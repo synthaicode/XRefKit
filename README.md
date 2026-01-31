@@ -20,6 +20,13 @@ Each managed Markdown file carries an XID block:
 <a id="xid-1A2B3C4D5E6F"></a>
 ```
 
+## Why XRefKit (beyond links)
+
+- **Multi-agent consistency via normalization**: keep domain knowledge in one canonical place (`docs/`), and have agent/tool instructions point to it by XID.
+- **Loose coupling of instructions**: keep “how to behave” small and stable, and fetch “what to know” on demand (`xref search/show`, `ctx pack`).
+- **Human+AI shared knowledge base**: keep originals in `sources/` for human verification, and maintain AI-readable fragments in `docs/` with stable references.
+- **Critical caveat**: changing an XID is a semantic decision (what the ID *means*). Treat it as human-reviewed, and use `xref deprecate` to keep old links valid.
+
 ## Commands
 
 ```powershell
