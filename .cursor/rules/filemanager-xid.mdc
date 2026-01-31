@@ -1,0 +1,13 @@
+---
+description: filemanager XID/link contract
+alwaysApply: true
+---
+
+This repo uses XID as the primary key for cross-doc references.
+
+- Always start from `docs/000_index.md` (human entry) and `agent/000_agent_entry.md` (agent contract).
+- References must include `#xid-...` fragments (paths may change).
+- Never change or remove existing XID blocks (`<!-- xid: ... -->` and `<a id="xid-..."></a>`).
+- Do not guess missing information; use `python -m fm xref search` / `python -m fm xref show`.
+- After edits, run: `python -m fm xref init`, `python -m fm xref rewrite`, `python -m fm xref check`.
+
