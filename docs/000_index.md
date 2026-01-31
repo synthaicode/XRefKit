@@ -10,6 +10,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Importing existing documents (human view)](003_import_for_humans.md#xid-0CF07930F2FA)
 - [End-to-end flow (human view)](004_overall_flow_for_humans.md#xid-E01E6695A30A)
 - [Overview](000_overview.md#xid-7C6C2B46A9D1)
+- [Language policy (English canonical + Japanese archive)](030_language_policy.md#xid-72FB974C8236)
 - [Principles / Contract](001_principles.md#xid-71DFD9319CFB)
 - [Workflow](010_workflow.md#xid-7D1E1C0279F1)
 - [Repository structure (human view)](002_structure.md#xid-D0E1327DDD7F)

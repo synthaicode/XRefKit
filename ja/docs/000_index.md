@@ -10,6 +10,7 @@
 - [既存ドキュメント取り込み（人間向けの見え方）](003_import_for_humans.md#xid-0CF07930F2FA)
 - [全体の流れ（人間向け）](004_overall_flow_for_humans.md#xid-E01E6695A30A)
 - [概要](000_overview.md#xid-7C6C2B46A9D1)
+- [言語ポリシー（英語を正本 / 日本語はコピー）](030_language_policy.md#xid-72FB974C8236)
 - [設計原則（Contract）](001_principles.md#xid-71DFD9319CFB)
 - [運用フロー](010_workflow.md#xid-7D1E1C0279F1)
 - [フォルダ構成（人間向け）](002_structure.md#xid-D0E1327DDD7F)
