@@ -38,7 +38,9 @@ class XrefConfig:
         return self.include if self.include is not None else ["docs", "agent"]
 
     def resolved_exclude(self) -> set[str]:
-        base = {".git", ".xref", "node_modules", ".venv", "venv", "__pycache__"}
+        # NOTE: `ja/` is a translation/archive area and is intentionally excluded
+        # from the managed XID index to avoid duplicate XIDs across languages.
+        base = {".git", ".xref", "node_modules", ".venv", "venv", "__pycache__", "ja"}
         if self.exclude is None:
             return base
         return base.union(set(self.exclude))
