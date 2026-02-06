@@ -35,7 +35,7 @@ class XrefConfig:
         return Path(self.root).resolve()
 
     def resolved_include(self) -> list[str]:
-        return self.include if self.include is not None else ["docs", "agent"]
+        return self.include if self.include is not None else ["docs", "agent", "knowledge"]
 
     def resolved_exclude(self) -> set[str]:
         # NOTE: `ja/` is a translation/archive area and is intentionally excluded
@@ -640,7 +640,43 @@ def cmd_xref(args: argparse.Namespace, cfg: XrefConfig) -> int:
                     print("  - " + json.dumps(r, ensure_ascii=False))
                 if len(review_items) > 50:
                     print(f"  ... +{len(review_items) - 50} more")
-        return 0
+        has_errors = bool(result["missing_xid"]) or bool(result["issues"])
+        return 1 if has_errors else 0
+
+    if args.xref_cmd == "fix":
+        dry_run = bool(getattr(args, "dry_run", False))
+        include_review = bool(getattr(args, "review", False))
+        as_json = bool(getattr(args, "json", False))
+
+        init_result = xref_init(cfg, dry_run=dry_run)
+        rewrite_result = xref_rewrite(cfg, dry_run=dry_run)
+        check_result = xref_check(cfg, review=include_review)
+        payload = {
+            "dry_run": dry_run,
+            "init": init_result,
+            "rewrite": rewrite_result,
+            "check": check_result,
+        }
+
+        if as_json:
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+        else:
+            print("phase:init")
+            print(f"  changed_files: {len(init_result['changed_files'])}")
+            print(f"  added_xids: {len(init_result['added'])}")
+            print("phase:rewrite")
+            print(f"  changed_files: {len(rewrite_result['changed_files'])}")
+            print(f"  issues: {len(rewrite_result['issues'])}")
+            print("phase:check")
+            print(f"  index_size: {check_result['index_size']}")
+            print(f"  missing_xid: {len(check_result['missing_xid'])}")
+            print(f"  issues: {len(check_result['issues'])}")
+            review_items = check_result.get("review")
+            if isinstance(review_items, list):
+                print(f"  review: {len(review_items)}")
+
+        has_errors = bool(check_result["missing_xid"]) or bool(check_result["issues"])
+        return 1 if has_errors else 0
 
     if args.xref_cmd == "index":
         index, index_issues = build_index(cfg)

@@ -5,7 +5,7 @@
 
 This repository intentionally maintains **two language trees**:
 
-- English: `docs/` and `agent/` (canonical operational knowledge)
+- English: `docs/`, `knowledge/`, and `agent/` (canonical operational knowledge)
 - Japanese: `ja/docs/` and `ja/agent/` (human-facing Japanese copies/notes)
 
 ## Why we do *not* cross-link languages by XID
@@ -20,7 +20,7 @@ If we managed both languages under the same XID index, we would create unavoidab
 
 Therefore:
 
-- **All managed XID references live in the English tree** (`docs/`, `agent/`)
+- **All managed XID references live in the English tree** (`docs/`, `knowledge/`, `agent/`)
 - The Japanese tree under `ja/` is **excluded from the XID index** and does not participate in `xref rewrite/check`
 
 ## What to do when you need bilingual navigation
@@ -34,7 +34,7 @@ These links are not rewritten by XRefKit; keep them stable and minimal.
 
 ## What “canonical” means here
 
-- `docs/` is the canonical knowledge the AI reads and references by XID
+- `knowledge/` is the canonical domain knowledge the AI reads and references by XID
+- `docs/` is canonical operational documentation for this repository
 - `sources/` holds originals for human verification
 - `ja/` is a parallel human-facing copy; it may drift and is not part of the managed reference graph
-

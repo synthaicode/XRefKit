@@ -19,7 +19,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "--include",
             nargs="*",
             default=None,
-            help="Top-level folders to include (default: docs agent)",
+            help="Top-level folders to include (default: docs agent knowledge)",
         )
         p.add_argument(
             "--exclude",
@@ -44,6 +44,16 @@ def _build_parser() -> argparse.ArgumentParser:
     p_rewrite = xref_sub.add_parser("rewrite", help="Rewrite managed links to correct paths")
     add_common_config(p_rewrite)
     p_rewrite.add_argument("--dry-run", action="store_true", help="Show changes only")
+
+    p_fix = xref_sub.add_parser("fix", help="Run init + rewrite + check in one command")
+    add_common_config(p_fix)
+    p_fix.add_argument("--dry-run", action="store_true", help="Show changes only")
+    p_fix.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
+    p_fix.add_argument(
+        "--review",
+        action="store_true",
+        help="Include human review hints from check phase (best-effort)",
+    )
 
     p_index = xref_sub.add_parser("index", help="Print XID -> path mapping")
     add_common_config(p_index)

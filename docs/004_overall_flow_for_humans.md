@@ -5,11 +5,11 @@
 
 The purpose of this repository is to keep original materials (PDF/Excel/Web, etc.) in-repo, while maintaining an AI-friendly knowledge base (fragmented Markdown). It is designed so that links remain stable even after rename/move/split/merge operations.
 
-As a secondary benefit, you can center your workflow around XIDs and `docs/` and avoid continuously rewriting vendor-specific “instruction files” or “rule files”. When you switch tools, the knowledge location and reference method remain stable, reducing migration cost.
+As a secondary benefit, you can center your workflow around XIDs and `knowledge/` and avoid continuously rewriting vendor-specific “instruction files” or “rule files”. When you switch tools, the knowledge location and reference method remain stable, reducing migration cost.
 
 The basic loop is:
 
-**`sources/` (originals) → `docs/` (extracted fragments) → `fm xref` (consistency) → CI (breakage detection)**
+**`sources/` (originals) → `knowledge/` (extracted fragments) → skills (select/use knowledge) → `fm xref` (connection maintenance) → CI (breakage detection)**
 
 This page is a one-page overview of what goes where and how day-to-day work proceeds. It is easiest to think in three situations: (1) import, (2) reference, (3) update.
 
@@ -17,12 +17,12 @@ This page is a one-page overview of what goes where and how day-to-day work proc
 
 - `sources/`: vault of original materials (the sources humans can verify)
   - e.g., PDFs, Excel files, saved HTML snapshots, images, logs
-- `docs/`: extracted knowledge base (the canonical form the AI reads)
+- `knowledge/`: extracted knowledge base (the canonical form the AI reads)
   - “one page = one fragment” Markdown with an XID
   - each fragment ends with a source pointer (`sources/` path + locator)
-- `fm/`: CLI that assigns XIDs, rewrites managed links, and validates consistency
+- `fm/`: supporting CLI that protects skill-to-knowledge connections by assigning XIDs, rewriting managed links, and validating consistency
 
-The key split is: **humans verify `sources/`**, **AI reads `docs/`**. The AI should usually work only from `docs/`, and consult `sources/` only when needed, using the source pointer recorded in the fragment.
+The key split is: **humans verify `sources/`**, **AI reads `knowledge/`**. The AI should usually work only from `knowledge/`, and consult `sources/` only when needed, using the source pointer recorded in the fragment.
 
 XID is the stable identifier that makes cross-doc references resilient to path changes (`fm xref` automates rewriting and validation).
 
@@ -40,7 +40,7 @@ This cannot be fully automated. Use `xref check --review` as a signal, and requi
 ### 1) Import (add new materials)
 
 1. Add original materials to `sources/` as-is (no pre-splitting required)
-2. Let the AI reference only the necessary parts and add/update `docs/` fragments
+2. Let the AI reference only the necessary parts and add/update `knowledge/` fragments
    - keep each fragment self-contained (assumptions/conditions/conclusion/procedure)
 3. At the end of each fragment, record a source pointer (e.g., `source_path` + `page=` / `sheet=` / `source_url`)
 4. Run consistency commands (when local execution is possible)
@@ -55,9 +55,9 @@ Completion condition: `xref check` returns `issues: 0`.
 
 ### 2) Reference (when you need to confirm something)
 
-Instead of scanning the originals every time, first find and read the relevant fragments in `docs/`. This keeps AI reads small and stable.
+Instead of scanning the originals every time, first find and read the relevant fragments in `knowledge/`. This keeps AI reads small and stable.
 
-1. Start at `docs/000_index.md`
+1. Start at `knowledge/000_index.md`
 2. Find candidate XIDs: `python -m fm xref search "<query>"`
 3. Read only what you need: `python -m fm xref show <XID>`
 
@@ -69,7 +69,7 @@ python -m fm ctx pack --seed <XID> --depth 1 --out .xref/pack.md
 
 ### 3) Update (edit or reorganize existing docs)
 
-Day-to-day edits happen in `docs/`. The important part is to run the consistency steps after structural changes.
+Day-to-day edits happen in `knowledge/`. The important part is to run the consistency steps after structural changes.
 
 - Edit content normally
 - After rename/move/split/merge: run `xref rewrite` and `xref check` (never remove XID blocks)
@@ -79,7 +79,7 @@ Day-to-day edits happen in `docs/`. The important part is to run the consistency
 Fragmentation is **not** splitting the original materials. It is shaping the AI-readable knowledge into units that can be referenced and loaded on demand.
 
 - originals stay in `sources/` (for human verification)
-- fragments live in `docs/` (for AI work and reuse)
+- fragments live in `knowledge/` (for AI work and reuse)
 
 ## Common failure modes and mitigations
 

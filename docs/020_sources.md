@@ -7,17 +7,17 @@ This repository keeps original materials (PDF/Excel/Web, etc.) **inside the repo
 
 Important: **you do not need to pre-split the original materials**. Store the originals as-is (PDF/Excel/HTML, etc.).
 
-The AI-readable “knowledge” is maintained as Markdown fragments under `docs/` (XID-managed). Originals under `sources/` act as the **source of truth** that each fragment points to.
+The AI-readable domain knowledge is maintained as Markdown fragments under `knowledge/` (XID-managed). Originals under `sources/` act as the **source of truth** that each fragment points to.
 
 ## Where to put things
 
 - Originals (binaries, HTML snapshots, etc.): `sources/`
-- AI-readable knowledge (fragmented Markdown): `docs/`
+- AI-readable knowledge (fragmented Markdown): `knowledge/`
 
 ## Basic ingestion pipeline
 
 1. Add originals to `sources/` (PDF/Excel/HTML, etc.)
-2. Read originals and add/update `docs/` as “one page = one fragment”
+2. Read originals and add/update `knowledge/` as “one page = one fragment”
 3. At the end of the change, run `init` / `rewrite` / `check` until `issues: 0`
 
 ## How to record sources (recommended)
@@ -48,5 +48,5 @@ Example (Web):
 
 ## Operational guidance for AI
 
-- Do not re-read entire originals every time. First locate and read relevant fragments via `docs/000_index.md` and `python -m fm xref search/show`.
+- Do not re-read entire originals every time. First locate and read relevant fragments via `knowledge/000_index.md` and `python -m fm xref search/show`.
 - Only when needed, follow the source pointer to consult the exact location in `sources/` (page/sheet/URL).

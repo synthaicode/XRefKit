@@ -19,6 +19,17 @@ References treat the **XID** as the primary key.
 - Managed links include `#xid-<XID>`
 - After rename/move, `python -m fm xref rewrite` updates only the *path* portion of managed links
 
+## Positioning: xref is a supporting feature
+
+The primary value of this repository is to **connect each skill to domain knowledge fragments in `knowledge/`**.
+`xref` is intentionally a supporting capability that keeps those connections durable.
+
+- Separation rule: keep skill files and domain-knowledge files separate.
+- Shared knowledge rule: `knowledge/` is common domain knowledge across skills.
+- Primary: skills select and consume the right knowledge fragments for the task
+- Supporting: `fm xref` maintains IDs, link paths, and breakage checks
+- Outcome: skill-to-knowledge wiring stays stable even when tools or agents change
+
 ## What it means for AI to “manage XIDs”
 
 It does **not** mean the AI invents IDs. It means the AI (or CI) uses `fm` commands to keep the system consistent.
@@ -30,6 +41,9 @@ It does **not** mean the AI invents IDs. It means the AI (or CI) uses `fm` comma
 ## Minimal repository layout
 
 - `docs/`: Human-facing docs (background, design, operations)
+- `knowledge/`: Shared domain knowledge fragments (XID-managed)
+- `skills/`: Skill definitions (behavior/procedure, references to XIDs)
+- `work/`: AI-authored retrospectives and handover logs (non-canonical)
 - `agent/`: Agent entry + contract (keep L0 short and stable)
 - `fm/`: CLI implementation (`python -m fm ...`)
 - `sources/`: Original materials (PDF/Excel/Web snapshots, etc.) for human review
@@ -37,9 +51,13 @@ It does **not** mean the AI invents IDs. It means the AI (or CI) uses `fm` comma
 
 ## Tool integrations (examples)
 
+Keep vendor startup files minimal (`xref` route + central links), and centralize detailed policy in `docs/` + `agent/`.
+Shared startup policy: [Startup xref routing policy](011_startup_xref_routing.md#xid-6C0B62D6366A)
+
 - GitHub Copilot: `.github/copilot-instructions.md`
 - Claude Code: `CLAUDE.md`
 - Devin: `AGENTS.md`
+- ChatGPT: `CHATGPT.md`
 - Cursor: `.cursor/rules/*.mdc`
 
 ## Common commands
