@@ -43,6 +43,7 @@ It does **not** mean the AI invents IDs. It means the AI (or CI) uses `fm` comma
 - `docs/`: Human-facing docs (background, design, operations)
 - `knowledge/`: Shared domain knowledge fragments (XID-managed)
 - `skills/`: Skill definitions (behavior/procedure, references to XIDs)
+- `work/`: AI-authored retrospectives and handover logs (non-canonical)
 - `agent/`: Agent entry + contract (keep L0 short and stable)
 - `fm/`: CLI implementation (`python -m fm ...`)
 - `sources/`: Original materials (PDF/Excel/Web snapshots, etc.) for human review
