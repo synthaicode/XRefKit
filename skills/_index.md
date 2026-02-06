@@ -28,6 +28,10 @@ When asked "what skills are available?", answer from this file.
   - summary: check Dev.to drafts and optionally rewrite
   - meta: `skills/devto_check/meta.md`
   - skill_doc: `skills/devto_check/SKILL.md`
+- `csharp_review`:
+  - summary: review C# code beyond Roslyn-detectable diagnostics
+  - meta: `skills/csharp_review/meta.md`
+  - skill_doc: `skills/csharp_review/SKILL.md`
 
 ## Notes
 

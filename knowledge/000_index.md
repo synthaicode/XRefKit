@@ -16,3 +16,4 @@ Skills should reference these pages by XID and load only what is needed.
 ## Entries
 
 - [Dev.to check spec](devto/100_devto_check_spec.md#xid-D6AFA8483950)
+- [C# review spec](csharp/100_csharp_review_spec.md#xid-30E6A4F6F3AA)
