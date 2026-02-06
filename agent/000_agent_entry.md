@@ -13,6 +13,7 @@ Related: [Overview](../docs/000_overview.md#xid-7C6C2B46A9D1)
 - Keep skill instructions and domain knowledge in separate files
 - Treat `knowledge/` as shared domain knowledge; skills load only needed fragments on demand
 - MUST write execution logs/retrospectives to `work/` automatically (non-canonical)
+- MUST use date-prefixed filenames for `work/` logs (`YYYY-MM-DD_<type>_<topic>.md`)
 - MUST promote stabilized decisions/facts from `work/` to canonical locations (`docs/` or `knowledge/`)
 - Follow shared-memory event logging rules in `docs/015_shared_memory_operations.md#xid-4A423E72D2ED`
 - Follow uncertainty protocol in `docs/016_uncertainty_protocol.md#xid-8A666C1FD121`

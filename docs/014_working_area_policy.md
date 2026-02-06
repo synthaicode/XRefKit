@@ -18,6 +18,16 @@ Use `docs/` and `knowledge/` only for reviewed, stable outputs.
 - `work/retrospectives/`: summaries of decisions, tradeoffs, and outcomes
 - `work/handover/`: concise baton-pass notes for unfinished work
 
+## File Naming Rule (required)
+
+Because auto-routing is not guaranteed, AI MUST use date-prefixed filenames.
+
+- Format: `YYYY-MM-DD_<type>_<topic>.md`
+- Examples:
+  - `2026-02-06_session_xref-policy-update.md`
+  - `2026-02-06_retro_skill-import-design.md`
+  - `2026-02-06_handover_pending-main-merge.md`
+
 ## Promotion Rules
 
 1. AI MUST write logs and retrospectives to `work/` during/after tasks.

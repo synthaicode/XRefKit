@@ -15,3 +15,8 @@ Recommended structure:
 - `work/sessions/<YYYY-MM-DD>_<topic>.md`
 - `work/retrospectives/<YYYY-MM-DD>_<topic>.md`
 - `work/handover/<YYYY-MM-DD>_<topic>.md`
+
+Required filename convention:
+
+- `YYYY-MM-DD_<type>_<topic>.md`
+- `<type>`: `session`, `retro`, `handover`

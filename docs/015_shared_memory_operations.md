@@ -34,6 +34,7 @@ Do not log:
 - Humans review logs for accuracy; humans do not need to author these logs.
 - Log location: `work/sessions/` and `work/retrospectives/`.
 - AI MUST promote stabilized decisions/facts from `work/` to canonical docs (`docs/`, `knowledge/`).
+- Filename MUST be date-prefixed: `YYYY-MM-DD_<type>_<topic>.md`.
 
 ## Event Log Format
 
