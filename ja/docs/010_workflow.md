@@ -9,6 +9,7 @@
 - 他ファイル参照は `#xid-<XID>` を含むリンクで行う
 - 改名/移動/分割/統合の後に `python -m fm xref rewrite` を実行する
 - 破綻検出は `python -m fm xref check` を CI などで継続実行する
+- まとめて整合を取りたい場合は `python -m fm xref fix` を使う（init + rewrite + check）
 - 更新時の人間レビュー用ヒントは `python -m fm xref check --review` を使う（best-effort）
 
 ## 他の AI がこのリポジトリを使う時の手順（固定）
@@ -17,6 +18,9 @@
 2. 目的に近いページを `python -m fm xref search` で探し、読む XID を列挙する
 3. 列挙した XID を `python -m fm xref show <XID>` で必要な分だけ読む
 4. 作業し、参照した XID 一覧を作業ログとして残す
+
+Skill 実行中に追加のドメイン知識が必要になった場合も、同じ導線を都度使います。  
+`xref search` -> `xref show` -> 取得した XID 文脈で Skill を再開する、という流れです。
 
 ## よくある操作
 
@@ -35,9 +39,7 @@
 3. 仕上げに整合性を回す
 
 ```powershell
-python -m fm xref init
-python -m fm xref rewrite
-python -m fm xref check
+python -m fm xref fix
 ```
 
 詳細: [ソース取り込み（PDF/Excel/Web）](020_sources.md#xid-2FAD591BF725)
@@ -51,3 +53,5 @@ python -m fm xref deprecate <OLD_XID> <NEW_XID> --note "変更理由（任意）
 python -m fm xref rewrite
 python -m fm xref check --review
 ```
+
+`python -m fm xref check` と `python -m fm xref fix` は、問題がある場合に終了コード `1` を返します。

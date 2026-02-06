@@ -14,6 +14,8 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Principles / Contract](001_principles.md#xid-71DFD9319CFB)
 - [Workflow](010_workflow.md#xid-7D1E1C0279F1)
 - [Repository structure (human view)](002_structure.md#xid-D0E1327DDD7F)
+- [Startup xref routing policy (shared for vendor startup files)](011_startup_xref_routing.md#xid-6C0B62D6366A)
+- [Single-link startup architecture (multi-vendor AI)](012_single_link_startup_architecture.md#xid-AB27F6C19DF5)
 
 ## Common links
 

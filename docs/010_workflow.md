@@ -9,6 +9,7 @@
 - Cross-file references must use links that include `#xid-<XID>`
 - After rename/move/split/merge, run `python -m fm xref rewrite`
 - Continuously validate with `python -m fm xref check` (e.g., in CI)
+- For one-shot maintenance, use `python -m fm xref fix` (runs init + rewrite + check)
 - For human review hints during updates, use `python -m fm xref check --review` (best-effort)
 
 ## Fixed procedure for any AI using this repo
@@ -17,6 +18,9 @@
 2. Find candidate pages: `python -m fm xref search "<query>"` and list the XIDs to read
 3. Read only what you need: `python -m fm xref show <XID>`
 4. Do the work and record the XIDs you referenced in the work log
+
+When a running skill needs additional domain knowledge, use the same route on demand:
+`xref search` -> `xref show` -> resume the skill with the retrieved XID context.
 
 ## Common operations
 
@@ -35,9 +39,7 @@ Store originals under `sources/` so humans can always verify them. Treat `docs/`
 3. Run consistency steps
 
 ```powershell
-python -m fm xref init
-python -m fm xref rewrite
-python -m fm xref check
+python -m fm xref fix
 ```
 
 Details: [Sources](020_sources.md#xid-2FAD591BF725)
@@ -82,3 +84,5 @@ python -m fm xref deprecate <OLD_XID> <NEW_XID> --note "reason (optional)"
 python -m fm xref rewrite
 python -m fm xref check --review
 ```
+
+`python -m fm xref check` and `python -m fm xref fix` return exit code `1` when issues are found.

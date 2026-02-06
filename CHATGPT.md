@@ -1,4 +1,4 @@
-# Copilot Startup (XRefKit)
+# ChatGPT Startup (XRefKit)
 
 This startup file is intentionally minimal.
 

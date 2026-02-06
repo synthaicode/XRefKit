@@ -3,11 +3,14 @@
 XRefKit は「AI と知識を共有する」ための OSS 知識運用ツールキットです。
 
 リポジトリ内に原本（PDF/Excel/Web スナップショットなど）を保持しつつ、AI が参照しやすい形として Markdown の断片（フラグメント）を整備します。文書間参照は安定ID（**XID**）を主キーにすることで、改名・移動・分割・統合があってもリンク破綻を抑えます。
+この構成では `xref` は脇役の補助機能で、主目的は Skill/agent とドメイン知識断片を正しく結びつけることです。
 
 **入口**
 
 - 人間向け入口: `docs/000_index.md`
 - agent 契約（常に読む）: `agent/000_agent_entry.md`
+
+AI ベンダー別の起動ファイルは最小限にし、`xref` で知識を読む導線だけ示します。詳細ルールは上記入口へ一元化します。
 
 ## XID とは
 
@@ -32,6 +35,9 @@ python -m fm xref rewrite
 # XID とリンクの検査
 python -m fm xref check
 
+# まとめて整合（init + rewrite + check）
+python -m fm xref fix
+
 # 人間レビュー用ヒント（best-effort）
 python -m fm xref check --review
 
@@ -42,3 +48,5 @@ python -m fm xref show 1A2B3C4D5E6F
 # コンテキストパック（seed + 近傍）
 python -m fm ctx pack --seed 7C6C2B46A9D1 --depth 1 --out .xref\\pack.md
 ```
+
+`python -m fm xref check` と `python -m fm xref fix` は、問題がある場合に終了コード `1` を返します（CI で失敗検知可能）。

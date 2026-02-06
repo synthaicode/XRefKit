@@ -9,7 +9,7 @@ As a secondary benefit, you can center your workflow around XIDs and `docs/` and
 
 The basic loop is:
 
-**`sources/` (originals) → `docs/` (extracted fragments) → `fm xref` (consistency) → CI (breakage detection)**
+**`sources/` (originals) → `docs/` (extracted fragments) → skills (select/use knowledge) → `fm xref` (connection maintenance) → CI (breakage detection)**
 
 This page is a one-page overview of what goes where and how day-to-day work proceeds. It is easiest to think in three situations: (1) import, (2) reference, (3) update.
 
@@ -20,7 +20,7 @@ This page is a one-page overview of what goes where and how day-to-day work proc
 - `docs/`: extracted knowledge base (the canonical form the AI reads)
   - “one page = one fragment” Markdown with an XID
   - each fragment ends with a source pointer (`sources/` path + locator)
-- `fm/`: CLI that assigns XIDs, rewrites managed links, and validates consistency
+- `fm/`: supporting CLI that protects skill-to-knowledge connections by assigning XIDs, rewriting managed links, and validating consistency
 
 The key split is: **humans verify `sources/`**, **AI reads `docs/`**. The AI should usually work only from `docs/`, and consult `sources/` only when needed, using the source pointer recorded in the fragment.
 

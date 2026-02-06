@@ -3,11 +3,14 @@
 XRefKit is an OSS knowledge-ops toolkit for sharing knowledge with AI.
 
 It keeps original sources (PDF/Excel/Web snapshots, etc.) in-repo, and maintains an AI-readable knowledge base as small Markdown “fragments”. Cross-document references use stable IDs (**XIDs**) so links keep working across rename/move/split/merge operations.
+In this architecture, `xref` is a supporting feature: the primary goal is to connect skills/agents with the right domain knowledge fragments.
 
 **Entry points**
 
 - Human entry: `docs/000_index.md`
 - Agent contract (always read): `agent/000_agent_entry.md`
+
+Vendor startup files should stay minimal: show how to load domain knowledge via `xref`, and centralize all detailed policy in the entry points above.
 
 ## Why XIDs
 
@@ -39,6 +42,9 @@ python -m fm xref rewrite
 # Validate XIDs and managed links
 python -m fm xref check
 
+# One-shot maintenance (init + rewrite + check)
+python -m fm xref fix
+
 # Human-review hints (best-effort)
 python -m fm xref check --review
 
@@ -49,3 +55,5 @@ python -m fm xref show 1A2B3C4D5E6F
 # Build a small context pack (seed + neighbors)
 python -m fm ctx pack --seed 7C6C2B46A9D1 --depth 1 --out .xref\\pack.md
 ```
+
+`python -m fm xref check` and `python -m fm xref fix` return exit code `1` when issues are found, so they can fail CI correctly.
