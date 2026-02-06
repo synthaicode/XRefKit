@@ -11,7 +11,7 @@ Related: [Overview](../docs/000_overview.md#xid-7C6C2B46A9D1)
 
 - Use XIDs as primary keys for references (links must include `#xid-...`)
 - Keep skill instructions and domain knowledge in separate files
-- Treat `docs/` as shared domain knowledge; skills load only needed fragments on demand
+- Treat `knowledge/` as shared domain knowledge; skills load only needed fragments on demand
 - Do not fill missing information by guessing; first find the relevant XIDs and read them
 - After rename/move/split/merge, run link validation (`xref check`)
 

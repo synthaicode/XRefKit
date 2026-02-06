@@ -16,8 +16,10 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Repository structure (human view)](002_structure.md#xid-D0E1327DDD7F)
 - [Startup xref routing policy (shared for vendor startup files)](011_startup_xref_routing.md#xid-6C0B62D6366A)
 - [Single-link startup architecture (multi-vendor AI)](012_single_link_startup_architecture.md#xid-AB27F6C19DF5)
+- [Skill authoring with xref](013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B)
 
 ## Common links
 
 - Agent entry: [Agent Entry](../agent/000_agent_entry.md#xid-0B5C58B5E5B2)
+- Domain knowledge entry: [Knowledge Index](../knowledge/000_index.md#xid-23059118FBB9)
 - [Sources (PDF/Excel/Web)](020_sources.md#xid-2FAD591BF725)

@@ -9,7 +9,7 @@ This page defines the shared startup policy for vendor-specific startup files
 ## Shared Policy
 
 - Manage skill definitions and domain knowledge as separate files.
-- Treat domain knowledge in `docs/` as shared/common.
+- Treat domain knowledge in `knowledge/` as shared/common.
 - Each skill reads only what it needs, on demand, via `xref`.
 - When a task/skill needs domain knowledge, route via:
   - `python -m fm xref search "<query>"`

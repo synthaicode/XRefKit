@@ -3,7 +3,7 @@
 XRefKit is an OSS knowledge-ops toolkit for sharing knowledge with AI.
 
 It keeps original sources (PDF/Excel/Web snapshots, etc.) in-repo, and maintains an AI-readable knowledge base as small Markdown “fragments”. Cross-document references use stable IDs (**XIDs**) so links keep working across rename/move/split/merge operations.
-In this architecture, `xref` is a supporting feature: the primary goal is to connect skills/agents with the right domain knowledge fragments.
+In this architecture, `xref` is a supporting feature: the primary goal is to connect skills/agents with the right domain knowledge fragments in `knowledge/`.
 
 **Entry points**
 
@@ -25,7 +25,7 @@ Each managed Markdown file carries an XID block:
 
 ## Why XRefKit (beyond links)
 
-- **Multi-agent consistency via normalization**: keep domain knowledge in one canonical place (`docs/`), and have agent/tool instructions point to it by XID.
+- **Multi-agent consistency via normalization**: keep domain knowledge in one canonical place (`knowledge/`), and have agent/tool instructions point to it by XID.
 - **Loose coupling of instructions**: keep “how to behave” small and stable, and fetch “what to know” on demand (`xref search/show`, `ctx pack`).
 - **Human+AI shared knowledge base**: keep originals in `sources/` for human verification, and maintain AI-readable fragments in `docs/` with stable references.
 - **Critical caveat**: changing an XID is a semantic decision (what the ID *means*). Treat it as human-reviewed, and use `xref deprecate` to keep old links valid.

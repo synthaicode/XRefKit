@@ -28,7 +28,7 @@ Vendor-specific startup files stay minimal and only point to the shared policy.
 1. Vendor startup file is loaded by the tool.
 2. The file points to one shared policy page.
 3. The shared policy routes knowledge access through `xref`.
-4. Skills pull only required domain fragments from `docs/`.
+4. Skills pull only required domain fragments from `knowledge/`.
 
 This keeps startup files thin while preserving consistent behavior.
 

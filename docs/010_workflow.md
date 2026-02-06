@@ -30,12 +30,12 @@ When a running skill needs additional domain knowledge, use the same route on de
 2. Assign XIDs: `python -m fm xref init`
 3. If needed: `python -m fm xref rewrite`
 
-### Ingest sources (PDF/Excel/Web → docs)
+### Ingest sources (PDF/Excel/Web → knowledge)
 
-Store originals under `sources/` so humans can always verify them. Treat `docs/` Markdown fragments (with XIDs) as the canonical knowledge the AI reads.
+Store originals under `sources/` so humans can always verify them. Treat `knowledge/` Markdown fragments (with XIDs) as the canonical domain knowledge the AI reads.
 
 1. Add original materials to `sources/`
-2. Read the originals and add/update `docs/` as “one page = one fragment” (record sources at the end)
+2. Read the originals and add/update `knowledge/` as “one page = one fragment” (record sources at the end)
 3. Run consistency steps
 
 ```powershell
