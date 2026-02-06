@@ -1,42 +1,36 @@
 # Skills Index
 
 This page is the routing entry for skills.
-It lists each skill with scope and when to use it.
+It is intentionally compact for context efficiency.
 When asked "what skills are available?", answer from this file.
 
 ## Routing Rules
 
 1. Read the user request and identify intent.
-2. Match intent to one skill from the catalog below.
-3. Open the selected skill page and execute its procedure.
-4. If domain knowledge is needed, resolve by XID from `knowledge/` via `xref`.
+2. Narrow candidates using category indexes under `skills/index/`.
+3. Read candidate `meta.md` files only (2-3 candidates max).
+4. Open the selected `SKILL.md` and execute its procedure.
+5. If domain knowledge is needed, resolve by XID from `knowledge/` via `xref`.
 
-## Skill Catalog
+## Category Indexes
 
-### `import_skill`
+- by task: `skills/index/by_task.md`
+- by domain: `skills/index/by_domain.md`
+- by tool: `skills/index/by_tool.md`
 
-- summary: import an external skill into this repository's split model (skill vs domain knowledge)
-- use_when: a user asks to bring a skill from another repo/source and make it runnable here
-- input: source URL or ZIP file path, and optional target skill id
-- output: `skills/<skill_id>/SKILL.md`, updated `skills/_index.md`, and referenced knowledge in `knowledge/`
-- constraints: do not leave domain facts embedded in skill files; use XID references
-- skill_doc: `skills/import_skill/SKILL.md`
-- knowledge_refs: none (uses existing domain fragments as needed)
+## Skills (compact)
 
-## Skill Entry Template
-
-### `<skill_id>`
-
-- summary: one-line purpose of this skill
-- use_when: concrete trigger conditions
-- input: expected input shape
-- output: expected output shape
-- constraints: safety/quality boundaries
-- skill_doc: `skills/<skill_id>/SKILL.md`
-- knowledge_refs: `knowledge/...#xid-<XID>`
+- `import_skill`:
+  - summary: import external skill content into this repository model
+  - meta: `skills/import_skill/meta.md`
+  - skill_doc: `skills/import_skill/SKILL.md`
+- `devto_check`:
+  - summary: check Dev.to drafts and optionally rewrite
+  - meta: `skills/devto_check/meta.md`
+  - skill_doc: `skills/devto_check/SKILL.md`
 
 ## Notes
 
-- Keep behavior/procedure in skill files only.
+- Keep this file lightweight; detailed fields belong in `meta.md`.
+- Keep behavior/procedure in `SKILL.md`.
 - Keep factual domain content in `knowledge/`.
-- Do not duplicate domain facts in this index.

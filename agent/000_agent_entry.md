@@ -23,9 +23,11 @@ Related: [Overview](../docs/000_overview.md#xid-7C6C2B46A9D1)
 ## How to reference (fixed procedure)
 
 1. Read skill routing entry: `skills/_index.md`
-2. Read the entry index: `docs/000_index.md`
-3. Find candidate XIDs: `python -m fm xref search "<query>"`
-4. Read only what you need: `python -m fm xref show <XID>`
+2. Narrow candidates via `skills/index/*`, then read candidate `meta.md` files
+3. Open selected `SKILL.md`
+4. Read the entry index: `docs/000_index.md`
+5. Find candidate XIDs: `python -m fm xref search "<query>"`
+6. Read only what you need: `python -m fm xref show <XID>`
 
 If the user asks for available skills, answer from `skills/_index.md` first.
 

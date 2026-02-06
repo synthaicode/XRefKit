@@ -12,3 +12,7 @@ Skills should reference these pages by XID and load only what is needed.
 - Preserve XID blocks.
 - Use links with `#xid-...` for cross-fragment references.
 - After edits, run `python -m fm xref fix`.
+
+## Entries
+
+- [Dev.to check spec](devto/100_devto_check_spec.md#xid-D6AFA8483950)
