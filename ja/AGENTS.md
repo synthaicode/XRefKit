@@ -1,5 +1,5 @@
 # AGENTS 起動ファイル（XRefKit / 日本語）
 
-このファイルは最小限の起動導線だけを持ちます。
+**最初のアクションとして**、以下の共有スタートアップポリシーを読み、その指示に従うこと:
 
-- 共通起動ポリシー: `docs/011_startup_xref_routing.md#xid-6C0B62D6366A`
+- `docs/011_startup_xref_routing.md#xid-6C0B62D6366A`

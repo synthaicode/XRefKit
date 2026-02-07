@@ -3,7 +3,7 @@ description: filemanager XID/link contract
 alwaysApply: true
 ---
 
-Use this file only as startup routing.
+**As your first action**, read the shared startup policy below and follow its instructions:
 
-- Shared startup policy: `docs/011_startup_xref_routing.md#xid-6C0B62D6366A`
+- `docs/011_startup_xref_routing.md#xid-6C0B62D6366A`
 
