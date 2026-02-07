@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "description": "Inspection policy for imported skills. JSON is used as YAML-compatible content.",
+  "trust": {
+    "allowed_owners": [
+      "openai"
+    ],
+    "require_sha_pinning": true
+  },
+  "rules": [
+    {
+      "id": "override-system-instructions",
+      "severity": "block",
+      "targets": [
+        "skill_md"
+      ],
+      "pattern": "(ignore|override|bypass).{0,80}(system|developer)\\s+(instruction|prompt|policy)",
+      "message": "Prompt hierarchy override attempt."
+    },
+    {
+      "id": "forced-escalation",
+      "severity": "block",
+      "targets": [
+        "skill_md"
+      ],
+      "pattern": "(must|required|always).{0,80}(escalat|admin|root|approval).{0,80}(without|skip|ignore)",
+      "message": "Forces privileged execution without approval."
+    },
+    {
+      "id": "destructive-command",
+      "severity": "block",
+      "targets": [
+        "script"
+      ],
+      "pattern": "(rm\\s+-rf\\s+/|del\\s+/[sq]\\s+|Remove-Item\\s+-Recurse\\s+-Force|git\\s+reset\\s+--hard|diskpart\\b)",
+      "message": "Potentially destructive command."
+    },
+    {
+      "id": "secret-exfiltration",
+      "severity": "block",
+      "targets": [
+        "script",
+        "skill_md"
+      ],
+      "pattern": "(curl|wget|Invoke-WebRequest|Invoke-RestMethod).{0,120}(\\$\\{?[A-Z_]*(TOKEN|SECRET|KEY|PASSWORD)[A-Z_]*\\}?|%[A-Z_]*(TOKEN|SECRET|KEY|PASSWORD)[A-Z_]*%)",
+      "message": "Possible secret exfiltration pattern."
+    },
+    {
+      "id": "mandatory-unscanned-script",
+      "severity": "warn",
+      "targets": [
+        "skill_md"
+      ],
+      "pattern": "(must|required|always).{0,80}(run|execute).{0,80}(scripts?/|\\.sh|\\.ps1|\\.bat|\\.cmd|python\\s+)",
+      "message": "Mandatory script execution instruction detected."
+    },
+    {
+      "id": "persistent-global-config",
+      "severity": "warn",
+      "targets": [
+        "script"
+      ],
+      "pattern": "(git\\s+config\\s+--global|setx\\s+|\\.bashrc|\\.zshrc|profile\\.ps1|HKCU\\\\Software)",
+      "message": "Persistent global configuration change."
+    },
+    {
+      "id": "supply-chain-chaining",
+      "severity": "warn",
+      "targets": [
+        "script",
+        "skill_md"
+      ],
+      "pattern": "(git\\s+clone\\s+https?://|pip\\s+install\\s+.+https?://|curl\\s+.+\\|\\s*(sh|bash|pwsh))",
+      "message": "External chained fetch/execute pattern."
+    }
+  ]
+}

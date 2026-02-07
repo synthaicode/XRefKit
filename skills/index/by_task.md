@@ -5,3 +5,5 @@
 - review:
   - `devto_check` -> `../devto_check/meta.md`
   - `csharp_review` -> `../csharp_review/meta.md`
+  - `libecity_mamoru` -> `../libecity_mamoru/meta.md`
+  - `password_management` -> `../password_management/meta.md`

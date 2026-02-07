@@ -18,6 +18,7 @@ Import an external skill into this repository while preserving the split model:
 - `skills/<skill_id>/SKILL.md` (imported and normalized procedure)
 - updated `skills/_index.md` entry for `<skill_id>`
 - domain fragments in `knowledge/` when needed
+- inspection report from `skills/import_skill/scripts/inspect_imported_skill.py`
 
 ## Procedure
 
@@ -27,13 +28,20 @@ Import an external skill into this repository while preserving the split model:
    - behavior/procedure steps
    - factual/domain statements
    - external references and assumptions
-2. Create `skills/<skill_id>/SKILL.md` with behavior-only instructions.
-3. Move factual/domain statements into `knowledge/` fragments.
-4. Assign/normalize XIDs for new knowledge pages:
+2. Inspect extracted skill content before import:
+   - run `python skills/import_skill/scripts/inspect_imported_skill.py <extracted_skill_dir> --repo <owner/repo> --ref <ref>`
+   - for CI/strict mode use `--strict` and fail on any `block` or `warn`
+   - policy source: `skills/import_skill/policy/inspection_rules.yaml`
+3. If any `block` findings exist:
+   - do not import as-is
+   - remove or rewrite flagged instructions/scripts first
+4. Create `skills/<skill_id>/SKILL.md` with behavior-only instructions.
+5. Move factual/domain statements into `knowledge/` fragments.
+6. Assign/normalize XIDs for new knowledge pages:
    - `python -m fm xref init`
-5. Replace hardcoded facts in skill files with XID-based references to `knowledge/...#xid-...`.
-6. Add `<skill_id>` entry to `skills/_index.md`.
-7. Validate and normalize links:
+7. Replace hardcoded facts in skill files with XID-based references to `knowledge/...#xid-...`.
+8. Add `<skill_id>` entry to `skills/_index.md`.
+9. Validate and normalize links:
    - `python -m fm xref rewrite`
    - `python -m fm xref fix`
 
@@ -41,6 +49,7 @@ Import an external skill into this repository while preserving the split model:
 
 - No large factual blocks remain in `skills/<skill_id>/SKILL.md`.
 - Knowledge references point to `knowledge/` with `#xid-...`.
+- Skill inspection reports `block: 0` before import.
 - `python -m fm xref fix` reports `issues: 0`.
 
 ## Failure Handling

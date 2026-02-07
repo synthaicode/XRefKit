@@ -32,6 +32,14 @@ When asked "what skills are available?", answer from this file.
   - summary: review C# code beyond Roslyn-detectable diagnostics
   - meta: `skills/csharp_review/meta.md`
   - skill_doc: `skills/csharp_review/SKILL.md`
+- `libecity_mamoru`:
+  - summary: assess and strengthen personal/household protection readiness
+  - meta: `skills/libecity_mamoru/meta.md`
+  - skill_doc: `skills/libecity_mamoru/SKILL.md`
+- `password_management`:
+  - summary: assess and improve password hygiene with vault and MFA
+  - meta: `skills/password_management/meta.md`
+  - skill_doc: `skills/password_management/SKILL.md`
 
 ## Notes
 
