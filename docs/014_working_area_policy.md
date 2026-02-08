@@ -31,13 +31,15 @@ Because auto-routing is not guaranteed, AI MUST use date-prefixed filenames.
 ## Promotion Rules
 
 1. AI MUST write logs and retrospectives to `work/` during/after tasks.
-2. AI MUST promote stabilized content to:
+2. AI MUST update `work/sessions/` before declaring task completion.
+3. AI MUST update `work/sessions/` before running `git commit` or `git push`.
+4. AI MUST promote stabilized content to:
    - `docs/` for operational/design policy
    - `knowledge/` for domain facts
-3. Add/normalize XIDs after promotion:
+5. Add/normalize XIDs after promotion:
    - `python -m fm xref init`
    - `python -m fm xref fix`
-4. Keep a short pointer in `work/` (moved-to path/date).
+6. Keep a short pointer in `work/` (moved-to path/date).
 
 ## Notes
 

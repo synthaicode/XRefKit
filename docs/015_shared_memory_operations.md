@@ -31,6 +31,8 @@ Do not log:
 ## Write Policy
 
 - AI MUST write logs automatically after significant discussions, decisions, or work sessions.
+- AI MUST ensure the current task has a `work/sessions/` entry before final response.
+- AI MUST ensure logs are updated before `git commit` or `git push`.
 - Humans review logs for accuracy; humans do not need to author these logs.
 - Log location: `work/sessions/` and `work/retrospectives/`.
 - AI MUST promote stabilized decisions/facts from `work/` to canonical docs (`docs/`, `knowledge/`).
