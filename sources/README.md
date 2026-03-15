@@ -10,6 +10,7 @@ Store original materials here (PDF/Excel/Web snapshots, etc.).
 - `sources/pdf/...`
 - `sources/excel/...`
 - `sources/web/<domain>/...`
+- `sources/markdown/<topic>/...`
 
 ## How `docs/` references `sources/`
 
