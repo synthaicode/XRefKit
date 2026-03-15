@@ -1,3 +1,6 @@
+<!-- xid: AFA67C6DEC22 -->
+<a id="xid-AFA67C6DEC22"></a>
+
 # Skill Meta: password_management
 
 - skill_id: `password_management`

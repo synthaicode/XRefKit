@@ -1,0 +1,52 @@
+<!-- xid: 8B31F02A4001 -->
+<a id="xid-8B31F02A4001"></a>
+
+# Investigation Workflow
+
+This workflow defines how investigation work is orchestrated before estimation, requirements, or design.
+
+## Purpose
+
+Narrow the affected scope, inspect the relevant implementation area, and hand off a structured change-target summary.
+
+## Sequence
+
+1. Start with the request and available service catalog.
+2. Run [CAP-INV-001 Service Catalog Analysis](../capabilities/investigation/100_cap_inv_001_service_catalog_analysis.md#xid-867B78FF702F).
+3. Run [CAP-INV-002 Source and Dependency Analysis](../capabilities/investigation/110_cap_inv_002_source_dependency_analysis.md#xid-E994FCDA8CD1).
+4. Run [CAP-INV-003 Change Target Summary](../capabilities/investigation/120_cap_inv_003_change_target_summary.md#xid-6AB17163C9BF).
+5. Record uncertainty and evidence gaps before handoff.
+
+## Inputs
+
+- request
+- service catalog or equivalent domain reference
+- repository paths, source code, and design materials when available
+
+## Outputs
+
+- in-scope service list
+- out-of-scope service list with reasons
+- change viewpoints
+- test viewpoints
+- change target list
+- consolidated uncertainty list
+
+## Control Rules
+
+- Investigation does not decide implementation policy.
+- Investigation does not decide design policy.
+- Every investigation coverage area must be recorded explicitly.
+- Missing evidence must be recorded as `unknown`.
+- Non-applicable coverage areas must be recorded as `out_of_scope` with reasons.
+- Out-of-scope items must preserve reasons for later escalation.
+- Investigation is not complete until no coverage area remains unrecorded.
+
+## Required Knowledge
+
+- [Investigation coverage checklist](../knowledge/investigation/100_investigation_coverage_checklist.md#xid-91E2A7C56101)
+
+## Related Skills
+
+- [investigation_flow](../skills/investigation_flow/SKILL.md#xid-9C0115875B0C)
+- [management_table_control](../skills/management_table_control/SKILL.md#xid-D6DDBAC513BF)

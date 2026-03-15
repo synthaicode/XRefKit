@@ -26,7 +26,7 @@ When a running skill needs additional domain knowledge, use the same route on de
 
 ### Add a new doc
 
-1. Add a Markdown file under `docs/` or `agent/`
+1. Add a Markdown file under `docs/`, `agent/`, `knowledge/`, `capabilities/`, or `skills/`
 2. Assign XIDs: `python -m fm xref init`
 3. If needed: `python -m fm xref rewrite`
 
@@ -44,7 +44,7 @@ python -m fm xref fix
 
 Details: [Sources](020_sources.md#xid-2FAD591BF725)
 
-### Let the AI write human-facing docs (recommended)
+### Let the AI write managed docs (recommended)
 
 - Let the AI write normal Markdown (no need to invent XIDs)
 - After generation, run `python -m fm xref init` to assign XIDs

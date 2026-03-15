@@ -8,8 +8,11 @@ This repository provides the operational pattern and tooling to reference split 
 ## Top-level directories
 
 - `docs/`: Human-facing docs (background, design, operations, indexes)
+- `capabilities/`: Reusable capability definitions (inputs, outputs, triggers, constraints)
 - `agent/`: Agent entry + operational contract (keep L0 short and stable)
 - `fm/`: CLI implementation (`python -m fm ...`)
+- `knowledge/`: Shared domain knowledge fragments
+- `skills/`: Executable procedures and routing index
 - `sources/`: Original materials (PDF/Excel/Web snapshots, etc.) kept in-repo for human review
 - `.github/`: GitHub control plane (Copilot instructions, prompts, CI)
 - `.cursor/`: Cursor rules
@@ -36,8 +39,11 @@ This repository provides the operational pattern and tooling to reference split 
 ```text
 .
 ├─ docs/          # Human-facing docs (XID-managed)
+├─ capabilities/  # Capability definitions (XID-managed)
 ├─ agent/         # Agent entry/contract (XID-managed)
 ├─ fm/            # CLI implementation
+├─ knowledge/     # Shared domain knowledge
+├─ skills/        # Executable skills
 ├─ sources/       # Original materials (PDF/Excel/Web)
 ├─ .github/       # Copilot/CI
 ├─ .cursor/       # Cursor rules

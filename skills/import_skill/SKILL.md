@@ -1,3 +1,6 @@
+<!-- xid: 7C2A492D2B72 -->
+<a id="xid-7C2A492D2B72"></a>
+
 # Skill: import_skill
 
 ## Purpose

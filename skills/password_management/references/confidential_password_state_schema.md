@@ -1,3 +1,6 @@
+<!-- xid: 827F6ED31FD2 -->
+<a id="xid-827F6ED31FD2"></a>
+
 # Confidential Password State Schema
 
 Use this schema for confidential password-management knowledge.

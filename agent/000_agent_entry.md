@@ -12,13 +12,14 @@ Related: [Overview](../docs/000_overview.md#xid-7C6C2B46A9D1)
 - Use XIDs as primary keys for references (links must include `#xid-...`)
 - Keep skill instructions and domain knowledge in separate files
 - Treat `knowledge/` as shared domain knowledge; skills load only needed fragments on demand
+- Treat `capabilities/` as reusable work-unit definitions, not as evidence
 - Default new skill creation to private (`skills_private/`); publish to `skills/` only when the user explicitly requests public release
 - MUST write execution logs/retrospectives to `work/` automatically (non-canonical)
 - MUST use date-prefixed filenames for `work/` logs (`YYYY-MM-DD_<type>_<topic>.md`)
 - MUST create or update a `work/sessions/` log before final task completion and before `commit`/`push`
 - MUST promote stabilized decisions/facts from `work/` to canonical locations (`docs/` or `knowledge/`)
-- Follow shared-memory event logging rules in `docs/015_shared_memory_operations.md#xid-4A423E72D2ED`
-- Follow uncertainty protocol in `docs/016_uncertainty_protocol.md#xid-8A666C1FD121`
+- Follow shared-memory event logging rules in [Shared memory operations](../docs/015_shared_memory_operations.md#xid-4A423E72D2ED)
+- Follow uncertainty protocol in [Uncertainty protocol](../docs/016_uncertainty_protocol.md#xid-8A666C1FD121)
 - Do not fill missing information by guessing; first find the relevant XIDs and read them
 - After rename/move/split/merge, run link validation (`xref check`)
 
@@ -27,9 +28,10 @@ Related: [Overview](../docs/000_overview.md#xid-7C6C2B46A9D1)
 1. Read skill routing entry: `skills/_index.md`
 2. Narrow candidates via `skills/index/*`, then read candidate `meta.md` files
 3. Open selected `SKILL.md`
-4. Read the entry index: `docs/000_index.md`
-5. Find candidate XIDs: `python -m fm xref search "<query>"`
-6. Read only what you need: `python -m fm xref show <XID>`
+4. Read the entry index: [Docs Index](../docs/000_index.md#xid-56DD6EB68343)
+5. If the task maps to the business-capability model, follow [Capability Routing for Agents](010_capability_routing.md#xid-1F93A7C24010)
+6. Find candidate XIDs: `python -m fm xref search "<query>"`
+7. Read only what you need: `python -m fm xref show <XID>`
 
 If the user asks for available skills, answer from `skills/_index.md` first.
 
@@ -37,6 +39,10 @@ If the user asks for available skills, answer from `skills/_index.md` first.
 
 When a skill needs domain knowledge to proceed, `xref` is the routing layer:
 
-1. Search the relevant knowledge fragment by intent/keyword (`xref search`)
+1. Search the relevant knowledge fragment by intent or keyword (`xref search`)
 2. Resolve and load only the needed fragment (`xref show`)
 3. Continue skill execution with explicit XID-backed references
+
+## Related
+
+- [Capability Routing for Agents](010_capability_routing.md#xid-1F93A7C24010)

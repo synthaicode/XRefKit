@@ -35,7 +35,7 @@ class XrefConfig:
         return Path(self.root).resolve()
 
     def resolved_include(self) -> list[str]:
-        return self.include if self.include is not None else ["docs", "agent", "knowledge"]
+        return self.include if self.include is not None else ["docs", "agent", "knowledge", "capabilities", "skills"]
 
     def resolved_exclude(self) -> set[str]:
         # NOTE: `ja/` is a translation/archive area and is intentionally excluded
@@ -912,3 +912,4 @@ def xref_deprecate(cfg: XrefConfig, *, old_xid: str, new_xid: str, note: str | N
         "changed_files": changed,
         "issues": issues,
     }
+

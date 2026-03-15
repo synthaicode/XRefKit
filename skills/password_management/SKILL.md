@@ -1,3 +1,6 @@
+<!-- xid: B4B723C853B6 -->
+<a id="xid-B4B723C853B6"></a>
+
 # Skill: password_management
 
 ## Purpose
