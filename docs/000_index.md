@@ -33,6 +33,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Flow quality assurance mechanism](042_flow_quality_assurance_mechanism.md#xid-8B31F02A4011)
 - [System quality feedback loop](043_system_quality_feedback_loop.md#xid-8B31F02A4012)
 - [System quality feedback register](044_system_quality_feedback_register.md#xid-8B31F02A4013)
+- [Application workflow](045_application_workflow.md#xid-8B31F02A4014)
 
 ## Common links
 

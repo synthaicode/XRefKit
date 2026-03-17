@@ -9,6 +9,7 @@ This page provides a one-page view of workflow ownership and cross-group handoff
 
 | Flow | Main owner group | Main input from | Main output to | Main handoff artifacts |
 |------|------|------|------|------|
+| [Application workflow](045_application_workflow.md#xid-8B31F02A4014) | Human decision layer with AI support | framework baseline, project brief, domain materials, stakeholder constraints | all normal workflows, with Investigation workflow as first consumer | domain knowledge injection record, capability tuning record, threshold configuration record, verification result, application completion record |
 | [Investigation workflow](032_investigation_workflow.md#xid-8B31F02A4001) | Planning Group | request intake, domain references, technical materials | Planning Group estimation and requirements work, Design Group support | change target list, change viewpoints, test viewpoints, uncertainty list |
 | [Estimation workflow](035_estimation_workflow.md#xid-8B31F02A4004) | Planning Group | investigation outputs, supplier and budget context | Planning Group requirements work | supplier comparison result, cost patterns, solution options, unresolved assumptions |
 | [Requirements workflow](036_requirements_workflow.md#xid-8B31F02A4005) | Planning Group with Design Group support | estimation outputs, investigation outputs, confirmed assumptions | Design Group planning work, later Manufacturing scope definition | requirement draft, performance requirement definition, unresolved evidence list |
@@ -22,6 +23,7 @@ This page provides a one-page view of workflow ownership and cross-group handoff
 
 | Group | Main flows | Typical handoff direction |
 |------|------|------|
+| Human decision layer | application workflow, final approval, major uncertainty escalation | to Planning Group and all normal workflows through application completion record |
 | Planning Group | investigation, estimation, requirements, CAB business evaluation | to Design Group, to human decision layer, to Coordinator for out-of-scope routing |
 | Design Group | investigation support, requirements support, planning | to Manufacturing Group |
 | Manufacturing Group | manufacturing | to Quality Group and Operations Group |
