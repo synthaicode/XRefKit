@@ -4,7 +4,7 @@
 # Skill Meta: estimation_flow
 
 - skill_id: `estimation_flow`
-- summary: execute supplier and estimation work from four-condition check through assumption classification
+- summary: execute estimation business activities through reusable comparison, projection, option-structuring, and ambiguity-classification capabilities
 - use_when: user needs estimate options, supplier checks, or assumption clarification before requirements
 - input: request, change target list, supplier definitions, optional budget definition
 - output: supplier check results, cost patterns, solution options, assumption list, ambiguity classification
@@ -12,7 +12,7 @@
 - lifecycle:
   - startup: confirm request, change targets, supplier definitions, and budget evidence as needed
   - planning: define estimation scope and management rows
-  - execution: run `CAP-SUP-001 -> CAP-SUP-002 -> CAP-EST-001 -> CAP-EST-002`
+  - execution: perform supplier four-condition check, cost estimation, solution option generation, and assumption ambiguity classification through `CAP-SUP-001 -> CAP-SUP-002 -> CAP-EST-001 -> CAP-EST-002`
   - monitoring_and_control: downgrade weak assumptions to `unknown`; preserve confirmation items
   - closure: finalize states and hand off unresolved assumptions
 - tags: `estimation`, `planning`, `supplier`

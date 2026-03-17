@@ -50,6 +50,11 @@
 - quality review step
 - [Quality Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
 
+## Notes
+
+- This capability is a specialized review under the `specification` domain.
+- Use it when specification conformance depends on attribute semantics or framework attribute preconditions.
+
 ## Task Lifecycle Mapping
 
 - Startup:

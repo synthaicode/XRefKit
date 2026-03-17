@@ -1,14 +1,14 @@
 <!-- xid: 7E9CCEBEDA2D -->
 <a id="xid-7E9CCEBEDA2D"></a>
 
-# Capability: CAP-QA-001 Code Review
+# Capability: CAP-QA-001 Specification Conformance Review
 
 ## Definition
 
 - capability_id: `CAP-QA-001`
-- capability_name: `code_review`
+- capability_name: `specification_conformance_review`
 - work_type: `judgment`
-- summary: review implemented code against design evidence and coding rules
+- summary: review implemented code against specification, design evidence, and coding rules
 
 ## Preconditions
 
@@ -23,19 +23,23 @@
 ## Inputs
 
 - implemented code
-- design document
+- specification and design evidence
 - coding rules
 
 ## Outputs
 
-- pass or fail judgment
-- finding list with evidence
+- specification review result
+- specification finding list with evidence
 - uncertainty list for evidence gaps
+- execution metrics log
+
+## Required Domain Knowledge
 
 - [C# quality review criteria](../../knowledge/quality/100_csharp_quality_review_criteria.md#xid-8C4D2A7E5101)
 - review criteria
 - coding rules
 - local design patterns when applicable
+- [Metrics definition](../../knowledge/organization/120_metrics_definition.md#xid-7A2F4C8D1201)
 
 ## Constraints
 
@@ -47,6 +51,12 @@
 
 - quality review step
 - [Quality Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+
+## Notes
+
+- This capability covers the `specification` review domain.
+- Attribute-oriented checks can be deepened through `CAP-QA-005` when needed.
+
 ## Task Lifecycle Mapping
 
 - Startup:
@@ -62,9 +72,4 @@
 - Closure:
   - confirm the capability result is finalized as `done`, `unknown`, or `out_of_scope`
   - preserve unresolved and out-of-scope items for handoff or escalation
-
-- execution metrics log
-- [Metrics definition](../../knowledge/organization/120_metrics_definition.md#xid-7A2F4C8D1201)
-
-
 

@@ -4,7 +4,7 @@
 # Skill Meta: planning_flow
 
 - skill_id: `planning_flow`
-- summary: decompose approved requirements into executable tasks and dependencies
+- summary: execute planning business activity through reusable work-decomposition capability
 - use_when: user needs planning after requirements are approved
 - input: approved requirements, change target list
 - output: task list, dependencies, execution order, effort estimate, group assignment draft
@@ -12,7 +12,7 @@
 - lifecycle:
   - startup: confirm approved requirements and change targets exist
   - planning: define decomposition scope and management rows
-  - execution: run `CAP-PLN-001`
+  - execution: perform task decomposition and plan drafting through `CAP-PLN-001`
   - monitoring_and_control: downgrade weak planning assumptions to `unknown`
   - closure: finalize states and hand off the plan draft with unresolved items
 - tags: `planning`, `execution`, `decomposition`

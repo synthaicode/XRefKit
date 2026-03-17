@@ -4,7 +4,7 @@
 # Skill Meta: cab_review_flow
 
 - skill_id: `cab_review_flow`
-- summary: perform quality, operational, and business CAB evaluations
+- summary: execute CAB business activities through reusable quality, operational-readiness, and value-alignment evaluation capabilities
 - use_when: user needs CAB-style evaluation before release confirmation
 - input: release plan materials, manufacturing outputs, requirement and design evidence, value and constraint definitions
 - output: quality-gate result, operational readiness result, value-gate result, unresolved list
@@ -12,7 +12,7 @@
 - lifecycle:
   - startup: confirm CAB evidence exists
   - planning: define gate scope and management rows
-  - execution: run `CAP-QA-003 -> CAP-OPS-004 -> CAP-BIZ-001`
+  - execution: perform release plan suitability review, operational readiness gate work, and value-constraint fit evaluation through `CAP-QA-003 -> CAP-OPS-004 -> CAP-BIZ-001`
   - monitoring_and_control: downgrade unsupported judgments to `unknown`
   - closure: finalize states and hand off the three gate results to the decision layer
 - tags: `cab`, `review`, `release`

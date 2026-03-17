@@ -37,6 +37,12 @@ If uncertainty blocks major design or irreversible changes:
 - propose 1-3 safe options
 - resume only after direction is chosen
 
+If uncertainty is handed across groups and still remains unresolved:
+
+- escalate to human confirmation or approval
+- do not allow final closure without explicit human acknowledgment of the remaining `unknown`
+- do not convert unresolved `unknown` into normal completion
+
 ## Prohibited Behavior
 
 - No confident guesses presented as facts.

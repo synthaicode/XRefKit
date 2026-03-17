@@ -9,10 +9,10 @@ Execute `CAP-OPS-001 -> CAP-OPS-002 -> CAP-OPS-003 -> CAP-OPS-004` and prepare r
 
 ## Required Capability Definitions (XID)
 
-- [CAP-OPS-001 Release Plan Draft Creation](../../capabilities/operations/100_cap_ops_001_release_plan_draft_creation.md#xid-9715BACE7EB8)
-- [CAP-OPS-002 Monitoring Design](../../capabilities/operations/110_cap_ops_002_monitoring_design.md#xid-316B0FB4493C)
-- [CAP-OPS-003 Event Response Procedure Draft](../../capabilities/operations/120_cap_ops_003_event_response_procedure_draft.md#xid-6DA033B45D93)
-- [CAP-OPS-004 Operational Readiness Gate](../../capabilities/operations/130_cap_ops_004_operational_readiness_gate.md#xid-83140C9538B3)
+- [CAP-OPS-001 Release Material Structuring](../../capabilities/operations/100_cap_ops_001_release_plan_draft_creation.md#xid-9715BACE7EB8)
+- [CAP-OPS-002 Operational Signal Specification](../../capabilities/operations/110_cap_ops_002_monitoring_design.md#xid-316B0FB4493C)
+- [CAP-OPS-003 Event Response Structuring](../../capabilities/operations/120_cap_ops_003_event_response_procedure_draft.md#xid-6DA033B45D93)
+- [CAP-OPS-004 Operational Readiness Evaluation](../../capabilities/operations/130_cap_ops_004_operational_readiness_gate.md#xid-83140C9538B3)
 
 ## Inputs
 
@@ -39,6 +39,11 @@ Execute `CAP-OPS-001 -> CAP-OPS-002 -> CAP-OPS-003 -> CAP-OPS-004` and prepare r
 ## Planning
 
 - Define the release-planning scope.
+- Map each business activity to its supporting capability:
+  - release plan draft creation -> `CAP-OPS-001`
+  - monitoring design -> `CAP-OPS-002`
+  - event-response procedure drafting -> `CAP-OPS-003`
+  - operational readiness gate -> `CAP-OPS-004`
 - Define the step order: `CAP-OPS-001 -> CAP-OPS-002 -> CAP-OPS-003 -> CAP-OPS-004`.
 - Prepare management rows for planning, monitoring, response procedures, and readiness findings.
 

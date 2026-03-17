@@ -49,6 +49,10 @@
 - quality review step
 - [Quality Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
 
+## Notes
+
+- This capability covers the `performance` review domain.
+
 ## Task Lifecycle Mapping
 
 - Startup:

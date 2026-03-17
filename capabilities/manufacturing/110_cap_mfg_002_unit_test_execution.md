@@ -1,12 +1,12 @@
 <!-- xid: 55CC9027ACAD -->
 <a id="xid-55CC9027ACAD"></a>
 
-# Capability: CAP-MFG-002 Unit Test Execution
+# Capability: CAP-MFG-002 Unit-Level Verification
 
 ## Definition
 
 - capability_id: `CAP-MFG-002`
-- capability_name: `unit_test_execution`
+- capability_name: `unit_level_verification`
 - work_type: `execution`
 - summary: execute unit tests for implemented code within design scope
 
@@ -46,6 +46,11 @@
 
 - manufacturing phase
 - [Manufacturing Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+
+## Notes
+
+- `unit test execution` is a business activity in manufacturing work.
+- This capability is the reusable unit-level verification ability used by that activity.
 ## Task Lifecycle Mapping
 
 - Startup:

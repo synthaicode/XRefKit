@@ -9,12 +9,31 @@ This workflow defines how investigation work is orchestrated before estimation, 
 
 Narrow the affected scope, inspect the relevant implementation area, and hand off a structured change-target summary.
 
+## Group Interaction
+
+| Item | Value |
+|------|------|
+| Owner group | Planning Group with Design Group support when technical investigation is needed |
+| Input from | request intake, domain references, repository and design materials |
+| Output to | Planning Group estimation work, requirements work, and Design Group planning support |
+| Main handoff artifacts | in-scope service list, change viewpoints, test viewpoints, change target list, uncertainty list |
+| Escalation path | out-of-scope items go to Coordinator routing; unresolved evidence stays `unknown` for later confirmation |
+
+## Business Activities and Supporting Capabilities
+
+- Service catalog analysis:
+  - supported by [CAP-INV-001 Scope Classification](../capabilities/investigation/100_cap_inv_001_service_catalog_analysis.md#xid-867B78FF702F)
+- Source and dependency analysis:
+  - supported by [CAP-INV-002 Change Impact Enumeration](../capabilities/investigation/110_cap_inv_002_source_dependency_analysis.md#xid-E994FCDA8CD1)
+- Change-target summarization:
+  - supported by [CAP-INV-003 Structured Investigation Summary](../capabilities/investigation/120_cap_inv_003_change_target_summary.md#xid-6AB17163C9BF)
+
 ## Sequence
 
 1. Start with the request and available service catalog.
-2. Run [CAP-INV-001 Service Catalog Analysis](../capabilities/investigation/100_cap_inv_001_service_catalog_analysis.md#xid-867B78FF702F).
-3. Run [CAP-INV-002 Source and Dependency Analysis](../capabilities/investigation/110_cap_inv_002_source_dependency_analysis.md#xid-E994FCDA8CD1).
-4. Run [CAP-INV-003 Change Target Summary](../capabilities/investigation/120_cap_inv_003_change_target_summary.md#xid-6AB17163C9BF).
+2. Perform service catalog analysis by applying [CAP-INV-001 Scope Classification](../capabilities/investigation/100_cap_inv_001_service_catalog_analysis.md#xid-867B78FF702F).
+3. Perform source and dependency analysis by applying [CAP-INV-002 Change Impact Enumeration](../capabilities/investigation/110_cap_inv_002_source_dependency_analysis.md#xid-E994FCDA8CD1).
+4. Perform change-target summarization by applying [CAP-INV-003 Structured Investigation Summary](../capabilities/investigation/120_cap_inv_003_change_target_summary.md#xid-6AB17163C9BF).
 5. Record uncertainty and evidence gaps before handoff.
 
 ## Inputs

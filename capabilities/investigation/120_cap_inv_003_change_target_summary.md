@@ -1,14 +1,14 @@
 <!-- xid: 6AB17163C9BF -->
 <a id="xid-6AB17163C9BF"></a>
 
-# Capability: CAP-INV-003 Change Target Summary
+# Capability: CAP-INV-003 Structured Investigation Summary
 
 ## Definition
 
 - capability_id: `CAP-INV-003`
-- capability_name: `change_target_summary`
+- capability_name: `structured_investigation_summary`
 - work_type: `execution`
-- summary: structure investigation outputs into a change target list and test viewpoint summary
+- summary: structure investigation outputs into reusable change-target, test-viewpoint, and unresolved-item summaries
 
 ## Preconditions
 
@@ -16,7 +16,7 @@
 
 ## Trigger
 
-- investigation phase step 3 starts
+- investigation workflow step 3 starts
 
 ## Inputs
 
@@ -47,6 +47,12 @@
 - [Planning Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
 - [Design Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
 - [Quality Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+
+## Notes
+
+- `change target summary` is a business activity in the investigation workflow.
+- This capability is the reusable structuring ability used by that activity.
+
 ## Task Lifecycle Mapping
 
 - Startup:
@@ -62,8 +68,5 @@
 - Closure:
   - confirm the capability result is finalized as `done`, `unknown`, or `out_of_scope`
   - preserve unresolved and out-of-scope items for handoff or escalation
-
-- execution metrics log
-- [Metrics definition](../../knowledge/organization/120_metrics_definition.md#xid-7A2F4C8D1201)
 
 

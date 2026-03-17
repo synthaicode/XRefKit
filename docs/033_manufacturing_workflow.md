@@ -9,12 +9,31 @@ This workflow defines how implementation and unit testing are orchestrated insid
 
 Produce code changes and unit-test results without crossing the approved design boundary.
 
+## Group Interaction
+
+| Item | Value |
+|------|------|
+| Owner group | Manufacturing Group |
+| Input from | approved design and plan outputs from Design Group, requirement context from Planning Group when needed |
+| Output to | Quality Group review and Operations Group release-planning preparation |
+| Main handoff artifacts | implemented code, unit test results, self-check result, uncertainty list, out-of-scope list |
+| Escalation path | implementation assumption gaps stay `unknown` or become `out_of_scope`; `out_of_scope` items go to Coordinator routing |
+
+## Business Activities and Supporting Capabilities
+
+- Implementation:
+  - supported by [CAP-MFG-001 Scoped Code Realization](../capabilities/manufacturing/100_cap_mfg_001_implementation.md#xid-1A12C5C61269)
+- Unit test execution:
+  - supported by [CAP-MFG-002 Unit-Level Verification](../capabilities/manufacturing/110_cap_mfg_002_unit_test_execution.md#xid-55CC9027ACAD)
+- Manufacturing self check:
+  - supported by [CAP-MFG-004 Design Alignment Self Evaluation](../capabilities/manufacturing/120_cap_mfg_004_manufacturing_self_check.md#xid-6F5A9C1B4401)
+
 ## Sequence
 
 1. Confirm the approved design or equivalent scoped instruction.
-2. Run [CAP-MFG-001 Implementation](../capabilities/manufacturing/100_cap_mfg_001_implementation.md#xid-1A12C5C61269).
-3. Run [CAP-MFG-002 Unit Test Execution](../capabilities/manufacturing/110_cap_mfg_002_unit_test_execution.md#xid-55CC9027ACAD).
-4. Run [CAP-MFG-004 Manufacturing Self Check](../capabilities/manufacturing/120_cap_mfg_004_manufacturing_self_check.md#xid-6F5A9C1B4401).
+2. Perform implementation by applying [CAP-MFG-001 Scoped Code Realization](../capabilities/manufacturing/100_cap_mfg_001_implementation.md#xid-1A12C5C61269).
+3. Perform unit test execution by applying [CAP-MFG-002 Unit-Level Verification](../capabilities/manufacturing/110_cap_mfg_002_unit_test_execution.md#xid-55CC9027ACAD).
+4. Perform manufacturing self check by applying [CAP-MFG-004 Design Alignment Self Evaluation](../capabilities/manufacturing/120_cap_mfg_004_manufacturing_self_check.md#xid-6F5A9C1B4401).
 5. Hand off implementation results to QA review.
 6. Record unresolved items and out-of-scope items for control handling.
 
@@ -38,7 +57,12 @@ Produce code changes and unit-test results without crossing the approved design 
 
 - Manufacturing does not change design policy.
 - Manufacturing stays inside the approved boundary.
-- Manufacturing performs an internal design-alignment self-check before external QA review.
+- Manufacturing performs a group-internal self-check within the manufacturing responsibility boundary before external QA review.
+- That self-check covers only manufacturing-owned work:
+  - implementation result
+  - unit-test result
+  - implementation assumption-gap handling
+- Implementation assumption gaps must be recorded and classified before closure.
 - Unresolved items must remain explicit.
 - Out-of-scope items must preserve reasons for escalation.
 

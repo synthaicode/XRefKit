@@ -1,12 +1,12 @@
 <!-- xid: 83140C9538B3 -->
 <a id="xid-83140C9538B3"></a>
 
-# Capability: CAP-OPS-004 Operational Readiness Gate
+# Capability: CAP-OPS-004 Operational Readiness Evaluation
 
 ## Definition
 
 - capability_id: `CAP-OPS-004`
-- capability_name: `operational_readiness_gate`
+- capability_name: `operational_readiness_evaluation`
 - work_type: `judgment`
 - summary: evaluate whether release planning, monitoring, and response procedures are ready for CAB
 
@@ -46,6 +46,11 @@
 
 - CAB preparation
 - [Operations Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+
+## Notes
+
+- `operational readiness gate` is a business activity in release-planning and CAB work.
+- This capability is the reusable operational-readiness evaluation ability used by that activity.
 ## Task Lifecycle Mapping
 
 - Startup:

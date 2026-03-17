@@ -29,6 +29,7 @@
 
 - uncertainty list
 - out-of-scope list
+- implementation assumption gap log
 - metrics log
 
 ## Required Domain Knowledge
@@ -40,6 +41,7 @@
 - record only
 - do not resolve or accept risk by itself
 - preserve evidence gaps explicitly
+- preserve implementation assumption gap classification explicitly
 
 ## Assignment
 

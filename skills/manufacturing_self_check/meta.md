@@ -4,7 +4,7 @@
 # Skill Meta: manufacturing_self_check
 
 - skill_id: `manufacturing_self_check`
-- summary: perform manufacturing-group self-check against approved design before external QA review
+- summary: execute manufacturing self-check business activity through reusable design-alignment self-evaluation capability
 - use_when: implementation and unit testing are complete and manufacturing needs an internal alignment check
 - input: implemented code, approved design, unit test results, coding rules
 - output: self-check result, design-alignment findings, unresolved list
@@ -12,7 +12,7 @@
 - lifecycle:
   - startup: confirm implemented code, design evidence, and unit-test evidence exist
   - planning: define self-check targets and management rows
-  - execution: run `CAP-MFG-004`
+  - execution: perform manufacturing self-check through `CAP-MFG-004`
   - monitoring_and_control: downgrade unsupported alignment claims to `unknown`
   - closure: finalize states and hand off results to quality review
 - tags: `manufacturing`, `self-check`, `quality`

@@ -3,10 +3,10 @@
 
 # Investigation Capabilities
 
-Place capability definitions for investigation work here.
+Place reusable investigation capability definitions here.
 
 Examples:
 
-- `CAP-INV-001` service catalog analysis
-- `CAP-INV-002` source and dependency analysis
-- `CAP-INV-003` change target summary
+- `CAP-INV-001` scope classification
+- `CAP-INV-002` change impact enumeration
+- `CAP-INV-003` structured investigation summary

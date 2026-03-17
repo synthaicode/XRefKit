@@ -4,7 +4,7 @@
 # Skill Meta: investigation_flow
 
 - skill_id: `investigation_flow`
-- summary: execute the investigation phase from service narrowing through change-target summary
+- summary: execute the investigation workflow from service catalog analysis through change-target summary using reusable investigation capabilities
 - use_when: user needs impact investigation before estimation or design
 - input: request, optional service candidates, optional service catalog path, optional repository or document paths
 - output: in-scope service list, out-of-scope service list with reasons, change viewpoints, test viewpoints, change target list, uncertainty list
@@ -12,7 +12,7 @@
 - lifecycle:
   - startup: confirm request, service catalog, analysis targets, and coverage checklist exist
   - planning: define investigation targets, coverage areas, and management rows
-  - execution: run `CAP-INV-001 -> CAP-INV-002 -> CAP-INV-003`
+  - execution: run service catalog analysis, source and dependency analysis, and change-target summarization through `CAP-INV-001 -> CAP-INV-002 -> CAP-INV-003`
   - monitoring_and_control: treat unrecorded coverage areas as leaks; downgrade weak evidence to `unknown`
   - closure: finalize states and hand off unresolved or out-of-scope items
 - tags: `investigation`, `scope`, `planning`

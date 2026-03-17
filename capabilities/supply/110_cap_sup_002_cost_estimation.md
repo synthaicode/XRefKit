@@ -1,12 +1,12 @@
 <!-- xid: 754A17D69C7C -->
 <a id="xid-754A17D69C7C"></a>
 
-# Capability: CAP-SUP-002 Cost Estimation
+# Capability: CAP-SUP-002 Cost Pattern Projection
 
 ## Definition
 
 - capability_id: `CAP-SUP-002`
-- capability_name: `cost_estimation`
+- capability_name: `cost_pattern_projection`
 - work_type: `execution`
 - summary: estimate service cost patterns and identify budget-overrun risk
 
@@ -46,6 +46,11 @@
 
 - estimation phase
 - [Planning Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+
+## Notes
+
+- `cost estimation` is a business activity in estimation work.
+- This capability is the reusable cost-projection ability used by that activity.
 ## Task Lifecycle Mapping
 
 - Startup:

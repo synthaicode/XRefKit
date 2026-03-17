@@ -29,6 +29,10 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Release planning workflow](038_release_planning_workflow.md#xid-8B31F02A4007)
 - [CAB workflow](039_cab_workflow.md#xid-8B31F02A4008)
 - [Group definitions](040_group_definitions.md#xid-8B31F02A4009)
+- [Flow-to-group matrix](041_flow_to_group_matrix.md#xid-8B31F02A4010)
+- [Flow quality assurance mechanism](042_flow_quality_assurance_mechanism.md#xid-8B31F02A4011)
+- [System quality feedback loop](043_system_quality_feedback_loop.md#xid-8B31F02A4012)
+- [System quality feedback register](044_system_quality_feedback_register.md#xid-8B31F02A4013)
 
 ## Common links
 

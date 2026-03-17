@@ -1,12 +1,12 @@
 <!-- xid: D67FAD650F8C -->
 <a id="xid-D67FAD650F8C"></a>
 
-# Capability: CAP-REQ-002 Performance Requirement Definition
+# Capability: CAP-REQ-002 Performance Constraint Structuring
 
 ## Definition
 
 - capability_id: `CAP-REQ-002`
-- capability_name: `performance_requirement_definition`
+- capability_name: `performance_constraint_structuring`
 - work_type: `execution`
 - summary: define performance requirements and load-test draft conditions
 
@@ -46,6 +46,11 @@
 - requirements phase
 - [Planning Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
 - [Design Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+
+## Notes
+
+- `performance requirement definition` is a business activity in requirements work.
+- This capability is the reusable performance-constraint structuring ability used by that activity.
 ## Task Lifecycle Mapping
 
 - Startup:

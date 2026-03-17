@@ -4,7 +4,7 @@
 # Skill Meta: release_planning_flow
 
 - skill_id: `release_planning_flow`
-- summary: prepare release planning, monitoring, and response procedures before CAB
+- summary: execute release-planning business activities through reusable release-material, signal-specification, response-structuring, and readiness-evaluation capabilities
 - use_when: user needs release-planning work after manufacturing and testing
 - input: manufacturing outputs, requirements, design materials, optional performance data
 - output: release plan draft, monitoring specification, event-response procedure draft, operational readiness result
@@ -12,7 +12,7 @@
 - lifecycle:
   - startup: confirm manufacturing outputs and release-planning evidence exist
   - planning: define release-planning scope and management rows
-  - execution: run `CAP-OPS-001 -> CAP-OPS-002 -> CAP-OPS-003 -> CAP-OPS-004`
+  - execution: perform release plan drafting, monitoring design, event-response drafting, and operational readiness gate work through `CAP-OPS-001 -> CAP-OPS-002 -> CAP-OPS-003 -> CAP-OPS-004`
   - monitoring_and_control: downgrade unsupported readiness conclusions to `unknown`
   - closure: finalize states and hand off release materials to CAB
 - tags: `operations`, `release`, `planning`

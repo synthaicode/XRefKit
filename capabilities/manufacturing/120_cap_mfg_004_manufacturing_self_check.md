@@ -1,12 +1,12 @@
 <!-- xid: 6F5A9C1B4401 -->
 <a id="xid-6F5A9C1B4401"></a>
 
-# Capability: CAP-MFG-004 Manufacturing Self Check
+# Capability: CAP-MFG-004 Design Alignment Self Evaluation
 
 ## Definition
 
 - capability_id: `CAP-MFG-004`
-- capability_name: `manufacturing_self_check`
+- capability_name: `design_alignment_self_evaluation`
 - work_type: `judgment`
 - summary: verify that manufacturing outputs remain aligned with approved design before external QA review
 
@@ -50,6 +50,11 @@
 
 - manufacturing phase
 - [Manufacturing Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+
+## Notes
+
+- `manufacturing self check` is a business activity in manufacturing work.
+- This capability is the reusable self-evaluation ability used by that activity.
 
 ## Task Lifecycle Mapping
 

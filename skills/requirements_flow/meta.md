@@ -4,7 +4,7 @@
 # Skill Meta: requirements_flow
 
 - skill_id: `requirements_flow`
-- summary: produce requirement drafts and performance requirements from confirmed assumptions
+- summary: execute requirements business activities through reusable requirement and performance-constraint structuring capabilities
 - use_when: user needs requirement drafting after investigation and estimation
 - input: confirmed assumptions, change target list, test viewpoints, request, optional performance constraints
 - output: requirement draft, performance requirement definition, load-test draft plan, unresolved list
@@ -12,7 +12,7 @@
 - lifecycle:
   - startup: confirm confirmed assumptions and requirement inputs exist
   - planning: define requirement areas and management rows
-  - execution: run `CAP-REQ-001 -> CAP-REQ-002`
+  - execution: perform requirement draft creation and performance requirement definition through `CAP-REQ-001 -> CAP-REQ-002`
   - monitoring_and_control: downgrade weak requirement claims to `unknown`
   - closure: finalize states and hand off unresolved requirement items
 - tags: `requirements`, `planning`, `analysis`

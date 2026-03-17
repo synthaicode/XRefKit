@@ -1,14 +1,14 @@
 <!-- xid: E994FCDA8CD1 -->
 <a id="xid-E994FCDA8CD1"></a>
 
-# Capability: CAP-INV-002 Source and Dependency Analysis
+# Capability: CAP-INV-002 Change Impact Enumeration
 
 ## Definition
 
 - capability_id: `CAP-INV-002`
-- capability_name: `source_and_dependency_analysis`
+- capability_name: `change_impact_enumeration`
 - work_type: `execution`
-- summary: analyze target services, source code, and dependencies to identify change and test viewpoints
+- summary: enumerate source, dependency, data, configuration, and interface impacts needed to understand a requested change
 
 ## Preconditions
 
@@ -17,12 +17,12 @@
 
 ## Trigger
 
-- investigation phase step 2 starts
+- investigation workflow step 2 starts
 
 ## Inputs
 
-- in-scope service list
-- source code
+- in-scope target list
+- source code or equivalent implementation artifacts
 - design documents
 
 ## Outputs
@@ -54,6 +54,11 @@
 - investigation phase step 2
 - [Planning Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
 - [Design Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+
+## Notes
+
+- `source and dependency analysis` is a business activity in the investigation workflow.
+- This capability is the reusable impact-enumeration ability used by that activity.
 
 ## Task Lifecycle Mapping
 

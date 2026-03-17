@@ -1,12 +1,12 @@
 <!-- xid: 316B0FB4493C -->
 <a id="xid-316B0FB4493C"></a>
 
-# Capability: CAP-OPS-002 Monitoring Design
+# Capability: CAP-OPS-002 Operational Signal Specification
 
 ## Definition
 
 - capability_id: `CAP-OPS-002`
-- capability_name: `monitoring_design`
+- capability_name: `operational_signal_specification`
 - work_type: `execution`
 - summary: define monitoring items, thresholds, and alert conditions from performance evidence
 
@@ -46,6 +46,11 @@
 
 - release-planning phase
 - [Operations Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+
+## Notes
+
+- `monitoring design` is a business activity in release-planning work.
+- This capability is the reusable operational-signal specification ability used by that activity.
 ## Task Lifecycle Mapping
 
 - Startup:

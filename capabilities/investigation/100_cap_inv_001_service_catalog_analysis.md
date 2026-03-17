@@ -1,14 +1,14 @@
 <!-- xid: 867B78FF702F -->
 <a id="xid-867B78FF702F"></a>
 
-# Capability: CAP-INV-001 Service Catalog Analysis
+# Capability: CAP-INV-001 Scope Classification
 
 ## Definition
 
 - capability_id: `CAP-INV-001`
-- capability_name: `service_catalog_analysis`
+- capability_name: `scope_classification`
 - work_type: `execution`
-- summary: analyze the service catalog and narrow candidate target services from a request
+- summary: classify request scope into in-scope and out-of-scope targets using available catalog or equivalent domain evidence
 
 ## Preconditions
 
@@ -17,12 +17,12 @@
 
 ## Trigger
 
-- investigation phase step 1 starts
+- investigation workflow step 1 starts
 
 ## Inputs
 
 - request
-- service catalog
+- service catalog or equivalent service reference
 - optional business-domain constraints
 
 ## Outputs
@@ -35,10 +35,11 @@
 
 - service catalog definitions
 - business domain rules used to interpret the request
+- scope classification criteria
 
 ## Constraints
 
-- narrow target scope only
+- classify scope only
 - do not decide implementation policy
 - do not decide design policy
 - record missing evidence as `unknown`
@@ -53,6 +54,9 @@
 - Workflow belongs in `docs/`.
 - Executable procedure belongs in `skills/investigation_flow/`.
 - Domain evidence belongs in `knowledge/`.
+- `service catalog analysis` is a business activity in the investigation workflow.
+- This capability is the reusable classification ability used by that activity.
+
 ## Task Lifecycle Mapping
 
 - Startup:
@@ -68,8 +72,5 @@
 - Closure:
   - confirm the capability result is finalized as `done`, `unknown`, or `out_of_scope`
   - preserve unresolved and out-of-scope items for handoff or escalation
-
-- execution metrics log
-- [Metrics definition](../../knowledge/organization/120_metrics_definition.md#xid-7A2F4C8D1201)
 
 

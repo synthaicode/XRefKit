@@ -9,9 +9,9 @@ Execute the sequence `CAP-SUP-001 -> CAP-SUP-002 -> CAP-EST-001 -> CAP-EST-002` 
 
 ## Required Capability Definitions (XID)
 
-- [CAP-SUP-001 Supplier Four-Condition Check](../../capabilities/supply/100_cap_sup_001_supplier_four_condition_check.md#xid-2DC9A90A6508)
-- [CAP-SUP-002 Cost Estimation](../../capabilities/supply/110_cap_sup_002_cost_estimation.md#xid-754A17D69C7C)
-- [CAP-EST-001 Solution Option Generation](../../capabilities/estimation/100_cap_est_001_solution_option_generation.md#xid-BDB6B54A3571)
+- [CAP-SUP-001 External Service Condition Comparison](../../capabilities/supply/100_cap_sup_001_supplier_four_condition_check.md#xid-2DC9A90A6508)
+- [CAP-SUP-002 Cost Pattern Projection](../../capabilities/supply/110_cap_sup_002_cost_estimation.md#xid-754A17D69C7C)
+- [CAP-EST-001 Solution Option Structuring](../../capabilities/estimation/100_cap_est_001_solution_option_generation.md#xid-BDB6B54A3571)
 - [CAP-EST-002 Assumption Ambiguity Classification](../../capabilities/estimation/110_cap_est_002_assumption_ambiguity_classification.md#xid-B362EA06B9C2)
 
 ## Inputs
@@ -41,15 +41,20 @@ Execute the sequence `CAP-SUP-001 -> CAP-SUP-002 -> CAP-EST-001 -> CAP-EST-002` 
 ## Planning
 
 - Define the estimation scope and target assumptions.
+- Map each business activity to its supporting capability:
+  - supplier four-condition check -> `CAP-SUP-001`
+  - cost estimation -> `CAP-SUP-002`
+  - solution option generation -> `CAP-EST-001`
+  - assumption ambiguity classification -> `CAP-EST-002`
 - Define the step order: `CAP-SUP-001 -> CAP-SUP-002 -> CAP-EST-001 -> CAP-EST-002`.
 - Prepare management rows for supplier checks, cost patterns, options, and assumptions.
 
 ## Execution
 
-- Execute `CAP-SUP-001` to compare supplier conditions.
-- Execute `CAP-SUP-002` to estimate cost patterns and budget risk.
-- Execute `CAP-EST-001` to generate solution options.
-- Execute `CAP-EST-002` to classify ambiguous assumptions.
+- Perform supplier four-condition check by executing `CAP-SUP-001`.
+- Perform cost estimation by executing `CAP-SUP-002`.
+- Perform solution option generation by executing `CAP-EST-001`.
+- Perform assumption ambiguity classification by executing `CAP-EST-002`.
 
 ## Monitoring and Control
 

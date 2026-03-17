@@ -1,12 +1,12 @@
 <!-- xid: 9715BACE7EB8 -->
 <a id="xid-9715BACE7EB8"></a>
 
-# Capability: CAP-OPS-001 Release Plan Draft Creation
+# Capability: CAP-OPS-001 Release Material Structuring
 
 ## Definition
 
 - capability_id: `CAP-OPS-001`
-- capability_name: `release_plan_draft_creation`
+- capability_name: `release_material_structuring`
 - work_type: `execution`
 - summary: draft a release plan from build outputs, requirements, and operational constraints
 
@@ -47,6 +47,11 @@
 
 - release-planning phase
 - [Operations Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+
+## Notes
+
+- `release plan draft creation` is a business activity in release-planning work.
+- This capability is the reusable release-material structuring ability used by that activity.
 ## Task Lifecycle Mapping
 
 - Startup:

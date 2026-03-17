@@ -9,9 +9,9 @@ Execute the investigation sequence `CAP-INV-001 -> CAP-INV-002 -> CAP-INV-003` a
 
 ## Required Capability Definitions (XID)
 
-- [CAP-INV-001 Service Catalog Analysis](../../capabilities/investigation/100_cap_inv_001_service_catalog_analysis.md#xid-867B78FF702F)
-- [CAP-INV-002 Source and Dependency Analysis](../../capabilities/investigation/110_cap_inv_002_source_dependency_analysis.md#xid-E994FCDA8CD1)
-- [CAP-INV-003 Change Target Summary](../../capabilities/investigation/120_cap_inv_003_change_target_summary.md#xid-6AB17163C9BF)
+- [CAP-INV-001 Scope Classification](../../capabilities/investigation/100_cap_inv_001_service_catalog_analysis.md#xid-867B78FF702F)
+- [CAP-INV-002 Change Impact Enumeration](../../capabilities/investigation/110_cap_inv_002_source_dependency_analysis.md#xid-E994FCDA8CD1)
+- [CAP-INV-003 Structured Investigation Summary](../../capabilities/investigation/120_cap_inv_003_change_target_summary.md#xid-6AB17163C9BF)
 
 ## Required Knowledge (XID)
 
@@ -45,14 +45,18 @@ Execute the investigation sequence `CAP-INV-001 -> CAP-INV-002 -> CAP-INV-003` a
 ## Planning
 
 - Define the investigation targets.
+- Map each business activity to its supporting capability:
+  - service catalog analysis -> `CAP-INV-001`
+  - source and dependency analysis -> `CAP-INV-002`
+  - change-target summarization -> `CAP-INV-003`
 - Define the step order: `CAP-INV-001 -> CAP-INV-002 -> CAP-INV-003`.
 - Prepare management rows for services, source areas, unresolved questions, and each investigation coverage area.
 
 ## Execution
 
-- Execute `CAP-INV-001` to identify in-scope and out-of-scope services.
-- Execute `CAP-INV-002` to inspect source code, dependencies, data, interfaces, configuration, security, performance, and test viewpoints.
-- Execute `CAP-INV-003` to structure outputs into a change target list and handoff summary.
+- Perform service catalog analysis by executing `CAP-INV-001`.
+- Perform source and dependency analysis by executing `CAP-INV-002`.
+- Perform change-target summarization by executing `CAP-INV-003`.
 
 ## Monitoring and Control
 

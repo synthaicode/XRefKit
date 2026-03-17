@@ -1,12 +1,12 @@
 <!-- xid: F5193313AB79 -->
 <a id="xid-F5193313AB79"></a>
 
-# Capability: CAP-PLN-001 Task Decomposition and Plan Draft
+# Capability: CAP-PLN-001 Work Decomposition Structuring
 
 ## Definition
 
 - capability_id: `CAP-PLN-001`
-- capability_name: `task_decomposition_and_plan_draft`
+- capability_name: `work_decomposition_structuring`
 - work_type: `execution`
 - summary: decompose approved requirements into tasks, dependencies, and execution order
 
@@ -46,6 +46,11 @@
 
 - planning phase
 - [Design Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+
+## Notes
+
+- `task decomposition and plan draft` is a business activity in planning work.
+- This capability is the reusable work-decomposition ability used by that activity.
 ## Task Lifecycle Mapping
 
 - Startup:

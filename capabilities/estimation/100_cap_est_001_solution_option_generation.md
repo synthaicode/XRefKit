@@ -1,12 +1,12 @@
 <!-- xid: BDB6B54A3571 -->
 <a id="xid-BDB6B54A3571"></a>
 
-# Capability: CAP-EST-001 Solution Option Generation
+# Capability: CAP-EST-001 Solution Option Structuring
 
 ## Definition
 
 - capability_id: `CAP-EST-001`
-- capability_name: `solution_option_generation`
+- capability_name: `solution_option_structuring`
 - work_type: `execution`
 - summary: generate solution options with effort, risk, and assumption lists
 
@@ -47,6 +47,11 @@
 
 - estimation phase
 - [Planning Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+
+## Notes
+
+- `solution option generation` is a business activity in estimation work.
+- This capability is the reusable option-structuring ability used by that activity.
 ## Task Lifecycle Mapping
 
 - Startup:

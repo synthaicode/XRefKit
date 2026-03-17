@@ -37,11 +37,13 @@ Use one row per `(work, target)` pair so completion, uncertainty, and out-of-sco
 - `missing` is a control status, not a valid final status.
 - Every `unknown` row must record the missing evidence.
 - Every `out_of_scope` row must record the reason and likely next owner if known.
+- Every implementation assumption gap must record its classification and assumption statement in `notes` or linked detail.
 - If `confidence` is effectively low, upgrade the row to `unknown`.
 
 ## Closure Rules
 
 1. Check that all rows have a final status.
 2. Move unresolved `unknown` rows to the handoff list.
-3. Move `out_of_scope` rows to escalation handling.
-4. Preserve table state in the work-management record.
+3. If an `unknown` row remains unresolved at the final responsible boundary, escalate it to human confirmation or approval.
+4. Move `out_of_scope` rows to escalation handling.
+5. Preserve table state in the work-management record.
