@@ -22,6 +22,9 @@ outputs:
   - data_change_design
   - test_design
   - design_basis_policy_reference
+  - test_design_basis_policy_reference
+  - integration_regression_test_design
+  - integration_regression_test_basis_policy_reference
 handoff:
   output_to:
     - FLOW-MANUFACTURING
@@ -32,12 +35,17 @@ handoff:
     - data_change_design
     - test_design
     - design_basis_policy_reference
+    - test_design_basis_policy_reference
+    - integration_regression_test_design
+    - integration_regression_test_basis_policy_reference
   escalation:
     - unresolved_design_assumptions_explicit
     - scope_conflicts_to_coordinator
 sequence:
   - confirm_planning_outputs_approved
   - solution_design_drafting
+  - test_design_drafting
+  - integration_regression_test_design_drafting
   - record_design_to_planning_trace
   - prepare_manufacturing_handoff
 control_rules:

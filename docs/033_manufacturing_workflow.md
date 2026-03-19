@@ -14,7 +14,7 @@ Produce code changes and unit-test results without crossing the approved design 
 | Item | Value |
 |------|------|
 | Owner group | Manufacturing Group |
-| Input from | approved design and detailed design outputs from Design Group, requirement context from Planning Group when needed |
+| Input from | approved design, detailed design outputs, and test design outputs from Design Group, requirement context from Planning Group when needed |
 | Output to | Quality Group review and Operations Group release-planning preparation |
 | Main handoff artifacts | implemented code, unit test results, implementation basis design reference, self-check result, uncertainty list, out-of-scope list |
 | Escalation path | implementation assumption gaps stay `unknown` or become `out_of_scope`; `out_of_scope` items go to Coordinator routing |
@@ -43,6 +43,7 @@ Produce code changes and unit-test results without crossing the approved design 
 - source modification design
 - data change design when applicable
 - test design or explicit test viewpoints
+- test design basis policy reference
 - target paths
 - coding and naming rules
 - optional test viewpoints from investigation or design

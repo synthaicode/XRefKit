@@ -13,7 +13,7 @@
 ## Preconditions
 
 - implemented code from `CAP-MFG-001` exists
-- test viewpoints or equivalent expectations exist
+- test design or equivalent expectations exist
 
 ## Trigger
 
@@ -22,7 +22,8 @@
 ## Inputs
 
 - implemented code
-- test viewpoints
+- test design
+- test design basis policy reference
 - coding rules
 
 ## Outputs
@@ -33,13 +34,14 @@
 
 ## Required Domain Knowledge
 
-- test design criteria
+- [Test design criteria](../../knowledge/quality/110_test_design_criteria.md#xid-8C4D2A7E5102)
 - coding rules
 
 ## Constraints
 
 - test only within approved design scope
 - do not redefine test criteria
+- unit test execution must follow the provided test design unless an explicit deviation reason is recorded
 - record unresolved failures explicitly
 
 ## Assignment

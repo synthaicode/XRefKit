@@ -15,6 +15,7 @@ inputs:
   - source_modification_design
   - data_change_design
   - test_design
+  - test_design_basis_policy_reference
   - target_paths
   - coding_rules
   - naming_rules

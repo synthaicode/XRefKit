@@ -25,7 +25,6 @@
 - work plan
 - source modification policy
 - data change policy
-- test policy
 - planning basis source list
 
 ## Outputs
@@ -34,7 +33,6 @@
 - target paths
 - source modification design
 - data change design
-- test design
 - design basis policy reference
 
 ## Required Domain Knowledge

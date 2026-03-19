@@ -16,6 +16,8 @@ Execute the manufacturing sequence `CAP-MFG-001 -> CAP-MFG-002` and prepare outp
 
 - approved design or equivalent scoped instruction
 - design basis policy reference
+- test design
+- test design basis policy reference
 - target paths
 - coding and naming rules
 - optional test viewpoints
@@ -54,6 +56,7 @@ Execute the manufacturing sequence `CAP-MFG-001 -> CAP-MFG-002` and prepare outp
 - Perform implementation by executing `CAP-MFG-001`.
 - Perform unit test execution by executing `CAP-MFG-002`.
 - Record which design artifact or design basis reference each implementation change realizes.
+- Record which test design item each executed unit test realizes.
 - When an implementation assumption gap appears, classify it as:
   - `clarification_needed`
   - `evidence_missing`
@@ -82,3 +85,4 @@ Execute the manufacturing sequence `CAP-MFG-001 -> CAP-MFG-002` and prepare outp
 - Never resolve an implementation assumption gap by guessing design or business intent.
 - Every out-of-scope item must include a reason.
 - Keep changes traceable to explicit scope.
+- Keep executed unit tests traceable to explicit test design.

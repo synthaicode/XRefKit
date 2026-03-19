@@ -14,9 +14,9 @@ Prepare release planning, monitoring, and response procedures before CAB review.
 | Item | Value |
 |------|------|
 | Owner group | Operations Group |
-| Input from | Manufacturing outputs, Design materials, Requirement materials, performance evidence |
+| Input from | Manufacturing outputs, integration regression verification outputs, Design materials, Requirement materials, performance evidence |
 | Output to | CAB evaluation workflow |
-| Main handoff artifacts | release plan draft, monitoring specification, event-response procedure draft, operational readiness result |
+| Main handoff artifacts | release plan draft, monitoring specification, event-response procedure draft, operational readiness result, release verification result |
 | Escalation path | operational gaps remain explicit as `unknown`; out-of-scope operational items go to Coordinator routing |
 
 ## Business Activities and Supporting Capabilities
@@ -29,6 +29,8 @@ Prepare release planning, monitoring, and response procedures before CAB review.
   - supported by [CAP-OPS-003 Event Response Structuring](../capabilities/operations/120_cap_ops_003_event_response_procedure_draft.md#xid-6DA033B45D93)
 - Operational readiness gate:
   - supported by [CAP-OPS-004 Operational Readiness Evaluation](../capabilities/operations/130_cap_ops_004_operational_readiness_gate.md#xid-83140C9538B3)
+- Release verification:
+  - supported by [CAP-OPS-005 Release Verification](../capabilities/operations/140_cap_ops_005_release_verification.md#xid-83140C9538B4)
 
 ## Sequence
 
@@ -36,6 +38,7 @@ Prepare release planning, monitoring, and response procedures before CAB review.
 2. Perform monitoring design by applying [CAP-OPS-002 Operational Signal Specification](../capabilities/operations/110_cap_ops_002_monitoring_design.md#xid-316B0FB4493C).
 3. Perform event-response procedure drafting by applying [CAP-OPS-003 Event Response Structuring](../capabilities/operations/120_cap_ops_003_event_response_procedure_draft.md#xid-6DA033B45D93).
 4. Perform operational readiness gate by applying [CAP-OPS-004 Operational Readiness Evaluation](../capabilities/operations/130_cap_ops_004_operational_readiness_gate.md#xid-83140C9538B3).
+5. Perform release verification by applying [CAP-OPS-005 Release Verification](../capabilities/operations/140_cap_ops_005_release_verification.md#xid-83140C9538B4).
 
 ## Related Skills
 

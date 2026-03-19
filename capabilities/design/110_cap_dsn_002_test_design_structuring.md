@@ -1,0 +1,69 @@
+<!-- xid: 6C1A2D9F4502 -->
+<a id="xid-6C1A2D9F4502"></a>
+
+# Capability: CAP-DSN-002 Test Design Structuring
+
+## Definition
+
+- capability_id: `CAP-DSN-002`
+- capability_name: `test_design_structuring`
+- work_type: `execution`
+- summary: expand approved test policy and design artifacts into executable test design
+
+## Preconditions
+
+- approved test policy exists
+- approved design or design draft exists
+
+## Trigger
+
+- design workflow reaches the test-design step
+
+## Inputs
+
+- test policy
+- approved requirements
+- approved design or design draft
+- planning basis source list
+
+## Outputs
+
+- test design
+- test design basis policy reference
+
+## Required Domain Knowledge
+
+- [Test design criteria](../../knowledge/quality/110_test_design_criteria.md#xid-8C4D2A7E5102)
+- applicable domain knowledge for test conditions
+
+## Constraints
+
+- realize the approved test policy without silently changing its scope
+- each test design artifact must identify which test policy and design artifact it realizes
+- preserve unresolved test assumptions explicitly
+
+## Assignment
+
+- design phase
+- [Design Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+
+## Notes
+
+- `test design drafting` is a business activity in design work.
+- This capability is the reusable test-design structuring ability used by that activity.
+
+## Task Lifecycle Mapping
+
+- Startup:
+  - use `Preconditions`, `Trigger`, and `Inputs` to confirm the capability can start
+  - if required evidence is missing, record `unknown` before continuing
+- Planning:
+  - define test-design targets, work rows, and handoff boundaries for this capability
+- Execution:
+  - produce the outputs defined in this capability within its stated constraints
+- Monitoring and Control:
+  - check progress and evidence quality through management-table and metrics rules
+  - downgrade weakly supported conclusions to `unknown`
+- Closure:
+  - confirm the capability result is finalized as `done`, `unknown`, or `out_of_scope`
+  - preserve unresolved and out-of-scope items for handoff or escalation

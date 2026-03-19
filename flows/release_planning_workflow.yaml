@@ -10,6 +10,7 @@ runs_before:
   - FLOW-CAB
 inputs:
   - manufacturing_outputs
+  - integration_regression_verification_result
   - design_materials
   - requirement_materials
   - performance_evidence
@@ -18,6 +19,7 @@ outputs:
   - monitoring_specification
   - event_response_procedure_draft
   - operational_readiness_result
+  - release_verification_result
 handoff:
   output_to:
     - FLOW-CAB
@@ -26,6 +28,7 @@ handoff:
     - monitoring_specification
     - event_response_procedure_draft
     - operational_readiness_result
+    - release_verification_result
   escalation:
     - operational_gaps_as_unknown
     - out_of_scope_operational_items_to_coordinator
@@ -34,6 +37,7 @@ sequence:
   - monitoring_design
   - event_response_procedure_drafting
   - operational_readiness_gate
+  - release_verification
 control_rules:
   - operations_group_owns_release_preparation
   - readiness_evidence_must_be_explicit

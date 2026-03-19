@@ -20,6 +20,8 @@ Skills should reference these pages by XID and load only what is needed.
 - [Custom framework common criteria](source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002)
 - [C# custom framework analysis criteria](csharp/110_custom_framework_analysis_criteria.md#xid-30E6A4F6F3AB)
 - [C# quality review criteria](quality/100_csharp_quality_review_criteria.md#xid-8C4D2A7E5101)
+- [Test design criteria](quality/110_test_design_criteria.md#xid-8C4D2A7E5102)
+- [IPA test viewpoint supplement](quality/120_ipa_test_viewpoint_supplement.md#xid-8C4D2A7E5103)
 - [Investigation coverage checklist](investigation/100_investigation_coverage_checklist.md#xid-91E2A7C56101)
 - [Management table schema](organization/110_management_table_schema.md#xid-7A2F4C8D1101)
 - [Metrics definition](organization/120_metrics_definition.md#xid-7A2F4C8D1201)
