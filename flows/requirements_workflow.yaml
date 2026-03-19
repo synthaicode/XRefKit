@@ -1,0 +1,40 @@
+flow_id: FLOW-REQUIREMENTS
+name: requirements_workflow
+doc_xid: 8B31F02A4005
+phase: normal
+owner:
+  primary: planning_group
+  support:
+    - design_group
+runs_after:
+  - FLOW-ESTIMATION
+  - FLOW-INVESTIGATION
+runs_before:
+  - FLOW-PLANNING
+inputs:
+  - confirmed_assumptions
+  - change_target_list
+  - change_test_viewpoint_table
+outputs:
+  - requirement_draft
+  - performance_requirement_definition
+  - unresolved_evidence_list
+handoff:
+  output_to:
+    - FLOW-PLANNING
+    - manufacturing_scope_definition
+  artifacts:
+    - requirement_draft
+    - performance_requirement_definition
+    - unresolved_evidence_list
+  escalation:
+    - unresolved_requirement_questions_for_review_or_approval
+    - out_of_scope_to_coordinator
+sequence:
+  - confirm_unresolved_assumptions_reviewed
+  - requirement_draft_creation
+  - performance_requirement_definition
+  - preserve_unresolved_evidence_gaps
+control_rules:
+  - draft_only
+  - unresolved_items_must_remain_explicit

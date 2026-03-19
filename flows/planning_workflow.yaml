@@ -1,0 +1,46 @@
+flow_id: FLOW-PLANNING
+name: planning_workflow
+doc_xid: 8B31F02A4006
+phase: normal
+owner:
+  primary: design_group
+runs_after:
+  - FLOW-REQUIREMENTS
+runs_before:
+  - FLOW-DESIGN
+inputs:
+  - approved_requirements
+  - current_source_structure_findings
+  - domain_knowledge_references
+outputs:
+  - work_plan
+  - source_modification_policy
+  - data_change_policy
+  - test_policy
+  - release_policy
+  - planning_basis_source_list
+handoff:
+  output_to:
+    - FLOW-DESIGN
+    - management_control_initialization
+  artifacts:
+    - work_plan
+    - source_modification_policy
+    - data_change_policy
+    - test_policy
+    - release_policy
+    - planning_basis_source_list
+  escalation:
+    - unresolved_planning_assumptions_explicit
+    - scope_conflicts_to_coordinator
+sequence:
+  - confirm_requirements_approved
+  - read_domain_knowledge_and_current_source_findings
+  - work_planning_and_policy_drafting
+  - initialize_management_control
+control_rules:
+  - design_group_owns_planning_structure
+  - source_modification_policy_follows_current_source_structure_by_default
+  - each_policy_must_cite_its_current_source_basis
+  - structural_deviation_requires_explicit_reason
+  - unresolved_planning_assumptions_must_remain_explicit

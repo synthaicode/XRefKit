@@ -1,0 +1,49 @@
+flow_id: FLOW-CLOSURE
+name: closure_workflow
+doc_xid: 8B31F02A4003
+phase: control
+owner:
+  primary: quality_group
+  support:
+    - coordinator
+runs_after:
+  - any_workflow
+inputs:
+  - management_table
+  - metrics_log
+  - unresolved_list
+  - out_of_scope_list
+outputs:
+  - leak_detection_result
+  - return_instructions
+  - closure_confirmation_result
+  - escalation_record
+  - unknown_escalation_record
+  - structural_quality_feedback_record
+handoff:
+  output_to:
+    - responsible_execution_group
+    - coordinator_routing
+    - human_confirmation_or_approval
+    - FLOW-SYSTEM-QUALITY-FEEDBACK
+  artifacts:
+    - return_instructions
+    - closure_confirmation_result
+    - escalation_record
+    - structural_quality_feedback_record
+  escalation:
+    - out_of_scope_to_coordinator
+    - unresolved_final_unknown_to_human
+    - repeated_or_upstream_leaks_to_feedback_loop
+sequence:
+  - inspect_management_table
+  - management_table_check
+  - confirm_final_statuses
+  - return_incomplete_rows
+  - out_of_scope_escalation
+  - route_final_unknown_to_human
+  - emit_structural_feedback_when_needed
+control_rules:
+  - missing_is_not_final
+  - low_confidence_is_not_normal_completion
+  - repeated_leaks_must_not_be_handled_only_locally

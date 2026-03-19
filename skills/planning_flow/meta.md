@@ -4,19 +4,22 @@
 # Skill Meta: planning_flow
 
 - skill_id: `planning_flow`
-- summary: execute planning business activity through reusable work-decomposition capability
+- summary: execute planning business activity through reusable work-and-policy planning capability grounded in domain knowledge and current-source findings
 - use_when: user needs planning after requirements are approved
-- input: approved requirements, change target list
-- output: task list, dependencies, execution order, effort estimate, group assignment draft
+- input: approved requirements, change target list, current source structure findings, domain knowledge references
+- output: work plan, source modification policy, data change policy, test policy, release policy, planning basis source list
 - constraints: draft only; do not finalize priority or resource allocation
 - lifecycle:
-  - startup: confirm approved requirements and change targets exist
-  - planning: define decomposition scope and management rows
-  - execution: perform task decomposition and plan drafting through `CAP-PLN-001`
-  - monitoring_and_control: downgrade weak planning assumptions to `unknown`
-  - closure: finalize states and hand off the plan draft with unresolved items
-- tags: `planning`, `execution`, `decomposition`
+  - startup: confirm approved requirements, current source findings, and domain knowledge references exist
+  - planning: define planning scope, policy targets, and management rows from domain knowledge and current-source findings
+  - execution: perform work planning and policy drafting through `CAP-PLN-001`
+  - monitoring_and_control: downgrade weak planning assumptions and unsupported source-structure claims to `unknown`
+  - closure: finalize states and hand off planning outputs and planning basis source list with unresolved items
+- tags: `planning`, `execution`, `policy`
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../capabilities/planning/100_cap_pln_001_task_decomposition_plan_draft.md#xid-F5193313AB79`
-- knowledge_refs: none
+- knowledge_refs:
+  - `../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001`
+  - `../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002`
+  - `../../knowledge/csharp/110_custom_framework_analysis_criteria.md#xid-30E6A4F6F3AB`

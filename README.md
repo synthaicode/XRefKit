@@ -42,7 +42,7 @@ Each managed Markdown file carries an XID block:
 ## Typical Workflow
 
 1. Add or update source material in `sources/`.
-2. Convert workflow/governance into `docs/`, capability definitions into `capabilities/`, and domain facts into `knowledge/`.
+2. Convert workflow control structure into `flows/`, workflow/governance explanation into `docs/`, capability definitions into `capabilities/`, and domain facts into `knowledge/`.
 3. Keep references XID-based (`#xid-...`), not path-based.
 4. Run `python -m fm xref fix` after edits.
 5. Use `xref search/show` or `ctx pack` to load only the needed context.
@@ -87,6 +87,7 @@ python -m fm ctx pack --seed 7C6C2B46A9D1 --depth 1 --out .xref\\pack.md
 ## Repository Map
 
 - `docs/`: human-facing operational docs and policy
+- `flows/`: machine-readable workflow control structures
 - `capabilities/`: reusable capability definitions
 - `knowledge/`: shared domain knowledge fragments
 - `sources/`: original source material for human verification

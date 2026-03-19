@@ -1,0 +1,45 @@
+flow_id: FLOW-CAB
+name: cab_workflow
+doc_xid: 8B31F02A4008
+phase: normal
+owner:
+  primary:
+    - quality_group
+    - operations_group
+    - planning_group
+runs_after:
+  - FLOW-RELEASE-PLANNING
+runs_before:
+  - human_release_decision
+inputs:
+  - release_planning_materials
+  - manufacturing_outputs
+  - requirement_and_design_evidence
+  - value_and_constraint_definitions
+outputs:
+  - quality_gate_result
+  - operational_readiness_result
+  - value_gate_result
+  - unresolved_list
+  - structural_quality_feedback_record
+handoff:
+  output_to:
+    - human_decision_layer
+    - FLOW-SYSTEM-QUALITY-FEEDBACK
+  artifacts:
+    - quality_gate_result
+    - operational_readiness_result
+    - value_gate_result
+    - unresolved_list
+  escalation:
+    - unresolved_risks_to_human_decision
+    - upstream_structural_causes_to_feedback_loop
+sequence:
+  - release_plan_suitability_review
+  - operational_readiness_evaluation
+  - value_constraint_fit_evaluation
+  - handoff_to_human_decision_layer
+  - emit_structural_feedback_when_needed
+control_rules:
+  - evaluation_not_decision
+  - preserves_separation_between_evaluation_and_approval

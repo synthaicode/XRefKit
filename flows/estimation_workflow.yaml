@@ -1,0 +1,40 @@
+flow_id: FLOW-ESTIMATION
+name: estimation_workflow
+doc_xid: 8B31F02A4004
+phase: normal
+owner:
+  primary: planning_group
+runs_after:
+  - FLOW-INVESTIGATION
+runs_before:
+  - FLOW-REQUIREMENTS
+inputs:
+  - investigation_outputs
+  - supplier_definitions
+  - budget_context
+outputs:
+  - supplier_comparison_result
+  - cost_patterns
+  - solution_options
+  - ambiguity_classification
+  - unresolved_assumptions
+handoff:
+  output_to:
+    - FLOW-REQUIREMENTS
+  artifacts:
+    - supplier_comparison_result
+    - cost_patterns
+    - solution_options
+    - unresolved_assumptions
+  escalation:
+    - supplier_or_budget_items_to_coordinator
+    - unresolved_assumptions_for_confirmation
+sequence:
+  - supplier_four_condition_check
+  - cost_estimation
+  - solution_option_generation
+  - assumption_ambiguity_classification
+control_rules:
+  - does_not_approve_supplier_adoption
+  - does_not_approve_final_budget
+  - unresolved_assumptions_must_remain_explicit

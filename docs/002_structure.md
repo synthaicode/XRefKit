@@ -8,6 +8,7 @@ This repository provides the operational pattern and tooling to reference split 
 ## Top-level directories
 
 - `docs/`: Human-facing docs (background, design, operations, indexes)
+- `flows/`: Machine-readable workflow control structures in YAML
 - `capabilities/`: Reusable capability definitions (inputs, outputs, triggers, constraints)
 - `agent/`: Agent entry + operational contract (keep L0 short and stable)
 - `fm/`: CLI implementation (`python -m fm ...`)
@@ -39,6 +40,7 @@ This repository provides the operational pattern and tooling to reference split 
 ```text
 .
 ├─ docs/          # Human-facing docs (XID-managed)
+├─ flows/         # Workflow YAML models
 ├─ capabilities/  # Capability definitions (XID-managed)
 ├─ agent/         # Agent entry/contract (XID-managed)
 ├─ fm/            # CLI implementation

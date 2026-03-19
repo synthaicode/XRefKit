@@ -1,14 +1,14 @@
 <!-- xid: F5193313AB79 -->
 <a id="xid-F5193313AB79"></a>
 
-# Capability: CAP-PLN-001 Work Decomposition Structuring
+# Capability: CAP-PLN-001 Work and Policy Planning Structuring
 
 ## Definition
 
 - capability_id: `CAP-PLN-001`
-- capability_name: `work_decomposition_structuring`
+- capability_name: `work_and_policy_planning_structuring`
 - work_type: `execution`
-- summary: decompose approved requirements into tasks, dependencies, and execution order
+- summary: structure approved requirements, domain knowledge, and current-source findings into executable work plans and downstream design policies aligned to the current codebase
 
 ## Preconditions
 
@@ -22,23 +22,30 @@
 
 - approved requirements
 - change target list
+- current source structure findings
+- domain knowledge references
 
 ## Outputs
 
-- task list
-- dependency map
-- execution order
-- effort estimate
-- group assignment draft
+- work plan
+- source modification policy
+- data change policy
+- test policy
+- release policy
+- planning basis source list
 
 ## Required Domain Knowledge
 
+- applicable domain knowledge for the target service or business area
+- current source structure and dependency findings
 - process rules
 - approval flow
 
 ## Constraints
 
 - draft only
+- planning must stay consistent with the current source structure unless an explicit deviation reason is recorded
+- each planning policy must cite the current source artifacts or current-source findings used as its basis
 - do not decide final priority or resource allocation
 - preserve unresolved planning assumptions explicitly
 
@@ -49,8 +56,9 @@
 
 ## Notes
 
-- `task decomposition and plan draft` is a business activity in planning work.
-- This capability is the reusable work-decomposition ability used by that activity.
+- `work planning and policy drafting` is a business activity in planning work.
+- This capability is the reusable planning-structuring ability used by that activity.
+- This capability uses domain knowledge and current-source analysis so that downstream design starts from the existing codebase reality, not an idealized target structure.
 ## Task Lifecycle Mapping
 
 - Startup:
@@ -66,8 +74,5 @@
 - Closure:
   - confirm the capability result is finalized as `done`, `unknown`, or `out_of_scope`
   - preserve unresolved and out-of-scope items for handoff or escalation
-
-- execution metrics log
-- [Metrics definition](../../knowledge/organization/120_metrics_definition.md#xid-7A2F4C8D1201)
 
 

@@ -26,6 +26,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Estimation workflow](035_estimation_workflow.md#xid-8B31F02A4004)
 - [Requirements workflow](036_requirements_workflow.md#xid-8B31F02A4005)
 - [Planning workflow](037_planning_workflow.md#xid-8B31F02A4006)
+- [Design workflow](046_design_workflow.md#xid-8B31F02A4015)
 - [Release planning workflow](038_release_planning_workflow.md#xid-8B31F02A4007)
 - [CAB workflow](039_cab_workflow.md#xid-8B31F02A4008)
 - [Group definitions](040_group_definitions.md#xid-8B31F02A4009)

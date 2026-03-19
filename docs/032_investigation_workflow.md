@@ -64,6 +64,9 @@ Narrow the affected scope, inspect the relevant implementation area, and hand of
 ## Required Knowledge
 
 - [Investigation coverage checklist](../knowledge/investigation/100_investigation_coverage_checklist.md#xid-91E2A7C56101)
+- [Common source analysis criteria](../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+- [Custom framework common criteria](../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002)
+- [C# custom framework analysis criteria](../knowledge/csharp/110_custom_framework_analysis_criteria.md#xid-30E6A4F6F3AB)
 
 ## Related Skills
 

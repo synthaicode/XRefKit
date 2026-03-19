@@ -48,9 +48,13 @@ When asked "what skills are available?", answer from this file.
   - meta: `skills/requirements_flow/meta.md`
   - skill_doc: `skills/requirements_flow/SKILL.md`
 - `planning_flow`:
-  - summary: decompose approved requirements into an execution plan draft
+  - summary: prepare work planning outputs and implementation policies
   - meta: `skills/planning_flow/meta.md`
   - skill_doc: `skills/planning_flow/SKILL.md`
+- `design_flow`:
+  - summary: convert planning outputs into implementation-ready design artifacts
+  - meta: `skills/design_flow/meta.md`
+  - skill_doc: `skills/design_flow/SKILL.md`
 - `implementation_flow`:
   - summary: implement changes and collect unit test results within approved scope
   - meta: `skills/implementation_flow/meta.md`

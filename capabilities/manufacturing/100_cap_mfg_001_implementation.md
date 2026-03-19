@@ -23,6 +23,7 @@
 ## Inputs
 
 - approved design
+- design basis policy reference
 - target source code
 - coding rules
 - naming rules
@@ -32,6 +33,7 @@
 - implemented code
 - uncertainty list
 - out-of-scope list
+- implementation basis design reference
 
 ## Required Domain Knowledge
 
@@ -43,6 +45,7 @@
 ## Constraints
 
 - implement only within approved design scope
+- each implementation change must identify the design artifact or design basis reference it realizes
 - do not change design policy
 - do not hide unresolved issues
 - convert every implementation assumption gap into `unknown`, `out_of_scope`, or explicit delegated local choice

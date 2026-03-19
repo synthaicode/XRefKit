@@ -28,6 +28,7 @@ Keep domain facts in `knowledge/` and executable procedures in `skills/`.
 - `estimation/`
 - `requirements/`
 - `planning/`
+- `design/`
 - `manufacturing/`
 - `operations/`
 - `quality/`
@@ -45,7 +46,8 @@ Keep domain facts in `knowledge/` and executable procedures in `skills/`.
 - [CAP-EST-002 Assumption Ambiguity Classification](estimation/110_cap_est_002_assumption_ambiguity_classification.md#xid-B362EA06B9C2)
 - [CAP-REQ-001 Requirement Structuring](requirements/100_cap_req_001_requirement_draft_creation.md#xid-BC408337F2A2)
 - [CAP-REQ-002 Performance Constraint Structuring](requirements/110_cap_req_002_performance_requirement_definition.md#xid-D67FAD650F8C)
-- [CAP-PLN-001 Work Decomposition Structuring](planning/100_cap_pln_001_task_decomposition_plan_draft.md#xid-F5193313AB79)
+- [CAP-PLN-001 Work and Policy Planning Structuring](planning/100_cap_pln_001_task_decomposition_plan_draft.md#xid-F5193313AB79)
+- [CAP-DSN-001 Solution Design Structuring](design/100_cap_dsn_001_solution_design_structuring.md#xid-6C1A2D9F4501)
 - [CAP-MFG-001 Scoped Code Realization](manufacturing/100_cap_mfg_001_implementation.md#xid-1A12C5C61269)
 - [CAP-MFG-002 Unit-Level Verification](manufacturing/110_cap_mfg_002_unit_test_execution.md#xid-55CC9027ACAD)
 - [CAP-MFG-004 Design Alignment Self Evaluation](manufacturing/120_cap_mfg_004_manufacturing_self_check.md#xid-6F5A9C1B4401)

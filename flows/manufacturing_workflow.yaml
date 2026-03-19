@@ -1,0 +1,55 @@
+flow_id: FLOW-MANUFACTURING
+name: manufacturing_workflow
+doc_xid: 8B31F02A4002
+phase: normal
+owner:
+  primary: manufacturing_group
+runs_after:
+  - FLOW-DESIGN
+runs_before:
+  - FLOW-RELEASE-PLANNING
+  - qa_review
+inputs:
+  - approved_design
+  - design_basis_policy_reference
+  - source_modification_design
+  - data_change_design
+  - test_design
+  - target_paths
+  - coding_rules
+  - naming_rules
+  - test_viewpoints
+outputs:
+  - implemented_code
+  - unit_test_results
+  - implementation_basis_design_reference
+  - self_check_result
+  - unresolved_list
+  - uncertainty_list
+  - out_of_scope_list
+handoff:
+  output_to:
+    - quality_group_review
+    - FLOW-RELEASE-PLANNING
+  artifacts:
+    - implemented_code
+    - unit_test_results
+    - implementation_basis_design_reference
+    - self_check_result
+    - unresolved_list
+    - out_of_scope_list
+  escalation:
+    - implementation_assumption_gap_to_unknown_or_out_of_scope
+    - out_of_scope_to_coordinator
+sequence:
+  - confirm_approved_scope
+  - implementation
+  - unit_test_execution
+  - record_implementation_to_design_trace
+  - manufacturing_self_check
+  - handoff_to_quality_review
+control_rules:
+  - stays_inside_approved_boundary
+  - does_not_change_design_policy
+  - implementation_assumption_gaps_must_be_recorded
+  - group_internal_self_check_before_external_review

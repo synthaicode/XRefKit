@@ -1,0 +1,50 @@
+flow_id: FLOW-INVESTIGATION
+name: investigation_workflow
+doc_xid: 8B31F02A4001
+phase: normal
+owner:
+  primary: planning_group
+  support:
+    - design_group
+runs_after:
+  - FLOW-APPLICATION
+runs_before:
+  - FLOW-ESTIMATION
+  - FLOW-REQUIREMENTS
+  - FLOW-PLANNING
+inputs:
+  - request
+  - service_catalog_or_equivalent_domain_reference
+  - repository_paths
+  - source_code
+  - design_materials
+outputs:
+  - in_scope_service_list
+  - out_of_scope_service_list
+  - change_viewpoints
+  - test_viewpoints
+  - change_target_list
+  - consolidated_uncertainty_list
+handoff:
+  output_to:
+    - FLOW-ESTIMATION
+    - FLOW-REQUIREMENTS
+    - design_group_support
+  artifacts:
+    - change_target_list
+    - change_viewpoints
+    - test_viewpoints
+    - uncertainty_list
+  escalation:
+    - out_of_scope_to_coordinator
+    - unresolved_evidence_as_unknown
+sequence:
+  - service_catalog_analysis
+  - source_and_dependency_analysis
+  - change_target_summarization
+  - record_uncertainty_and_evidence_gaps
+control_rules:
+  - does_not_decide_implementation_policy
+  - does_not_decide_design_policy
+  - every_coverage_area_must_be_recorded
+  - missing_evidence_must_be_unknown

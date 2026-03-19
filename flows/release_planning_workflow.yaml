@@ -1,0 +1,39 @@
+flow_id: FLOW-RELEASE-PLANNING
+name: release_planning_workflow
+doc_xid: 8B31F02A4007
+phase: normal
+owner:
+  primary: operations_group
+runs_after:
+  - FLOW-MANUFACTURING
+runs_before:
+  - FLOW-CAB
+inputs:
+  - manufacturing_outputs
+  - design_materials
+  - requirement_materials
+  - performance_evidence
+outputs:
+  - release_plan_draft
+  - monitoring_specification
+  - event_response_procedure_draft
+  - operational_readiness_result
+handoff:
+  output_to:
+    - FLOW-CAB
+  artifacts:
+    - release_plan_draft
+    - monitoring_specification
+    - event_response_procedure_draft
+    - operational_readiness_result
+  escalation:
+    - operational_gaps_as_unknown
+    - out_of_scope_operational_items_to_coordinator
+sequence:
+  - release_plan_draft_creation
+  - monitoring_design
+  - event_response_procedure_drafting
+  - operational_readiness_gate
+control_rules:
+  - operations_group_owns_release_preparation
+  - readiness_evidence_must_be_explicit

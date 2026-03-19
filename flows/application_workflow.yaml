@@ -1,0 +1,49 @@
+flow_id: FLOW-APPLICATION
+name: application_workflow
+doc_xid: 8B31F02A4014
+phase: bootstrap
+owner:
+  primary: human_decision_layer
+  support:
+    - ai_support
+runs_before:
+  - FLOW-INVESTIGATION
+inputs:
+  - framework_baseline
+  - project_brief
+  - domain_materials
+  - stakeholder_constraints
+outputs:
+  - domain_knowledge_injection_record
+  - capability_tuning_record
+  - threshold_configuration_record
+  - output_level_definition_record
+  - interview_verification_result
+  - unresolved_configuration_gap_record
+  - application_completion_record
+handoff:
+  output_to:
+    - FLOW-INVESTIGATION
+    - all_normal_workflows
+  artifacts:
+    - application_completion_record
+    - domain_knowledge_injection_record
+    - capability_tuning_record
+    - threshold_configuration_record
+  escalation:
+    - unresolved_configuration_gap_to_human_decision_layer
+sequence:
+  - collect_project_materials
+  - identify_framework_gaps
+  - inject_domain_knowledge
+  - configure_capability_tuning
+  - configure_thresholds_and_output_level
+  - conduct_interview_verification
+  - record_unresolved_gaps
+  - obtain_human_confirmation
+  - issue_application_completion_record
+control_rules:
+  - must_complete_before_normal_workflows
+  - human_owns_configuration_decisions
+  - no_silent_defaults
+  - unresolved_configuration_gaps_must_be_recorded
