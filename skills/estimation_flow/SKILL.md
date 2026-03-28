@@ -54,6 +54,7 @@ Execute the sequence `CAP-SUP-001 -> CAP-SUP-002 -> CAP-EST-001 -> CAP-EST-002` 
 - Perform supplier four-condition check by executing `CAP-SUP-001`.
 - Perform cost estimation by executing `CAP-SUP-002`.
 - Perform solution option generation by executing `CAP-EST-001`.
+- Consult on option differences, direction tradeoffs, and assumption impacts when comparison cannot be closed inside the current boundary.
 - Perform assumption ambiguity classification by executing `CAP-EST-002`.
 
 ## Monitoring and Control

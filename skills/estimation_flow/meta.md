@@ -12,7 +12,7 @@
 - lifecycle:
   - startup: confirm request, change targets, supplier definitions, and budget evidence as needed
   - planning: define estimation scope and management rows
-  - execution: perform supplier four-condition check, cost estimation, solution option generation, and assumption ambiguity classification through `CAP-SUP-001 -> CAP-SUP-002 -> CAP-EST-001 -> CAP-EST-002`
+  - execution: perform supplier four-condition check, cost estimation, solution option generation, consultation on option tradeoffs when needed, and assumption ambiguity classification through `CAP-SUP-001 -> CAP-SUP-002 -> CAP-EST-001 -> CAP-EST-002`
   - monitoring_and_control: downgrade weak assumptions to `unknown`; preserve confirmation items
   - closure: finalize states and hand off unresolved assumptions
 - tags: `estimation`, `planning`, `supplier`
