@@ -23,6 +23,7 @@
   - `estimation_flow` -> `../estimation_flow/meta.md`
   - `requirements_flow` -> `../requirements_flow/meta.md`
   - `planning_flow` -> `../planning_flow/meta.md`
+  - `xlsx_spec_traceability` -> `../xlsx_spec_traceability/meta.md`
 - security:
   - `password_management` -> `../password_management/meta.md`
 
