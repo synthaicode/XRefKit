@@ -43,13 +43,9 @@
 - do not decide the final direction
 - preserve uncertain assumptions explicitly
 
-## Solution Option Generation Rules
+## Solution Option Generation Rule
 
-- keep the same request and the same change target list across compared options
-- each option must differ from at least one other option by one or more explicit branching axes
-- if no meaningful branching-axis difference exists, merge the candidates into one option instead of presenting them as separate options
-- record the branching axis or axes that make each option distinct
-- every option must include effort, risk, and assumption records
+A solution option must be differentiated by at least one explicit branching axis while keeping the same request and the same change target list.
 
 ### Allowed Branching Axes
 
@@ -57,6 +53,14 @@
 - automation boundary: manual absorption / semi-automation / full automation
 - change-impact strategy: preserve existing structure / partial modification / redesign
 - assumption dependency: works without added assumptions / requires stakeholder confirmation / requires external condition fulfillment
+
+### Rules
+
+- each option must explicitly state which branching axis or axes make it distinct
+- branching axes must describe differences in realization, not differences in request scope or change target scope
+- options without a material axis difference must be merged into a single option
+- every option must include an effort estimate, a risk list, and an assumption list
+- option generation proposes alternatives only and does not decide the final direction
 
 ## Assignment
 
