@@ -7,3 +7,5 @@ This folder stores reusable capabilities used to transform planning outputs into
 
 - `CAP-DSN-001`: solution design structuring
 - `CAP-DSN-002`: test design structuring
+- `CAP-DSN-003`: integration and regression test design structuring
+- `CAP-DSN-004`: test plan structuring

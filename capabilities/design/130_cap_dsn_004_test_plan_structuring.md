@@ -1,23 +1,23 @@
-<!-- xid: 6C1A2D9F4502 -->
-<a id="xid-6C1A2D9F4502"></a>
+<!-- xid: 6C1A2D9F4504 -->
+<a id="xid-6C1A2D9F4504"></a>
 
-# Capability: CAP-DSN-002 Test Design Structuring
+# Capability: CAP-DSN-004 Test Plan Structuring
 
 ## Definition
 
-- capability_id: `CAP-DSN-002`
-- capability_name: `test_design_structuring`
+- capability_id: `CAP-DSN-004`
+- capability_name: `test_plan_structuring`
 - work_type: `execution`
-- summary: expand approved test policy, requirements, and design artifacts into executable test items with requirement traceability
+- summary: structure approved test policy and requirement context into an executable test plan
 
 ## Preconditions
 
 - approved test policy exists
-- approved design or design draft exists
+- approved requirements exist
 
 ## Trigger
 
-- test workflow reaches the test-item step
+- test workflow reaches the test-plan step
 
 ## Inputs
 
@@ -28,20 +28,19 @@
 
 ## Outputs
 
-- test design
-- test design basis policy reference
-- test-item requirement traceability reference
+- test plan
+- test plan basis policy reference
 
 ## Required Domain Knowledge
 
 - [Test design criteria](../../knowledge/quality/110_test_design_criteria.md#xid-8C4D2A7E5102)
-- applicable domain knowledge for test conditions
+- applicable domain knowledge for test scope and risk selection
 
 ## Constraints
 
 - realize the approved test policy without silently changing its scope
-- each test design artifact must identify which test policy, requirement, and design artifact it realizes
-- preserve unresolved test assumptions explicitly
+- preserve requirement coverage intent explicitly
+- preserve unresolved test planning assumptions explicitly
 
 ## Assignment
 
@@ -50,8 +49,8 @@
 
 ## Notes
 
-- `test item drafting` is a business activity in test work.
-- This capability is the reusable test-design structuring ability used by that activity.
+- `test plan drafting` is a business activity in test work.
+- This capability is the reusable test-plan structuring ability used by that activity.
 
 ## Task Lifecycle Mapping
 
@@ -59,7 +58,7 @@
   - use `Preconditions`, `Trigger`, and `Inputs` to confirm the capability can start
   - if required evidence is missing, record `unknown` before continuing
 - Planning:
-  - define test-design targets, work rows, and handoff boundaries for this capability
+  - define test-plan targets, work rows, and handoff boundaries for this capability
 - Execution:
   - produce the outputs defined in this capability within its stated constraints
 - Monitoring and Control:

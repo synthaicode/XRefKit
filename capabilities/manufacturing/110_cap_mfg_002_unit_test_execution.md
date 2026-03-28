@@ -31,6 +31,7 @@
 - unit test results
 - unresolved list
 - uncertainty list
+- unit test execution basis reference
 
 ## Required Domain Knowledge
 
@@ -42,6 +43,7 @@
 - test only within approved design scope
 - do not redefine test criteria
 - unit test execution must follow the provided test design unless an explicit deviation reason is recorded
+- each executed unit test must identify which test design item and test-design basis reference it realizes
 - record unresolved failures explicitly
 
 ## Assignment

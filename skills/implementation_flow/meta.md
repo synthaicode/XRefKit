@@ -6,12 +6,12 @@
 - skill_id: `implementation_flow`
 - summary: execute manufacturing business activities through reusable scoped realization and unit-level verification capabilities
 - use_when: user asks to implement changes based on an approved design or explicitly bounded instructions
-- input: approved design or equivalent scope instruction, design basis policy reference, test design, test design basis policy reference, target files, applicable coding rules, optional test viewpoints
-- output: code changes, unit test results, implementation basis design reference, uncertainty list, out-of-scope list
+- input: approved design or equivalent scope instruction, design basis policy reference, test plan, test design, test design basis policy reference, test-item requirement traceability reference, manufacturing test review result, target files, applicable coding rules, optional test viewpoints
+- output: code changes, unit test results, unit test execution basis reference, implementation basis design reference, uncertainty list, out-of-scope list
 - constraints: do not change design policy; keep unresolved items explicit
 - lifecycle:
-  - startup: confirm approved scope, test design, target files, and coding rules exist
-  - planning: define implementation and test targets and management rows from design and test design
+  - startup: confirm approved scope, reviewed test package, target files, and coding rules exist
+  - planning: define implementation and test targets and management rows from design and reviewed test design
   - execution: perform implementation and unit test execution through `CAP-MFG-001 -> CAP-MFG-002`
   - monitoring_and_control: downgrade weak completion claims to `unknown`; preserve out-of-scope reasons
   - closure: finalize states and hand off results and implementation basis design reference to QA review

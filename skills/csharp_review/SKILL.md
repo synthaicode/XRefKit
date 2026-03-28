@@ -52,6 +52,7 @@ Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4
   - solution
   - project
   - directory or file subset
+- If the review scope can be split into disjoint paths or projects without cross-scope consistency risk, decompose by scope and execute those scopes through subagents.
 - Define the output mode:
   - `findings-only`
   - `findings-with-fixes`
@@ -117,6 +118,7 @@ Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4
 - Separate `unresolved attribute origin` from `precondition not satisfied`.
 - Include evidence in every finding (file path, config node, project setting, or package reference).
 - Do not assume public-framework behavior for an application-specific framework without local evidence.
+- Use subagents only when scope boundaries stay explicit and cross-scope reasoning is not required.
 
 ## Failure Handling
 

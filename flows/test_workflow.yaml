@@ -1,0 +1,56 @@
+flow_id: FLOW-TEST
+name: test_workflow
+doc_xid: 8B31F02A4016
+phase: normal
+owner:
+  primary: design_group
+  review_support:
+    - manufacturing_group
+runs_after:
+  - FLOW-PLANNING
+  - FLOW-DESIGN
+runs_before:
+  - FLOW-MANUFACTURING
+  - quality_verification
+inputs:
+  - approved_requirements
+  - work_plan
+  - test_policy
+  - planning_basis_source_list
+  - approved_design
+  - source_modification_design
+  - target_paths
+outputs:
+  - test_plan
+  - test_plan_basis_policy_reference
+  - test_design
+  - test_design_basis_policy_reference
+  - test_item_requirement_traceability_reference
+  - integration_regression_test_design
+  - integration_regression_test_basis_policy_reference
+  - manufacturing_test_review_result
+  - unresolved_list
+handoff:
+  output_to:
+    - FLOW-MANUFACTURING
+    - quality_verification
+  artifacts:
+    - test_plan
+    - test_design
+    - test_item_requirement_traceability_reference
+    - integration_regression_test_design
+    - manufacturing_test_review_result
+  escalation:
+    - unsupported_test_methods_return_to_design
+    - scope_conflicts_to_coordinator
+sequence:
+  - confirm_test_inputs
+  - test_plan_drafting
+  - test_item_drafting
+  - integration_regression_test_design_drafting
+  - manufacturing_test_method_review
+  - handoff_reviewed_test_package
+control_rules:
+  - each_test_item_must_identify_requirement_traceability
+  - manufacturing_review_confirms_method_suitability_only
+  - unresolved_test_assumptions_must_remain_explicit

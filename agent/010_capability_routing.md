@@ -47,6 +47,8 @@ This page defines how an agent should route a user request through workflow, cap
 - Skill pages define how to execute it.
 - If multiple capabilities form one business step, prefer the phase skill that already composes them.
 - If no suitable composed skill exists, use the nearest matching skill and load the missing capability definition explicitly.
+- If processing can be separated into disjoint scopes and parallel execution does not create handoff or consistency risk, prefer subagent decomposition by scope.
+- Subagent decomposition must preserve explicit scope boundaries; do not split work in a way that changes owner, evidence basis, or closure responsibility.
 
 ## Knowledge Loading Rule
 

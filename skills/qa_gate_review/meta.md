@@ -11,7 +11,7 @@
 - constraints: every judgment needs evidence; unresolved evidence gaps stay explicit
 - lifecycle:
   - startup: confirm domain evidence exists for specification, performance, security, and license review
-  - planning: define review domains, targets, and management rows
+  - planning: define review domains, targets, management rows, and subagent split when scope-separated parallel review is safe
   - execution: run `CAP-QA-001`, `CAP-QA-006`, `CAP-QA-007`, and `CAP-QA-008`, with `CAP-QA-005` when attribute analysis is required
   - monitoring_and_control: downgrade unsupported conclusions to `unknown`
   - closure: finalize states and return per-domain findings with evidence

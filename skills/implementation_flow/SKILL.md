@@ -16,8 +16,11 @@ Execute the manufacturing sequence `CAP-MFG-001 -> CAP-MFG-002` and prepare outp
 
 - approved design or equivalent scoped instruction
 - design basis policy reference
+- test plan
 - test design
 - test design basis policy reference
+- test-item requirement traceability reference
+- manufacturing test review result
 - target paths
 - coding and naming rules
 - optional test viewpoints
@@ -30,6 +33,7 @@ Execute the manufacturing sequence `CAP-MFG-001 -> CAP-MFG-002` and prepare outp
 
 - implemented code
 - unit test results
+- unit test execution basis reference
 - unresolved list
 - uncertainty list
 - out-of-scope list
@@ -75,7 +79,7 @@ Execute the manufacturing sequence `CAP-MFG-001 -> CAP-MFG-002` and prepare outp
 ## Closure
 
 - Confirm all rows are finalized as `done`, `unknown`, or `out_of_scope`.
-- Hand off code, test results, and implementation basis design reference to QA review.
+- Hand off code, test results, unit test execution basis reference, and implementation basis design reference to QA review.
 - Escalate out-of-scope items when reassignment is required.
 
 ## Rules

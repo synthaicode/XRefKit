@@ -30,7 +30,9 @@
 - work plan
 - source modification policy
 - data change policy
+- data correction tool policy
 - test policy
+- test tool policy
 - release policy
 - planning basis source list
 
@@ -38,6 +40,7 @@
 
 - applicable domain knowledge for the target service or business area
 - current source structure and dependency findings
+- [IPA release activity catalog](../../knowledge/operations/100_ipa_release_activity_catalog.md#xid-7B3E5D1A6101)
 - process rules
 - approval flow
 
@@ -46,6 +49,8 @@
 - draft only
 - planning must stay consistent with the current source structure unless an explicit deviation reason is recorded
 - each planning policy must cite the current source artifacts or current-source findings used as its basis
+- data change planning must state whether a dedicated data correction tool is needed and, when needed, how creation and verification of that tool will be handled
+- test planning must state which test tools will be used, whether an existing tool is selected or a new tool must be created, and how that tool will be verified
 - do not decide final priority or resource allocation
 - preserve unresolved planning assumptions explicitly
 

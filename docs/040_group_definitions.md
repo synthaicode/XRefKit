@@ -90,6 +90,7 @@ Another example:
 ### Responsibility
 
 - define value, constraints, priorities, estimates, assumptions, and requirement drafts
+- confirm that test content matches the approved change specification and requirement intent
 - prepare business-facing evaluation for CAB
 - perform planning-side self-check on assumptions, estimates, and requirement framing before handoff
 
@@ -107,6 +108,7 @@ Another example:
 - change target summary
 - solution options
 - requirement drafts
+- planning test content review result
 - value-gate results
 
 ## Design Group
@@ -126,12 +128,16 @@ Another example:
 - investigation support
 - performance requirement support
 - task decomposition and plan drafting
+- solution design
+- test planning and test design
 
 ### Typical Outputs
 
 - technical clarification inputs
 - execution-plan drafts
 - dependency and sequencing decisions
+- approved design
+- test plan and test design package
 
 ## Manufacturing Group
 
@@ -151,12 +157,14 @@ Another example:
 
 - implementation
 - unit testing
+- test-method review
 
 ### Typical Outputs
 
 - code changes
 - unit test results
 - unresolved list
+- manufacturing test review result
 
 ## Quality Group
 
@@ -164,6 +172,7 @@ Another example:
 
 - evaluate outputs against higher-level evidence
 - detect leaks, missing records, and unsupported judgments
+- review test artifacts and test results as product evidence against higher-level evidence
 - provide quality-gate evaluations for CAB
 - perform quality-side self-check on review completeness and evidence traceability before returning or handing off judgments
 - detect recurring or structural quality degradation across workflows and emit system-level quality feedback
@@ -177,6 +186,7 @@ Another example:
 ### Typical Capabilities
 
 - code review
+- test-result and verification review
 - release-plan suitability review
 - management-table checks
 

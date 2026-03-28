@@ -49,6 +49,7 @@ Execute the four QA review domains `specification / performance / security / lic
   - performance
   - security
   - license
+- If review targets can be separated into disjoint scopes and parallel execution does not create consistency or handoff risk, split the work by scope and execute those scopes through subagents.
 - Prepare management rows for each domain, review targets, findings, and unresolved evidence gaps.
 
 ## Execution
@@ -77,4 +78,5 @@ Execute the four QA review domains `specification / performance / security / lic
 - Every judgment must cite evidence.
 - Do not treat unsupported assumptions as facts.
 - Do not decide design or implementation policy.
+- Use subagents only when scope boundaries stay explicit and parallel execution is safe.
 

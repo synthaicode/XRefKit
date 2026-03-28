@@ -14,9 +14,9 @@ Produce code changes and unit-test results without crossing the approved design 
 | Item | Value |
 |------|------|
 | Owner group | Manufacturing Group |
-| Input from | approved design, detailed design outputs, and test design outputs from Design Group, requirement context from Planning Group when needed |
+| Input from | approved design and detailed design outputs from Design Group, reviewed test package from Test workflow, requirement context from Planning Group when needed |
 | Output to | Quality Group review and Operations Group release-planning preparation |
-| Main handoff artifacts | implemented code, unit test results, implementation basis design reference, self-check result, uncertainty list, out-of-scope list |
+| Main handoff artifacts | implemented code, unit test results, unit test execution basis reference, implementation basis design reference, self-check result, uncertainty list, out-of-scope list |
 | Escalation path | implementation assumption gaps stay `unknown` or become `out_of_scope`; `out_of_scope` items go to Coordinator routing |
 
 ## Business Activities and Supporting Capabilities
@@ -42,8 +42,11 @@ Produce code changes and unit-test results without crossing the approved design 
 - approved design or equivalent explicit scope
 - source modification design
 - data change design when applicable
+- test plan when needed
 - test design or explicit test viewpoints
 - test design basis policy reference
+- test-item requirement traceability reference
+- manufacturing test review result
 - target paths
 - coding and naming rules
 - optional test viewpoints from investigation or design
@@ -52,6 +55,7 @@ Produce code changes and unit-test results without crossing the approved design 
 
 - implemented code
 - unit test results
+- unit test execution basis reference
 - self-check result
 - implementation basis design reference
 - unresolved list
@@ -68,6 +72,7 @@ Produce code changes and unit-test results without crossing the approved design 
   - unit-test result
   - implementation assumption-gap handling
 - Manufacturing must preserve traceability from each code change back to the design artifact or design basis reference it implements.
+- Manufacturing must preserve traceability from each executed unit test back to the reviewed test item and requirement reference it realizes.
 - Implementation assumption gaps must be recorded and classified before closure.
 - Unresolved items must remain explicit.
 - Out-of-scope items must preserve reasons for escalation.

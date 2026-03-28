@@ -4,10 +4,10 @@
 # Skill Meta: release_planning_flow
 
 - skill_id: `release_planning_flow`
-- summary: execute release-planning business activities through reusable release-material, signal-specification, response-structuring, and readiness-evaluation capabilities
+- summary: execute release-planning business activities through reusable release-material, release-procedure, release-confirmation, signal-specification, response-structuring, and readiness-evaluation capabilities
 - use_when: user needs release-planning work after manufacturing and testing
 - input: manufacturing outputs, requirements, design materials, optional performance data
-- output: release plan draft, monitoring specification, event-response procedure draft, operational readiness result
+- output: release plan draft, release procedure draft, release confirmation procedure draft, rollback procedure draft, monitoring specification, event-response procedure draft, operational readiness result
 - constraints: do not approve release timing or final go or no-go
 - lifecycle:
   - startup: confirm manufacturing outputs and release-planning evidence exist

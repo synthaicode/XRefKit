@@ -10,24 +10,30 @@ runs_before:
   - FLOW-DESIGN
 inputs:
   - approved_requirements
+  - change_target_list
   - current_source_structure_findings
   - domain_knowledge_references
 outputs:
   - work_plan
   - source_modification_policy
   - data_change_policy
+  - data_correction_tool_policy
   - test_policy
+  - test_tool_policy
   - release_policy
   - planning_basis_source_list
 handoff:
   output_to:
     - FLOW-DESIGN
+    - FLOW-TEST
     - management_control_initialization
   artifacts:
     - work_plan
     - source_modification_policy
     - data_change_policy
+    - data_correction_tool_policy
     - test_policy
+    - test_tool_policy
     - release_policy
     - planning_basis_source_list
   escalation:
@@ -41,6 +47,8 @@ sequence:
 control_rules:
   - design_group_owns_planning_structure
   - source_modification_policy_follows_current_source_structure_by_default
+  - data_correction_tool_requirements_must_be_explicit
+  - test_tool_selection_or_creation_must_be_explicit
   - each_policy_must_cite_its_current_source_basis
   - structural_deviation_requires_explicit_reason
   - unresolved_planning_assumptions_must_remain_explicit

@@ -30,6 +30,7 @@
 - integration regression verification result
 - unresolved list
 - uncertainty list
+- integration regression verification basis reference
 
 ## Required Domain Knowledge
 
@@ -38,6 +39,7 @@
 ## Constraints
 
 - execute or evaluate only against the approved test design
+- each verification result must identify which integration/regression test-design item and basis reference it verified
 - do not redefine release approval
 - record unresolved failures explicitly
 

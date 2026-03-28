@@ -23,13 +23,16 @@ Execute `CAP-PLN-001` and prepare work planning outputs from approved requiremen
 - [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
 - [Custom framework common criteria](../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002)
 - [C# custom framework analysis criteria](../../knowledge/csharp/110_custom_framework_analysis_criteria.md#xid-30E6A4F6F3AB)
+- [IPA release activity catalog](../../knowledge/operations/100_ipa_release_activity_catalog.md#xid-7B3E5D1A6101)
 
 ## Outputs
 
 - work plan
 - source modification policy
 - data change policy
+- data correction tool policy
 - test policy
+- test tool policy
 - release policy
 - planning basis source list
 
@@ -53,6 +56,10 @@ Execute `CAP-PLN-001` and prepare work planning outputs from approved requiremen
 - Perform work planning and policy drafting by executing `CAP-PLN-001`.
 - Build source modification policy from the current source structure by default.
 - Record an explicit reason if the plan intentionally departs from the current structure.
+- Build release policy by checking IPA-derived release activity areas, not only deployment steps.
+- Separate release policy into at least test-environment and production-environment plans.
+- For data change work, state whether a dedicated correction tool is required and how that tool will be created and verified.
+- For test work, state which test tools are selected and, if no suitable tool exists, how a new tool will be created and verified.
 - Record the source files, modules, registrations, or framework artifacts used as the basis of each planning policy.
 - Produce planning outputs and preserve unresolved planning assumptions explicitly.
 

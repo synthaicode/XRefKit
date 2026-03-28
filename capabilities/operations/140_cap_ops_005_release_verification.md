@@ -21,7 +21,11 @@
 
 ## Inputs
 
-- release plan draft
+- test-environment release plan
+- production-environment release plan
+- release basis reference
+- environment release basis reference
+- release confirmation procedure draft
 - operational readiness result
 - integration regression verification result
 
@@ -29,6 +33,7 @@
 
 - release verification result
 - unresolved list
+- release verification basis reference
 
 ## Required Domain Knowledge
 
@@ -39,6 +44,8 @@
 ## Constraints
 
 - verify only
+- each verification result must identify which release plan item, release confirmation procedure item, and release basis reference it verified
+- release verification must cover both placement confirmation evidence and behavior confirmation evidence
 - do not decide final release approval
 - every judgment needs evidence
 

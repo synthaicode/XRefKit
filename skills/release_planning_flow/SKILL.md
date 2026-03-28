@@ -5,7 +5,7 @@
 
 ## Purpose
 
-Execute `CAP-OPS-001 -> CAP-OPS-002 -> CAP-OPS-003 -> CAP-OPS-004` and prepare release materials for CAB.
+Execute `CAP-OPS-001 -> CAP-OPS-002 -> CAP-OPS-003 -> CAP-OPS-004 -> CAP-OPS-005` and prepare release materials and procedures for CAB.
 
 ## Required Capability Definitions (XID)
 
@@ -19,18 +19,31 @@ Execute `CAP-OPS-001 -> CAP-OPS-002 -> CAP-OPS-003 -> CAP-OPS-004` and prepare r
 
 - manufacturing outputs
 - integration regression verification result
+- release policy
+- planning basis source list
 - design materials
 - requirement materials
 - optional performance data
 
 ## Outputs
 
-- release plan draft
+- test-environment release plan
+- production-environment release plan
+- release basis reference
+- environment release basis reference
+- release procedure draft
+- release confirmation procedure draft
+- rollback procedure draft
 - monitoring specification
 - event-response procedure draft
 - operational readiness result
 - release verification result
+- release verification basis reference
 - unresolved list
+
+## Required Knowledge (XID)
+
+- [IPA release activity catalog](../../knowledge/operations/100_ipa_release_activity_catalog.md#xid-7B3E5D1A6101)
 
 ## Startup
 
@@ -54,10 +67,17 @@ Execute `CAP-OPS-001 -> CAP-OPS-002 -> CAP-OPS-003 -> CAP-OPS-004` and prepare r
 ## Execution
 
 - Draft the release plan.
+- Split the release plan into test-environment and production-environment versions.
+- Prepare release, release-confirmation, and rollback procedures as part of the release materials.
+- Define placement confirmation steps and behavior confirmation steps inside the release-confirmation procedure.
+- Record which release policy entry and planning basis source each environment-specific release plan realizes.
+- Check IPA-derived release activity areas and keep missing areas explicit.
 - Define monitoring and thresholds.
 - Draft event-response procedures.
 - Evaluate operational readiness with evidence.
 - Evaluate release verification with evidence.
+- Check that both placement confirmation evidence and behavior confirmation evidence are present.
+- Record which release plan item, release confirmation procedure item, and release basis reference each release verification result confirms.
 
 ## Monitoring and Control
 
@@ -68,7 +88,7 @@ Execute `CAP-OPS-001 -> CAP-OPS-002 -> CAP-OPS-003 -> CAP-OPS-004` and prepare r
 ## Closure
 
 - Confirm all rows are finalized as `done`, `unknown`, or `out_of_scope`.
-- Hand off release materials and readiness findings to CAB.
+- Hand off release materials, release basis references, and release verification basis reference to CAB.
 - Escalate out-of-scope operational items when reassignment is required.
 
 ## Rules

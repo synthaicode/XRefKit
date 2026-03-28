@@ -17,7 +17,7 @@
 
 ## Trigger
 
-- design workflow reaches the integration and regression test-design step
+- test workflow reaches the integration and regression test-design step
 
 ## Inputs
 
@@ -44,12 +44,12 @@
 
 ## Assignment
 
-- design phase
+- test phase
 - [Design Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
 
 ## Notes
 
-- `integration and regression test design drafting` is a business activity in design work.
+- `integration and regression test design drafting` is a business activity in test work.
 - This capability is the reusable structuring ability used by that activity.
 
 ## Task Lifecycle Mapping

@@ -6,6 +6,7 @@ owner:
   primary: manufacturing_group
 runs_after:
   - FLOW-DESIGN
+  - FLOW-TEST
 runs_before:
   - FLOW-RELEASE-PLANNING
   - qa_review
@@ -16,6 +17,8 @@ inputs:
   - data_change_design
   - test_design
   - test_design_basis_policy_reference
+  - test_item_requirement_traceability_reference
+  - manufacturing_test_review_result
   - target_paths
   - coding_rules
   - naming_rules
@@ -23,6 +26,7 @@ inputs:
 outputs:
   - implemented_code
   - unit_test_results
+  - unit_test_execution_basis_reference
   - implementation_basis_design_reference
   - self_check_result
   - unresolved_list
@@ -35,6 +39,7 @@ handoff:
   artifacts:
     - implemented_code
     - unit_test_results
+    - unit_test_execution_basis_reference
     - implementation_basis_design_reference
     - self_check_result
     - unresolved_list

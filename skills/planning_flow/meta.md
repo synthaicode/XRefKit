@@ -7,7 +7,7 @@
 - summary: execute planning business activity through reusable work-and-policy planning capability grounded in domain knowledge and current-source findings
 - use_when: user needs planning after requirements are approved
 - input: approved requirements, change target list, current source structure findings, domain knowledge references
-- output: work plan, source modification policy, data change policy, test policy, release policy, planning basis source list
+- output: work plan, source modification policy, data change policy, data correction tool policy, test policy, test tool policy, release policy, planning basis source list
 - constraints: draft only; do not finalize priority or resource allocation
 - lifecycle:
   - startup: confirm approved requirements, current source findings, and domain knowledge references exist
@@ -23,3 +23,4 @@
   - `../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001`
   - `../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002`
   - `../../knowledge/csharp/110_custom_framework_analysis_criteria.md#xid-30E6A4F6F3AB`
+  - `../../knowledge/operations/100_ipa_release_activity_catalog.md#xid-7B3E5D1A6101`

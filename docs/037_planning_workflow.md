@@ -14,9 +14,9 @@ Prepare work planning and implementation policies before design starts, using do
 | Item | Value |
 |------|------|
 | Owner group | Design Group |
-| Input from | approved requirements from Planning Group, investigation outputs, domain knowledge references, current-source findings |
-| Output to | Design Group design work and management control initialization |
-| Main handoff artifacts | work plan, source modification policy, data change policy, test policy, release policy, planning basis source list |
+| Input from | approved requirements from Planning Group, change target list from Investigation workflow, domain knowledge references, current-source findings |
+| Output to | Design Group design work, Test workflow preparation, and management control initialization |
+| Main handoff artifacts | work plan, source modification policy, data change policy, data correction tool policy, test policy, test tool policy, release policy, planning basis source list |
 | Escalation path | unresolved planning assumptions remain explicit; scope conflicts go to Coordinator routing |
 
 ## Business Activities and Supporting Capabilities
@@ -37,7 +37,9 @@ Prepare work planning and implementation policies before design starts, using do
 - work plan
 - source modification policy
 - data change policy
+- data correction tool policy
 - test policy
+- test tool policy
 - release policy
 - planning basis source list
 
@@ -46,8 +48,12 @@ Prepare work planning and implementation policies before design starts, using do
 - Planning must read relevant domain knowledge before drafting policies.
 - Planning must inspect current-source findings before defining source modification policy.
 - Source modification policy should follow the current source structure by default.
+- Data change policy must identify whether data correction requires a dedicated tool and, if so, define creation and verification expectations for that tool.
+- Test policy must identify required test tools, whether an existing tool is selected or a new tool must be created, and how that tool will be verified before use.
 - When a custom framework exists, planning must identify framework lifecycle, extension points, and convention rules before defining source modification policy.
 - Planning must show which current source files, modules, registrations, or framework artifacts were used as the basis for each policy.
+- Release policy should cover IPA-derived release activity areas, including cutover, rollback, operational readiness, pre-release verification, post-release monitoring, incident response, and business-cycle constraints.
+- Release policy must distinguish test-environment release planning from production-environment release planning.
 - Any planned structural deviation must include an explicit reason and downstream impact note.
 
 ## Related Skills

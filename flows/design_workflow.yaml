@@ -7,47 +7,38 @@ owner:
 runs_after:
   - FLOW-PLANNING
 runs_before:
+  - FLOW-TEST
   - FLOW-MANUFACTURING
 inputs:
   - approved_requirements
   - work_plan
   - source_modification_policy
   - data_change_policy
-  - test_policy
   - planning_basis_source_list
 outputs:
   - approved_design
   - target_paths
   - source_modification_design
   - data_change_design
-  - test_design
   - design_basis_policy_reference
-  - test_design_basis_policy_reference
-  - integration_regression_test_design
-  - integration_regression_test_basis_policy_reference
 handoff:
   output_to:
+    - FLOW-TEST
     - FLOW-MANUFACTURING
   artifacts:
     - approved_design
     - target_paths
     - source_modification_design
     - data_change_design
-    - test_design
     - design_basis_policy_reference
-    - test_design_basis_policy_reference
-    - integration_regression_test_design
-    - integration_regression_test_basis_policy_reference
   escalation:
     - unresolved_design_assumptions_explicit
     - scope_conflicts_to_coordinator
 sequence:
   - confirm_planning_outputs_approved
   - solution_design_drafting
-  - test_design_drafting
-  - integration_regression_test_design_drafting
   - record_design_to_planning_trace
-  - prepare_manufacturing_handoff
+  - prepare_test_and_manufacturing_handoff
 control_rules:
   - design_realizes_planning_policies
   - unresolved_design_assumptions_must_remain_explicit

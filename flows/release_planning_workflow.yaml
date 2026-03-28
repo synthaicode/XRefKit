@@ -11,29 +11,41 @@ runs_before:
 inputs:
   - manufacturing_outputs
   - integration_regression_verification_result
+  - release_policy
+  - planning_basis_source_list
   - design_materials
   - requirement_materials
   - performance_evidence
 outputs:
-  - release_plan_draft
+  - test_environment_release_plan
+  - production_environment_release_plan
+  - release_basis_reference
+  - environment_release_basis_reference
   - monitoring_specification
   - event_response_procedure_draft
   - operational_readiness_result
   - release_verification_result
+  - release_verification_basis_reference
 handoff:
   output_to:
     - FLOW-CAB
   artifacts:
-    - release_plan_draft
+    - test_environment_release_plan
+    - production_environment_release_plan
+    - release_basis_reference
+    - environment_release_basis_reference
     - monitoring_specification
     - event_response_procedure_draft
     - operational_readiness_result
     - release_verification_result
+    - release_verification_basis_reference
   escalation:
     - operational_gaps_as_unknown
     - out_of_scope_operational_items_to_coordinator
 sequence:
   - release_plan_draft_creation
+  - split_environment_release_plans
+  - record_release_to_policy_trace
   - monitoring_design
   - event_response_procedure_drafting
   - operational_readiness_gate
