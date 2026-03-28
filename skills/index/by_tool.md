@@ -6,9 +6,11 @@
 - xref:
   - `import_skill` -> `../import_skill/meta.md`
   - `xlsx_spec_traceability` -> `../xlsx_spec_traceability/meta.md`
+  - `pptx_spec_traceability` -> `../pptx_spec_traceability/meta.md`
 - .NET:
   - `csharp_review` -> `../csharp_review/meta.md`
 - repository:
+  - `pptx_spec_traceability` -> `../pptx_spec_traceability/meta.md`
   - `xlsx_spec_traceability` -> `../xlsx_spec_traceability/meta.md`
   - `investigation_flow` -> `../investigation_flow/meta.md`
   - `estimation_flow` -> `../estimation_flow/meta.md`

@@ -31,6 +31,10 @@ When asked "what skills are available?", answer from this file.
   - summary: convert xlsx specifications into Markdown with traceability IDs and workbook write-back
   - meta: `skills/xlsx_spec_traceability/meta.md`
   - skill_doc: `skills/xlsx_spec_traceability/SKILL.md`
+- `pptx_spec_traceability`:
+  - summary: convert pptx specifications into Markdown with traceability IDs and deck write-back
+  - meta: `skills/pptx_spec_traceability/meta.md`
+  - skill_doc: `skills/pptx_spec_traceability/SKILL.md`
 - `csharp_review`:
   - summary: review C# code beyond Roslyn-detectable diagnostics
   - meta: `skills/csharp_review/meta.md`

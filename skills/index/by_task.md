@@ -6,6 +6,7 @@
 - import:
   - `import_skill` -> `../import_skill/meta.md`
   - `xlsx_spec_traceability` -> `../xlsx_spec_traceability/meta.md`
+  - `pptx_spec_traceability` -> `../pptx_spec_traceability/meta.md`
 - review:
   - `csharp_review` -> `../csharp_review/meta.md`
   - `password_management` -> `../password_management/meta.md`
