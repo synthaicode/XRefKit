@@ -31,6 +31,8 @@
 - implement:
   - `implementation_flow` -> `../implementation_flow/meta.md`
 - control:
+  - `doc_ship` -> `../doc_ship/meta.md`
+  - `retro` -> `../retro/meta.md`
   - `management_table_control` -> `../management_table_control/meta.md`
   - `or_team_operations` -> `../or_team_operations/meta.md`
 

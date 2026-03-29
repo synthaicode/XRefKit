@@ -27,6 +27,14 @@ When asked "what skills are available?", answer from this file.
   - summary: import external skill content into this repository model
   - meta: `skills/import_skill/meta.md`
   - skill_doc: `skills/import_skill/SKILL.md`
+- `doc_ship`:
+  - summary: apply approved promotion candidates from `work/` into canonical repository assets
+  - meta: `skills/doc_ship/meta.md`
+  - skill_doc: `skills/doc_ship/SKILL.md`
+- `retro`:
+  - summary: review `work/` logs and propose promotion into canonical repository assets
+  - meta: `skills/retro/meta.md`
+  - skill_doc: `skills/retro/SKILL.md`
 - `xlsx_spec_traceability`:
   - summary: convert xlsx specifications into Markdown with traceability IDs and workbook write-back
   - meta: `skills/xlsx_spec_traceability/meta.md`

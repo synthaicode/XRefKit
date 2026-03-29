@@ -4,6 +4,8 @@
 # Skills by Domain
 
 - operations:
+  - `doc_ship` -> `../doc_ship/meta.md`
+  - `retro` -> `../retro/meta.md`
   - `import_skill` -> `../import_skill/meta.md`
   - `management_table_control` -> `../management_table_control/meta.md`
   - `release_planning_flow` -> `../release_planning_flow/meta.md`
