@@ -18,6 +18,7 @@ The goal is not to “centralize everything into one giant doc”. The goal is t
 4. **Automate registration and validation**
    - Multi-format ingestion is inherently messy; don’t over-standardize input
    - Instead, mechanically validate XIDs/links/index for the Markdown output
+   - When editing structured source artifacts such as XML, JSON, YAML, or similar parseable formats, mechanically validate with a deterministic parser or equivalent deterministic validator that the edited artifact still parses
 
 ## Prohibitions (protect link assets)
 

@@ -11,6 +11,7 @@
 - Continuously validate with `python -m fm xref check` (e.g., in CI)
 - For one-shot maintenance, use `python -m fm xref fix` (runs init + rewrite + check)
 - For human review hints during updates, use `python -m fm xref check --review` (best-effort)
+- After editing structured source files such as XML, JSON, YAML, or similar parseable formats, run a deterministic parser or equivalent deterministic validation step and confirm there is no parse error
 
 ## Fixed procedure for any AI using this repo
 
@@ -54,6 +55,12 @@ Details: [Sources](020_sources.md#xid-2FAD591BF725)
 
 - Never remove `<!-- xid: ... -->` and `<a id="xid-..."></a>`
 - After changes: `python -m fm xref rewrite`
+
+### Edit structured source files
+
+- When editing structured source files such as XML, JSON, YAML, or similar parseable formats, run a deterministic parser or equivalent deterministic validation step after the edit
+- Do not treat the edit as complete until the file parses without error
+- When a project-specific formatter, linter, compiler, or validator already exists for that format, prefer that validator over ad hoc checking
 
 ### Split
 

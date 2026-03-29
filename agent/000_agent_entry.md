@@ -22,6 +22,7 @@ Related: [Overview](../docs/000_overview.md#xid-7C6C2B46A9D1)
 - Follow uncertainty protocol in [Uncertainty protocol](../docs/016_uncertainty_protocol.md#xid-8A666C1FD121)
 - Do not fill missing information by guessing; first find the relevant XIDs and read them
 - After rename/move/split/merge, run link validation (`xref check`)
+- After editing structured source files such as XML, JSON, YAML, or similar parseable formats, run a deterministic parser or equivalent deterministic validation step and confirm no parse error remains
 
 ## How to reference (fixed procedure)
 
