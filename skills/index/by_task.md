@@ -32,4 +32,5 @@
   - `implementation_flow` -> `../implementation_flow/meta.md`
 - control:
   - `management_table_control` -> `../management_table_control/meta.md`
+  - `or_team_operations` -> `../or_team_operations/meta.md`
 

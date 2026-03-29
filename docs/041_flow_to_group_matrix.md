@@ -31,6 +31,7 @@ This page provides a one-page view of workflow ownership and cross-group handoff
 | Manufacturing Group | manufacturing | to Quality Group and Operations Group |
 | Quality Group | quality verification, QA review, CAB quality evaluation, closure checking | to human decision layer, to responsible execution group for return |
 | Operations Group | release planning, CAB operations evaluation | to human decision layer |
+| OR Team | cross-group state presentation, structural problem handling, drift evaluation, execution control, re-observation | to responsible execution group, to human decision layer, to Planning Group for upstream prioritization |
 | Coordinator | closure escalation, out-of-scope routing | to reassigned responsible group |
 
 ## Common Handoff Rule
@@ -45,3 +46,4 @@ This page provides a one-page view of workflow ownership and cross-group handoff
 - Normal work moves feed-forward across workflows.
 - Structural quality degradation moves backward through the [System quality feedback loop](043_system_quality_feedback_loop.md#xid-8B31F02A4012).
 - That loop is triggered mainly from CAB rejection patterns and closure leak patterns.
+- Cross-group operating-state optimization is defined in the [OR Team operating model](048_or_team_operating_model.md#xid-1D7A8E2C5F10).

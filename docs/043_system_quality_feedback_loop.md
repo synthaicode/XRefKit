@@ -46,6 +46,12 @@ System-level quality monitoring is split as follows:
   - detect recurring or structural quality degradation
   - identify the workflow and lifecycle layer where the degradation appears
   - issue a quality feedback record
+- OR Team:
+  - present current operating state from logs and evidence
+  - structure problems, cause hypotheses, and improvement options
+  - classify stop, conditional continuation, or continuation allowed
+  - control approved corrective execution and re-observation across groups
+  - maintain drift-detection assets and improvement traceability
 - Planning Group:
   - own prioritization of structural corrective action
   - decide which upstream workflow, requirement, or assumption framing must be corrected
@@ -83,6 +89,9 @@ The feedback loop must produce a record containing:
 - immediate containment action
 - required upstream corrective action
 - next responsible group
+- OR improvement ID and execution owner
+- recovery condition
+- re-observation condition
 - whether human approval is required
 
 ## Root-Cause Mapping
@@ -114,9 +123,10 @@ When upstream correction is required:
 1. record the structural defect
 2. identify the upstream workflow to revisit
 3. identify the owner group of that workflow
-4. assign corrective action through Planning Group prioritization
-5. route cross-boundary reassignment through Coordinator if needed
-6. preserve traceability from the observed failure back to the corrective action
+4. let OR Team define improvement options, approval needs, recovery condition, and re-observation condition
+5. assign corrective action through Planning Group prioritization
+6. route cross-boundary reassignment through Coordinator if needed
+7. preserve traceability from the observed failure back to the corrective action
 
 ## Storage And Reference Path
 
@@ -149,3 +159,14 @@ A system-level quality finding is not complete unless it answers both:
 
 - what must be fixed now
 - what must change upstream so the same degradation does not recur
+
+It is also not complete unless the OR loop defines:
+
+- who must approve the improvement
+- who must execute it
+- how recovery will be judged
+- how re-observation will be performed
+
+## Related
+
+- [OR Team operating model](048_or_team_operating_model.md#xid-1D7A8E2C5F10)

@@ -36,6 +36,8 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [System quality feedback loop](043_system_quality_feedback_loop.md#xid-8B31F02A4012)
 - [System quality feedback register](044_system_quality_feedback_register.md#xid-8B31F02A4013)
 - [Application workflow](045_application_workflow.md#xid-8B31F02A4014)
+- [OR Team operating model](048_or_team_operating_model.md#xid-1D7A8E2C5F10)
+- [OR Team usage guide](049_or_team_usage_guide.md#xid-4E2F91A6B8C1)
 
 ## Common links
 

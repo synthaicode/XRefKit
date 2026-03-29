@@ -223,6 +223,48 @@ Another example:
 - event-response procedures
 - operational readiness result
 
+## OR Team
+
+### Responsibility
+
+- observe cross-group operating state using logs, deliverables, diffs, review results, rework history, escalation history, and drift-evaluation results
+- present current state and baseline deviation for the AI organization as a whole
+- structure problems, prepare cause hypotheses, and design improvement options
+- organize approval requirements and decide stop, conditional continuation, or continuation allowed
+- execute approved improvements inside the OR boundary and control execution by other responsible groups
+- re-observe after change and confirm effect, side effect, and recurrence
+- maintain drift-evaluation assets and operate the continuous-improvement loop
+
+### Must Not Decide
+
+- product implementation details that belong to execution groups
+- business-priority decisions
+- final release approval
+- prohibited-judgment or approval-boundary changes without the required business or human approval
+
+### Typical Capabilities
+
+- state presentation
+- anomaly detection
+- problem structuring
+- improvement design
+- approval routing
+- execution control
+- re-observation
+- drift evaluation
+- evaluation-asset maintenance
+
+### Typical Outputs
+
+- state-presentation report
+- problem list
+- cause-hypothesis list
+- improvement list
+- approval-routing sheet
+- implementation request
+- re-observation report
+- drift evaluation report
+
 ## Coordinator
 
 ### Responsibility
@@ -255,6 +297,7 @@ Another example:
 
 - Quality Group detects structural quality degradation across workflows.
 - Planning Group owns prioritization of upstream corrective action.
+- OR Team maintains cross-group state presentation, intervention design, execution control, and re-observation for the corrective loop.
 - Coordinator routes reassignment when the corrective action crosses boundaries.
 - Human decision-makers approve major corrective direction when business, release, or risk posture is affected.
 
@@ -263,3 +306,4 @@ Another example:
 - [Capability layering](031_capability_layering.md#xid-8D50A972BA9F)
 - [Closure workflow](034_closure_workflow.md#xid-8B31F02A4003)
 - [CAB workflow](039_cab_workflow.md#xid-8B31F02A4008)
+- [OR Team operating model](048_or_team_operating_model.md#xid-1D7A8E2C5F10)

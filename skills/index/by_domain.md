@@ -8,6 +8,7 @@
   - `management_table_control` -> `../management_table_control/meta.md`
   - `release_planning_flow` -> `../release_planning_flow/meta.md`
   - `cab_review_flow` -> `../cab_review_flow/meta.md`
+  - `or_team_operations` -> `../or_team_operations/meta.md`
 - engineering:
   - `csharp_review` -> `../csharp_review/meta.md`
   - `implementation_flow` -> `../implementation_flow/meta.md`
