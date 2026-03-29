@@ -32,4 +32,6 @@
   - `or_team_operations` -> `../or_team_operations/meta.md`
 - password-manager:
   - `password_management` -> `../password_management/meta.md`
+- html-css-png:
+  - `marketing_slide_png` -> `../marketing_slide_png/meta.md`
 

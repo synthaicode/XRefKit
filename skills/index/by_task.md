@@ -28,6 +28,7 @@
   - `release_planning_flow` -> `../release_planning_flow/meta.md`
 - design:
   - `design_flow` -> `../design_flow/meta.md`
+  - `marketing_slide_png` -> `../marketing_slide_png/meta.md`
 - implement:
   - `implementation_flow` -> `../implementation_flow/meta.md`
 - control:

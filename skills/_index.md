@@ -99,6 +99,10 @@ When asked "what skills are available?", answer from this file.
   - summary: run the OR Team loop for cross-group state presentation, improvement control, and re-observation
   - meta: `skills/or_team_operations/meta.md`
   - skill_doc: `skills/or_team_operations/SKILL.md`
+- `marketing_slide_png`:
+  - summary: create marketing-group slide visuals as CSS/HTML-rendered PNG assets for image-based decks
+  - meta: `skills/marketing_slide_png/meta.md`
+  - skill_doc: `skills/marketing_slide_png/SKILL.md`
 
 ## Notes
 
