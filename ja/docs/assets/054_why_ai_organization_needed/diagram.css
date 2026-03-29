@@ -15,6 +15,7 @@
 }
 
 .soft-blue { background: var(--primary-soft); border-color: #cfdcff; }
+.soft-gray { background: #f3f6fa; border-color: #d7e0ea; }
 .soft-orange { background: var(--warning-soft); border-color: #ffd8ad; }
 .soft-green { background: var(--positive-soft); border-color: #bee8d9; }
 .soft-red { background: var(--danger-soft); border-color: #f2c5c5; }

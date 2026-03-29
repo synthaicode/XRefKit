@@ -223,6 +223,7 @@ body {
 }
 
 .soft-blue { background: var(--primary-soft); border-color: #cfdcff; }
+.soft-gray { background: #f3f6fa; border-color: #d7e0ea; }
 .soft-orange { background: var(--warning-soft); border-color: #ffd8ad; }
 .soft-green { background: var(--positive-soft); border-color: #bee8d9; }
 .soft-red { background: var(--danger-soft); border-color: #f2c5c5; }
@@ -283,11 +284,11 @@ body {
       <p class="subtitle">PoC の先で、何を見ないと止まるのか</p>
       <div class="compare" style="margin-top:84px;">
         <div class="panel">
-          <span class="badge b-blue" style="font-size:22px;">よくある理解</span>
+          <span class="badge" style="font-size:22px; background:#eef2f6; color:#6b7a8c;">よくある理解</span>
           <div class="stack">
-            <div class="box soft-blue">AI を入れれば速くなる</div>
-            <div class="box soft-blue">良いプロンプトで解決する</div>
-            <div class="box soft-blue">PoC 成功で次に進める</div>
+            <div class="box soft-gray">AI を入れれば速くなる</div>
+            <div class="box soft-gray">良いプロンプトで解決する</div>
+            <div class="box soft-gray">PoC 成功で次に進める</div>
           </div>
         </div>
         <div class="panel">
@@ -299,9 +300,9 @@ body {
           </div>
         </div>
       </div>
-      <div class="hero-note">
-        AI 活用の課題は、使えるかどうかではない。<br>
-        品質を担保しながら、本番利用につなげられるかにある。
+      <div class="summary-band" style="margin-top:24px; padding:28px 32px;">
+        <strong>AI 活用の課題は、使えるかどうかではなく、本番利用につなげられるかにある</strong>
+        <span>そのためには、品質、複雑さ、再現性をまとめて捉える必要がある。</span>
       </div>
     </div></body>
 </html>

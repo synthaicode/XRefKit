@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <style>* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", "Yu Gothic UI", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.canvas {
+  width: 1600px;
+  height: 900px;
+  padding: 52px;
+  position: relative;
+  overflow: hidden;
+}
+
+.title {
+  margin: 0 0 10px;
+  font-size: 56px;
+  font-weight: 800;
+  line-height: 1.08;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 24px;
+  color: var(--muted);
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  box-shadow: 0 16px 36px rgba(28, 53, 86, 0.08);
+  padding: 28px;
+}
+
+.panel h2 {
+  margin: 0 0 14px;
+  font-size: 34px;
+}
+
+.panel p {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.box {
+  padding: 18px 20px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: #fff;
+  font-size: 27px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.soft-blue { background: var(--primary-soft); border-color: #cbdcff; }
+.soft-orange { background: var(--warning-soft); border-color: #ffd5b7; }
+.soft-green { background: var(--positive-soft); border-color: #bae9d8; }
+.soft-red { background: var(--danger-soft); border-color: #f4c3c3; }
+
+.h-flow {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: nowrap;
+}
+
+.step {
+  min-width: 220px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid var(--line);
+  text-align: center;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.chev {
+  font-size: 44px;
+  color: var(--primary);
+  font-weight: 800;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.card,
+.mini {
+  padding: 22px;
+  border-radius: 22px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.card h3,
+.mini h3 {
+  margin: 0 0 12px;
+  font-size: 24px;
+}
+
+.card p,
+.mini p {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.badge {
+  display: inline-block;
+  margin-bottom: 14px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.b-blue { background: var(--primary-soft); color: var(--primary); }
+.b-orange { background: var(--warning-soft); color: var(--warning); }
+.b-green { background: var(--positive-soft); color: var(--positive); }
+.b-red { background: var(--danger-soft); color: var(--danger); }
+
+.center {
+  display: grid;
+  place-items: center;
+  height: 100%;
+}
+
+.hub {
+  width: 280px;
+  height: 280px;
+  border-radius: 999px;
+  border: 3px solid #c9dafc;
+  background: var(--primary-soft);
+  display: grid;
+  place-items: center;
+  font-size: 48px;
+  font-weight: 800;
+  color: var(--primary);
+  text-align: center;
+}
+
+.orbit {
+  position: absolute;
+  width: 220px;
+  padding: 16px;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid var(--line);
+  text-align: center;
+  font-size: 23px;
+  font-weight: 700;
+}
+
+.o-top { top: 170px; left: 690px; }
+.o-left { top: 375px; left: 240px; }
+.o-right { top: 375px; right: 240px; }
+.o-bottom { bottom: 100px; left: 690px; }
+.o-tl { top: 230px; left: 420px; }
+.o-tr { top: 230px; right: 420px; }
+
+.connector {
+  position: absolute;
+  background: #cad7ee;
+}
+
+.v1 { width: 4px; height: 100px; top: 300px; left: 798px; }
+.v2 { width: 4px; height: 112px; bottom: 220px; left: 798px; }
+.h1 { height: 4px; width: 290px; top: 486px; left: 472px; }
+.h2 { height: 4px; width: 290px; top: 486px; right: 472px; }
+
+.caption {
+  margin-top: 16px;
+  font-size: 21px;
+  color: var(--muted);
+}
+
+:root {
+  --bg: linear-gradient(135deg, #f7fafc 0%, #eef4fb 100%);
+  --panel: #ffffff;
+  --ink: #132237;
+  --muted: #62748a;
+  --line: #d8e1eb;
+  --primary: #2267d8;
+  --primary-soft: #eaf1ff;
+  --warning: #e28a2e;
+  --warning-soft: #fff1de;
+  --positive: #1b8f67;
+  --positive-soft: #e8f7f0;
+  --danger: #d44f4f;
+  --danger-soft: #fcecec;
+}
+
+.soft-blue { background: var(--primary-soft); border-color: #cfdcff; }
+.soft-gray { background: #f3f6fa; border-color: #d7e0ea; }
+.soft-orange { background: var(--warning-soft); border-color: #ffd8ad; }
+.soft-green { background: var(--positive-soft); border-color: #bee8d9; }
+.soft-red { background: var(--danger-soft); border-color: #f2c5c5; }
+
+.summary-band {
+  margin-top: 24px;
+  padding: 24px 28px;
+  border-radius: 24px;
+  border: 2px solid #9fb9e8;
+  background: #f7faff;
+  text-align: center;
+}
+
+.summary-band strong {
+  display: block;
+  font-size: 34px;
+  color: #234e95;
+}
+
+.summary-band span {
+  display: block;
+  margin-top: 10px;
+  font-size: 22px;
+  line-height: 1.45;
+  color: #526985;
+}
+
+.big-arrow {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+  color: #6e8fbd;
+  font-size: 88px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.hero-note {
+  margin-top: 34px;
+  padding: 24px 28px;
+  border-radius: 24px;
+  border: 1px solid #d8e1eb;
+  background: rgba(255,255,255,0.84);
+  box-shadow: 0 16px 34px rgba(21,34,53,0.08);
+  text-align: center;
+  font-size: 24px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+</style>
+</head>
+<body>
+    <div class="canvas">
+      <h1 class="title">なぜ AI を組織化する必要があるのか</h1>
+      <p class="subtitle">統制された運用を、継続して回すための単位が必要になる</p>
+      <div class="hero-note">
+        AI 活用では、要素を揃えることと、<br>
+        それを回し続けられることは別の課題になる。
+      </div>
+      <div class="summary-band" style="margin-top:42px;">
+        <strong>ここで問いたいのは、統制を持続できる形があるかどうか</strong>
+        <span>それが、組織化を考える理由になる。</span>
+      </div>
+    </div></body>
+</html>

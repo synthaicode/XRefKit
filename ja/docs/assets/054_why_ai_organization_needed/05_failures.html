@@ -223,6 +223,7 @@ body {
 }
 
 .soft-blue { background: var(--primary-soft); border-color: #cfdcff; }
+.soft-gray { background: #f3f6fa; border-color: #d7e0ea; }
 .soft-orange { background: var(--warning-soft); border-color: #ffd8ad; }
 .soft-green { background: var(--positive-soft); border-color: #bee8d9; }
 .soft-red { background: var(--danger-soft); border-color: #f2c5c5; }
@@ -280,7 +281,7 @@ body {
 <body>
     <div class="canvas">
       <h1 class="title">PoC で見え始める典型問題</h1>
-      <p class="subtitle">複雑さが増えるほど、失敗は表面化しやすくなる</p>
+      <p class="subtitle">先ほどの特性が、本番ではこうした問題として現れやすくなる</p>
       <div class="grid-3" style="margin-top:120px;">
         <div class="card soft-orange" style="padding:32px 24px;">
           <h3 style="font-size:30px; display:flex; align-items:center; gap:12px;"><span style="display:inline-grid; place-items:center; width:30px; height:30px; border:2px solid #d28b39; border-radius:999px; color:#d28b39; font-size:18px; font-weight:800;">!</span>作業忘れ</h3>
@@ -300,5 +301,6 @@ body {
         <strong>精度不足だけではなく、抜け漏れと暴走が問題になる</strong>
         <span>個人の注意力だけでは、複雑な本番運用を安定して支えにくくなります。</span>
       </div>
+      <div style="margin-top:14px; text-align:right; color:#73859c; font-size:20px; font-weight:700;">では、何を再現性として見るべきか</div>
     </div></body>
 </html>
