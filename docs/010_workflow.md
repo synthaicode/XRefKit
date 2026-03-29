@@ -11,6 +11,9 @@
 - Continuously validate with `python -m fm xref check` (e.g., in CI)
 - For one-shot maintenance, use `python -m fm xref fix` (runs init + rewrite + check)
 - For human review hints during updates, use `python -m fm xref check --review` (best-effort)
+- When creating new documents, follow the existing format conventions, character encoding, and encoding form used in the surrounding repository area unless an intentional change is required
+- When editing source files, preserve the existing format conventions, character encoding, and encoding form unless an intentional change is required
+- When adding entries to XML, preserve the existing semantic grouping and insert entries in the structurally appropriate location instead of appending mechanically to the end
 - After editing structured source files such as XML, JSON, YAML, or similar parseable formats, run a deterministic parser or equivalent deterministic validation step and confirm there is no parse error
 
 ## Fixed procedure for any AI using this repo
@@ -28,8 +31,9 @@ When a running skill needs additional domain knowledge, use the same route on de
 ### Add a new doc
 
 1. Add a Markdown file under `docs/`, `agent/`, `knowledge/`, `capabilities/`, or `skills/`
-2. Assign XIDs: `python -m fm xref init`
-3. If needed: `python -m fm xref rewrite`
+2. Follow the existing format conventions, character encoding, and encoding form used by nearby managed files unless the task explicitly requires a controlled change
+3. Assign XIDs: `python -m fm xref init`
+4. If needed: `python -m fm xref rewrite`
 
 ### Ingest sources (PDF/Excel/Web → knowledge)
 
@@ -58,6 +62,8 @@ Details: [Sources](020_sources.md#xid-2FAD591BF725)
 
 ### Edit structured source files
 
+- Preserve the existing formatting style, character encoding, and encoding form unless the task explicitly requires a controlled change
+- When adding entries to XML, inspect the surrounding grouping, ordering, and meaning boundaries first, then insert the new entry where that structure says it belongs
 - When editing structured source files such as XML, JSON, YAML, or similar parseable formats, run a deterministic parser or equivalent deterministic validation step after the edit
 - Do not treat the edit as complete until the file parses without error
 - When a project-specific formatter, linter, compiler, or validator already exists for that format, prefer that validator over ad hoc checking
