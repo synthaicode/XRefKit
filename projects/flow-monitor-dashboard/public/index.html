@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>XRefKit Flow Monitor</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <p class="eyebrow">XRefKit Brownfield Monitor</p>
+      <div class="hero-title-row">
+        <h1>Flow の通過経路と判断の質を監視する</h1>
+        <div class="hero-controls">
+          <div class="tab-bar" id="viewTabs" role="radiogroup" aria-label="表示切替">
+            <button type="button" class="tab-button" data-view="monitoring" role="radio" aria-checked="false">監視</button>
+            <button type="button" class="tab-button" data-view="design" role="radio" aria-checked="false">設計</button>
+          </div>
+          <button id="refreshButton" type="button">再読込</button>
+        </div>
+      </div>
+      <p class="lead">
+        `projects/` 配下の実行トレースを収集し、どの Flow がどのステップを通り、
+        判断とチェックリストが本当に使われたかを一覧します。
+      </p>
+      <div class="hero-actions">
+        <span id="generatedAt" class="generated-at">読み込み中...</span>
+      </div>
+    </section>
+
+    <section class="summary-grid" id="summaryGrid"></section>
+
+    <section class="workspace">
+      <aside class="panel project-sidebar">
+        <div class="panel-head">
+          <h2>Project List</h2>
+          <p>監視対象の project を選択します。</p>
+        </div>
+        <div id="projectList"></div>
+      </aside>
+
+      <section class="project-main">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Selected Project</h2>
+            <p>選択中 project の Flow 状況を表示します。</p>
+          </div>
+          <div id="projectSummary"></div>
+        </section>
+
+        <div id="monitoringView">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Project Flow States</h2>
+              <p>その project に関する各 Flow の現在状態、完走率、最新 run を確認します。</p>
+            </div>
+            <div id="projectFlowStates" class="flow-list"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Project Run History</h2>
+              <p>選択中 project の run 履歴を時系列で表示します。</p>
+            </div>
+            <div id="projectRunHistory"></div>
+          </section>
+        </div>
+
+        <div id="designView">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Flow Design Status</h2>
+              <p>入出力、判断、チェックリストなど、各 Flow の AI 単体責務の設計状況を確認します。</p>
+            </div>
+            <div id="projectFlowDesign" class="flow-list"></div>
+          </section>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <template id="metricCardTemplate">
+    <article class="metric-card">
+      <p class="metric-label"></p>
+      <p class="metric-value"></p>
+      <p class="metric-note"></p>
+    </article>
+  </template>
+
+  <script src="./app.js"></script>
+</body>
+</html>

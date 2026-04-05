@@ -1,0 +1,5 @@
+{"timestamp":"2026-04-06T05:11:00Z","project":"customer-portal-modernization","flow_name":"test_workflow","run_id":"TEST-001","type":"step","step":"confirm_test_inputs","status":"completed"}
+{"timestamp":"2026-04-06T05:20:00Z","project":"customer-portal-modernization","flow_name":"test_workflow","run_id":"TEST-001","type":"step","step":"test_plan_drafting","status":"completed"}
+{"timestamp":"2026-04-06T05:33:00Z","project":"customer-portal-modernization","flow_name":"test_workflow","run_id":"TEST-001","type":"decision","decision":"test_method_suitability","decision_result":"supported"}
+{"timestamp":"2026-04-06T05:44:00Z","project":"customer-portal-modernization","flow_name":"test_workflow","run_id":"TEST-001","type":"step","step":"test_item_drafting","status":"completed"}
+{"timestamp":"2026-04-06T05:53:00Z","project":"customer-portal-modernization","flow_name":"test_workflow","run_id":"TEST-001","type":"step","step":"manufacturing_test_method_review","status":"completed"}

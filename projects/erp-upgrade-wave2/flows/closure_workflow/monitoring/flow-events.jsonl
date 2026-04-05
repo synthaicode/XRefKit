@@ -1,0 +1,4 @@
+{"timestamp":"2026-04-06T09:10:00Z","project":"erp-upgrade-wave2","flow_name":"closure_workflow","run_id":"CLS-001","type":"step","step":"inspect_management_table","status":"completed"}
+{"timestamp":"2026-04-06T09:18:00Z","project":"erp-upgrade-wave2","flow_name":"closure_workflow","run_id":"CLS-001","type":"checklist","checklist":"management_table_check","completed_items":9,"total_items":9,"checklist_used":true}
+{"timestamp":"2026-04-06T09:27:00Z","project":"erp-upgrade-wave2","flow_name":"closure_workflow","run_id":"CLS-001","type":"decision","decision":"closure_confirmation","decision_result":"return_required"}
+{"timestamp":"2026-04-06T09:34:00Z","project":"erp-upgrade-wave2","flow_name":"closure_workflow","run_id":"CLS-001","type":"path","path":"return_incomplete_rows","status":"raised"}

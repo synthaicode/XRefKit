@@ -1,0 +1,6 @@
+{"timestamp":"2026-04-06T01:10:00Z","project":"customer-portal-modernization","flow_name":"application_workflow","run_id":"APP-001","type":"step","step":"collect_project_materials","status":"completed"}
+{"timestamp":"2026-04-06T01:18:00Z","project":"customer-portal-modernization","flow_name":"application_workflow","run_id":"APP-001","type":"step","step":"identify_framework_gaps","status":"completed"}
+{"timestamp":"2026-04-06T01:29:00Z","project":"customer-portal-modernization","flow_name":"application_workflow","run_id":"APP-001","type":"decision","decision":"threshold_configuration_decision","decision_result":"strict_quality_gate"}
+{"timestamp":"2026-04-06T01:36:00Z","project":"customer-portal-modernization","flow_name":"application_workflow","run_id":"APP-001","type":"step","step":"inject_domain_knowledge","status":"completed"}
+{"timestamp":"2026-04-06T01:44:00Z","project":"customer-portal-modernization","flow_name":"application_workflow","run_id":"APP-001","type":"checklist","checklist":"application_interview_verification","completed_items":5,"total_items":6,"checklist_used":true}
+{"timestamp":"2026-04-06T01:52:00Z","project":"customer-portal-modernization","flow_name":"application_workflow","run_id":"APP-001","type":"path","path":"unresolved_configuration_gap_to_human_decision_layer","status":"raised"}

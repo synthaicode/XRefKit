@@ -1,0 +1,6 @@
+{"timestamp":"2026-04-06T06:02:00Z","project":"erp-upgrade-wave2","flow_name":"release_planning_workflow","run_id":"REL-001","type":"step","step":"release_plan_draft_creation","status":"completed"}
+{"timestamp":"2026-04-06T06:15:00Z","project":"erp-upgrade-wave2","flow_name":"release_planning_workflow","run_id":"REL-001","type":"step","step":"split_environment_release_plans","status":"completed"}
+{"timestamp":"2026-04-06T06:28:00Z","project":"erp-upgrade-wave2","flow_name":"release_planning_workflow","run_id":"REL-001","type":"step","step":"record_release_to_policy_trace","status":"completed"}
+{"timestamp":"2026-04-06T06:36:00Z","project":"erp-upgrade-wave2","flow_name":"release_planning_workflow","run_id":"REL-001","type":"checklist","checklist":"monitoring_design_review","completed_items":3,"total_items":5,"checklist_used":true}
+{"timestamp":"2026-04-06T06:49:00Z","project":"erp-upgrade-wave2","flow_name":"release_planning_workflow","run_id":"REL-001","type":"decision","decision":"operational_readiness_gate","decision_result":"pending_evidence"}
+{"timestamp":"2026-04-06T06:58:00Z","project":"erp-upgrade-wave2","flow_name":"release_planning_workflow","run_id":"REL-001","type":"path","path":"operational_gaps_as_unknown","status":"raised"}

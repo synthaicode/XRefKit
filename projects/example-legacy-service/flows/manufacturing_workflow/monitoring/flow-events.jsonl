@@ -1,0 +1,13 @@
+{"timestamp":"2026-04-05T10:02:00Z","project":"example-legacy-service","flow_name":"manufacturing_workflow","run_id":"MFG-001","type":"step","step":"confirm_approved_scope","status":"completed"}
+{"timestamp":"2026-04-05T10:20:00Z","project":"example-legacy-service","flow_name":"manufacturing_workflow","run_id":"MFG-001","type":"step","step":"implementation","status":"completed"}
+{"timestamp":"2026-04-05T10:42:00Z","project":"example-legacy-service","flow_name":"manufacturing_workflow","run_id":"MFG-001","type":"step","step":"unit_test_execution","status":"completed"}
+{"timestamp":"2026-04-05T10:55:00Z","project":"example-legacy-service","flow_name":"manufacturing_workflow","run_id":"MFG-001","type":"checklist","checklist":"manufacturing_self_check","completed_items":7,"total_items":8,"checklist_used":true}
+{"timestamp":"2026-04-05T10:57:00Z","project":"example-legacy-service","flow_name":"manufacturing_workflow","run_id":"MFG-001","type":"decision","decision":"implementation_boundary_review","decision_result":"within_approved_boundary"}
+{"timestamp":"2026-04-05T11:04:00Z","project":"example-legacy-service","flow_name":"manufacturing_workflow","run_id":"MFG-001","type":"path","path":"handoff_to_quality_review","status":"completed"}
+{"timestamp":"2026-04-06T10:03:00Z","project":"example-legacy-service","flow_name":"manufacturing_workflow","run_id":"MFG-002","type":"step","step":"confirm_approved_scope","status":"completed"}
+{"timestamp":"2026-04-06T10:22:00Z","project":"example-legacy-service","flow_name":"manufacturing_workflow","run_id":"MFG-002","type":"step","step":"implementation","status":"completed"}
+{"timestamp":"2026-04-06T10:38:00Z","project":"example-legacy-service","flow_name":"manufacturing_workflow","run_id":"MFG-002","type":"step","step":"unit_test_execution","status":"completed"}
+{"timestamp":"2026-04-06T10:41:00Z","project":"example-legacy-service","flow_name":"manufacturing_workflow","run_id":"MFG-002","type":"step","step":"record_implementation_to_design_trace","status":"completed"}
+{"timestamp":"2026-04-06T10:49:00Z","project":"example-legacy-service","flow_name":"manufacturing_workflow","run_id":"MFG-002","type":"checklist","checklist":"manufacturing_self_check","completed_items":8,"total_items":8,"checklist_used":true}
+{"timestamp":"2026-04-06T10:54:00Z","project":"example-legacy-service","flow_name":"manufacturing_workflow","run_id":"MFG-002","type":"decision","decision":"implementation_boundary_review","decision_result":"within_approved_boundary"}
+{"timestamp":"2026-04-06T10:58:00Z","project":"example-legacy-service","flow_name":"manufacturing_workflow","run_id":"MFG-002","type":"path","path":"handoff_to_quality_review","status":"completed"}

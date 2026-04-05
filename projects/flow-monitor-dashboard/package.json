@@ -1,0 +1,13 @@
+{
+  "name": "xrefkit-flow-monitor-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Flow monitoring dashboard for brownfield projects stored under projects/",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

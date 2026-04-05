@@ -1,0 +1,143 @@
+{
+  "application_workflow": {
+    "decisions": [
+      "framework_gap_resolution",
+      "capability_tuning_decision",
+      "threshold_configuration_decision",
+      "human_confirmation"
+    ],
+    "checklists": [
+      "application_interview_verification"
+    ],
+    "paths": [
+      "unresolved_configuration_gap_to_human_decision_layer"
+    ]
+  },
+  "investigation_workflow": {
+    "decisions": [
+      "coverage_assessment",
+      "unknown_classification"
+    ],
+    "checklists": [
+      "investigation_coverage_checklist"
+    ],
+    "paths": [
+      "out_of_scope_to_coordinator",
+      "unresolved_evidence_as_unknown"
+    ]
+  },
+  "estimation_workflow": {
+    "decisions": [
+      "supplier_condition_assessment",
+      "ambiguity_classification"
+    ],
+    "checklists": [],
+    "paths": [
+      "unresolved_assumptions_explicit"
+    ]
+  },
+  "requirements_workflow": {
+    "decisions": [
+      "requirement_gap_assessment"
+    ],
+    "checklists": [
+      "requirement_evidence_review"
+    ],
+    "paths": [
+      "unresolved_evidence_list"
+    ]
+  },
+  "planning_workflow": {
+    "decisions": [
+      "source_modification_policy_decision",
+      "test_tool_selection",
+      "structural_deviation_reason"
+    ],
+    "checklists": [
+      "planning_policy_completeness_check"
+    ],
+    "paths": [
+      "management_control_initialization",
+      "scope_conflicts_to_coordinator"
+    ]
+  },
+  "design_workflow": {
+    "decisions": [
+      "design_policy_alignment",
+      "unresolved_design_assumptions"
+    ],
+    "checklists": [
+      "design_handoff_readiness_check"
+    ],
+    "paths": [
+      "scope_conflicts_to_coordinator"
+    ]
+  },
+  "test_workflow": {
+    "decisions": [
+      "test_method_suitability",
+      "traceability_completeness"
+    ],
+    "checklists": [
+      "test_package_review"
+    ],
+    "paths": [
+      "unsupported_test_methods_return_to_design",
+      "scope_conflicts_to_coordinator"
+    ]
+  },
+  "manufacturing_workflow": {
+    "decisions": [
+      "implementation_boundary_review",
+      "assumption_gap_recording"
+    ],
+    "checklists": [
+      "manufacturing_self_check"
+    ],
+    "paths": [
+      "handoff_to_quality_review",
+      "out_of_scope_to_coordinator"
+    ]
+  },
+  "release_planning_workflow": {
+    "decisions": [
+      "operational_readiness_gate",
+      "release_verification_decision"
+    ],
+    "checklists": [
+      "monitoring_design_review",
+      "event_response_readiness_check"
+    ],
+    "paths": [
+      "operational_gaps_as_unknown",
+      "out_of_scope_operational_items_to_coordinator"
+    ]
+  },
+  "cab_workflow": {
+    "decisions": [
+      "quality_gate_evaluation",
+      "operational_readiness_evaluation",
+      "value_constraint_fit_evaluation"
+    ],
+    "checklists": [
+      "cab_evidence_review"
+    ],
+    "paths": [
+      "unresolved_risks_to_human_decision",
+      "upstream_structural_causes_to_feedback_loop"
+    ]
+  },
+  "closure_workflow": {
+    "decisions": [
+      "closure_confirmation",
+      "leak_detection_assessment"
+    ],
+    "checklists": [
+      "management_table_check"
+    ],
+    "paths": [
+      "return_incomplete_rows",
+      "route_final_unknown_to_human"
+    ]
+  }
+}
