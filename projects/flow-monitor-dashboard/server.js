@@ -11,6 +11,9 @@ const PROJECTS_DIR = path.join(REPO_ROOT, "projects");
 const FLOWS_DIR = path.join(REPO_ROOT, "flows");
 const PUBLIC_DIR = path.join(APP_DIR, "public");
 const LOG_PRESETS_FILE = path.join(APP_DIR, "flow-log-presets.json");
+const FLOW_SKILL_MAP_FILE = path.join(APP_DIR, "flow-skill-map.json");
+const FLOW_STEP_SKILL_MAP_FILE = path.join(APP_DIR, "flow-step-skill-map.json");
+const SKILLS_DIR = path.join(REPO_ROOT, "skills");
 const TRACE_FILE_PATTERN = /(?:flow-events|flow-monitor|flow-monitoring|trace|events)\.(?:jsonl|json)$/i;
 const SKIP_DIRS = new Set(["node_modules", ".git", ".next", "dist", "build"]);
 
@@ -19,6 +22,7 @@ const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
   ".js": "application/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
+  ".md": "text/plain; charset=utf-8",
   ".svg": "image/svg+xml",
 };
 
@@ -92,6 +96,9 @@ function normalizeKey(value) {
 
 function loadFlowDefinitions() {
   const logPresets = loadLogPresets();
+  const flowSkillMap = loadFlowSkillMap();
+  const flowStepSkillMap = loadFlowStepSkillMap();
+  const skillCatalog = loadSkillCatalog();
   return readDirSafe(FLOWS_DIR)
     .filter((entry) => entry.isFile() && entry.name.endsWith(".yaml"))
     .map((entry) => {
@@ -115,6 +122,10 @@ function loadFlowDefinitions() {
         checklists: [],
         paths: [],
       };
+      flow.skill_definitions = (flowSkillMap[flow.name] || [])
+        .map((skillId) => skillCatalog[skillId])
+        .filter(Boolean);
+      flow.step_skill_map = flowStepSkillMap[flow.name] || {};
       return flow;
     })
     .sort((left, right) => left.name.localeCompare(right.name));
@@ -126,6 +137,61 @@ function loadLogPresets() {
   } catch {
     return {};
   }
+}
+
+function loadFlowSkillMap() {
+  try {
+    return JSON.parse(readFileSafe(FLOW_SKILL_MAP_FILE));
+  } catch {
+    return {};
+  }
+}
+
+function loadFlowStepSkillMap() {
+  try {
+    return JSON.parse(readFileSafe(FLOW_STEP_SKILL_MAP_FILE));
+  } catch {
+    return {};
+  }
+}
+
+function parseMetaField(lines, key) {
+  const prefix = `- ${key}:`;
+  for (const line of lines) {
+    if (line.startsWith(prefix)) {
+      return line.slice(prefix.length).trim().replace(/^`|`$/g, "");
+    }
+  }
+  return "";
+}
+
+function loadSkillCatalog() {
+  const catalog = {};
+  for (const entry of readDirSafe(SKILLS_DIR)) {
+    if (!entry.isDirectory()) {
+      continue;
+    }
+    const metaPath = path.join(SKILLS_DIR, entry.name, "meta.md");
+    if (!fs.existsSync(metaPath)) {
+      continue;
+    }
+    const lines = readFileSafe(metaPath).split(/\r?\n/);
+    const skill = {
+      skill_id: parseMetaField(lines, "skill_id"),
+      summary: parseMetaField(lines, "summary"),
+      use_when: parseMetaField(lines, "use_when"),
+      input: parseMetaField(lines, "input"),
+      output: parseMetaField(lines, "output"),
+      constraints: parseMetaField(lines, "constraints"),
+      tags: parseMetaField(lines, "tags"),
+      skill_doc: parseMetaField(lines, "skill_doc"),
+      meta_path: path.relative(REPO_ROOT, metaPath).replace(/\\/g, "/"),
+    };
+    if (skill.skill_id) {
+      catalog[skill.skill_id] = skill;
+    }
+  }
+  return catalog;
 }
 
 function walkForTraceFiles(currentDir, traceFiles) {
@@ -479,6 +545,17 @@ function sendFile(response, filePath) {
   }
 }
 
+function sendRepoFile(response, relativePath) {
+  const safeRelativePath = relativePath.split("/").join(path.sep);
+  const resolved = path.resolve(REPO_ROOT, safeRelativePath);
+  if (!resolved.startsWith(REPO_ROOT)) {
+    response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+    response.end("Bad request");
+    return;
+  }
+  sendFile(response, resolved);
+}
+
 function resolvePublicPath(urlPath) {
   const cleanPath = urlPath === "/" ? "/index.html" : urlPath;
   const resolved = path.normalize(path.join(PUBLIC_DIR, cleanPath));
@@ -493,6 +570,11 @@ const server = http.createServer((request, response) => {
 
   if (requestUrl.pathname === "/api/dashboard") {
     return sendJson(response, buildDashboardData());
+  }
+
+  if (requestUrl.pathname.startsWith("/repo/")) {
+    const relativePath = decodeURIComponent(requestUrl.pathname.slice("/repo/".length));
+    return sendRepoFile(response, relativePath);
   }
 
   const filePath = resolvePublicPath(requestUrl.pathname);

@@ -1,0 +1,46 @@
+{
+  "investigation_workflow": [
+    "investigation_flow",
+    "management_table_control"
+  ],
+  "estimation_workflow": [
+    "estimation_flow",
+    "management_table_control"
+  ],
+  "requirements_workflow": [
+    "requirements_flow",
+    "management_table_control"
+  ],
+  "planning_workflow": [
+    "planning_flow",
+    "design_flow",
+    "management_table_control"
+  ],
+  "design_workflow": [
+    "design_flow",
+    "test_flow",
+    "management_table_control"
+  ],
+  "test_workflow": [
+    "test_flow",
+    "implementation_flow",
+    "qa_gate_review",
+    "management_table_control"
+  ],
+  "manufacturing_workflow": [
+    "implementation_flow",
+    "manufacturing_self_check",
+    "qa_gate_review",
+    "management_table_control"
+  ],
+  "release_planning_workflow": [
+    "release_planning_flow",
+    "management_table_control"
+  ],
+  "cab_workflow": [
+    "cab_review_flow"
+  ],
+  "closure_workflow": [
+    "management_table_control"
+  ]
+}

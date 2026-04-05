@@ -187,6 +187,10 @@ button {
   min-width: 0;
 }
 
+.workspace.design-mode {
+  grid-template-columns: 1fr;
+}
+
 .tab-bar {
   display: flex;
   gap: 10px;
@@ -353,6 +357,153 @@ td {
 .run-chip-foot {
   color: var(--muted);
   font-size: 12px;
+}
+
+.skill-card-list {
+  display: grid;
+  gap: 14px;
+}
+
+.skill-card {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(255, 251, 244, 0.92), rgba(245, 241, 232, 0.88));
+}
+
+.skill-card-head,
+.skill-card-tags {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.skill-doc-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.skill-card-summary,
+.skill-card-text {
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.skill-card-summary {
+  margin-bottom: 14px;
+}
+
+.inline-skill-detail {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+  background: linear-gradient(180deg, rgba(215, 238, 240, 0.35), rgba(255, 255, 255, 0.78));
+}
+
+.sequence-clickable-row {
+  cursor: pointer;
+}
+
+.sequence-clickable-row:hover td {
+  background: rgba(10, 108, 116, 0.06);
+}
+
+.sequence-detail-row td {
+  background: rgba(10, 108, 116, 0.03);
+}
+
+.sequence-skill-button {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  text-decoration: underline;
+  border-radius: 0;
+  font-size: 13px;
+}
+
+.table-doc-link {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 8px;
+  color: var(--accent);
+  text-decoration: underline;
+  font-size: 12px;
+}
+
+.sequence-diagram {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sequence-node-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.sequence-node-wrap.vertical {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.sequence-node {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(100%, 520px);
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(215, 238, 240, 0.7), rgba(255, 255, 255, 0.7));
+}
+
+.sequence-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sequence-label {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.sequence-skill-link {
+  color: var(--accent);
+  text-decoration: underline;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.sequence-arrow {
+  color: var(--muted);
+  font-family: Consolas, monospace;
+  font-size: 16px;
+}
+
+.sequence-arrow.vertical {
+  margin-left: 10px;
+  line-height: 0.9;
+  font-size: 14px;
 }
 
 .badge {

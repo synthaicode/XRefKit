@@ -14,6 +14,7 @@ const metricCardTemplate = document.getElementById("metricCardTemplate");
 let dashboardData = null;
 let selectedProject = "";
 let selectedView = "monitoring";
+const expandedSequenceSkills = new Set();
 
 function metricCard(label, value, note) {
   const fragment = metricCardTemplate.content.cloneNode(true);
@@ -101,8 +102,20 @@ function renderTabs() {
 }
 
 function renderViewVisibility() {
-  monitoringView.style.display = selectedView === "monitoring" ? "" : "none";
-  designView.style.display = selectedView === "design" ? "" : "none";
+  const workspace = document.querySelector(".workspace");
+  const sidebar = document.querySelector(".project-sidebar");
+  const projectSummaryPanel = document.querySelector("#projectSummary")?.closest(".panel");
+  const isMonitoring = selectedView === "monitoring";
+
+  monitoringView.style.display = isMonitoring ? "" : "none";
+  designView.style.display = isMonitoring ? "none" : "";
+  workspace?.classList.toggle("design-mode", !isMonitoring);
+  if (sidebar) {
+    sidebar.style.display = isMonitoring ? "" : "none";
+  }
+  if (projectSummaryPanel) {
+    projectSummaryPanel.style.display = isMonitoring ? "" : "none";
+  }
   for (const button of viewTabs.querySelectorAll("[data-view]")) {
     const isActive = button.getAttribute("data-view") === selectedView;
     button.classList.toggle("tab-button-active", isActive);
@@ -421,6 +434,189 @@ function renderDesignIO(flow) {
   `;
 }
 
+function skillRowId(flowName, skillId) {
+  return `skill-${flowName}-${skillId}`.replace(/[^a-zA-Z0-9_-]+/g, "-");
+}
+
+function renderSkillDefinitionTable(flow) {
+  const skills = flow.skill_definitions || [];
+  if (!skills || skills.length === 0) {
+    return '<p class="muted">この Flow に紐づく Skill 定義はありません。</p>';
+  }
+
+  const rows = skills
+    .map(
+      (skill) => `
+        <tr id="${skillRowId(flow.name, skill.skill_id)}">
+          <td><strong>${escapeHtml(skill.skill_id)}</strong></td>
+          <td>${escapeHtml(skill.summary || "-")}</td>
+          <td>${escapeHtml(skill.use_when || "-")}</td>
+          <td>${escapeHtml(skill.input || "-")}</td>
+          <td>${escapeHtml(skill.output || "-")}</td>
+          <td>${escapeHtml(skill.constraints || "-")}</td>
+          <td>
+            ${skill.meta_path ? `<a class="table-doc-link" href="./repo/${escapeHtml(skill.meta_path)}" target="_blank" rel="noreferrer">meta.md</a>` : ""}
+            ${skill.meta_path ? `<a class="table-doc-link" href="./repo/${escapeHtml(skill.meta_path.replace(/meta\.md$/i, "SKILL.md"))}" target="_blank" rel="noreferrer">SKILL.md</a>` : ""}
+          </td>
+        </tr>
+      `
+    )
+    .join("");
+
+  return `
+    <table>
+      <thead>
+        <tr>
+          <th>Skill</th>
+          <th>Summary</th>
+          <th>Use When</th>
+          <th>Input</th>
+          <th>Output</th>
+          <th>Constraints</th>
+          <th>Docs</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function renderInlineSkillDetail(flowName, skill) {
+  const metaLink = skill.meta_path ? `./repo/${skill.meta_path}` : "";
+  const skillDocPath = skill.meta_path
+    ? skill.meta_path.replace(/meta\.md$/i, "SKILL.md")
+    : "";
+  const skillDocLink = skillDocPath ? `./repo/${skillDocPath}` : "";
+  return `
+    <div class="inline-skill-detail">
+      <div class="skill-card-head">
+        <div>
+          <p class="eyebrow">Skill</p>
+          <h4>${escapeHtml(skill.skill_id)}</h4>
+        </div>
+        <div class="skill-card-tags">
+          ${skill.tags ? badge(skill.tags, "active") : ""}
+          ${skillDocLink ? `<a class="skill-doc-link" href="${escapeHtml(skillDocLink)}" target="_blank" rel="noreferrer">SKILL.md</a>` : ""}
+          ${metaLink ? `<a class="skill-doc-link" href="${escapeHtml(metaLink)}" target="_blank" rel="noreferrer">meta.md</a>` : ""}
+        </div>
+      </div>
+      <p class="skill-card-summary">${escapeHtml(skill.summary || "-")}</p>
+      <div class="flow-columns">
+        <section>
+          <h4>Use When</h4>
+          <p class="skill-card-text">${escapeHtml(skill.use_when || "-")}</p>
+          <h4>Constraints</h4>
+          <p class="skill-card-text">${escapeHtml(skill.constraints || "-")}</p>
+        </section>
+        <section>
+          <h4>Input</h4>
+          <p class="skill-card-text">${escapeHtml(skill.input || "-")}</p>
+          <h4>Output</h4>
+          <p class="skill-card-text">${escapeHtml(skill.output || "-")}</p>
+        </section>
+      </div>
+    </div>
+  `;
+}
+
+function renderSkillList(flow) {
+  const skills = flow.skill_definitions || [];
+  if (!skills.length) {
+    return '<p class="muted">この Flow に紐づく Skill はありません。</p>';
+  }
+
+  const selectedSkillId =
+    selectedSkillDetails.get(flowSkillSelectionKey(flow.name))
+    || skills[0]?.skill_id
+    || "";
+
+  const selectedSkill = skills.find((skill) => skill.skill_id === selectedSkillId) || skills[0];
+
+  return `
+    <div class="skill-picker-layout">
+      <div class="skill-picker-list">
+        ${skills
+          .map((skill) => {
+            const active = skill.skill_id === selectedSkill?.skill_id;
+            return `
+              <button
+                type="button"
+                class="skill-picker-item${active ? " skill-picker-item-active" : ""}"
+                data-flow-skill="${escapeHtml(flow.name)}::${escapeHtml(skill.skill_id)}"
+                aria-label="Show ${escapeHtml(skill.skill_id)} definition"
+              >
+                <span class="skill-picker-name">${escapeHtml(skill.skill_id)}</span>
+                <span class="skill-picker-summary">${escapeHtml(skill.summary || "-")}</span>
+              </button>
+            `;
+          })
+          .join("")}
+      </div>
+      <div class="skill-picker-detail">
+        ${selectedSkill ? renderInlineSkillDetail(flow.name, selectedSkill) : '<p class="muted">Skill を選択してください。</p>'}
+      </div>
+    </div>
+  `;
+}
+
+function sequenceRowKey(flowName, step) {
+  return `${flowName}::${step}`;
+}
+
+function renderSequenceTable(flow) {
+  if (!flow.sequence || flow.sequence.length === 0) {
+    return '<p class="muted">sequence 定義なし</p>';
+  }
+
+  const skillMap = new Map((flow.skill_definitions || []).map((skill) => [skill.skill_id, skill]));
+  const rows = flow.sequence.map((step, index) => {
+    const mappedSkillId = flow.step_skill_map?.[step] || "";
+    const mappedSkill = mappedSkillId ? skillMap.get(mappedSkillId) : null;
+    const rowKey = sequenceRowKey(flow.name, step);
+    const expanded = expandedSequenceSkills.has(rowKey);
+
+    const mainRow = `
+      <tr class="${mappedSkill ? "sequence-clickable-row" : ""}" ${mappedSkill ? `data-sequence-row="${escapeHtml(rowKey)}"` : ""}>
+        <td>${index + 1}</td>
+        <td>${escapeHtml(step)}</td>
+        <td>${
+          mappedSkill
+            ? `<button type="button" class="sequence-skill-button" data-sequence-row="${escapeHtml(rowKey)}">${escapeHtml(mappedSkill.skill_id)}</button>`
+            : '<span class="muted">なし</span>'
+        }</td>
+        <td>${mappedSkill ? badge(expanded ? "open" : "show", expanded ? "ok" : "default") : '<span class="muted">-</span>'}</td>
+      </tr>
+    `;
+
+    if (!mappedSkill || !expanded) {
+      return mainRow;
+    }
+
+    return `
+      ${mainRow}
+      <tr class="sequence-detail-row">
+        <td colspan="4">
+          ${renderInlineSkillDetail(flow.name, mappedSkill)}
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  return `
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Step</th>
+          <th>Skill</th>
+          <th>Detail</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
 function renderStepStateTable(flow, latestRun) {
   const rows = deriveStepRows(flow, latestRun)
     .map(
@@ -566,7 +762,7 @@ function renderProjectFlowDesign(projectFlows) {
         <div>
           <p class="flow-phase">${escapeHtml(flow.phase || "unknown")}</p>
           <h3>${escapeHtml(flow.name)}</h3>
-          <p class="flow-meta">${escapeHtml(flow.flow_id)} / AI 単体責務の設計確認</p>
+          <p class="flow-meta">${escapeHtml(flow.flow_id)} / AI 単体責務の定義確認</p>
         </div>
         <div class="flow-metrics">
           ${badge(`inputs ${flow.inputs.length}`, flow.inputs.length ? "active" : "muted")}
@@ -576,6 +772,14 @@ function renderProjectFlowDesign(projectFlows) {
         </div>
       </div>
       ${renderDesignIO(flow)}
+      <div class="flow-runs">
+        <h4>Sequence</h4>
+        ${renderSequenceTable(flow)}
+      </div>
+      <div class="flow-runs">
+        <h4>Skill Definition Table</h4>
+        ${renderSkillDefinitionTable(flow)}
+      </div>
       <div class="flow-columns">
         <section>
           <h4>Decision Responsibility</h4>
@@ -594,13 +798,28 @@ function renderProjectFlowDesign(projectFlows) {
         <section>
           <h4>Control Rules</h4>
           <div class="tag-list">${formatList(flow.control_rules, "定義なし")}</div>
-          <h4>Sequence</h4>
-          <div class="tag-list">${formatList(flow.sequence, "定義なし")}</div>
         </section>
       </div>
     `;
     projectFlowDesign.appendChild(article);
   }
+
+  for (const row of projectFlowDesign.querySelectorAll("[data-sequence-row]")) {
+    row.addEventListener("click", (event) => {
+      const trigger = event.target.closest("[data-sequence-row]");
+      const rowKey = trigger?.getAttribute("data-sequence-row") || row.getAttribute("data-sequence-row");
+      if (!rowKey) {
+        return;
+      }
+      if (expandedSequenceSkills.has(rowKey)) {
+        expandedSequenceSkills.delete(rowKey);
+      } else {
+        expandedSequenceSkills.add(rowKey);
+      }
+      renderProjectFlowDesign(projectFlows);
+    });
+  }
+
 }
 
 function renderProjectRunHistory(projectRuns) {

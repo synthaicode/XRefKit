@@ -1,0 +1,8 @@
+{
+  "manufacturing_workflow": {
+    "implementation": "implementation_flow",
+    "unit_test_execution": "implementation_flow",
+    "manufacturing_self_check": "manufacturing_self_check",
+    "handoff_to_quality_review": "qa_gate_review"
+  }
+}
