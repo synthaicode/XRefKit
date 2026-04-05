@@ -32,19 +32,16 @@
     <section class="summary-grid" id="summaryGrid"></section>
 
     <section class="workspace">
-      <aside class="panel project-sidebar">
-        <div class="panel-head">
-          <h2>Project List</h2>
-          <p>監視対象の project を選択します。</p>
-        </div>
-        <div id="projectList"></div>
-      </aside>
-
       <section class="project-main">
         <section class="panel">
           <div class="panel-head">
-            <h2>Selected Project</h2>
-            <p>選択中 project の Flow 状況を表示します。</p>
+            <div>
+              <h2>Project Summary</h2>
+            </div>
+            <label class="project-selector-wrap" for="projectSelector">
+              <span>Project List</span>
+              <select id="projectSelector" aria-label="Project List"></select>
+            </label>
           </div>
           <div id="projectSummary"></div>
         </section>

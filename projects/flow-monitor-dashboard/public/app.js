@@ -1,5 +1,5 @@
 const summaryGrid = document.getElementById("summaryGrid");
-const projectList = document.getElementById("projectList");
+const projectSelector = document.getElementById("projectSelector");
 const projectSummary = document.getElementById("projectSummary");
 const projectFlowStates = document.getElementById("projectFlowStates");
 const projectRunHistory = document.getElementById("projectRunHistory");
@@ -103,16 +103,12 @@ function renderTabs() {
 
 function renderViewVisibility() {
   const workspace = document.querySelector(".workspace");
-  const sidebar = document.querySelector(".project-sidebar");
   const projectSummaryPanel = document.querySelector("#projectSummary")?.closest(".panel");
   const isMonitoring = selectedView === "monitoring";
 
   monitoringView.style.display = isMonitoring ? "" : "none";
   designView.style.display = isMonitoring ? "none" : "";
   workspace?.classList.toggle("design-mode", !isMonitoring);
-  if (sidebar) {
-    sidebar.style.display = isMonitoring ? "" : "none";
-  }
   if (projectSummaryPanel) {
     projectSummaryPanel.style.display = isMonitoring ? "" : "none";
   }
@@ -169,32 +165,24 @@ function deriveProjectFlowStates(data, projectName) {
     });
 }
 
-function renderProjectList(data) {
+function renderProjectSelector(data) {
   const projects = data.project_summaries;
   if (!projects.length) {
-    projectList.innerHTML = `<p class="empty-state">まだ project がありません。</p>`;
+    projectSelector.innerHTML = `<option value="">project なし</option>`;
+    projectSelector.disabled = true;
     return;
   }
 
-  projectList.innerHTML = projects
+  projectSelector.disabled = false;
+  projectSelector.innerHTML = projects
     .map((project) => {
-      const active = project.project === selectedProject ? " project-item-active" : "";
       return `
-        <button class="project-item${active}" type="button" data-project="${escapeHtml(project.project)}">
-          <span class="project-item-name">${escapeHtml(project.project)}</span>
-          <span class="project-item-meta">${project.run_count} runs / ${project.flow_count} flows</span>
-          <span class="project-item-date">${escapeHtml(project.latest_at || "-")}</span>
-        </button>
+        <option value="${escapeHtml(project.project)}" ${project.project === selectedProject ? "selected" : ""}>
+          ${escapeHtml(project.project)}
+        </option>
       `;
     })
     .join("");
-
-  for (const button of projectList.querySelectorAll("[data-project]")) {
-    button.addEventListener("click", () => {
-      selectedProject = button.getAttribute("data-project") || "";
-      renderProjectWorkspace();
-    });
-  }
 }
 
 function renderProjectSummary(data, project, projectFlows, projectRuns) {
@@ -209,8 +197,6 @@ function renderProjectSummary(data, project, projectFlows, projectRuns) {
   projectSummary.innerHTML = `
     <div class="project-header">
       <div>
-        <p class="eyebrow">Selected Project</p>
-        <h3>${escapeHtml(project.project)}</h3>
         <p class="flow-meta">Latest activity: ${escapeHtml(project.latest_at || "-")}</p>
       </div>
       <div class="project-badges">
@@ -514,46 +500,6 @@ function renderInlineSkillDetail(flowName, skill) {
           <h4>Output</h4>
           <p class="skill-card-text">${escapeHtml(skill.output || "-")}</p>
         </section>
-      </div>
-    </div>
-  `;
-}
-
-function renderSkillList(flow) {
-  const skills = flow.skill_definitions || [];
-  if (!skills.length) {
-    return '<p class="muted">この Flow に紐づく Skill はありません。</p>';
-  }
-
-  const selectedSkillId =
-    selectedSkillDetails.get(flowSkillSelectionKey(flow.name))
-    || skills[0]?.skill_id
-    || "";
-
-  const selectedSkill = skills.find((skill) => skill.skill_id === selectedSkillId) || skills[0];
-
-  return `
-    <div class="skill-picker-layout">
-      <div class="skill-picker-list">
-        ${skills
-          .map((skill) => {
-            const active = skill.skill_id === selectedSkill?.skill_id;
-            return `
-              <button
-                type="button"
-                class="skill-picker-item${active ? " skill-picker-item-active" : ""}"
-                data-flow-skill="${escapeHtml(flow.name)}::${escapeHtml(skill.skill_id)}"
-                aria-label="Show ${escapeHtml(skill.skill_id)} definition"
-              >
-                <span class="skill-picker-name">${escapeHtml(skill.skill_id)}</span>
-                <span class="skill-picker-summary">${escapeHtml(skill.summary || "-")}</span>
-              </button>
-            `;
-          })
-          .join("")}
-      </div>
-      <div class="skill-picker-detail">
-        ${selectedSkill ? renderInlineSkillDetail(flow.name, selectedSkill) : '<p class="muted">Skill を選択してください。</p>'}
       </div>
     </div>
   `;
@@ -876,7 +822,7 @@ function renderProjectWorkspace() {
     || null;
 
   selectedProject = project?.project || "";
-  renderProjectList(dashboardData);
+  renderProjectSelector(dashboardData);
 
   const projectRuns = dashboardData.runs
     .filter((run) => run.project === selectedProject)
@@ -907,6 +853,11 @@ refreshButton.addEventListener("click", () => {
   loadDashboard().catch((error) => {
     generatedAt.textContent = `読込失敗: ${error.message}`;
   });
+});
+
+projectSelector?.addEventListener("change", (event) => {
+  selectedProject = event.target.value || "";
+  renderProjectWorkspace();
 });
 
 loadDashboard().catch((error) => {

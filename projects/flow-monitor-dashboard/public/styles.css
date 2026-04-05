@@ -36,7 +36,7 @@ body {
 
 .workspace {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
   align-items: start;
 }
@@ -178,11 +178,6 @@ button {
   gap: 18px;
 }
 
-.project-sidebar {
-  position: sticky;
-  top: 24px;
-}
-
 .project-main {
   min-width: 0;
 }
@@ -224,6 +219,29 @@ button {
   align-items: flex-start;
 }
 
+.project-selector-wrap {
+  display: grid;
+  gap: 6px;
+  min-width: 280px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.project-selector-wrap select {
+  min-width: 280px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--ink);
+  padding: 12px 14px;
+  font: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
 .project-badges {
   display: flex;
   gap: 8px;
@@ -232,40 +250,6 @@ button {
 
 .project-summary-grid {
   margin-top: 18px;
-}
-
-.project-item {
-  width: 100%;
-  text-align: left;
-  display: block;
-  background: rgba(255, 255, 255, 0.55);
-  color: var(--ink);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 14px;
-  margin-bottom: 10px;
-}
-
-.project-item-active {
-  background: linear-gradient(180deg, rgba(215, 238, 240, 0.95), rgba(255, 255, 255, 0.62));
-  border-color: rgba(10, 108, 116, 0.35);
-}
-
-.project-item-name,
-.project-item-meta,
-.project-item-date {
-  display: block;
-}
-
-.project-item-name {
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.project-item-meta,
-.project-item-date {
-  color: var(--muted);
-  font-size: 12px;
 }
 
 .flow-card {
@@ -588,8 +572,10 @@ thead th {
     align-items: flex-start;
   }
 
-  .project-sidebar {
-    position: static;
+  .project-selector-wrap,
+  .project-selector-wrap select {
+    width: 100%;
+    min-width: 0;
   }
 
   .flow-columns {
