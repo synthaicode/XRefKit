@@ -32,6 +32,11 @@ Convert spreadsheet-based specifications into Markdown artifacts with stable tra
 - Confirm that the source workbook is stored under `sources/` or that the workbook copy being edited is the controlled source of truth.
 - Confirm how traceability IDs should be prefixed and grouped.
 - Confirm whether IDs should be written into existing columns, adjacent cells, comments, or a dedicated traceability sheet when the workbook layout has no safe free column.
+- Confirm how to handle or escalate uncertainty around:
+  - business rule interpretation
+  - boundary values and threshold conditions
+  - numeric rounding, clock/time handling, and timezone interpretation
+  - concurrency assumptions and order-dependent behavior
 
 ## Planning
 
@@ -67,6 +72,7 @@ Convert spreadsheet-based specifications into Markdown artifacts with stable tra
   - the image position
   - the surrounding textual basis
 - Keep IDs stable across reruns unless the semantic unit itself changed.
+- If business rules, boundary values, rounding/timezone handling, or concurrency/order assumptions remain ambiguous, do not guess. Record the ambiguity as `unknown` and confirm it before finalizing the extracted result.
 
 ## Closure
 

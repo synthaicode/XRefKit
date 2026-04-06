@@ -22,6 +22,17 @@ Even if the original source is huge, the AI should not need to read everything e
 
 This split allows the AI to reference **only what is needed** by XID, while remaining resilient to rename/move operations.
 
+## Cautions during import
+
+When importing external information, pay explicit attention to the following:
+
+- business rule misinterpretation
+- boundary-value interpretation mismatch
+- numeric rounding, clock/time handling, and timezone mismatch
+- concurrency assumptions and order-dependent behavior
+
+If any of these points is unclear from the source material alone, record it as unresolved and confirm it before treating the import result as final.
+
 ## Next
 
 - Workflow: `docs/010_workflow.md`

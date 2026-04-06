@@ -50,3 +50,9 @@ Example (Web):
 
 - Do not re-read entire originals every time. First locate and read relevant fragments via `knowledge/000_index.md` and `python -m fm xref search/show`.
 - Only when needed, follow the source pointer to consult the exact location in `sources/` (page/sheet/URL).
+- When importing external information, explicitly watch for:
+  - business rule misinterpretation
+  - boundary-value interpretation mismatch
+  - numeric rounding, clock/time handling, and timezone mismatch
+  - concurrency assumptions and order-dependent behavior
+- If any of the above remains unclear from the source, mark it as unresolved and confirm with the user or source owner before finalizing the extracted knowledge.
