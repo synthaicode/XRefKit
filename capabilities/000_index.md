@@ -72,4 +72,5 @@ Keep domain facts in `knowledge/` and executable procedures in `skills/`.
 - [CAP-MGT-001 Execution Management](management/100_cap_mgt_001_execution_management.md#xid-A365F4499AA7)
 - [CAP-MGT-002 Uncertainty and Risk Logging](management/110_cap_mgt_002_uncertainty_risk_logging.md#xid-9F14372D994A)
 - [CAP-MGT-003 Out-of-Scope Escalation](management/120_cap_mgt_003_out_of_scope_escalation.md#xid-1E3B2AA5B328)
+- [CAP-MGT-004 Context Direction Guard](management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11)
 

@@ -8,6 +8,7 @@
 - use_when: user needs to convert PowerPoint-based specifications into Markdown artifacts while preserving slide-level traceability and reducing review burden in the original deck
 - input: source pptx path, optional target Markdown destination, optional slide scope, optional traceability ID prefix
 - output: Markdown specification fragments, slide-item descriptions, traceability ID map, updated pptx with written-back IDs, unresolved list
+- guard_policy: `required`
 - constraints: keep slide number and object position explicit; do not separate image-derived or shape-derived items from the slide text that gives them meaning; write IDs back into the original deck or the controlled deck copy used as the source of truth
 - lifecycle:
   - startup: confirm source deck path, slide scope, and ID policy
@@ -17,6 +18,8 @@
   - closure: finalize Markdown outputs, verify deck write-back, and preserve source pointers
 - tags: `pptx`, `powerpoint`, `presentation`, `specification`, `traceability`, `image`, `import`
 - skill_doc: `./SKILL.md`
-- capability_refs: none
+- capability_refs:
+  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
+  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../docs/020_sources.md#xid-2FAD591BF725`

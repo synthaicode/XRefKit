@@ -8,6 +8,7 @@
 - use_when: a task or work session is ending and the agent should determine whether stable rules, knowledge, or procedures must be promoted out of `work/`
 - input: current task goal, related `work/sessions/` or `work/retrospectives/` files, changed files, optional conversation history, optional target canonical paths
 - output: promotion candidate list, target location per candidate, reasons, evidence references, already-promoted checks, stay-in-work decisions, optional draft update plan
+- guard_policy: `required`
 - constraints: do not treat `work/` as canonical; do not promote unstable notes; do not duplicate existing canonical content without checking first
 - lifecycle:
   - startup: confirm the relevant session logs, changed files, and canonical search scope
@@ -17,8 +18,10 @@
   - closure: produce a promotion report and, when approved, prepare the canonical update set and `work/` pointer update
 - tags: `retrospective`, `promotion`, `knowledge-ops`
 - skill_doc: `./SKILL.md`
-- capability_refs: none
+- capability_refs:
+  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
+  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../docs/014_working_area_policy.md#xid-111D282CA0EA`
   - `../../docs/015_shared_memory_operations.md#xid-4A423E72D2ED`
   - `../../docs/044_system_quality_feedback_register.md#xid-8B31F02A4013`

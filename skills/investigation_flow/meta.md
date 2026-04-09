@@ -8,6 +8,7 @@
 - use_when: user needs impact investigation before estimation or design
 - input: request, optional service candidates, optional service catalog path, optional repository or document paths
 - output: in-scope service list, out-of-scope service list with reasons, change viewpoints, test viewpoints, change target list, uncertainty list
+- guard_policy: `required`
 - constraints: do not decide design or implementation policy; record unknowns explicitly
 - lifecycle:
   - startup: confirm request, service catalog, analysis targets, and coverage checklist exist
@@ -18,8 +19,10 @@
 - tags: `investigation`, `scope`, `planning`
 - skill_doc: `./SKILL.md`
 - capability_refs:
+  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
   - `../../capabilities/investigation/100_cap_inv_001_service_catalog_analysis.md#xid-867B78FF702F`
   - `../../capabilities/investigation/110_cap_inv_002_source_dependency_analysis.md#xid-E994FCDA8CD1`
   - `../../capabilities/investigation/120_cap_inv_003_change_target_summary.md#xid-6AB17163C9BF`
 - knowledge_refs:
+  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../knowledge/investigation/100_investigation_coverage_checklist.md#xid-91E2A7C56101`

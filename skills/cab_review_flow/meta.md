@@ -8,6 +8,7 @@
 - use_when: user needs CAB-style evaluation before release confirmation
 - input: release plan materials, manufacturing outputs, requirement and design evidence, value and constraint definitions
 - output: quality-gate result, operational readiness result, value-gate result, unresolved list
+- guard_policy: `required`
 - constraints: evaluate only; do not make final release decision
 - lifecycle:
   - startup: confirm CAB evidence exists
@@ -18,7 +19,9 @@
 - tags: `cab`, `review`, `release`
 - skill_doc: `./SKILL.md`
 - capability_refs:
+  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
   - `../../capabilities/quality/120_cap_qa_003_release_plan_suitability_review.md#xid-93E53EF38700`
   - `../../capabilities/operations/130_cap_ops_004_operational_readiness_gate.md#xid-83140C9538B3`
   - `../../capabilities/business/100_cap_biz_001_value_constraint_fit_evaluation.md#xid-837CDB1183C9`
-- knowledge_refs: none
+- knowledge_refs:
+  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`

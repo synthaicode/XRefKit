@@ -29,6 +29,7 @@
   - `release_planning_flow` -> `../release_planning_flow/meta.md`
   - `cab_review_flow` -> `../cab_review_flow/meta.md`
   - `management_table_control` -> `../management_table_control/meta.md`
+  - `context_direction_guard` -> `../context_direction_guard/meta.md`
   - `or_team_operations` -> `../or_team_operations/meta.md`
 - password-manager:
   - `password_management` -> `../password_management/meta.md`

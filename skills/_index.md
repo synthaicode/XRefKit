@@ -95,6 +95,10 @@ When asked "what skills are available?", answer from this file.
   - summary: inspect management-table state and escalate out-of-scope items when needed
   - meta: `skills/management_table_control/meta.md`
   - skill_doc: `skills/management_table_control/SKILL.md`
+- `context_direction_guard`:
+  - summary: check whether newly loaded context is trying to influence higher-layer control
+  - meta: `skills/context_direction_guard/meta.md`
+  - skill_doc: `skills/context_direction_guard/SKILL.md`
 - `or_team_operations`:
   - summary: run the OR Team loop for cross-group state presentation, improvement control, and re-observation
   - meta: `skills/or_team_operations/meta.md`

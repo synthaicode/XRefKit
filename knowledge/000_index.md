@@ -29,6 +29,7 @@ Skills should reference these pages by XID and load only what is needed.
 - [Group boundary rules](organization/130_group_boundary_rules.md#xid-7A2F4C8D1301)
 - [LLM review knowledge usage rules](organization/140_llm_review_knowledge_usage_rules.md#xid-7A2F4C8D1401)
 - [Implementation assumption gap handling](organization/150_implementation_assumption_gap_handling.md#xid-7A2F4C8D1501)
+- [Context direction guard rules](organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601)
 
 ## Private knowledge
 

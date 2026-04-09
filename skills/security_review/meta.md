@@ -8,6 +8,7 @@
 - use_when: user needs focused security validation
 - input: target code, design evidence
 - output: security review result, risk findings, unresolved list
+- guard_policy: `required`
 - constraints: every judgment needs evidence; unresolved evidence gaps stay explicit
 - lifecycle:
   - startup: confirm target and security-relevant evidence exist
@@ -18,6 +19,8 @@
 - tags: `qa`, `security`, `csharp`
 - skill_doc: `./SKILL.md`
 - capability_refs:
+  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
   - `../../capabilities/quality/150_cap_qa_007_security_review.md#xid-5A1C2F0E5507`
 - knowledge_refs:
+  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../knowledge/quality/100_csharp_quality_review_criteria.md#xid-8C4D2A7E5101`

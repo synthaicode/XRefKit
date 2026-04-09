@@ -8,6 +8,7 @@
 - use_when: user needs a reviewed test package from planning outputs, requirements, and design evidence
 - input: approved requirements, work plan, test policy, approved design, planning basis source list
 - output: test plan, test design, requirement traceability reference, integration regression test design, manufacturing test review result
+- guard_policy: `required`
 - constraints: do not redefine requirement intent, business scope, or final release judgment
 - lifecycle:
   - startup: confirm requirements, planning outputs, and design evidence exist
@@ -18,9 +19,11 @@
 - tags: `test`, `design`, `manufacturing`, `traceability`
 - skill_doc: `./SKILL.md`
 - capability_refs:
+  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
   - `../../capabilities/design/130_cap_dsn_004_test_plan_structuring.md#xid-6C1A2D9F4504`
   - `../../capabilities/design/110_cap_dsn_002_test_design_structuring.md#xid-6C1A2D9F4502`
   - `../../capabilities/design/120_cap_dsn_003_integration_regression_test_design_structuring.md#xid-6C1A2D9F4503`
   - `../../capabilities/manufacturing/130_cap_mfg_003_test_method_review.md#xid-55CC9027ACAE`
 - knowledge_refs:
+  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../knowledge/quality/110_test_design_criteria.md#xid-8C4D2A7E5102`

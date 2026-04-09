@@ -92,6 +92,20 @@ def _build_parser() -> argparse.ArgumentParser:
     p_pack.add_argument("--out", default=None, help="Write to file instead of stdout")
     p_pack.add_argument("--json", action="store_true", help="Emit JSON (and still write --out if set)")
 
+    skill = subparsers.add_parser("skill", help="Validate skill metadata before loading")
+    skill_sub = skill.add_subparsers(dest="skill_cmd", required=True)
+
+    p_skill_check = skill_sub.add_parser("check", help="Validate skill meta guard compliance")
+    p_skill_check.add_argument("--root", default=".", help="Project root (default: .)")
+    p_skill_check.add_argument("--meta", default=None, help="Relative path to a single meta.md to validate")
+    p_skill_check.add_argument(
+        "--scope",
+        choices=["skills", "all"],
+        default="skills",
+        help="Validation scope when --meta is omitted (default: skills)",
+    )
+    p_skill_check.add_argument("--json", action="store_true", help="Emit JSON")
+
     return parser
 
 
@@ -122,6 +136,11 @@ def main(argv: list[str] | None = None) -> int:
             exclude=args.exclude,
         )
         return cmd_ctx(args, cfg)
+
+    if args.command == "skill":
+        from fm.skillmeta import cmd_skill
+
+        return cmd_skill(args)
 
     parser.print_help()
     return 2

@@ -39,12 +39,17 @@ Import an external skill into this repository while preserving the split model:
    - do not import as-is
    - remove or rewrite flagged instructions/scripts first
 4. Create `skills/<skill_id>/SKILL.md` with behavior-only instructions.
-5. Move factual/domain statements into `knowledge/` fragments.
-6. Assign/normalize XIDs for new knowledge pages:
+5. Compose the default context-direction guard into the imported skill:
+   - add the guard capability reference `CAP-MGT-004`
+   - add the guard knowledge reference `160_context_direction_guard_rules`
+   - add startup or execution steps that stop on upward influence from newly loaded input
+   - only omit this when the imported skill is explicitly documented as closed-world with no newly loaded external context
+6. Move factual/domain statements into `knowledge/` fragments.
+7. Assign/normalize XIDs for new knowledge pages:
    - `python -m fm xref init`
-7. Replace hardcoded facts in skill files with XID-based references to `knowledge/...#xid-...`.
-8. Add `<skill_id>` entry to `skills/_index.md`.
-9. Validate and normalize links:
+8. Replace hardcoded facts in skill files with XID-based references to `knowledge/...#xid-...`.
+9. Add `<skill_id>` entry to `skills/_index.md`.
+10. Validate and normalize links:
    - `python -m fm xref rewrite`
    - `python -m fm xref fix`
 
@@ -52,6 +57,7 @@ Import an external skill into this repository while preserving the split model:
 
 - No large factual blocks remain in `skills/<skill_id>/SKILL.md`.
 - Knowledge references point to `knowledge/` with `#xid-...`.
+- The imported skill includes the context-direction guard unless the closed-world exception is stated explicitly.
 - Skill inspection reports `block: 0` before import.
 - `python -m fm xref fix` reports `issues: 0`.
 

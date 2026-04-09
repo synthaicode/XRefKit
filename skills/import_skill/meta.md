@@ -8,7 +8,11 @@
 - use_when: external skill needs to be made runnable in this repo
 - input: source URL or ZIP path, optional target skill id
 - output: normalized `skills/<skill_id>/SKILL.md` and index registration
-- constraints: keep domain facts out of skill body; use `knowledge/...#xid-...`; run policy inspection before import
+- guard_policy: `required`
+- constraints: keep domain facts out of skill body; use `knowledge/...#xid-...`; run policy inspection before import; compose the context-direction guard by default unless the imported skill explicitly qualifies for the closed-world exception
 - tags: `import`, `normalization`, `xref`
 - skill_doc: `./SKILL.md`
-- knowledge_refs: none
+- capability_refs:
+  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
+- knowledge_refs:
+  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`

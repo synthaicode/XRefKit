@@ -30,6 +30,7 @@
   - `pptx_spec_traceability` -> `../pptx_spec_traceability/meta.md`
 - security:
   - `password_management` -> `../password_management/meta.md`
+  - `context_direction_guard` -> `../context_direction_guard/meta.md`
 - marketing:
   - `marketing_slide_png` -> `../marketing_slide_png/meta.md`
 

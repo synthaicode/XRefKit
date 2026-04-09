@@ -38,6 +38,10 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Application workflow](045_application_workflow.md#xid-8B31F02A4014)
 - [OR Team operating model](048_or_team_operating_model.md#xid-1D7A8E2C5F10)
 - [OR Team usage guide](049_or_team_usage_guide.md#xid-4E2F91A6B8C1)
+- [Codex MCP job inbox design](050_codex_mcp_job_inbox_design.md#xid-77BCEAA247E3)
+- [Parapara Video Creation Team usage guide](051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842)
+- [Flow Capability Skill Knowledge model](052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
+- [Context direction security guard](053_context_direction_security_guard.md#xid-A7F3C92D4E11)
 
 ## Common links
 

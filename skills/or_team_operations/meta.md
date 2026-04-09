@@ -8,6 +8,7 @@
 - use_when: user needs cross-group operating optimization, drift handling, stop-or-continue decisions, or structured improvement control beyond a local fix
 - input: target scope, minimum observation data, supporting evidence, baseline reference, and operating constraints
 - output: current state, problem list, cause hypotheses, improvement list, approval requirements, implementation method, re-observation method, unresolved items
+- guard_policy: `required`
 - constraints: do not become the default implementation owner for product changes; execute only OR-owned changes and otherwise return controlled implementation requests
 - lifecycle:
   - startup: confirm scope, minimum evidence, baseline, and operating constraints
@@ -17,8 +18,10 @@
   - closure: complete re-observation and close only after recovery or stable conditional continuation is confirmed
 - tags: `operations`, `optimization`, `drift`, `governance`, `control`
 - skill_doc: `./SKILL.md`
-- capability_refs: none
+- capability_refs:
+  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
+  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../docs/048_or_team_operating_model.md#xid-1D7A8E2C5F10`
   - `../../docs/049_or_team_usage_guide.md#xid-4E2F91A6B8C1`
   - `../../docs/040_group_definitions.md#xid-8B31F02A4009`
