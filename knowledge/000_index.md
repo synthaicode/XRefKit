@@ -30,6 +30,8 @@ Skills should reference these pages by XID and load only what is needed.
 - [LLM review knowledge usage rules](organization/140_llm_review_knowledge_usage_rules.md#xid-7A2F4C8D1401)
 - [Implementation assumption gap handling](organization/150_implementation_assumption_gap_handling.md#xid-7A2F4C8D1501)
 - [Context direction guard rules](organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601)
+- [XDDP basics](organization/170_xddp_basics.md#xid-7A2F4C8D1701)
+- [XDDP supporting methods](organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711)
 
 ## Private knowledge
 

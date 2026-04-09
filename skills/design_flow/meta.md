@@ -10,12 +10,12 @@
 - output: approved design, target paths, source modification design, data change design, design basis policy reference
 - execution_mode: `local_default`
 - guard_policy: `required`
-- constraints: preserve unresolved design assumptions explicitly; do not redefine business scope
+- constraints: preserve unresolved design assumptions explicitly; do not redefine business scope; express the change method clearly enough for pre-code review
 - lifecycle:
   - startup: confirm planning outputs and source modification policy exist
-  - planning: define design scope and management rows
-  - execution: perform solution design drafting through `CAP-DSN-001`
-  - monitoring_and_control: downgrade weak design assumptions to `unknown`
+  - planning: define design scope, change-design boundaries, and management rows
+  - execution: perform solution design drafting through `CAP-DSN-001` and preserve the intended change method explicitly
+  - monitoring_and_control: downgrade weak design assumptions or unclear change methods to `unknown`
   - closure: finalize states and hand off the approved design package and design basis policy reference with unresolved items
 - tags: `design`, `execution`, `implementation-preparation`
 - skill_doc: `./SKILL.md`
@@ -24,3 +24,5 @@
   - `../../capabilities/design/100_cap_dsn_001_solution_design_structuring.md#xid-6C1A2D9F4501`
 - knowledge_refs:
   - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
+  - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`
+  - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`

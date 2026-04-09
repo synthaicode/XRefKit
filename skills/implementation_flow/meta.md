@@ -10,12 +10,12 @@
 - output: code changes, unit test results, unit test execution basis reference, implementation basis design reference, uncertainty list, out-of-scope list
 - execution_mode: `local_default`
 - guard_policy: `required`
-- constraints: do not change design policy; keep unresolved items explicit
+- constraints: do not change design policy; keep unresolved items explicit; implement only traced and approved differences by default
 - lifecycle:
   - startup: confirm approved scope, reviewed test package, target files, and coding rules exist
   - planning: define implementation and test targets and management rows from design and reviewed test design
-  - execution: perform implementation and unit test execution through `CAP-MFG-001 -> CAP-MFG-002`
-  - monitoring_and_control: downgrade weak completion claims to `unknown`; preserve out-of-scope reasons
+  - execution: perform implementation and unit test execution through `CAP-MFG-001 -> CAP-MFG-002` against traced and approved differences
+  - monitoring_and_control: downgrade weak completion claims or untraced diffs to `unknown`; preserve out-of-scope reasons
   - closure: finalize states and hand off results and implementation basis design reference to QA review
 - tags: `implementation`, `manufacturing`, `engineering`
 - skill_doc: `./SKILL.md`
@@ -25,3 +25,5 @@
   - `../../capabilities/manufacturing/110_cap_mfg_002_unit_test_execution.md#xid-55CC9027ACAD`
 - knowledge_refs:
   - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
+  - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`
+  - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`

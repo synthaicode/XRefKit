@@ -20,6 +20,8 @@ Execute `CAP-PLN-001` and prepare work planning outputs from approved requiremen
 
 ## Required Knowledge (XID)
 
+- [XDDP basics](../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701)
+- [XDDP supporting methods](../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711)
 - [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
 - [Custom framework common criteria](../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002)
 - [C# custom framework analysis criteria](../../knowledge/csharp/110_custom_framework_analysis_criteria.md#xid-30E6A4F6F3AB)
@@ -28,6 +30,7 @@ Execute `CAP-PLN-001` and prepare work planning outputs from approved requiremen
 ## Outputs
 
 - work plan
+- change traceability view for planning scope
 - source modification policy
 - data change policy
 - data correction tool policy
@@ -35,6 +38,7 @@ Execute `CAP-PLN-001` and prepare work planning outputs from approved requiremen
 - test tool policy
 - release policy
 - planning basis source list
+- change-design basis notes
 
 ## Startup
 
@@ -47,6 +51,8 @@ Execute `CAP-PLN-001` and prepare work planning outputs from approved requiremen
 
 - Define planning scope and downstream design-policy targets.
 - Identify which domain knowledge and current-source findings govern the target scope.
+- Build a traceability view from requirement differences to impacted modules, files, documents, or operational assets.
+- Separate common impact and project-specific impact when the same asset serves multiple change areas.
 - Map the business activity to its supporting capability:
   - work planning and policy drafting -> `CAP-PLN-001`
 - Prepare management rows for planning outputs and unresolved policy assumptions.
@@ -54,6 +60,9 @@ Execute `CAP-PLN-001` and prepare work planning outputs from approved requiremen
 ## Execution
 
 - Perform work planning and policy drafting by executing `CAP-PLN-001`.
+- Use the requirement difference as the planning anchor, not only the final desired state.
+- Record which requirement difference maps to which target file, function, module, document, registration, or operational artifact.
+- Build policy outputs so they can serve as pre-code change-design guidance rather than only as broad planning notes.
 - Build source modification policy from the current source structure by default.
 - Record an explicit reason if the plan intentionally departs from the current structure.
 - Build release policy by checking IPA-derived release activity areas, not only deployment steps.
@@ -68,6 +77,7 @@ Execute `CAP-PLN-001` and prepare work planning outputs from approved requiremen
 - Check that all required planning outputs have a recorded result.
 - Downgrade weakly supported planning assumptions to `unknown`.
 - Downgrade source-structure claims to `unknown` if no current-source finding supports them.
+- Downgrade impact mappings to `unknown` when the requirement-to-target relation cannot be traced clearly enough for downstream design or review.
 - Preserve unresolved policy, dependency, or assignment questions.
 
 ## Closure
@@ -81,3 +91,4 @@ Execute `CAP-PLN-001` and prepare work planning outputs from approved requiremen
 - Do not finalize resource allocation.
 - Do not finalize business priority.
 - Do not invent a target structure without checking the current codebase first.
+- Do not let planning outputs hide which concrete difference they are meant to realize.

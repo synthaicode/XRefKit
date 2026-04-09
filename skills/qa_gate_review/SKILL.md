@@ -32,6 +32,11 @@ Execute the four QA review domains `specification / performance / security / lic
 - finding list with evidence
 - uncertainty list
 
+## Required Knowledge (XID)
+
+- [XDDP basics](../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701)
+- [XDDP supporting methods](../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711)
+
 ## Startup
 
 - Confirm implemented code exists.
@@ -44,6 +49,8 @@ Execute the four QA review domains `specification / performance / security / lic
 ## Planning
 
 - Define the review scope and target files.
+- Define the intended change difference before reading the implementation in detail.
+- Narrow the review target to the appropriateness of the stated difference rather than re-reviewing the whole implementation surface.
 - Define the review domains:
   - specification
   - performance
@@ -54,17 +61,24 @@ Execute the four QA review domains `specification / performance / security / lic
 
 ## Execution
 
+- Review the implementation as a delta against:
+  - the change reason
+  - the change requirement specification
+  - the traced impact targets
+  - the intended change method when available
 - Execute `CAP-QA-001` for specification conformance against design evidence and coding rules.
 - Execute `CAP-QA-006` for performance risk review.
 - Execute `CAP-QA-007` for security review.
 - Execute `CAP-QA-008` for license compliance check.
 - Execute `CAP-QA-005` when attribute semantics need specification-focused deep review.
+- Confirm that the reviewed code or diff matches the intended change scope and does not silently expand beyond the traced targets without explanation.
 - Produce findings with concrete evidence.
 
 ## Monitoring and Control
 
 - Check that each review domain has a recorded result.
 - Downgrade unsupported conclusions to `unknown`.
+- Downgrade review coverage to `unknown` when the intended difference is not clear enough to bound the review target.
 - Preserve explicit evidence gaps.
 
 ## Closure
@@ -79,4 +93,5 @@ Execute the four QA review domains `specification / performance / security / lic
 - Do not treat unsupported assumptions as facts.
 - Do not decide design or implementation policy.
 - Use subagents only when scope boundaries stay explicit and parallel execution is safe.
+- Do not expand review into full-codebase inspection when the intended delta can be reviewed more narrowly and correctly.
 
