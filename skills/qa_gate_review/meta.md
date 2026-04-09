@@ -8,6 +8,7 @@
 - use_when: user asks for QA review against design, performance, security, or license expectations
 - input: target code paths, design evidence, coding rules, optional performance evidence, optional dependency provenance
 - output: per-domain review results, findings with evidence, uncertainty list
+- execution_mode: `subagent_required`
 - guard_policy: `required`
 - constraints: every judgment needs evidence; unresolved evidence gaps stay explicit
 - lifecycle:

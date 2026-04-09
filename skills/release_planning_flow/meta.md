@@ -8,6 +8,7 @@
 - use_when: user needs release-planning work after manufacturing and testing
 - input: manufacturing outputs, requirements, design materials, optional performance data
 - output: release plan draft, release procedure draft, release confirmation procedure draft, rollback procedure draft, monitoring specification, event-response procedure draft, operational readiness result
+- execution_mode: `local_default`
 - guard_policy: `required`
 - constraints: do not approve release timing or final go or no-go
 - lifecycle:

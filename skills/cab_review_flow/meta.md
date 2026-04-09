@@ -8,6 +8,7 @@
 - use_when: user needs CAB-style evaluation before release confirmation
 - input: release plan materials, manufacturing outputs, requirement and design evidence, value and constraint definitions
 - output: quality-gate result, operational readiness result, value-gate result, unresolved list
+- execution_mode: `subagent_preferred`
 - guard_policy: `required`
 - constraints: evaluate only; do not make final release decision
 - lifecycle:

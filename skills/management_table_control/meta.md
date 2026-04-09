@@ -8,6 +8,7 @@
 - use_when: user needs leak detection, closure confirmation, or out-of-scope escalation handling
 - input: management table, optional metrics log, optional out-of-scope list
 - output: leak detection result, closure confirmation, escalation record when needed
+- execution_mode: `local_default`
 - guard_policy: `required`
 - constraints: control state only; do not alter judgment content or accept risk implicitly
 - lifecycle:

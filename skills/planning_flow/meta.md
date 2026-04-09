@@ -8,6 +8,7 @@
 - use_when: user needs planning after requirements are approved
 - input: approved requirements, change target list, current source structure findings, domain knowledge references
 - output: work plan, source modification policy, data change policy, data correction tool policy, test policy, test tool policy, release policy, planning basis source list
+- execution_mode: `local_default`
 - guard_policy: `required`
 - constraints: draft only; do not finalize priority or resource allocation
 - lifecycle:

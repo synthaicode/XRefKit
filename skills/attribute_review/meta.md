@@ -8,6 +8,7 @@
 - use_when: user needs focused validation of C# attributes
 - input: target C# code, design evidence, coding rules
 - output: attribute review result, invalid usage findings, unresolved list
+- execution_mode: `subagent_preferred`
 - guard_policy: `required`
 - constraints: every judgment needs evidence; unresolved evidence gaps stay explicit
 - lifecycle:

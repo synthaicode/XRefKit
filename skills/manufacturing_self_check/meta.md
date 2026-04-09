@@ -8,6 +8,7 @@
 - use_when: implementation and unit testing are complete and manufacturing needs an internal alignment check
 - input: implemented code, approved design, unit test results, coding rules
 - output: self-check result, design-alignment findings, unresolved list
+- execution_mode: `subagent_preferred`
 - guard_policy: `required`
 - constraints: internal manufacturing check only; does not replace quality-group review
 - lifecycle:

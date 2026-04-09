@@ -8,6 +8,7 @@
 - use_when: user needs to convert PowerPoint-based specifications into Markdown artifacts while preserving slide-level traceability and reducing review burden in the original deck
 - input: source pptx path, optional target Markdown destination, optional slide scope, optional traceability ID prefix
 - output: Markdown specification fragments, slide-item descriptions, traceability ID map, updated pptx with written-back IDs, unresolved list
+- execution_mode: `local_default`
 - guard_policy: `required`
 - constraints: keep slide number and object position explicit; do not separate image-derived or shape-derived items from the slide text that gives them meaning; write IDs back into the original deck or the controlled deck copy used as the source of truth
 - lifecycle:

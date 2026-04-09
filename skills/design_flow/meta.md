@@ -8,6 +8,7 @@
 - use_when: user needs implementation-ready design after planning outputs are approved
 - input: approved requirements, work plan, source modification policy, data change policy, planning basis source list
 - output: approved design, target paths, source modification design, data change design, design basis policy reference
+- execution_mode: `local_default`
 - guard_policy: `required`
 - constraints: preserve unresolved design assumptions explicitly; do not redefine business scope
 - lifecycle:

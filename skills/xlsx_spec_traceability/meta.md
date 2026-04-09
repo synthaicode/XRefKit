@@ -8,6 +8,7 @@
 - use_when: user needs to convert Excel-based specifications into Markdown artifacts while preserving source traceability and reducing review burden in the original workbook
 - input: source xlsx path, optional target Markdown destination, optional workbook or sheet scope, optional traceability ID prefix
 - output: Markdown specification fragments, image-linked screen-item descriptions, traceability ID map, updated xlsx with written-back IDs, unresolved list
+- execution_mode: `local_default`
 - guard_policy: `required`
 - constraints: keep the workbook path and sheet/cell/image position explicit; do not separate image-derived items from the source location they came from; write IDs back into the original workbook or the controlled workbook copy used as the source of truth
 - lifecycle:

@@ -8,6 +8,7 @@
 - use_when: user needs presentation diagrams, figure-first slides, or visually structured slide assets for decks where Markdown should mainly control page breaks and image placement
 - input: target deck markdown path, target asset directory, slide messages, diagram structure, and branding constraints
 - output: slide-ready PNG diagrams, reusable `diagram.css`, reusable `render.mjs`, and updated deck markdown that embeds the generated PNG assets
+- execution_mode: `local_default`
 - guard_policy: `required`
 - constraints: treat this as Marketing Group work; keep official announcement ownership outside this skill; put slide titles, labels, and visual hierarchy inside the generated image when the deck is image-based; keep Markdown minimal and avoid duplicating slide content outside the PNG
 - lifecycle:

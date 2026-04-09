@@ -8,6 +8,7 @@
 - use_when: `retro` or an equivalent review has identified stable promotion candidates and the user wants those candidates reflected in `docs/`, `knowledge/`, `skills/`, or `agent/`
 - input: approved promotion report, related `work/` records, target canonical files or target classes, optional user wording constraints
 - output: updated canonical files, `work/` pointer updates, unresolved or skipped candidate list, xref validation result
+- execution_mode: `local_default`
 - guard_policy: `required`
 - constraints: do not ship unstable notes; do not duplicate existing canonical content; do not mix procedure and domain fact into the wrong destination
 - lifecycle:

@@ -8,6 +8,7 @@
 - use_when: user needs focused license validation
 - input: package list, dependency information, provenance information
 - output: license review result, incompatible or unknown license findings, unresolved list
+- execution_mode: `subagent_preferred`
 - guard_policy: `required`
 - constraints: every judgment needs evidence; unresolved evidence gaps stay explicit
 - lifecycle:

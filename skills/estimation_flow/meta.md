@@ -8,6 +8,7 @@
 - use_when: user needs estimate options, supplier checks, or assumption clarification before requirements
 - input: request, change target list, supplier definitions, optional budget definition
 - output: supplier check results, cost patterns, solution options, assumption list, ambiguity classification
+- execution_mode: `local_default`
 - guard_policy: `required`
 - constraints: do not approve supplier adoption, budget, or final direction
 - lifecycle:

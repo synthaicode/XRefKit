@@ -8,6 +8,7 @@
 - use_when: user needs focused security validation
 - input: target code, design evidence
 - output: security review result, risk findings, unresolved list
+- execution_mode: `subagent_preferred`
 - guard_policy: `required`
 - constraints: every judgment needs evidence; unresolved evidence gaps stay explicit
 - lifecycle:

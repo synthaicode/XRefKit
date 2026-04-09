@@ -8,6 +8,7 @@
 - use_when: user needs impact investigation before estimation or design
 - input: request, optional service candidates, optional service catalog path, optional repository or document paths
 - output: in-scope service list, out-of-scope service list with reasons, change viewpoints, test viewpoints, change target list, uncertainty list
+- execution_mode: `local_default`
 - guard_policy: `required`
 - constraints: do not decide design or implementation policy; record unknowns explicitly
 - lifecycle:

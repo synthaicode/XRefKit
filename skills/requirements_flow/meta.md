@@ -8,6 +8,7 @@
 - use_when: user needs requirement drafting after investigation and estimation
 - input: confirmed assumptions, change target list, test viewpoints, request, optional performance constraints
 - output: requirement draft, performance requirement definition, load-test draft plan, unresolved list
+- execution_mode: `local_default`
 - guard_policy: `required`
 - constraints: draft only; do not approve final requirements
 - lifecycle:

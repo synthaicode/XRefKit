@@ -8,6 +8,7 @@
 - use_when: user asks to build, review, or migrate password management practices for personal or team accounts
 - input: account inventory, current password habits/tools, security incidents, constraints, confidential password state file
 - output: risk findings, prioritized fixes, vault/MFA rollout plan, recovery checklist, updated confidential state record
+- execution_mode: `local_default`
 - guard_policy: `required`
 - constraints: never store plaintext passwords or master secrets in Git-tracked files; never ask users to reveal current passwords
 - tags: `security`, `password`, `mfa`, `vault`, `checklist`

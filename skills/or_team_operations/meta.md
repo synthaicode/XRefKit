@@ -8,6 +8,7 @@
 - use_when: user needs cross-group operating optimization, drift handling, stop-or-continue decisions, or structured improvement control beyond a local fix
 - input: target scope, minimum observation data, supporting evidence, baseline reference, and operating constraints
 - output: current state, problem list, cause hypotheses, improvement list, approval requirements, implementation method, re-observation method, unresolved items
+- execution_mode: `local_default`
 - guard_policy: `required`
 - constraints: do not become the default implementation owner for product changes; execute only OR-owned changes and otherwise return controlled implementation requests
 - lifecycle:

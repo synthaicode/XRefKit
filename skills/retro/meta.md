@@ -8,6 +8,7 @@
 - use_when: a task or work session is ending and the agent should determine whether stable rules, knowledge, or procedures must be promoted out of `work/`
 - input: current task goal, related `work/sessions/` or `work/retrospectives/` files, changed files, optional conversation history, optional target canonical paths
 - output: promotion candidate list, target location per candidate, reasons, evidence references, already-promoted checks, stay-in-work decisions, optional draft update plan
+- execution_mode: `local_default`
 - guard_policy: `required`
 - constraints: do not treat `work/` as canonical; do not promote unstable notes; do not duplicate existing canonical content without checking first
 - lifecycle:

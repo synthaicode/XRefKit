@@ -8,6 +8,7 @@
 - use_when: user needs focused performance validation
 - input: target code, performance evidence or assumptions
 - output: performance review result, bottleneck findings, unresolved list
+- execution_mode: `subagent_preferred`
 - guard_policy: `required`
 - constraints: every judgment needs evidence; unresolved evidence gaps stay explicit
 - lifecycle:

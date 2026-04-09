@@ -49,6 +49,8 @@ This page defines how an agent should route a user request through workflow, cap
 - If no suitable composed skill exists, use the nearest matching skill and load the missing capability definition explicitly.
 - If processing can be separated into disjoint scopes and parallel execution does not create handoff or consistency risk, prefer subagent decomposition by scope.
 - Subagent decomposition must preserve explicit scope boundaries; do not split work in a way that changes owner, evidence basis, or closure responsibility.
+- Review-oriented or `judgment`-heavy skills should prefer separate subagent execution so the reviewer runs in a different context from the producer.
+- When a skill `meta.md` declares `execution_mode: subagent_preferred` or `execution_mode: subagent_required`, validate that metadata before loading and follow the declared execution mode.
 
 ## Knowledge Loading Rule
 

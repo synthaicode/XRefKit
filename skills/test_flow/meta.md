@@ -8,6 +8,7 @@
 - use_when: user needs a reviewed test package from planning outputs, requirements, and design evidence
 - input: approved requirements, work plan, test policy, approved design, planning basis source list
 - output: test plan, test design, requirement traceability reference, integration regression test design, manufacturing test review result
+- execution_mode: `subagent_preferred`
 - guard_policy: `required`
 - constraints: do not redefine requirement intent, business scope, or final release judgment
 - lifecycle:

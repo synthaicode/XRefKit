@@ -8,6 +8,7 @@
 - use_when: user asks for C# review beyond Roslyn/compiler diagnostics
 - input: target path, optional scope filters, optional output mode
 - output: evidence-based findings for attribute misuse, resource efficiency, synchronization, and lifecycle support
+- execution_mode: `subagent_preferred`
 - guard_policy: `required`
 - constraints: exclude Roslyn-detectable issues; do not hard-fail unknown attribute values by whitelist
 - lifecycle:
