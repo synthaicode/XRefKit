@@ -13,6 +13,8 @@
   - `or_team_operations` -> `../or_team_operations/meta.md`
 - engineering:
   - `csharp_review` -> `../csharp_review/meta.md`
+  - `dotnet_change_analysis` -> `../dotnet_change_analysis/meta.md`
+  - `external_definition_change_analysis` -> `../external_definition_change_analysis/meta.md`
   - `implementation_flow` -> `../implementation_flow/meta.md`
   - `design_flow` -> `../design_flow/meta.md`
   - `manufacturing_self_check` -> `../manufacturing_self_check/meta.md`

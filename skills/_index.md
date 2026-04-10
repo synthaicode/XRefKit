@@ -47,6 +47,14 @@ When asked "what skills are available?", answer from this file.
   - summary: review C# code beyond Roslyn-detectable diagnostics
   - meta: `skills/csharp_review/meta.md`
   - skill_doc: `skills/csharp_review/SKILL.md`
+- `dotnet_change_analysis`:
+  - summary: analyze .NET application structure and generate a Markdown change-analysis note
+  - meta: `skills/dotnet_change_analysis/meta.md`
+  - skill_doc: `skills/dotnet_change_analysis/SKILL.md`
+- `external_definition_change_analysis`:
+  - summary: analyze applications driven by XML or other external definitions and generate a Markdown change-analysis note
+  - meta: `skills/external_definition_change_analysis/meta.md`
+  - skill_doc: `skills/external_definition_change_analysis/SKILL.md`
 - `password_management`:
   - summary: assess and improve password hygiene with vault and MFA
   - meta: `skills/password_management/meta.md`

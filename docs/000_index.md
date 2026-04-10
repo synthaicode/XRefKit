@@ -42,6 +42,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Parapara Video Creation Team usage guide](051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842)
 - [Flow Capability Skill Knowledge model](052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
 - [Context direction security guard](053_context_direction_security_guard.md#xid-A7F3C92D4E11)
+- [Change analysis skill usage](054_change_analysis_skill_usage.md#xid-C5A8F13D7E21)
 
 ## Common links
 

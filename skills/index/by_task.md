@@ -18,6 +18,8 @@
   - `license_review` -> `../license_review/meta.md`
   - `cab_review_flow` -> `../cab_review_flow/meta.md`
 - investigate:
+  - `dotnet_change_analysis` -> `../dotnet_change_analysis/meta.md`
+  - `external_definition_change_analysis` -> `../external_definition_change_analysis/meta.md`
   - `investigation_flow` -> `../investigation_flow/meta.md`
 - estimate:
   - `estimation_flow` -> `../estimation_flow/meta.md`

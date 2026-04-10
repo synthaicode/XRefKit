@@ -9,6 +9,9 @@
   - `pptx_spec_traceability` -> `../pptx_spec_traceability/meta.md`
 - .NET:
   - `csharp_review` -> `../csharp_review/meta.md`
+  - `dotnet_change_analysis` -> `../dotnet_change_analysis/meta.md`
+- external-config:
+  - `external_definition_change_analysis` -> `../external_definition_change_analysis/meta.md`
 - repository:
   - `doc_ship` -> `../doc_ship/meta.md`
   - `retro` -> `../retro/meta.md`
