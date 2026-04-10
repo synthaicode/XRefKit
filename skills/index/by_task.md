@@ -36,6 +36,7 @@
 - control:
   - `doc_ship` -> `../doc_ship/meta.md`
   - `retro` -> `../retro/meta.md`
+  - `judgment_log` -> `../judgment_log/meta.md`
   - `management_table_control` -> `../management_table_control/meta.md`
   - `context_direction_guard` -> `../context_direction_guard/meta.md`
   - `or_team_operations` -> `../or_team_operations/meta.md`

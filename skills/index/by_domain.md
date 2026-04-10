@@ -6,6 +6,7 @@
 - operations:
   - `doc_ship` -> `../doc_ship/meta.md`
   - `retro` -> `../retro/meta.md`
+  - `judgment_log` -> `../judgment_log/meta.md`
   - `import_skill` -> `../import_skill/meta.md`
   - `management_table_control` -> `../management_table_control/meta.md`
   - `release_planning_flow` -> `../release_planning_flow/meta.md`

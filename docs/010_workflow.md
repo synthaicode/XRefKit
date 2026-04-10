@@ -68,6 +68,18 @@ Details: [Sources](020_sources.md#xid-2FAD591BF725)
 - Do not treat the edit as complete until the file parses without error
 - When a project-specific formatter, linter, compiler, or validator already exists for that format, prefer that validator over ad hoc checking
 
+#### XML/JSON parse-validation checklist
+
+Use this checklist whenever an edit touches XML or JSON:
+
+1. Confirm the file's existing formatting style, character encoding, and encoding form before editing.
+2. For XML, inspect the surrounding semantic grouping and insert new entries where the existing structure indicates, not automatically at the end.
+3. Apply the minimal change needed; avoid unrelated reformatting or reordering.
+4. Run a deterministic parser, formatter, linter, compiler, or validator appropriate to the file.
+5. Confirm the parser or validator reports no error.
+6. If the validator rewrites output, confirm the resulting file still follows the repository's existing formatting conventions.
+7. If parse validation cannot be executed, record that fact explicitly and treat the work as incomplete.
+
 ### Split
 
 - Keep the original file’s XID in the original file (preserve existing links)

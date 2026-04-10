@@ -33,6 +33,21 @@ The human decision layer retains full authority over all configuration decisions
 | Main handoff artifacts | domain knowledge injection record, capability tuning record, threshold configuration record, verification result |
 | Escalation path | unresolved configuration gaps must be explicitly recorded before normal workflows begin; no silent defaults permitted |
 
+## Flow Diagram
+
+```mermaid
+flowchart TD
+    A[Project brief, domain materials, stakeholder constraints] --> B[Identify gaps against framework defaults]
+    B --> C[Populate knowledge]
+    C --> D[Determine capability tuning]
+    D --> E[Set thresholds and output level]
+    E --> F[Interview-based verification]
+    F --> G[Record unresolved gaps explicitly]
+    G --> H[Human confirmation]
+    H --> I[Application completion record]
+    I --> J[Investigation workflow]
+```
+
 ## What This Workflow Configures
 
 ### 1. Domain Knowledge Injection

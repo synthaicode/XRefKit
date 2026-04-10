@@ -15,6 +15,7 @@ Use `docs/` and `knowledge/` only for reviewed, stable outputs.
 ## Folder Roles
 
 - `work/sessions/`: per-task execution logs written by AI
+- `work/judgments/`: non-trivial judgment logs with evidence, alternatives, and next checks
 - `work/retrospectives/`: summaries of decisions, tradeoffs, and outcomes
 - `work/handover/`: concise baton-pass notes for unfinished work
 
@@ -33,13 +34,14 @@ Because auto-routing is not guaranteed, AI MUST use date-prefixed filenames.
 1. AI MUST write logs and retrospectives to `work/` during/after tasks.
 2. AI MUST update `work/sessions/` before declaring task completion.
 3. AI MUST update `work/sessions/` before running `git commit` or `git push`.
-4. AI MUST promote stabilized content to:
+4. AI SHOULD write `work/judgments/` when a non-trivial judgment, mixed-confidence conclusion, or alternative comparison needs later review.
+5. AI MUST promote stabilized content to:
    - `docs/` for operational/design policy
    - `knowledge/` for domain facts
-5. Add/normalize XIDs after promotion:
+6. Add/normalize XIDs after promotion:
    - `python -m fm xref init`
    - `python -m fm xref fix`
-6. Keep a short pointer in `work/` (moved-to path/date).
+7. Keep a short pointer in `work/` (moved-to path/date).
 
 ## Notes
 
@@ -48,3 +50,5 @@ Because auto-routing is not guaranteed, AI MUST use date-prefixed filenames.
 - Do not treat `work/` as canonical source of truth.
 - Event-log writing rules are defined in:
   - `docs/015_shared_memory_operations.md#xid-4A423E72D2ED`
+- Judgment-log schema is defined in:
+  - `../knowledge/organization/121_judgment_log_schema.md#xid-7B4C2D91E621`

@@ -19,6 +19,22 @@ Prevent silent leaks and ensure unresolved or out-of-scope items are explicitly 
 | Main handoff artifacts | leak detection result, return instructions, closure confirmation, escalation record, unknown escalation record, structural quality feedback record |
 | Escalation path | all remaining `out_of_scope` rows go to Coordinator routing; unresolved final `unknown` rows go to human confirmation or approval; recurring or upstream-origin leaks go to the system quality feedback loop |
 
+## Flow Diagram
+
+```mermaid
+flowchart TD
+    A[Management table and metrics] --> B[Management table check]
+    B --> C[Confirm final statuses]
+    C --> D[Return incomplete rows]
+    C --> E[Out-of-scope escalation]
+    C --> F[Route final unknown to human]
+    C --> G[Emit structural feedback when needed]
+    D --> H[Responsible execution group]
+    E --> I[Coordinator routing]
+    F --> J[Human confirmation or approval]
+    G --> K[System quality feedback]
+```
+
 ## Sequence
 
 1. Inspect the management table and supporting metrics.
