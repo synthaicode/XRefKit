@@ -9,6 +9,10 @@ Important: **you do not need to pre-split the original materials**. Store the or
 
 The AI-readable domain knowledge is maintained as Markdown fragments under `knowledge/` (XID-managed). Originals under `sources/` act as the **source of truth** that each fragment points to.
 
+This page is the detailed source-recording rule.
+For the import mental model, see [Importing existing documents](003_import_for_humans.md#xid-0CF07930F2FA).
+For the broader repository cycle, see [End-to-end flow](004_overall_flow_for_humans.md#xid-E01E6695A30A).
+
 ## Where to put things
 
 - Originals (binaries, HTML snapshots, etc.): `sources/`
@@ -18,7 +22,8 @@ The AI-readable domain knowledge is maintained as Markdown fragments under `know
 
 1. Add originals to `sources/` (PDF/Excel/HTML, etc.)
 2. Read originals and add/update `knowledge/` as “one page = one fragment”
-3. At the end of the change, run `init` / `rewrite` / `check` until `issues: 0`
+3. Record a source pointer in each resulting fragment
+4. At the end of the change, run `init` / `rewrite` / `check` until `issues: 0`
 
 ## How to record sources (recommended)
 

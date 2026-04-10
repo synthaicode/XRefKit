@@ -5,6 +5,10 @@
 
 This page provides a one-page view of workflow ownership and cross-group handoff.
 
+This page is the compact navigation view.
+It does not redefine group authority, flow-internal quality control, or structural feedback rules.
+For those, see [Group definitions](040_group_definitions.md#xid-8B31F02A4009), [Flow quality assurance mechanism](042_flow_quality_assurance_mechanism.md#xid-8B31F02A4011), and [System quality feedback loop](043_system_quality_feedback_loop.md#xid-8B31F02A4012).
+
 ## Matrix
 
 | Flow | Main owner group | Main input from | Main output to | Main handoff artifacts |

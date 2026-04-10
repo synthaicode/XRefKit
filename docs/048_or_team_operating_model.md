@@ -5,6 +5,10 @@
 
 This page defines the cross-functional OR Team for AI-organization performance maintenance and improvement.
 
+This page defines the OR Team as an operating model.
+For day-to-day use, request format, and interpretation, see [OR Team usage guide](049_or_team_usage_guide.md#xid-4E2F91A6B8C1).
+For the boundary among operating models, usage guides, and design pages, see [Operating models, usage guides, and design pages](022_operating_models_guides_and_designs.md#xid-9C4E2A71D583).
+
 ## Purpose
 
 The OR Team is not a simple monitoring unit.
@@ -464,6 +468,7 @@ Approval split for evaluation assets:
 
 ## Related
 
+- [Operating models, usage guides, and design pages](022_operating_models_guides_and_designs.md#xid-9C4E2A71D583)
 - [Group definitions](040_group_definitions.md#xid-8B31F02A4009)
 - [Flow-to-group matrix](041_flow_to_group_matrix.md#xid-8B31F02A4010)
 - [System quality feedback loop](043_system_quality_feedback_loop.md#xid-8B31F02A4012)

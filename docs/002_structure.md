@@ -1,9 +1,10 @@
 <!-- xid: D0E1327DDD7F -->
 <a id="xid-D0E1327DDD7F"></a>
 
-# Repository Structure (human view)
+# Repository Structure (Human View)
 
-This repository provides the operational pattern and tooling to reference split documents by XID and prevent link breakage after rename/move/split/merge.
+This page describes the top-level directory layout only.
+For the repository purpose and operating model, see [Overview](000_overview.md#xid-7C6C2B46A9D1).
 
 ## Top-level directories
 
@@ -28,7 +29,7 @@ This repository provides the operational pattern and tooling to reference split 
 - Human entry: `docs/000_index.md`
 - Agent entry: `agent/000_agent_entry.md`
 
-## Representative files
+## Representative startup files
 
 - `README.md`: Project summary and basic usage
 - `CLAUDE.md`: Claude Code contract (optional)

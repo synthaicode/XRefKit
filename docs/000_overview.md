@@ -5,11 +5,20 @@
 
 This repository is a workspace for building an AI/human collaborative “knowledge operations” system: keep original sources in-repo, extract AI-readable fragments, and keep references stable as the docs evolve.
 
+Originally, the most visible mechanism in this repository was XID-based reference durability.
+The current repository should be understood more broadly as a controlled AI work base:
+
+- explicit AI operating rules
+- repository-specific knowledge routing
+- reusable workflow, capability, and skill structure
+- stable references across evolving knowledge assets
+
 ## The core problem
 
 - Agent design forces documents to be split (context limits)
 - Human-facing explanation (`docs/`) and agent-facing instructions (`agent/`) need different granularity
 - With many files, links break easily during split/merge/move/delete
+- Capable models still need explicit control over boundary, uncertainty, and knowledge loading
 
 ## Approach: reference by XID
 
@@ -29,6 +38,22 @@ The primary value of this repository is to **connect each skill to domain knowle
 - Primary: skills select and consume the right knowledge fragments for the task
 - Supporting: `fm xref` maintains IDs, link paths, and breakage checks
 - Outcome: skill-to-knowledge wiring stays stable even when tools or agents change
+
+The repository therefore manages more than link stability:
+
+- base AI control rules
+- knowledge-loading rules
+- work-structure boundaries
+- durable references for the knowledge layer
+
+## Internal layering
+
+This repository intentionally keeps two layers together:
+
+- base control: common AI behavior control such as guard, uncertainty handling, and startup contract
+- xref routing: XRefKit-specific knowledge loading and reference management
+
+See [Base control and xref routing layers](017_base_and_xref_layering.md#xid-5A1C8E4D2F90) for the exact boundary.
 
 ## What it means for AI to “manage XIDs”
 

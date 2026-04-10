@@ -5,6 +5,8 @@
 
 This workflow defines how implementation and unit testing are orchestrated inside an approved scope.
 
+This page follows the shared [Workflow page schema](018_workflow_page_schema.md#xid-6D2E4A9C0B71). The sections below focus on workflow-specific content.
+
 ## Purpose
 
 Produce code changes and unit-test results without crossing the approved design boundary.
@@ -18,6 +20,20 @@ Produce code changes and unit-test results without crossing the approved design 
 | Output to | Quality Group review and Operations Group release-planning preparation |
 | Main handoff artifacts | implemented code, unit test results, unit test execution basis reference, implementation basis design reference, self-check result, uncertainty list, out-of-scope list |
 | Escalation path | implementation assumption gaps stay `unknown` or become `out_of_scope`; `out_of_scope` items go to Coordinator routing |
+
+## Flow Diagram
+
+```mermaid
+flowchart TD
+    A[Approved design and scoped instruction] --> B[Implementation]
+    B --> C[Unit test execution]
+    C --> D[Manufacturing self check]
+    D --> E[Hand off implementation results]
+    E --> F[Quality Group review]
+    E --> G[Operations release planning]
+    D --> H[Record unresolved and out_of_scope items]
+    H --> I[Coordinator routing for out_of_scope]
+```
 
 ## Business Activities and Supporting Capabilities
 

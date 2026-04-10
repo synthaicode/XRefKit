@@ -5,6 +5,8 @@
 
 This workflow defines how requirement drafts are produced from confirmed assumptions and investigation outputs.
 
+This page follows the shared [Workflow page schema](018_workflow_page_schema.md#xid-6D2E4A9C0B71). The sections below focus on workflow-specific content.
+
 ## Purpose
 
 Convert confirmed assumptions into draft requirements and related performance conditions.
@@ -18,6 +20,20 @@ Convert confirmed assumptions into draft requirements and related performance co
 | Output to | Design Group planning work and later Manufacturing scope definition |
 | Main handoff artifacts | requirement draft, performance requirement definition, unresolved evidence list |
 | Escalation path | unresolved requirement questions remain `unknown` for review or approval; out-of-scope items go to Coordinator routing |
+
+## Flow Diagram
+
+```mermaid
+flowchart TD
+    A[Estimation outputs, investigation outputs, confirmed assumptions] --> B[Confirm assumption review state]
+    B --> C[Requirement draft creation]
+    C --> D[Performance requirement definition when needed]
+    D --> E[Preserve unresolved evidence gaps]
+    E --> F[Design planning work]
+    E --> G[Manufacturing scope definition]
+    E --> H[Coordinator routing for out_of_scope]
+    E --> I[Review or approval for unresolved unknown]
+```
 
 ## Business Activities and Supporting Capabilities
 

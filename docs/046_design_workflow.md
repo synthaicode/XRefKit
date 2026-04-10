@@ -5,6 +5,8 @@
 
 This workflow defines how planning outputs are converted into implementation-ready solution-design artifacts.
 
+This page follows the shared [Workflow page schema](018_workflow_page_schema.md#xid-6D2E4A9C0B71). The sections below focus on workflow-specific content.
+
 ## Purpose
 
 Prepare solution-design artifacts that realize approved planning policies before manufacturing and test work start.
@@ -18,6 +20,19 @@ Prepare solution-design artifacts that realize approved planning policies before
 | Output to | Test workflow and Manufacturing Group execution work |
 | Main handoff artifacts | approved design, target paths, source modification design, data change design, design basis policy reference |
 | Escalation path | unresolved design evidence remains explicit; scope conflicts go to Coordinator routing |
+
+## Flow Diagram
+
+```mermaid
+flowchart TD
+    A[Approved planning outputs and requirements] --> B[Confirm work plan and policies]
+    B --> C[Solution design drafting]
+    C --> D[Record planning-policy and source-basis traceability]
+    D --> E[Prepare approved design artifacts and target paths]
+    E --> F[Test workflow]
+    E --> G[Manufacturing Group execution]
+    E --> H[Coordinator routing for scope conflicts]
+```
 
 ## Business Activities and Supporting Capabilities
 

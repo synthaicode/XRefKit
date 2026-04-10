@@ -9,8 +9,9 @@ This page defines how output quality is assured inside a single workflow before 
 
 Prevent a workflow from producing outputs that cannot be explained, traced, or safely handed off.
 
-This page covers quality assurance inside one workflow.
-Cross-workflow structural quality feedback is defined separately.
+This page covers quality assurance inside one workflow only.
+It does not define role ownership or cross-workflow structural correction.
+For those boundaries, see [Group definitions](040_group_definitions.md#xid-8B31F02A4009), [System quality feedback loop](043_system_quality_feedback_loop.md#xid-8B31F02A4012), and [Group, quality, and feedback boundaries](021_group_quality_and_feedback_boundaries.md#xid-8E5D31A4C672).
 
 ## Quality Assurance Layers
 
@@ -145,6 +146,7 @@ For manufacturing output:
 
 ## Related
 
+- [Group, quality, and feedback boundaries](021_group_quality_and_feedback_boundaries.md#xid-8E5D31A4C672)
 - [Flow-to-group matrix](041_flow_to_group_matrix.md#xid-8B31F02A4010)
 - [Group definitions](040_group_definitions.md#xid-8B31F02A4009)
 - [Closure workflow](034_closure_workflow.md#xid-8B31F02A4003)

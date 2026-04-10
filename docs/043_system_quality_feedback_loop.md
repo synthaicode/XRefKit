@@ -5,6 +5,10 @@
 
 This page defines how quality degradation is traced across workflows and returned upstream for structural improvement.
 
+This page defines the structural feedback process.
+For storage-role separation across `work/` record types, see [Work record types](019_work_record_types.md#xid-4F8C21B7D4A2).
+For the boundary against role definitions, matrix navigation, and flow-internal quality control, see [Group, quality, and feedback boundaries](021_group_quality_and_feedback_boundaries.md#xid-8E5D31A4C672).
+
 ## Purpose
 
 Prevent the repository from behaving as a feed-forward-only system that fixes individual defects without improving the underlying quality mechanism.
@@ -169,4 +173,6 @@ It is also not complete unless the OR loop defines:
 
 ## Related
 
+- [Group, quality, and feedback boundaries](021_group_quality_and_feedback_boundaries.md#xid-8E5D31A4C672)
+- [Work record types](019_work_record_types.md#xid-4F8C21B7D4A2)
 - [OR Team operating model](048_or_team_operating_model.md#xid-1D7A8E2C5F10)

@@ -9,6 +9,7 @@ Related: [Overview](../docs/000_overview.md#xid-7C6C2B46A9D1)
 
 ## Contract (required)
 
+- Apply base control rules first, then follow XRefKit-specific routing; see [Base control and xref routing layers](../docs/017_base_and_xref_layering.md#xid-5A1C8E4D2F90)
 - Use XIDs as primary keys for references (links must include `#xid-...`)
 - Keep skill instructions and domain knowledge in separate files
 - Treat `knowledge/` as shared domain knowledge; skills load only needed fragments on demand
@@ -52,4 +53,5 @@ When a skill needs domain knowledge to proceed, `xref` is the routing layer:
 
 ## Related
 
+- [Base control and xref routing layers](../docs/017_base_and_xref_layering.md#xid-5A1C8E4D2F90)
 - [Capability Routing for Agents](010_capability_routing.md#xid-1F93A7C24010)

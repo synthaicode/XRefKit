@@ -5,6 +5,12 @@
 
 The goal is not to “centralize everything into one giant doc”. The goal is to make it possible to **reference and read only the needed fragments correctly**.
 
+This page is the authoritative rule for XID meaning and reference stability.
+Overview and workflow pages may summarize it, but they should defer to this page rather than redefine it.
+
+This repository now also treats AI operating correctness as a first-class concern.
+So these principles support not only reference correctness, but also stable boundary handling, knowledge loading, and traceable AI work.
+
 ## Principles
 
 1. **XID is the primary key**

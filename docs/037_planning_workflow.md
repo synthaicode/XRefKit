@@ -5,6 +5,8 @@
 
 This workflow defines how approved requirements are converted into executable plan drafts.
 
+This page follows the shared [Workflow page schema](018_workflow_page_schema.md#xid-6D2E4A9C0B71). The sections below focus on workflow-specific content.
+
 ## Purpose
 
 Prepare work planning and implementation policies before design starts, using domain knowledge and current-source analysis so the plan stays aligned with the existing codebase structure.
@@ -18,6 +20,19 @@ Prepare work planning and implementation policies before design starts, using do
 | Output to | Design Group design work, Test workflow preparation, and management control initialization |
 | Main handoff artifacts | work plan, source modification policy, data change policy, data correction tool policy, test policy, test tool policy, release policy, planning basis source list |
 | Escalation path | unresolved planning assumptions remain explicit; scope conflicts go to Coordinator routing |
+
+## Flow Diagram
+
+```mermaid
+flowchart TD
+    A[Approved requirements and investigation outputs] --> B[Read domain knowledge and current-source findings]
+    B --> C[Work planning and policy drafting]
+    C --> D[Keep policy aligned with current source structure]
+    D --> E[Initialize management control]
+    E --> F[Design workflow]
+    E --> G[Test workflow preparation]
+    E --> H[Coordinator routing for scope conflicts]
+```
 
 ## Business Activities and Supporting Capabilities
 

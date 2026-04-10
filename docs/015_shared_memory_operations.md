@@ -6,6 +6,9 @@
 This repository adopts a shared-memory model for AI collaboration.
 The goal is to make past decisions and context reloadable across sessions.
 
+This page defines the session/event-log pattern only.
+For the full split across session logs, judgment logs, and structural feedback records, see [Work record types](019_work_record_types.md#xid-4F8C21B7D4A2).
+
 ## Core Idea
 
 - AI has no persistent time sense across sessions.
@@ -81,6 +84,7 @@ Do not mix states from different points in time.
 
 ## Related
 
+- [Work record types](019_work_record_types.md#xid-4F8C21B7D4A2)
 - [Working area policy](014_working_area_policy.md#xid-111D282CA0EA)
 - [Agent Entry](../agent/000_agent_entry.md#xid-0B5C58B5E5B2)
 - [Startup xref routing policy](011_startup_xref_routing.md#xid-6C0B62D6366A)

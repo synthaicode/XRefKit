@@ -3,14 +3,39 @@
 XRefKit is an OSS knowledge-ops toolkit for sharing knowledge with AI.
 
 It keeps original sources (PDF/Excel/Web snapshots, etc.) in-repo, and maintains an AI-readable knowledge base as small Markdown “fragments”. Cross-document references use stable IDs (**XIDs**) so links keep working across rename/move/split/merge operations.
-In this architecture, `xref` is a supporting feature: the primary goal is to connect skills/agents with the right domain knowledge fragments in `knowledge/`.
+Originally, the visible center of this repository was XID-based link durability.
+Now, the repository should be understood more broadly as an operating base for controlled AI work:
+
+- base AI control rules
+- repository-specific knowledge routing
+- stable knowledge references
+- reusable work structure for skills, capabilities, and workflows
+
+In this architecture, `xref` is a supporting feature. The primary goal is to connect agents and skills with the right domain knowledge fragments in `knowledge/` under explicit operating rules.
 
 ## Entry Points
 
 - Human entry: `docs/000_index.md`
 - Agent contract (always read): `agent/000_agent_entry.md`
 
-Vendor startup files should stay minimal: show how to load domain knowledge via `xref`, and centralize all detailed policy in the entry points above.
+Use `README.md` for a short external-facing introduction.
+Use `docs/000_index.md` for the detailed internal documentation map.
+
+Vendor startup files should stay minimal: show how to load domain knowledge via `xref`, and centralize detailed policy in the entry points above.
+
+## What This Repository Manages
+
+This repository is not just a link-maintenance tool.
+It manages the minimum structure needed for AI to work in a stable, reviewable way.
+
+That structure includes:
+
+- operating rules for how AI should behave
+- repository-specific knowledge loading rules
+- reusable workflow, capability, and skill boundaries
+- source-backed knowledge fragments with stable references
+
+In practice, this means the repository now treats AI contract and control rules as first-class assets, not just auxiliary notes around XID management.
 
 ## Quick Start
 
@@ -39,7 +64,7 @@ Each managed Markdown file carries an XID block:
 <a id="xid-1A2B3C4D5E6F"></a>
 ```
 
-## Typical Workflow
+## Minimal Workflow
 
 1. Add or update source material in `sources/`.
 2. Convert workflow control structure into `flows/`, workflow/governance explanation into `docs/`, capability definitions into `capabilities/`, and domain facts into `knowledge/`.
@@ -47,8 +72,11 @@ Each managed Markdown file carries an XID block:
 4. Run `python -m fm xref fix` after edits.
 5. Use `xref search/show` or `ctx pack` to load only the needed context.
 
+For the broader repository reading order and policy map, start from `docs/000_index.md`.
+
 ## Why XRefKit (beyond links)
 
+- **AI operating contract**: keep base control rules such as startup behavior, uncertainty handling, logging expectations, and context-boundary control explicit in the repository.
 - **Multi-agent consistency via normalization**: keep domain knowledge in one canonical place (`knowledge/`), keep reusable work-unit definitions in `capabilities/`, and have agent/tool instructions point to them by XID.
 - **Loose coupling of instructions**: keep “how to behave” small and stable, and fetch “what to know” on demand (`xref search/show`, `ctx pack`).
 - **Human+AI shared knowledge base**: keep originals in `sources/` for human verification, and maintain AI-readable fragments in `docs/` with stable references.
@@ -95,3 +123,16 @@ python -m fm ctx pack --seed 7C6C2B46A9D1 --depth 1 --out .xref\\pack.md
 - `work/`: AI-authored execution logs and retrospectives for traceability
 - `agent/`: agent entry and contract
 - `fm/`: CLI implementation (`xref`, `ctx`)
+
+For explanations of these areas, use:
+
+- `docs/000_overview.md`
+- `docs/002_structure.md`
+- `docs/000_index.md`
+
+## Current Positioning
+
+If you read this repository today, the main value is not only that links survive file movement.
+The main value is that AI behavior, knowledge loading, work structure, and traceability are made explicit in one place.
+
+XID durability remains important, but it supports that larger goal.

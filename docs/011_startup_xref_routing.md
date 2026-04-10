@@ -6,8 +6,13 @@
 This page defines the shared startup policy for vendor-specific startup files
 (Copilot, Claude, Devin/AGENTS, Cursor, ChatGPT, etc.).
 
+This page is the operational entry rule for startup files.
+For the startup-file structure itself, see [Single-link startup architecture](012_single_link_startup_architecture.md#xid-AB27F6C19DF5).
+For the boundary between base AI control and XRefKit-specific routing, see [Base control and xref routing layers](017_base_and_xref_layering.md#xid-5A1C8E4D2F90).
+
 ## Shared Policy
 
+- Apply base AI control rules before repository-specific xref routing; see [Base control and xref routing layers](017_base_and_xref_layering.md#xid-5A1C8E4D2F90).
 - Manage skill definitions and domain knowledge as separate files.
 - Treat domain knowledge in `knowledge/` as shared/common.
 - Treat capability definitions in `capabilities/` as reusable work-unit definitions.
@@ -26,4 +31,5 @@ This page defines the shared startup policy for vendor-specific startup files
 - Agent contract: [Agent Entry](../agent/000_agent_entry.md#xid-0B5C58B5E5B2)
 - Agent routing: [Capability Routing for Agents](../agent/010_capability_routing.md#xid-1F93A7C24010)
 - Architecture rationale: [Single-link startup architecture](012_single_link_startup_architecture.md#xid-AB27F6C19DF5)
+- Layer boundary: [Base control and xref routing layers](017_base_and_xref_layering.md#xid-5A1C8E4D2F90)
 - Uncertainty behavior: [Uncertainty protocol](016_uncertainty_protocol.md#xid-8A666C1FD121)

@@ -5,6 +5,8 @@
 
 This workflow defines how supplier checks, cost estimation, solution-option generation, and assumption classification are orchestrated.
 
+This page follows the shared [Workflow page schema](018_workflow_page_schema.md#xid-6D2E4A9C0B71). The sections below focus on workflow-specific content.
+
 ## Purpose
 
 Prepare grounded options and unresolved assumption lists before requirements work begins.
@@ -19,6 +21,19 @@ Consult on option differences, assumption gaps, and direction tradeoffs before r
 | Output to | Planning Group requirements work |
 | Main handoff artifacts | supplier comparison result, cost patterns, solution options, ambiguity classification, unresolved assumptions |
 | Escalation path | supplier or budget items outside boundary go to Coordinator routing; unresolved assumptions move forward as explicit confirmation items |
+
+## Flow Diagram
+
+```mermaid
+flowchart TD
+    A[Investigation outputs and budget context] --> B[Supplier four-condition check]
+    B --> C[Cost estimation]
+    C --> D[Solution option generation]
+    D --> E[Consult on tradeoffs when needed]
+    E --> F[Assumption ambiguity classification]
+    F --> G[Requirements work with explicit confirmations]
+    F --> H[Coordinator routing for out_of_scope]
+```
 
 ## Business Activities and Supporting Capabilities
 

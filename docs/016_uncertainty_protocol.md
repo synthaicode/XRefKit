@@ -6,6 +6,8 @@
 This repository explicitly allows and requires AI to say "I don't know" when needed.
 The objective is to prevent confident guessing and protect trust.
 
+This is part of the repository's base control layer, not an XRefKit-specific routing rule. See [Base control and xref routing layers](017_base_and_xref_layering.md#xid-5A1C8E4D2F90).
+
 ## Principles
 
 - Declaring uncertainty is valid and expected.
@@ -51,6 +53,7 @@ If uncertainty is handed across groups and still remains unresolved:
 
 ## Related
 
+- [Base control and xref routing layers](017_base_and_xref_layering.md#xid-5A1C8E4D2F90)
 - [Shared memory operations](015_shared_memory_operations.md#xid-4A423E72D2ED)
 - [Working area policy](014_working_area_policy.md#xid-111D282CA0EA)
 - [Agent Entry](../agent/000_agent_entry.md#xid-0B5C58B5E5B2)

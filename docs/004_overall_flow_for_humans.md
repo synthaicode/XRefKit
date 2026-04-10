@@ -1,7 +1,7 @@
 <!-- xid: E01E6695A30A -->
 <a id="xid-E01E6695A30A"></a>
 
-# End-to-end flow (human view)
+# End-to-End Flow (Human View)
 
 The purpose of this repository is to keep original materials (PDF/Excel/Web, etc.) in-repo, while maintaining an AI-friendly knowledge base (fragmented Markdown). It is designed so that links remain stable even after rename/move/split/merge operations.
 
@@ -24,11 +24,12 @@ This page is a one-page overview of what goes where and how day-to-day work proc
 
 The key split is: **humans verify `sources/`**, **AI reads `knowledge/`**. The AI should usually work only from `knowledge/`, and consult `sources/` only when needed, using the source pointer recorded in the fragment.
 
-XID is the stable identifier that makes cross-doc references resilient to path changes (`fm xref` automates rewriting and validation).
-
 ## Critical point: deciding to change an XID
 
-XID is the primary key for references. Therefore, changing an XID is not merely a mechanical refactor: it strongly suggests that **the meaning of what the page represents** (service/feature/concept) has changed.
+This page does not redefine the XID contract.
+For the authoritative rule, see [Principles](001_principles.md#xid-71DFD9319CFB).
+
+Changing an XID is not merely a mechanical refactor: it strongly suggests that **the meaning of what the page represents** (service/feature/concept) has changed.
 
 - Default: keep existing XIDs (preserve meaning)
 - Exception: only if “keeping the same XID would make it a different thing”, create a new XID and explicitly record the old→new relationship
@@ -39,19 +40,7 @@ This cannot be fully automated. Use `xref check --review` as a signal, and requi
 
 ### 1) Import (add new materials)
 
-1. Add original materials to `sources/` as-is (no pre-splitting required)
-2. Let the AI reference only the necessary parts and add/update `knowledge/` fragments
-   - keep each fragment self-contained (assumptions/conditions/conclusion/procedure)
-3. At the end of each fragment, record a source pointer (e.g., `source_path` + `page=` / `sheet=` / `source_url`)
-4. Run consistency commands (when local execution is possible)
-
-```powershell
-python -m fm xref init
-python -m fm xref rewrite
-python -m fm xref check
-```
-
-Completion condition: `xref check` returns `issues: 0`.
+Use the import-specific guidance in [Importing existing documents](003_import_for_humans.md#xid-0CF07930F2FA) and the source-recording rules in [Sources](020_sources.md#xid-2FAD591BF725).
 
 ### 2) Reference (when you need to confirm something)
 
@@ -83,12 +72,12 @@ Fragmentation is **not** splitting the original materials. It is shaping the AI-
 
 ## Common failure modes and mitigations
 
-- Extracted docs but forgot to record source pointers
-  - Fix: always keep `source_path` + locator (page/sheet/url) at the end of a fragment
+- Extracted knowledge but forgot to record source pointers
+  - Fix: follow [Sources](020_sources.md#xid-2FAD591BF725) and always keep `source_path` + locator (page/sheet/url) at the end of a fragment
 - Fragments lack prerequisites and cannot be used standalone
   - Fix: add assumptions/conditions up front; link related fragments by XID
 - Links break after moving files
-  - Fix: `xref rewrite` → `xref check` (and run in CI)
+  - Fix: follow [Workflow](010_workflow.md#xid-7D1E1C0279F1) and run `xref rewrite` → `xref check`
 
 ## Related
 

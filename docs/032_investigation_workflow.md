@@ -5,6 +5,8 @@
 
 This workflow defines how investigation work is orchestrated before estimation, requirements, or design.
 
+This page follows the shared [Workflow page schema](018_workflow_page_schema.md#xid-6D2E4A9C0B71). The sections below focus on workflow-specific content.
+
 ## Purpose
 
 Narrow the affected scope, inspect the relevant implementation area, and hand off a structured change-target summary.
@@ -18,6 +20,19 @@ Narrow the affected scope, inspect the relevant implementation area, and hand of
 | Output to | Planning Group estimation work, requirements work, and Design Group planning support |
 | Main handoff artifacts | in-scope service list, change viewpoints, test viewpoints, change target list, uncertainty list |
 | Escalation path | out-of-scope items go to Coordinator routing; unresolved evidence stays `unknown` for later confirmation |
+
+## Flow Diagram
+
+```mermaid
+flowchart TD
+    A[Request and service catalog] --> B[Scope classification]
+    B --> C[Source and dependency analysis]
+    C --> D[Change-target summarization]
+    D --> E[Record uncertainty and evidence gaps]
+    E --> F[Planning estimation and requirements]
+    E --> G[Design planning support]
+    E --> H[Coordinator routing for out_of_scope]
+```
 
 ## Business Activities and Supporting Capabilities
 

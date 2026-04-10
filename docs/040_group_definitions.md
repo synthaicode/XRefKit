@@ -5,6 +5,12 @@
 
 This page defines the groups used by the business-capability model, including their responsibility boundaries, prohibited actions, and typical outputs.
 
+This page defines role boundaries only.
+For the one-page ownership map, see [Flow-to-group matrix](041_flow_to_group_matrix.md#xid-8B31F02A4010).
+For within-flow quality control, see [Flow quality assurance mechanism](042_flow_quality_assurance_mechanism.md#xid-8B31F02A4011).
+For cross-flow structural correction, see [System quality feedback loop](043_system_quality_feedback_loop.md#xid-8B31F02A4012).
+For the boundary among these pages, see [Group, quality, and feedback boundaries](021_group_quality_and_feedback_boundaries.md#xid-8E5D31A4C672).
+
 ## Common Rule
 
 - Groups evaluate, execute, and record within their assigned boundary.
@@ -223,6 +229,82 @@ Another example:
 - event-response procedures
 - operational readiness result
 
+## Parapara Video Creation Team
+
+### Responsibility
+
+- manage overall objective, target audience, and completion criteria for the video
+- organize beginner and intermediate learner understanding gaps and control explanation level
+- read repository structure, documentation, and responsibility boundaries to prepare explanation inputs
+- define the scenario, chapter order, and one-message-per-slide script
+- define slide specifications for what appears on each screen
+- prepare narration scripts, estimate timing, generate audio, and tune pronunciation and reading flow
+- recognize VOICEVOX Engine Docker as an available tool for audio generation work
+- use VOICEVOX Aoyama Ryusei as the default baseline voice unless another voice is explicitly required
+- use VOICEVOX No.7 as the next candidate voice when the baseline voice is not suitable
+- design diagrams, icons, and visual density for slide presentation
+- check content, order, and expression consistency across all deliverables
+- check whether the explanation is too difficult for beginners
+- control duration, transitions, audio synchronization, final video assembly, and distribution packaging
+- include required license or attribution display on the last slide when the selected assets or voices require it
+- verify that the message is understandable, aligned, and memorable before release
+
+### Must Not Decide
+
+- business-priority decisions outside the requested video objective
+- approval of facts, claims, or policy positions that require an external owner
+- final acceptance of the video when human sign-off is required
+
+### Typical Capabilities
+
+- project objective control
+- audience and completion-criteria definition
+- learner model structuring
+- explanation-level control
+- repository reading
+- terminology extraction
+- issue extraction
+- scenario composition
+- chapter flow design
+- narration script writing
+- slide specification design
+- speech synthesis and reading adjustment with available tools including VOICEVOX Engine Docker
+- default voice selection management with VOICEVOX Aoyama Ryusei as baseline
+- fallback voice selection management with VOICEVOX No.7 as the next candidate
+- diagram and icon direction design
+- visual density control
+- consistency review
+- beginner-perspective review
+- timeline editing
+- audio synchronization
+- final video packaging
+- communication validation
+
+### Typical Outputs
+
+- work instructions
+- chapter outline
+- completion criteria
+- explanation-level definition
+- prohibited and supplemental term list
+- repository explanation memo
+- terminology glossary
+- issue list
+- scenario outline
+- one-message-per-slide script
+- slide specification
+- narration script
+- duration estimate
+- generated audio assets
+- visual direction notes
+- qa findings
+- beginner review findings
+- edit timeline
+- distributed slide deck
+- synchronized draft video
+- final license slide
+- validation findings
+
 ## OR Team
 
 ### Responsibility
@@ -303,7 +385,9 @@ Another example:
 
 ## Related
 
+- [Group, quality, and feedback boundaries](021_group_quality_and_feedback_boundaries.md#xid-8E5D31A4C672)
 - [Capability layering](031_capability_layering.md#xid-8D50A972BA9F)
 - [Closure workflow](034_closure_workflow.md#xid-8B31F02A4003)
 - [CAB workflow](039_cab_workflow.md#xid-8B31F02A4008)
 - [OR Team operating model](048_or_team_operating_model.md#xid-1D7A8E2C5F10)
+- [Parapara Video Creation Team usage guide](051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842)

@@ -1,7 +1,7 @@
 <!-- xid: 72FB974C8236 -->
 <a id="xid-72FB974C8236"></a>
 
-# Language policy (English canonical + Japanese archive)
+# Language Policy (English Canonical + Japanese Archive)
 
 This repository intentionally maintains **two language trees**:
 

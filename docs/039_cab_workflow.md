@@ -5,6 +5,8 @@
 
 This workflow defines how quality, operational, and business evaluations are assembled before a human release decision.
 
+This page follows the shared [Workflow page schema](018_workflow_page_schema.md#xid-6D2E4A9C0B71). The sections below focus on workflow-specific content.
+
 ## Purpose
 
 Produce CAB evaluation outputs without collapsing the separation between evaluation and decision.
@@ -18,6 +20,18 @@ Produce CAB evaluation outputs without collapsing the separation between evaluat
 | Output to | human decision layer and system quality feedback loop when rejection indicates an upstream structural issue |
 | Main handoff artifacts | quality-gate result, operational readiness result, value-gate result, unresolved list, structural quality feedback record when needed |
 | Escalation path | unresolved risks remain explicit for human decision; scope reassignment still goes through Coordinator routing; upstream structural causes go to the system quality feedback loop |
+
+## Flow Diagram
+
+```mermaid
+flowchart TD
+    A[Release-planning and delivery evidence] --> B[Release plan suitability review]
+    B --> C[Operational readiness gate]
+    C --> D[Value and constraint fit evaluation]
+    D --> E[Human decision layer]
+    D --> F[Coordinator routing for scope reassignment]
+    D --> G[System quality feedback for structural rejection]
+```
 
 ## Business Activities and Supporting Capabilities
 

@@ -3,6 +3,8 @@
 
 # Release Planning Workflow
 
+This page follows the shared [Workflow page schema](018_workflow_page_schema.md#xid-6D2E4A9C0B71). The sections below focus on workflow-specific content.
+
 This workflow defines how release materials, release procedures, and release confirmation procedures are prepared after manufacturing and testing.
 
 ## Purpose
@@ -18,6 +20,21 @@ Prepare the release materials and operating procedures needed for release execut
 | Output to | CAB evaluation workflow |
 | Main handoff artifacts | test-environment release plan, production-environment release plan, release basis reference, environment release basis reference, release procedure draft, release confirmation procedure draft, rollback procedure draft, monitoring specification, event-response procedure draft, operational readiness result, release verification result, release verification basis reference |
 | Escalation path | operational gaps remain explicit as `unknown`; out-of-scope operational items go to Coordinator routing |
+
+## Flow Diagram
+
+```mermaid
+flowchart TD
+    A[Manufacturing, test, design, and requirement materials] --> B[Release plan draft creation]
+    B --> C[Split test and production release plans]
+    C --> D[Prepare release, confirmation, and rollback procedures]
+    D --> E[Monitoring design]
+    E --> F[Event-response procedure drafting]
+    F --> G[Operational readiness gate]
+    G --> H[Release verification]
+    H --> I[CAB evaluation workflow]
+    H --> J[Coordinator routing for out_of_scope]
+```
 
 ## Business Activities and Supporting Capabilities
 

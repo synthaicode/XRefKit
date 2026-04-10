@@ -5,6 +5,8 @@
 
 This workflow defines how test planning, requirement-traceable test-item structuring, and manufacturing-side test-method confirmation are orchestrated before execution and verification.
 
+This page follows the shared [Workflow page schema](018_workflow_page_schema.md#xid-6D2E4A9C0B71). The sections below focus on workflow-specific content.
+
 ## Purpose
 
 Prepare a reviewed test package from planning outputs, requirements, and approved design so that manufacturing and later verification work can execute against explicit test intent and traceability.
@@ -18,6 +20,22 @@ Prepare a reviewed test package from planning outputs, requirements, and approve
 | Output to | Planning Group content confirmation, Manufacturing Group execution work, and Quality Group verification work |
 | Main handoff artifacts | test plan, test plan basis policy reference, test design, test design basis policy reference, test-item requirement traceability reference, integration regression test design, integration regression test basis policy reference, manufacturing test review result, planning test content review result |
 | Escalation path | unresolved test evidence remains explicit; unsupported test methods return for redesign; scope conflicts go to Coordinator routing |
+
+## Flow Diagram
+
+```mermaid
+flowchart TD
+    A[Approved planning outputs, requirements, and design] --> B[Test plan drafting]
+    B --> C[Test item drafting]
+    C --> D[Integration and regression test design]
+    D --> E[Manufacturing-side test-method review]
+    E --> F[Planning Group content review]
+    F --> G[Record traceability]
+    G --> H[Manufacturing execution]
+    G --> I[Quality verification]
+    F --> J[Coordinator routing for scope conflicts]
+    E --> K[Return unsupported methods for redesign]
+```
 
 ## Business Activities and Supporting Capabilities
 

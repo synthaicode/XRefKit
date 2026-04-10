@@ -6,6 +6,10 @@
 This document explains the operating model used in this repository for
 different AI vendors (Copilot, Claude, Devin/AGENTS, Cursor, ChatGPT, etc.).
 
+This page explains the startup-file structure only.
+It does not restate the startup operating rules or the base/XRefKit layer boundary.
+For those, see [Startup xref routing policy](011_startup_xref_routing.md#xid-6C0B62D6366A) and [Base control and xref routing layers](017_base_and_xref_layering.md#xid-5A1C8E4D2F90).
+
 ## Problem
 
 Each AI vendor expects different startup files, locations, and formats.
@@ -23,7 +27,7 @@ Vendor-specific startup files stay minimal and only point to the shared policy.
   - [Docs Index](000_index.md#xid-56DD6EB68343)
   - [Agent Entry](../agent/000_agent_entry.md#xid-0B5C58B5E5B2)
 
-## How It Works
+## Startup Shape
 
 1. Vendor startup file is loaded by the tool.
 2. The file points to one shared policy page.

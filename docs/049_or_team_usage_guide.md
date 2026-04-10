@@ -5,6 +5,10 @@
 
 This page explains how to use the OR Team in day-to-day AI-organization operation.
 
+This page is the practical usage guide.
+It assumes the OR function itself is defined in [OR Team operating model](048_or_team_operating_model.md#xid-1D7A8E2C5F10).
+For the boundary among operating models, usage guides, and design pages, see [Operating models, usage guides, and design pages](022_operating_models_guides_and_designs.md#xid-9C4E2A71D583).
+
 ## Purpose
 
 Use the OR Team when you need more than a local fix.
@@ -314,6 +318,7 @@ Stop decisions require human approval.
 
 ## Related
 
+- [Operating models, usage guides, and design pages](022_operating_models_guides_and_designs.md#xid-9C4E2A71D583)
 - [OR Team operating model](048_or_team_operating_model.md#xid-1D7A8E2C5F10)
 - [Group definitions](040_group_definitions.md#xid-8B31F02A4009)
 - [System quality feedback loop](043_system_quality_feedback_loop.md#xid-8B31F02A4012)

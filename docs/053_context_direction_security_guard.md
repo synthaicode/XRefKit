@@ -5,6 +5,8 @@
 
 This page defines a security-guard model for this repository based on preserving the direction of context narrowing.
 
+This is part of the repository's base control layer, not an XRefKit-specific routing mechanism. See [Base control and xref routing layers](017_base_and_xref_layering.md#xid-5A1C8E4D2F90).
+
 The model is aligned with the idea that prompt-injection defense should not rely mainly on content sanitization. Instead, the system should detect when lower-layer input attempts to influence higher-layer intent, procedure, or authority.
 
 ## Intent
@@ -168,6 +170,7 @@ This supports replay, governance, and post-incident review.
 
 ## Related
 
+- [Base control and xref routing layers](017_base_and_xref_layering.md#xid-5A1C8E4D2F90)
 - [Flow Capability Skill Knowledge model](052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
 - [Capability layering](031_capability_layering.md#xid-8D50A972BA9F)
 - [Capability Routing for Agents](../agent/010_capability_routing.md#xid-1F93A7C24010)

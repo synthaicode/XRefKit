@@ -5,6 +5,10 @@
 
 This page defines where structural quality feedback is stored and how it is referenced in later cycles.
 
+This page defines the canonical register only.
+For the overall structural feedback process, see [System quality feedback loop](043_system_quality_feedback_loop.md#xid-8B31F02A4012).
+For the broader split across record types, see [Work record types](019_work_record_types.md#xid-4F8C21B7D4A2).
+
 ## Purpose
 
 Make system-level quality feedback reloadable for the next Planning Group cycle instead of leaving it as isolated event history.
@@ -96,6 +100,7 @@ When CAB or Closure emits structural feedback:
 
 ## Related
 
+- [Work record types](019_work_record_types.md#xid-4F8C21B7D4A2)
 - [System quality feedback loop](043_system_quality_feedback_loop.md#xid-8B31F02A4012)
 - [Working area policy](014_working_area_policy.md#xid-111D282CA0EA)
 - [Shared memory operations](015_shared_memory_operations.md#xid-4A423E72D2ED)
