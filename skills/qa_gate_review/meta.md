@@ -16,7 +16,7 @@
   - planning: define review domains, delta-bounded targets, management rows, and subagent split when scope-separated parallel review is safe
   - execution: run `CAP-QA-001`, `CAP-QA-006`, `CAP-QA-007`, and `CAP-QA-008`, with `CAP-QA-005` when attribute analysis is required, while checking delta appropriateness against traced intent
   - monitoring_and_control: downgrade unsupported conclusions or unclear delta coverage to `unknown`
-  - closure: finalize states and return per-domain findings with evidence
+  - closure: finalize states, return per-domain findings with evidence, and hand off target-scope cleanup when code review completion is declared
 - tags: `qa`, `review`, `quality`
 - skill_doc: `./SKILL.md`
 - capability_refs:
@@ -27,6 +27,7 @@
   - `../../capabilities/quality/160_cap_qa_008_license_compliance_check.md#xid-5A1C2F0E5508`
 - knowledge_refs:
   - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
+  - `../../knowledge/organization/151_temporary_traceability_comment_rule.md#xid-22E4C7AC7063`
   - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`
   - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`
 

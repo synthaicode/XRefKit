@@ -28,6 +28,7 @@ Execute the manufacturing sequence `CAP-MFG-001 -> CAP-MFG-002` and prepare outp
 ## Required Knowledge (XID)
 
 - [Implementation assumption gap handling](../../knowledge/organization/150_implementation_assumption_gap_handling.md#xid-7A2F4C8D1501)
+- [Temporary traceability comment rule](../../knowledge/organization/151_temporary_traceability_comment_rule.md#xid-22E4C7AC7063)
 - [XDDP basics](../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701)
 - [XDDP supporting methods](../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711)
 
@@ -66,6 +67,8 @@ Execute the manufacturing sequence `CAP-MFG-001 -> CAP-MFG-002` and prepare outp
 - Prefer one coordinated pass over repeated local rework when the required change set is already known.
 - Record which design artifact or design basis reference each implementation change realizes.
 - Record which test design item each executed unit test realizes.
+- Use temporary source comments for human traceability by default under the temporary traceability comment rule.
+- Mark temporary traceability comments with the `TRACE-TEMP:` prefix and keep the lasting traceability in external evidence.
 - When an implementation assumption gap appears, classify it as:
   - `clarification_needed`
   - `evidence_missing`
@@ -85,6 +88,7 @@ Execute the manufacturing sequence `CAP-MFG-001 -> CAP-MFG-002` and prepare outp
 ## Closure
 
 - Confirm all rows are finalized as `done`, `unknown`, or `out_of_scope`.
+- When code review completion is declared for the target scope, remove any `TRACE-TEMP:` comments from source files in that scope before final completion.
 - Hand off code, test results, unit test execution basis reference, and implementation basis design reference to QA review.
 - Escalate out-of-scope items when reassignment is required.
 
@@ -97,3 +101,5 @@ Execute the manufacturing sequence `CAP-MFG-001 -> CAP-MFG-002` and prepare outp
 - Keep changes traceable to explicit scope.
 - Keep executed unit tests traceable to explicit test design.
 - Do not broaden the implementation diff beyond the traced target set without recording a new explicit reason.
+- Do not leave `TRACE-TEMP:` comments in final code handed off as completed output.
+- Treat a user declaration of code review completion plus a target scope such as `projects` as the cleanup trigger for `TRACE-TEMP:` comments in that scope.

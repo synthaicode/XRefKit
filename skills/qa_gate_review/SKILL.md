@@ -34,6 +34,7 @@ Execute the four QA review domains `specification / performance / security / lic
 
 ## Required Knowledge (XID)
 
+- [Temporary traceability comment rule](../../knowledge/organization/151_temporary_traceability_comment_rule.md#xid-22E4C7AC7063)
 - [XDDP basics](../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701)
 - [XDDP supporting methods](../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711)
 
@@ -84,6 +85,7 @@ Execute the four QA review domains `specification / performance / security / lic
 ## Closure
 
 - Confirm all review rows are finalized as `done`, `unknown`, or `out_of_scope`.
+- If code review completion is being declared for a target scope, hand off that scope for `TRACE-TEMP:` cleanup under the temporary traceability comment rule.
 - Return the per-domain judgments and supporting findings.
 - Hand off unresolved review items when further investigation is required.
 
