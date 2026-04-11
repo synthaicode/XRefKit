@@ -88,7 +88,21 @@ projects/
 - `checklist`: 実行時に確認したチェックリスト
 - `path`: 分岐、エスカレーション、handoff
 
-推奨候補は `flow-log-presets.json` に持たせており、ダッシュボード上にも表示されます。
+ダッシュボード上で表示する decision / checklist / path キーは、観測済みログがある場合はそのキーを優先します。
+
+定義値としては `flows/*.yaml` の `monitoring:` セクションを正本とし、未観測時の表示候補として扱います。
+
+```yaml
+monitoring:
+  decisions:
+    - implementation_boundary_review
+  checklists:
+    - manufacturing_self_check
+  paths:
+    - handoff_to_quality_review
+```
+
+移行中は `flow-log-presets.json` を fallback として読みます。
 
 例:
 

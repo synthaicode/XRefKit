@@ -44,6 +44,14 @@ function formatList(values, emptyText = "なし") {
   return values.map((value) => badge(value)).join("");
 }
 
+function preferredLoggingNames(flow, kind) {
+  const observed = flow.observed_logging?.[kind] || [];
+  if (observed.length > 0) {
+    return observed;
+  }
+  return flow.logging_recommendation?.[kind] || [];
+}
+
 function percent(numerator, denominator) {
   if (!denominator) {
     return 0;
@@ -284,7 +292,11 @@ function renderPathTable(pathItems) {
 }
 
 function deriveStepRows(flow, latestRun) {
-  const logging = flow.logging_recommendation || { decisions: [], checklists: [], paths: [] };
+  const logging = {
+    decisions: preferredLoggingNames(flow, "decisions"),
+    checklists: preferredLoggingNames(flow, "checklists"),
+    paths: preferredLoggingNames(flow, "paths"),
+  };
   const latestChecklistMap = new Map(
     (latestRun?.checklist_usage || []).map((item) => [item.name, item])
   );
@@ -628,7 +640,11 @@ function renderProjectFlowStates(projectFlows) {
       })
       .join("");
 
-    const logging = flow.logging_recommendation || { decisions: [], checklists: [], paths: [] };
+    const logging = {
+      decisions: preferredLoggingNames(flow, "decisions"),
+      checklists: preferredLoggingNames(flow, "checklists"),
+      paths: preferredLoggingNames(flow, "paths"),
+    };
     const article = document.createElement("article");
     article.className = "flow-card";
     article.innerHTML = `
@@ -670,13 +686,13 @@ function renderProjectFlowStates(projectFlows) {
       </div>
       <div class="flow-columns">
         <section>
-          <h4>Recommended Decision Logs</h4>
+          <h4>Decision Logs</h4>
           <div class="tag-list">${formatList(logging.decisions, "追加不要")}</div>
-          <h4>Recommended Checklist Logs</h4>
+          <h4>Checklist Logs</h4>
           <div class="tag-list">${formatList(logging.checklists, "追加不要")}</div>
         </section>
         <section>
-          <h4>Recommended Path Logs</h4>
+          <h4>Path Logs</h4>
           <div class="tag-list">${formatList(logging.paths, "追加不要")}</div>
           <h4>Observed Paths</h4>
           ${renderPathTable(flow.project_paths)}
@@ -700,7 +716,11 @@ function renderProjectFlowDesign(projectFlows) {
   projectFlowDesign.innerHTML = "";
   for (const flow of projectFlows) {
     const latestRun = flow.project_latest_run;
-    const logging = flow.logging_recommendation || { decisions: [], checklists: [], paths: [] };
+    const logging = {
+      decisions: preferredLoggingNames(flow, "decisions"),
+      checklists: preferredLoggingNames(flow, "checklists"),
+      paths: preferredLoggingNames(flow, "paths"),
+    };
     const article = document.createElement("article");
     article.className = "flow-card";
     article.innerHTML = `

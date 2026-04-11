@@ -86,6 +86,70 @@ function extractList(lines, key) {
   return values;
 }
 
+function extractNestedList(lines, sectionKey, key) {
+  const values = [];
+  const sectionPrefix = `${sectionKey}:`;
+  const keyPrefix = `${key}:`;
+  let inSection = false;
+  let inTargetList = false;
+  let sectionIndent = 0;
+  let keyIndent = 0;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) {
+      continue;
+    }
+
+    const indent = line.length - line.trimStart().length;
+
+    if (!inSection) {
+      if (line.startsWith(sectionPrefix)) {
+        inSection = true;
+        sectionIndent = indent;
+      }
+      continue;
+    }
+
+    if (indent <= sectionIndent) {
+      break;
+    }
+
+    if (!inTargetList) {
+      if (trimmed.startsWith(keyPrefix)) {
+        inTargetList = true;
+        keyIndent = indent;
+      }
+      continue;
+    }
+
+    if (indent <= keyIndent) {
+      break;
+    }
+
+    if (trimmed.startsWith("- ")) {
+      values.push(trimmed.slice(2).trim());
+    }
+  }
+
+  return values;
+}
+
+function mergeLoggingRecommendation(flowMonitoring, fallbackMonitoring) {
+  const flowDefined = flowMonitoring
+    && (flowMonitoring.decisions.length || flowMonitoring.checklists.length || flowMonitoring.paths.length);
+
+  if (flowDefined) {
+    return flowMonitoring;
+  }
+
+  return fallbackMonitoring || {
+    decisions: [],
+    checklists: [],
+    paths: [],
+  };
+}
+
 function normalizeKey(value) {
   return String(value || "")
     .trim()
@@ -116,12 +180,17 @@ function loadFlowDefinitions() {
         inputs: extractList(lines, "inputs"),
         outputs: extractList(lines, "outputs"),
       };
+      const monitoring = {
+        decisions: extractNestedList(lines, "monitoring", "decisions"),
+        checklists: extractNestedList(lines, "monitoring", "checklists"),
+        paths: extractNestedList(lines, "monitoring", "paths"),
+      };
       flow.slug = normalizeKey(flow.name || flow.flow_id || entry.name.replace(/\.yaml$/i, ""));
-      flow.logging_recommendation = logPresets[flow.name] || {
+      flow.logging_recommendation = mergeLoggingRecommendation(monitoring, logPresets[flow.name] || {
         decisions: [],
         checklists: [],
         paths: [],
-      };
+      });
       flow.skill_definitions = (flowSkillMap[flow.name] || [])
         .map((skillId) => skillCatalog[skillId])
         .filter(Boolean);
@@ -451,6 +520,36 @@ function getRunSummary(runKey, events, flowDefinition) {
   };
 }
 
+function collectObservedLogging(flowRuns) {
+  const decisions = new Set();
+  const checklists = new Set();
+  const paths = new Set();
+
+  for (const run of flowRuns) {
+    for (const item of run.decisions || []) {
+      if (item.label) {
+        decisions.add(item.label);
+      }
+    }
+    for (const item of run.checklist_usage || []) {
+      if (item.name) {
+        checklists.add(item.name);
+      }
+    }
+    for (const item of run.traversed_paths || []) {
+      if (item) {
+        paths.add(item);
+      }
+    }
+  }
+
+  return {
+    decisions: [...decisions],
+    checklists: [...checklists],
+    paths: [...paths],
+  };
+}
+
 function buildDashboardData() {
   const flowDefinitions = loadFlowDefinitions();
   const rawEvents = loadTraceFiles()
@@ -474,6 +573,7 @@ function buildDashboardData() {
 
   const flowSummaries = flowDefinitions.map((flow) => {
     const flowRuns = runs.filter((run) => run.flow_name === flow.name || run.flow_id === flow.flow_id);
+    const observedLogging = collectObservedLogging(flowRuns);
     const stepCoverage = flow.sequence.map((step) => ({
       step,
       run_count: flowRuns.filter((run) => run.visited_steps.includes(step)).length,
@@ -488,6 +588,7 @@ function buildDashboardData() {
     return {
       ...flow,
       run_count: flowRuns.length,
+      observed_logging: observedLogging,
       decision_run_count: flowRuns.filter((run) => run.decisions.length > 0).length,
       checklist_run_count: flowRuns.filter((run) => run.checklist_usage.length > 0).length,
       incomplete_run_count: flowRuns.filter((run) => run.missing_steps.length > 0).length,
