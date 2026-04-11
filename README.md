@@ -1,6 +1,17 @@
 # XRefKit
 
+XRefKit is not only a document repository or a link-maintenance tool.
+It is an information architecture for controlled AI work.
+
+The repository is designed so AI can load only the knowledge it needs,
+follow explicit work boundaries, and remain auditable by humans.
+
+Its core model separates flow, capability, skill, knowledge, and stable XID-based references
+so AI behavior, knowledge access, and work responsibility do not collapse into one layer.
+
 XRefKit is an OSS knowledge-ops toolkit for sharing knowledge with AI.
+Reading the repository does not require Python, but the standard operational commands in `fm/`
+such as `python -m fm xref ...` require a local Python runtime.
 
 It keeps original sources (PDF/Excel/Web snapshots, etc.) in-repo, and maintains an AI-readable knowledge base as small Markdown “fragments”. Cross-document references use stable IDs (**XIDs**) so links keep working across rename/move/split/merge operations.
 Originally, the visible center of this repository was XID-based link durability.
