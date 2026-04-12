@@ -51,6 +51,36 @@ Example (Web):
 - captured_at: 2026-01-31
 ```
 
+## Exception for xddp-related sources
+
+As a repository-wide default, originals should remain inside `sources/`.
+However, `xddp`-related materials may be handled as an explicit exception by recording only external references and not mirroring the original files in this repo.
+
+Use this exception only for `xddp` materials.
+Do not generalize it to other source families unless the rule is updated intentionally.
+
+Example (external file reference):
+
+```md
+## Sources
+
+- source_type: file_link
+- source_uri: \\server\share\xddp\ET2018_04.pdf
+- source_locator: page=12-14
+- access_note: xddp source is managed externally and is not mirrored in this repo
+```
+
+Example (external web reference):
+
+```md
+## Sources
+
+- source_type: web
+- source_url: https://example.com/xddp/method
+- source_locator: section=overview
+- access_note: xddp source is referenced externally and is not mirrored in this repo
+```
+
 ## Operational guidance for AI
 
 - Do not re-read entire originals every time. First locate and read relevant fragments via `knowledge/000_index.md` and `python -m fm xref search/show`.

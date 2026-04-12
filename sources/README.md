@@ -4,6 +4,7 @@ Store original materials here (PDF/Excel/Web snapshots, etc.).
 
 - Goal: keep verifiable “sources” inside the repo for humans
 - Note: the AI’s canonical knowledge lives in `docs/` as XID-managed Markdown fragments
+- Exception: `xddp`-related materials may be recorded as external references only and do not have to be mirrored in this repo
 
 ## Suggested layout
 
