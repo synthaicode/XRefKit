@@ -39,4 +39,7 @@
   - `password_management` -> `../password_management/meta.md`
 - html-css-png:
   - `marketing_slide_png` -> `../marketing_slide_png/meta.md`
+  - `marketing-explainer-video` -> `../marketing-explainer-video/meta.md`
+- video-tts:
+  - `marketing-explainer-video` -> `../marketing-explainer-video/meta.md`
 

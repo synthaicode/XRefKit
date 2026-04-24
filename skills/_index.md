@@ -119,6 +119,10 @@ When asked "what skills are available?", answer from this file.
   - summary: create marketing-group slide visuals as CSS/HTML-rendered PNG assets for image-based decks
   - meta: `skills/marketing_slide_png/meta.md`
   - skill_doc: `skills/marketing_slide_png/SKILL.md`
+- `marketing-explainer-video`:
+  - summary: create narrated marketing explainer videos with staged slide reveals, TTS audio, credits, previews, and README placement
+  - meta: `skills/marketing-explainer-video/meta.md`
+  - skill_doc: `skills/marketing-explainer-video/SKILL.md`
 
 ## Notes
 

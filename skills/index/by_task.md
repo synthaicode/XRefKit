@@ -31,8 +31,10 @@
 - design:
   - `design_flow` -> `../design_flow/meta.md`
   - `marketing_slide_png` -> `../marketing_slide_png/meta.md`
+  - `marketing-explainer-video` -> `../marketing-explainer-video/meta.md`
 - implement:
   - `implementation_flow` -> `../implementation_flow/meta.md`
+  - `marketing-explainer-video` -> `../marketing-explainer-video/meta.md`
 - control:
   - `doc_ship` -> `../doc_ship/meta.md`
   - `retro` -> `../retro/meta.md`

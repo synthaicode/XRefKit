@@ -36,4 +36,5 @@
   - `context_direction_guard` -> `../context_direction_guard/meta.md`
 - marketing:
   - `marketing_slide_png` -> `../marketing_slide_png/meta.md`
+  - `marketing-explainer-video` -> `../marketing-explainer-video/meta.md`
 
