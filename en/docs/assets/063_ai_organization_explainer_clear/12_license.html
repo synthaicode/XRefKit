@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <style>:root {
+  --bg: #f7f8fa;
+  --ink: #111827;
+  --muted: #4b5563;
+  --line: #cbd5e1;
+  --blue: #1d4ed8;
+  --blue-soft: #dbeafe;
+  --green: #047857;
+  --green-soft: #d1fae5;
+  --orange: #c2410c;
+  --orange-soft: #ffedd5;
+  --red: #b91c1c;
+  --red-soft: #fee2e2;
+  --amber: #b45309;
+  --amber-soft: #fef3c7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", "Yu Gothic UI", "Meiryo", sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+.canvas {
+  width: 1600px;
+  height: 900px;
+  position: relative;
+  overflow: hidden;
+  padding: 56px 72px 64px;
+  background: #fff;
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+h1 {
+  margin: 26px 0 18px;
+  max-width: 1240px;
+  font-size: 70px;
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+
+.lead {
+  margin: 0;
+  max-width: 1120px;
+  color: var(--muted);
+  font-size: 36px;
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+.stage {
+  margin-top: 46px;
+}
+
+.stage.compact {
+  margin-top: 34px;
+}
+
+.stage.tight {
+  margin-top: 28px;
+}
+
+.big-point {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 30px;
+  align-items: start;
+  margin-top: 46px;
+}
+
+.number {
+  width: 112px;
+  height: 112px;
+  border-radius: 28px;
+  display: grid;
+  place-items: center;
+  background: var(--blue);
+  color: white;
+  font-size: 54px;
+  font-weight: 900;
+}
+
+.point-title {
+  margin: 0 0 14px;
+  font-size: 54px;
+  line-height: 1.18;
+}
+
+.point-text {
+  margin: 0;
+  color: var(--muted);
+  font-size: 34px;
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36px;
+}
+
+.card {
+  min-height: 360px;
+  padding: 36px;
+  border: 3px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+}
+
+.card.impact {
+  min-height: 300px;
+  padding: 30px 34px;
+}
+
+.card.short {
+  min-height: 290px;
+  padding: 30px 34px;
+}
+
+.card.blue { border-color: #93c5fd; background: #eff6ff; }
+.card.green { border-color: #86efac; background: #f0fdf4; }
+.card.orange { border-color: #fdba74; background: #fff7ed; }
+.card.red { border-color: #fca5a5; background: #fef2f2; }
+.card.amber { border-color: #fcd34d; background: #fffbeb; }
+
+.card h2 {
+  margin: 0 0 22px;
+  font-size: 48px;
+  line-height: 1.18;
+}
+
+.card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 33px;
+  line-height: 1.42;
+  font-weight: 700;
+}
+
+.flow {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.impact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  align-items: stretch;
+}
+
+.dialogue-grid {
+  display: grid;
+  grid-template-columns: 0.92fr 1.08fr;
+  gap: 30px;
+  align-items: stretch;
+}
+
+.dialogue-grid.question-only {
+  grid-template-columns: 1fr;
+  max-width: 1000px;
+}
+
+.definition-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 30px;
+  align-items: stretch;
+}
+
+.definition-main {
+  min-height: 330px;
+  padding: 34px 38px;
+  border-radius: 18px;
+  border: 4px solid #93c5fd;
+  background: #eff6ff;
+}
+
+.definition-main h2 {
+  margin: 0 0 18px;
+  color: var(--blue);
+  font-size: 52px;
+  line-height: 1.16;
+}
+
+.definition-main p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 34px;
+  line-height: 1.42;
+  font-weight: 850;
+}
+
+.management-list {
+  display: grid;
+  gap: 14px;
+}
+
+.management-item {
+  min-height: 74px;
+  padding: 16px 20px;
+  border-radius: 14px;
+  border: 3px solid #fdba74;
+  background: #fff7ed;
+  color: var(--ink);
+  font-size: 30px;
+  line-height: 1.25;
+  font-weight: 850;
+}
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  align-items: stretch;
+}
+
+.compare-box {
+  min-height: 320px;
+  padding: 28px 34px;
+  border-radius: 18px;
+  border: 4px solid var(--line);
+}
+
+.compare-box.before {
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+.compare-box.after {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.compare-box h2 {
+  margin: 0 0 18px;
+  font-size: 48px;
+  line-height: 1.12;
+}
+
+.compare-box.before h2 {
+  color: var(--red);
+}
+
+.compare-box.after h2 {
+  color: var(--green);
+}
+
+.compare-box ul {
+  margin: 0;
+  padding-left: 34px;
+}
+
+.compare-box li {
+  margin: 0 0 10px;
+  color: var(--ink);
+  font-size: 29px;
+  line-height: 1.32;
+  font-weight: 850;
+}
+
+.bubble {
+  min-height: 300px;
+  padding: 30px 34px;
+  border-radius: 18px;
+  border: 4px solid var(--line);
+  background: #fff;
+}
+
+.bubble.question {
+  border-color: #fcd34d;
+  background: #fffbeb;
+}
+
+.bubble.answer {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.bubble.placeholder {
+  border-color: #e5e7eb;
+  background: #f9fafb;
+}
+
+.speaker {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  padding: 0 16px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.question .speaker {
+  background: var(--amber);
+}
+
+.answer .speaker {
+  background: var(--green);
+}
+
+.bubble h2 {
+  margin: 0 0 16px;
+  font-size: 44px;
+  line-height: 1.15;
+}
+
+.bubble p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 31px;
+  line-height: 1.38;
+  font-weight: 800;
+}
+
+.impact-box {
+  min-height: 290px;
+  padding: 30px 34px;
+  border-radius: 18px;
+  border: 4px solid var(--line);
+  background: #fff;
+}
+
+.impact-box.problem {
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+.impact-box.solution {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.impact-label {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  padding: 0 16px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.problem .impact-label {
+  background: var(--red);
+}
+
+.solution .impact-label {
+  background: var(--green);
+}
+
+.impact-box h2 {
+  margin: 22px 0 16px;
+  font-size: 48px;
+  line-height: 1.15;
+}
+
+.impact-box p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 31px;
+  line-height: 1.38;
+  font-weight: 800;
+}
+
+.chain {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.chain .step {
+  min-height: 230px;
+  background: #fff;
+}
+
+.step.problem {
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+.step.solution {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.step.check {
+  border-color: #fdba74;
+  background: #fff7ed;
+}
+
+.step.problem strong {
+  color: var(--red);
+}
+
+.step.solution strong {
+  color: var(--green);
+}
+
+.step.check strong {
+  color: var(--orange);
+}
+
+.step {
+  min-height: 250px;
+  padding: 28px 22px;
+  border-radius: 18px;
+  border: 3px solid #bfdbfe;
+  background: #eff6ff;
+  text-align: center;
+}
+
+.step strong {
+  display: block;
+  margin-bottom: 18px;
+  color: var(--blue);
+  font-size: 34px;
+}
+
+.step span {
+  display: block;
+  color: var(--ink);
+  font-size: 30px;
+  line-height: 1.35;
+  font-weight: 800;
+}
+
+.list {
+  display: grid;
+  gap: 22px;
+  margin-top: 44px;
+}
+
+.list-item {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 20px;
+  align-items: center;
+  padding: 24px 28px;
+  border: 3px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  font-size: 38px;
+  line-height: 1.25;
+  font-weight: 850;
+}
+
+.check {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: var(--green);
+  color: #fff;
+  font-size: 34px;
+  font-weight: 900;
+}
+
+.summary {
+  position: absolute;
+  left: 72px;
+  right: 72px;
+  bottom: 42px;
+  padding: 18px 26px;
+  border-left: 12px solid var(--blue);
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: 31px;
+  line-height: 1.35;
+  font-weight: 900;
+}
+
+.caption {
+  position: absolute;
+  right: 72px;
+  bottom: 54px;
+  color: #64748b;
+  font-size: 24px;
+  font-weight: 700;
+}
+</style>
+</head>
+<body>
+  <main class="canvas">
+    <div class="kicker">Summary</div>
+    <h1>An AI Team turns human burden into visible work</h1>
+    
+    <section class="stage">
+  <div class="dialogue-grid">
+    <div class="bubble question">
+      <h2>So why is an AI Team necessary?</h2>
+      <p>Because the more AI is used, the more humans must explain, manage procedures, update knowledge, coordinate flow, and check work.</p>
+    </div>
+    <div class="bubble answer">
+      <h2>Make it manageable</h2>
+      <p>An AI Team turns those burdens into roles, flow, and checkpoints, so the organization can handle AI work.</p>
+    </div>
+  </div></section>
+    <div class="summary">Using AI organizationally means designing it into a form humans can manage</div>
+  </main></body>
+</html>

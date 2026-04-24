@@ -1,0 +1,25 @@
+order	slide_path	narration
+01a	../../assets/063_ai_organization_explainer_clear/01_title_q.png	Question: If we add AI, doesn't work simply get easier?
+01b	../../assets/063_ai_organization_explainer_clear/01_title.png	Answer: It can. But used the wrong way, AI increases the management work on the human side. Today we will trace Prompt, Skill, domain knowledge, and AI Team, and separate the burden each step creates from the structure that solves it.
+02a	../../assets/063_ai_organization_explainer_clear/02_team_definition_q.png	Question: So what exactly is an AI Team?
+02b	../../assets/063_ai_organization_explainer_clear/02_team_definition.png	Answer: An AI Team is an operating structure that fixes the Skill, domain knowledge, roles, checkpoints, and handoffs around a purpose. It packages the explaining, deciding, checking, and handoff work humans used to repeat every time.
+03a	../../assets/063_ai_organization_explainer_clear/03_problem_q.png	Question: Isn't a careful prompt enough?
+03b	../../assets/063_ai_organization_explainer_clear/03_problem.png	Answer: It looks enough at first. But every run still asks a human to explain the goal, assumptions, constraints, and output format. If anything is missing, the result drifts. With prompts alone, humans become the explainer every time.
+04a	../../assets/063_ai_organization_explainer_clear/04_work_q.png	Question: If we use Skills, does it become stable?
+04b	../../assets/063_ai_organization_explainer_clear/04_work.png	Answer: The repeated explanation decreases. But humans must now manage which Skill to use and whether the procedure fits the purpose. For example, scripting and voice production are Skills. What counts as a correct explanation must be decided separately.
+05a	../../assets/063_ai_organization_explainer_clear/05_not_one_ai_q.png	Question: If the procedure exists, why do we need domain knowledge?
+05b	../../assets/063_ai_organization_explainer_clear/05_not_one_ai.png	Answer: A Skill is the way to proceed. Correctness depends on business terms, criteria, and constraints. Beginner-friendly explanation, exclusions, execution, and checking are not just steps. They are decision criteria, and that is domain knowledge.
+06a	../../assets/063_ai_organization_explainer_clear/06_repository_q.png	Question: If we share the knowledge, are we done?
+06b	../../assets/063_ai_organization_explainer_clear/06_repository.png	Answer: No. Shared knowledge still has to be updated when the rules or assumptions change. If the knowledge is stale, AI keeps working from an old version of correctness. Organizations need ownership for maintaining knowledge.
+07a	../../assets/063_ai_organization_explainer_clear/07_handoff_q.png	Question: If we have the Skills and knowledge, does the work run?
+07b	../../assets/063_ai_organization_explainer_clear/07_handoff.png	Answer: Not yet. Humans still have to connect research, decisions, production, and review each time. Unless sequence, responsibility, and handoff are fixed, humans keep carrying the coordination burden.
+08a	../../assets/063_ai_organization_explainer_clear/08_or_team_q.png	Question: This is where the AI Team comes in, right?
+08b	../../assets/063_ai_organization_explainer_clear/08_or_team.png	Answer: Yes. An AI Team turns human coordination into structure. A producer creates, a checker catches omissions, records remain, and the work is handed to the next step. That complete flow is the Team.
+09a	../../assets/063_ai_organization_explainer_clear/09_value_q.png	Question: If AI forgets, can't humans just check?
+09b	../../assets/063_ai_organization_explainer_clear/09_value.png	Answer: If humans must remember everything, they get exhausted and misses become likely. Work omissions, review omissions, and missing rationale are easy to overlook. That is why execution and checking should be separate roles.
+10a	../../assets/063_ai_organization_explainer_clear/10_conclusion_q.png	Question: Does this remove human work?
+10b	../../assets/063_ai_organization_explainer_clear/10_conclusion.png	Answer: No. It changes the job from chasing everything to checking the points that matter. Purpose, execution, checking, records, and handoffs are fixed inside the team so humans can inspect the right places.
+11a	../../assets/063_ai_organization_explainer_clear/11_before_after_q.png	Question: What changes before and after adoption?
+11b	../../assets/063_ai_organization_explainer_clear/11_before_after.png	Answer: Before, humans explain, decide, check, and hand work over every time. After, Skills, knowledge, checkpoints, responsibility, and handoffs are fixed in the AI Team. Humans no longer watch everything. They check the right points.
+12a	../../assets/063_ai_organization_explainer_clear/12_license_q.png	Question: So why is an AI Team necessary?
+12b	../../assets/063_ai_organization_explainer_clear/12_license.png	Answer: Because the more AI is used, the more humans must explain, manage procedures, update knowledge, coordinate flow, and check work. An AI Team turns those burdens into roles, flow, and checkpoints, so the organization can handle AI work.
