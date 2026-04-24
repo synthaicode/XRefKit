@@ -2,7 +2,7 @@
 
 XRefKit is a toolkit for making domain knowledge referenceable, traceable, and maintainable for AI-assisted work.
 
-▶️ Watch the 2-minute overview: [Why XRefKit exists and how it helps AI teams use domain knowledge](readme.mp4)
+▶️ Download the 2-minute overview: [Why XRefKit exists and how it helps AI teams use domain knowledge](https://raw.githubusercontent.com/synthaicode/XRefKit/main/readme.mp4)
 
 XRefKit is not only a document repository or a link-maintenance tool.
 It is an information architecture for controlled AI work.
