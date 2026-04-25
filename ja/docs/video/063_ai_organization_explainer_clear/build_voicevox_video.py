@@ -9,7 +9,10 @@ import urllib.request
 import wave
 from pathlib import Path
 
+import imageio.v2 as imageio
 import imageio_ffmpeg
+import numpy as np
+from PIL import Image
 
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -26,12 +29,15 @@ STYLE_NAME = os.environ.get("VOICEVOX_STYLE_NAME", "ノーマル")
 LISTENER_SPEAKER_NAME = os.environ.get("VOICEVOX_LISTENER_SPEAKER_NAME", "ずんだもん")
 LISTENER_STYLE_NAME = os.environ.get("VOICEVOX_LISTENER_STYLE_NAME", "ノーマル")
 FPS = "24"
+FPS_INT = 24
 QUESTION_PAUSE_SECONDS = float(os.environ.get("VOICEVOX_QUESTION_PAUSE_SECONDS", "0.8"))
 ANSWER_PAUSE_SECONDS = float(os.environ.get("VOICEVOX_ANSWER_PAUSE_SECONDS", "0.6"))
 SLIDE_END_PAUSE_SECONDS = float(os.environ.get("VOICEVOX_SLIDE_END_PAUSE_SECONDS", "1.0"))
+ANSWER_REVEAL_SECONDS = float(os.environ.get("VOICEVOX_ANSWER_REVEAL_SECONDS", "0.9"))
 WAV_RATE = 24000
 WAV_CHANNELS = 1
 WAV_SAMPLE_WIDTH = 2
+FRAME_SIZE = (1600, 900)
 
 
 def request_json(url: str, data: bytes | None = None) -> object:
@@ -112,6 +118,43 @@ def run_ffmpeg(args: list[str]) -> None:
     subprocess.run([ffmpeg, "-y", *args], check=True)
 
 
+def wav_duration_seconds(path: Path) -> float:
+    with wave.open(str(path), "rb") as wav:
+        return wav.getnframes() / wav.getframerate()
+
+
+def load_frame(path: Path) -> np.ndarray:
+    image = Image.open(path).convert("RGB")
+    if image.size != FRAME_SIZE:
+        image = image.resize(FRAME_SIZE, Image.Resampling.LANCZOS)
+    return np.asarray(image, dtype=np.uint8)
+
+
+def render_reveal_video(start_path: Path, end_path: Path, audio_path: Path, video_path: Path) -> None:
+    start = load_frame(start_path).astype(np.float32)
+    end = load_frame(end_path).astype(np.float32)
+    duration = wav_duration_seconds(audio_path)
+    frame_count = max(1, round(duration * FPS_INT))
+    reveal_frames = max(1, round(min(ANSWER_REVEAL_SECONDS, duration) * FPS_INT))
+
+    with imageio.get_writer(
+        video_path,
+        fps=FPS_INT,
+        codec="libx264",
+        quality=8,
+        macro_block_size=1,
+        ffmpeg_params=["-pix_fmt", "yuv420p", "-movflags", "+faststart"],
+    ) as writer:
+        for index in range(frame_count):
+            if index < reveal_frames:
+                t = index / max(1, reveal_frames - 1)
+                alpha = t * t * (3 - 2 * t)
+                frame = (start * (1 - alpha) + end * alpha).clip(0, 255).astype(np.uint8)
+            else:
+                frame = end.astype(np.uint8)
+            writer.append_data(frame)
+
+
 def concat_audio(audio_paths: list[Path], output_path: Path) -> None:
     concat_file = output_path.with_suffix(".txt")
     lines = [f"file '{path.as_posix()}'" for path in audio_paths]
@@ -188,6 +231,34 @@ def build_segment(slide_path: Path, audio_path: Path, segment_path: Path) -> Non
     )
 
 
+def build_reveal_segment(
+    question_slide_path: Path,
+    answer_slide_path: Path,
+    audio_path: Path,
+    segment_path: Path,
+) -> None:
+    temp_video_path = segment_path.with_name(f"{segment_path.stem}_reveal_video.mp4")
+    render_reveal_video(question_slide_path, answer_slide_path, audio_path, temp_video_path)
+    run_ffmpeg(
+        [
+            "-i",
+            str(temp_video_path),
+            "-i",
+            str(audio_path),
+            "-c:v",
+            "copy",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "192k",
+            "-shortest",
+            "-movflags",
+            "+faststart",
+            str(segment_path),
+        ]
+    )
+
+
 def concat_segments(segment_paths: list[Path]) -> None:
     lines = [f"file '{path.as_posix()}'" for path in segment_paths]
     CONCAT_FILE.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -225,14 +296,26 @@ def main() -> None:
     }
     rows = read_manifest()
     segments: list[Path] = []
+    previous_slide_path: Path | None = None
+    previous_order = ""
 
     for row in rows:
         order = row["order"]
         slide_path = (VIDEO_DIR / row["slide_path"]).resolve()
         segment_path = SEGMENT_DIR / f"{order}.mp4"
         wav_path = build_dialogue_audio(order, row["narration"], speaker_ids)
-        build_segment(slide_path, wav_path, segment_path)
+        is_answer_reveal = (
+            order.endswith("b")
+            and previous_slide_path is not None
+            and previous_order == f"{order[:-1]}a"
+        )
+        if is_answer_reveal:
+            build_reveal_segment(previous_slide_path, slide_path, wav_path, segment_path)
+        else:
+            build_segment(slide_path, wav_path, segment_path)
         segments.append(segment_path.resolve())
+        previous_slide_path = slide_path
+        previous_order = order
 
     concat_segments(segments)
     print(f"speaker=解説:{SPEAKER_NAME}/{STYLE_NAME} id={speaker_ids['解説']}")
