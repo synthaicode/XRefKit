@@ -14,11 +14,12 @@ This page clarifies the boundary among three nearby document types:
 - operating model pages:
   - define how a function or team is structured and operated
   - example: [OR Team operating model](048_or_team_operating_model.md#xid-1D7A8E2C5F10)
+  - example: [AI Organization Explainer Video Team operating model](057_ai_organization_explainer_video_team_operating_model.md#xid-2E8F4A1C9B73)
 - usage guide pages:
   - explain when and how to use that function or team in practice
   - examples:
     - [OR Team usage guide](049_or_team_usage_guide.md#xid-4E2F91A6B8C1)
-    - [Parapara Video Creation Team usage guide](051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842)
+    - [AI Organization Explainer Video Team usage guide](051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842)
 - design pages:
   - define a proposed system or integration design
   - example: [Codex MCP job inbox design](050_codex_mcp_job_inbox_design.md#xid-77BCEAA247E3)
@@ -45,4 +46,5 @@ Do not restate a full usage guide inside a design page.
 - [OR Team operating model](048_or_team_operating_model.md#xid-1D7A8E2C5F10)
 - [OR Team usage guide](049_or_team_usage_guide.md#xid-4E2F91A6B8C1)
 - [Codex MCP job inbox design](050_codex_mcp_job_inbox_design.md#xid-77BCEAA247E3)
-- [Parapara Video Creation Team usage guide](051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842)
+- [AI Organization Explainer Video Team operating model](057_ai_organization_explainer_video_team_operating_model.md#xid-2E8F4A1C9B73)
+- [AI Organization Explainer Video Team usage guide](051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842)

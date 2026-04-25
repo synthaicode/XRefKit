@@ -229,40 +229,50 @@ Another example:
 - event-response procedures
 - operational readiness result
 
-## Parapara Video Creation Team
+## AI Organization Explainer Video Team
+
+This team is the marketing-facing successor name for the Parapara Video Creation Team.
+`Parapara` describes the slide-based video format; the responsibility is to explain
+the XRefKit AI organization model in an understandable marketing video.
 
 ### Responsibility
 
-- manage overall objective, target audience, and completion criteria for the video
-- organize beginner and intermediate learner understanding gaps and control explanation level
-- read repository structure, documentation, and responsibility boundaries to prepare explanation inputs
-- define the scenario, chapter order, and one-message-per-slide script
+- define the marketing communication objective, target audience, viewer action, and completion criteria for an AI organization explanation video
+- explain that XRefKit is an operating base for AI work, not a model-weight repository
+- explain why AI work benefits from responsibility separation, knowledge externalization, workflow control, self-check, handoff, and OR Team improvement
+- organize beginner and stakeholder understanding gaps and control explanation level
+- read repository structure, documentation, and responsibility boundaries to prepare evidence-backed explanation inputs
+- define the message backbone, scenario, chapter order, and one-message-per-slide script
 - define slide specifications for what appears on each screen
 - prepare narration scripts, estimate timing, generate audio, and tune pronunciation and reading flow
 - recognize VOICEVOX Engine Docker as an available tool for audio generation work
 - use VOICEVOX Aoyama Ryusei as the default baseline voice unless another voice is explicitly required
 - use VOICEVOX No.7 as the next candidate voice when the baseline voice is not suitable
 - design diagrams, icons, and visual density for slide presentation
-- check content, order, and expression consistency across all deliverables
-- check whether the explanation is too difficult for beginners
+- check content, order, repository-claim traceability, and expression consistency across all deliverables
+- check whether the explanation is too difficult for first-time viewers
 - control duration, transitions, audio synchronization, final video assembly, and distribution packaging
 - include required license or attribution display on the last slide when the selected assets or voices require it
-- verify that the message is understandable, aligned, and memorable before release
+- verify that the message is understandable, aligned, memorable, and suitable for the requested marketing context before release
 
 ### Must Not Decide
 
 - business-priority decisions outside the requested video objective
 - approval of facts, claims, or policy positions that require an external owner
+- official announcement wording unless assigned by the announcement owner
 - final acceptance of the video when human sign-off is required
 
 ### Typical Capabilities
 
 - project objective control
 - audience and completion-criteria definition
+- marketing message framing
+- viewer-action definition
 - learner model structuring
 - explanation-level control
 - repository reading
 - terminology extraction
+- claim-source mapping
 - issue extraction
 - scenario composition
 - chapter flow design
@@ -275,20 +285,23 @@ Another example:
 - visual density control
 - consistency review
 - beginner-perspective review
+- communication validation
 - timeline editing
 - audio synchronization
 - final video packaging
-- communication validation
 
 ### Typical Outputs
 
 - work instructions
 - chapter outline
 - completion criteria
+- marketing message backbone
+- viewer-action definition
 - explanation-level definition
 - prohibited and supplemental term list
 - repository explanation memo
 - terminology glossary
+- claim-source map
 - issue list
 - scenario outline
 - one-message-per-slide script
@@ -390,4 +403,5 @@ Another example:
 - [Closure workflow](034_closure_workflow.md#xid-8B31F02A4003)
 - [CAB workflow](039_cab_workflow.md#xid-8B31F02A4008)
 - [OR Team operating model](048_or_team_operating_model.md#xid-1D7A8E2C5F10)
-- [Parapara Video Creation Team usage guide](051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842)
+- [AI Organization Explainer Video Team operating model](057_ai_organization_explainer_video_team_operating_model.md#xid-2E8F4A1C9B73)
+- [AI Organization Explainer Video Team usage guide](051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842)

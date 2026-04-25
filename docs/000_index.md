@@ -69,7 +69,8 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [OR Team operating model](048_or_team_operating_model.md#xid-1D7A8E2C5F10)
 - [OR Team usage guide](049_or_team_usage_guide.md#xid-4E2F91A6B8C1)
 - [Codex MCP job inbox design](050_codex_mcp_job_inbox_design.md#xid-77BCEAA247E3)
-- [Parapara Video Creation Team usage guide](051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842)
+- [AI Organization Explainer Video Team operating model](057_ai_organization_explainer_video_team_operating_model.md#xid-2E8F4A1C9B73)
+- [AI Organization Explainer Video Team usage guide](051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842)
 
 ## Common links
 

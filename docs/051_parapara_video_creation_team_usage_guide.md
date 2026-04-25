@@ -1,143 +1,67 @@
 <!-- xid: 5A7C31D9E842 -->
 <a id="xid-5A7C31D9E842"></a>
 
-# Parapara Video Creation Team Usage Guide
+# AI Organization Explainer Video Team Usage Guide
 
-This page explains the minimum operating memo for the Parapara Video Creation Team.
+This page explains how to use the AI Organization Explainer Video Team, formerly
+called the Parapara Video Creation Team.
+
+`Parapara` is the slide-based video format. The team purpose is marketing-facing:
+it produces an understandable explanation video about this repository's AI
+organization model.
 
 This page is a team-specific usage guide.
 It is not a general repository operating model and not a system integration design page.
+For the team structure and operating loop, see
+[AI Organization Explainer Video Team operating model](057_ai_organization_explainer_video_team_operating_model.md#xid-2E8F4A1C9B73).
 For the boundary among operating models, usage guides, and design pages, see [Operating models, usage guides, and design pages](022_operating_models_guides_and_designs.md#xid-9C4E2A71D583).
 
 ## Purpose
 
-Use this team when you need to produce a short slide-based video with explicit role separation across composition, audio, visual, editing, and validation.
+Use this team when you need to produce a short slide-based marketing or
+orientation video that explains XRefKit's AI organization model in plain terms.
+
+The team should make the viewer understand:
+
+- this repository is not a place to store model weights
+- this repository manages responsibilities, knowledge, workflows, skills,
+  evidence, and outputs for AI work
+- AI work becomes more stable when responsibility boundaries and checks are made
+  explicit
+- OR Team exists to keep the organization improving after normal execution work
 
 ## Recommended Presentation Structure
 
-Use the following structure as the default chapter sequence when explaining what an AI team repository manages:
+Use the following structure as the default chapter sequence when explaining what
+this repository's AI organization manages:
 
-1. title:
-   - `AIチームのリポジトリは何を管理しているのか`
-2. purpose of this repository:
-   - show that the repository is not a place to make AI look smart
-   - show that it manages roles, knowledge, and work flow
-3. why AI is organized as a team:
-   - explain that a single AI tends to mix responsibilities
-   - explain that planning, production, and inspection should be separated
-4. team overview:
-   - show a bird's-eye view of each AI responsibility
-5. end-to-end flow:
-   - `題材入力 -> 読解 -> シナリオ -> スライド -> 音声 -> QA -> 公開`
-6. repository contents:
-   - show the repository through elements such as `knowledge / skill / workflow / templates / outputs`
-7. actual work unit:
-   - show how a single slide is produced as an example
-8. quality control:
-   - cover beginner-friendly expression
-   - cover content consistency
-   - cover synchronization between narration and screen
-   - cover terminology consistency
-9. value of this repository:
+1. normal AI use:
+   - show that AI use often starts as individual practice
+   - show why prompt sharing alone does not create stable operation
+2. AI characteristics:
+   - explain that AI is useful but can forget, skip, mix responsibilities, and
+     drift
+3. work structure:
+   - explain that real work is a bundle of tasks, checks, handoffs, and
+     decisions
+4. role composition:
+   - explain why multiple AI roles should be composed around responsibility
+     boundaries
+5. repository structure:
+   - show how `docs / flows / capabilities / skills / knowledge / outputs`
+     support that organization
+6. quality and handoff:
+   - explain self-check, evidence, unknown handling, and explicit handoff
+7. OR Team:
+   - explain why continuous improvement needs observation, improvement, and
+     re-observation
+8. value:
    - reduce person-dependence
-   - align explanation quality
+   - align explanation and operating quality
    - make improvement possible
-10. conclusion:
-   - explain that an AI team repository is not a model storage place
-   - explain that it is an operating base for producing explanations in a stable way
-
-## Team Roles
-
-The team is composed of the following roles:
-
-1. planning lead AI:
-   - main responsibility:
-     - manage the overall purpose, target audience, and completion criteria
-   - input:
-     - purpose
-     - target
-     - source materials
-   - output:
-     - work instructions
-     - chapter structure
-     - completion criteria
-2. learner model AI:
-   - main responsibility:
-     - organize understanding gaps for beginner and intermediate learners
-   - input:
-     - assumed audience
-     - terminology list
-   - output:
-     - explanation-level definition
-     - prohibited and supplemental term list
-3. repository reading AI:
-   - main responsibility:
-     - organize repository structure and responsibility boundaries
-   - input:
-     - `README`
-     - `docs/`
-     - structure information
-   - output:
-     - repository explanation memo
-     - glossary
-     - issue list
-4. scenario AI:
-   - main responsibility:
-     - build the order of the story
-   - input:
-     - repository reading memo
-     - target explanation level
-   - output:
-     - chapter structure
-     - one-message-per-slide script
-5. slide design AI:
-   - main responsibility:
-     - decide what appears on screen
-   - input:
-     - script
-   - output:
-     - slide specification
-6. narration AI:
-   - main responsibility:
-     - prepare the spoken script
-   - input:
-     - script
-     - slide specification
-   - output:
-     - narration script
-     - duration estimate
-7. diagram and direction AI:
-   - main responsibility:
-     - design diagrams, icons, and screen density
-   - input:
-     - slide specification
-   - output:
-     - visual instructions
-8. consistency QA AI:
-   - main responsibility:
-     - check content, order, and expression consistency
-   - input:
-     - all deliverables
-   - output:
-     - issue list
-     - whether correction is required
-9. beginner QA AI:
-   - main responsibility:
-     - check whether the material is too difficult
-   - input:
-     - script
-     - slides
-   - output:
-     - beginner-perspective review
-10. final editing AI:
-   - main responsibility:
-     - integrate outputs
-   - input:
-     - corrected deliverable set
-   - output:
-     - distribution slide deck
-     - narration script
-     - public release version
+9. conclusion:
+   - explain that XRefKit is not a model storage place
+   - explain that it is an operating base for stable AI work
 
 ## Slide Composition Rule
 
@@ -217,19 +141,56 @@ When reading quality is not acceptable:
 
 Do not treat the first synthesized output as final without checking timing and reading quality against the slide sequence.
 
+## Request Format
+
+Use this minimum request format:
+
+```text
+Target audience:
+Purpose:
+Desired viewer action:
+Target duration:
+Publication context:
+Required source materials:
+Voice preference:
+License or attribution constraints:
+```
+
+If the requester provides only a topic, assume the default purpose is to explain
+why this repository treats AI work as an organization instead of a single
+general-purpose agent.
+
+## Minimum Production Flow
+
+1. confirm target audience, purpose, viewer action, and target duration
+2. read the relevant repository materials
+3. create the message backbone and chapter sequence
+4. create one-message-per-slide scenario rows
+5. create slide specifications and visual assets
+6. create narration and timing estimates
+7. generate or attach audio
+8. assemble a synchronized draft video
+9. run consistency QA and beginner QA
+10. add license and attribution display when required
+11. finalize the distribution package
+
 ## Validation Check
 
 Before finalizing the video, confirm at least the following:
 
-1. each slide has a single clear role
-2. the narration matches the intended message of the slide
-3. scene switching does not cut speech unnaturally
-4. the total duration matches the requested presentation length
-5. character or visual differences support, rather than distract from, the explanation
-6. the final result is understandable without extra verbal supplementation
-7. the last slide includes the required license and attribution display for the assets and voices used
+1. the target audience and desired viewer action are explicit
+2. each slide has a single clear role
+3. the narration matches the intended message of the slide
+4. repository claims are traceable or clearly framed as marketing explanation
+5. scene switching does not cut speech unnaturally
+6. the total duration matches the requested presentation length
+7. character or visual differences support, rather than distract from, the explanation
+8. the final result is understandable without extra verbal supplementation
+9. the video does not imply unsupported product, policy, or business claims
+10. the last slide includes the required license and attribution display for the assets and voices used
 
 ## Related
 
+- [AI Organization Explainer Video Team operating model](057_ai_organization_explainer_video_team_operating_model.md#xid-2E8F4A1C9B73)
 - [Operating models, usage guides, and design pages](022_operating_models_guides_and_designs.md#xid-9C4E2A71D583)
 - [Group definitions](040_group_definitions.md#xid-8B31F02A4009)
