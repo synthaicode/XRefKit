@@ -170,6 +170,32 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_artifact.add_argument("--note", default=None, help="Optional artifact note")
     p_skill_artifact.add_argument("--json", action="store_true", help="Emit JSON")
 
+    p_skill_concern = skill_sub.add_parser("concern", help="Add or update unknown, risk, or judgment closure linkage")
+    p_skill_concern.add_argument("--log", required=True, help="Skill run log to update")
+    p_skill_concern.add_argument("--concern", required=True, help="Stable concern id, such as UNK-001")
+    p_skill_concern.add_argument(
+        "--kind",
+        required=True,
+        choices=["unknown", "risk", "judgment"],
+        help="Concern kind",
+    )
+    p_skill_concern.add_argument(
+        "--status",
+        required=True,
+        choices=["open", "resolved", "escalated"],
+        help="Concern status",
+    )
+    p_skill_concern.add_argument(
+        "--judgment",
+        default="trivial",
+        choices=["trivial", "non_trivial"],
+        help="Judgment significance; only non_trivial judgments require artifact/reference linkage",
+    )
+    p_skill_concern.add_argument("--target", default=None, help="Optional path, XID, command, URL, or judgment reference")
+    p_skill_concern.add_argument("--text", default=None, help="Concern text; required when adding a new concern")
+    p_skill_concern.add_argument("--role", required=True, help="Runtime role recording the concern")
+    p_skill_concern.add_argument("--json", action="store_true", help="Emit JSON")
+
     p_skill_close = skill_sub.add_parser("close", help="Apply the Skill run closure gate")
     p_skill_close.add_argument("--log", required=True, help="Skill run log to close")
     p_skill_close.add_argument("--note", default=None, help="Optional closure event note")
@@ -223,6 +249,10 @@ def main(argv: list[str] | None = None) -> int:
             from fm.skillrun import cmd_skill_artifact
 
             return cmd_skill_artifact(args)
+        if args.skill_cmd == "concern":
+            from fm.skillrun import cmd_skill_concern
+
+            return cmd_skill_concern(args)
         if args.skill_cmd == "close":
             from fm.skillrun import cmd_skill_close
 

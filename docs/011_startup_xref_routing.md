@@ -21,6 +21,7 @@ For the boundary between base AI control and XRefKit-specific routing, see [Base
 - When a task uses a Skill, start it through `python -m fm skill run --meta <path-to-meta.md> --task "<task>" --json` before opening or executing `SKILL.md`.
 - Add task-specific work items with `python -m fm skill workitem` before closure; generic phase rows are not enough to close Skill-backed work.
 - Record output and evidence links with `python -m fm skill artifact` before closure.
+- Record closure-relevant unknowns, risks, and non-trivial judgments with `python -m fm skill concern`; closure rejects unresolved unknowns, unresolved non-escalated risks, and unlinked non-trivial judgments.
 - Keep the returned `run_log` and assigned roles active; update execution, check, and handoff with `python -m fm skill phase --role <assigned-role>` so execution and checking stay separated.
 - When a task follows the business-capability model, route via [Capability Routing for Agents](../agent/010_capability_routing.md#xid-1F93A7C24010).
 - When a task or skill needs domain knowledge, route via:

@@ -155,6 +155,31 @@ At least one `output` artifact and one `evidence` artifact are required before
 closure. Every artifact must be `done` or `escalated` before the Skill run can
 close.
 
+The generated log also contains an `Unknowns And Risks` section. Add or update
+closure-relevant unknowns, risks, and judgments with:
+
+```powershell
+python -m fm skill concern --log work/sessions/<run-log>.md --concern UNK-001 --kind unknown --status resolved --text "missing input was confirmed" --role "<skill_id>:checker"
+python -m fm skill concern --log work/sessions/<run-log>.md --concern RSK-001 --kind risk --status escalated --text "residual risk accepted by owner" --role "<skill_id>:checker"
+python -m fm skill concern --log work/sessions/<run-log>.md --concern JDG-001 --kind judgment --judgment non_trivial --status resolved --target "work/judgments/JDG-001.md" --text "non-trivial trade-off recorded" --role "<skill_id>:checker"
+```
+
+Supported concern kinds:
+
+- `unknown`
+- `risk`
+- `judgment`
+
+Supported concern statuses:
+
+- `open`
+- `resolved`
+- `escalated`
+
+Unknowns must be `resolved` before closure. Risks must be `resolved` or
+`escalated` before closure. A `judgment` marked `non_trivial` must be linked by
+either a `judgment` artifact or a `work/judgments/` reference before closure.
+
 The command prepares the controlled execution envelope. It does not perform
 domain-specific work automatically. Domain execution happens through the
 selected Skill procedure after the runtime record exists.
@@ -211,10 +236,15 @@ The closure command reads the run log and rejects closure unless:
 - at least one `output` artifact exists
 - at least one `evidence` artifact exists
 - every runtime artifact is `done` or `escalated`
+- every unknown is `resolved`
+- every risk is `resolved` or `escalated`
+- every `non_trivial` judgment has a `judgment` artifact or `work/judgments/` reference
 
-When the gate passes, it updates `Closure Gate` and appends a phase event. If
-any required section is still `pending`, `blocked`, `unknown`, or missing, the
-run remains open and the missing closure conditions are printed as errors.
+When the gate passes, it updates `Closure Gate`, records the unknown/risk/
+judgment inspection results under `Closure Checks`, and appends a phase event.
+If any required section is still `pending`, `blocked`, `unknown`, or missing,
+or if required concern linkage is absent, the run remains open and the missing
+closure conditions are printed as errors.
 
 Later runtime commands may use this same contract to launch separate execution
 and checking processes, but the role separation is already enforced at the

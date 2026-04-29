@@ -37,6 +37,97 @@ class CliTests(unittest.TestCase):
         (meta.parent / "SKILL.md").write_text("# Sample Skill\n", encoding="utf-8")
         return meta
 
+    def _write_completed_skill_run(self, root: Path) -> Path:
+        self._write_valid_skill(root)
+        out = root / "work" / "sessions" / "run.md"
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(
+                0,
+                main(
+                    [
+                        "skill",
+                        "run",
+                        "--root",
+                        str(root),
+                        "--meta",
+                        "skills/sample/meta.md",
+                        "--task",
+                        "Create a controlled output",
+                        "--out",
+                        str(out),
+                    ]
+                ),
+            )
+            self.assertEqual(
+                0,
+                main(
+                    [
+                        "skill",
+                        "workitem",
+                        "--log",
+                        str(out),
+                        "--item",
+                        "WI-001",
+                        "--text",
+                        "Implement controlled output",
+                        "--status",
+                        "done",
+                        "--role",
+                        "sample_skill:executor",
+                    ]
+                ),
+            )
+            for artifact_id, kind, target, role in (
+                ("OUT-001", "output", "docs/output.md", "sample_skill:executor"),
+                ("EVD-001", "evidence", "python tools/run_quality_gate.py fm", "sample_skill:checker"),
+            ):
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "artifact",
+                            "--log",
+                            str(out),
+                            "--artifact",
+                            artifact_id,
+                            "--kind",
+                            kind,
+                            "--target",
+                            target,
+                            "--item",
+                            "WI-001",
+                            "--status",
+                            "done",
+                            "--role",
+                            role,
+                        ]
+                    ),
+                )
+            for phase, role in (
+                ("execution", "sample_skill:executor"),
+                ("check", "sample_skill:checker"),
+                ("handoff", "sample_skill:handoff_owner"),
+            ):
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "phase",
+                            "--log",
+                            str(out),
+                            "--phase",
+                            phase,
+                            "--status",
+                            "done",
+                            "--role",
+                            role,
+                        ]
+                    ),
+                )
+        return out
+
     def test_main_xref_check_json_returns_zero_and_emits_payload(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -652,6 +743,199 @@ class CliTests(unittest.TestCase):
             self.assertEqual(1, exit_code)
             self.assertFalse(payload["ok"])
             self.assertIn("Execution Role must be done or escalated", payload["errors"][0])
+
+    def test_main_skill_close_rejects_unresolved_unknown(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            out = self._write_completed_skill_run(Path(tmp))
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "concern",
+                            "--log",
+                            str(out),
+                            "--concern",
+                            "UNK-001",
+                            "--kind",
+                            "unknown",
+                            "--status",
+                            "open",
+                            "--text",
+                            "Source boundary is not confirmed",
+                            "--role",
+                            "sample_skill:checker",
+                        ]
+                    ),
+                )
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(["skill", "close", "--log", str(out), "--json"])
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(1, exit_code)
+            self.assertFalse(payload["ok"])
+            self.assertIn("unresolved unknowns block closure: UNK-001", payload["errors"])
+            self.assertEqual("failed", payload["closure_checks"]["unknown"])
+
+    def test_main_skill_close_allows_escalated_risk(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            out = self._write_completed_skill_run(Path(tmp))
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "concern",
+                            "--log",
+                            str(out),
+                            "--concern",
+                            "RSK-001",
+                            "--kind",
+                            "risk",
+                            "--status",
+                            "escalated",
+                            "--text",
+                            "Residual schedule risk needs owner acceptance",
+                            "--role",
+                            "sample_skill:checker",
+                        ]
+                    ),
+                )
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(["skill", "close", "--log", str(out), "--json"])
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(0, exit_code)
+            self.assertTrue(payload["ok"])
+            self.assertEqual("passed", payload["closure_checks"]["risk"])
+            self.assertEqual("RSK-001", payload["closure_checks"]["escalated_risks"])
+
+    def test_main_skill_close_rejects_unlinked_non_trivial_judgment(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            out = self._write_completed_skill_run(Path(tmp))
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "concern",
+                            "--log",
+                            str(out),
+                            "--concern",
+                            "JDG-001",
+                            "--kind",
+                            "judgment",
+                            "--status",
+                            "resolved",
+                            "--judgment",
+                            "non_trivial",
+                            "--text",
+                            "Chose a minimal runtime register instead of broad schema redesign",
+                            "--role",
+                            "sample_skill:checker",
+                        ]
+                    ),
+                )
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(["skill", "close", "--log", str(out), "--json"])
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(1, exit_code)
+            self.assertFalse(payload["ok"])
+            self.assertIn(
+                "non-trivial judgments require a judgment artifact or work/judgments/ reference before closure: JDG-001",
+                payload["errors"],
+            )
+            self.assertEqual("failed", payload["closure_checks"]["judgment"])
+
+    def test_main_skill_close_records_unknown_risk_judgment_checks(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            out = self._write_completed_skill_run(Path(tmp))
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "concern",
+                            "--log",
+                            str(out),
+                            "--concern",
+                            "UNK-001",
+                            "--kind",
+                            "unknown",
+                            "--status",
+                            "resolved",
+                            "--text",
+                            "Source boundary confirmed",
+                            "--role",
+                            "sample_skill:checker",
+                        ]
+                    ),
+                )
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "concern",
+                            "--log",
+                            str(out),
+                            "--concern",
+                            "JDG-001",
+                            "--kind",
+                            "judgment",
+                            "--status",
+                            "resolved",
+                            "--judgment",
+                            "non_trivial",
+                            "--target",
+                            "work/judgments/JDG-001.md",
+                            "--text",
+                            "Chose the closure linkage rule",
+                            "--role",
+                            "sample_skill:checker",
+                        ]
+                    ),
+                )
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(["skill", "close", "--log", str(out), "--json"])
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(0, exit_code)
+            self.assertTrue(payload["ok"])
+            self.assertEqual(
+                {
+                    "unknown": "passed",
+                    "risk": "passed",
+                    "judgment": "passed",
+                    "open_unknowns": "-",
+                    "open_risks": "-",
+                    "escalated_risks": "-",
+                    "non_trivial_judgments": "JDG-001",
+                    "judgment_reference": "present",
+                },
+                payload["closure_checks"],
+            )
+            text = out.read_text(encoding="utf-8")
+            self.assertIn("### Closure Checks", text)
+            self.assertIn("- unknown: `passed` open=`-`", text)
+            self.assertIn("- judgment: `passed` non_trivial=`JDG-001` reference=`present`", text)
 
     def test_main_skill_close_accepts_completed_runtime_log(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
