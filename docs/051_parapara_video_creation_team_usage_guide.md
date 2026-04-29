@@ -20,6 +20,11 @@ For the boundary among operating models, usage guides, and design pages, see [Op
 
 Use this team when you need to produce a short slide-based marketing or
 orientation video that explains XRefKit's AI organization model in plain terms.
+The same Marketing Group production function also owns upstream presentation
+material creation for explanatory decks: goal definition, issue organization,
+information collection, analysis, and structure design.
+It also owns standalone one-page repository infographics when the request is to
+represent the current repository as a visual operating model.
 
 The team should make the viewer understand:
 
@@ -149,6 +154,7 @@ Use this minimum request format:
 Target audience:
 Purpose:
 Desired viewer action:
+Presentation goal:
 Target duration:
 Publication context:
 Required source materials:
@@ -163,31 +169,46 @@ general-purpose agent.
 ## Minimum Production Flow
 
 1. confirm target audience, purpose, viewer action, and target duration
-2. read the relevant repository materials
-3. create the message backbone and chapter sequence
-4. create one-message-per-slide scenario rows
-5. create slide specifications and visual assets
-6. create narration and timing estimates
-7. generate or attach audio
-8. assemble a synchronized draft video
-9. run consistency QA and beginner QA
-10. add license and attribution display when required
-11. finalize the distribution package
+2. define the presentation goal and issue map
+3. collect the relevant repository materials and other source inputs
+4. analyze the collected information and derive the presentation implications
+5. create the message backbone, deck structure, and chapter sequence
+6. create one-message-per-slide scenario rows
+7. create slide specifications and visual assets
+   - for a standalone repository infographic, create a one-page visual section
+     map and renderable image specification instead of a slide sequence
+8. create narration and timing estimates when the output is video
+9. generate or attach audio when the output is video
+10. assemble a slide deck or synchronized draft video
+11. run consistency QA and beginner QA
+12. add license and attribution display when required
+13. finalize the distribution package
 
 ## Validation Check
 
 Before finalizing the video, confirm at least the following:
 
 1. the target audience and desired viewer action are explicit
-2. each slide has a single clear role
-3. the narration matches the intended message of the slide
-4. repository claims are traceable or clearly framed as marketing explanation
-5. scene switching does not cut speech unnaturally
-6. the total duration matches the requested presentation length
-7. character or visual differences support, rather than distract from, the explanation
-8. the final result is understandable without extra verbal supplementation
-9. the video does not imply unsupported product, policy, or business claims
-10. the last slide includes the required license and attribution display for the assets and voices used
+2. the presentation goal, issue map, and deck structure are explicit
+3. collected information and analysis support the selected structure
+4. each slide has a single clear role
+5. the narration matches the intended message of the slide when narration exists
+6. repository claims are traceable or clearly framed as marketing explanation
+7. scene switching does not cut speech unnaturally when the output is video
+8. the total duration matches the requested presentation length when duration is requested
+9. character or visual differences support, rather than distract from, the explanation
+10. the final result is understandable without extra verbal supplementation
+11. the output does not imply unsupported product, policy, or business claims
+12. the last slide includes the required license and attribution display for the assets and voices used
+
+For a standalone repository infographic, replace slide-specific checks with:
+
+1. the central claim of the image is explicit
+2. the image represents the current repository state, not an undocumented future design
+3. repository facts are traceable or marked as marketing explanation
+4. important control boundaries such as unknown handling, no unsupported guessing, human decision boundaries, and context-direction guard are not lost when they are part of the requested message
+5. the PNG is readable at the requested output size
+6. reusable HTML/CSS/render sources are preserved with the final image
 
 ## Related
 

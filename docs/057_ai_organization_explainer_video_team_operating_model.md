@@ -6,7 +6,8 @@
 This page defines the operating model for the AI Organization Explainer Video Team.
 
 This team is a Marketing Group production function. Its purpose is to explain the
-XRefKit AI organization model in a short, understandable, slide-based video.
+XRefKit AI organization model in understandable presentation material, including
+slide decks, short slide-based videos, and standalone repository infographics.
 
 For day-to-day request format and production guidance, see
 [AI Organization Explainer Video Team usage guide](051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842).
@@ -18,8 +19,9 @@ For the boundary among operating models, usage guides, and design pages, see
 The team converts the repository's AI organization concept into marketing-facing
 explanation content.
 
-The team does not exist merely to make videos. It exists to make the following
-ideas understandable:
+The team does not exist merely to make videos or decorate slides. It owns the
+presentation-material creation work needed to make the following ideas
+understandable:
 
 - XRefKit is an operating base for AI work, not a model-weight repository.
 - AI work becomes more stable when responsibilities, knowledge, workflow, and
@@ -38,8 +40,14 @@ It may use Marketing Group slide-production skills such as
 
 - message framing
 - audience modeling
+- presentation goal definition
+- issue structuring
+- information collection
+- analysis and synthesis
+- deck structure design
 - scenario design
 - slide design
+- single-image repository infographic design
 - narration
 - audio generation
 - video assembly
@@ -89,6 +97,7 @@ completion criteria.
 Typical outputs:
 
 - video objective
+- presentation objective
 - target-audience definition
 - viewer-action definition
 - completion criteria
@@ -115,6 +124,20 @@ Typical outputs:
 - terminology glossary
 - claim-source map
 - issue list
+
+### Presentation Structuring AI
+
+Structures the presentation before visual production starts by defining the goal,
+organizing issues, collecting needed information, analyzing implications, and
+turning the result into a deck outline.
+
+Typical outputs:
+
+- presentation goal
+- issue map
+- information collection list
+- analysis memo
+- deck structure outline
 
 ### Scenario AI
 
@@ -186,6 +209,7 @@ Integrates corrected deliverables into the final distribution package.
 Typical outputs:
 
 - distribution slide deck
+- repository infographic image and its rerenderable sources
 - generated audio assets
 - edit timeline
 - synchronized draft video
@@ -196,23 +220,33 @@ Typical outputs:
 
 1. Confirm the audience, objective, target duration, publication context, and
    desired viewer action.
-2. Read the repository materials needed to support the claims.
-3. Define the message backbone and chapter sequence.
-4. Produce one-message-per-slide scenario rows.
-5. Produce slide specifications and visual assets.
-6. Produce narration, timing estimates, and audio.
-7. Assemble a synchronized draft video.
-8. Run consistency QA and beginner QA.
-9. Correct the scenario, slides, narration, or timing.
-10. Add license and attribution display when required.
-11. Finalize the distribution package.
+2. Define the presentation goal and issue map.
+3. Collect the repository materials and other source inputs needed to support
+   the claims.
+4. Analyze the collected information and separate evidence-backed claims from
+   marketing explanation.
+5. Define the message backbone, deck structure, and chapter sequence.
+6. Produce one-message-per-slide scenario rows.
+7. Produce slide specifications and visual assets.
+   For a standalone repository infographic, produce a one-page visual
+   specification, render source files, and final PNG instead of a slide sequence.
+8. Produce narration, timing estimates, and audio when the output is video.
+9. Assemble a slide deck or synchronized draft video.
+10. Run consistency QA and beginner QA.
+11. Correct the structure, scenario, slides, narration, or timing.
+12. Add license and attribution display when required.
+13. Finalize the distribution package.
 
 ## Completion Conditions
 
 The team may close work only when:
 
 - the video has a defined audience and viewer action
+- the presentation goal, issue map, and deck structure are explicit
+- collected information and analysis support the selected structure
 - every slide has one clear message
+- every standalone infographic has one central claim and represents the current
+  repository rather than an unsupported future state
 - every non-obvious claim is traceable to repository material or marked as a
   marketing explanation
 - narration and slide message are aligned

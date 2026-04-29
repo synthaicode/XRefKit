@@ -2,6 +2,8 @@
 
 XRefKit is a toolkit for making domain knowledge referenceable, traceable, and maintainable for AI-assisted work.
 
+![XRefKit repository snapshot](en/docs/assets/xrefkit_repository_snapshot/xrefkit_repository_snapshot.png)
+
 ▶️ Download the 2-minute overview: [Why XRefKit exists and how it helps AI teams use domain knowledge](https://raw.githubusercontent.com/synthaicode/XRefKit/main/readme.mp4)
 
 XRefKit is not only a document repository or a link-maintenance tool.
@@ -126,6 +128,25 @@ python -m fm ctx pack --seed 7C6C2B46A9D1 --depth 1 --out .xref\\pack.md
 ```
 
 `python -m fm xref check` and `python -m fm xref fix` return exit code `1` when issues are found, so they can fail CI correctly.
+
+## Quality Gate
+
+Use the repository quality-gate runner to execute the same core checks that CI uses.
+
+```powershell
+# fm contract checks (unit tests + xref + skill metadata)
+python tools/run_quality_gate.py fm
+
+# slides app checks (install deps first on a clean machine)
+python tools/run_quality_gate.py slides-app --install-node-deps
+
+# flow monitor dashboard checks
+python tools/run_quality_gate.py flow-monitor-dashboard
+```
+
+The GitHub Actions workflow calls the same runner for the `fm` and Node project quality gates.
+
+The bundled project baseline is defined in [Project Quality Baseline](docs/056_project_quality_baseline.md#xid-1C4B72D5E901).
 
 ## Repository Map
 

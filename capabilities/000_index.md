@@ -33,6 +33,7 @@ Keep domain facts in `knowledge/` and executable procedures in `skills/`.
 - `operations/`
 - `quality/`
 - `business/`
+- `marketing/`
 - `management/`
 
 ## Entries
@@ -69,6 +70,8 @@ Keep domain facts in `knowledge/` and executable procedures in `skills/`.
 - [CAP-QA-008 License Compliance Check](quality/160_cap_qa_008_license_compliance_check.md#xid-5A1C2F0E5508)
 - [CAP-QA-009 Integration and Regression Verification](quality/170_cap_qa_009_integration_regression_verification.md#xid-5A1C2F0E5509)
 - [CAP-BIZ-001 Value-Constraint Alignment Evaluation](business/100_cap_biz_001_value_constraint_fit_evaluation.md#xid-837CDB1183C9)
+- [CAP-MKT-001 Presentation Material Structuring](marketing/100_cap_mkt_001_presentation_material_structuring.md#xid-A4E9B13D7C20)
+- [CAP-MKT-002 Repository Infographic Snapshot](marketing/110_cap_mkt_002_repository_infographic_snapshot.md#xid-C8D4A92F61E0)
 - [CAP-MGT-001 Execution Management](management/100_cap_mgt_001_execution_management.md#xid-A365F4499AA7)
 - [CAP-MGT-002 Uncertainty and Risk Logging](management/110_cap_mgt_002_uncertainty_risk_logging.md#xid-9F14372D994A)
 - [CAP-MGT-003 Out-of-Scope Escalation](management/120_cap_mgt_003_out_of_scope_escalation.md#xid-1E3B2AA5B328)

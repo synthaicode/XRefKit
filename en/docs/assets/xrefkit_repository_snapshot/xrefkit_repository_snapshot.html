@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>XRefKit Repository Snapshot</title>
+  <style>:root {
+  --ink: #061331;
+  --muted: #526173;
+  --blue: #174ea6;
+  --blue2: #2563eb;
+  --cyan: #087f8c;
+  --green: #0f766e;
+  --red: #dc2626;
+  --amber: #b45309;
+  --line: #b8c7dd;
+  --soft: #f6f9fe;
+  --card: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  color: var(--ink);
+  background: #f8fafc;
+}
+
+.canvas {
+  width: 1600px;
+  height: 900px;
+  padding: 22px 28px 18px;
+  background:
+    linear-gradient(180deg, #ffffff 0%, #f7fbff 58%, #eef6ff 100%);
+  overflow: hidden;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: start;
+  margin-bottom: 14px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 39px;
+  line-height: 1.05;
+  letter-spacing: 0;
+  max-width: 1180px;
+}
+
+.subtitle {
+  margin: 8px 0 0;
+  font-size: 18px;
+  line-height: 1.28;
+  color: var(--muted);
+}
+
+.brand {
+  min-width: 150px;
+  padding: 13px 18px 15px;
+  border-radius: 10px;
+  text-align: center;
+  color: #fff;
+  font-weight: 900;
+  font-size: 31px;
+  background: linear-gradient(135deg, #0f3f9e, #2468d8);
+  box-shadow: 0 12px 28px rgba(23, 78, 166, .25);
+}
+
+.snapshot {
+  margin-top: 7px;
+  color: var(--blue);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 325px 490px 310px 345px;
+  gap: 16px;
+  height: 535px;
+}
+
+.panel {
+  height: 535px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255,255,255,.92);
+  overflow: hidden;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, .08);
+}
+
+.panel-title {
+  padding: 9px 12px 10px;
+  text-align: center;
+  color: #fff;
+  font-size: 19px;
+  font-weight: 900;
+  background: linear-gradient(180deg, var(--blue2), var(--blue));
+}
+
+.panel.guard .panel-title,
+.panel.human .panel-title {
+  background: linear-gradient(180deg, #0891b2, #0f766e);
+}
+
+.panel-body {
+  padding: 13px;
+}
+
+.asset-list {
+  display: grid;
+  gap: 6px;
+}
+
+.asset {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  align-items: center;
+  min-height: 49px;
+  padding: 6px 10px;
+  border: 1.4px solid #b7c8e7;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #fff, #f7fbff);
+}
+
+.ico {
+  width: 34px;
+  height: 34px;
+  border: 2px solid var(--blue);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: var(--blue);
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.asset strong {
+  font-size: 16px;
+}
+
+.memory-box {
+  margin-top: 9px;
+  padding: 9px 10px;
+  border: 1.4px solid #b7c8e7;
+  border-radius: 10px;
+  background: #f8fbff;
+  text-align: center;
+}
+
+.no-memory {
+  margin: 0 auto 6px;
+  width: 52px;
+  height: 52px;
+  border: 5px solid var(--red);
+  border-radius: 50%;
+  position: relative;
+}
+
+.no-memory::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 21px;
+  width: 37px;
+  height: 5px;
+  background: var(--red);
+  transform: rotate(-38deg);
+}
+
+.memory-box h2 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  color: var(--red);
+}
+
+.memory-box p,
+.note,
+.small {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.memory-box p {
+  font-size: 12px;
+  line-height: 1.22;
+}
+
+.pipeline {
+  display: grid;
+  grid-template-columns: 42px 1fr 130px;
+  gap: 10px;
+  align-items: start;
+}
+
+.steps {
+  display: grid;
+  gap: 8px;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 10px;
+  align-items: start;
+  min-height: 56px;
+  padding: 8px 9px;
+  border: 1.4px solid #b7c8e7;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #fff, #f7fbff);
+}
+
+.num {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: white;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+}
+
+.step h3,
+.human-card h3 {
+  margin: 0 0 3px;
+  font-size: 15.5px;
+  line-height: 1.1;
+}
+
+.step p,
+.human-card p {
+  margin: 0;
+  font-size: 11.4px;
+  line-height: 1.28;
+  color: #1f2a44;
+}
+
+.left-numbers {
+  display: grid;
+  gap: 33px;
+  padding-top: 9px;
+}
+
+.side-rule {
+  min-height: 355px;
+  padding: 11px 9px;
+  border: 1.5px solid #f0b4b4;
+  border-radius: 12px;
+  background: #fffafa;
+}
+
+.side-rule h3 {
+  margin: 0 0 11px;
+  text-align: center;
+  color: var(--red);
+  font-size: 15px;
+  line-height: 1.15;
+}
+
+.rule-card {
+  padding: 8px 7px;
+  margin-bottom: 8px;
+  border: 1px solid #f0b4b4;
+  border-radius: 8px;
+  background: #fff;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.stop {
+  margin: 10px auto 7px;
+  width: 68px;
+  height: 68px;
+  clip-path: polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%);
+  background: var(--red);
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.ai-first {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 8px 11px;
+  border: 1.4px solid #b7c8e7;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.ai-first strong {
+  color: var(--blue);
+  font-size: 14px;
+}
+
+.guard-stack {
+  display: grid;
+  grid-template-columns: 1fr 88px;
+  gap: 10px;
+  align-items: center;
+}
+
+.direction {
+  display: grid;
+  gap: 6px;
+}
+
+.guard-item {
+  padding: 8px;
+  border: 1.4px solid #b6d6dc;
+  border-radius: 8px;
+  background: #f8ffff;
+  font-size: 14px;
+  font-weight: 850;
+  text-align: center;
+}
+
+.down {
+  text-align: center;
+  color: var(--green);
+  font-size: 20px;
+  line-height: .75;
+}
+
+.shield {
+  width: 72px;
+  height: 82px;
+  margin: 0 auto 10px;
+  clip-path: polygon(50% 0%,90% 15%,84% 70%,50% 100%,16% 70%,10% 15%);
+  background: var(--green);
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: 38px;
+  font-weight: 900;
+}
+
+.guard-copy {
+  text-align: center;
+  font-weight: 900;
+  color: var(--green);
+  font-size: 18px;
+  line-height: 1.08;
+}
+
+.blocked {
+  margin-top: 10px;
+  padding: 10px;
+  border-top: 2px dashed #ef4444;
+  color: #1f2a44;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.blocked strong {
+  color: var(--red);
+}
+
+.human-flow {
+  display: grid;
+  gap: 6px;
+}
+
+.human-card {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 7px;
+  min-height: 48px;
+  padding: 7px 9px;
+  border: 1.4px solid #afd4da;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #fff, #f8ffff);
+}
+
+.human-card .ico {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.bracket {
+  margin: 1px 0 1px 50px;
+  color: var(--cyan);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.xid-band {
+  margin-top: 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255,255,255,.95);
+  display: grid;
+  grid-template-columns: 1.15fr 1.15fr 1.6fr 1.15fr 1.15fr;
+  align-items: center;
+  min-height: 66px;
+  overflow: hidden;
+}
+
+.band-cell {
+  padding: 8px 15px;
+  min-height: 66px;
+  border-right: 1px dashed #9fb2cc;
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.band-cell:last-child {
+  border-right: 0;
+}
+
+.band-center {
+  text-align: center;
+  padding: 10px;
+}
+
+.band-center h2 {
+  margin: 0;
+  font-size: 22px;
+  color: var(--blue);
+}
+
+.band-center p {
+  margin: 4px 0 0;
+  color: var(--blue);
+  font-weight: 750;
+  font-size: 13px;
+}
+
+.principles {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.principle {
+  min-height: 76px;
+  padding: 8px 9px;
+  border: 1.4px solid #c4d2e6;
+  border-radius: 9px;
+  background: rgba(255,255,255,.95);
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 8px;
+}
+
+.principle .num {
+  width: 28px;
+  height: 28px;
+  font-size: 15px;
+}
+
+.principle h3 {
+  margin: 0 0 4px;
+  color: var(--blue);
+  font-size: 12.8px;
+  line-height: 1.15;
+}
+
+.principle p {
+  margin: 0;
+  font-size: 10.6px;
+  line-height: 1.25;
+  color: #1f2a44;
+}
+</style>
+</head>
+<body>
+  <main class="canvas">
+    <header class="header">
+      <div>
+        <h1>An operating foundation that keeps AI work controlled, traceable, and reviewable.</h1>
+        <p class="subtitle">Current repository snapshot: control assets define the work, AI roles execute and check it, guardrails stop boundary drift, and humans decide trade-offs.</p>
+        <div class="snapshot">Repository snapshot: 2026-04-29</div>
+      </div>
+      <div class="brand">XRefKit</div>
+    </header>
+
+    <section class="main-grid">
+      <section class="panel assets">
+        <div class="panel-title">Control assets</div>
+        <div class="panel-body">
+          <div class="asset-list">
+            <div class="asset"><div class="ico">F</div><strong>Flow</strong></div>
+            <div class="asset"><div class="ico">C</div><strong>Capability</strong></div>
+            <div class="asset"><div class="ico">S</div><strong>Skill</strong></div>
+            <div class="asset"><div class="ico">K</div><strong>Knowledge</strong></div>
+            <div class="asset"><div class="ico">SRC</div><strong>Sources</strong></div>
+            <div class="asset"><div class="ico">XID</div><strong>Stable references</strong></div>
+          </div>
+          <div class="memory-box">
+            <div class="no-memory"></div>
+            <h2>Do not rely on memory</h2>
+            <p>AI loads required knowledge, rules, skills, and workflow definitions on demand.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title">Controlled AI work pipeline</div>
+        <div class="panel-body pipeline">
+          <div class="left-numbers">
+            <div class="num">1</div>
+            <div class="num">2</div>
+            <div class="num">3</div>
+            <div class="num">4</div>
+            <div class="num">5</div>
+            <div class="num">6</div>
+          </div>
+          <div class="steps">
+            <div class="step"><div class="ico">CTX</div><div><h3>Load required context</h3><p>Retrieve exact assets, rules, and evidence needed for the task.</p></div></div>
+            <div class="step"><div class="ico">AI</div><div><h3>AI Executor</h3><p>Execute under defined flow, capability, skill, and procedure.</p></div></div>
+            <div class="step"><div class="ico">QA</div><div><h3>AI Reviewer / Checker</h3><p>Verify evidence, boundaries, assumptions, output quality, and handoff readiness.</p></div></div>
+            <div class="step"><div class="ico">G</div><div><h3>Quality Gate</h3><p>Apply policy and quality rules. Determine pass, fail, or escalate.</p></div></div>
+            <div class="step"><div class="ico">LOG</div><div><h3>Record assumptions</h3><p>Log constraints, unknowns, decisions, and dependencies.</p></div></div>
+            <div class="step"><div class="ico">OUT</div><div><h3>Produce output</h3><p>Generate artifacts with links to sources, evidence, and records.</p></div></div>
+          </div>
+          <aside class="side-rule">
+            <h3>No unsupported guessing</h3>
+            <div class="rule-card">Unknowns stay explicit</div>
+            <div class="rule-card">Missing evidence is blocked</div>
+            <div class="stop">STOP</div>
+            <p class="small">Unsupported assumptions are stopped and made visible instead of guessed.</p>
+          </aside>
+          <div class="ai-first">
+            <p><strong>AI-to-AI verification first</strong><br><span class="small">Execution and checking are separate AI roles before humans are involved.</span></p>
+            <p><strong>Human review only where needed</strong><br><span class="small">Escalations, approvals, and trade-off decisions return to humans.</span></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel guard">
+        <div class="panel-title">Context Direction Security Guard</div>
+        <div class="panel-body">
+          <div class="guard-stack">
+            <div class="direction">
+              <div class="guard-item">Flow</div>
+              <div class="down">↓</div>
+              <div class="guard-item">Capability</div>
+              <div class="down">↓</div>
+              <div class="guard-item">Skill</div>
+              <div class="down">↓</div>
+              <div class="guard-item">External input</div>
+              <div class="down">↓</div>
+              <div class="guard-item">Output</div>
+            </div>
+            <div>
+              <div class="shield">✓</div>
+              <div class="guard-copy">Guard protects direction</div>
+            </div>
+          </div>
+          <div class="blocked">
+            <p><strong>Blocked:</strong> lower-layer input cannot rewrite higher-layer intent, authority, scope, capability, skill procedure, or escalation path.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel human">
+        <div class="panel-title">Human decision layer</div>
+        <div class="panel-body">
+          <div class="human-flow">
+            <div class="human-card"><div class="ico">!</div><div><h3>Escalations</h3><p>AI escalates with reasons, evidence, and options.</p></div></div>
+            <div class="human-card"><div class="ico">?</div><div><h3>Unknowns / risks</h3><p>Risks, missing evidence, and impact remain visible.</p></div></div>
+            <div class="bracket">Trade-offs return to humans</div>
+            <div class="human-card"><div class="ico">BAL</div><div><h3>Trade-off decision</h3><p>AI prepares options, evidence, risks, and recommendations.</p></div></div>
+            <div class="human-card"><div class="ico">OK</div><div><h3>Human approval</h3><p>Humans decide risk, scope, priority, and business trade-offs.</p></div></div>
+            <div class="bracket">Human approval</div>
+            <div class="human-card"><div class="ico">GO</div><div><h3>Approved handoff</h3><p>Release the output for the next action or recipient.</p></div></div>
+            <div class="human-card"><div class="ico">AUD</div><div><h3>Audit trail</h3><p>Record decisions, evidence, checks, and approvals.</p></div></div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="xid-band">
+      <div class="band-cell"><div class="ico">ID</div><p class="small"><strong>Persistent identifiers</strong><br>for control assets, sources, and outputs.</p></div>
+      <div class="band-cell"><div class="ico">MAP</div><p class="small"><strong>Traceability</strong><br>across flows, capabilities, skills, evidence, and outputs.</p></div>
+      <div class="band-center"><h2>Stable XID references</h2><p>Durable reference layer that supports controlled AI work</p></div>
+      <div class="band-cell"><div class="ico">EVD</div><p class="small"><strong>Evidence links</strong><br>from assumptions to sources, checks, and decisions.</p></div>
+      <div class="band-cell"><div class="ico">AUD</div><p class="small"><strong>Auditability</strong><br>for reproducibility and handoff continuity.</p></div>
+    </section>
+
+    <section class="principles">
+      <div class="principle"><div class="num">1</div><div><h3>AI does not rely on memory.</h3><p>Tasks load required context from control assets.</p></div></div>
+      <div class="principle"><div class="num">2</div><div><h3>Execution and checking are separated.</h3><p>Different AI roles reduce responsibility mixing.</p></div></div>
+      <div class="principle"><div class="num">3</div><div><h3>AI verifies before human review.</h3><p>Humans review only escalations and decisions.</p></div></div>
+      <div class="principle"><div class="num">4</div><div><h3>AI does not guess.</h3><p>Unknowns and missing evidence are stopped or surfaced.</p></div></div>
+      <div class="principle"><div class="num">5</div><div><h3>Guard prevents redirection.</h3><p>External input cannot override higher-layer control.</p></div></div>
+      <div class="principle"><div class="num">6</div><div><h3>Trade-offs return to humans.</h3><p>Humans approve actions and accept responsibility.</p></div></div>
+    </section>
+  </main>
+</body>
+</html>

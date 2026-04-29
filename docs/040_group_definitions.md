@@ -238,17 +238,26 @@ the XRefKit AI organization model in an understandable marketing video.
 ### Responsibility
 
 - define the marketing communication objective, target audience, viewer action, and completion criteria for an AI organization explanation video
+- own marketing and orientation presentation-material creation from goal definition through deck structure when the requested output is a slide deck, explanatory deck, or slide-based video
+- define the presentation goal, audience, expected decision or action, and completion criteria before collecting or arranging slide content
+- organize presentation issues, claims, questions, and decision points so the deck has an explicit argument structure
+- collect repository facts, stakeholder inputs, examples, constraints, and other source material needed to support the presentation argument
+- analyze collected information, derive implications, and separate evidence-backed claims from marketing explanation
+- structure conclusions, supporting reasons, chapter order, and slide order before visual production starts
 - explain that XRefKit is an operating base for AI work, not a model-weight repository
 - explain why AI work benefits from responsibility separation, knowledge externalization, workflow control, self-check, handoff, and OR Team improvement
 - organize beginner and stakeholder understanding gaps and control explanation level
 - read repository structure, documentation, and responsibility boundaries to prepare evidence-backed explanation inputs
 - define the message backbone, scenario, chapter order, and one-message-per-slide script
 - define slide specifications for what appears on each screen
+- create standalone one-page repository infographics that explain the current repository structure, operating model, responsibility boundaries, controls, and evidence flow
+- refresh repository explainer images when the repository structure, operating model, or control message changes
 - prepare narration scripts, estimate timing, generate audio, and tune pronunciation and reading flow
 - recognize VOICEVOX Engine Docker as an available tool for audio generation work
 - use VOICEVOX Aoyama Ryusei as the default baseline voice unless another voice is explicitly required
 - use VOICEVOX No.7 as the next candidate voice when the baseline voice is not suitable
 - design diagrams, icons, and visual density for slide presentation
+- design infographic section structure, visual density, and claim traceability for standalone repository explanation images
 - check content, order, repository-claim traceability, and expression consistency across all deliverables
 - check whether the explanation is too difficult for first-time viewers
 - control duration, transitions, audio synchronization, final video assembly, and distribution packaging
@@ -266,6 +275,11 @@ the XRefKit AI organization model in an understandable marketing video.
 
 - project objective control
 - audience and completion-criteria definition
+- presentation goal definition
+- presentation issue structuring
+- presentation information collection
+- presentation analysis and synthesis
+- presentation structure design
 - marketing message framing
 - viewer-action definition
 - learner model structuring
@@ -295,6 +309,11 @@ the XRefKit AI organization model in an understandable marketing video.
 - work instructions
 - chapter outline
 - completion criteria
+- presentation objective
+- presentation issue map
+- presentation source collection list
+- presentation analysis memo
+- deck structure outline
 - marketing message backbone
 - viewer-action definition
 - explanation-level definition
