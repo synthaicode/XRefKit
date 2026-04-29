@@ -118,6 +118,12 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_run.add_argument("--task", default=None, help="Task text for the Skill run")
     p_skill_run.add_argument("--task-file", default=None, help="Read task text from a UTF-8 file")
     p_skill_run.add_argument("--out", default=None, help="Write run log to this path")
+    p_skill_run.add_argument(
+        "--handoff-source-log",
+        action="append",
+        default=[],
+        help="Prior Skill run log that handed work into this startup; may be repeated",
+    )
     p_skill_run.add_argument("--json", action="store_true", help="Emit JSON")
 
     p_skill_phase = skill_sub.add_parser("phase", help="Update a Skill run log phase state")

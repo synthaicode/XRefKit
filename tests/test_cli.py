@@ -135,6 +135,13 @@ class CliTests(unittest.TestCase):
                 )
         return out
 
+    def _write_second_valid_skill(self, root: Path) -> Path:
+        meta = root / "skills" / "receiver" / "meta.md"
+        meta.parent.mkdir(parents=True, exist_ok=True)
+        meta.write_text(self._valid_meta_text().replace("sample_skill", "receiver_skill"), encoding="utf-8")
+        (meta.parent / "SKILL.md").write_text("# Receiver Skill\n", encoding="utf-8")
+        return meta
+
     def test_main_xref_check_json_returns_zero_and_emits_payload(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -264,6 +271,99 @@ class CliTests(unittest.TestCase):
             self.assertIn("## Closure Gate", text)
             self.assertIn("Create a controlled output", text)
             self.assertIn("- maturity: `stable`", text)
+            self.assertIn("## Startup Inputs", text)
+            self.assertIn("- none", text)
+
+    def test_main_skill_run_rejects_unclosed_handoff_source_log(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_valid_skill(root)
+            self._write_second_valid_skill(root)
+            source = root / "work" / "sessions" / "source.md"
+            out = root / "work" / "sessions" / "receiver.md"
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "run",
+                            "--root",
+                            str(root),
+                            "--meta",
+                            "skills/sample/meta.md",
+                            "--task",
+                            "Produce a source handoff",
+                            "--out",
+                            str(source),
+                        ]
+                    ),
+                )
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        "skill",
+                        "run",
+                        "--root",
+                        str(root),
+                        "--meta",
+                        "skills/receiver/meta.md",
+                        "--task",
+                        "Consume the handoff",
+                        "--out",
+                        str(out),
+                        "--handoff-source-log",
+                        str(source),
+                        "--json",
+                    ]
+                )
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(1, exit_code)
+            self.assertFalse(payload["ok"])
+            self.assertIn("handoff source log must have Closure Gate done or escalated before startup", payload["errors"][0])
+
+    def test_main_skill_run_accepts_closed_handoff_source_log(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = self._write_completed_skill_run(root)
+            self._write_second_valid_skill(root)
+            out = root / "work" / "sessions" / "receiver.md"
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(0, main(["skill", "close", "--log", str(source)]))
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        "skill",
+                        "run",
+                        "--root",
+                        str(root),
+                        "--meta",
+                        "skills/receiver/meta.md",
+                        "--task",
+                        "Consume the closed handoff",
+                        "--out",
+                        str(out),
+                        "--handoff-source-log",
+                        str(source),
+                        "--json",
+                    ]
+                )
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(0, exit_code)
+            self.assertTrue(payload["ok"])
+            self.assertEqual(1, len(payload["handoff_sources"]))
+            text = out.read_text(encoding="utf-8")
+            self.assertIn("## Startup Inputs", text)
+            self.assertIn("source_log: `work/sessions/run.md`", text)
+            self.assertIn("closure=`done`", text)
 
     def test_main_skill_run_rejects_invalid_meta(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

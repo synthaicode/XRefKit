@@ -29,6 +29,7 @@ class SkillRunResult:
     artifacts: list[dict[str, str]] | None = None
     concerns: list[dict[str, str]] | None = None
     closure_checks: dict[str, str] | None = None
+    handoff_sources: list[dict[str, str]] | None = None
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -42,6 +43,7 @@ class SkillRunResult:
             "artifacts": self.artifacts or [],
             "concerns": self.concerns or [],
             "closure_checks": self.closure_checks or {},
+            "handoff_sources": self.handoff_sources or [],
         }
 
 
@@ -150,11 +152,16 @@ def _render_log(
     assigned_roles: dict[str, str],
     task: str,
     os_contract: dict[str, str],
+    handoff_sources: list[dict[str, str]],
 ) -> str:
     contract_lines = "\n".join(f"- {key}: `{value}`" for key, value in os_contract.items())
     worklist_lines = "\n".join(
         f"- [ ] {name}: {description}" for name, description in WORKLIST_ROWS
     )
+    handoff_source_lines = "\n".join(
+        f"- source_log: `{source['source_log']}` skill_id=`{source['skill_id']}` closure=`{source['closure']}` handoff=`{source['handoff']}`"
+        for source in handoff_sources
+    ) or "- none"
     return f"""# Skill Run Log
 
 - date: `{date.today().isoformat()}`
@@ -183,6 +190,11 @@ def _render_log(
 ## OS Contract
 
 {contract_lines}
+
+## Startup Inputs
+
+- rule: when work starts from a prior handoff, the receiving startup must name the handoff source log and verify that its closure gate already passed
+{handoff_source_lines}
 
 ## Worklist
 
@@ -270,6 +282,18 @@ def _section_body(text: str, section: str) -> tuple[str | None, int, int]:
     next_section = text.find("\n## ", start + len(marker))
     end = len(text) if next_section == -1 else next_section
     return text[start:end], start, end
+
+
+def _log_skill_id(text: str) -> str | None:
+    prefix = "- skill_id: `"
+    start = text.find(prefix)
+    if start == -1:
+        return None
+    start += len(prefix)
+    end = text.find("`", start)
+    if end == -1:
+        return None
+    return text[start:end]
 
 
 def _set_phase_status(text: str, *, phase: str, status: str) -> str:
@@ -870,6 +894,44 @@ def _replace_closure_checks(text: str, checks: dict[str, str]) -> str:
     return text[:start] + new_body + text[end:]
 
 
+def _validate_handoff_sources(root: Path, source_logs: list[str]) -> tuple[list[dict[str, str]], list[str]]:
+    validated: list[dict[str, str]] = []
+    errors: list[str] = []
+    for raw_source in source_logs:
+        source_path = Path(raw_source)
+        if not source_path.is_absolute():
+            source_path = root / source_path
+        source_path = source_path.resolve()
+        if not source_path.exists():
+            errors.append(f"handoff source log not found: {source_path}")
+            continue
+        text = source_path.read_text(encoding="utf-8")
+        if "## Skill Load Gate\n\n- status: `opened_by_fm_skill_run`" not in text:
+            errors.append(f"handoff source log was not opened by fm skill run: {source_path}")
+            continue
+        closure_status = _section_status(text, "Closure Gate")
+        if closure_status not in ACCEPTED_CLOSE_STATUSES:
+            errors.append(
+                f"handoff source log must have Closure Gate done or escalated before startup: {source_path} current={closure_status or 'missing'}"
+            )
+            continue
+        handoff_status = _section_status(text, "Handoff")
+        if handoff_status not in ACCEPTED_CLOSE_STATUSES:
+            errors.append(
+                f"handoff source log must have Handoff done or escalated before startup: {source_path} current={handoff_status or 'missing'}"
+            )
+            continue
+        validated.append(
+            {
+                "source_log": source_path.relative_to(root).as_posix() if source_path.is_relative_to(root) else str(source_path),
+                "skill_id": _log_skill_id(text) or "-",
+                "closure": closure_status,
+                "handoff": handoff_status,
+            }
+        )
+    return validated, errors
+
+
 def close_skill_run(args) -> SkillRunResult:
     log_path = Path(args.log).resolve()
     if not log_path.exists():
@@ -972,6 +1034,7 @@ def run_skill(args) -> SkillRunResult:
     task, task_errors = _read_task(args)
     if task_errors:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=task_errors)
+    handoff_source_logs = [str(value).strip() for value in getattr(args, "handoff_source_log", []) if str(value).strip()]
 
     if not meta_path.exists():
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"meta not found: {meta_path}"])
@@ -1044,6 +1107,16 @@ def run_skill(args) -> SkillRunResult:
         merged_os_contract = dict(REQUIRED_OS_CONTRACT)
         merged_os_contract.update(os_contract)
         os_contract = merged_os_contract
+    validated_handoff_sources, handoff_source_errors = _validate_handoff_sources(root, handoff_source_logs)
+    if handoff_source_errors:
+        return SkillRunResult(
+            ok=False,
+            skill_id=skill_id,
+            skill_doc=None,
+            run_log=None,
+            errors=handoff_source_errors,
+            handoff_sources=validated_handoff_sources,
+        )
     assigned_roles = _assign_runtime_roles(skill_id=skill_id, execution_mode=execution_mode)
 
     out_path = Path(args.out) if args.out else _default_log_path(root, skill_id)
@@ -1061,6 +1134,7 @@ def run_skill(args) -> SkillRunResult:
         assigned_roles=assigned_roles,
         task=str(task),
         os_contract=os_contract,
+        handoff_sources=validated_handoff_sources,
     )
     out_path.write_text(log, encoding="utf-8")
 
@@ -1071,6 +1145,7 @@ def run_skill(args) -> SkillRunResult:
         run_log=str(out_path),
         errors=[],
         assigned_roles=assigned_roles,
+        handoff_sources=validated_handoff_sources,
     )
 
 

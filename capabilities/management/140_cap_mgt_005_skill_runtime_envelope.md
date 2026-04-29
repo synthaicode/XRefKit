@@ -65,12 +65,14 @@
 - do not close a Skill run with non-trivial judgments unless they link to a judgment artifact or `work/judgments/`
 - do not rely on policy prose alone when metadata can be machine-checked
 - do not close a Skill run when execution, checking, or handoff is incomplete and not explicitly escalated
+- do not let a receiving startup proceed from a prior handoff unless the source run already passed closure and handoff
 
 ## Task Lifecycle Mapping
 
 - Startup:
   - identify the Skill and its metadata file
   - create the runtime envelope before opening the Skill procedure
+  - when startup depends on a prior handoff, identify the source run log and verify that its closure and handoff already passed
 - Planning:
   - identify the required operating-contract fields and guard policy
 - Execution:

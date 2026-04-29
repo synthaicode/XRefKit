@@ -12,6 +12,12 @@ procedure. It must carry the minimum runtime envelope needed to plan work,
 separate execution from checking, record evidence, surface unknowns, and hand
 off explicitly.
 
+This is also why Skill maturity matters. A Skill does not become trustworthy
+merely because its procedure exists. It becomes trustworthy as its operating
+boundary with humans becomes explicit: what the Skill may handle on its own,
+what must remain visible as uncertainty or risk, and what must be returned to a
+human with evidence and a clear handoff condition.
+
 ## Core Rule
 
 Every `stable` or `governed` Skill metadata file must declare an `os_contract`
@@ -63,6 +69,8 @@ being clarified through actual use.
 - `handoff_policy: explicit`
   - outputs, unresolved items, and next responsibility must be handed off
     explicitly
+  - when startup begins from a prior handoff, the receiving side must verify
+    that the source run already passed closure before continuing
 
 ## Skill Authoring Requirement
 
@@ -119,6 +127,17 @@ the referenced `SKILL.md` file exists, then writes a session log containing:
 Do not open or execute the Skill procedure before `fm skill run` succeeds. The
 returned `skill_doc` is the allowed procedure file for that run, and the
 returned `run_log` is the active runtime record.
+
+When work starts from a prior Skill handoff, the receiving startup must name
+the source run log explicitly:
+
+```powershell
+python -m fm skill run --meta skills/<skill>/meta.md --task "task text" --handoff-source-log work/sessions/<source-run-log>.md
+```
+
+The receiving startup must not continue from that handoff unless the source run
+shows `Closure Gate` as `done` or `escalated` and `Handoff` as `done` or
+`escalated`.
 
 `draft` Skills are managed records and are not load-ready. Promote them to
 `trial` before operational use.
