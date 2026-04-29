@@ -89,6 +89,7 @@
   - update runtime artifact state as `pending`, `in_progress`, `done`, `blocked`, `unknown`, or `escalated`
   - update concern state as `open`, `resolved`, or `escalated`
   - reject phase updates that use the wrong runtime role
+  - audit committed `work/sessions` Skill run logs from the FM quality gate
 - Closure:
   - mark the Skill load-ready only when required fields and references pass
   - require at least one concrete work item before closure
@@ -100,3 +101,4 @@
   - require a judgment artifact or `work/judgments/` reference when non-trivial judgments exist
   - record unknown, risk, and judgment inspection results in `Closure Gate`
   - accept Skill-run closure only after execution, checking, and handoff are done or escalated by their assigned roles
+  - fail the FM quality gate when a committed Skill run log is not load-gated, not closed, missing assigned-role evidence, missing required work/artifact evidence, or carrying unresolved concerns

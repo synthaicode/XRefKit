@@ -246,6 +246,19 @@ If any required section is still `pending`, `blocked`, `unknown`, or missing,
 or if required concern linkage is absent, the run remains open and the missing
 closure conditions are printed as errors.
 
+The FM quality gate also audits Skill runtime logs:
+
+```powershell
+python tools/audit_skill_runtime_logs.py --tracked-only
+```
+
+The audit detects committed Skill run logs that were not opened by
+`fm skill run`, logs that are not closed, missing assigned-role phase evidence,
+missing concrete work items, missing output/evidence artifacts, and unresolved
+unknown/risk/judgment concerns. The `--tracked-only` mode is used by
+`python tools/run_quality_gate.py fm` so historical local `work/` files do not
+require migration before the CI-facing gate can enforce the contract.
+
 Later runtime commands may use this same contract to launch separate execution
 and checking processes, but the role separation is already enforced at the
 runtime-log boundary.

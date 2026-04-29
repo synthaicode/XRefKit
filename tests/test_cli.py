@@ -927,6 +927,7 @@ class CliTests(unittest.TestCase):
                     "open_unknowns": "-",
                     "open_risks": "-",
                     "escalated_risks": "-",
+                    "open_judgments": "-",
                     "non_trivial_judgments": "JDG-001",
                     "judgment_reference": "present",
                 },
@@ -935,7 +936,7 @@ class CliTests(unittest.TestCase):
             text = out.read_text(encoding="utf-8")
             self.assertIn("### Closure Checks", text)
             self.assertIn("- unknown: `passed` open=`-`", text)
-            self.assertIn("- judgment: `passed` non_trivial=`JDG-001` reference=`present`", text)
+            self.assertIn("- judgment: `passed` open=`-` non_trivial=`JDG-001` reference=`present`", text)
 
     def test_main_skill_close_accepts_completed_runtime_log(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

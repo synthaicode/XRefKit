@@ -786,6 +786,11 @@ def _evaluate_closure_linkage(
     else:
         risk_check = "passed"
 
+    open_judgments = [
+        concern["concern_id"]
+        for concern in concerns
+        if concern["kind"] == "judgment" and concern["status"] not in {"resolved", "escalated"}
+    ]
     non_trivial_judgments = [
         concern["concern_id"]
         for concern in concerns
@@ -802,6 +807,9 @@ def _evaluate_closure_linkage(
             + ", ".join(non_trivial_judgments)
         )
         judgment_check = "failed"
+    elif open_judgments:
+        errors.append(f"unresolved judgments block closure: {', '.join(open_judgments)}")
+        judgment_check = "failed"
     else:
         judgment_check = "passed"
 
@@ -812,6 +820,7 @@ def _evaluate_closure_linkage(
         "open_unknowns": ",".join(open_unknowns) or "-",
         "open_risks": ",".join(open_risks) or "-",
         "escalated_risks": ",".join(escalated_risks) or "-",
+        "open_judgments": ",".join(open_judgments) or "-",
         "non_trivial_judgments": ",".join(non_trivial_judgments) or "-",
         "judgment_reference": "present" if has_judgment_artifact or has_work_judgment_ref else "not_required",
     }
@@ -842,7 +851,7 @@ def _replace_closure_checks(text: str, checks: dict[str, str]) -> str:
             "",
             f"- unknown: `{checks['unknown']}` open=`{checks['open_unknowns']}`",
             f"- risk: `{checks['risk']}` open=`{checks['open_risks']}` escalated=`{checks['escalated_risks']}`",
-            f"- judgment: `{checks['judgment']}` non_trivial=`{checks['non_trivial_judgments']}` reference=`{checks['judgment_reference']}`",
+            f"- judgment: `{checks['judgment']}` open=`{checks['open_judgments']}` non_trivial=`{checks['non_trivial_judgments']}` reference=`{checks['judgment_reference']}`",
         ]
     )
     new_body = "\n".join(filtered) + "\n"
