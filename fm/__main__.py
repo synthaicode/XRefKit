@@ -149,6 +149,27 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_workitem.add_argument("--role", required=True, help="Runtime role updating the work item")
     p_skill_workitem.add_argument("--json", action="store_true", help="Emit JSON")
 
+    p_skill_artifact = skill_sub.add_parser("artifact", help="Add or update a Skill runtime artifact/evidence link")
+    p_skill_artifact.add_argument("--log", required=True, help="Skill run log to update")
+    p_skill_artifact.add_argument("--artifact", required=True, help="Stable artifact id, such as OUT-001")
+    p_skill_artifact.add_argument(
+        "--kind",
+        required=True,
+        choices=["output", "evidence", "check", "judgment", "source", "handoff"],
+        help="Artifact kind",
+    )
+    p_skill_artifact.add_argument(
+        "--status",
+        required=True,
+        choices=["pending", "in_progress", "done", "blocked", "unknown", "escalated"],
+        help="Artifact status",
+    )
+    p_skill_artifact.add_argument("--target", default=None, help="Path, XID, command, URL, or other trace target")
+    p_skill_artifact.add_argument("--item", default=None, help="Optional related concrete work item id")
+    p_skill_artifact.add_argument("--role", required=True, help="Runtime role updating the artifact")
+    p_skill_artifact.add_argument("--note", default=None, help="Optional artifact note")
+    p_skill_artifact.add_argument("--json", action="store_true", help="Emit JSON")
+
     p_skill_close = skill_sub.add_parser("close", help="Apply the Skill run closure gate")
     p_skill_close.add_argument("--log", required=True, help="Skill run log to close")
     p_skill_close.add_argument("--note", default=None, help="Optional closure event note")
@@ -198,6 +219,10 @@ def main(argv: list[str] | None = None) -> int:
             from fm.skillrun import cmd_skill_workitem
 
             return cmd_skill_workitem(args)
+        if args.skill_cmd == "artifact":
+            from fm.skillrun import cmd_skill_artifact
+
+            return cmd_skill_artifact(args)
         if args.skill_cmd == "close":
             from fm.skillrun import cmd_skill_close
 

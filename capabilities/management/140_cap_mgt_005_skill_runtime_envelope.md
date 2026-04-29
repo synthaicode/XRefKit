@@ -40,6 +40,7 @@
 - explicit runtime obligations for worklist, execution role, check role, logging, closure, and handoff
 - assigned runtime roles for executor, checker, and handoff owner
 - concrete task-specific work item records and statuses
+- structured output, evidence, check, judgment, source, and handoff artifact links
 - generated Skill run log when a runtime envelope is created
 - resolved Skill procedure path returned by the runtime envelope
 - phase-state update record when a Skill runtime phase advances
@@ -58,6 +59,7 @@
 - do not collapse execution and checking into one unmarked responsibility
 - do not accept an execution/check/handoff phase update from a role other than the role assigned by `fm skill run`
 - do not treat generic lifecycle rows as a substitute for concrete task-specific work items
+- do not close a Skill run without at least one output artifact and one evidence artifact
 - do not allow unsupported assumptions to disappear during closure
 - do not rely on policy prose alone when metadata can be machine-checked
 - do not close a Skill run when execution, checking, or handoff is incomplete and not explicitly escalated
@@ -75,14 +77,18 @@
   - assign separate runtime roles for execution and checking
   - create a runtime log with worklist, execution role, check role, unknown/risk, closure, and handoff sections when `fm skill run` is used
   - add and update concrete work items with explicit statuses
+  - add and update runtime artifacts for outputs, evidence, checks, judgments, sources, and handoff links
 - Monitoring and Control:
   - detect missing or downgraded contract fields
   - return explicit correction messages
   - update runtime phase state as `pending`, `in_progress`, `done`, `blocked`, `unknown`, or `escalated`
   - update concrete work-item state as `pending`, `in_progress`, `done`, `blocked`, `unknown`, or `escalated`
+  - update runtime artifact state as `pending`, `in_progress`, `done`, `blocked`, `unknown`, or `escalated`
   - reject phase updates that use the wrong runtime role
 - Closure:
   - mark the Skill load-ready only when required fields and references pass
   - require at least one concrete work item before closure
   - accept only concrete work items that are done or escalated before closure
+  - require at least one output artifact and one evidence artifact before closure
+  - accept only runtime artifacts that are done or escalated before closure
   - accept Skill-run closure only after execution, checking, and handoff are done or escalated by their assigned roles

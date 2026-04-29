@@ -18,6 +18,7 @@ class SkillRunResult:
     errors: list[str]
     assigned_roles: dict[str, str] | None = None
     work_items: list[dict[str, str]] | None = None
+    artifacts: list[dict[str, str]] | None = None
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -28,12 +29,15 @@ class SkillRunResult:
             "errors": self.errors,
             "assigned_roles": self.assigned_roles or {},
             "work_items": self.work_items or [],
+            "artifacts": self.artifacts or [],
         }
 
 
 VALID_PHASES = {"startup", "planning", "execution", "check", "closure", "handoff"}
 VALID_PHASE_STATUSES = {"pending", "in_progress", "done", "blocked", "unknown", "escalated"}
 VALID_WORKITEM_STATUSES = {"pending", "in_progress", "done", "blocked", "unknown", "escalated"}
+VALID_ARTIFACT_STATUSES = {"pending", "in_progress", "done", "blocked", "unknown", "escalated"}
+VALID_ARTIFACT_KINDS = {"output", "evidence", "check", "judgment", "source", "handoff"}
 PHASE_LABELS = {
     "startup": "Startup",
     "planning": "Planning",
@@ -68,6 +72,11 @@ WORKLIST_ROWS = [
 WORKITEM_RE = re.compile(
     r"^- \[(?P<checkbox>[ x!])\] (?P<item_id>[A-Za-z0-9_.-]+) "
     r"status=`(?P<status>[^`]+)` role=`(?P<role>[^`]+)`: (?P<text>.*)$"
+)
+ARTIFACT_RE = re.compile(
+    r"^- \[(?P<checkbox>[ x!])\] (?P<artifact_id>[A-Za-z0-9_.-]+) "
+    r"kind=`(?P<kind>[^`]+)` status=`(?P<status>[^`]+)` "
+    r"role=`(?P<role>[^`]+)` target=`(?P<target>[^`]+)` item=`(?P<item_id>[^`]+)`: (?P<note>.*)$"
 )
 
 
@@ -158,6 +167,11 @@ def _render_log(
 
 - status: `pending`
 - rule: task-specific work items must be added with `fm skill workitem` and closed as `done` or `escalated`
+
+## Runtime Artifacts
+
+- status: `pending`
+- rule: outputs, evidence, checks, judgments, sources, and handoff links must be added with `fm skill artifact`
 
 ## Execution Role
 
@@ -254,6 +268,14 @@ def _set_phase_status(text: str, *, phase: str, status: str) -> str:
 
 
 def _workitem_checkbox(status: str) -> str:
+    if status == "done":
+        return "x"
+    if status == "pending":
+        return " "
+    return "!"
+
+
+def _status_checkbox(status: str) -> str:
     if status == "done":
         return "x"
     if status == "pending":
@@ -358,6 +380,140 @@ def update_work_item(args) -> SkillRunResult:
     text = _append_phase_event(text, phase=f"workitem:{item_id}", status=status, role=role, note=item_text or None)
     log_path.write_text(text, encoding="utf-8")
     return SkillRunResult(ok=True, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[], work_items=items)
+
+
+def _parse_artifacts(text: str) -> list[dict[str, str]]:
+    body, _, _ = _section_body(text, "Runtime Artifacts")
+    if body is None:
+        return []
+
+    artifacts: list[dict[str, str]] = []
+    for line in body.splitlines():
+        match = ARTIFACT_RE.match(line)
+        if not match:
+            continue
+        artifacts.append(
+            {
+                "artifact_id": match.group("artifact_id"),
+                "kind": match.group("kind"),
+                "status": match.group("status"),
+                "role": match.group("role"),
+                "target": match.group("target"),
+                "item_id": match.group("item_id"),
+                "note": match.group("note"),
+            }
+        )
+    return artifacts
+
+
+def _render_artifact_line(
+    *,
+    artifact_id: str,
+    kind: str,
+    status: str,
+    role: str,
+    target: str,
+    item_id: str,
+    note: str,
+) -> str:
+    return (
+        f"- [{_status_checkbox(status)}] {artifact_id} kind=`{kind}` status=`{status}` "
+        f"role=`{role}` target=`{target}` item=`{item_id}`: {note}"
+    )
+
+
+def _overall_artifact_status(artifacts: list[dict[str, str]]) -> str:
+    if not artifacts:
+        return "pending"
+    if all(artifact["status"] in ACCEPTED_CLOSE_STATUSES for artifact in artifacts):
+        if any(artifact["status"] == "escalated" for artifact in artifacts):
+            return "escalated"
+        return "done"
+    if any(artifact["status"] in {"blocked", "unknown", "escalated"} for artifact in artifacts):
+        return "blocked"
+    return "in_progress"
+
+
+def _replace_runtime_artifacts_section(text: str, artifacts: list[dict[str, str]]) -> str:
+    body, start, end = _section_body(text, "Runtime Artifacts")
+    if body is None:
+        insert_at = text.find("\n## Execution Role")
+        if insert_at == -1:
+            insert_at = len(text)
+        section = "\n\n## Runtime Artifacts\n\n- status: `pending`\n- rule: outputs, evidence, checks, judgments, sources, and handoff links must be added with `fm skill artifact`\n"
+        text = text[:insert_at] + section + text[insert_at:]
+        body, start, end = _section_body(text, "Runtime Artifacts")
+        if body is None:
+            return text
+
+    status = _overall_artifact_status(artifacts)
+    lines = [
+        "## Runtime Artifacts",
+        "",
+        f"- status: `{status}`",
+        "- rule: outputs, evidence, checks, judgments, sources, and handoff links must be added with `fm skill artifact`",
+    ]
+    lines.extend(_render_artifact_line(**artifact) for artifact in artifacts)
+    new_body = "\n".join(lines) + "\n"
+    return text[:start] + new_body + text[end:]
+
+
+def update_artifact(args) -> SkillRunResult:
+    log_path = Path(args.log).resolve()
+    if not log_path.exists():
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"log not found: {log_path}"])
+
+    artifact_id = str(args.artifact).strip()
+    kind = str(args.kind).lower()
+    status = str(args.status).lower()
+    role = str(args.role).strip()
+    target = str(args.target or "").strip()
+    item_id = str(args.item or "").strip()
+    note = str(args.note or "").strip()
+    if not artifact_id:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["missing --artifact"])
+    if kind not in VALID_ARTIFACT_KINDS:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[f"invalid artifact kind: {kind}"])
+    if status not in VALID_ARTIFACT_STATUSES:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[f"invalid artifact status: {status}"])
+    if not role:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["missing --role"])
+
+    text = log_path.read_text(encoding="utf-8")
+    if "## Skill Load Gate\n\n- status: `opened_by_fm_skill_run`" not in text:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["skill run log is missing an opened Skill Load Gate"])
+
+    artifacts = _parse_artifacts(text)
+    existing = next((artifact for artifact in artifacts if artifact["artifact_id"] == artifact_id), None)
+    if existing:
+        existing["kind"] = kind
+        existing["status"] = status
+        existing["role"] = role
+        if target:
+            existing["target"] = target
+        if item_id:
+            existing["item_id"] = item_id
+        if note:
+            existing["note"] = note
+    else:
+        if not target:
+            return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["new artifact requires --target"])
+        artifacts.append(
+            {
+                "artifact_id": artifact_id,
+                "kind": kind,
+                "status": status,
+                "role": role,
+                "target": target,
+                "item_id": item_id or "-",
+                "note": note or "-",
+            }
+        )
+
+    text = _replace_runtime_artifacts_section(text, artifacts)
+    text = _append_phase_event(text, phase=f"artifact:{artifact_id}", status=status, role=role, note=note or target)
+    log_path.write_text(text, encoding="utf-8")
+    return SkillRunResult(ok=True, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[], artifacts=artifacts)
 
 
 def _assigned_role(text: str, role_name: str) -> str | None:
@@ -484,6 +640,18 @@ def close_skill_run(args) -> SkillRunResult:
                 f"work item {item['item_id']} must be done or escalated before closure; current={item['status']}"
             )
 
+    artifacts = _parse_artifacts(text)
+    artifact_kinds = {artifact["kind"] for artifact in artifacts}
+    if "output" not in artifact_kinds:
+        errors.append("at least one output artifact is required before closure")
+    if "evidence" not in artifact_kinds:
+        errors.append("at least one evidence artifact is required before closure")
+    for artifact in artifacts:
+        if artifact["status"] not in ACCEPTED_CLOSE_STATUSES:
+            errors.append(
+                f"artifact {artifact['artifact_id']} must be done or escalated before closure; current={artifact['status']}"
+            )
+
     if errors:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=errors)
 
@@ -601,6 +769,22 @@ def cmd_skill_workitem(args) -> int:
         print(f"  status: {args.status}")
     else:
         print("fail: skill workitem")
+        for error in result.errors:
+            print(f"  error: {error}")
+    return 0 if result.ok else 1
+
+
+def cmd_skill_artifact(args) -> int:
+    result = update_artifact(args)
+    if args.json:
+        print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+    elif result.ok:
+        print(f"ok: {result.run_log}")
+        print(f"  artifact: {args.artifact}")
+        print(f"  kind: {args.kind}")
+        print(f"  status: {args.status}")
+    else:
+        print("fail: skill artifact")
         for error in result.errors:
             print(f"  error: {error}")
     return 0 if result.ok else 1

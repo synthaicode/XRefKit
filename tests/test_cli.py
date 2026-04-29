@@ -133,6 +133,7 @@ class CliTests(unittest.TestCase):
             self.assertIn("## Runtime Role Assignment", text)
             self.assertIn("## Worklist", text)
             self.assertIn("## Concrete Work Items", text)
+            self.assertIn("## Runtime Artifacts", text)
             self.assertIn("## Execution Role", text)
             self.assertIn("## Check Role", text)
             self.assertIn("## Closure Gate", text)
@@ -479,7 +480,144 @@ class CliTests(unittest.TestCase):
             payload = json.loads(stdout.getvalue())
             self.assertEqual(1, exit_code)
             self.assertFalse(payload["ok"])
-            self.assertIn("work item WI-001 must be done or escalated", payload["errors"][-1])
+            self.assertTrue(
+                any("work item WI-001 must be done or escalated" in error for error in payload["errors"])
+            )
+
+    def test_main_skill_artifact_adds_structured_artifact(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_valid_skill(root)
+            out = root / "work" / "sessions" / "run.md"
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "run",
+                            "--root",
+                            str(root),
+                            "--meta",
+                            "skills/sample/meta.md",
+                            "--task",
+                            "Create a controlled output",
+                            "--out",
+                            str(out),
+                        ]
+                    ),
+                )
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        "skill",
+                        "artifact",
+                        "--log",
+                        str(out),
+                        "--artifact",
+                        "OUT-001",
+                        "--kind",
+                        "output",
+                        "--target",
+                        "docs/output.md",
+                        "--item",
+                        "WI-001",
+                        "--status",
+                        "done",
+                        "--role",
+                        "sample_skill:executor",
+                        "--note",
+                        "created output document",
+                        "--json",
+                    ]
+                )
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(0, exit_code)
+            self.assertTrue(payload["ok"])
+            self.assertEqual("OUT-001", payload["artifacts"][0]["artifact_id"])
+            text = out.read_text(encoding="utf-8")
+            self.assertIn("- [x] OUT-001 kind=`output` status=`done` role=`sample_skill:executor` target=`docs/output.md` item=`WI-001`: created output document", text)
+
+    def test_main_skill_close_rejects_missing_runtime_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_valid_skill(root)
+            out = root / "work" / "sessions" / "run.md"
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "run",
+                            "--root",
+                            str(root),
+                            "--meta",
+                            "skills/sample/meta.md",
+                            "--task",
+                            "Create a controlled output",
+                            "--out",
+                            str(out),
+                        ]
+                    ),
+                )
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "workitem",
+                            "--log",
+                            str(out),
+                            "--item",
+                            "WI-001",
+                            "--text",
+                            "Implement controlled output",
+                            "--status",
+                            "done",
+                            "--role",
+                            "sample_skill:executor",
+                        ]
+                    ),
+                )
+                phase_roles = {
+                    "execution": "sample_skill:executor",
+                    "check": "sample_skill:checker",
+                    "handoff": "sample_skill:handoff_owner",
+                }
+                for phase, role in phase_roles.items():
+                    self.assertEqual(
+                        0,
+                        main(
+                            [
+                                "skill",
+                                "phase",
+                                "--log",
+                                str(out),
+                                "--phase",
+                                phase,
+                                "--status",
+                                "done",
+                                "--role",
+                                role,
+                            ]
+                        ),
+                    )
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(["skill", "close", "--log", str(out), "--json"])
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(1, exit_code)
+            self.assertFalse(payload["ok"])
+            self.assertIn("at least one output artifact is required before closure", payload["errors"])
+            self.assertIn("at least one evidence artifact is required before closure", payload["errors"])
 
     def test_main_skill_close_rejects_incomplete_runtime_log(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -563,6 +701,33 @@ class CliTests(unittest.TestCase):
                         ]
                     ),
                 )
+                for artifact_id, kind, target, role in (
+                    ("OUT-001", "output", "docs/output.md", "sample_skill:executor"),
+                    ("EVD-001", "evidence", "python tools/run_quality_gate.py fm", "sample_skill:checker"),
+                ):
+                    self.assertEqual(
+                        0,
+                        main(
+                            [
+                                "skill",
+                                "artifact",
+                                "--log",
+                                str(out),
+                                "--artifact",
+                                artifact_id,
+                                "--kind",
+                                kind,
+                                "--target",
+                                target,
+                                "--item",
+                                "WI-001",
+                                "--status",
+                                "done",
+                                "--role",
+                                role,
+                            ]
+                        ),
+                    )
                 for phase, role in phase_roles.items():
                     self.assertEqual(
                         0,

@@ -95,6 +95,7 @@ that the referenced `SKILL.md` file exists, then writes a session log containing
 - the declared OS contract
 - a required worklist
 - a concrete work-item section for task-specific items
+- a runtime artifact section for outputs, evidence, checks, judgments, sources, and handoff links
 - separated execution and check role sections
 - unknown/risk handling
 - closure gate
@@ -132,6 +133,27 @@ Supported work-item statuses are the same runtime status set:
 
 At least one concrete work item is required before closure. Every concrete work
 item must be `done` or `escalated` before the Skill run can close.
+
+The generated log also contains a `Runtime Artifacts` section. Add or update
+structured output and evidence links with:
+
+```powershell
+python -m fm skill artifact --log work/sessions/<run-log>.md --artifact OUT-001 --kind output --target "docs/output.md" --item WI-001 --status done --role "<skill_id>:executor"
+python -m fm skill artifact --log work/sessions/<run-log>.md --artifact EVD-001 --kind evidence --target "python tools/run_quality_gate.py fm" --item WI-001 --status done --role "<skill_id>:checker"
+```
+
+Supported artifact kinds:
+
+- `output`
+- `evidence`
+- `check`
+- `judgment`
+- `source`
+- `handoff`
+
+At least one `output` artifact and one `evidence` artifact are required before
+closure. Every artifact must be `done` or `escalated` before the Skill run can
+close.
 
 The command prepares the controlled execution envelope. It does not perform
 domain-specific work automatically. Domain execution happens through the
@@ -186,6 +208,9 @@ The closure command reads the run log and rejects closure unless:
 - execution, check, and handoff were advanced by their assigned runtime roles
 - at least one concrete work item exists
 - every concrete work item is `done` or `escalated`
+- at least one `output` artifact exists
+- at least one `evidence` artifact exists
+- every runtime artifact is `done` or `escalated`
 
 When the gate passes, it updates `Closure Gate` and appends a phase event. If
 any required section is still `pending`, `blocked`, `unknown`, or missing, the
