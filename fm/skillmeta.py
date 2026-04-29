@@ -11,6 +11,11 @@ GUARD_KNOWLEDGE_REF = "../../knowledge/organization/160_context_direction_guard_
 SKILL_RUNTIME_CAPABILITY_REF = "../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5"
 VALID_GUARD_POLICIES = {"required", "closed_world"}
 VALID_EXECUTION_MODES = {"local_default", "subagent_preferred", "subagent_required"}
+VALID_MATURITY_LEVELS = {"draft", "trial", "stable", "governed", "deprecated"}
+VALID_CHECK_LEVELS = {"auto", "draft", "trial", "stable", "governed"}
+LEGACY_DEFAULT_MATURITY = "stable"
+TRIAL_DEFAULT_EXECUTION_MODE = "local_default"
+TRIAL_DEFAULT_GUARD_POLICY = "required"
 REQUIRED_OS_CONTRACT = {
     "version": "1",
     "worklist_policy": "required",
@@ -28,6 +33,8 @@ REQUIRED_OS_CONTRACT = {
 class SkillMetaResult:
     meta_path: str
     skill_id: str | None
+    maturity: str | None
+    checked_level: str
     guard_policy: str | None
     execution_mode: str | None
     ok: bool
@@ -37,6 +44,8 @@ class SkillMetaResult:
         return {
             "meta_path": self.meta_path,
             "skill_id": self.skill_id,
+            "maturity": self.maturity,
+            "checked_level": self.checked_level,
             "guard_policy": self.guard_policy,
             "execution_mode": self.execution_mode,
             "ok": self.ok,
@@ -90,49 +99,38 @@ def _parse_key_value_list(value: object) -> dict[str, str]:
     return parsed
 
 
-def validate_skill_meta(meta_path: Path) -> SkillMetaResult:
-    parsed = _parse_meta_lines(meta_path.read_text(encoding="utf-8"))
-    skill_id = parsed.get("skill_id")
-    guard_policy = parsed.get("guard_policy")
-    execution_mode = parsed.get("execution_mode")
-    constraints = str(parsed.get("constraints", ""))
-    summary = str(parsed.get("summary", ""))
-    tags = str(parsed.get("tags", ""))
-    capability_refs = parsed.get("capability_refs", [])
-    knowledge_refs = parsed.get("knowledge_refs", [])
-    skill_doc = parsed.get("skill_doc")
-    os_contract = _parse_key_value_list(parsed.get("os_contract"))
+def _require_text_field(parsed: dict[str, object], key: str, errors: list[str]) -> None:
+    value = parsed.get(key)
+    if not isinstance(value, str) or not value.strip():
+        errors.append(f"missing {key}")
 
-    if not isinstance(capability_refs, list):
-        capability_refs = []
-    if not isinstance(knowledge_refs, list):
-        knowledge_refs = []
 
-    errors: list[str] = []
+def _resolve_maturity(parsed: dict[str, object]) -> tuple[str | None, str | None]:
+    maturity = parsed.get("maturity")
+    status = parsed.get("status")
 
-    if not skill_id:
-        errors.append("missing skill_id")
-    if not skill_doc:
-        errors.append("missing skill_doc")
-    if execution_mode not in VALID_EXECUTION_MODES:
-        errors.append("missing or invalid execution_mode")
-    for key, expected_value in REQUIRED_OS_CONTRACT.items():
-        actual_value = os_contract.get(key)
-        if actual_value != expected_value:
-            errors.append(f"os_contract.{key} must be {expected_value}")
-    if SKILL_RUNTIME_CAPABILITY_REF not in capability_refs:
-        errors.append("required skill runtime envelope capability ref is missing")
-    if guard_policy not in VALID_GUARD_POLICIES:
-        errors.append("missing or invalid guard_policy")
-    elif guard_policy == "required":
-        if GUARD_CAPABILITY_REF not in capability_refs:
-            errors.append("required guard capability ref is missing")
-        if GUARD_KNOWLEDGE_REF not in knowledge_refs:
-            errors.append("required guard knowledge ref is missing")
-    elif guard_policy == "closed_world":
-        if "closed-world" not in constraints:
-            errors.append("closed_world policy requires explicit closed-world constraint text")
+    raw_value = None
+    if isinstance(maturity, str) and maturity.strip():
+        raw_value = maturity.strip()
+    elif isinstance(status, str) and status.strip():
+        raw_value = status.strip()
 
+    if raw_value is None:
+        return LEGACY_DEFAULT_MATURITY, None
+    if raw_value in VALID_MATURITY_LEVELS:
+        return raw_value, raw_value
+    return None, raw_value
+
+
+def _resolve_check_level(*, maturity: str | None, check_level: str) -> str:
+    if check_level != "auto":
+        return check_level
+    if maturity == "deprecated":
+        return "draft"
+    return maturity or LEGACY_DEFAULT_MATURITY
+
+
+def _check_review_mode(summary: str, tags: str, skill_id: object, execution_mode: object, errors: list[str]) -> None:
     review_markers = (
         "review" in str(skill_id).lower()
         or " review" in summary.lower()
@@ -143,9 +141,87 @@ def validate_skill_meta(meta_path: Path) -> SkillMetaResult:
     if review_markers and execution_mode == "local_default":
         errors.append("review-oriented skills must use subagent_preferred or subagent_required")
 
+
+def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillMetaResult:
+    parsed = _parse_meta_lines(meta_path.read_text(encoding="utf-8"))
+    skill_id = parsed.get("skill_id")
+    summary = str(parsed.get("summary", ""))
+    tags = str(parsed.get("tags", ""))
+    maturity, explicit_maturity = _resolve_maturity(parsed)
+    is_legacy_meta = explicit_maturity is None
+    effective_check_level = _resolve_check_level(maturity=maturity, check_level=check_level)
+    guard_policy = parsed.get("guard_policy")
+    execution_mode = parsed.get("execution_mode")
+    constraints = str(parsed.get("constraints", ""))
+    capability_refs = parsed.get("capability_refs", [])
+    knowledge_refs = parsed.get("knowledge_refs", [])
+    observation_refs = parsed.get("observation_refs", [])
+    governance_refs = parsed.get("governance_refs", [])
+    skill_doc = parsed.get("skill_doc")
+    os_contract = _parse_key_value_list(parsed.get("os_contract"))
+
+    if not isinstance(capability_refs, list):
+        capability_refs = []
+    if not isinstance(knowledge_refs, list):
+        knowledge_refs = []
+    if not isinstance(observation_refs, list):
+        observation_refs = []
+    if not isinstance(governance_refs, list):
+        governance_refs = []
+
+    errors: list[str] = []
+
+    if check_level not in VALID_CHECK_LEVELS:
+        errors.append(f"invalid check level: {check_level}")
+    if explicit_maturity and explicit_maturity not in VALID_MATURITY_LEVELS:
+        errors.append(f"invalid maturity/status: {explicit_maturity}")
+
+    for key in ("skill_id", "summary", "use_when", "input", "output", "skill_doc"):
+        _require_text_field(parsed, key, errors)
+
+    require_observation_refs = effective_check_level in {"trial", "stable", "governed"} and not (
+        check_level == "auto" and is_legacy_meta and effective_check_level == "stable"
+    )
+    if require_observation_refs:
+        if not observation_refs:
+            errors.append("trial-or-higher skills must include at least one observation_refs entry")
+    if effective_check_level == "trial":
+        if execution_mode and execution_mode not in VALID_EXECUTION_MODES:
+            errors.append("invalid execution_mode")
+        if guard_policy and guard_policy not in VALID_GUARD_POLICIES:
+            errors.append("invalid guard_policy")
+
+    if effective_check_level in {"stable", "governed"}:
+        if execution_mode not in VALID_EXECUTION_MODES:
+            errors.append("missing or invalid execution_mode")
+        if guard_policy not in VALID_GUARD_POLICIES:
+            errors.append("missing or invalid guard_policy")
+        elif guard_policy == "required":
+            if GUARD_CAPABILITY_REF not in capability_refs:
+                errors.append("required guard capability ref is missing")
+            if GUARD_KNOWLEDGE_REF not in knowledge_refs:
+                errors.append("required guard knowledge ref is missing")
+        elif guard_policy == "closed_world" and "closed-world" not in constraints:
+            errors.append("closed_world policy requires explicit closed-world constraint text")
+        if SKILL_RUNTIME_CAPABILITY_REF not in capability_refs:
+            errors.append("required skill runtime envelope capability ref is missing")
+        if not constraints.strip():
+            errors.append("missing constraints")
+        _check_review_mode(summary, tags, skill_id, execution_mode, errors)
+        for key, expected_value in REQUIRED_OS_CONTRACT.items():
+            actual_value = os_contract.get(key)
+            if actual_value != expected_value:
+                errors.append(f"os_contract.{key} must be {expected_value}")
+
+    if effective_check_level == "governed":
+        if not governance_refs:
+            errors.append("governed skills must include at least one governance_refs entry")
+
     return SkillMetaResult(
         meta_path=str(meta_path),
         skill_id=str(skill_id) if skill_id else None,
+        maturity=maturity,
+        checked_level=effective_check_level,
         guard_policy=str(guard_policy) if guard_policy else None,
         execution_mode=str(execution_mode) if execution_mode else None,
         ok=not errors,
@@ -174,7 +250,7 @@ def cmd_skill(args) -> int:
     else:
         targets.extend(_iter_meta_files(root, args.scope))
 
-    results = [validate_skill_meta(path) for path in targets]
+    results = [validate_skill_meta(path, check_level=args.level) for path in targets]
     failed = [result for result in results if not result.ok]
 
     if args.json:
@@ -185,6 +261,9 @@ def cmd_skill(args) -> int:
             print(f"{status}: {result.meta_path}")
             if result.skill_id:
                 print(f"  skill_id: {result.skill_id}")
+            if result.maturity:
+                print(f"  maturity: {result.maturity}")
+            print(f"  checked_level: {result.checked_level}")
             if result.execution_mode:
                 print(f"  execution_mode: {result.execution_mode}")
             if result.guard_policy:

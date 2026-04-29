@@ -46,7 +46,11 @@ The repository routing order is:
 A Skill is not only a procedure document. A loadable Skill must also carry the
 repository operating envelope defined in [Skill Operating Contract](058_skill_operating_contract.md#xid-B7A2C94F0E61).
 
-That envelope makes each Skill declare:
+New Skills do not need to start at that fully mature state. In this repository,
+Skills are managed as maturity-based assets: `draft` -> `trial` -> `stable` ->
+`governed`.
+
+At `stable` and `governed`, that envelope makes each Skill declare:
 
 - worklist policy
 - execution role
@@ -60,6 +64,9 @@ That envelope makes each Skill declare:
 This keeps the repository closer to an operating foundation: Skills are loaded
 with execution/check separation, records, closure, and handoff expectations
 already attached.
+
+For the lifecycle and promotion rules, see
+[Skill maturity governance](059_skill_maturity_governance.md#xid-4E7B8D9C1A20).
 
 ## Design Rules
 

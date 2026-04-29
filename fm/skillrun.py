@@ -6,7 +6,15 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
-from fm.skillmeta import _parse_key_value_list, _parse_meta_lines, validate_skill_meta
+from fm.skillmeta import (
+    REQUIRED_OS_CONTRACT,
+    TRIAL_DEFAULT_EXECUTION_MODE,
+    TRIAL_DEFAULT_GUARD_POLICY,
+    _parse_key_value_list,
+    _parse_meta_lines,
+    _resolve_maturity,
+    validate_skill_meta,
+)
 
 
 @dataclass
@@ -134,9 +142,11 @@ def _default_log_path(root: Path, skill_id: str) -> Path:
 def _render_log(
     *,
     skill_id: str,
+    maturity: str,
     meta_path: Path,
     skill_doc: Path,
     execution_mode: str,
+    guard_policy: str,
     assigned_roles: dict[str, str],
     task: str,
     os_contract: dict[str, str],
@@ -149,6 +159,7 @@ def _render_log(
 
 - date: `{date.today().isoformat()}`
 - skill_id: `{skill_id}`
+- maturity: `{maturity}`
 - meta: `{meta_path.as_posix()}`
 - skill_doc: `{skill_doc.as_posix()}`
 - task: {task}
@@ -160,6 +171,7 @@ def _render_log(
 
 ## Runtime Role Assignment
 
+- guard_policy: `{guard_policy}`
 - execution_mode: `{execution_mode}`
 - executor: `{assigned_roles["executor"]}`
 - checker: `{assigned_roles["checker"]}`
@@ -964,19 +976,59 @@ def run_skill(args) -> SkillRunResult:
     if not meta_path.exists():
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"meta not found: {meta_path}"])
 
-    validation = validate_skill_meta(meta_path)
-    if not validation.ok:
+    parsed = _parse_meta_lines(meta_path.read_text(encoding="utf-8"))
+    maturity, _ = _resolve_maturity(parsed)
+    maturity = maturity or "stable"
+
+    if maturity == "draft":
+        return SkillRunResult(
+            ok=False,
+            skill_id=str(parsed.get("skill_id")) if parsed.get("skill_id") else None,
+            skill_doc=None,
+            run_log=None,
+            errors=[
+                "draft skills are not load-ready; promote the skill to trial with provisional runtime fields before fm skill run"
+            ],
+        )
+    if maturity == "deprecated":
+        return SkillRunResult(
+            ok=False,
+            skill_id=str(parsed.get("skill_id")) if parsed.get("skill_id") else None,
+            skill_doc=None,
+            run_log=None,
+            errors=["deprecated skills cannot be opened with fm skill run"],
+        )
+
+    validation_level = "trial" if maturity == "trial" else "stable"
+    validation = validate_skill_meta(meta_path, check_level=validation_level)
+    if maturity == "trial":
+        allowed_trial_errors = {"trial-or-higher skills must include at least one observation_refs entry"}
+        blocking_errors = [error for error in validation.errors if error not in allowed_trial_errors]
+    else:
+        blocking_errors = list(validation.errors)
+
+    if blocking_errors:
         return SkillRunResult(
             ok=False,
             skill_id=validation.skill_id,
             skill_doc=None,
             run_log=None,
-            errors=validation.errors,
+            errors=blocking_errors,
         )
 
-    parsed = _parse_meta_lines(meta_path.read_text(encoding="utf-8"))
     skill_id = str(parsed.get("skill_id"))
-    execution_mode = str(parsed.get("execution_mode"))
+    raw_execution_mode = parsed.get("execution_mode")
+    execution_mode = str(raw_execution_mode) if raw_execution_mode else TRIAL_DEFAULT_EXECUTION_MODE
+    if execution_mode not in {"local_default", "subagent_preferred", "subagent_required"}:
+        return SkillRunResult(
+            ok=False,
+            skill_id=skill_id,
+            skill_doc=None,
+            run_log=None,
+            errors=[f"invalid execution_mode for skill run: {execution_mode}"],
+        )
+    raw_guard_policy = parsed.get("guard_policy")
+    guard_policy = str(raw_guard_policy) if raw_guard_policy else TRIAL_DEFAULT_GUARD_POLICY
     raw_skill_doc = str(parsed.get("skill_doc"))
     skill_doc_path = (meta_path.parent / raw_skill_doc).resolve()
     if not skill_doc_path.exists():
@@ -988,6 +1040,10 @@ def run_skill(args) -> SkillRunResult:
             errors=[f"skill_doc not found: {skill_doc_path}"],
         )
     os_contract = _parse_key_value_list(parsed.get("os_contract"))
+    if maturity == "trial":
+        merged_os_contract = dict(REQUIRED_OS_CONTRACT)
+        merged_os_contract.update(os_contract)
+        os_contract = merged_os_contract
     assigned_roles = _assign_runtime_roles(skill_id=skill_id, execution_mode=execution_mode)
 
     out_path = Path(args.out) if args.out else _default_log_path(root, skill_id)
@@ -997,9 +1053,11 @@ def run_skill(args) -> SkillRunResult:
 
     log = _render_log(
         skill_id=skill_id,
+        maturity=maturity,
         meta_path=meta_path.relative_to(root),
         skill_doc=skill_doc_path.relative_to(root),
         execution_mode=execution_mode,
+        guard_policy=guard_policy,
         assigned_roles=assigned_roles,
         task=str(task),
         os_contract=os_contract,

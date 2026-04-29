@@ -18,16 +18,23 @@ class SkillRuntimeAuditTests(unittest.TestCase):
             "# Skill Meta: sample\n\n"
             "- skill_id: `sample_skill`\n"
             "- summary: sample summary\n"
+            "- use_when: sample use\n"
+            "- input: sample input\n"
+            "- output: sample output\n"
+            "- maturity: `stable`\n"
             "- execution_mode: `local_default`\n"
             "- guard_policy: `required`\n"
             "- os_contract:\n"
             f"{os_contract}"
+            "- constraints: keep observed boundary explicit\n"
             "- skill_doc: `./SKILL.md`\n"
             "- capability_refs:\n"
             f"  - `{SKILL_RUNTIME_CAPABILITY_REF}`\n"
             f"  - `{GUARD_CAPABILITY_REF}`\n"
             "- knowledge_refs:\n"
             f"  - `{GUARD_KNOWLEDGE_REF}`\n"
+            "- observation_refs:\n"
+            "  - `../../work/sessions/sample.md`\n"
         )
 
     def _write_valid_skill(self, root: Path) -> None:

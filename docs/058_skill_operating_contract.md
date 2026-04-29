@@ -7,16 +7,23 @@ This page defines the repository-level operating contract that every loadable
 Skill must carry.
 
 The purpose is to make XRefKit behave like an AI work operating foundation, not
-only a collection of prompt files. A Skill must not be just a procedure. It must
-carry the minimum runtime envelope needed to plan work, separate execution from
-checking, record evidence, surface unknowns, and hand off explicitly.
+only a collection of prompt files. A load-ready Skill must not be just a
+procedure. It must carry the minimum runtime envelope needed to plan work,
+separate execution from checking, record evidence, surface unknowns, and hand
+off explicitly.
 
 ## Core Rule
 
-Every public Skill metadata file must declare an `os_contract` block.
+Every `stable` or `governed` Skill metadata file must declare an `os_contract`
+block.
 
-The block is enforced by `python -m fm skill check`. A Skill that does not carry
-the required operating contract is not considered load-ready.
+The block is enforced by `python -m fm skill check --level stable` and
+`--level governed`. A Skill that does not carry the required operating contract
+is not considered `stable` or `governed`.
+
+`draft` Skills may exist without a complete operating contract.
+`trial` Skills may still be carrying provisional runtime choices while they are
+being clarified through actual use.
 
 ## Required Meta Block
 
@@ -59,8 +66,8 @@ the required operating contract is not considered load-ready.
 
 ## Skill Authoring Requirement
 
-When creating or revising a Skill, include sections that correspond to the
-operating contract:
+When promoting a Skill to `stable` or `governed`, include sections that
+correspond to the operating contract:
 
 - Startup
 - Worklist
@@ -76,8 +83,15 @@ The exact wording may vary by Skill, but the responsibility must not disappear.
 
 ## Enforcement Boundary
 
-The first enforcement layer checks metadata readiness. A Skill that fails this
-check must not be treated as load-ready.
+The first enforcement layer checks metadata readiness by maturity level.
+
+- `draft`: minimum identity and hypothesis structure only
+- `trial`: observation-connected, runnable but still maturing
+- `stable`: operationally complete
+- `governed`: operationally complete plus governance linkage
+
+A Skill that fails the required check for its intended maturity must not be
+treated as ready for that maturity.
 
 Operational Skill use must start through the runtime-envelope command:
 
@@ -85,8 +99,9 @@ Operational Skill use must start through the runtime-envelope command:
 python -m fm skill run --meta skills/<skill>/meta.md --task "task text"
 ```
 
-This command is the Skill load gate. It validates the Skill metadata, confirms
-that the referenced `SKILL.md` file exists, then writes a session log containing:
+This command is the Skill load gate for `trial`, `stable`, and `governed`
+Skills. It validates the Skill metadata at runtime-open level, confirms that
+the referenced `SKILL.md` file exists, then writes a session log containing:
 
 - the active Skill
 - the resolved `skill_doc` path that may be opened next
@@ -104,6 +119,9 @@ that the referenced `SKILL.md` file exists, then writes a session log containing
 Do not open or execute the Skill procedure before `fm skill run` succeeds. The
 returned `skill_doc` is the allowed procedure file for that run, and the
 returned `run_log` is the active runtime record.
+
+`draft` Skills are managed records and are not load-ready. Promote them to
+`trial` before operational use.
 
 `fm skill run` also assigns distinct runtime roles:
 
@@ -274,3 +292,6 @@ This contract composes with:
 
 The contract does not replace those pages. It makes their runtime expectations
 part of every loadable Skill.
+
+For maturity progression and promotion templates, see
+[Skill maturity governance](059_skill_maturity_governance.md#xid-4E7B8D9C1A20).

@@ -104,6 +104,12 @@ def _build_parser() -> argparse.ArgumentParser:
         default="skills",
         help="Validation scope when --meta is omitted (default: skills)",
     )
+    p_skill_check.add_argument(
+        "--level",
+        choices=["auto", "draft", "trial", "stable", "governed"],
+        default="auto",
+        help="Validation level; auto uses declared maturity/status (default: auto)",
+    )
     p_skill_check.add_argument("--json", action="store_true", help="Emit JSON")
 
     p_skill_run = skill_sub.add_parser("run", help="Create a Skill runtime envelope and session log")

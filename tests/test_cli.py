@@ -18,16 +18,23 @@ class CliTests(unittest.TestCase):
             "# Skill Meta: sample\n\n"
             "- skill_id: `sample_skill`\n"
             "- summary: sample summary\n"
+            "- use_when: sample use\n"
+            "- input: sample input\n"
+            "- output: sample output\n"
+            "- maturity: `stable`\n"
             "- execution_mode: `local_default`\n"
             "- guard_policy: `required`\n"
             "- os_contract:\n"
             f"{os_contract}"
+            "- constraints: keep observed boundary explicit\n"
             "- skill_doc: `./SKILL.md`\n"
             "- capability_refs:\n"
             f"  - `{SKILL_RUNTIME_CAPABILITY_REF}`\n"
             f"  - `{GUARD_CAPABILITY_REF}`\n"
             "- knowledge_refs:\n"
             f"  - `{GUARD_KNOWLEDGE_REF}`\n"
+            "- observation_refs:\n"
+            "  - `../../work/sessions/sample.md`\n"
         )
 
     def _write_valid_skill(self, root: Path) -> Path:
@@ -188,6 +195,33 @@ class CliTests(unittest.TestCase):
             self.assertFalse(payload[0]["ok"])
             self.assertIn("missing skill_doc", payload[0]["errors"])
 
+    def test_main_skill_check_draft_level_accepts_minimum_meta(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            meta = root / "meta.md"
+            meta.write_text(
+                "# Skill Meta: draft\n\n"
+                "- skill_id: `draft_skill`\n"
+                "- summary: draft summary\n"
+                "- use_when: early use hypothesis\n"
+                "- input: rough input\n"
+                "- output: rough output\n"
+                "- skill_doc: `./SKILL.md`\n"
+                "- maturity: `draft`\n",
+                encoding="utf-8",
+            )
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(
+                    ["skill", "check", "--root", str(root), "--meta", "meta.md", "--level", "draft", "--json"]
+                )
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(0, exit_code)
+            self.assertTrue(payload[0]["ok"])
+            self.assertEqual("draft", payload[0]["checked_level"])
+
     def test_main_skill_run_writes_runtime_log(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -229,6 +263,7 @@ class CliTests(unittest.TestCase):
             self.assertIn("## Check Role", text)
             self.assertIn("## Closure Gate", text)
             self.assertIn("Create a controlled output", text)
+            self.assertIn("- maturity: `stable`", text)
 
     def test_main_skill_run_rejects_invalid_meta(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -266,6 +301,93 @@ class CliTests(unittest.TestCase):
             self.assertFalse(payload["ok"])
             self.assertFalse(out.exists())
             self.assertIn("missing skill_doc", payload["errors"])
+
+    def test_main_skill_run_rejects_draft_skill(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            meta = root / "skills" / "sample" / "meta.md"
+            meta.parent.mkdir(parents=True, exist_ok=True)
+            meta.write_text(
+                "# Skill Meta: draft\n\n"
+                "- skill_id: `draft_skill`\n"
+                "- summary: draft summary\n"
+                "- use_when: early use hypothesis\n"
+                "- input: rough input\n"
+                "- output: rough output\n"
+                "- skill_doc: `./SKILL.md`\n"
+                "- maturity: `draft`\n",
+                encoding="utf-8",
+            )
+            (meta.parent / "SKILL.md").write_text("# Draft Skill\n", encoding="utf-8")
+            out = root / "work" / "sessions" / "run.md"
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        "skill",
+                        "run",
+                        "--root",
+                        str(root),
+                        "--meta",
+                        "skills/sample/meta.md",
+                        "--task",
+                        "Try a draft skill",
+                        "--out",
+                        str(out),
+                        "--json",
+                    ]
+                )
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(1, exit_code)
+            self.assertFalse(payload["ok"])
+            self.assertIn("draft skills are not load-ready", payload["errors"][0])
+
+    def test_main_skill_run_accepts_trial_skill_with_provisional_runtime_defaults(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            meta = root / "skills" / "sample" / "meta.md"
+            meta.parent.mkdir(parents=True, exist_ok=True)
+            meta.write_text(
+                "# Skill Meta: trial\n\n"
+                "- skill_id: `trial_skill`\n"
+                "- summary: trial summary\n"
+                "- use_when: observed use hypothesis\n"
+                "- input: observed input hypothesis\n"
+                "- output: observed output hypothesis\n"
+                "- skill_doc: `./SKILL.md`\n"
+                "- maturity: `trial`\n",
+                encoding="utf-8",
+            )
+            (meta.parent / "SKILL.md").write_text("# Trial Skill\n", encoding="utf-8")
+            out = root / "work" / "sessions" / "run.md"
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        "skill",
+                        "run",
+                        "--root",
+                        str(root),
+                        "--meta",
+                        "skills/sample/meta.md",
+                        "--task",
+                        "Observe a trial skill",
+                        "--out",
+                        str(out),
+                        "--json",
+                    ]
+                )
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(0, exit_code)
+            self.assertTrue(payload["ok"])
+            text = out.read_text(encoding="utf-8")
+            self.assertIn("- maturity: `trial`", text)
+            self.assertIn("- guard_policy: `required`", text)
+            self.assertIn("- execution_mode: `local_default`", text)
 
     def test_main_skill_phase_updates_runtime_log(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
