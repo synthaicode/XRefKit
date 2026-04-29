@@ -10,6 +10,16 @@
 - output: in-scope service list, out-of-scope service list with reasons, change viewpoints, test viewpoints, change target list, uncertainty list
 - execution_mode: `local_default`
 - guard_policy: `required`
+- os_contract:
+  - version: `1`
+  - worklist_policy: `required`
+  - execution_role: `required`
+  - check_role: `required`
+  - logging_policy: `session_required`
+  - judgment_log_policy: `required_when_non_trivial`
+  - unknown_risk_policy: `explicit`
+  - closure_gate: `required`
+  - handoff_policy: `explicit`
 - constraints: do not decide design or implementation policy; record unknowns explicitly; preserve requested difference and impacted-target discovery explicitly
 - lifecycle:
   - startup: confirm request, service catalog, analysis targets, and coverage checklist exist
@@ -20,6 +30,7 @@
 - tags: `investigation`, `scope`, `planning`
 - skill_doc: `./SKILL.md`
 - capability_refs:
+  - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
   - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
   - `../../capabilities/investigation/100_cap_inv_001_service_catalog_analysis.md#xid-867B78FF702F`
   - `../../capabilities/investigation/110_cap_inv_002_source_dependency_analysis.md#xid-E994FCDA8CD1`

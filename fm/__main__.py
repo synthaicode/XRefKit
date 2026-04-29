@@ -106,6 +106,31 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_skill_check.add_argument("--json", action="store_true", help="Emit JSON")
 
+    p_skill_run = skill_sub.add_parser("run", help="Create a Skill runtime envelope and session log")
+    p_skill_run.add_argument("--root", default=".", help="Project root (default: .)")
+    p_skill_run.add_argument("--meta", required=True, help="Relative path to the Skill meta.md to run")
+    p_skill_run.add_argument("--task", default=None, help="Task text for the Skill run")
+    p_skill_run.add_argument("--task-file", default=None, help="Read task text from a UTF-8 file")
+    p_skill_run.add_argument("--out", default=None, help="Write run log to this path")
+    p_skill_run.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_skill_phase = skill_sub.add_parser("phase", help="Update a Skill run log phase state")
+    p_skill_phase.add_argument("--log", required=True, help="Skill run log to update")
+    p_skill_phase.add_argument(
+        "--phase",
+        required=True,
+        choices=["startup", "planning", "execution", "check", "closure", "handoff"],
+        help="Phase to update",
+    )
+    p_skill_phase.add_argument(
+        "--status",
+        required=True,
+        choices=["pending", "in_progress", "done", "blocked", "unknown", "escalated"],
+        help="Phase status",
+    )
+    p_skill_phase.add_argument("--note", default=None, help="Optional phase event note")
+    p_skill_phase.add_argument("--json", action="store_true", help="Emit JSON")
+
     return parser
 
 
@@ -138,6 +163,15 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_ctx(args, cfg)
 
     if args.command == "skill":
+        if args.skill_cmd == "run":
+            from fm.skillrun import cmd_skill_run
+
+            return cmd_skill_run(args)
+        if args.skill_cmd == "phase":
+            from fm.skillrun import cmd_skill_phase
+
+            return cmd_skill_phase(args)
+
         from fm.skillmeta import cmd_skill
 
         return cmd_skill(args)

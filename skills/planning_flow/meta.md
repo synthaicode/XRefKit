@@ -10,6 +10,16 @@
 - output: work plan, source modification policy, data change policy, data correction tool policy, test policy, test tool policy, release policy, planning basis source list
 - execution_mode: `local_default`
 - guard_policy: `required`
+- os_contract:
+  - version: `1`
+  - worklist_policy: `required`
+  - execution_role: `required`
+  - check_role: `required`
+  - logging_policy: `session_required`
+  - judgment_log_policy: `required_when_non_trivial`
+  - unknown_risk_policy: `explicit`
+  - closure_gate: `required`
+  - handoff_policy: `explicit`
 - constraints: draft only; do not finalize priority or resource allocation; keep requirement-to-target difference tracing explicit for downstream design and review
 - lifecycle:
   - startup: confirm approved requirements, current source findings, and domain knowledge references exist
@@ -20,6 +30,7 @@
 - tags: `planning`, `execution`, `policy`
 - skill_doc: `./SKILL.md`
 - capability_refs:
+  - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
   - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
   - `../../capabilities/planning/100_cap_pln_001_task_decomposition_plan_draft.md#xid-F5193313AB79`
 - knowledge_refs:

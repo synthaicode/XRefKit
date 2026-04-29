@@ -10,6 +10,16 @@
 - output: approved design, target paths, source modification design, data change design, design basis policy reference
 - execution_mode: `local_default`
 - guard_policy: `required`
+- os_contract:
+  - version: `1`
+  - worklist_policy: `required`
+  - execution_role: `required`
+  - check_role: `required`
+  - logging_policy: `session_required`
+  - judgment_log_policy: `required_when_non_trivial`
+  - unknown_risk_policy: `explicit`
+  - closure_gate: `required`
+  - handoff_policy: `explicit`
 - constraints: preserve unresolved design assumptions explicitly; do not redefine business scope; express the change method clearly enough for pre-code review
 - lifecycle:
   - startup: confirm planning outputs and source modification policy exist
@@ -20,6 +30,7 @@
 - tags: `design`, `execution`, `implementation-preparation`
 - skill_doc: `./SKILL.md`
 - capability_refs:
+  - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
   - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
   - `../../capabilities/design/100_cap_dsn_001_solution_design_structuring.md#xid-6C1A2D9F4501`
 - knowledge_refs:

@@ -36,6 +36,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Context direction security guard](053_context_direction_security_guard.md#xid-A7F3C92D4E11)
 - [Change analysis skill usage](054_change_analysis_skill_usage.md#xid-C5A8F13D7E21)
 - [Judgment log usage](055_judgment_log_usage.md#xid-9D64B2F18E44)
+- [Skill operating contract](058_skill_operating_contract.md#xid-B7A2C94F0E61)
 
 ## Cross-Cutting Schemas And Boundaries
 

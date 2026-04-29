@@ -41,6 +41,26 @@ The repository routing order is:
 - `Skill` answers: how is that work executed in practice?
 - `Knowledge` answers: what evidence or local rule supports the work?
 
+## Skill Runtime Envelope
+
+A Skill is not only a procedure document. A loadable Skill must also carry the
+repository operating envelope defined in [Skill Operating Contract](058_skill_operating_contract.md#xid-B7A2C94F0E61).
+
+That envelope makes each Skill declare:
+
+- worklist policy
+- execution role
+- check role
+- logging policy
+- judgment-log policy
+- unknown and risk handling
+- closure gate
+- handoff policy
+
+This keeps the repository closer to an operating foundation: Skills are loaded
+with execution/check separation, records, closure, and handoff expectations
+already attached.
+
 ## Design Rules
 
 - Put lifecycle progression and business-stage control in `Flow`.

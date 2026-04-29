@@ -10,6 +10,16 @@
 - output: code changes, unit test results, unit test execution basis reference, implementation basis design reference, uncertainty list, out-of-scope list
 - execution_mode: `local_default`
 - guard_policy: `required`
+- os_contract:
+  - version: `1`
+  - worklist_policy: `required`
+  - execution_role: `required`
+  - check_role: `required`
+  - logging_policy: `session_required`
+  - judgment_log_policy: `required_when_non_trivial`
+  - unknown_risk_policy: `explicit`
+  - closure_gate: `required`
+  - handoff_policy: `explicit`
 - constraints: do not change design policy; keep unresolved items explicit; implement only traced and approved differences by default
 - lifecycle:
   - startup: confirm approved scope, reviewed test package, target files, and coding rules exist
@@ -20,6 +30,7 @@
 - tags: `implementation`, `manufacturing`, `engineering`
 - skill_doc: `./SKILL.md`
 - capability_refs:
+  - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
   - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
   - `../../capabilities/manufacturing/100_cap_mfg_001_implementation.md#xid-1A12C5C61269`
   - `../../capabilities/manufacturing/110_cap_mfg_002_unit_test_execution.md#xid-55CC9027ACAD`

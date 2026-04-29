@@ -16,11 +16,13 @@ Related: [Overview](../docs/000_overview.md#xid-7C6C2B46A9D1)
 - Treat `capabilities/` as reusable work-unit definitions, not as evidence
 - Default new skill creation to private (`skills_private/`); publish to `skills/` only when the user explicitly requests public release
 - New skills MUST include the context-direction security guard by default unless they explicitly declare closed-world execution with no newly loaded external context
+- New skills MUST include the Skill operating contract (`os_contract`) so worklist, execution role, check role, logging, unknown/risk handling, closure, and handoff are load-gated
 - MUST write execution logs/retrospectives to `work/` automatically (non-canonical)
 - MUST use date-prefixed filenames for `work/` logs (`YYYY-MM-DD_<type>_<topic>.md`)
 - MUST create or update a `work/sessions/` log before final task completion and before `commit`/`push`
 - MUST promote stabilized decisions/facts from `work/` to canonical locations (`docs/` or `knowledge/`)
 - Follow shared-memory event logging rules in [Shared memory operations](../docs/015_shared_memory_operations.md#xid-4A423E72D2ED)
+- Follow the Skill operating contract in [Skill Operating Contract](../docs/058_skill_operating_contract.md#xid-B7A2C94F0E61)
 - Follow uncertainty protocol in [Uncertainty protocol](../docs/016_uncertainty_protocol.md#xid-8A666C1FD121)
 - Do not fill missing information by guessing; first find the relevant XIDs and read them
 - When creating new documents, follow the existing document format conventions, character encoding, and encoding form used by the surrounding repository area unless an intentional change is explicitly required

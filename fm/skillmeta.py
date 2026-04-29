@@ -8,8 +8,20 @@ from typing import Iterable
 
 GUARD_CAPABILITY_REF = "../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11"
 GUARD_KNOWLEDGE_REF = "../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601"
+SKILL_RUNTIME_CAPABILITY_REF = "../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5"
 VALID_GUARD_POLICIES = {"required", "closed_world"}
 VALID_EXECUTION_MODES = {"local_default", "subagent_preferred", "subagent_required"}
+REQUIRED_OS_CONTRACT = {
+    "version": "1",
+    "worklist_policy": "required",
+    "execution_role": "required",
+    "check_role": "required",
+    "logging_policy": "session_required",
+    "judgment_log_policy": "required_when_non_trivial",
+    "unknown_risk_policy": "explicit",
+    "closure_gate": "required",
+    "handoff_policy": "explicit",
+}
 
 
 @dataclass
@@ -43,7 +55,7 @@ def _parse_meta_lines(text: str) -> dict[str, object]:
         if not stripped:
             continue
 
-        if stripped.startswith("- ") and ":" in stripped[2:]:
+        if line.startswith("- ") and ":" in stripped[2:]:
             key, value = stripped[2:].split(":", 1)
             key = key.strip()
             value = value.strip()
@@ -65,6 +77,19 @@ def _parse_meta_lines(text: str) -> dict[str, object]:
     return data
 
 
+def _parse_key_value_list(value: object) -> dict[str, str]:
+    if not isinstance(value, list):
+        return {}
+
+    parsed: dict[str, str] = {}
+    for item in value:
+        if not isinstance(item, str) or ":" not in item:
+            continue
+        key, raw_value = item.split(":", 1)
+        parsed[key.strip()] = raw_value.strip().strip("`")
+    return parsed
+
+
 def validate_skill_meta(meta_path: Path) -> SkillMetaResult:
     parsed = _parse_meta_lines(meta_path.read_text(encoding="utf-8"))
     skill_id = parsed.get("skill_id")
@@ -76,6 +101,7 @@ def validate_skill_meta(meta_path: Path) -> SkillMetaResult:
     capability_refs = parsed.get("capability_refs", [])
     knowledge_refs = parsed.get("knowledge_refs", [])
     skill_doc = parsed.get("skill_doc")
+    os_contract = _parse_key_value_list(parsed.get("os_contract"))
 
     if not isinstance(capability_refs, list):
         capability_refs = []
@@ -90,6 +116,12 @@ def validate_skill_meta(meta_path: Path) -> SkillMetaResult:
         errors.append("missing skill_doc")
     if execution_mode not in VALID_EXECUTION_MODES:
         errors.append("missing or invalid execution_mode")
+    for key, expected_value in REQUIRED_OS_CONTRACT.items():
+        actual_value = os_contract.get(key)
+        if actual_value != expected_value:
+            errors.append(f"os_contract.{key} must be {expected_value}")
+    if SKILL_RUNTIME_CAPABILITY_REF not in capability_refs:
+        errors.append("required skill runtime envelope capability ref is missing")
     if guard_policy not in VALID_GUARD_POLICIES:
         errors.append("missing or invalid guard_policy")
     elif guard_policy == "required":

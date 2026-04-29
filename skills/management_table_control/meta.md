@@ -10,6 +10,16 @@
 - output: leak detection result, closure confirmation, escalation record when needed
 - execution_mode: `local_default`
 - guard_policy: `required`
+- os_contract:
+  - version: `1`
+  - worklist_policy: `required`
+  - execution_role: `required`
+  - check_role: `required`
+  - logging_policy: `session_required`
+  - judgment_log_policy: `required_when_non_trivial`
+  - unknown_risk_policy: `explicit`
+  - closure_gate: `required`
+  - handoff_policy: `explicit`
 - constraints: control state only; do not alter judgment content or accept risk implicitly
 - lifecycle:
   - startup: confirm management table and control evidence exist
@@ -20,6 +30,7 @@
 - tags: `management`, `qa`, `control`
 - skill_doc: `./SKILL.md`
 - capability_refs:
+  - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
   - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
   - `../../capabilities/quality/110_cap_qa_004_management_table_check.md#xid-AFEB172B97D8`
   - `../../capabilities/management/120_cap_mgt_003_out_of_scope_escalation.md#xid-1E3B2AA5B328`
