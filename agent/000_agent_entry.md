@@ -18,7 +18,7 @@ Related: [Overview](../docs/000_overview.md#xid-7C6C2B46A9D1)
 - New skills MUST include the context-direction security guard by default unless they explicitly declare closed-world execution with no newly loaded external context
 - New skills MUST include the Skill operating contract (`os_contract`) so worklist, execution role, check role, logging, unknown/risk handling, closure, and handoff are load-gated
 - Skill execution MUST start with `python -m fm skill run --meta <path-to-meta.md> --task "<task>"`; do not open or execute `SKILL.md` until this command succeeds and returns a run log
-- During Skill execution, update the run log with `python -m fm skill phase --log <run-log> --phase <phase> --status <status>`
+- During Skill execution, update the run log with `python -m fm skill phase --log <run-log> --phase <phase> --status <status> --role <assigned-role>`
 - Before treating Skill-backed work as complete, run `python -m fm skill close --log <run-log>` and resolve or escalate any failed closure checks
 - MUST write execution logs/retrospectives to `work/` automatically (non-canonical)
 - MUST use date-prefixed filenames for `work/` logs (`YYYY-MM-DD_<type>_<topic>.md`)
@@ -41,7 +41,7 @@ Related: [Overview](../docs/000_overview.md#xid-7C6C2B46A9D1)
 2. Narrow candidates via `skills/index/*`, then read candidate `meta.md` files
 3. Start the selected Skill through the runtime envelope: `python -m fm skill run --meta <path-to-meta.md> --task "<task>" --json`
 4. Preserve the returned `run_log`; open selected `SKILL.md` only from the returned `skill_doc`
-5. Mark runtime progress with `python -m fm skill phase --log <run-log> --phase <phase> --status <status>`
+5. Use the returned assigned roles; mark runtime progress with `python -m fm skill phase --log <run-log> --phase <phase> --status <status> --role <assigned-role>`
 6. Before completion, run `python -m fm skill close --log <run-log>` and keep failed closure checks explicit
 7. Read the entry index: [Docs Index](../docs/000_index.md#xid-56DD6EB68343)
 8. If the task maps to the business-capability model, follow [Capability Routing for Agents](010_capability_routing.md#xid-1F93A7C24010)

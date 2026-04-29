@@ -90,6 +90,7 @@ that the referenced `SKILL.md` file exists, then writes a session log containing
 
 - the active Skill
 - the resolved `skill_doc` path that may be opened next
+- assigned runtime roles for executor, checker, and handoff owner
 - the task
 - the declared OS contract
 - a required worklist
@@ -102,6 +103,15 @@ Do not open or execute the Skill procedure before `fm skill run` succeeds. The
 returned `skill_doc` is the allowed procedure file for that run, and the
 returned `run_log` is the active runtime record.
 
+`fm skill run` also assigns distinct runtime roles:
+
+- `executor`: advances the execution phase
+- `checker`: advances the check phase
+- `handoff_owner`: advances the handoff phase
+
+The assigned roles are returned in JSON and written to the `Runtime Role
+Assignment` section. The execution and check roles must be different.
+
 The command prepares the controlled execution envelope. It does not perform
 domain-specific work automatically. Domain execution happens through the
 selected Skill procedure after the runtime record exists.
@@ -109,8 +119,8 @@ selected Skill procedure after the runtime record exists.
 After the runtime log exists, phase state can be advanced with:
 
 ```powershell
-python -m fm skill phase --log work/sessions/<run-log>.md --phase execution --status done --note "executor completed work items"
-python -m fm skill phase --log work/sessions/<run-log>.md --phase check --status done --note "checker verified evidence and handoff"
+python -m fm skill phase --log work/sessions/<run-log>.md --phase execution --status done --role "<skill_id>:executor" --note "executor completed work items"
+python -m fm skill phase --log work/sessions/<run-log>.md --phase check --status done --role "<skill_id>:checker" --note "checker verified evidence and handoff"
 ```
 
 Supported phases:
@@ -135,6 +145,11 @@ This is the first runtime state-transition layer. It updates the worklist,
 updates the matching runtime section when one exists, and appends a phase event
 record.
 
+For `execution`, `check`, and `handoff`, `fm skill phase` rejects updates unless
+the supplied `--role` matches the role assigned by `fm skill run`. This makes
+execution/check separation a machine-checked runtime rule rather than a note in
+the log.
+
 Before treating Skill-backed work as complete, apply the closure gate:
 
 ```powershell
@@ -147,13 +162,15 @@ The closure command reads the run log and rejects closure unless:
 - `Check Role` is `done` or `escalated`
 - `Handoff` is `done` or `escalated`
 - the log was opened by `fm skill run`
+- execution, check, and handoff were advanced by their assigned runtime roles
 
 When the gate passes, it updates `Closure Gate` and appends a phase event. If
 any required section is still `pending`, `blocked`, `unknown`, or missing, the
 run remains open and the missing closure conditions are printed as errors.
 
-Later runtime commands may use this same contract to assign executor/checker
-roles with stronger structured state.
+Later runtime commands may use this same contract to launch separate execution
+and checking processes, but the role separation is already enforced at the
+runtime-log boundary.
 
 ## Relationship To Existing Controls
 

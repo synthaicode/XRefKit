@@ -125,9 +125,12 @@ class CliTests(unittest.TestCase):
             self.assertEqual(0, exit_code)
             self.assertTrue(payload["ok"])
             self.assertTrue(str(payload["skill_doc"]).endswith("SKILL.md"))
+            self.assertEqual("sample_skill:executor", payload["assigned_roles"]["executor"])
+            self.assertEqual("sample_skill:checker", payload["assigned_roles"]["checker"])
             self.assertTrue(out.exists())
             text = out.read_text(encoding="utf-8")
             self.assertIn("## Skill Load Gate", text)
+            self.assertIn("## Runtime Role Assignment", text)
             self.assertIn("## Worklist", text)
             self.assertIn("## Execution Role", text)
             self.assertIn("## Check Role", text)
@@ -208,6 +211,8 @@ class CliTests(unittest.TestCase):
                         "execution",
                         "--status",
                         "done",
+                        "--role",
+                        "sample_skill:executor",
                         "--note",
                         "executor completed work items",
                         "--json",
@@ -220,7 +225,55 @@ class CliTests(unittest.TestCase):
             text = out.read_text(encoding="utf-8")
             self.assertIn("- [x] Execution:", text)
             self.assertIn("## Execution Role\n\n- status: `done`", text)
-            self.assertIn("`execution` -> `done`: executor completed work items", text)
+            self.assertIn("`execution` -> `done` role=`sample_skill:executor`: executor completed work items", text)
+
+    def test_main_skill_phase_rejects_wrong_runtime_role(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_valid_skill(root)
+            out = root / "work" / "sessions" / "run.md"
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "run",
+                            "--root",
+                            str(root),
+                            "--meta",
+                            "skills/sample/meta.md",
+                            "--task",
+                            "Create a controlled output",
+                            "--out",
+                            str(out),
+                        ]
+                    ),
+                )
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        "skill",
+                        "phase",
+                        "--log",
+                        str(out),
+                        "--phase",
+                        "check",
+                        "--status",
+                        "done",
+                        "--role",
+                        "sample_skill:executor",
+                        "--json",
+                    ]
+                )
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(1, exit_code)
+            self.assertFalse(payload["ok"])
+            self.assertIn("check phase requires role sample_skill:checker", payload["errors"][0])
 
     def test_main_skill_run_rejects_missing_skill_doc_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -337,7 +390,12 @@ class CliTests(unittest.TestCase):
                         ]
                     ),
                 )
-                for phase in ("execution", "check", "handoff"):
+                phase_roles = {
+                    "execution": "sample_skill:executor",
+                    "check": "sample_skill:checker",
+                    "handoff": "sample_skill:handoff_owner",
+                }
+                for phase, role in phase_roles.items():
                     self.assertEqual(
                         0,
                         main(
@@ -350,6 +408,8 @@ class CliTests(unittest.TestCase):
                                 phase,
                                 "--status",
                                 "done",
+                                "--role",
+                                role,
                             ]
                         ),
                     )
@@ -374,7 +434,7 @@ class CliTests(unittest.TestCase):
             text = out.read_text(encoding="utf-8")
             self.assertIn("- [x] Closure:", text)
             self.assertIn("## Closure Gate\n\n- status: `done`", text)
-            self.assertIn("`closure` -> `done`: closure gate accepted completed run", text)
+            self.assertIn("`closure` -> `done` role=`closure_gate`: closure gate accepted completed run", text)
 
 
 if __name__ == "__main__":

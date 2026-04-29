@@ -129,6 +129,11 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Phase status",
     )
     p_skill_phase.add_argument("--note", default=None, help="Optional phase event note")
+    p_skill_phase.add_argument(
+        "--role",
+        default=None,
+        help="Runtime role assigned by fm skill run; required for execution, check, and handoff phases",
+    )
     p_skill_phase.add_argument("--json", action="store_true", help="Emit JSON")
 
     p_skill_close = skill_sub.add_parser("close", help="Apply the Skill run closure gate")

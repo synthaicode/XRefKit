@@ -15,6 +15,7 @@ class SkillRunResult:
     skill_doc: str | None
     run_log: str | None
     errors: list[str]
+    assigned_roles: dict[str, str] | None = None
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -23,6 +24,7 @@ class SkillRunResult:
             "skill_doc": self.skill_doc,
             "run_log": self.run_log,
             "errors": self.errors,
+            "assigned_roles": self.assigned_roles or {},
         }
 
 
@@ -44,6 +46,11 @@ PHASE_SECTIONS = {
 }
 REQUIRED_CLOSE_SECTIONS = ("Execution Role", "Check Role", "Handoff")
 ACCEPTED_CLOSE_STATUSES = {"done", "escalated"}
+PHASE_REQUIRED_ROLES = {
+    "execution": "executor",
+    "check": "checker",
+    "handoff": "handoff_owner",
+}
 
 
 WORKLIST_ROWS = [
@@ -99,6 +106,8 @@ def _render_log(
     skill_id: str,
     meta_path: Path,
     skill_doc: Path,
+    execution_mode: str,
+    assigned_roles: dict[str, str],
     task: str,
     os_contract: dict[str, str],
 ) -> str:
@@ -118,6 +127,16 @@ def _render_log(
 
 - status: `opened_by_fm_skill_run`
 - rule: do not open or execute the Skill procedure until this runtime envelope exists
+
+## Runtime Role Assignment
+
+- execution_mode: `{execution_mode}`
+- executor: `{assigned_roles["executor"]}`
+- checker: `{assigned_roles["checker"]}`
+- handoff_owner: `{assigned_roles["handoff_owner"]}`
+- separation_rule: `execution and check must be advanced by different runtime roles`
+- executor_context: `{assigned_roles["executor_context"]}`
+- checker_context: `{assigned_roles["checker_context"]}`
 
 ## OS Contract
 
@@ -160,11 +179,13 @@ def _replace_line(text: str, old: str, new: str) -> tuple[str, bool]:
     return text.replace(old, new, 1), True
 
 
-def _append_phase_event(text: str, *, phase: str, status: str, note: str | None) -> str:
+def _append_phase_event(text: str, *, phase: str, status: str, role: str | None, note: str | None) -> str:
     if "## Phase Events\n" not in text:
         text = text.rstrip() + "\n\n## Phase Events\n\n"
     note_text = note or ""
     event = f"- {date.today().isoformat()} `{phase}` -> `{status}`"
+    if role:
+        event += f" role=`{role}`"
     if note_text:
         event += f": {note_text}"
     return text.rstrip() + "\n" + event + "\n"
@@ -209,6 +230,59 @@ def _set_phase_status(text: str, *, phase: str, status: str) -> str:
     return text
 
 
+def _assigned_role(text: str, role_name: str) -> str | None:
+    prefix = f"- {role_name}: `"
+    start = text.find(prefix)
+    if start == -1:
+        return None
+    start += len(prefix)
+    end = text.find("`", start)
+    if end == -1:
+        return None
+    return text[start:end]
+
+
+def _phase_has_role_event(text: str, *, phase: str, role: str) -> bool:
+    marker = f"`{phase}` -> `"
+    role_marker = f"role=`{role}`"
+    return any(marker in line and role_marker in line for line in text.splitlines())
+
+
+def _validate_phase_role(text: str, *, phase: str, role: str | None) -> list[str]:
+    required_role_name = PHASE_REQUIRED_ROLES.get(phase)
+    if not required_role_name:
+        return []
+    if not role:
+        return [f"{phase} phase requires --role {required_role_name}"]
+
+    assigned = _assigned_role(text, required_role_name)
+    if not assigned:
+        return [f"runtime role assignment is missing {required_role_name}"]
+    if role != assigned:
+        return [f"{phase} phase requires role {assigned}; got {role}"]
+    return []
+
+
+def _assign_runtime_roles(*, skill_id: str, execution_mode: str) -> dict[str, str]:
+    if execution_mode == "subagent_required":
+        executor_context = "isolated_subagent_required"
+        checker_context = "independent_checker_subagent_required"
+    elif execution_mode == "subagent_preferred":
+        executor_context = "subagent_preferred"
+        checker_context = "independent_checker_subagent_preferred"
+    else:
+        executor_context = "current_context_allowed"
+        checker_context = "independent_check_required"
+
+    return {
+        "executor": f"{skill_id}:executor",
+        "checker": f"{skill_id}:checker",
+        "handoff_owner": f"{skill_id}:handoff_owner",
+        "executor_context": executor_context,
+        "checker_context": checker_context,
+    }
+
+
 def update_skill_phase(args) -> SkillRunResult:
     log_path = Path(args.log).resolve()
     if not log_path.exists():
@@ -222,8 +296,12 @@ def update_skill_phase(args) -> SkillRunResult:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[f"invalid status: {status}"])
 
     text = log_path.read_text(encoding="utf-8")
+    role_errors = _validate_phase_role(text, phase=phase, role=args.role)
+    if role_errors:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=role_errors)
+
     text = _set_phase_status(text, phase=phase, status=status)
-    text = _append_phase_event(text, phase=phase, status=status, note=args.note)
+    text = _append_phase_event(text, phase=phase, status=status, role=args.role, note=args.note)
     log_path.write_text(text, encoding="utf-8")
 
     return SkillRunResult(ok=True, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[])
@@ -252,12 +330,27 @@ def close_skill_run(args) -> SkillRunResult:
         if status not in ACCEPTED_CLOSE_STATUSES:
             errors.append(f"{section} must be done or escalated before closure; current={status or 'missing'}")
 
+    executor = _assigned_role(text, "executor")
+    checker = _assigned_role(text, "checker")
+    handoff_owner = _assigned_role(text, "handoff_owner")
+    if not executor or not checker or not handoff_owner:
+        errors.append("runtime role assignment is incomplete")
+    elif executor == checker:
+        errors.append("executor and checker roles must be different")
+    else:
+        if not _phase_has_role_event(text, phase="execution", role=executor):
+            errors.append(f"execution phase must be advanced by executor role {executor}")
+        if not _phase_has_role_event(text, phase="check", role=checker):
+            errors.append(f"check phase must be advanced by checker role {checker}")
+        if not _phase_has_role_event(text, phase="handoff", role=handoff_owner):
+            errors.append(f"handoff phase must be advanced by handoff_owner role {handoff_owner}")
+
     if errors:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=errors)
 
     close_status = "escalated" if "escalated" in statuses.values() else "done"
     text = _set_phase_status(text, phase="closure", status=close_status)
-    text = _append_phase_event(text, phase="closure", status=close_status, note=args.note)
+    text = _append_phase_event(text, phase="closure", status=close_status, role="closure_gate", note=args.note)
     log_path.write_text(text, encoding="utf-8")
     return SkillRunResult(ok=True, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[])
 
@@ -284,6 +377,7 @@ def run_skill(args) -> SkillRunResult:
 
     parsed = _parse_meta_lines(meta_path.read_text(encoding="utf-8"))
     skill_id = str(parsed.get("skill_id"))
+    execution_mode = str(parsed.get("execution_mode"))
     raw_skill_doc = str(parsed.get("skill_doc"))
     skill_doc_path = (meta_path.parent / raw_skill_doc).resolve()
     if not skill_doc_path.exists():
@@ -295,6 +389,7 @@ def run_skill(args) -> SkillRunResult:
             errors=[f"skill_doc not found: {skill_doc_path}"],
         )
     os_contract = _parse_key_value_list(parsed.get("os_contract"))
+    assigned_roles = _assign_runtime_roles(skill_id=skill_id, execution_mode=execution_mode)
 
     out_path = Path(args.out) if args.out else _default_log_path(root, skill_id)
     if not out_path.is_absolute():
@@ -305,6 +400,8 @@ def run_skill(args) -> SkillRunResult:
         skill_id=skill_id,
         meta_path=meta_path.relative_to(root),
         skill_doc=skill_doc_path.relative_to(root),
+        execution_mode=execution_mode,
+        assigned_roles=assigned_roles,
         task=str(task),
         os_contract=os_contract,
     )
@@ -316,6 +413,7 @@ def run_skill(args) -> SkillRunResult:
         skill_doc=str(skill_doc_path),
         run_log=str(out_path),
         errors=[],
+        assigned_roles=assigned_roles,
     )
 
 
@@ -327,6 +425,8 @@ def cmd_skill_run(args) -> int:
         print(f"ok: {result.run_log}")
         print(f"  skill_id: {result.skill_id}")
         print(f"  skill_doc: {result.skill_doc}")
+        for key, value in (result.assigned_roles or {}).items():
+            print(f"  {key}: {value}")
         print("  next: open the Skill procedure from skill_doc and keep updating run_log with skill phase")
     else:
         print("fail: skill run")
