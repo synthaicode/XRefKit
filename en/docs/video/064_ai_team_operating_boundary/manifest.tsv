@@ -1,0 +1,17 @@
+order	slide_path	narration
+01a	../../assets/064_ai_team_operating_boundary/01_title_q.png	Question: Once an AI Team is defined, what should humans still decide?
+01b	../../assets/064_ai_team_operating_boundary/01_title.png	Answer: The next question is not whether AI helps. It is where human responsibility must remain visible. An AI Team becomes governable when it fixes what AI may handle, what must stay explicit as uncertainty or risk, and what must be handed back to a human with evidence.
+02a	../../assets/064_ai_team_operating_boundary/02_review_q.png	Question: Can't humans simply review more carefully?
+02b	../../assets/064_ai_team_operating_boundary/02_review.png	Answer: More review is not the same as a better boundary. If humans keep watching everything, the operating burden stays on them. A real boundary limits review to defined return points such as unresolved risk, non-trivial judgment, failed checks, or release approval.
+03a	../../assets/064_ai_team_operating_boundary/03_concern_q.png	Question: What should force work back to humans?
+03b	../../assets/064_ai_team_operating_boundary/03_concern.png	Answer: Unknowns, unresolved risks, and non-trivial judgments are the first signals that the boundary has been reached. The team must stop guessing, keep those states visible, and return them with evidence.
+04a	../../assets/064_ai_team_operating_boundary/04_roles_q.png	Question: If the same AI produces and checks the work, is that enough?
+04b	../../assets/064_ai_team_operating_boundary/04_roles.png	Answer: No. Self-certification hides omissions and weak evidence. Execution and checking should be separate responsibilities so humans can inspect the check result instead of replaying the whole run.
+05a	../../assets/064_ai_team_operating_boundary/05_closure_q.png	Question: Why do we need an explicit closure gate?
+05b	../../assets/064_ai_team_operating_boundary/05_closure.png	Answer: Because incomplete evidence, unresolved concerns, and skipped checks otherwise disappear into a casual done claim. The closure gate keeps unfinished work from being released as accepted work.
+06a	../../assets/064_ai_team_operating_boundary/06_handoff_q.png	Question: If the work is checked, isn't that enough?
+06b	../../assets/064_ai_team_operating_boundary/06_handoff.png	Answer: No. Handoff is where responsibility changes. The next owner still needs the output, evidence, unresolved edges, and the acceptance condition in a form they can use without rediscovering the context.
+07a	../../assets/064_ai_team_operating_boundary/07_maturity_q.png	Question: Why do Skills need maturity levels at all?
+07b	../../assets/064_ai_team_operating_boundary/07_maturity.png	Answer: Because procedure text can exist before the practical human boundary is clear. Skill maturity shows how far the team has clarified what AI may do, what must be returned, and what is auditable.
+08a	../../assets/064_ai_team_operating_boundary/08_conclusion_q.png	Question: What should an organization design first?
+08b	../../assets/064_ai_team_operating_boundary/08_conclusion.png	Answer: Not more prompts, and not more review load. First design the human boundary and the conditions that govern return, closure, and handoff. AI convenience becomes organizational control only when the responsibility boundary is explicit.
