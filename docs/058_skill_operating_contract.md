@@ -94,6 +94,7 @@ that the referenced `SKILL.md` file exists, then writes a session log containing
 - the task
 - the declared OS contract
 - a required worklist
+- a concrete work-item section for task-specific items
 - separated execution and check role sections
 - unknown/risk handling
 - closure gate
@@ -111,6 +112,26 @@ returned `run_log` is the active runtime record.
 
 The assigned roles are returned in JSON and written to the `Runtime Role
 Assignment` section. The execution and check roles must be different.
+
+The generated log also contains a `Concrete Work Items` section. Add or update
+task-specific work items with:
+
+```powershell
+python -m fm skill workitem --log work/sessions/<run-log>.md --item WI-001 --text "implement the concrete change" --status pending --role "<skill_id>:executor"
+python -m fm skill workitem --log work/sessions/<run-log>.md --item WI-001 --status done --role "<skill_id>:executor"
+```
+
+Supported work-item statuses are the same runtime status set:
+
+- `pending`
+- `in_progress`
+- `done`
+- `blocked`
+- `unknown`
+- `escalated`
+
+At least one concrete work item is required before closure. Every concrete work
+item must be `done` or `escalated` before the Skill run can close.
 
 The command prepares the controlled execution envelope. It does not perform
 domain-specific work automatically. Domain execution happens through the
@@ -163,6 +184,8 @@ The closure command reads the run log and rejects closure unless:
 - `Handoff` is `done` or `escalated`
 - the log was opened by `fm skill run`
 - execution, check, and handoff were advanced by their assigned runtime roles
+- at least one concrete work item exists
+- every concrete work item is `done` or `escalated`
 
 When the gate passes, it updates `Closure Gate` and appends a phase event. If
 any required section is still `pending`, `blocked`, `unknown`, or missing, the

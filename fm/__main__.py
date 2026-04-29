@@ -136,6 +136,19 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_skill_phase.add_argument("--json", action="store_true", help="Emit JSON")
 
+    p_skill_workitem = skill_sub.add_parser("workitem", help="Add or update a concrete Skill work item")
+    p_skill_workitem.add_argument("--log", required=True, help="Skill run log to update")
+    p_skill_workitem.add_argument("--item", required=True, help="Stable work item id, such as WI-001")
+    p_skill_workitem.add_argument("--text", default=None, help="Work item text; required when adding a new item")
+    p_skill_workitem.add_argument(
+        "--status",
+        required=True,
+        choices=["pending", "in_progress", "done", "blocked", "unknown", "escalated"],
+        help="Work item status",
+    )
+    p_skill_workitem.add_argument("--role", required=True, help="Runtime role updating the work item")
+    p_skill_workitem.add_argument("--json", action="store_true", help="Emit JSON")
+
     p_skill_close = skill_sub.add_parser("close", help="Apply the Skill run closure gate")
     p_skill_close.add_argument("--log", required=True, help="Skill run log to close")
     p_skill_close.add_argument("--note", default=None, help="Optional closure event note")
@@ -181,6 +194,10 @@ def main(argv: list[str] | None = None) -> int:
             from fm.skillrun import cmd_skill_phase
 
             return cmd_skill_phase(args)
+        if args.skill_cmd == "workitem":
+            from fm.skillrun import cmd_skill_workitem
+
+            return cmd_skill_workitem(args)
         if args.skill_cmd == "close":
             from fm.skillrun import cmd_skill_close
 

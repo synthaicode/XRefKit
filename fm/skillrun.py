@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
@@ -16,6 +17,7 @@ class SkillRunResult:
     run_log: str | None
     errors: list[str]
     assigned_roles: dict[str, str] | None = None
+    work_items: list[dict[str, str]] | None = None
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -25,11 +27,13 @@ class SkillRunResult:
             "run_log": self.run_log,
             "errors": self.errors,
             "assigned_roles": self.assigned_roles or {},
+            "work_items": self.work_items or [],
         }
 
 
 VALID_PHASES = {"startup", "planning", "execution", "check", "closure", "handoff"}
 VALID_PHASE_STATUSES = {"pending", "in_progress", "done", "blocked", "unknown", "escalated"}
+VALID_WORKITEM_STATUSES = {"pending", "in_progress", "done", "blocked", "unknown", "escalated"}
 PHASE_LABELS = {
     "startup": "Startup",
     "planning": "Planning",
@@ -61,6 +65,10 @@ WORKLIST_ROWS = [
     ("Closure", "Apply the closure gate and keep pass, fail, unknown, and escalation states explicit."),
     ("Handoff", "Record outputs, unresolved items, next owner, and human decision points."),
 ]
+WORKITEM_RE = re.compile(
+    r"^- \[(?P<checkbox>[ x!])\] (?P<item_id>[A-Za-z0-9_.-]+) "
+    r"status=`(?P<status>[^`]+)` role=`(?P<role>[^`]+)`: (?P<text>.*)$"
+)
 
 
 def _safe_slug(value: str) -> str:
@@ -146,6 +154,11 @@ def _render_log(
 
 {worklist_lines}
 
+## Concrete Work Items
+
+- status: `pending`
+- rule: task-specific work items must be added with `fm skill workitem` and closed as `done` or `escalated`
+
 ## Execution Role
 
 - status: `pending`
@@ -210,6 +223,16 @@ def _section_status(text: str, section: str) -> str | None:
     return body[status_start:status_end]
 
 
+def _section_body(text: str, section: str) -> tuple[str | None, int, int]:
+    marker = f"## {section}\n"
+    start = text.find(marker)
+    if start == -1:
+        return None, -1, -1
+    next_section = text.find("\n## ", start + len(marker))
+    end = len(text) if next_section == -1 else next_section
+    return text[start:end], start, end
+
+
 def _set_phase_status(text: str, *, phase: str, status: str) -> str:
     label = PHASE_LABELS[phase]
     checkbox = "x" if status == "done" else "!"
@@ -228,6 +251,113 @@ def _set_phase_status(text: str, *, phase: str, status: str) -> str:
             if changed:
                 break
     return text
+
+
+def _workitem_checkbox(status: str) -> str:
+    if status == "done":
+        return "x"
+    if status == "pending":
+        return " "
+    return "!"
+
+
+def _parse_work_items(text: str) -> list[dict[str, str]]:
+    body, _, _ = _section_body(text, "Concrete Work Items")
+    if body is None:
+        return []
+
+    items: list[dict[str, str]] = []
+    for line in body.splitlines():
+        match = WORKITEM_RE.match(line)
+        if not match:
+            continue
+        items.append(
+            {
+                "item_id": match.group("item_id"),
+                "status": match.group("status"),
+                "role": match.group("role"),
+                "text": match.group("text"),
+            }
+        )
+    return items
+
+
+def _render_workitem_line(*, item_id: str, status: str, role: str, text: str) -> str:
+    return f"- [{_workitem_checkbox(status)}] {item_id} status=`{status}` role=`{role}`: {text}"
+
+
+def _overall_workitem_status(items: list[dict[str, str]]) -> str:
+    if not items:
+        return "pending"
+    if all(item["status"] in ACCEPTED_CLOSE_STATUSES for item in items):
+        if any(item["status"] == "escalated" for item in items):
+            return "escalated"
+        return "done"
+    if any(item["status"] in {"blocked", "unknown", "escalated"} for item in items):
+        return "blocked"
+    return "in_progress"
+
+
+def _replace_concrete_work_items_section(text: str, items: list[dict[str, str]]) -> str:
+    body, start, end = _section_body(text, "Concrete Work Items")
+    if body is None:
+        insert_at = text.find("\n## Execution Role")
+        if insert_at == -1:
+            insert_at = len(text)
+        section = "\n\n## Concrete Work Items\n\n- status: `pending`\n- rule: task-specific work items must be added with `fm skill workitem` and closed as `done` or `escalated`\n"
+        text = text[:insert_at] + section + text[insert_at:]
+        body, start, end = _section_body(text, "Concrete Work Items")
+        if body is None:
+            return text
+
+    status = _overall_workitem_status(items)
+    lines = [
+        "## Concrete Work Items",
+        "",
+        f"- status: `{status}`",
+        "- rule: task-specific work items must be added with `fm skill workitem` and closed as `done` or `escalated`",
+    ]
+    lines.extend(_render_workitem_line(**item) for item in items)
+    new_body = "\n".join(lines) + "\n"
+    return text[:start] + new_body + text[end:]
+
+
+def update_work_item(args) -> SkillRunResult:
+    log_path = Path(args.log).resolve()
+    if not log_path.exists():
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"log not found: {log_path}"])
+
+    item_id = str(args.item).strip()
+    status = str(args.status).lower()
+    role = str(args.role).strip()
+    item_text = str(args.text or "").strip()
+    if not item_id:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["missing --item"])
+    if status not in VALID_WORKITEM_STATUSES:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[f"invalid work item status: {status}"])
+    if not role:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["missing --role"])
+
+    text = log_path.read_text(encoding="utf-8")
+    if "## Skill Load Gate\n\n- status: `opened_by_fm_skill_run`" not in text:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["skill run log is missing an opened Skill Load Gate"])
+
+    items = _parse_work_items(text)
+    existing = next((item for item in items if item["item_id"] == item_id), None)
+    if existing:
+        existing["status"] = status
+        existing["role"] = role
+        if item_text:
+            existing["text"] = item_text
+    else:
+        if not item_text:
+            return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["new work item requires --text"])
+        items.append({"item_id": item_id, "status": status, "role": role, "text": item_text})
+
+    text = _replace_concrete_work_items_section(text, items)
+    text = _append_phase_event(text, phase=f"workitem:{item_id}", status=status, role=role, note=item_text or None)
+    log_path.write_text(text, encoding="utf-8")
+    return SkillRunResult(ok=True, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[], work_items=items)
 
 
 def _assigned_role(text: str, role_name: str) -> str | None:
@@ -345,6 +475,15 @@ def close_skill_run(args) -> SkillRunResult:
         if not _phase_has_role_event(text, phase="handoff", role=handoff_owner):
             errors.append(f"handoff phase must be advanced by handoff_owner role {handoff_owner}")
 
+    work_items = _parse_work_items(text)
+    if not work_items:
+        errors.append("at least one concrete work item is required before closure")
+    for item in work_items:
+        if item["status"] not in ACCEPTED_CLOSE_STATUSES:
+            errors.append(
+                f"work item {item['item_id']} must be done or escalated before closure; current={item['status']}"
+            )
+
     if errors:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=errors)
 
@@ -447,6 +586,21 @@ def cmd_skill_phase(args) -> int:
         print(f"  status: {args.status}")
     else:
         print("fail: skill phase")
+        for error in result.errors:
+            print(f"  error: {error}")
+    return 0 if result.ok else 1
+
+
+def cmd_skill_workitem(args) -> int:
+    result = update_work_item(args)
+    if args.json:
+        print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+    elif result.ok:
+        print(f"ok: {result.run_log}")
+        print(f"  item: {args.item}")
+        print(f"  status: {args.status}")
+    else:
+        print("fail: skill workitem")
         for error in result.errors:
             print(f"  error: {error}")
     return 0 if result.ok else 1

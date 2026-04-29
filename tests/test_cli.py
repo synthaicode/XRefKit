@@ -132,6 +132,7 @@ class CliTests(unittest.TestCase):
             self.assertIn("## Skill Load Gate", text)
             self.assertIn("## Runtime Role Assignment", text)
             self.assertIn("## Worklist", text)
+            self.assertIn("## Concrete Work Items", text)
             self.assertIn("## Execution Role", text)
             self.assertIn("## Check Role", text)
             self.assertIn("## Closure Gate", text)
@@ -332,6 +333,154 @@ class CliTests(unittest.TestCase):
             self.assertFalse(payload["ok"])
             self.assertIn("log not found", payload["errors"][0])
 
+    def test_main_skill_workitem_adds_and_updates_concrete_item(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_valid_skill(root)
+            out = root / "work" / "sessions" / "run.md"
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "run",
+                            "--root",
+                            str(root),
+                            "--meta",
+                            "skills/sample/meta.md",
+                            "--task",
+                            "Create a controlled output",
+                            "--out",
+                            str(out),
+                        ]
+                    ),
+                )
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        "skill",
+                        "workitem",
+                        "--log",
+                        str(out),
+                        "--item",
+                        "WI-001",
+                        "--text",
+                        "Implement controlled output",
+                        "--status",
+                        "in_progress",
+                        "--role",
+                        "sample_skill:executor",
+                        "--json",
+                    ]
+                )
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(0, exit_code)
+            self.assertTrue(payload["ok"])
+            self.assertEqual("WI-001", payload["work_items"][0]["item_id"])
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "workitem",
+                            "--log",
+                            str(out),
+                            "--item",
+                            "WI-001",
+                            "--status",
+                            "done",
+                            "--role",
+                            "sample_skill:executor",
+                        ]
+                    ),
+                )
+
+            text = out.read_text(encoding="utf-8")
+            self.assertIn("- [x] WI-001 status=`done` role=`sample_skill:executor`: Implement controlled output", text)
+
+    def test_main_skill_close_rejects_pending_concrete_work_item(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_valid_skill(root)
+            out = root / "work" / "sessions" / "run.md"
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "run",
+                            "--root",
+                            str(root),
+                            "--meta",
+                            "skills/sample/meta.md",
+                            "--task",
+                            "Create a controlled output",
+                            "--out",
+                            str(out),
+                        ]
+                    ),
+                )
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "workitem",
+                            "--log",
+                            str(out),
+                            "--item",
+                            "WI-001",
+                            "--text",
+                            "Implement controlled output",
+                            "--status",
+                            "pending",
+                            "--role",
+                            "sample_skill:executor",
+                        ]
+                    ),
+                )
+                phase_roles = {
+                    "execution": "sample_skill:executor",
+                    "check": "sample_skill:checker",
+                    "handoff": "sample_skill:handoff_owner",
+                }
+                for phase, role in phase_roles.items():
+                    self.assertEqual(
+                        0,
+                        main(
+                            [
+                                "skill",
+                                "phase",
+                                "--log",
+                                str(out),
+                                "--phase",
+                                phase,
+                                "--status",
+                                "done",
+                                "--role",
+                                role,
+                            ]
+                        ),
+                    )
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(["skill", "close", "--log", str(out), "--json"])
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(1, exit_code)
+            self.assertFalse(payload["ok"])
+            self.assertIn("work item WI-001 must be done or escalated", payload["errors"][-1])
+
     def test_main_skill_close_rejects_incomplete_runtime_log(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -395,6 +544,25 @@ class CliTests(unittest.TestCase):
                     "check": "sample_skill:checker",
                     "handoff": "sample_skill:handoff_owner",
                 }
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "workitem",
+                            "--log",
+                            str(out),
+                            "--item",
+                            "WI-001",
+                            "--text",
+                            "Implement controlled output",
+                            "--status",
+                            "done",
+                            "--role",
+                            "sample_skill:executor",
+                        ]
+                    ),
+                )
                 for phase, role in phase_roles.items():
                     self.assertEqual(
                         0,
