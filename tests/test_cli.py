@@ -30,6 +30,13 @@ class CliTests(unittest.TestCase):
             f"  - `{GUARD_KNOWLEDGE_REF}`\n"
         )
 
+    def _write_valid_skill(self, root: Path) -> Path:
+        meta = root / "skills" / "sample" / "meta.md"
+        meta.parent.mkdir(parents=True, exist_ok=True)
+        meta.write_text(self._valid_meta_text(), encoding="utf-8")
+        (meta.parent / "SKILL.md").write_text("# Sample Skill\n", encoding="utf-8")
+        return meta
+
     def test_main_xref_check_json_returns_zero_and_emits_payload(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -93,9 +100,7 @@ class CliTests(unittest.TestCase):
     def test_main_skill_run_writes_runtime_log(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            meta = root / "skills" / "sample" / "meta.md"
-            meta.parent.mkdir(parents=True, exist_ok=True)
-            meta.write_text(self._valid_meta_text(), encoding="utf-8")
+            self._write_valid_skill(root)
             out = root / "work" / "sessions" / "run.md"
 
             stdout = io.StringIO()
@@ -119,8 +124,10 @@ class CliTests(unittest.TestCase):
             payload = json.loads(stdout.getvalue())
             self.assertEqual(0, exit_code)
             self.assertTrue(payload["ok"])
+            self.assertTrue(str(payload["skill_doc"]).endswith("SKILL.md"))
             self.assertTrue(out.exists())
             text = out.read_text(encoding="utf-8")
+            self.assertIn("## Skill Load Gate", text)
             self.assertIn("## Worklist", text)
             self.assertIn("## Execution Role", text)
             self.assertIn("## Check Role", text)
@@ -167,9 +174,7 @@ class CliTests(unittest.TestCase):
     def test_main_skill_phase_updates_runtime_log(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            meta = root / "skills" / "sample" / "meta.md"
-            meta.parent.mkdir(parents=True, exist_ok=True)
-            meta.write_text(self._valid_meta_text(), encoding="utf-8")
+            self._write_valid_skill(root)
             out = root / "work" / "sessions" / "run.md"
 
             with contextlib.redirect_stdout(io.StringIO()):
@@ -216,6 +221,38 @@ class CliTests(unittest.TestCase):
             self.assertIn("- [x] Execution:", text)
             self.assertIn("## Execution Role\n\n- status: `done`", text)
             self.assertIn("`execution` -> `done`: executor completed work items", text)
+
+    def test_main_skill_run_rejects_missing_skill_doc_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            meta = root / "skills" / "sample" / "meta.md"
+            meta.parent.mkdir(parents=True, exist_ok=True)
+            meta.write_text(self._valid_meta_text(), encoding="utf-8")
+            out = root / "work" / "sessions" / "run.md"
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        "skill",
+                        "run",
+                        "--root",
+                        str(root),
+                        "--meta",
+                        "skills/sample/meta.md",
+                        "--task",
+                        "Create a controlled output",
+                        "--out",
+                        str(out),
+                        "--json",
+                    ]
+                )
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(1, exit_code)
+            self.assertFalse(payload["ok"])
+            self.assertFalse(out.exists())
+            self.assertIn("skill_doc not found", payload["errors"][0])
 
     def test_main_skill_phase_rejects_missing_log(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

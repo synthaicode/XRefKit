@@ -18,6 +18,8 @@ For the boundary between base AI control and XRefKit-specific routing, see [Base
 - Treat capability definitions in `capabilities/` as reusable work-unit definitions.
 - Each skill reads only what it needs, on demand, via `xref`.
 - Treat `skills/_index.md` as the canonical skill catalog for listing/routing skills.
+- When a task uses a Skill, start it through `python -m fm skill run --meta <path-to-meta.md> --task "<task>" --json` before opening or executing `SKILL.md`.
+- Keep the returned `run_log` active and update it with `python -m fm skill phase` as startup, planning, execution, check, closure, and handoff progress.
 - When a task follows the business-capability model, route via [Capability Routing for Agents](../agent/010_capability_routing.md#xid-1F93A7C24010).
 - When a task or skill needs domain knowledge, route via:
   - `python -m fm xref search "<query>"`

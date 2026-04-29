@@ -14,6 +14,7 @@
 
 - a Skill is being created, revised, loaded, or validated
 - the Skill has or will have a `meta.md` file
+- an agent is about to open or execute a Skill procedure
 
 ## Trigger
 
@@ -21,6 +22,7 @@
 - an existing Skill is revised
 - `python -m fm skill check` validates one Skill or all Skills
 - a future Skill runtime needs to decide whether a Skill is load-ready
+- an agent starts a Skill-backed task through `python -m fm skill run`
 
 ## Inputs
 
@@ -37,6 +39,7 @@
 - required correction list
 - explicit runtime obligations for worklist, execution role, check role, logging, closure, and handoff
 - generated Skill run log when a runtime envelope is created
+- resolved Skill procedure path returned by the runtime envelope
 - phase-state update record when a Skill runtime phase advances
 
 ## Required Domain Knowledge
@@ -48,6 +51,7 @@
 ## Constraints
 
 - do not treat a Skill as load-ready when the operating contract is missing
+- do not open or execute `SKILL.md` before `fm skill run` succeeds for the selected `meta.md`
 - do not collapse execution and checking into one unmarked responsibility
 - do not allow unsupported assumptions to disappear during closure
 - do not rely on policy prose alone when metadata can be machine-checked
@@ -56,10 +60,12 @@
 
 - Startup:
   - identify the Skill and its metadata file
+  - create the runtime envelope before opening the Skill procedure
 - Planning:
   - identify the required operating-contract fields and guard policy
 - Execution:
   - validate that the Skill declares the required runtime envelope
+  - confirm that the referenced Skill procedure file exists
   - create a runtime log with worklist, execution role, check role, unknown/risk, closure, and handoff sections when `fm skill run` is used
 - Monitoring and Control:
   - detect missing or downgraded contract fields

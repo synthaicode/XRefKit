@@ -12,6 +12,7 @@ from fm.skillmeta import _parse_key_value_list, _parse_meta_lines, validate_skil
 class SkillRunResult:
     ok: bool
     skill_id: str | None
+    skill_doc: str | None
     run_log: str | None
     errors: list[str]
 
@@ -19,6 +20,7 @@ class SkillRunResult:
         return {
             "ok": self.ok,
             "skill_id": self.skill_id,
+            "skill_doc": self.skill_doc,
             "run_log": self.run_log,
             "errors": self.errors,
         }
@@ -94,6 +96,7 @@ def _render_log(
     *,
     skill_id: str,
     meta_path: Path,
+    skill_doc: Path,
     task: str,
     os_contract: dict[str, str],
 ) -> str:
@@ -106,7 +109,13 @@ def _render_log(
 - date: `{date.today().isoformat()}`
 - skill_id: `{skill_id}`
 - meta: `{meta_path.as_posix()}`
+- skill_doc: `{skill_doc.as_posix()}`
 - task: {task}
+
+## Skill Load Gate
+
+- status: `opened_by_fm_skill_run`
+- rule: do not open or execute the Skill procedure until this runtime envelope exists
 
 ## OS Contract
 
@@ -162,14 +171,14 @@ def _append_phase_event(text: str, *, phase: str, status: str, note: str | None)
 def update_skill_phase(args) -> SkillRunResult:
     log_path = Path(args.log).resolve()
     if not log_path.exists():
-        return SkillRunResult(ok=False, skill_id=None, run_log=None, errors=[f"log not found: {log_path}"])
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"log not found: {log_path}"])
 
     phase = str(args.phase).lower()
     status = str(args.status).lower()
     if phase not in VALID_PHASES:
-        return SkillRunResult(ok=False, skill_id=None, run_log=str(log_path), errors=[f"invalid phase: {phase}"])
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[f"invalid phase: {phase}"])
     if status not in VALID_PHASE_STATUSES:
-        return SkillRunResult(ok=False, skill_id=None, run_log=str(log_path), errors=[f"invalid status: {status}"])
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[f"invalid status: {status}"])
 
     text = log_path.read_text(encoding="utf-8")
     label = PHASE_LABELS[phase]
@@ -198,7 +207,7 @@ def update_skill_phase(args) -> SkillRunResult:
     text = _append_phase_event(text, phase=phase, status=status, note=args.note)
     log_path.write_text(text, encoding="utf-8")
 
-    return SkillRunResult(ok=True, skill_id=None, run_log=str(log_path), errors=[])
+    return SkillRunResult(ok=True, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[])
 
 
 def run_skill(args) -> SkillRunResult:
@@ -206,22 +215,33 @@ def run_skill(args) -> SkillRunResult:
     meta_path = (root / args.meta).resolve()
     task, task_errors = _read_task(args)
     if task_errors:
-        return SkillRunResult(ok=False, skill_id=None, run_log=None, errors=task_errors)
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=task_errors)
 
     if not meta_path.exists():
-        return SkillRunResult(ok=False, skill_id=None, run_log=None, errors=[f"meta not found: {meta_path}"])
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"meta not found: {meta_path}"])
 
     validation = validate_skill_meta(meta_path)
     if not validation.ok:
         return SkillRunResult(
             ok=False,
             skill_id=validation.skill_id,
+            skill_doc=None,
             run_log=None,
             errors=validation.errors,
         )
 
     parsed = _parse_meta_lines(meta_path.read_text(encoding="utf-8"))
     skill_id = str(parsed.get("skill_id"))
+    raw_skill_doc = str(parsed.get("skill_doc"))
+    skill_doc_path = (meta_path.parent / raw_skill_doc).resolve()
+    if not skill_doc_path.exists():
+        return SkillRunResult(
+            ok=False,
+            skill_id=skill_id,
+            skill_doc=str(skill_doc_path),
+            run_log=None,
+            errors=[f"skill_doc not found: {skill_doc_path}"],
+        )
     os_contract = _parse_key_value_list(parsed.get("os_contract"))
 
     out_path = Path(args.out) if args.out else _default_log_path(root, skill_id)
@@ -232,6 +252,7 @@ def run_skill(args) -> SkillRunResult:
     log = _render_log(
         skill_id=skill_id,
         meta_path=meta_path.relative_to(root),
+        skill_doc=skill_doc_path.relative_to(root),
         task=str(task),
         os_contract=os_contract,
     )
@@ -240,6 +261,7 @@ def run_skill(args) -> SkillRunResult:
     return SkillRunResult(
         ok=True,
         skill_id=skill_id,
+        skill_doc=str(skill_doc_path),
         run_log=str(out_path),
         errors=[],
     )
@@ -252,6 +274,8 @@ def cmd_skill_run(args) -> int:
     elif result.ok:
         print(f"ok: {result.run_log}")
         print(f"  skill_id: {result.skill_id}")
+        print(f"  skill_doc: {result.skill_doc}")
+        print("  next: open the Skill procedure from skill_doc and keep updating run_log with skill phase")
     else:
         print("fail: skill run")
         if result.skill_id:

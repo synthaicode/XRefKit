@@ -79,15 +79,17 @@ The exact wording may vary by Skill, but the responsibility must not disappear.
 The first enforcement layer checks metadata readiness. A Skill that fails this
 check must not be treated as load-ready.
 
-The repository also provides a minimal runtime-envelope command:
+Operational Skill use must start through the runtime-envelope command:
 
 ```powershell
 python -m fm skill run --meta skills/<skill>/meta.md --task "task text"
 ```
 
-This command validates the Skill metadata, then writes a session log containing:
+This command is the Skill load gate. It validates the Skill metadata, confirms
+that the referenced `SKILL.md` file exists, then writes a session log containing:
 
 - the active Skill
+- the resolved `skill_doc` path that may be opened next
 - the task
 - the declared OS contract
 - a required worklist
@@ -96,10 +98,13 @@ This command validates the Skill metadata, then writes a session log containing:
 - closure gate
 - handoff section
 
-The command prepares the controlled execution envelope. It does not yet perform
-domain-specific work automatically. Domain execution still happens through the
-selected Skill procedure, but the runtime record is created in a consistent OS
-shape.
+Do not open or execute the Skill procedure before `fm skill run` succeeds. The
+returned `skill_doc` is the allowed procedure file for that run, and the
+returned `run_log` is the active runtime record.
+
+The command prepares the controlled execution envelope. It does not perform
+domain-specific work automatically. Domain execution happens through the
+selected Skill procedure after the runtime record exists.
 
 After the runtime log exists, phase state can be advanced with:
 
