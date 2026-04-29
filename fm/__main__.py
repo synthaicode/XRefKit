@@ -131,6 +131,11 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_phase.add_argument("--note", default=None, help="Optional phase event note")
     p_skill_phase.add_argument("--json", action="store_true", help="Emit JSON")
 
+    p_skill_close = skill_sub.add_parser("close", help="Apply the Skill run closure gate")
+    p_skill_close.add_argument("--log", required=True, help="Skill run log to close")
+    p_skill_close.add_argument("--note", default=None, help="Optional closure event note")
+    p_skill_close.add_argument("--json", action="store_true", help="Emit JSON")
+
     return parser
 
 
@@ -171,6 +176,10 @@ def main(argv: list[str] | None = None) -> int:
             from fm.skillrun import cmd_skill_phase
 
             return cmd_skill_phase(args)
+        if args.skill_cmd == "close":
+            from fm.skillrun import cmd_skill_close
+
+            return cmd_skill_close(args)
 
         from fm.skillmeta import cmd_skill
 

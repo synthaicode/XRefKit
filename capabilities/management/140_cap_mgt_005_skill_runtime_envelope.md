@@ -41,6 +41,7 @@
 - generated Skill run log when a runtime envelope is created
 - resolved Skill procedure path returned by the runtime envelope
 - phase-state update record when a Skill runtime phase advances
+- closure-gate pass/fail result for a Skill run
 
 ## Required Domain Knowledge
 
@@ -55,6 +56,7 @@
 - do not collapse execution and checking into one unmarked responsibility
 - do not allow unsupported assumptions to disappear during closure
 - do not rely on policy prose alone when metadata can be machine-checked
+- do not close a Skill run when execution, checking, or handoff is incomplete and not explicitly escalated
 
 ## Task Lifecycle Mapping
 
@@ -73,3 +75,4 @@
   - update runtime phase state as `pending`, `in_progress`, `done`, `blocked`, `unknown`, or `escalated`
 - Closure:
   - mark the Skill load-ready only when required fields and references pass
+  - accept Skill-run closure only after execution, checking, and handoff are done or escalated

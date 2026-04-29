@@ -135,8 +135,25 @@ This is the first runtime state-transition layer. It updates the worklist,
 updates the matching runtime section when one exists, and appends a phase event
 record.
 
+Before treating Skill-backed work as complete, apply the closure gate:
+
+```powershell
+python -m fm skill close --log work/sessions/<run-log>.md --note "closure accepted"
+```
+
+The closure command reads the run log and rejects closure unless:
+
+- `Execution Role` is `done` or `escalated`
+- `Check Role` is `done` or `escalated`
+- `Handoff` is `done` or `escalated`
+- the log was opened by `fm skill run`
+
+When the gate passes, it updates `Closure Gate` and appends a phase event. If
+any required section is still `pending`, `blocked`, `unknown`, or missing, the
+run remains open and the missing closure conditions are printed as errors.
+
 Later runtime commands may use this same contract to assign executor/checker
-roles and close handoffs with stronger structured state.
+roles with stronger structured state.
 
 ## Relationship To Existing Controls
 

@@ -279,6 +279,103 @@ class CliTests(unittest.TestCase):
             self.assertFalse(payload["ok"])
             self.assertIn("log not found", payload["errors"][0])
 
+    def test_main_skill_close_rejects_incomplete_runtime_log(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_valid_skill(root)
+            out = root / "work" / "sessions" / "run.md"
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "run",
+                            "--root",
+                            str(root),
+                            "--meta",
+                            "skills/sample/meta.md",
+                            "--task",
+                            "Create a controlled output",
+                            "--out",
+                            str(out),
+                        ]
+                    ),
+                )
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(["skill", "close", "--log", str(out), "--json"])
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(1, exit_code)
+            self.assertFalse(payload["ok"])
+            self.assertIn("Execution Role must be done or escalated", payload["errors"][0])
+
+    def test_main_skill_close_accepts_completed_runtime_log(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_valid_skill(root)
+            out = root / "work" / "sessions" / "run.md"
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "run",
+                            "--root",
+                            str(root),
+                            "--meta",
+                            "skills/sample/meta.md",
+                            "--task",
+                            "Create a controlled output",
+                            "--out",
+                            str(out),
+                        ]
+                    ),
+                )
+                for phase in ("execution", "check", "handoff"):
+                    self.assertEqual(
+                        0,
+                        main(
+                            [
+                                "skill",
+                                "phase",
+                                "--log",
+                                str(out),
+                                "--phase",
+                                phase,
+                                "--status",
+                                "done",
+                            ]
+                        ),
+                    )
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        "skill",
+                        "close",
+                        "--log",
+                        str(out),
+                        "--note",
+                        "closure gate accepted completed run",
+                        "--json",
+                    ]
+                )
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(0, exit_code)
+            self.assertTrue(payload["ok"])
+            text = out.read_text(encoding="utf-8")
+            self.assertIn("- [x] Closure:", text)
+            self.assertIn("## Closure Gate\n\n- status: `done`", text)
+            self.assertIn("`closure` -> `done`: closure gate accepted completed run", text)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -42,6 +42,8 @@ PHASE_SECTIONS = {
     "closure": "Closure Gate",
     "handoff": "Handoff",
 }
+REQUIRED_CLOSE_SECTIONS = ("Execution Role", "Check Role", "Handoff")
+ACCEPTED_CLOSE_STATUSES = {"done", "escalated"}
 
 
 WORKLIST_ROWS = [
@@ -168,6 +170,45 @@ def _append_phase_event(text: str, *, phase: str, status: str, note: str | None)
     return text.rstrip() + "\n" + event + "\n"
 
 
+def _section_status(text: str, section: str) -> str | None:
+    marker = f"## {section}\n"
+    start = text.find(marker)
+    if start == -1:
+        return None
+
+    next_section = text.find("\n## ", start + len(marker))
+    body = text[start:] if next_section == -1 else text[start:next_section]
+    prefix = "- status: `"
+    status_start = body.find(prefix)
+    if status_start == -1:
+        return None
+    status_start += len(prefix)
+    status_end = body.find("`", status_start)
+    if status_end == -1:
+        return None
+    return body[status_start:status_end]
+
+
+def _set_phase_status(text: str, *, phase: str, status: str) -> str:
+    label = PHASE_LABELS[phase]
+    checkbox = "x" if status == "done" else "!"
+    new_worklist = f"- [{checkbox}] {label}:"
+    for marker in (" ", "x", "!"):
+        text, changed = _replace_line(text, f"- [{marker}] {label}:", new_worklist)
+        if changed:
+            break
+
+    section = PHASE_SECTIONS.get(phase)
+    if section:
+        new_status = f"## {section}\n\n- status: `{status}`"
+        for existing in VALID_PHASE_STATUSES:
+            old_status = f"## {section}\n\n- status: `{existing}`"
+            text, changed = _replace_line(text, old_status, new_status)
+            if changed:
+                break
+    return text
+
+
 def update_skill_phase(args) -> SkillRunResult:
     log_path = Path(args.log).resolve()
     if not log_path.exists():
@@ -181,32 +222,43 @@ def update_skill_phase(args) -> SkillRunResult:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[f"invalid status: {status}"])
 
     text = log_path.read_text(encoding="utf-8")
-    label = PHASE_LABELS[phase]
-    checkbox = "x" if status == "done" else "!"
-    old_worklist = f"- [ ] {label}:"
-    new_worklist = f"- [{checkbox}] {label}:"
-    text, changed = _replace_line(text, old_worklist, new_worklist)
-    if not changed:
-        for marker in ("x", "!"):
-            text, changed = _replace_line(text, f"- [{marker}] {label}:", new_worklist)
-            if changed:
-                break
-
-    section = PHASE_SECTIONS.get(phase)
-    if section:
-        old_status = f"## {section}\n\n- status: `pending`"
-        new_status = f"## {section}\n\n- status: `{status}`"
-        text, status_changed = _replace_line(text, old_status, new_status)
-        if not status_changed:
-            for existing in VALID_PHASE_STATUSES:
-                old_status = f"## {section}\n\n- status: `{existing}`"
-                text, status_changed = _replace_line(text, old_status, new_status)
-                if status_changed:
-                    break
-
+    text = _set_phase_status(text, phase=phase, status=status)
     text = _append_phase_event(text, phase=phase, status=status, note=args.note)
     log_path.write_text(text, encoding="utf-8")
 
+    return SkillRunResult(ok=True, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[])
+
+
+def close_skill_run(args) -> SkillRunResult:
+    log_path = Path(args.log).resolve()
+    if not log_path.exists():
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"log not found: {log_path}"])
+
+    text = log_path.read_text(encoding="utf-8")
+    if "## Skill Load Gate\n\n- status: `opened_by_fm_skill_run`" not in text:
+        return SkillRunResult(
+            ok=False,
+            skill_id=None,
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=["skill run log is missing an opened Skill Load Gate"],
+        )
+
+    errors: list[str] = []
+    statuses: dict[str, str | None] = {}
+    for section in REQUIRED_CLOSE_SECTIONS:
+        status = _section_status(text, section)
+        statuses[section] = status
+        if status not in ACCEPTED_CLOSE_STATUSES:
+            errors.append(f"{section} must be done or escalated before closure; current={status or 'missing'}")
+
+    if errors:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=errors)
+
+    close_status = "escalated" if "escalated" in statuses.values() else "done"
+    text = _set_phase_status(text, phase="closure", status=close_status)
+    text = _append_phase_event(text, phase="closure", status=close_status, note=args.note)
+    log_path.write_text(text, encoding="utf-8")
     return SkillRunResult(ok=True, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[])
 
 
@@ -295,6 +347,20 @@ def cmd_skill_phase(args) -> int:
         print(f"  status: {args.status}")
     else:
         print("fail: skill phase")
+        for error in result.errors:
+            print(f"  error: {error}")
+    return 0 if result.ok else 1
+
+
+def cmd_skill_close(args) -> int:
+    result = close_skill_run(args)
+    if args.json:
+        print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+    elif result.ok:
+        print(f"ok: {result.run_log}")
+        print("  closure: accepted")
+    else:
+        print("fail: skill close")
         for error in result.errors:
             print(f"  error: {error}")
     return 0 if result.ok else 1
