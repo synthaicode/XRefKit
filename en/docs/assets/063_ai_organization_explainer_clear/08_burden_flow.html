@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <style>:root {
@@ -54,7 +54,7 @@ body {
 h1 {
   margin: 26px 0 18px;
   max-width: 1240px;
-  font-size: 76px;
+  font-size: 70px;
   line-height: 1.12;
   letter-spacing: 0;
   font-weight: 900;
@@ -70,7 +70,7 @@ h1 {
 }
 
 .stage {
-  margin-top: 54px;
+  margin-top: 46px;
 }
 
 .stage.compact {
@@ -293,8 +293,8 @@ h1 {
 }
 
 .compare-box {
-  min-height: 365px;
-  padding: 32px 36px;
+  min-height: 320px;
+  padding: 28px 34px;
   border-radius: 18px;
   border: 4px solid var(--line);
 }
@@ -310,8 +310,8 @@ h1 {
 }
 
 .compare-box h2 {
-  margin: 0 0 22px;
-  font-size: 52px;
+  margin: 0 0 18px;
+  font-size: 48px;
   line-height: 1.12;
 }
 
@@ -329,9 +329,9 @@ h1 {
 }
 
 .compare-box li {
-  margin: 0 0 14px;
+  margin: 0 0 10px;
   color: var(--ink);
-  font-size: 32px;
+  font-size: 29px;
   line-height: 1.32;
   font-weight: 850;
 }
@@ -407,7 +407,7 @@ h1 {
 
 .bubble h2 {
   margin: 12px 0 16px;
-  font-size: 47px;
+  font-size: 44px;
   line-height: 1.15;
   font-weight: 700;
 }
@@ -570,12 +570,12 @@ h1 {
   position: absolute;
   left: 72px;
   right: 72px;
-  bottom: 48px;
-  padding: 22px 28px;
+  bottom: 42px;
+  padding: 18px 26px;
   border-left: 4px solid #2563EB;
   background: #EFF6FF;
   color: #1e3a8a;
-  font-size: 34px;
+  font-size: 31px;
   line-height: 1.35;
   font-weight: 600;
 }
@@ -592,22 +592,36 @@ h1 {
 </head>
 <body>
   <main class="canvas">
-    <div class="kicker">それでも残る問題</div>
-    <h1>Skill と業務知識が増えるほど、仕事はバラバラになりやすい</h1>
+    <div class="kicker">How the burden moves</div>
+    <h1>Each step replaces one human burden and exposes the next</h1>
     
-    <section class="stage">
-  <div class="dialogue-grid">
-    <div class="bubble question">
-      <div class="card-label">Q</div>
-      <h2>部品が揃えば、仕事は回る?</h2>
-      <p>まだ回らない。調査、判断、制作、確認の順番や受け渡しを、人間が都度つなぐことになる。</p>
+    <section class="stage compact">
+  <div class="burden-flow">
+    <div class="burden-step">
+      <div class="burden-label">Prompt</div>
+      <h2>Explaining</h2>
+      <p>Humans still explain the goal, assumptions, constraints, and output format every time.</p>
+      <div class="burden-arrow">reduces into Skill</div>
     </div>
-    <div class="bubble answer">
-      <div class="card-label">A</div>
-      <h2>AI Team にする</h2>
-      <p>役割、順番、責任、引き渡しをチーム構成として先に決める。</p>
+    <div class="burden-step">
+      <div class="burden-label">Skill</div>
+      <h2>Procedure choice</h2>
+      <p>The procedure is fixed, but humans still choose which Skill fits the purpose.</p>
+      <div class="burden-arrow">needs criteria</div>
+    </div>
+    <div class="burden-step">
+      <div class="burden-label">Knowledge</div>
+      <h2>Ownership</h2>
+      <p>Decision criteria are shared, but someone must keep the knowledge current.</p>
+      <div class="burden-arrow">needs flow</div>
+    </div>
+    <div class="burden-step">
+      <div class="burden-label">AI Team</div>
+      <h2>Coordination</h2>
+      <p>Roles, checks, sequence, and handoffs make AI work inspectable by humans.</p>
+      <div class="burden-arrow">becomes governable AI work</div>
     </div>
   </div></section>
-    <div class="summary">部品が揃っても、仕事の流れを設計しないと人間の調整負担が残る</div>
+    <div class="summary">AI Team is not added to make AI magical. It is added to make AI work governable</div>
   </main></body>
 </html>

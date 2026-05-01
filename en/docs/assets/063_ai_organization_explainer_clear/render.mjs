@@ -25,10 +25,12 @@ const wrap = ({ kicker, title, lead = "", body = "", summary = "", compact = fal
 const dialogue = (questionTitle, questionText, answerTitle, answerText, mode = "both") => `
   <div class="dialogue-grid${mode === "question" ? " question-only" : ""}">
     <div class="bubble question">
+      <div class="card-label">Q</div>
       <h2>${questionTitle}</h2>
       <p>${questionText}</p>
     </div>
     ${mode === "question" ? "" : `<div class="bubble answer">
+      <div class="card-label">A</div>
       <h2>${answerTitle}</h2>
       <p>${answerText}</p>
     </div>`}
@@ -37,6 +39,7 @@ const dialogue = (questionTitle, questionText, answerTitle, answerText, mode = "
 const definition = () => `
   <div class="definition-grid">
     <div class="definition-main">
+      <div class="card-label">DEF</div>
       <h2>What is an AI Team?</h2>
       <p>An operating structure that fixes the Skill, domain knowledge, roles, checkpoints, and handoffs around a purpose.</p>
     </div>
@@ -67,6 +70,34 @@ const compare = () => `
         <li>Checkpoints catch omissions</li>
         <li>Responsibility and handoffs are fixed</li>
       </ul>
+    </div>
+  </div>`;
+
+const burdenFlow = () => `
+  <div class="burden-flow">
+    <div class="burden-step">
+      <div class="burden-label">Prompt</div>
+      <h2>Explaining</h2>
+      <p>Humans still explain the goal, assumptions, constraints, and output format every time.</p>
+      <div class="burden-arrow">reduces into Skill</div>
+    </div>
+    <div class="burden-step">
+      <div class="burden-label">Skill</div>
+      <h2>Procedure choice</h2>
+      <p>The procedure is fixed, but humans still choose which Skill fits the purpose.</p>
+      <div class="burden-arrow">needs criteria</div>
+    </div>
+    <div class="burden-step">
+      <div class="burden-label">Knowledge</div>
+      <h2>Ownership</h2>
+      <p>Decision criteria are shared, but someone must keep the knowledge current.</p>
+      <div class="burden-arrow">needs flow</div>
+    </div>
+    <div class="burden-step">
+      <div class="burden-label">AI Team</div>
+      <h2>Coordination</h2>
+      <p>Roles, checks, sequence, and handoffs make AI work inspectable by humans.</p>
+      <div class="burden-arrow">becomes governable AI work</div>
     </div>
   </div>`;
 
@@ -185,7 +216,7 @@ const slides = {
   }),
   "06_repository_q": wrap({
     kicker: "Conditions for organizational use",
-    title: "Once knowledge is externalized, humans become responsible for keeping it current",
+    title: "Shared knowledge needs ownership",
     body: dialogue(
       "If we share the knowledge, are we done?",
       "Shared knowledge still has to be updated when the rules or assumptions change.",
@@ -197,7 +228,7 @@ const slides = {
   }),
   "06_repository": wrap({
     kicker: "Conditions for organizational use",
-    title: "Once knowledge is externalized, humans become responsible for keeping it current",
+    title: "Shared knowledge needs ownership",
     body: dialogue(
       "If we share the knowledge, are we done?",
       "No. If the rules change and the knowledge is not updated, AI keeps working from an old version of correctness.",
@@ -229,6 +260,13 @@ const slides = {
     ),
     summary: "Even with the parts in place, humans still carry the coordination burden unless the flow is designed"
   }),
+  "08_burden_flow": wrap({
+    kicker: "How the burden moves",
+    title: "Each step replaces one human burden and exposes the next",
+    body: burdenFlow(),
+    summary: "AI Team is not added to make AI magical. It is added to make AI work governable",
+    compact: true
+  }),
   "08_or_team_q": wrap({
     kicker: "The solution",
     title: "An AI Team turns human coordination into structure",
@@ -247,7 +285,7 @@ const slides = {
     body: dialogue(
       "What does an AI Team actually do?",
       "It fixes the sequence, responsibility, checks, and handoffs that humans otherwise rethink every time.",
-      "Connect it as real work",
+      "Connect the parts into real work",
       "Example: a producer creates, a checker catches omissions, records remain, and the work is handed to the next step. That is the Team."
     ),
     summary: "An AI Team combines procedure, knowledge, responsibility, and flow into work"
@@ -277,7 +315,7 @@ const slides = {
   }),
   "10_conclusion_q": wrap({
     kicker: "The role of the AI Team",
-    title: "Fix where humans need to look inside the team",
+    title: "Define where humans inspect the work",
     body: dialogue(
       "Does this remove human work?",
       "No. It changes how humans look at the work.",
@@ -289,11 +327,11 @@ const slides = {
   }),
   "10_conclusion": wrap({
     kicker: "The role of the AI Team",
-    title: "Fix where humans need to look inside the team",
+    title: "Define where humans inspect the work",
     body: dialogue(
       "Does this remove human work?",
       "No. But it changes the job from chasing everything to checking the points that matter.",
-      "Fix the review points",
+      "Fix the human review points",
       "Place purpose, execution, checking, records, and handoffs inside the team so humans can inspect them."
     ),
     summary: "Human work shifts from watching everything to checking the right points"
@@ -337,7 +375,7 @@ const slides = {
       "Make it manageable",
       "An AI Team turns those burdens into roles, flow, and checkpoints, so the organization can handle AI work."
     ),
-    summary: "Using AI organizationally means designing it into a form humans can manage"
+    summary: "AI Team makes AI work governable, not magical"
   })
 };
 

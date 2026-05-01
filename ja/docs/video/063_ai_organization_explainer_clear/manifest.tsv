@@ -1,26 +1,28 @@
 order	slide_path	narration
-01a	../../assets/063_ai_organization_explainer_clear/01_title_q.png	聞き手: AI を入れれば、仕事は楽になるんじゃないですか。
-01b	../../assets/063_ai_organization_explainer_clear/01_title.png	解説: なる部分もあります。ただし使い方を間違えると、人間側の管理仕事が増えます。今日は、プロンプト、Skill、ドメイン知識、AI Team の順に見ていきます。
-02a	../../assets/063_ai_organization_explainer_clear/02_team_definition_q.png	聞き手: その AI Team って、最初に言うと何なんですか。
-02b	../../assets/063_ai_organization_explainer_clear/02_team_definition.png	解説: 目的に対して、Skill、ドメイン知識、役割、チェック点、引き渡しを固定した AI の作業体制です。人間が毎回やっていた説明、判断、確認、引き渡しを、管理できる形にまとめます。
+01a	../../assets/063_ai_organization_explainer_clear/01_title_q.png	聞き手: AIを使うと、個人の作業はかなり速くなりますよね。
+01b	../../assets/063_ai_organization_explainer_clear/01_title.png	解説: はい。一般的にも、AIは文章作成、要約、調査、コード生成を速くするものとして受け止められています。たたき台を出す、情報を集める、表現を整える。この便利さは、多くの人が実感しています。まずは、この共通認識から始めます。
+02a	../../assets/063_ai_organization_explainer_clear/02_team_definition_q.png	聞き手: AIが出力したら、あとはそれを使えばいいのではないですか。
+02b	../../assets/063_ai_organization_explainer_clear/02_team_definition.png	解説: 実際には、そこで終わりません。外部調査でも、生成AI利用時の人間の仕事は、情報検証、回答統合、タスク管理へ移ると整理されています。AIは出力を速くしますが、その後に確認する、比べる、統合する、判断する作業は人間側に残ります。ここを見ないと、AIが本当にQCDを改善したか判断できません。
 03a	../../assets/063_ai_organization_explainer_clear/03_problem_q.png	聞き手: 丁寧にプロンプトを書けば十分ではないですか。
 03b	../../assets/063_ai_organization_explainer_clear/03_problem.png	解説: 最初はそう見えます。でも、目的、前提、制約、出力形式を人間が毎回説明することになります。書き漏れれば結果がぶれる。つまりプロンプトだけだと、人間に説明疲れが起きます。
+03c	../../assets/063_ai_organization_explainer_clear/03_prompt_skill_limit.png	解説: ここで問題を一般化します。Prompt や Skill を、人間がその都度選んで使う前提では、説明、確認、比較、統合、再指示、判断が人間側に集まります。つまり、Prompt と Skill を増やすだけでは、QCDを劣化させる人間側作業と認知負荷は消えません。回答は、根本的に使い方を変えることです。
 04a	../../assets/063_ai_organization_explainer_clear/04_work_q.png	聞き手: では、Skill にすれば安定しますか。
 04b	../../assets/063_ai_organization_explainer_clear/04_work.png	解説: 毎回の説明は減ります。ただし今度は、どの Skill を使うべきか、手順が目的に合っているかを管理する必要が出ます。たとえば説明動画なら、台本化や音声化は Skill。何を正しい説明と見るかは、別に決める必要があります。
-05a	../../assets/063_ai_organization_explainer_clear/05_not_one_ai_q.png	聞き手: 手順があるのに、なぜドメイン知識が必要なんですか。
-05b	../../assets/063_ai_organization_explainer_clear/05_not_one_ai.png	解説: Skill は進め方です。何を正しいと見るかは、業務の用語、基準、制約で決まります。たとえば初見向けにする、特定の説明を外す、実行とチェックを入れる。この判断基準がドメイン知識です。
-06a	../../assets/063_ai_organization_explainer_clear/06_repository_q.png	聞き手: 知識を共有すれば、それで終わりですか。
-06b	../../assets/063_ai_organization_explainer_clear/06_repository.png	解説: 終わりではありません。ルールや前提が変わったら、知識も更新する必要があります。古い知識のまま AI が動くと、古い正解で作業してしまいます。
-07a	../../assets/063_ai_organization_explainer_clear/07_handoff_q.png	聞き手: Skill と知識が揃えば、仕事は回りますか。
-07b	../../assets/063_ai_organization_explainer_clear/07_handoff.png	解説: まだ回りません。調査、判断、制作、確認をどの順番で進めるのか。誰が責任を持つのか。どこへ渡すのか。そこを決めないと、人間が毎回交通整理をすることになります。
+05a	../../assets/063_ai_organization_explainer_clear/05_not_one_ai_q.png	聞き手: 手順があるのに、なぜ業務知識が必要なんですか。
+05b	../../assets/063_ai_organization_explainer_clear/05_not_one_ai.png	解説: Skill は進め方です。何を正しいと見るかは、業務の用語、基準、制約で決まります。たとえば初見向けにする、特定の説明を外す、実行とチェックを入れる。このルールが業務知識と判断ルールです。
+06a	../../assets/063_ai_organization_explainer_clear/06_repository_q.png	聞き手: 業務知識を共有すれば、それで終わりですか。
+06b	../../assets/063_ai_organization_explainer_clear/06_repository.png	解説: 終わりではありません。ルールや前提が変わったら、業務知識と判断ルールも更新する必要があります。古い業務知識のまま AI が動くと、古い正解で作業してしまいます。
+07a	../../assets/063_ai_organization_explainer_clear/07_handoff_q.png	聞き手: Skill と業務知識が揃えば、仕事は回りますか。
+07b	../../assets/063_ai_organization_explainer_clear/07_handoff.png	解説: まだ回りません。調査、判断、制作、確認をどの順番で進めるのか。誰が責任を持つのか。どこへ渡すのか。そこを決めないと、人間が毎回調整することになります。
+08	../../assets/063_ai_organization_explainer_clear/08_burden_flow.png	解説: 各段階では、人間の負担が一つ減り、次の負担が見えるようになります。プロンプトでは説明する負担。Skill では手順を選ぶ負担。業務知識と判断ルールでは更新、維持する負担。AI Team では、役割、確認、順番、引き渡しを固定し、AI の仕事を管理できる形にします。
 08a	../../assets/063_ai_organization_explainer_clear/08_or_team_q.png	聞き手: そこで AI Team が出てくるんですね。
-08b	../../assets/063_ai_organization_explainer_clear/08_or_team.png	解説: そうです。AI Team は、人間が毎回やっていた交通整理を仕組みに変えます。制作役が作り、チェック役が漏れを見て、記録を残して次へ渡す。ここまでをチーム構成として先に決めます。
+08b	../../assets/063_ai_organization_explainer_clear/08_or_team.png	解説: そうです。人間がAIを逐次使い分ける前提をやめ、AIをチームとして構造化します。役割を分け、確認点を決め、記録を残し、次へ渡す流れを固定する。人間が毎回調整していた作業を、チームの運用構造に変えることで、品質、コスト、納期を管理しやすくします。
 09a	../../assets/063_ai_organization_explainer_clear/09_value_q.png	聞き手: でも、AI が忘れるなら人間が確認すればいいのでは。
 09b	../../assets/063_ai_organization_explainer_clear/09_value.png	解説: 全部を人間の記憶で追う設計にすると疲弊します。作業漏れ、確認漏れ、根拠漏れを見落としやすい。だから AI Team では、実行役とチェック役を分けます。
 10a	../../assets/063_ai_organization_explainer_clear/10_conclusion_q.png	聞き手: では、人間の仕事はなくなるんですか。
-10b	../../assets/063_ai_organization_explainer_clear/10_conclusion.png	解説: なくなりません。ただし、全部を覚えて追いかける仕事から、見るべき点を確認する仕事に変わります。目的、実行、チェック、記録、引き渡しをチーム内に固定します。
+10b	../../assets/063_ai_organization_explainer_clear/10_conclusion.png	解説: なくなりません。ただし、全部を覚えて追いかける仕事から、確認点を見る仕事に変わります。目的、実行、確認、記録、引き渡しをチーム内に固定します。
 11a	../../assets/063_ai_organization_explainer_clear/11_before_after_q.png	聞き手: 導入前後で、何が変わるんですか。
-11b	../../assets/063_ai_organization_explainer_clear/11_before_after.png	解説: Before では、人間が毎回説明し、判断し、確認し、引き渡します。After では、Skill、知識、チェック点、責任が AI Team に固定されます。人間は全部を見るのではなく、見るべき点を確認します。
+11b	../../assets/063_ai_organization_explainer_clear/11_before_after.png	解説: Before では、人間が毎回説明し、判断し、確認し、引き渡します。After では、Skill、知識、確認点、責任が AI Team に固定されます。人間は全部を見るのではなく、確認点を見ます。
 12a	../../assets/063_ai_organization_explainer_clear/12_license_q.png	聞き手: 結局、AI Team が必要な理由は何ですか。
-12b	../../assets/063_ai_organization_explainer_clear/12_license.png	解説: AI を使うほど、人間には説明、手順管理、知識更新、交通整理、確認の負担が増えるからです。AI Team は、それらを役割、流れ、チェックに変え、組織で扱える仕事にします。
+12b	../../assets/063_ai_organization_explainer_clear/12_license.png	解説: AIを使えることと、QCDが改善することは別です。PromptやSkillを人間が逐次使う前提では、説明、監視、比較、統合、判断、確認、修正、調整、更新の作業が人間側に集まり続けます。だから使い方を根本的に変え、AIをチームとして構造化する必要があります。それが、AIの便利さをQCD改善へつなげるAI Teamです。
 13	../../assets/063_ai_organization_explainer_clear/13_voicevox_credit.png	クレジット: 音声、VOICEVOX、ずんだもん。VOICEVOX、四国めたん。
