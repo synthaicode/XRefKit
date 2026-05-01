@@ -10,10 +10,23 @@ When asked "what skills are available?", answer from this file.
 ## Routing Rules
 
 1. Read the user request and identify intent.
-2. Narrow candidates using category indexes under `skills/index/`.
-3. Read candidate `meta.md` files only (2-3 candidates max).
-4. Open the selected `SKILL.md` and execute its procedure.
-5. If domain knowledge is needed, resolve by XID from `knowledge/` via `xref`.
+2. Use semantic routing cues from the user's wording, known artifacts, pain points, and boundary stage.
+3. Narrow candidates using category indexes under `skills/index/`.
+4. Read candidate `meta.md` files only (2-3 candidates max).
+5. Select one Skill, then open its runtime envelope.
+6. Open the selected `SKILL.md` and execute its procedure.
+7. If domain knowledge is needed, resolve by XID from `knowledge/` via `xref`.
+
+## Semantic Routing Cues
+
+- Default business-intake route:
+  - if the business structure is still incomplete, start with `business_learning_interview`
+  - move to `business_intake_scoping` only after the result becomes `ready_for_scoping`
+- If the user has only fragments, tacit knowledge, bottlenecks, or wants the AI to ask the next best business question:
+  - route to `business_learning_interview`
+- If the user already has a partial business hypothesis and wants to shape one business unit with previous side / current scope / next side:
+  - route to `business_intake_scoping`
+- If the user already has an approved requirements/planning/design/implementation stage, use the existing workflow and phase skills instead.
 
 ## Category Indexes
 
@@ -123,6 +136,14 @@ When asked "what skills are available?", answer from this file.
   - summary: create narrated marketing explainer videos with staged slide reveals, TTS audio, credits, previews, and README placement
   - meta: `skills/marketing-explainer-video/meta.md`
   - skill_doc: `skills/marketing-explainer-video/SKILL.md`
+- `business_intake_scoping`:
+  - summary: scope a business task into a boundary-visible responsibility unit before AI execution design
+  - meta: `skills/business_intake_scoping/meta.md`
+  - skill_doc: `skills/business_intake_scoping/SKILL.md`
+- `business_learning_interview`:
+  - summary: learn a business task from human fragments through iterative interview and produce the next best question
+  - meta: `skills/business_learning_interview/meta.md`
+  - skill_doc: `skills/business_learning_interview/SKILL.md`
 
 ## Notes
 

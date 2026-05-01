@@ -21,6 +21,7 @@
   - `dotnet_change_analysis` -> `../dotnet_change_analysis/meta.md`
   - `external_definition_change_analysis` -> `../external_definition_change_analysis/meta.md`
   - `investigation_flow` -> `../investigation_flow/meta.md`
+  - `business_learning_interview` -> `../business_learning_interview/meta.md`
 - estimate:
   - `estimation_flow` -> `../estimation_flow/meta.md`
 - define-requirements:
@@ -28,6 +29,7 @@
 - plan:
   - `planning_flow` -> `../planning_flow/meta.md`
   - `release_planning_flow` -> `../release_planning_flow/meta.md`
+  - `business_intake_scoping` -> `../business_intake_scoping/meta.md`
 - design:
   - `design_flow` -> `../design_flow/meta.md`
   - `marketing_slide_png` -> `../marketing_slide_png/meta.md`

@@ -16,6 +16,8 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 
 - [Importing existing documents (human view)](003_import_for_humans.md#xid-0CF07930F2FA)
 - [End-to-end flow (human view)](004_overall_flow_for_humans.md#xid-E01E6695A30A)
+- [Business intake scoping guide](060_business_intake_scoping_guide.md#xid-C91F7D2A6B40)
+- [Business learning interview guide](061_business_learning_interview_guide.md#xid-D2A41E8C7B51)
 - [Language policy (English canonical + Japanese archive)](030_language_policy.md#xid-72FB974C8236)
 
 ## Base Control And Repository Rules

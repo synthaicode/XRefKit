@@ -12,6 +12,8 @@
   - `release_planning_flow` -> `../release_planning_flow/meta.md`
   - `cab_review_flow` -> `../cab_review_flow/meta.md`
   - `or_team_operations` -> `../or_team_operations/meta.md`
+  - `business_intake_scoping` -> `../business_intake_scoping/meta.md`
+  - `business_learning_interview` -> `../business_learning_interview/meta.md`
 - engineering:
   - `csharp_review` -> `../csharp_review/meta.md`
   - `dotnet_change_analysis` -> `../dotnet_change_analysis/meta.md`

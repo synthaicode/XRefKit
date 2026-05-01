@@ -18,6 +18,11 @@ For the boundary between base AI control and XRefKit-specific routing, see [Base
 - Treat capability definitions in `capabilities/` as reusable work-unit definitions.
 - Each skill reads only what it needs, on demand, via `xref`.
 - Treat `skills/_index.md` as the canonical skill catalog for listing/routing skills.
+- Select the target Skill by semantic routing from user intent, available fragments, and routing indexes before opening any specific Skill.
+- For business-intake requests where structure is still incomplete, prefer learning-first routing:
+  - first `business_learning_interview`
+  - then `business_intake_scoping` only after the business unit becomes scope-ready
+- Treat direct `--meta <path>` selection as an execution detail after routing, not as the normal human-facing routing method.
 - When a task uses a Skill, start it through `python -m fm skill run --meta <path-to-meta.md> --task "<task>" --json` before opening or executing `SKILL.md`.
 - Add task-specific work items with `python -m fm skill workitem` before closure; generic phase rows are not enough to close Skill-backed work.
 - Record output and evidence links with `python -m fm skill artifact` before closure.

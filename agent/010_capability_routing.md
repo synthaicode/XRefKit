@@ -15,15 +15,22 @@ This page defines how an agent should route a user request through workflow, cap
 ## Mandatory Routing Order
 
 1. Identify the business stage or user intent.
-2. Open the relevant workflow page in `docs/` by XID.
-3. From the workflow page, identify the required capability pages in `capabilities/`.
-4. From the capability pages, identify the matching skill in `skills/`.
-5. Load only the domain knowledge needed to execute the capability via `xref search` and `xref show`.
-6. Execute the skill.
-7. If work state must be tracked, apply management-table and metrics knowledge before closure.
+2. Use semantic routing against workflow cues, skill indexes, and known fragments to narrow the candidate route.
+3. Open the relevant workflow page in `docs/` by XID when a workflow already exists.
+4. From the workflow page or routing cue, identify the required capability pages in `capabilities/`.
+5. From the capability pages or routing cue, identify the matching skill in `skills/`.
+6. Open the runtime envelope for only the selected Skill.
+7. Load only the domain knowledge needed to execute the capability via `xref search` and `xref show`.
+8. Execute the skill.
+9. If work state must be tracked, apply management-table and metrics knowledge before closure.
 
 ## Intent-to-Workflow Mapping
 
+- Business learning from partial human fragments, tacit knowledge extraction, or "ask me the next best question":
+  - route to `skills/business_learning_interview/meta.md`
+- Business intake requests with incomplete structure should default here first, not directly to scoping.
+- Business intake scoping after a first business hypothesis already exists and the business unit is already scope-ready:
+  - route to `skills/business_intake_scoping/meta.md`
 - Investigation or impact analysis:
   - [Investigation workflow](../docs/032_investigation_workflow.md#xid-8B31F02A4001)
 - Estimation, supplier check, or assumption clarification:
@@ -45,6 +52,11 @@ This page defines how an agent should route a user request through workflow, cap
 
 - Capability pages define what must be done.
 - Skill pages define how to execute it.
+- Semantic routing may select a Skill directly from strong intent cues before a full capability chain is opened, but the chosen Skill must still remain consistent with repository layering and business boundary rules.
+- For business-task intake, the default semantic path is:
+  - learn the business from fragments
+  - identify the smallest viable business unit
+  - then scope that unit
 - If multiple capabilities form one business step, prefer the phase skill that already composes them.
 - If no suitable composed skill exists, use the nearest matching skill and load the missing capability definition explicitly.
 - If processing can be separated into disjoint scopes and parallel execution does not create handoff or consistency risk, prefer subagent decomposition by scope.

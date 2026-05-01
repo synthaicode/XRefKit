@@ -26,6 +26,8 @@ Skills should reference these pages by XID and load only what is needed.
 - [Management table schema](organization/110_management_table_schema.md#xid-7A2F4C8D1101)
 - [Metrics definition](organization/120_metrics_definition.md#xid-7A2F4C8D1201)
 - [IPA release activity catalog](operations/100_ipa_release_activity_catalog.md#xid-7B3E5D1A6101)
+- [Business intake scoping rules](operations/110_business_intake_scoping_rules.md#xid-7B3E5D1A6102)
+- [Business learning interview rules](operations/120_business_learning_interview_rules.md#xid-7B3E5D1A6103)
 - [Group boundary rules](organization/130_group_boundary_rules.md#xid-7A2F4C8D1301)
 - [LLM review knowledge usage rules](organization/140_llm_review_knowledge_usage_rules.md#xid-7A2F4C8D1401)
 - [Implementation assumption gap handling](organization/150_implementation_assumption_gap_handling.md#xid-7A2F4C8D1501)
