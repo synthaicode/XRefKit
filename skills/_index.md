@@ -144,6 +144,10 @@ When asked "what skills are available?", answer from this file.
   - summary: learn a business task from human fragments through iterative interview and produce the next best question
   - meta: `skills/business_learning_interview/meta.md`
   - skill_doc: `skills/business_learning_interview/SKILL.md`
+- `legacy_flow_skill_migration`:
+  - summary: analyze a Flow / Skill from an older XRefKit state and generate a current trial-first migration scaffold
+  - meta: `skills/legacy_flow_skill_migration/meta.md`
+  - skill_doc: `skills/legacy_flow_skill_migration/SKILL.md`
 
 ## Notes
 

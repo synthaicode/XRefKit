@@ -28,6 +28,7 @@ Skills should reference these pages by XID and load only what is needed.
 - [IPA release activity catalog](operations/100_ipa_release_activity_catalog.md#xid-7B3E5D1A6101)
 - [Business intake scoping rules](operations/110_business_intake_scoping_rules.md#xid-7B3E5D1A6102)
 - [Business learning interview rules](operations/120_business_learning_interview_rules.md#xid-7B3E5D1A6103)
+- [Legacy Flow Skill migration rules](operations/130_legacy_flow_skill_migration_rules.md#xid-7B3E5D1A6104)
 - [Group boundary rules](organization/130_group_boundary_rules.md#xid-7A2F4C8D1301)
 - [LLM review knowledge usage rules](organization/140_llm_review_knowledge_usage_rules.md#xid-7A2F4C8D1401)
 - [Implementation assumption gap handling](organization/150_implementation_assumption_gap_handling.md#xid-7A2F4C8D1501)
