@@ -17,6 +17,19 @@ npm run dev
 
 Open `http://localhost:3000`.
 
+## Quality
+
+```powershell
+cd projects/slides-app
+npm run check
+```
+
+Current baseline:
+
+- `lint`
+- `typecheck`
+- `build`
+
 ## Current scope
 
 - isolated Next.js app under `projects/`
