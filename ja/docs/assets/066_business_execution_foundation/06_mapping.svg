@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <rect width="1600" height="900" fill="#F8F9FA"/>
+  <rect x="0" y="788" width="1600" height="112" fill="#EFF6FF"/>
+  <rect x="0" y="788" width="1600" height="4" fill="#2563EB"/>
+  <text x="100" y="128" fill="#2563EB" font-size="26" font-family="Inter, Noto Sans JP, sans-serif" font-weight="700" letter-spacing="5">05 / EXAMPLE OF CUTTING</text>
+  <text x="100" y="214" fill="#111827" font-size="58" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">例で見る切り分け手順</text>
+  <rect x="120" y="290" width="1360" height="84" rx="22" fill="#DBEAFE"/>
+  <text x="170" y="344" fill="#1D4ED8" font-size="30" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">申請処理の例: 申請受付 → 内容確認 → 承認 → 反映</text>
+  <rect x="120" y="430" width="300" height="250" rx="28" fill="#FFFFFF" stroke="#D1D5DB"/>
+  <rect x="450" y="430" width="300" height="250" rx="28" fill="#FFFFFF" stroke="#D1D5DB"/>
+  <rect x="780" y="430" width="300" height="250" rx="28" fill="#FFFFFF" stroke="#D1D5DB"/>
+  <rect x="1110" y="430" width="370" height="250" rx="28" fill="#FFFFFF" stroke="#D1D5DB"/>
+  <text x="150" y="490" fill="#111827" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">1. 始点と終点</text>
+  <text x="150" y="548" fill="#374151" font-size="24" font-family="Inter, Noto Sans JP, sans-serif">申請受領で開始</text>
+  <text x="150" y="584" fill="#374151" font-size="24" font-family="Inter, Noto Sans JP, sans-serif">反映完了で終了</text>
+  <text x="480" y="490" fill="#111827" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">2. 境界を引く</text>
+  <text x="480" y="548" fill="#374151" font-size="24" font-family="Inter, Noto Sans JP, sans-serif">受付担当から</text>
+  <text x="480" y="584" fill="#374151" font-size="24" font-family="Inter, Noto Sans JP, sans-serif">確認担当へ渡る点</text>
+  <text x="810" y="490" fill="#111827" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">3. 担当を切る</text>
+  <text x="810" y="548" fill="#374151" font-size="24" font-family="Inter, Noto Sans JP, sans-serif">内容確認担当は</text>
+  <text x="810" y="584" fill="#374151" font-size="24" font-family="Inter, Noto Sans JP, sans-serif">確認結果返却まで</text>
+  <text x="1140" y="490" fill="#111827" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">4. 判断と例外</text>
+  <text x="1140" y="548" fill="#374151" font-size="24" font-family="Inter, Noto Sans JP, sans-serif">不足資料なら差し戻し</text>
+  <text x="1140" y="584" fill="#374151" font-size="24" font-family="Inter, Noto Sans JP, sans-serif">判断不能なら確認先を残す</text>
+</svg>

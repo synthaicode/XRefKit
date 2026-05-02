@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <rect width="1600" height="900" fill="#F8F9FA"/>
+  <rect x="0" y="788" width="1600" height="112" fill="#EFF6FF"/>
+  <rect x="0" y="788" width="1600" height="4" fill="#2563EB"/>
+  <circle cx="1320" cy="170" r="220" fill="#DBEAFE"/>
+  <circle cx="1440" cy="92" r="90" fill="#BFDBFE"/>
+  <text x="100" y="146" fill="#2563EB" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="700" letter-spacing="6">XREFKIT / BUSINESS EXECUTION FOUNDATION</text>
+  <text x="100" y="310" fill="#111827" font-size="76" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">業務実行基盤への</text>
+  <text x="100" y="402" fill="#111827" font-size="76" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">業務取り込み</text>
+  <text x="100" y="492" fill="#374151" font-size="34" font-family="Inter, Noto Sans JP, sans-serif" font-weight="500">考え方 / 棚卸しの出発点 / 切り分け手順</text>
+  <text x="100" y="640" fill="#1F2937" font-size="30" font-family="Inter, Noto Sans JP, sans-serif" font-weight="700">この資料で扱うこと</text>
+  <text x="100" y="690" fill="#4B5563" font-size="26" font-family="Inter, Noto Sans JP, sans-serif">・どのレベルから業務を棚卸しすると崩れにくいか</text>
+  <text x="100" y="728" fill="#4B5563" font-size="26" font-family="Inter, Noto Sans JP, sans-serif">・個人手順ではなく連携境界から見る理由</text>
+  <text x="100" y="766" fill="#4B5563" font-size="26" font-family="Inter, Noto Sans JP, sans-serif">・Flow / Capability / Skill / Knowledge への落とし込み方</text>
+</svg>

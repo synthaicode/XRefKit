@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <rect width="1600" height="900" fill="#F8F9FA"/>
+  <rect x="0" y="788" width="1600" height="112" fill="#EFF6FF"/>
+  <rect x="0" y="788" width="1600" height="4" fill="#2563EB"/>
+  <text x="100" y="128" fill="#2563EB" font-size="26" font-family="Inter, Noto Sans JP, sans-serif" font-weight="700" letter-spacing="5">04 / THREE LEVELS</text>
+  <text x="100" y="214" fill="#111827" font-size="58" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">棚卸しは 3 レベルで見る</text>
+  <rect x="120" y="300" width="1360" height="120" rx="30" fill="#DBEAFE"/>
+  <rect x="160" y="340" width="320" height="40" rx="20" fill="#2563EB"/>
+  <rect x="640" y="340" width="320" height="40" rx="20" fill="#60A5FA"/>
+  <rect x="1120" y="340" width="320" height="40" rx="20" fill="#93C5FD"/>
+  <text x="236" y="370" fill="#FFFFFF" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">業務レベル</text>
+  <text x="715" y="370" fill="#0F172A" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">担当レベル</text>
+  <text x="1195" y="370" fill="#0F172A" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">作業レベル</text>
+  <rect x="120" y="470" width="400" height="240" rx="28" fill="#FFFFFF" stroke="#BFDBFE"/>
+  <rect x="600" y="470" width="400" height="240" rx="28" fill="#FFFFFF" stroke="#BFDBFE"/>
+  <rect x="1080" y="470" width="400" height="240" rx="28" fill="#FFFFFF" stroke="#BFDBFE"/>
+  <text x="160" y="528" fill="#111827" font-size="30" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">業務レベル</text>
+  <text x="160" y="584" fill="#374151" font-size="26" font-family="Inter, Noto Sans JP, sans-serif">申請受付 → 内容確認</text>
+  <text x="160" y="622" fill="#374151" font-size="26" font-family="Inter, Noto Sans JP, sans-serif">→ 承認 → 反映</text>
+  <text x="160" y="660" fill="#374151" font-size="26" font-family="Inter, Noto Sans JP, sans-serif">役割が変わる流れ</text>
+  <text x="640" y="528" fill="#111827" font-size="30" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">担当レベル</text>
+  <text x="640" y="584" fill="#374151" font-size="26" font-family="Inter, Noto Sans JP, sans-serif">内容確認担当として</text>
+  <text x="640" y="622" fill="#374151" font-size="26" font-family="Inter, Noto Sans JP, sans-serif">不足確認、妥当性確認、</text>
+  <text x="640" y="660" fill="#374151" font-size="26" font-family="Inter, Noto Sans JP, sans-serif">確認結果の返却</text>
+  <text x="1120" y="528" fill="#111827" font-size="30" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">作業レベル</text>
+  <text x="1120" y="584" fill="#374151" font-size="26" font-family="Inter, Noto Sans JP, sans-serif">画面確認、台帳更新、</text>
+  <text x="1120" y="622" fill="#374151" font-size="26" font-family="Inter, Noto Sans JP, sans-serif">申請者への連絡文作成</text>
+  <text x="1120" y="660" fill="#374151" font-size="26" font-family="Inter, Noto Sans JP, sans-serif">最後に具体化する</text>
+</svg>

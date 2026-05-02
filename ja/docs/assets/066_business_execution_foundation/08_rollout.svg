@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <rect width="1600" height="900" fill="#F8F9FA"/>
+  <rect x="0" y="788" width="1600" height="112" fill="#EFF6FF"/>
+  <rect x="0" y="788" width="1600" height="4" fill="#2563EB"/>
+  <text x="100" y="128" fill="#2563EB" font-size="26" font-family="Inter, Noto Sans JP, sans-serif" font-weight="700" letter-spacing="5">07 / HOW TO START</text>
+  <text x="100" y="214" fill="#111827" font-size="58" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">1業務を取り込む進め方</text>
+  <rect x="120" y="300" width="250" height="360" rx="28" fill="#FFFFFF" stroke="#D1D5DB"/>
+  <rect x="410" y="300" width="250" height="360" rx="28" fill="#FFFFFF" stroke="#D1D5DB"/>
+  <rect x="700" y="300" width="250" height="360" rx="28" fill="#FFFFFF" stroke="#D1D5DB"/>
+  <rect x="990" y="300" width="250" height="360" rx="28" fill="#FFFFFF" stroke="#D1D5DB"/>
+  <rect x="1280" y="300" width="220" height="360" rx="28" fill="#FFFFFF" stroke="#D1D5DB"/>
+  <text x="150" y="358" fill="#2563EB" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">1</text>
+  <text x="150" y="402" fill="#111827" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">1業務を選ぶ</text>
+  <text x="150" y="458" fill="#374151" font-size="24" font-family="Inter, Noto Sans JP, sans-serif">前後の相手が明確で</text>
+  <text x="150" y="492" fill="#374151" font-size="24" font-family="Inter, Noto Sans JP, sans-serif">繰り返しがある業務</text>
+  <text x="440" y="358" fill="#2563EB" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">2</text>
+  <text x="440" y="402" fill="#111827" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">1枚で流れを書く</text>
+  <text x="440" y="458" fill="#374151" font-size="24" font-family="Inter, Noto Sans JP, sans-serif">前工程 / 自分 / 後工程</text>
+  <text x="440" y="492" fill="#374151" font-size="24" font-family="Inter, Noto Sans JP, sans-serif">だけ先に置く</text>
+  <text x="730" y="358" fill="#2563EB" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">3</text>
+  <text x="730" y="402" fill="#111827" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">担当を埋める</text>
+  <text x="730" y="458" fill="#374151" font-size="24" font-family="Inter, Noto Sans JP, sans-serif">開始条件 / 入力 / 判断</text>
+  <text x="730" y="492" fill="#374151" font-size="24" font-family="Inter, Noto Sans JP, sans-serif">出力 / 差し戻し</text>
+  <text x="1020" y="358" fill="#2563EB" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">4</text>
+  <text x="1020" y="402" fill="#111827" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">1回回す</text>
+  <text x="1020" y="458" fill="#374151" font-size="24" font-family="Inter, Noto Sans JP, sans-serif">戻り、詰まり、</text>
+  <text x="1020" y="492" fill="#374151" font-size="24" font-family="Inter, Noto Sans JP, sans-serif">判断不能点を見る</text>
+  <text x="1310" y="358" fill="#2563EB" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">5</text>
+  <text x="1310" y="402" fill="#111827" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">修正して広げる</text>
+  <text x="1310" y="458" fill="#374151" font-size="24" font-family="Inter, Noto Sans JP, sans-serif">他業務へ</text>
+  <text x="1310" y="492" fill="#374151" font-size="24" font-family="Inter, Noto Sans JP, sans-serif">横展開する</text>
+  <text x="100" y="734" fill="#1F2937" font-size="30" font-family="Inter, Noto Sans JP, sans-serif" font-weight="700">最初の目標は、業務全体を完成させることではなく、1業務を回る形にすること。</text>
+</svg>

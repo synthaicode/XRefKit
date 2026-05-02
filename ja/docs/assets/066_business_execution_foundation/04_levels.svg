@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <rect width="1600" height="900" fill="#F8F9FA"/>
+  <rect x="0" y="788" width="1600" height="112" fill="#EFF6FF"/>
+  <rect x="0" y="788" width="1600" height="4" fill="#2563EB"/>
+  <text x="100" y="128" fill="#2563EB" font-size="26" font-family="Inter, Noto Sans JP, sans-serif" font-weight="700" letter-spacing="5">03 / STARTING POINT</text>
+  <text x="100" y="214" fill="#111827" font-size="58" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">棚卸しの出発点は「自分の1つ上」</text>
+  <rect x="100" y="300" width="1400" height="120" rx="28" fill="#E5E7EB"/>
+  <rect x="140" y="328" width="350" height="64" rx="18" fill="#D1D5DB"/>
+  <rect x="625" y="328" width="350" height="64" rx="18" fill="#BFDBFE"/>
+  <rect x="1110" y="328" width="350" height="64" rx="18" fill="#D1D5DB"/>
+  <text x="210" y="371" fill="#111827" font-size="30" font-family="Inter, Noto Sans JP, sans-serif" font-weight="700">前工程</text>
+  <text x="734" y="371" fill="#1D4ED8" font-size="30" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">自分の担当</text>
+  <text x="1185" y="371" fill="#111827" font-size="30" font-family="Inter, Noto Sans JP, sans-serif" font-weight="700">後工程</text>
+  <text x="520" y="372" fill="#6B7280" font-size="38" font-family="Inter, Noto Sans JP, sans-serif">→</text>
+  <text x="1005" y="372" fill="#6B7280" font-size="38" font-family="Inter, Noto Sans JP, sans-serif">→</text>
+  <rect x="100" y="470" width="660" height="240" rx="28" fill="#FFFFFF" stroke="#D1D5DB"/>
+  <rect x="840" y="470" width="660" height="240" rx="28" fill="#FFFFFF" stroke="#D1D5DB"/>
+  <text x="140" y="528" fill="#111827" font-size="30" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">最初に見えるようにすること</text>
+  <text x="140" y="590" fill="#374151" font-size="27" font-family="Inter, Noto Sans JP, sans-serif">・何を受け取ると開始されるか</text>
+  <text x="140" y="636" fill="#374151" font-size="27" font-family="Inter, Noto Sans JP, sans-serif">・誰から来て、誰へ返すか</text>
+  <text x="140" y="682" fill="#374151" font-size="27" font-family="Inter, Noto Sans JP, sans-serif">・どこで止まり、どこで差し戻すか</text>
+  <text x="880" y="528" fill="#111827" font-size="30" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">後で細かくすればよいこと</text>
+  <text x="880" y="590" fill="#374151" font-size="27" font-family="Inter, Noto Sans JP, sans-serif">・画面操作の順番</text>
+  <text x="880" y="636" fill="#374151" font-size="27" font-family="Inter, Noto Sans JP, sans-serif">・ツール固有の入力手順</text>
+  <text x="880" y="682" fill="#374151" font-size="27" font-family="Inter, Noto Sans JP, sans-serif">・文言テンプレートの細部</text>
+</svg>

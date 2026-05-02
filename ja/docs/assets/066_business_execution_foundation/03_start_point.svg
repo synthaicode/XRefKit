@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <rect width="1600" height="900" fill="#F8F9FA"/>
+  <rect x="0" y="788" width="1600" height="112" fill="#EFF6FF"/>
+  <rect x="0" y="788" width="1600" height="4" fill="#2563EB"/>
+  <text x="100" y="128" fill="#2563EB" font-size="26" font-family="Inter, Noto Sans JP, sans-serif" font-weight="700" letter-spacing="5">02 / EXAMPLE OF THE PROBLEM</text>
+  <text x="100" y="214" fill="#111827" font-size="56" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">例で見る「個人作業から始める」問題</text>
+  <rect x="100" y="288" width="1400" height="108" rx="28" fill="#E5E7EB"/>
+  <rect x="140" y="314" width="250" height="56" rx="16" fill="#D1D5DB"/>
+  <rect x="470" y="314" width="270" height="56" rx="16" fill="#BFDBFE"/>
+  <rect x="820" y="314" width="250" height="56" rx="16" fill="#D1D5DB"/>
+  <rect x="1150" y="314" width="250" height="56" rx="16" fill="#D1D5DB"/>
+  <text x="195" y="351" fill="#111827" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="700">申請受付</text>
+  <text x="552" y="351" fill="#1D4ED8" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">内容確認</text>
+  <text x="896" y="351" fill="#111827" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="700">承認</text>
+  <text x="1236" y="351" fill="#111827" font-size="28" font-family="Inter, Noto Sans JP, sans-serif" font-weight="700">反映</text>
+  <text x="405" y="351" fill="#6B7280" font-size="34" font-family="Inter, Noto Sans JP, sans-serif">→</text>
+  <text x="755" y="351" fill="#6B7280" font-size="34" font-family="Inter, Noto Sans JP, sans-serif">→</text>
+  <text x="1090" y="351" fill="#6B7280" font-size="34" font-family="Inter, Noto Sans JP, sans-serif">→</text>
+  <rect x="100" y="450" width="640" height="250" rx="28" fill="#FEE2E2"/>
+  <rect x="780" y="450" width="720" height="250" rx="28" fill="#DBEAFE"/>
+  <text x="140" y="508" fill="#991B1B" font-size="30" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">内容確認だけを先に手順化すると</text>
+  <text x="140" y="568" fill="#7F1D1D" font-size="26" font-family="Inter, Noto Sans JP, sans-serif">・承認者が差し戻す条件が見えない</text>
+  <text x="140" y="612" fill="#7F1D1D" font-size="26" font-family="Inter, Noto Sans JP, sans-serif">・不足資料が来たときの戻し先が曖昧になる</text>
+  <text x="140" y="656" fill="#7F1D1D" font-size="26" font-family="Inter, Noto Sans JP, sans-serif">・確認結果を何として返すかが揃わない</text>
+  <text x="820" y="508" fill="#1D4ED8" font-size="30" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">最初に見えているべきこと</text>
+  <text x="820" y="568" fill="#1E3A8A" font-size="26" font-family="Inter, Noto Sans JP, sans-serif">・何を受け取れば確認開始か</text>
+  <text x="820" y="612" fill="#1E3A8A" font-size="26" font-family="Inter, Noto Sans JP, sans-serif">・確認結果を誰へどの形式で返すか</text>
+  <text x="820" y="656" fill="#1E3A8A" font-size="26" font-family="Inter, Noto Sans JP, sans-serif">・差し戻しと再確認の境界はどこか</text>
+</svg>

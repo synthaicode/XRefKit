@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <rect width="1600" height="900" fill="#F8F9FA"/>
+  <rect x="0" y="788" width="1600" height="112" fill="#EFF6FF"/>
+  <rect x="0" y="788" width="1600" height="4" fill="#2563EB"/>
+  <text x="100" y="128" fill="#2563EB" font-size="26" font-family="Inter, Noto Sans JP, sans-serif" font-weight="700" letter-spacing="5">01 / COMMON MISTAKE</text>
+  <text x="100" y="214" fill="#111827" font-size="58" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">まず自分の作業手順から書かない</text>
+  <rect x="100" y="288" width="640" height="370" rx="28" fill="#FEE2E2"/>
+  <rect x="780" y="288" width="720" height="370" rx="28" fill="#DBEAFE"/>
+  <text x="140" y="346" fill="#991B1B" font-size="30" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">個人手順から始めると起こること</text>
+  <text x="140" y="410" fill="#7F1D1D" font-size="27" font-family="Inter, Noto Sans JP, sans-serif">・前後の担当者との受け渡しが抜ける</text>
+  <text x="140" y="460" fill="#7F1D1D" font-size="27" font-family="Inter, Noto Sans JP, sans-serif">・差し戻し条件や確認点が後付けになる</text>
+  <text x="140" y="510" fill="#7F1D1D" font-size="27" font-family="Inter, Noto Sans JP, sans-serif">・個人のやり方は見えるが業務境界は見えない</text>
+  <text x="140" y="560" fill="#7F1D1D" font-size="27" font-family="Inter, Noto Sans JP, sans-serif">・他者や AI に渡せる単位になりにくい</text>
+  <text x="820" y="346" fill="#1D4ED8" font-size="30" font-family="Inter, Noto Sans JP, sans-serif" font-weight="800">この基盤で先に固定したいこと</text>
+  <text x="820" y="410" fill="#1E3A8A" font-size="27" font-family="Inter, Noto Sans JP, sans-serif">・何を受け取って始まるか</text>
+  <text x="820" y="460" fill="#1E3A8A" font-size="27" font-family="Inter, Noto Sans JP, sans-serif">・どこで判断が入り、何を根拠にするか</text>
+  <text x="820" y="510" fill="#1E3A8A" font-size="27" font-family="Inter, Noto Sans JP, sans-serif">・何を返したら次へ進めるか</text>
+  <text x="820" y="560" fill="#1E3A8A" font-size="27" font-family="Inter, Noto Sans JP, sans-serif">・誰に渡り、どこで止まるか</text>
+  <text x="100" y="724" fill="#374151" font-size="30" font-family="Inter, Noto Sans JP, sans-serif" font-weight="700">個人作業の手順書ではなく、受け渡し可能な業務単位を先に定義する。</text>
+</svg>
