@@ -21,6 +21,18 @@ npm start
 
 既定の URL は `http://127.0.0.1:3087` です。
 
+## 品質チェック
+
+```powershell
+cd projects/flow-monitor-dashboard
+npm run check
+```
+
+現在の最小基準:
+
+- JavaScript 構文チェック
+- 監視用 JSON ファイルの parse 検証
+
 ## 配置前提
 
 このアプリ自身も `projects/` 配下にありますが、自己ディレクトリはスキャン対象から除外します。

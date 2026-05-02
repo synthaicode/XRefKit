@@ -5,7 +5,8 @@
   "description": "Flow monitoring dashboard for brownfield projects stored under projects/",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "check": "node --check server.js && node scripts/check.mjs"
   },
   "engines": {
     "node": ">=18"
