@@ -5,6 +5,7 @@ import matter from "gray-matter";
 import { compileMDX } from "next-mdx-remote/rsc";
 import aiOrganizationConfig from "../decks/ai-organization/deck.config";
 import aiCharacteristicsConfig from "../decks/ai-characteristics/deck.config";
+import businessExecutionFoundationConfig from "../decks/business-execution-foundation/deck.config";
 import effectiveAiUseConfig from "../decks/effective-ai-use/deck.config";
 import { getMdxComponents } from "../components/mdx";
 import type { DeckConfig } from "./deck-config";
@@ -30,6 +31,7 @@ const DECKS: DeckConfig[] = [
   aiCharacteristicsConfig,
   effectiveAiUseConfig,
   aiOrganizationConfig,
+  businessExecutionFoundationConfig,
 ];
 
 function deckDir(slug: string) {
