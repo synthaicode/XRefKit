@@ -79,6 +79,7 @@ Start the system quality feedback loop when any of the following occurs:
 
 The feedback loop must produce a record containing:
 
+- feedback ID
 - triggering workflow
 - triggering artifact or finding
 - affected owner group
@@ -89,11 +90,19 @@ The feedback loop must produce a record containing:
   - Execution
   - Monitoring and Control
   - Closure
+- severity:
+  - `critical`
+  - `high`
+  - `medium`
+  - `low`
 - evidence for the diagnosis
 - immediate containment action
 - required upstream corrective action
 - next responsible group
 - OR improvement ID and execution owner
+- approval owner
+- first seen date
+- last updated date
 - recovery condition
 - re-observation condition
 - whether human approval is required
@@ -143,6 +152,10 @@ The feedback loop stores its outputs in two places:
 
 Later Planning Group cycles must start from the canonical register and then open the linked detailed record when a row is still `open` or `in_progress`.
 
+When multiple structural issues are active, Planning Group should use the register `severity` field as the default pickup order and use `first_seen` and `last_updated` to judge persistence and staleness.
+
+The register is operational only when each non-placeholder row points to an existing detailed record under `work/retrospectives/`.
+
 ## Relation To Existing Flows
 
 - [Closure workflow](034_closure_workflow.md#xid-8B31F02A4003):
@@ -170,6 +183,12 @@ It is also not complete unless the OR loop defines:
 - who must execute it
 - how recovery will be judged
 - how re-observation will be performed
+
+A structural issue should move to `closed` in the canonical register only when:
+
+1. corrective action has been implemented
+2. the recovery condition has been satisfied
+3. re-observation has completed with no recurrence
 
 ## Related
 

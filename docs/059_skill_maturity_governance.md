@@ -6,8 +6,17 @@
 This page defines how Skills mature in XRefKit.
 
 The repository does not treat a new Skill as a fully completed artifact at
-creation time. A Skill is a managed operating asset that becomes clearer
-through use, observation, review, and refinement.
+creation time.
+
+A Skill is not something that becomes complete just because its procedure text
+was written once. Its practical value depends on whether the operating boundary
+around it is clear: what the Skill may decide by itself, what must remain
+explicit as unknown or risk, what must be handed back to a human, and what
+evidence is needed before that handoff is acceptable.
+
+That boundary rarely becomes clear at the moment of creation. It becomes clear
+through use, observation, review, and refinement. `maturity` exists to show how
+far that clarification has actually progressed.
 
 ## Core Policy
 
@@ -16,6 +25,8 @@ through use, observation, review, and refinement.
 - Use runtime logs, judgment logs, review notes, and retrospectives to observe
   missing rules, missing references, weak boundaries, and repeated judgment
   ambiguity.
+- Treat maturity as the clarity level of the Skill's operating boundary with
+  humans, not as a cosmetic progress label.
 - Promote a Skill only when the target maturity conditions are actually met.
 - Keep the current maturity explicit in `meta.md` through `maturity` or
   `status`.
@@ -24,10 +35,10 @@ through use, observation, review, and refinement.
 
 | Maturity | Meaning | Load-ready | Main expectation |
 |------|------|------|------|
-| `draft` | hypothesis record for a new Skill | no | identify purpose, rough I/O, and initial procedure candidate |
-| `trial` | runnable but still being clarified through use | yes | connect operation to observations and refine missing controls |
-| `stable` | operationally complete Skill | yes | explicit runtime, guard, references, and operating contract |
-| `governed` | stable Skill with governance and audit linkage | yes | explicit governance references and promotion evidence |
+| `draft` | hypothesis record for a new Skill | no | identify purpose, rough I/O, and the first guess at the human/Skill boundary |
+| `trial` | runnable but still being clarified through use | yes | connect operation to observations and discover where the boundary is still weak or ambiguous |
+| `stable` | operationally complete Skill | yes | explicit runtime, guard, references, operating contract, and a dependable handoff boundary |
+| `governed` | stable Skill with governance and audit linkage | yes | explicit governance references, promotion evidence, and an auditable responsibility boundary |
 | `deprecated` | kept for compatibility/history, not for new use | no | preserve traceability and replacement path if applicable |
 
 ## Meta Schema By Maturity

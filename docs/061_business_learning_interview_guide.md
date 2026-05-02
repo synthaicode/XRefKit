@@ -22,16 +22,19 @@ The AI should not ask for the full business map as a startup condition.
 
 Instead, the AI should:
 
-1. accept partial fragments
-2. build a provisional business hypothesis
-3. identify the smallest missing point that blocks confidence
-4. ask the next best question
-5. update the structure
+1. start from the business goal or expected result
+2. trace backward from that goal
+3. identify the judgment needed to reach the goal
+4. identify the domain knowledge and inputs needed for that judgment
+5. identify the quality viewpoints that define acceptable output
+6. ask the next best question
+7. update the structure
 
 ## Valid Starting Seeds
 
 The interview may start from any one of the following:
 
+- one goal or expected result
 - one task name
 - one complaint or bottleneck
 - one role name
@@ -44,8 +47,13 @@ The interview may start from any one of the following:
 
 Each cycle should produce:
 
+- goal hypothesis
 - what is known now
 - current business hypothesis
+- decision hypothesis
+- required domain knowledge hypothesis
+- required input-information hypothesis
+- quality viewpoint hypothesis
 - unresolved points
 - next confirmation question
 - candidate scoped business unit if one is already visible
@@ -58,24 +66,26 @@ Ask the smallest question that most reduces ambiguity.
 
 Prefer questions in this order:
 
-1. ownership boundary
-2. start trigger
-3. output or return point
-4. send-back condition
-5. decision basis
-6. exception and escalation
+1. goal or expected result
+2. acceptance condition for that goal
+3. judgment needed to produce that result
+4. domain knowledge needed for that judgment
+5. input information needed for that judgment
+6. quality viewpoint for checking the result
+7. ownership boundary and handoff
+8. exception and escalation
 
 Do not ask broad "please explain the whole process" questions unless the user
 explicitly wants that.
 
 ## Good Question Examples
 
-- Who gives this work to you?
-- What do you return when you finish?
-- When do you send it back without finishing?
-- Who waits for your result next?
-- What makes the case easy versus hard?
-- When you cannot decide, who confirms it?
+- What is the result you want to obtain at the end?
+- How do you know that result is good enough?
+- What do you have to judge before you can produce that result?
+- What knowledge or rules do you refer to for that judgment?
+- What information has to be present before you can judge?
+- What quality points matter when you check the result?
 
 ## Bad Question Examples
 
@@ -98,12 +108,15 @@ Every cycle should keep these separate:
 
 Once the interview reveals:
 
+- goal
+- at least one key judgment
+- at least one required domain-knowledge area
+- at least one required input-information area
+- at least one quality viewpoint
 - previous side
 - current responsibility
 - next side
-- start trigger
 - output
-- key judgment point
 
 the result is ready to hand off to business intake scoping.
 

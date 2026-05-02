@@ -35,6 +35,7 @@ For those, see [Group definitions](040_group_definitions.md#xid-8B31F02A4009), [
 | Manufacturing Group | manufacturing | to Quality Group and Operations Group |
 | Quality Group | quality verification, QA review, CAB quality evaluation, closure checking | to human decision layer, to responsible execution group for return |
 | Operations Group | release planning, CAB operations evaluation | to human decision layer |
+| Marketing Group | presentation material structuring, explanatory deck production, slide-based marketing video production | to requester, to human decision layer when sign-off or claim approval is required |
 | OR Team | cross-group state presentation, structural problem handling, drift evaluation, execution control, re-observation | to responsible execution group, to human decision layer, to Planning Group for upstream prioritization |
 | Coordinator | closure escalation, out-of-scope routing | to reassigned responsible group |
 

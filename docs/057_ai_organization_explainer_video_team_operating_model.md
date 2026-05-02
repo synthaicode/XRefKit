@@ -142,12 +142,16 @@ Typical outputs:
 ### Scenario AI
 
 Builds the story order and assigns one clear message to each slide.
+It must prevent explanation jumps by making the transition reason between slides
+explicit, not only the slide-local message.
 
 Typical outputs:
 
 - chapter outline
 - one-message-per-slide script
 - slide order
+- transition rationale for each slide change
+- unresolved prerequisite list when a later slide depends on knowledge not yet introduced
 
 ### Slide Design AI
 
@@ -227,6 +231,11 @@ Typical outputs:
    marketing explanation.
 5. Define the message backbone, deck structure, and chapter sequence.
 6. Produce one-message-per-slide scenario rows.
+   For each row, state:
+   - what the viewer already knows at this point
+   - what new question or tension leads to the next slide
+   - what one new concept is being introduced now
+   - why this slide must appear before the next one
 7. Produce slide specifications and visual assets.
    For a standalone repository infographic, produce a one-page visual
    specification, render source files, and final PNG instead of a slide sequence.
@@ -245,6 +254,10 @@ The team may close work only when:
 - the presentation goal, issue map, and deck structure are explicit
 - collected information and analysis support the selected structure
 - every slide has one clear message
+- every slide transition has an explicit bridge from the previous viewer state to
+  the next message
+- any term, concept, or claim needed to understand a slide has already been
+  introduced or is restated on that slide
 - every standalone infographic has one central claim and represents the current
   repository rather than an unsupported future state
 - every non-obvious claim is traceable to repository material or marked as a

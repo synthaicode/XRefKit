@@ -1,4 +1,4 @@
-name: xref-check
+name: quality-gate
 
 on:
   pull_request:
@@ -7,14 +7,42 @@ on:
       - main
 
 jobs:
-  xref-check:
+  fm-quality:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Run xref check
+      - name: Run fm quality gate
         run: |
-          python -m fm xref check
+          python tools/run_quality_gate.py fm
+
+  slides-app-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: projects/slides-app/package-lock.json
+      - name: Run standardized quality gate
+        run: python tools/run_quality_gate.py slides-app --install-node-deps
+
+  flow-monitor-dashboard-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run standardized quality gate
+        run: python tools/run_quality_gate.py flow-monitor-dashboard
 

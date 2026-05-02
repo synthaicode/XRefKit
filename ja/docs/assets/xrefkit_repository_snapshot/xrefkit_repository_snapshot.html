@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>XRefKit Repository Snapshot JA</title>
+  <style>:root {
+  --ink: #061331;
+  --muted: #526173;
+  --blue: #174ea6;
+  --blue2: #2563eb;
+  --cyan: #087f8c;
+  --green: #0f766e;
+  --red: #dc2626;
+  --amber: #b45309;
+  --line: #b8c7dd;
+  --soft: #f6f9fe;
+  --card: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Noto Sans JP", "Yu Gothic", "Meiryo", "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: #f8fafc;
+}
+
+.canvas {
+  width: 1600px;
+  height: 900px;
+  padding: 24px 28px 26px;
+  background:
+    linear-gradient(180deg, #ffffff 0%, #f7fbff 58%, #eef6ff 100%);
+  overflow: hidden;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: start;
+  margin-bottom: 14px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 38px;
+  line-height: 1.05;
+  letter-spacing: 0;
+  max-width: 1180px;
+}
+
+.subtitle {
+  margin: 8px 0 0;
+  font-size: 17px;
+  line-height: 1.28;
+  color: var(--muted);
+}
+
+.brand {
+  min-width: 150px;
+  padding: 13px 18px 15px;
+  border-radius: 10px;
+  text-align: center;
+  color: #fff;
+  font-weight: 900;
+  font-size: 31px;
+  background: linear-gradient(135deg, #0f3f9e, #2468d8);
+  box-shadow: 0 12px 28px rgba(23, 78, 166, .25);
+}
+
+.snapshot {
+  margin-top: 7px;
+  color: var(--blue);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 325px 490px 310px 345px;
+  gap: 16px;
+  height: 590px;
+}
+
+.panel {
+  height: 590px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255,255,255,.92);
+  overflow: hidden;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, .08);
+}
+
+.panel-title {
+  padding: 9px 12px 10px;
+  text-align: center;
+  color: #fff;
+  font-size: 19px;
+  font-weight: 900;
+  background: linear-gradient(180deg, var(--blue2), var(--blue));
+}
+
+.panel.guard .panel-title,
+.panel.human .panel-title {
+  background: linear-gradient(180deg, #0891b2, #0f766e);
+}
+
+.panel-body {
+  padding: 13px;
+}
+
+.asset-list {
+  display: grid;
+  gap: 5px;
+}
+
+.asset {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  align-items: center;
+  min-height: 54px;
+  padding: 5px 9px;
+  border: 1.4px solid #b7c8e7;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #fff, #f7fbff);
+}
+
+.ico {
+  width: 34px;
+  height: 34px;
+  border: 2px solid var(--blue);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: var(--blue);
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.asset strong {
+  display: block;
+  font-size: 16px;
+}
+
+.asset span {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.2;
+}
+
+.memory-box {
+  margin-top: 7px;
+  padding: 7px 10px;
+  border: 1.4px solid #b7c8e7;
+  border-radius: 10px;
+  background: #f8fbff;
+  text-align: center;
+}
+
+.no-memory {
+  margin: 0 auto 5px;
+  width: 48px;
+  height: 48px;
+  border: 5px solid var(--red);
+  border-radius: 50%;
+  position: relative;
+}
+
+.no-memory::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 19px;
+  width: 33px;
+  height: 5px;
+  background: var(--red);
+  transform: rotate(-38deg);
+}
+
+.memory-box h2 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  color: var(--red);
+}
+
+.memory-box p,
+.note,
+.small {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.memory-box p {
+  font-size: 12px;
+  line-height: 1.22;
+}
+
+.pipeline {
+  display: grid;
+  grid-template-columns: 1fr 122px;
+  gap: 8px;
+  align-items: start;
+}
+
+.steps {
+  display: grid;
+  gap: 0;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 8px;
+  align-items: start;
+  min-height: 50px;
+  padding: 6px 8px;
+  border: 1.4px solid #b7c8e7;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #fff, #f7fbff);
+}
+
+.step h3,
+.human-card h3 {
+  margin: 0 0 3px;
+  font-size: 15.5px;
+  line-height: 1.1;
+}
+
+.step p,
+.human-card p {
+  margin: 0;
+  font-size: 10.4px;
+  line-height: 1.2;
+  color: #1f2a44;
+}
+
+.flow-down {
+  height: 13px;
+  display: grid;
+  place-items: center;
+  color: var(--green);
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.side-rule {
+  min-height: 318px;
+  padding: 8px 8px;
+  border: 1.5px solid #f0b4b4;
+  border-radius: 12px;
+  background: #fffafa;
+}
+
+.side-rule h3 {
+  margin: 0 0 8px;
+  text-align: center;
+  color: var(--red);
+  font-size: 15px;
+  line-height: 1.15;
+}
+
+.rule-card {
+  padding: 6px 6px;
+  margin-bottom: 6px;
+  border: 1px solid #f0b4b4;
+  border-radius: 8px;
+  background: #fff;
+  text-align: center;
+  font-size: 11.4px;
+  font-weight: 800;
+}
+
+.stop {
+  margin: 8px auto 6px;
+  width: 60px;
+  height: 60px;
+  clip-path: polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%);
+  background: var(--red);
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.ai-first {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 5px 11px;
+  border: 1.4px solid #b7c8e7;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.ai-first strong {
+  color: var(--blue);
+  font-size: 13px;
+}
+
+.guard-stack {
+  display: grid;
+  grid-template-columns: 1fr 88px;
+  gap: 10px;
+  align-items: center;
+}
+
+.direction {
+  display: grid;
+  gap: 6px;
+}
+
+.guard-item {
+  padding: 8px;
+  border: 1.4px solid #b6d6dc;
+  border-radius: 8px;
+  background: #f8ffff;
+  font-size: 13px;
+  font-weight: 850;
+  text-align: center;
+}
+
+.down {
+  text-align: center;
+  color: var(--green);
+  font-size: 20px;
+  line-height: .75;
+}
+
+.shield {
+  width: 72px;
+  height: 82px;
+  margin: 0 auto 10px;
+  clip-path: polygon(50% 0%,90% 15%,84% 70%,50% 100%,16% 70%,10% 15%);
+  background: var(--green);
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: 38px;
+  font-weight: 900;
+}
+
+.guard-copy {
+  text-align: center;
+  font-weight: 900;
+  color: var(--green);
+  font-size: 17px;
+  line-height: 1.08;
+}
+
+.blocked {
+  margin-top: 10px;
+  padding: 10px;
+  border-top: 2px dashed #ef4444;
+  color: #1f2a44;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.blocked strong {
+  color: var(--red);
+}
+
+.human-flow {
+  display: grid;
+  gap: 6px;
+}
+
+.human-card {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 7px;
+  min-height: 48px;
+  padding: 7px 9px;
+  border: 1.4px solid #afd4da;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #fff, #f8ffff);
+}
+
+.human-card .ico {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.bracket {
+  margin: 1px 0 1px 50px;
+  color: var(--cyan);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.xid-band {
+  margin-top: 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255,255,255,.95);
+  display: grid;
+  grid-template-columns: 1.15fr 1.15fr 1.6fr 1.15fr 1.15fr;
+  align-items: center;
+  min-height: 66px;
+  overflow: hidden;
+}
+
+.band-cell {
+  padding: 8px 15px;
+  min-height: 66px;
+  border-right: 1px dashed #9fb2cc;
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.band-cell:last-child {
+  border-right: 0;
+}
+
+.band-center {
+  text-align: center;
+  padding: 10px;
+}
+
+.band-center h2 {
+  margin: 0;
+  font-size: 21px;
+  color: var(--blue);
+}
+
+.band-center p {
+  margin: 4px 0 0;
+  color: var(--blue);
+  font-weight: 750;
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+  <main class="canvas">
+    <header class="header">
+      <div>
+        <h1>AI による作業を制御可能にする運用基盤。</h1>
+        <p class="subtitle">現在のリポジトリ像: Skillを用いる作業では、開始時に実行ログを作成し、作業項目と証跡を残す。実行とチェックを分離し、自動ゲートを通過したものだけを完了とする。</p>
+        <div class="snapshot">Repository snapshot: 2026-04-29</div>
+      </div>
+      <div class="brand">XRefKit</div>
+    </header>
+
+    <section class="main-grid">
+      <section class="panel assets">
+        <div class="panel-title">制御資産</div>
+        <div class="panel-body">
+          <div class="asset-list">
+            <div class="asset"><div class="ico">F</div><div><strong>Flow</strong><span>作業の順序と判断の流れ</span></div></div>
+            <div class="asset"><div class="ico">C</div><div><strong>Capability</strong><span>実行できる作業単位</span></div></div>
+            <div class="asset"><div class="ico">S</div><div><strong>Skill</strong><span>作業手順と運用契約</span></div></div>
+            <div class="asset"><div class="ico">K</div><div><strong>Knowledge</strong><span>参照すべき知識とルール</span></div></div>
+            <div class="asset"><div class="ico">LOG</div><div><strong>Session</strong><span>実行状態と証跡の記録</span></div></div>
+            <div class="asset"><div class="ico">XID</div><div><strong>安定参照</strong><span>文書や成果物を結ぶ固定参照</span></div></div>
+          </div>
+          <div class="memory-box">
+            <div class="no-memory"></div>
+            <h2>記憶に頼らない</h2>
+            <p>作業開始時に、現在の方針、Skill の定義、知識、証跡、引き継ぎ元を読み込んでから進める。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title">Skill 実行基盤の流れ</div>
+        <div class="panel-body pipeline">
+          <div class="steps">
+            <div class="step"><div class="ico">RUN</div><div><h3>開始ゲート</h3><p><code>fm skill run</code> がメタ情報を検査し、Skill を開く前に実行ログを作る。</p></div></div>
+            <div class="flow-down">v</div>
+            <div class="step"><div class="ico">WI</div><div><h3>作業リスト</h3><p>タスク固有の作業項目を追加し、完了またはエスカレーションまで追跡する。</p></div></div>
+            <div class="flow-down">v</div>
+            <div class="step"><div class="ico">R</div><div><h3>役割分担</h3><p>実行、チェック、引き継ぎの担当を分け、状態更新時に確認する。</p></div></div>
+            <div class="flow-down">v</div>
+            <div class="step"><div class="ico">ART</div><div><h3>成果物と証跡</h3><p>成果物と証跡リンクを必須にし、確認結果、判断、引き継ぎも明示する。</p></div></div>
+            <div class="flow-down">v</div>
+            <div class="step"><div class="ico">C</div><div><h3>不明点とリスク</h3><p>不明点、リスク、非自明な判断を本文に埋めず、完了条件として扱う。</p></div></div>
+            <div class="flow-down">v</div>
+            <div class="step"><div class="ico">QG</div><div><h3>完了と監査</h3><p><code>fm skill close</code> と品質ゲートが、不完全な実行ログを拒否する。</p></div></div>
+          </div>
+          <aside class="side-rule">
+            <h3>完了できない条件</h3>
+            <div class="rule-card">実行・確認・引き継ぎが未完了</div>
+            <div class="rule-card">作業項目・成果物が不足</div>
+            <div class="rule-card">不明点やリスクが残る</div>
+            <div class="stop">STOP</div>
+            <p class="small">判断は証跡に紐づけてから完了とする。</p>
+          </aside>
+          <div class="ai-first">
+            <p><strong>先に AI 同士で検証する</strong></p>
+            <p><strong>引き継ぎ元の完了を確認する</strong></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel guard">
+        <div class="panel-title">起動時の入力制御ガード</div>
+        <div class="panel-body">
+          <div class="guard-stack">
+            <div class="direction">
+              <div class="guard-item">起動方針</div>
+              <div class="down">v</div>
+              <div class="guard-item">Skill 定義 + 運用契約</div>
+              <div class="down">v</div>
+              <div class="guard-item">実行ログ</div>
+              <div class="down">v</div>
+              <div class="guard-item">外部からの依頼</div>
+              <div class="down">v</div>
+              <div class="guard-item">監査可能な出力</div>
+            </div>
+            <div>
+              <div class="shield">OK</div>
+              <div class="guard-copy">外部入力は上位定義を上書きできない</div>
+            </div>
+          </div>
+          <div class="blocked">
+            <p><strong>Blocked:</strong> 外部入力は、既定の flow、capability、Skill 手順、範囲、権限、エスカレーション経路を書き換えられない。</p>
+            <p><strong>引き継ぎ元:</strong> 受け取る側は、元の実行ログが完了済みであることを確認してから文脈として使う。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel human">
+        <div class="panel-title">人間との責任境界と成熟度</div>
+        <div class="panel-body">
+          <div class="human-flow">
+            <div class="human-card"><div class="ico">DR</div><div><h3>Draft</h3><p>仮説段階の記録。人間との責任境界が見えるまでは運用に適用しない。</p></div></div>
+            <div class="human-card"><div class="ico">TR</div><div><h3>Trial</h3><p>実行しながら観察し、弱い境界や曖昧な判断点を見つける。</p></div></div>
+            <div class="human-card"><div class="ico">ST</div><div><h3>Stable</h3><p>実行ログ、ガード、参照、引き継ぎ条件が明示されている。</p></div></div>
+            <div class="human-card"><div class="ico">GV</div><div><h3>Governed</h3><p>安定したSkillに、統制上の根拠と監査可能な責任境界が加わっている。</p></div></div>
+            <div class="bracket">判断のトレードオフは人間に戻す</div>
+            <div class="human-card"><div class="ico">H</div><div><h3>人間の判断</h3><p>リスク受容、範囲変更、優先度、業務上のトレードオフを人間が決める。</p></div></div>
+            <div class="human-card"><div class="ico">A</div><div><h3>監査証跡</h3><p>判断、証跡、確認結果、懸念、承認、引き継ぎをログに残す。</p></div></div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="xid-band">
+      <div class="band-cell"><div class="ico">XID</div><p class="small"><strong>安定した参照点</strong><br>文書、方針、Skill、情報源、成果物を結ぶ。</p></div>
+      <div class="band-cell"><div class="ico">LOG</div><p class="small"><strong>セッション記録</strong><br>実行状態、役割ごとの作業、完了イベントを残す。</p></div>
+      <div class="band-center"><h2>実行証跡レイヤー</h2><p>Skill、成果物、確認結果、懸念、引き継ぎを横断して追跡する土台</p></div>
+      <div class="band-cell"><div class="ico">JDG</div><p class="small"><strong>判断記録</strong><br>非自明な判断と人間向けの判断材料を記録する。</p></div>
+      <div class="band-cell"><div class="ico">CI</div><p class="small"><strong>品質監査</strong><br>統制外のログと未完了のSkill実行を検出する。</p></div>
+    </section>
+
+  </main>
+</body>
+</html>

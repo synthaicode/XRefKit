@@ -13,6 +13,7 @@ requiring the human to prepare a complete process description in advance.
 
 ## Core Rules
 
+- start from the business goal or expected result when possible
 - accept partial information as valid starting input
 - separate observed facts from AI inference
 - ask the smallest next question that reduces ambiguity
@@ -23,8 +24,13 @@ requiring the human to prepare a complete process description in advance.
 
 Each interview cycle must produce:
 
+- `goal_hypothesis`
 - `learned_now`
 - `current_hypothesis`
+- `decision_hypothesis`
+- `required_domain_knowledge`
+- `required_input_information`
+- `quality_viewpoints`
 - `open_questions`
 - `next_best_question`
 - `candidate_business_unit`
@@ -35,17 +41,20 @@ Each interview cycle must produce:
 
 Ask in this order unless a later item is the immediate blocker:
 
-1. ownership boundary
-2. start trigger
-3. output or handoff result
-4. send-back condition
-5. decision basis
-6. exception and escalation
+1. goal or expected result
+2. acceptance condition for that goal
+3. judgment needed to reach the goal
+4. domain knowledge needed for the judgment
+5. input information needed for the judgment
+6. quality viewpoint for checking the result
+7. ownership boundary and handoff
+8. exception and escalation
 
 ## Valid Starting Seeds
 
 The interview may start from:
 
+- one goal or expected result
 - one task name
 - one role
 - one artifact
@@ -71,12 +80,15 @@ Do not promote a provisional hypothesis to fact without explicit confirmation.
 
 The interview result is ready to hand off to scoping when:
 
+- goal is visible
+- at least one judgment is visible
+- at least one domain-knowledge area is visible
+- at least one input-information area is visible
+- at least one quality viewpoint is visible
 - previous side is visible
 - current responsibility is visible
 - next side is visible
-- at least one start trigger is visible
 - at least one output is visible
-- at least one judgment point is visible
 
 If these are not all visible, keep the output as interview-stage learning.
 
@@ -84,6 +96,7 @@ If these are not all visible, keep the output as interview-stage learning.
 
 Treat the cycle as weak when:
 
+- the AI does not clarify the goal before asking lower-level questions
 - the AI asks a broad question instead of the smallest next question
 - inference and human facts are mixed
 - unresolved items disappear without confirmation

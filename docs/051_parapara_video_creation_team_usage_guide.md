@@ -174,6 +174,12 @@ general-purpose agent.
 4. analyze the collected information and derive the presentation implications
 5. create the message backbone, deck structure, and chapter sequence
 6. create one-message-per-slide scenario rows
+   - before fixing slide order, write the bridge for each row:
+     - what the viewer knows now
+     - what question, doubt, or missing link causes the next row
+     - what one new idea the next row resolves
+   - if a row introduces a term, claim, or conclusion that has no prior setup,
+     insert a setup row before it instead of compressing the explanation
 7. create slide specifications and visual assets
    - for a standalone repository infographic, create a one-page visual section
      map and renderable image specification instead of a slide sequence
@@ -200,6 +206,12 @@ Before finalizing the video, confirm at least the following:
 10. the final result is understandable without extra verbal supplementation
 11. the output does not imply unsupported product, policy, or business claims
 12. the last slide includes the required license and attribution display for the assets and voices used
+13. no slide requires the viewer to infer an unstated premise that should have
+    been introduced in an earlier row
+14. each transition answers "why does this come next?" in audience language,
+    not only in author logic
+15. if beginner QA says "the explanation jumped", add a bridge row or reorder
+    rows before visual refinement
 
 For a standalone repository infographic, replace slide-specific checks with:
 
