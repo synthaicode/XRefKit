@@ -4,10 +4,10 @@
 # Skill Meta: business_learning_interview
 
 - skill_id: `business_learning_interview`
-- summary: learn a business task from a human through iterative interview and convert partial fragments into a structured business hypothesis
-- use_when: a user wants to teach the AI about a business task conversationally, only knows fragments, has tacit operational knowledge, or wants the AI to ask the next best question instead of demanding a complete process map
-- input: one or more starting seeds such as task name, role name, artifact, bottleneck, repeated error, approval point, or partial handoff, plus optional follow-up answers
-- output: interview-cycle summary with learned facts, current hypothesis, open questions, next best question, and candidate business unit
+- summary: learn a business task from a human through goal-first interview and convert partial fragments into a structured business hypothesis
+- use_when: a user wants to teach the AI about a business task conversationally, but can better explain the intended goal than the full process, or only knows fragments, tacit operational knowledge, bottlenecks, or partial handoffs
+- input: one or more starting seeds such as goal or expected result, task name, role name, artifact, bottleneck, repeated error, approval point, or partial handoff, plus optional follow-up answers
+- output: interview-cycle summary with goal hypothesis, learned facts, current hypothesis, decision hypothesis, required domain knowledge, required input information, quality viewpoints, open questions, next best question, and candidate business unit
 - maturity: `trial`
 - execution_mode: `local_default`
 - guard_policy: `required`
@@ -21,12 +21,12 @@
   - unknown_risk_policy: `explicit`
   - closure_gate: `required`
   - handoff_policy: `explicit`
-- constraints: do not demand a complete process description before helping; do not mix human facts and AI inference; do not ask broad dump-everything questions when a smaller question can reduce ambiguity; keep unresolved items explicit
+- constraints: do not demand a complete process description before helping; do not skip the goal and jump directly to local tasks; do not mix human facts and AI inference; do not ask broad dump-everything questions when a smaller question can reduce ambiguity; keep unresolved items explicit
 - lifecycle:
-  - startup: confirm the visible seed and load interview rules and template
-  - planning: identify the smallest missing point and choose the next best question
-  - execution: produce one interview cycle with learned facts, current hypothesis, open questions, and next best question
-  - monitoring_and_control: downgrade overconfident inference, broad questioning, or hidden ambiguity
+  - startup: confirm the visible seed, prefer goal or expected result when available, and load interview rules and template
+  - planning: identify the goal first, then the smallest missing point and choose the next best question
+  - execution: produce one interview cycle with goal hypothesis, learned facts, current hypothesis, decision hypothesis, domain knowledge needs, input information needs, quality viewpoints, open questions, and next best question
+  - monitoring_and_control: downgrade overconfident inference, broad questioning, hidden ambiguity, or lower-level detail that appears before the goal is clarified
   - closure: return the interview-cycle output and the recommended next question or transition to scoping
 - tags: `operations`, `learning`, `interview`, `business`, `intake`
 - skill_doc: `./SKILL.md`

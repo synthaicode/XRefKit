@@ -10,6 +10,7 @@ partial fragments into a structured business hypothesis.
 
 This Skill is earlier than business scoping.
 Use it when the human cannot yet describe the business in a structured way.
+The preferred starting point is the goal or expected result of the business.
 
 Use the canonical rules in
 `knowledge/operations/120_business_learning_interview_rules.md#xid-7B3E5D1A6103`.
@@ -28,6 +29,7 @@ Use the canonical rules in
 ## Inputs
 
 - one or more starting seeds such as:
+  - goal or expected result
   - task name
   - role name
   - artifact
@@ -42,11 +44,13 @@ Use the canonical rules in
 - one interview-cycle record
 - explicit separation between learned facts and AI inference
 - one next best question
+- goal, decision, domain-knowledge, input-information, and quality hypotheses
 - candidate business unit when visible
 
 ## Startup
 
 - Confirm the visible seed.
+- If a goal is available, treat it as the primary anchor.
 - Do not ask for the complete business map.
 - Load the interview rules and template.
 
@@ -60,39 +64,49 @@ Use the canonical rules in
 
 ## Planning
 
+- Identify the goal or expected result first.
+- If the goal is not yet explicit, ask for it before lower-level details.
 - Identify what is already known.
 - Identify the smallest missing point that most reduces ambiguity.
 - Choose the next question from this priority order:
-  1. ownership boundary
-  2. start trigger
-  3. output or handoff result
-  4. send-back condition
-  5. decision basis
-  6. exception and escalation
+  1. goal or expected result
+  2. acceptance condition for that goal
+  3. judgment needed to reach the goal
+  4. domain knowledge needed for that judgment
+  5. input information needed for that judgment
+  6. quality viewpoint for checking the result
+  7. ownership boundary and handoff
+  8. exception and escalation
 - Ask only one or a very small number of questions per cycle when possible.
 
 ## Execution
 
 1. Write `learned_now` from explicit human input only.
-2. Write `current_hypothesis` as provisional AI structure.
-3. Write `open_questions`.
-4. Choose `next_best_question`.
-5. If enough structure is visible, write `candidate_business_unit` with:
+2. Write `goal_hypothesis`.
+3. Write `current_hypothesis` as provisional AI structure.
+4. Write `decision_hypothesis`.
+5. Write `required_domain_knowledge`.
+6. Write `required_input_information`.
+7. Write `quality_viewpoints`.
+8. Write `open_questions`.
+9. Choose `next_best_question`.
+10. If enough structure is visible, write `candidate_business_unit` with:
    - `previous_side`
    - `current_scope`
    - `next_side`
-6. If scoping readiness is reached, recommend handoff to
+11. If scoping readiness is reached, recommend handoff to
    `business_intake_scoping`.
-7. Use the template in
+12. Use the template in
    `references/business_learning_interview_template.md` or equivalent
    structure.
 
 ## Monitoring and Control
 
 - Downgrade any hidden assumption into explicit hypothesis.
+- Downgrade the result if the goal is still vague but lower-level detail is presented as settled.
 - Reject broad "explain everything" questioning when a smaller question would
   work.
-- Keep the cycle incomplete when previous side, next side, or output is still
+- Keep the cycle incomplete when goal, judgment, domain knowledge, input information, quality viewpoint, previous side, next side, or output is still
   ambiguous.
 - Preserve contradictions when the human statements conflict.
 
@@ -109,6 +123,7 @@ Use the canonical rules in
 ## Rules
 
 - Do not demand a complete business description before helping.
+- Do not skip the goal and jump directly to local tasks.
 - Do not mix human facts and AI inference.
 - Do not ask the widest question first.
 - Prefer the smallest useful question.

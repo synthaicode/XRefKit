@@ -37,6 +37,12 @@ Create short marketing explainer videos that are understandable to first-time vi
 - Define the core term early, within the first two or three slides.
 - Use a clear progression: problem -> attempted solution -> new human burden -> next structure.
 - Make each step answer what changed for humans, not only what changed technically.
+- Before locking slide order, write one bridge line per step:
+  - what the viewer understands now
+  - what question or doubt remains
+  - what the next slide resolves
+- If a slide needs a concept that has not been introduced yet, add a setup slide
+  instead of hiding the jump inside narration.
 - Add at least one concrete example and one Before / After slide.
 - Avoid explaining implementation brands or internal repository names unless the user explicitly asks.
 - Use short question-only states before full explanation states so viewers can follow the narration.
@@ -87,6 +93,10 @@ Create short marketing explainer videos that are understandable to first-time vi
   - concrete example slide
   - Before / After slide
   - license/credit slide
+- Check scenario continuity before polishing visuals:
+  - no term appears before it is set up
+  - no conclusion appears before the problem and failed alternative are visible
+  - each slide can answer why it follows the previous slide
 - Build the MP4 and verify:
   - resolution
   - fps
