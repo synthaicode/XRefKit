@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Team Operating Boundary Preview</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+    }
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 20px 48px;
+    }
+    h1 {
+      margin: 0 0 20px;
+      font-size: 28px;
+    }
+    .viewer {
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 16px;
+    }
+    iframe {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: white;
+      border: 0;
+      border-radius: 6px;
+    }
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 14px;
+    }
+    button {
+      min-width: 92px;
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 6px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #475569;
+    }
+    .counter {
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+    .narration {
+      margin-top: 16px;
+      padding: 18px;
+      border-left: 5px solid #60a5fa;
+      background: #1e293b;
+      border-radius: 6px;
+      font-size: 18px;
+      line-height: 1.65;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p><a href="../../" style="color:#93c5fd;font-weight:700;text-decoration:none">← Back to English slides</a></p>
+    <h1>AI Team Operating Boundary Preview</h1>
+    <section class="viewer">
+      <iframe id="slide" src="../../assets/064_ai_team_operating_boundary/01_title_q.html" title="slide preview"></iframe>
+      <div class="controls">
+        <button class="secondary" id="prev">Prev</button>
+        <button id="next">Next</button>
+        <button class="secondary" id="play">Play</button>
+        <span class="counter" id="counter"></span>
+      </div>
+      <div class="narration" id="narration"></div>
+    </section>
+  </main>
+  <script>
+    const slides = [
+      ["../../assets/064_ai_team_operating_boundary/01_title_q.html", "Question: Once an AI Team is defined, what should humans still decide?"],
+      ["../../assets/064_ai_team_operating_boundary/01_title.html", "Answer: The next question is not whether AI helps. It is where human responsibility must remain visible. An AI Team becomes governable when it fixes what AI may handle, what must stay explicit as uncertainty or risk, and what must be handed back to a human with evidence."],
+      ["../../assets/064_ai_team_operating_boundary/02_review_q.html", "Question: Can't humans simply review more carefully?"],
+      ["../../assets/064_ai_team_operating_boundary/02_review.html", "Answer: More review is not the same as a better boundary. If humans keep watching everything, the operating burden stays on them. A real boundary limits review to defined return points such as unresolved risk, non-trivial judgment, failed checks, or release approval."],
+      ["../../assets/064_ai_team_operating_boundary/03_concern_q.html", "Question: What should force work back to humans?"],
+      ["../../assets/064_ai_team_operating_boundary/03_concern.html", "Answer: Unknowns, unresolved risks, and non-trivial judgments are the first signals that the boundary has been reached. The team must stop guessing, keep those states visible, and return them with evidence."],
+      ["../../assets/064_ai_team_operating_boundary/04_roles_q.html", "Question: If the same AI produces and checks the work, is that enough?"],
+      ["../../assets/064_ai_team_operating_boundary/04_roles.html", "Answer: No. Self-certification hides omissions and weak evidence. Execution and checking should be separate responsibilities so humans can inspect the check result instead of replaying the whole run."],
+      ["../../assets/064_ai_team_operating_boundary/05_closure_q.html", "Question: Why do we need an explicit closure gate?"],
+      ["../../assets/064_ai_team_operating_boundary/05_closure.html", "Answer: Because incomplete evidence, unresolved concerns, and skipped checks otherwise disappear into a casual done claim. The closure gate keeps unfinished work from being released as accepted work."],
+      ["../../assets/064_ai_team_operating_boundary/06_handoff_q.html", "Question: If the work is checked, isn't that enough?"],
+      ["../../assets/064_ai_team_operating_boundary/06_handoff.html", "Answer: No. Handoff is where responsibility changes. The next owner still needs the output, evidence, unresolved edges, and the acceptance condition in a form they can use without rediscovering the context."],
+      ["../../assets/064_ai_team_operating_boundary/07_maturity_q.html", "Question: Why do Skills need maturity levels at all?"],
+      ["../../assets/064_ai_team_operating_boundary/07_maturity.html", "Answer: Because procedure text can exist before the practical human boundary is clear. Skill maturity shows how far the team has clarified what AI may do, what must be returned, and what is auditable."],
+      ["../../assets/064_ai_team_operating_boundary/08_conclusion_q.html", "Question: What should an organization design first?"],
+      ["../../assets/064_ai_team_operating_boundary/08_conclusion.html", "Answer: Not more prompts, and not more review load. First design the human boundary and the conditions that govern return, closure, and handoff. AI convenience becomes organizational control only when the responsibility boundary is explicit."]
+    ];
+    let index = 0;
+    let timer = null;
+    const slide = document.getElementById("slide");
+    const narration = document.getElementById("narration");
+    const counter = document.getElementById("counter");
+    function render() {
+      slide.src = slides[index][0];
+      narration.textContent = slides[index][1];
+      counter.textContent = `${index + 1} / ${slides.length}`;
+    }
+    document.getElementById("prev").onclick = () => {
+      index = Math.max(0, index - 1);
+      render();
+    };
+    document.getElementById("next").onclick = () => {
+      index = Math.min(slides.length - 1, index + 1);
+      render();
+    };
+    document.getElementById("play").onclick = () => {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+        return;
+      }
+      timer = setInterval(() => {
+        index = index >= slides.length - 1 ? 0 : index + 1;
+        render();
+      }, 9000);
+    };
+    render();
+  </script>
+</body>
+</html>

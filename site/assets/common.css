@@ -6,6 +6,11 @@
   --muted: #62748a;
   --accent: #2267d8;
   --accent-soft: #eaf1ff;
+  --accent-strong: #0f4db8;
+  --ok: #12725b;
+  --ok-soft: #e7f8f0;
+  --warn: #8b5e00;
+  --warn-soft: #fff4d8;
   --shadow: 0 18px 38px rgba(21, 34, 53, 0.08);
 }
 
@@ -29,6 +34,24 @@ a {
   width: min(1120px, calc(100vw - 48px));
   margin: 0 auto;
   padding: 40px 0 72px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.page-header a {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.page-header a:hover {
+  text-decoration: underline;
 }
 
 .hero {
@@ -55,6 +78,72 @@ a {
   max-width: 760px;
   color: var(--muted);
   font-size: 20px;
+  line-height: 1.6;
+}
+
+.sublead {
+  margin: 12px 0 0;
+  max-width: 760px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.language-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.language-card {
+  display: block;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(234, 241, 255, 0.9) 0%, rgba(255, 255, 255, 1) 56%);
+  box-shadow: var(--shadow);
+  text-decoration: none;
+}
+
+.language-card:hover {
+  border-color: #b8cae4;
+}
+
+.language-label {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: var(--accent-strong);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.language-card h2 {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.1;
+}
+
+.language-card p {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.section-title {
+  margin: 40px 0 12px;
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+.section-lead {
+  margin: 0 0 20px;
+  max-width: 820px;
+  color: var(--muted);
+  font-size: 17px;
   line-height: 1.6;
 }
 
@@ -101,6 +190,31 @@ a {
   color: var(--muted);
   font-size: 18px;
   line-height: 1.55;
+}
+
+.status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 0;
+}
+
+.status-chip {
+  display: inline-block;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.status-chip.dual {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.status-chip.single {
+  background: var(--warn-soft);
+  color: var(--warn);
 }
 
 .deck-page {
@@ -176,6 +290,10 @@ a {
 
   .deck-card h2 {
     font-size: 24px;
+  }
+
+  .language-card h2 {
+    font-size: 28px;
   }
 
   .slide-card {

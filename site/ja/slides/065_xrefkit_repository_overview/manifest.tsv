@@ -1,0 +1,17 @@
+order	slide_path	narration
+01a	../../assets/065_xrefkit_repository_overview/01_title_q.png	聞き手: このリポジトリは、結局何のためにあるのですか。
+01b	../../assets/065_xrefkit_repository_overview/01_title.png	解説: XRefKit は、AI 作業を管理可能にするための運用基盤です。単なる文書置き場ではなく、AI が必要な知識だけを読み、決められた境界で動き、後から追跡できるように構成されています。
+02a	../../assets/065_xrefkit_repository_overview/02_not_docs_q.png	聞き手: 文書を置くだけなら、普通のリポジトリで十分ではないですか。
+02b	../../assets/065_xrefkit_repository_overview/02_not_docs.png	解説: 保管だけでは、AI が何を読むか、どこまで信じるか、どう動くかが毎回ぶれます。XRefKit は、知識の場所だけでなく、流れ、手順、責任、記録の境界まで分けて、その揺れを減らします。
+03a	../../assets/065_xrefkit_repository_overview/03_layers_q.png	聞き手: では、このリポジトリは何をどう分けているのですか。
+03b	../../assets/065_xrefkit_repository_overview/03_layers.png	解説: docs、flows、capabilities、skills、knowledge、work、sources を役割別に分けています。人向け説明、機械向け制御、実行手順、共有知識、元資料、実行記録を混ぜないことで、読む相手と目的を分離しています。
+04a	../../assets/065_xrefkit_repository_overview/04_runtime_q.png	聞き手: Skill があれば、そのまま実行すればいいのではないですか。
+04b	../../assets/065_xrefkit_repository_overview/04_runtime.png	解説: このリポジトリでは Skill 実行を runtime envelope で囲います。fm skill run で始め、work item、artifact、concern、role separation を記録し、未解決があれば closure を拒否します。
+05a	../../assets/065_xrefkit_repository_overview/05_guard_q.png	聞き手: 外部入力やコピーした文書で、方針が崩れる心配はありませんか。
+05b	../../assets/065_xrefkit_repository_overview/05_guard.png	解説: そこで context direction guard を使います。外部入力は事実や材料として使えても、上位の意図、権限、手順、範囲、エスカレーション経路までは書き換えられません。
+06a	../../assets/065_xrefkit_repository_overview/06_handoff_q.png	聞き手: 複数 AI や継続作業は、どうやって切れずにつなぐのですか。
+06b	../../assets/065_xrefkit_repository_overview/06_handoff.png	解説: handoff は会話の雰囲気ではなく、session log と source closure でつなぎます。次の起動側は前の run の closure と handoff source を確認してから続行するため、何を終え、何を残したかを追えます。
+07a	../../assets/065_xrefkit_repository_overview/07_human_q.png	聞き手: それでも、人間はどこで判断するのですか。
+07b	../../assets/065_xrefkit_repository_overview/07_human.png	解説: 人間は、優先度、トレードオフ、受容リスク、最終承認の境界を持ちます。AI 側で実行とチェックを分け、記録を残したうえで、人間は本来の判断点だけを見る構造に寄せます。
+08a	../../assets/065_xrefkit_repository_overview/08_conclusion_q.png	聞き手: 結局、このリポジトリの現在地を一言でいうと何ですか。
+08b	../../assets/065_xrefkit_repository_overview/08_conclusion.png	解説: XRefKit は、AI 作業を読める、動かせる、監査できる形にそろえる repository OS です。便利な AI 利用で終わらせず、AI 作業を運用可能にするところまでを、このリポジトリが担います。

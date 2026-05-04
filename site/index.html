@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -9,30 +9,33 @@
 <body>
   <main class="page">
     <header class="hero">
-      <p class="eyebrow">XRefKit Slides</p>
-      <h1>公開用スライド一覧</h1>
+      <p class="eyebrow">XRefKit Public Slides</p>
+      <h1>Choose a Language</h1>
       <p class="lead">
-        GitHub Pages 向けの公開ディレクトリです。各資料は独立した閲覧ページを持ちます。
+        Public explainer decks for XRefKit are grouped by language.
+      </p>
+      <p class="sublead">
+        Select Japanese or English first, then open the deck you want to browse.
       </p>
     </header>
 
-    <section class="deck-grid">
-      <a class="deck-card" href="./slides/ai-production-topics/">
-        <span class="deck-tag">Deck 054</span>
-        <h2>AI を本番利用するための論点</h2>
-        <p>AI の特性、PoC の限界、再現性、品質担保の論点を整理する資料。</p>
+    <section class="language-grid">
+      <a class="language-card" href="./ja/">
+        <span class="language-label">Japanese</span>
+        <h2>日本語</h2>
+        <p>リポジトリ概要、AI Team 説明、AI 組織化、AI 本番利用の論点など、日本語の公開スライドをまとめて見られます。</p>
       </a>
-      <a class="deck-card" href="./slides/why-ai-organization-needed/">
-        <span class="deck-tag">Deck 055</span>
-        <h2>なぜ AI を組織化する必要があるのか</h2>
-        <p>統制された運用を継続・共有・改善するために、組織化が必要になる理由を整理する資料。</p>
-      </a>
-      <a class="deck-card" href="./slides/structure-for-ai-organization/">
-        <span class="deck-tag">Deck 056</span>
-        <h2>AI にこの構造をどう持たせるか</h2>
-        <p>Skill、ドメイン知識、Flow、Group を使って、AI に責務、判断、知識、牽制を持たせる考え方を整理する資料。</p>
+      <a class="language-card" href="./en/">
+        <span class="language-label">English</span>
+        <h2>English</h2>
+        <p>Browse English explainer decks for AI Team structure, operating boundaries, and controlled AI work.</p>
       </a>
     </section>
+
+    <h2 class="section-title">About This Site</h2>
+    <p class="section-lead">
+      This Pages site publishes deck-style materials from the repository. It is a public-facing slide surface, separate from the repository's internal documentation map.
+    </p>
   </main>
 </body>
 </html>
