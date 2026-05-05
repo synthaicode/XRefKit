@@ -276,6 +276,10 @@ body {
   box-shadow: var(--shadow);
 }
 
+.catalog-card[hidden] {
+  display: none;
+}
+
 .catalog-top {
   display: flex;
   align-items: center;
