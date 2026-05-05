@@ -30,6 +30,12 @@ Current baseline:
 - `typecheck`
 - `build`
 
+The lint step uses the repository-local ESLint flat config in
+`eslint.config.mjs`, so `npm run check` stays non-interactive in CI.
+The slide viewer intentionally keeps raw `<img>` usage for repository-backed
+deck assets and thumbnails instead of routing them through Next image
+optimization.
+
 ## Current scope
 
 - isolated Next.js app under `projects/`
