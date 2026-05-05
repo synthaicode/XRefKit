@@ -179,7 +179,7 @@
 
       for (const card of cards) {
         const visible = filter === "all" || card.dataset.lang === filter;
-        card.hidden = !visible;
+        card.classList.toggle("is-filtered-out", !visible);
       }
     }
 

@@ -276,8 +276,8 @@ body {
   box-shadow: var(--shadow);
 }
 
-.catalog-card[hidden] {
-  display: none;
+.catalog-card.is-filtered-out {
+  display: none !important;
 }
 
 .catalog-top {
