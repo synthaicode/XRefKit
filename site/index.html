@@ -3,39 +3,191 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>XRefKit Slides</title>
+  <title>XRefKit Public Slides</title>
   <link rel="stylesheet" href="./assets/common.css" />
 </head>
 <body>
-  <main class="page">
-    <header class="hero">
-      <p class="eyebrow">XRefKit Public Slides</p>
-      <h1>Choose a Language</h1>
-      <p class="lead">
-        Public explainer decks for XRefKit are grouped by language.
-      </p>
-      <p class="sublead">
-        Select Japanese or English first, then open the deck you want to browse.
-      </p>
-    </header>
+  <main class="landing">
+    <section class="hero-shell">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="hero-note">Public slide catalog for XRefKit</p>
+          <h1>AI work needs structure,<br />not just prompts.</h1>
+          <p class="lead hero-lead">
+            XRefKit is an operating base for controlled AI work. These public explainer decks show
+            how sources, knowledge, skills, flows, checks, and human review are separated so AI work
+            becomes governable instead of ad hoc.
+          </p>
+        </div>
 
-    <section class="language-grid">
-      <a class="language-card" href="./ja/">
-        <span class="language-label">Japanese</span>
-        <h2>日本語</h2>
-        <p>リポジトリ概要、AI Team 説明、AI 組織化、AI 本番利用の論点など、日本語の公開スライドをまとめて見られます。</p>
-      </a>
-      <a class="language-card" href="./en/">
-        <span class="language-label">English</span>
-        <h2>English</h2>
-        <p>Browse English explainer decks for AI Team structure, operating boundaries, and controlled AI work.</p>
-      </a>
+        <div class="hero-panel">
+          <div class="flow-board" aria-label="XRefKit operating flow">
+            <div class="flow-row flow-row-top">
+              <div class="flow-node">Sources</div>
+              <div class="flow-connector">→</div>
+              <div class="flow-node">Knowledge</div>
+            </div>
+            <div class="flow-drop">↓</div>
+            <div class="flow-row flow-row-middle">
+              <div class="flow-node flow-node-split">Skills / Flows / Checks</div>
+              <div class="flow-connector">→</div>
+              <div class="flow-node flow-node-strong">Controlled AI Work</div>
+            </div>
+            <div class="flow-drop">↓</div>
+            <div class="flow-row flow-row-bottom">
+              <div class="flow-node">Human Review</div>
+            </div>
+          </div>
+          <p class="flow-caption">
+            The value is not slide storage. The value is making AI work explicit, structured, and reviewable.
+          </p>
+        </div>
+      </div>
     </section>
 
-    <h2 class="section-title">About This Site</h2>
-    <p class="section-lead">
-      This Pages site publishes deck-style materials from the repository. It is a public-facing slide surface, separate from the repository's internal documentation map.
-    </p>
+    <section class="landing-section">
+      <div class="section-heading">
+        <h2>Deck catalog</h2>
+        <p>
+          Filter by language, then open the deck that matches your audience and depth.
+          The catalog is organized as public explainers, not as the repository's internal docs map.
+        </p>
+      </div>
+
+      <div class="catalog-filter" role="tablist" aria-label="Language filter">
+        <button class="filter-button is-active" type="button" data-filter="all" aria-pressed="true">All</button>
+        <button class="filter-button" type="button" data-filter="ja" aria-pressed="false">Japanese</button>
+        <button class="filter-button" type="button" data-filter="en" aria-pressed="false">English</button>
+      </div>
+
+      <div class="catalog-grid">
+        <article class="catalog-card" data-lang="ja">
+          <div class="catalog-top">
+            <span class="catalog-deck">Deck 065</span>
+            <span class="catalog-lang">JA</span>
+          </div>
+          <h3>XRefKit Repository Overview</h3>
+          <p class="catalog-summary">
+            Explains XRefKit as an operating base for controlled AI work rather than a document repository.
+          </p>
+          <dl class="catalog-meta">
+            <div><dt>Audience</dt><dd>First-time viewers, repository explainers, Japanese business readers</dd></div>
+            <div><dt>Depth</dt><dd>Overview</dd></div>
+            <div><dt>Availability</dt><dd>Japanese only</dd></div>
+          </dl>
+          <a class="open-deck-button" href="./ja/slides/065_xrefkit_repository_overview/">Open deck</a>
+        </article>
+
+        <article class="catalog-card" data-lang="ja">
+          <div class="catalog-top">
+            <span class="catalog-deck">Deck 063</span>
+            <span class="catalog-lang">JA</span>
+          </div>
+          <h3>AI Team Explainer</h3>
+          <p class="catalog-summary">
+            Shows why prompt-only use leaves explanation, coordination, and checking burden on humans.
+          </p>
+          <dl class="catalog-meta">
+            <div><dt>Audience</dt><dd>Japanese teams evaluating structured AI operation</dd></div>
+            <div><dt>Depth</dt><dd>Foundation</dd></div>
+            <div><dt>Availability</dt><dd>Japanese and English</dd></div>
+          </dl>
+          <a class="open-deck-button" href="./ja/slides/063_ai_organization_explainer_clear/">Open deck</a>
+        </article>
+
+        <article class="catalog-card" data-lang="en">
+          <div class="catalog-top">
+            <span class="catalog-deck">Deck 063</span>
+            <span class="catalog-lang">EN</span>
+          </div>
+          <h3>AI Team Explainer</h3>
+          <p class="catalog-summary">
+            Introduces why Skills, knowledge, checkpoints, and handoffs are needed before AI work becomes manageable.
+          </p>
+          <dl class="catalog-meta">
+            <div><dt>Audience</dt><dd>English readers new to the AI Team model</dd></div>
+            <div><dt>Depth</dt><dd>Foundation</dd></div>
+            <div><dt>Availability</dt><dd>Japanese and English</dd></div>
+          </dl>
+          <a class="open-deck-button" href="./en/slides/063_ai_organization_explainer_clear/">Open deck</a>
+        </article>
+
+        <article class="catalog-card" data-lang="en">
+          <div class="catalog-top">
+            <span class="catalog-deck">Deck 064</span>
+            <span class="catalog-lang">EN</span>
+          </div>
+          <h3>AI Team Operating Boundary</h3>
+          <p class="catalog-summary">
+            Focuses on return conditions, closure, handoff, and what humans must still decide.
+          </p>
+          <dl class="catalog-meta">
+            <div><dt>Audience</dt><dd>Operators designing governance and review boundaries</dd></div>
+            <div><dt>Depth</dt><dd>Intermediate</dd></div>
+            <div><dt>Availability</dt><dd>English only</dd></div>
+          </dl>
+          <a class="open-deck-button" href="./en/slides/064_ai_team_operating_boundary/">Open deck</a>
+        </article>
+
+        <article class="catalog-card" data-lang="ja">
+          <div class="catalog-top">
+            <span class="catalog-deck">Deck 055</span>
+            <span class="catalog-lang">JA</span>
+          </div>
+          <h3>Why AI Organization Is Needed</h3>
+          <p class="catalog-summary">
+            Explains the management load that remains on humans when AI use is not organized.
+          </p>
+          <dl class="catalog-meta">
+            <div><dt>Audience</dt><dd>Japanese readers exploring organizational adoption</dd></div>
+            <div><dt>Depth</dt><dd>Foundation</dd></div>
+            <div><dt>Availability</dt><dd>Japanese only</dd></div>
+          </dl>
+          <a class="open-deck-button" href="./ja/slides/why-ai-organization-needed/">Open deck</a>
+        </article>
+
+        <article class="catalog-card" data-lang="ja">
+          <div class="catalog-top">
+            <span class="catalog-deck">Deck 056</span>
+            <span class="catalog-lang">JA</span>
+          </div>
+          <h3>Structure for AI Organization</h3>
+          <p class="catalog-summary">
+            Shows how Skill, domain knowledge, Flow, and Group are separated to control AI work.
+          </p>
+          <dl class="catalog-meta">
+            <div><dt>Audience</dt><dd>Japanese readers moving from concept to structure</dd></div>
+            <div><dt>Depth</dt><dd>Intermediate</dd></div>
+            <div><dt>Availability</dt><dd>Japanese only</dd></div>
+          </dl>
+          <a class="open-deck-button" href="./ja/slides/structure-for-ai-organization/">Open deck</a>
+        </article>
+      </div>
+    </section>
   </main>
+
+  <script>
+    const buttons = [...document.querySelectorAll("[data-filter]")];
+    const cards = [...document.querySelectorAll(".catalog-card")];
+
+    function applyFilter(filter) {
+      for (const button of buttons) {
+        const active = button.dataset.filter === filter;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+      }
+
+      for (const card of cards) {
+        const visible = filter === "all" || card.dataset.lang === filter;
+        card.hidden = !visible;
+      }
+    }
+
+    for (const button of buttons) {
+      button.addEventListener("click", () => applyFilter(button.dataset.filter));
+    }
+
+    applyFilter("all");
+  </script>
 </body>
 </html>
