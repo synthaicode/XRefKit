@@ -72,7 +72,7 @@
               <span class="catalog-deck">Deck 065</span>
             </div>
             <h3>XRefKit Repository Overview</h3>
-            <p>Short repository-level introduction for first-time readers.</p>
+            <p>Short repository introduction.</p>
             <a class="featured-inline-link" href="./ja/slides/065_xrefkit_repository_overview/">Open in Japanese</a>
           </article>
 
@@ -82,7 +82,7 @@
               <span class="catalog-deck">Deck 064</span>
             </div>
             <h3>AI Team Operating Boundary</h3>
-            <p>Next step after the basics: return conditions, closure, and review boundaries.</p>
+            <p>Boundary, closure, and review.</p>
             <a class="featured-inline-link" href="./en/slides/064_ai_team_operating_boundary/">Open in English</a>
           </article>
         </div>
@@ -187,16 +187,30 @@
         button.setAttribute("aria-pressed", active ? "true" : "false");
       }
 
+      const visibleCards = [];
       for (const card of cards) {
         const langs = (card.dataset.lang || "").split(",");
         const visible = filter === "all" || langs.includes(filter);
         card.classList.toggle("is-filtered-out", !visible);
+        card.classList.remove("catalog-card-last-row-wide");
+        if (visible) visibleCards.push(card);
+      }
+
+      if (window.innerWidth > 720 && visibleCards.length % 3 === 2) {
+        for (const card of visibleCards.slice(-2)) {
+          card.classList.add("catalog-card-last-row-wide");
+        }
       }
     }
 
     for (const button of buttons) {
       button.addEventListener("click", () => applyFilter(button.dataset.filter));
     }
+
+    window.addEventListener("resize", () => {
+      const active = document.querySelector(".filter-button.is-active")?.dataset.filter || "all";
+      applyFilter(active);
+    });
 
     applyFilter("all");
   </script>
