@@ -91,3 +91,10 @@ In both cases:
 
 - Human documentation: `docs/000_index.md`
 - Agent entry: `agent/000_agent_entry.md`
+
+## How to Explore This Repository
+
+Point your AI agent at this repository and ask directly.
+
+Startup files for Claude, Codex, and GitHub Copilot are included.
+The agent will load the operating contract automatically and can explain the structure in context.
