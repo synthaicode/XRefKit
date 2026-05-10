@@ -8,6 +8,7 @@
   - `retro` -> `../retro/meta.md`
   - `judgment_log` -> `../judgment_log/meta.md`
   - `import_skill` -> `../import_skill/meta.md`
+  - `skill_flow_authoring` -> `../skill_flow_authoring/meta.md`
   - `legacy_flow_skill_migration` -> `../legacy_flow_skill_migration/meta.md`
   - `management_table_control` -> `../management_table_control/meta.md`
   - `release_planning_flow` -> `../release_planning_flow/meta.md`

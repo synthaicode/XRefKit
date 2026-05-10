@@ -1,0 +1,35 @@
+flow_id: <flow_id>
+name: <flow name>
+doc_xid: <xid-from-human-readable-doc-when-applicable>
+owner:
+  primary: <primary owner>
+  support:
+    - <optional support owner>
+phase: normal
+runs_after:
+  - <upstream flow or condition>
+inputs:
+  - id: IN-001
+    name: <input name>
+    from: <source>
+outputs:
+  - id: OUT-001
+    name: <output name>
+    to: <destination>
+handoff:
+  output_to:
+    - <next owner or flow>
+  artifacts:
+    - <artifact type>
+  escalation:
+    - <escalation condition>
+sequence:
+  - step_id: STEP-001
+    name: <step name>
+    role: <responsible role>
+    uses:
+      - <skill or capability id>
+control_rules:
+  - <control rule>
+continuity_requirements:
+  - <what must remain explicit across reload or handoff>

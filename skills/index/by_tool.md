@@ -16,6 +16,7 @@
   - `doc_ship` -> `../doc_ship/meta.md`
   - `retro` -> `../retro/meta.md`
   - `judgment_log` -> `../judgment_log/meta.md`
+  - `skill_flow_authoring` -> `../skill_flow_authoring/meta.md`
   - `pptx_spec_traceability` -> `../pptx_spec_traceability/meta.md`
   - `xlsx_spec_traceability` -> `../xlsx_spec_traceability/meta.md`
   - `investigation_flow` -> `../investigation_flow/meta.md`
