@@ -98,3 +98,15 @@ Point your AI agent at this repository and ask directly.
 
 Startup files for Claude, Codex, and GitHub Copilot are included.
 The agent will load the operating contract automatically and can explain the structure in context.
+
+## Security and API Keys
+
+XRefKit does not require Claude, OpenAI, GitHub, or other provider API keys to explore the repository.
+
+This repository is a governance and knowledge-operations framework for AI-assisted work. It does not ask users to paste API keys into the repository, issue trackers, prompts, or configuration files.
+
+If you use XRefKit with an external AI agent such as Claude Code, Codex, or GitHub Copilot, authenticate that agent through the official provider mechanism outside this repository.
+
+Do not commit secrets, API keys, access tokens, `.env` files, or provider credentials to this repository.
+
+Before running any AI agent in this repository, review agent startup files and tool settings. XRefKit treats repository-controlled agent configuration as part of the trust boundary.
