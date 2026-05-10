@@ -57,15 +57,15 @@ XRefKit is designed to be used with an AI agent.
 If you are migrating an existing Skill:
 
 1. Place the source Skill or related source materials in `sources/`.
-2. Ask the AI agent to migrate that Skill into the current repository model.
-3. Let the migration process split procedure, source-backed knowledge, and runtime structure as needed.
+2. Ask the AI agent to migrate that Skill into the XRefKit repository model.
+3. Have the migration process separate procedure, source-backed knowledge, and runtime structure as needed.
 4. Review whether the migrated Skill is usable for the intended work.
 
 If you are creating a new Skill:
 
 1. Place the source materials, rules, or task examples in `sources/`.
-2. Ask the AI agent to create a new Skill by using `skill_flow_authoring`.
-3. Let the authoring process separate procedure, source-backed knowledge, and runtime structure as needed.
+2. Ask the AI agent to use the Skill authoring flow (`skill_flow_authoring`) to create a new Skill.
+3. Have the authoring process separate procedure, source-backed knowledge, and runtime structure as needed.
 4. Review whether the new Skill is usable for the intended work.
 
 In both cases:
