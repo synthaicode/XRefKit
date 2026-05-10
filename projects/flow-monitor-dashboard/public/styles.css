@@ -393,6 +393,31 @@ td {
   background: linear-gradient(180deg, rgba(215, 238, 240, 0.35), rgba(255, 255, 255, 0.78));
 }
 
+.skill-runtime-log-list {
+  display: grid;
+  gap: 12px;
+}
+
+.skill-runtime-log-card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px;
+  background: linear-gradient(180deg, rgba(255, 251, 244, 0.92), rgba(245, 241, 232, 0.82));
+}
+
+.skill-runtime-log-head,
+.skill-runtime-links {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.skill-runtime-links {
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
 .sequence-clickable-row {
   cursor: pointer;
 }
@@ -567,7 +592,9 @@ thead th {
   .flow-metrics,
   .project-header,
   .hero-title-row,
-  .hero-controls {
+  .hero-controls,
+  .skill-runtime-log-head,
+  .skill-runtime-links {
     flex-direction: column;
     align-items: flex-start;
   }

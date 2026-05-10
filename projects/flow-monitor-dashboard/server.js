@@ -14,8 +14,14 @@ const LOG_PRESETS_FILE = path.join(APP_DIR, "flow-log-presets.json");
 const FLOW_SKILL_MAP_FILE = path.join(APP_DIR, "flow-skill-map.json");
 const FLOW_STEP_SKILL_MAP_FILE = path.join(APP_DIR, "flow-step-skill-map.json");
 const SKILLS_DIR = path.join(REPO_ROOT, "skills");
+const WORK_SESSIONS_DIR = path.join(REPO_ROOT, "work", "sessions");
 const TRACE_FILE_PATTERN = /(?:flow-events|flow-monitor|flow-monitoring|trace|events)\.(?:jsonl|json)$/i;
+const SKILL_RUN_FILE_PATTERN = /(?:^|_)skill_run_(?:.+)\.md$/i;
 const SKIP_DIRS = new Set(["node_modules", ".git", ".next", "dist", "build"]);
+const WORKITEM_RE = /^- \[(?<checkbox>[ x!])\] (?<item_id>[A-Za-z0-9_.-]+) status=`(?<status>[^`]+)` role=`(?<role>[^`]+)`: (?<text>.*)$/;
+const ARTIFACT_RE = /^- \[(?<checkbox>[ x!])\] (?<artifact_id>[A-Za-z0-9_.-]+) kind=`(?<kind>[^`]+)` status=`(?<status>[^`]+)` role=`(?<role>[^`]+)` target=`(?<target>[^`]+)` item=`(?<item_id>[^`]+)`: (?<note>.*)$/;
+const CONCERN_RE = /^- \[(?<checkbox>[ x!])\] (?<concern_id>[A-Za-z0-9_.-]+) kind=`(?<kind>[^`]+)` status=`(?<status>[^`]+)` judgment=`(?<judgment>[^`]+)` role=`(?<role>[^`]+)` target=`(?<target>[^`]+)`: (?<text>.*)$/;
+const PHASE_EVENT_RE = /^- (?<date>\d{4}-\d{2}-\d{2}) `(?<phase>[^`]+)` -> `(?<status>[^`]+)`(?: role=`(?<role>[^`]+)`)?(?:: (?<note>.*))?$/;
 
 const MIME_TYPES = {
   ".css": "text/css; charset=utf-8",
@@ -135,6 +141,43 @@ function extractNestedList(lines, sectionKey, key) {
   return values;
 }
 
+function extractTopLevelSection(text, sectionName) {
+  const marker = `## ${sectionName}\n`;
+  const start = text.indexOf(marker);
+  if (start < 0) {
+    return "";
+  }
+  const afterMarker = start + marker.length;
+  const remaining = text.slice(afterMarker);
+  const nextSectionIndex = remaining.search(/\n## /);
+  if (nextSectionIndex < 0) {
+    return remaining.trim();
+  }
+  return remaining.slice(0, nextSectionIndex).trim();
+}
+
+function extractSectionStatus(text, sectionName) {
+  const section = extractTopLevelSection(text, sectionName);
+  const match = section.match(/^- status: `([^`]+)`/m);
+  return match ? match[1] : "";
+}
+
+function extractBulletScalar(text, key) {
+  const prefix = `- ${key}: \``;
+  for (const line of text.split(/\r?\n/)) {
+    if (!line.startsWith(prefix) || !line.endsWith("`")) {
+      continue;
+    }
+    return line.slice(prefix.length, -1);
+  }
+  return "";
+}
+
+function extractTask(text) {
+  const match = text.match(/^- task: (.+)$/m);
+  return match ? match[1].trim() : "";
+}
+
 function mergeLoggingRecommendation(flowMonitoring, fallbackMonitoring) {
   const flowDefined = flowMonitoring
     && (flowMonitoring.decisions.length || flowMonitoring.checklists.length || flowMonitoring.paths.length);
@@ -158,11 +201,10 @@ function normalizeKey(value) {
     .replace(/^_+|_+$/g, "");
 }
 
-function loadFlowDefinitions() {
+function loadFlowDefinitions(skillCatalog = loadSkillCatalog()) {
   const logPresets = loadLogPresets();
   const flowSkillMap = loadFlowSkillMap();
   const flowStepSkillMap = loadFlowStepSkillMap();
-  const skillCatalog = loadSkillCatalog();
   return readDirSafe(FLOWS_DIR)
     .filter((entry) => entry.isFile() && entry.name.endsWith(".yaml"))
     .map((entry) => {
@@ -261,6 +303,134 @@ function loadSkillCatalog() {
     }
   }
   return catalog;
+}
+
+function parseSkillRunMarkdown(filePath) {
+  const text = readFileSafe(filePath);
+  if (!text.includes("# Skill Run Log")) {
+    return null;
+  }
+
+  const relativePath = path.relative(REPO_ROOT, filePath).replace(/\\/g, "/");
+  const workItemsSection = extractTopLevelSection(text, "Concrete Work Items");
+  const artifactsSection = extractTopLevelSection(text, "Runtime Artifacts");
+  const concernsSection = extractTopLevelSection(text, "Unknowns And Risks");
+  const phaseEventsSection = extractTopLevelSection(text, "Phase Events");
+  const closureChecksSection = extractTopLevelSection(text, "Closure Checks");
+
+  const workItems = workItemsSection
+    .split(/\r?\n/)
+    .map((line) => line.match(WORKITEM_RE)?.groups || null)
+    .filter(Boolean);
+  const artifacts = artifactsSection
+    .split(/\r?\n/)
+    .map((line) => line.match(ARTIFACT_RE)?.groups || null)
+    .filter(Boolean);
+  const concerns = concernsSection
+    .split(/\r?\n/)
+    .map((line) => line.match(CONCERN_RE)?.groups || null)
+    .filter(Boolean);
+  const phaseEvents = phaseEventsSection
+    .split(/\r?\n/)
+    .map((line) => line.match(PHASE_EVENT_RE)?.groups || null)
+    .filter(Boolean);
+  const closureChecks = closureChecksSection
+    .split(/\r?\n/)
+    .map((line) => {
+      const match = line.match(/^- ([a-z_]+): `([^`]+)`(?: (.+))?$/i);
+      if (!match) {
+        return null;
+      }
+      return {
+        name: match[1],
+        status: match[2],
+        detail: match[3] || "",
+      };
+    })
+    .filter(Boolean);
+
+  const countsByArtifactKind = artifacts.reduce((acc, artifact) => {
+    acc[artifact.kind] = (acc[artifact.kind] || 0) + 1;
+    return acc;
+  }, {});
+  return {
+    skill_id: extractBulletScalar(text, "skill_id"),
+    date: extractBulletScalar(text, "date"),
+    maturity: extractBulletScalar(text, "maturity"),
+    meta: extractBulletScalar(text, "meta"),
+    skill_doc: extractBulletScalar(text, "skill_doc"),
+    task: extractTask(text),
+    log_path: relativePath,
+    load_gate_status: extractSectionStatus(text, "Skill Load Gate"),
+    workitem_status: extractSectionStatus(text, "Concrete Work Items"),
+    artifact_status: extractSectionStatus(text, "Runtime Artifacts"),
+    execution_status: extractSectionStatus(text, "Execution Role"),
+    check_status: extractSectionStatus(text, "Check Role"),
+    unknown_risk_status: extractSectionStatus(text, "Unknowns And Risks"),
+    closure_status: extractSectionStatus(text, "Closure Gate"),
+    handoff_status: extractSectionStatus(text, "Handoff"),
+    work_items: workItems,
+    artifacts,
+    concerns,
+    phase_events: phaseEvents,
+    closure_checks: closureChecks,
+    counts: {
+      work_items: workItems.length,
+      artifacts: artifacts.length,
+      concerns: concerns.length,
+      output_artifacts: countsByArtifactKind.output || 0,
+      evidence_artifacts: countsByArtifactKind.evidence || 0,
+      open_unknowns: concerns.filter((item) => item.kind === "unknown" && item.status !== "resolved").length,
+      open_risks: concerns.filter((item) => item.kind === "risk" && item.status === "open").length,
+      open_judgments: concerns.filter((item) => item.kind === "judgment" && item.status === "open").length,
+    },
+    latest_event_at: phaseEvents.length ? phaseEvents[phaseEvents.length - 1].date : extractBulletScalar(text, "date"),
+    last_event: phaseEvents.length ? phaseEvents[phaseEvents.length - 1] : null,
+  };
+}
+
+function loadSkillRuns() {
+  return readDirSafe(WORK_SESSIONS_DIR)
+    .filter((entry) => entry.isFile() && SKILL_RUN_FILE_PATTERN.test(entry.name))
+    .map((entry) => parseSkillRunMarkdown(path.join(WORK_SESSIONS_DIR, entry.name)))
+    .filter(Boolean)
+    .filter((run) => run.skill_id)
+    .sort((left, right) => (right.latest_event_at || "").localeCompare(left.latest_event_at || ""));
+}
+
+function buildSkillSummaries(skillRuns, skillCatalog) {
+  const grouped = new Map();
+  for (const run of skillRuns) {
+    const bucket = grouped.get(run.skill_id) || [];
+    bucket.push(run);
+    grouped.set(run.skill_id, bucket);
+  }
+
+  return [...grouped.entries()]
+    .map(([skillId, runs]) => {
+      const latestRun = runs[0];
+      const catalogEntry = skillCatalog[skillId] || null;
+      return {
+        skill_id: skillId,
+        summary: catalogEntry?.summary || "",
+        use_when: catalogEntry?.use_when || "",
+        meta_path: catalogEntry?.meta_path || latestRun.meta || "",
+        run_count: runs.length,
+        latest_at: latestRun.latest_event_at || latestRun.date || "",
+        latest_task: latestRun.task || "",
+        latest_closure_status: latestRun.closure_status || "",
+        latest_execution_status: latestRun.execution_status || "",
+        latest_check_status: latestRun.check_status || "",
+        latest_handoff_status: latestRun.handoff_status || "",
+        latest_unknown_risk_status: latestRun.unknown_risk_status || "",
+        total_output_artifacts: runs.reduce((sum, run) => sum + run.counts.output_artifacts, 0),
+        total_evidence_artifacts: runs.reduce((sum, run) => sum + run.counts.evidence_artifacts, 0),
+        open_unknowns: runs.reduce((sum, run) => sum + run.counts.open_unknowns, 0),
+        open_risks: runs.reduce((sum, run) => sum + run.counts.open_risks, 0),
+        recent_runs: runs.slice(0, 5),
+      };
+    })
+    .sort((left, right) => right.latest_at.localeCompare(left.latest_at));
 }
 
 function walkForTraceFiles(currentDir, traceFiles) {
@@ -551,7 +721,11 @@ function collectObservedLogging(flowRuns) {
 }
 
 function buildDashboardData() {
-  const flowDefinitions = loadFlowDefinitions();
+  const skillCatalog = loadSkillCatalog();
+  const flowDefinitions = loadFlowDefinitions(skillCatalog);
+  const skillRuns = loadSkillRuns();
+  const skillSummaries = buildSkillSummaries(skillRuns, skillCatalog);
+  const skillSummaryMap = Object.fromEntries(skillSummaries.map((summary) => [summary.skill_id, summary]));
   const rawEvents = loadTraceFiles()
     .flatMap((filePath) => parseTraceFile(filePath))
     .map((event) => normalizeEvent(event, flowDefinitions));
@@ -588,6 +762,9 @@ function buildDashboardData() {
     return {
       ...flow,
       run_count: flowRuns.length,
+      skill_runtime_summaries: (flow.skill_definitions || [])
+        .map((skill) => skillSummaryMap[skill.skill_id])
+        .filter(Boolean),
       observed_logging: observedLogging,
       decision_run_count: flowRuns.filter((run) => run.decisions.length > 0).length,
       checklist_run_count: flowRuns.filter((run) => run.checklist_usage.length > 0).length,
@@ -621,9 +798,12 @@ function buildDashboardData() {
     trace_file_pattern: TRACE_FILE_PATTERN.source,
     flow_count: flowDefinitions.length,
     run_count: runs.length,
+    skill_count: skillSummaries.length,
+    skill_run_count: skillRuns.length,
     project_count: projectSummaries.length,
     flow_summaries: flowSummaries,
     project_summaries: projectSummaries,
+    skill_summaries: skillSummaries,
     runs: runs.slice(0, 50),
   };
 }
@@ -688,6 +868,13 @@ const server = http.createServer((request, response) => {
   sendFile(response, filePath);
 });
 
-server.listen(PORT, HOST, () => {
-  process.stdout.write(`Flow monitor dashboard is running at http://${HOST}:${PORT}\n`);
-});
+if (require.main === module) {
+  server.listen(PORT, HOST, () => {
+    process.stdout.write(`Flow monitor dashboard is running at http://${HOST}:${PORT}\n`);
+  });
+}
+
+module.exports = {
+  buildDashboardData,
+  server,
+};

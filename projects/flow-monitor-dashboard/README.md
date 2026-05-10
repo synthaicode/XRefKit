@@ -8,6 +8,7 @@
 - 各 Flow でどの `sequence` ステップが観測されたか
 - 判断イベントが記録されたか
 - チェックリストが使われたか
+- Flow に紐づく各 Skill の runtime log がどう閉じられたか
 - 未観測ステップが残っていないか
 
 を一覧できるようにします。
@@ -77,8 +78,10 @@ projects/
 
 - `flows/*.yaml` を基準定義として読みます
 - `projects/` 配下の `flow-events.jsonl`, `trace.jsonl`, `events.jsonl`, `flow-monitor.json`, `flow-monitoring.json` を収集します
+- `work/sessions/*_skill_run_*.md` を収集し、Skill runtime log の phase / artifact / concern / closure 状態を表示します
 - `flow_id` または `flow_name` が一致すれば該当 Flow に紐づけます
 - `step`, `path`, `decision`, `checklist` 系フィールドから集計します
+- Skill runtime log は `flow-skill-map.json` と `flow-step-skill-map.json` を使って Flow 上の Skill 定義に紐づけます
 
 ## ブラウンフィールド導入の最小運用
 
@@ -122,3 +125,13 @@ monitoring:
 - `planning_workflow`: `test_tool_selection`, `planning_policy_completeness_check`
 - `manufacturing_workflow`: `implementation_boundary_review`, `manufacturing_self_check`
 - `release_planning_workflow`: `operational_readiness_gate`, `monitoring_design_review`
+
+## Skill runtime log 表示
+
+定義ビューでは、Flow に紐づく各 Skill について次を確認できます。
+
+- 最新の `work/sessions/*_skill_run_*.md`
+- `Execution Role` / `Check Role` / `Closure Gate` / `Handoff` の状態
+- `output` / `evidence` artifact 数
+- open の unknown / risk
+- 元の session log / `meta.md` / `SKILL.md` へのリンク

@@ -28,6 +28,22 @@ function badge(text, tone = "default") {
   return `<span class="badge badge-${tone}">${escapeHtml(text)}</span>`;
 }
 
+function statusTone(status) {
+  if (status === "done" || status === "resolved" || status === "passed") {
+    return "ok";
+  }
+  if (status === "in_progress") {
+    return "active";
+  }
+  if (status === "pending" || status === "unknown" || status === "blocked" || status === "open") {
+    return "warn";
+  }
+  if (status === "escalated") {
+    return "warn";
+  }
+  return "muted";
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -84,6 +100,8 @@ function renderSummary(data) {
   summaryGrid.appendChild(metricCard("Projects", String(data.project_count), "監視対象のプロジェクト数"));
   summaryGrid.appendChild(metricCard("Flows", String(data.flow_count), "定義済み Flow 数"));
   summaryGrid.appendChild(metricCard("Runs", String(data.run_count), "検出した実行単位"));
+  summaryGrid.appendChild(metricCard("Skills", String(data.skill_count || 0), "runtime log を持つ Skill 数"));
+  summaryGrid.appendChild(metricCard("Skill Runs", String(data.skill_run_count || 0), "検出した Skill runtime log 数"));
 
   const decisionRuns = data.flow_summaries.reduce((sum, flow) => sum + flow.decision_run_count, 0);
   const checklistRuns = data.flow_summaries.reduce((sum, flow) => sum + flow.checklist_run_count, 0);
@@ -479,6 +497,96 @@ function renderSkillDefinitionTable(flow) {
   `;
 }
 
+function renderSkillRuntimeCards(skillSummary) {
+  const runs = skillSummary.recent_runs || [];
+  if (!runs.length) {
+    return '<p class="muted">runtime log はありません。</p>';
+  }
+
+  return `
+    <div class="skill-runtime-log-list">
+      ${runs.map((run) => `
+        <article class="skill-runtime-log-card">
+          <div class="skill-runtime-log-head">
+            <div>
+              <p class="flow-meta">${escapeHtml(run.date || "-")}</p>
+              <strong>${escapeHtml(run.task || "task 未記録")}</strong>
+            </div>
+            <div class="skill-card-tags">
+              ${badge(`closure ${run.closure_status || "-"}`, statusTone(run.closure_status))}
+              ${badge(`execution ${run.execution_status || "-"}`, statusTone(run.execution_status))}
+              ${badge(`check ${run.check_status || "-"}`, statusTone(run.check_status))}
+            </div>
+          </div>
+          <div class="tag-list">
+            ${badge(`artifacts ${run.counts?.artifacts || 0}`, (run.counts?.artifacts || 0) ? "active" : "muted")}
+            ${badge(`outputs ${run.counts?.output_artifacts || 0}`, (run.counts?.output_artifacts || 0) ? "active" : "muted")}
+            ${badge(`evidence ${run.counts?.evidence_artifacts || 0}`, (run.counts?.evidence_artifacts || 0) ? "active" : "muted")}
+            ${badge(`concerns ${run.counts?.concerns || 0}`, (run.counts?.concerns || 0) ? "warn" : "ok")}
+          </div>
+          <p class="skill-card-text">
+            latest event:
+            ${escapeHtml(run.last_event?.phase || "-")}
+            /
+            ${escapeHtml(run.last_event?.status || "-")}
+            ${run.last_event?.note ? `- ${escapeHtml(run.last_event.note)}` : ""}
+          </p>
+          <div class="skill-runtime-links">
+            <a class="skill-doc-link" href="./repo/${escapeHtml(run.log_path)}" target="_blank" rel="noreferrer">session log</a>
+            ${run.meta ? `<a class="skill-doc-link" href="./repo/${escapeHtml(run.meta)}" target="_blank" rel="noreferrer">meta.md</a>` : ""}
+            ${run.skill_doc ? `<a class="skill-doc-link" href="./repo/${escapeHtml(run.skill_doc)}" target="_blank" rel="noreferrer">SKILL.md</a>` : ""}
+          </div>
+        </article>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderSkillRuntimeTable(flow) {
+  const summaries = flow.skill_runtime_summaries || [];
+  if (!summaries.length) {
+    return '<p class="muted">この Flow に紐づく Skill runtime log はありません。</p>';
+  }
+
+  const rows = summaries
+    .map((skill) => `
+      <tr>
+        <td><strong>${escapeHtml(skill.skill_id)}</strong></td>
+        <td>${escapeHtml(skill.latest_at || "-")}</td>
+        <td>${badge(skill.latest_closure_status || "-", statusTone(skill.latest_closure_status))}</td>
+        <td>${skill.run_count}</td>
+        <td>${skill.total_output_artifacts}</td>
+        <td>${skill.total_evidence_artifacts}</td>
+        <td>${badge(`unknown ${skill.open_unknowns}`, skill.open_unknowns ? "warn" : "ok")} ${badge(`risk ${skill.open_risks}`, skill.open_risks ? "warn" : "ok")}</td>
+        <td><a class="table-doc-link" href="#${escapeHtml(skillRowId(flow.name, skill.skill_id))}">definition</a></td>
+      </tr>
+      <tr class="sequence-detail-row">
+        <td colspan="8">
+          ${renderSkillRuntimeCards(skill)}
+        </td>
+      </tr>
+    `)
+    .join("");
+
+  return `
+    <table>
+      <thead>
+        <tr>
+          <th>Skill</th>
+          <th>Latest</th>
+          <th>Closure</th>
+          <th>Runs</th>
+          <th>Outputs</th>
+          <th>Evidence</th>
+          <th>Open Concerns</th>
+          <th>Link</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
 function renderInlineSkillDetail(flowName, skill) {
   const metaLink = skill.meta_path ? `./repo/${skill.meta_path}` : "";
   const skillDocPath = skill.meta_path
@@ -745,6 +853,10 @@ function renderProjectFlowDesign(projectFlows) {
       <div class="flow-runs">
         <h4>Skill Definition Table</h4>
         ${renderSkillDefinitionTable(flow)}
+      </div>
+      <div class="flow-runs">
+        <h4>Skill Runtime Logs</h4>
+        ${renderSkillRuntimeTable(flow)}
       </div>
       <div class="flow-columns">
         <section>
