@@ -1,174 +1,91 @@
 # XRefKit
 
-XRefKit is a toolkit for making domain knowledge referenceable, traceable, and maintainable for AI-assisted work.
+XRefKit is a repository-based operating layer for controlled AI work.
+
+It helps teams define reusable Skills, route AI to the right domain knowledge,
+preserve evidence across handoffs, and close work through explicit quality gates.
+
+It is not a prompt collection, a document repository, or a link-maintenance tool.
+It is a way to make AI work reviewable, repeatable, and governable.
 
 ![XRefKit repository snapshot](en/docs/assets/xrefkit_repository_snapshot/xrefkit_repository_snapshot.png)
 
 ▶️ Download the 2-minute overview: [Why XRefKit exists and how it helps AI teams use domain knowledge](https://raw.githubusercontent.com/synthaicode/XRefKit/main/readme.mp4)
 
-XRefKit is not only a document repository or a link-maintenance tool.
-It is an information architecture for controlled AI work.
+## The Problem
 
-The repository is designed so AI can load only the knowledge it needs,
-follow explicit work boundaries, and remain auditable by humans.
+Using AI for real work creates recurring operating problems:
 
-Its core model separates flow, capability, skill, knowledge, and stable XID-based references
-so AI behavior, knowledge access, and work responsibility do not collapse into one layer.
+- the AI can act from incomplete context or unsupported guesses
+- procedures, domain facts, and judgment criteria get mixed together in prompts
+- execution, checking, and handoff collapse into one opaque step
+- work becomes hard to continue across agents, humans, or sessions
+- outputs may lack evidence, closure discipline, or auditability
 
-XRefKit is an OSS knowledge-ops toolkit for sharing knowledge with AI.
-Reading the repository does not require Python, but the standard operational commands in `fm/`
-such as `python -m fm xref ...` require a local Python runtime.
+## What XRefKit Provides
 
-It keeps original sources (PDF/Excel/Web snapshots, etc.) in-repo, and maintains an AI-readable knowledge base as small Markdown “fragments”. Cross-document references use stable IDs (**XIDs**) so links keep working across rename/move/split/merge operations.
-Originally, the visible center of this repository was XID-based link durability.
-Now, the repository should be understood more broadly as an operating base for controlled AI work:
+XRefKit makes AI work explicit by separating:
 
-- base AI control rules
-- repository-specific knowledge routing
-- stable knowledge references
-- reusable work structure for skills, capabilities, and workflows
+- Flows: process structure
+- Capabilities: reusable abilities
+- Skills: executable work units with inputs, outputs, guards, and closure rules
+- Knowledge: source-backed domain facts loaded only when needed
+- Evidence: logs, judgments, concerns, and quality checks
+- XIDs: stable references that survive file movement and restructuring
 
-In this architecture, `xref` is a supporting feature. The primary goal is to connect agents and skills with the right domain knowledge fragments in `knowledge/` under explicit operating rules.
+This separation prevents prompts, domain facts, execution steps, review criteria,
+and handoff records from collapsing into one opaque instruction block.
 
-## Entry Points
+## How It Works
 
-- Human entry: `docs/000_index.md`
-- Agent contract (always read): `agent/000_agent_entry.md`
+1. Original materials are kept in `sources/`.
+2. AI-readable knowledge is maintained in `knowledge/`.
+3. Work is defined through `flows/`, `capabilities/`, and `skills/`.
+4. Agents are routed semantically to the right Skill and load only the relevant context.
+5. Evidence and quality gates make incomplete or unsupported work visible.
 
-Use `README.md` for a short external-facing introduction.
-Use `docs/000_index.md` for the detailed internal documentation map.
+## Why XIDs Matter
 
-Vendor startup files should stay minimal: show how to load domain knowledge via `xref`, and centralize detailed policy in the entry points above.
+XIDs provide stable references to source-backed knowledge fragments, policies, skills, and outputs.
 
-## What This Repository Manages
-
-This repository is not just a link-maintenance tool.
-It manages the minimum structure needed for AI to work in a stable, reviewable way.
-
-That structure includes:
-
-- operating rules for how AI should behave
-- repository-specific knowledge loading rules
-- reusable workflow, capability, and skill boundaries
-- source-backed knowledge fragments with stable references
-
-In practice, this means the repository now treats AI contract and control rules as first-class assets, not just auxiliary notes around XID management.
+They let AI load targeted context and keep references valid even when files are renamed, moved, split, or merged.
 
 ## Quick Start
 
-```powershell
-# 1) Validate Python environment
-python --version
+XRefKit is designed to be used with an AI agent.
 
-# 2) Run one-shot maintenance
-python -m fm xref fix
+If you are migrating an existing Skill:
 
-# 3) Find and open relevant knowledge fragments
-python -m fm xref search "your query"
-python -m fm xref show 1A2B3C4D5E6F
-```
+1. Place the source Skill or related source materials in `sources/`.
+2. Ask the AI agent to migrate that Skill into the current repository model.
+3. Let the migration process split procedure, source-backed knowledge, and runtime structure as needed.
+4. Review whether the migrated Skill is usable for the intended work.
 
-If `xref fix` reports issues, fix them first before editing links manually.
+If you are creating a new Skill:
 
-## Why XIDs
+1. Place the source materials, rules, or task examples in `sources/`.
+2. Ask the AI agent to create a new Skill by using `skill_flow_authoring`.
+3. Let the authoring process separate procedure, source-backed knowledge, and runtime structure as needed.
+4. Review whether the new Skill is usable for the intended work.
 
-When knowledge is split across many files, links break easily. XRefKit treats the `#xid-...` fragment as the primary key and rewrites only the *path* portion when files move.
+In both cases:
 
-Each managed Markdown file carries an XID block:
-
-```md
-<!-- xid: 1A2B3C4D5E6F -->
-<a id="xid-1A2B3C4D5E6F"></a>
-```
-
-## Minimal Workflow
-
-1. Add or update source material in `sources/`.
-2. Convert workflow control structure into `flows/`, workflow/governance explanation into `docs/`, capability definitions into `capabilities/`, and domain facts into `knowledge/`.
-3. Keep references XID-based (`#xid-...`), not path-based.
-4. Run `python -m fm xref fix` after edits.
-5. Use `xref search/show` or `ctx pack` to load only the needed context.
-
-For the broader repository reading order and policy map, start from `docs/000_index.md`.
-
-## Why XRefKit (beyond links)
-
-- **AI operating contract**: keep base control rules such as startup behavior, uncertainty handling, logging expectations, and context-boundary control explicit in the repository.
-- **Multi-agent consistency via normalization**: keep domain knowledge in one canonical place (`knowledge/`), keep reusable work-unit definitions in `capabilities/`, and have agent/tool instructions point to them by XID.
-- **Loose coupling of instructions**: keep “how to behave” small and stable, and fetch “what to know” on demand (`xref search/show`, `ctx pack`).
-- **Human+AI shared knowledge base**: keep originals in `sources/` for human verification, and maintain AI-readable fragments in `docs/` with stable references.
-- **Skill-driven execution**: manage diverse reusable skills in `skills/` and route from `skills/_index.md`.
-- **Traceable decision history**: share AI execution logs in `work/` so others can follow decisions and handovers.
-- **Critical caveat**: changing an XID is a semantic decision (what the ID *means*). Treat it as human-reviewed, and use `xref deprecate` to keep old links valid.
-
-## Commands
-
-```powershell
-# Add/replace missing XIDs
-python -m fm xref init
-
-# Rewrite managed links that contain #xid-... to correct relative paths
-python -m fm xref rewrite
-
-# Validate XIDs and managed links
-python -m fm xref check
-
-# One-shot maintenance (init + rewrite + check)
-python -m fm xref fix
-
-# Human-review hints (best-effort)
-python -m fm xref check --review
-
-# Search and read only what you need
-python -m fm xref search "query"
-python -m fm xref show 1A2B3C4D5E6F
-
-# Build a small context pack (seed + neighbors)
-python -m fm ctx pack --seed 7C6C2B46A9D1 --depth 1 --out .xref\\pack.md
-```
-
-`python -m fm xref check` and `python -m fm xref fix` return exit code `1` when issues are found, so they can fail CI correctly.
-
-## Quality Gate
-
-Use the repository quality-gate runner to execute the same core checks that CI uses.
-
-```powershell
-# fm contract checks (unit tests + xref + skill metadata)
-python tools/run_quality_gate.py fm
-
-# slides app checks (install deps first on a clean machine)
-python tools/run_quality_gate.py slides-app --install-node-deps
-
-# flow monitor dashboard checks
-python tools/run_quality_gate.py flow-monitor-dashboard
-```
-
-The GitHub Actions workflow calls the same runner for the `fm` and Node project quality gates.
-
-The bundled project baseline is defined in [Project Quality Baseline](docs/056_project_quality_baseline.md#xid-1C4B72D5E901).
+1. Give the AI agent a concrete work request with the goal, expected output, and constraints.
+2. Inspect `work/` records, then refine the Skill, knowledge, and operating rules based on what happened.
 
 ## Repository Map
 
-- `docs/`: human-facing operational docs and policy
-- `flows/`: machine-readable workflow control structures
+- `docs/`: human-facing docs and policy
+- `flows/`: workflow control structures
 - `capabilities/`: reusable capability definitions
-- `knowledge/`: shared domain knowledge fragments
-- `sources/`: original source material for human verification
-- `skills/`: skill definitions and routing index (`skills/_index.md`)
-- `work/`: AI-authored execution logs and retrospectives for traceability
-- `agent/`: agent entry and contract
-- `fm/`: CLI implementation (`xref`, `ctx`)
+- `knowledge/`: source-backed knowledge fragments
+- `sources/`: original materials for verification
+- `skills/`: Skill definitions and routing index
+- `work/`: execution logs, judgments, handoffs, and retrospectives
+- `agent/`: agent entry and operating contract
+- `fm/`: runtime and CLI implementation
 
-For explanations of these areas, use:
+## Entry Points
 
-- `docs/000_overview.md`
-- `docs/002_structure.md`
-- `docs/000_index.md`
-
-## Current Positioning
-
-If you read this repository today, the main value is not only that links survive file movement.
-The main value is that AI behavior, knowledge loading, work structure, and traceability are made explicit in one place.
-
-XID durability remains important, but it supports that larger goal.
+- Human documentation: `docs/000_index.md`
+- Agent entry: `agent/000_agent_entry.md`
