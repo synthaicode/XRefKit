@@ -26,10 +26,10 @@ Using AI for real work creates recurring operating problems:
 
 XRefKit makes AI work explicit by separating:
 
-- Flows: process structure
-- Capabilities: reusable abilities
-- Skills: executable work units with inputs, outputs, guards, and closure rules
-- Knowledge: source-backed domain facts loaded only when needed
+- Flows: business progression, boundary, handoff, and control points
+- Capabilities: reusable work-unit abilities that define what must be done
+- Skills: executable work units that define how one or more capabilities are carried out
+- Knowledge: source-backed domain facts and local rules loaded only when needed
 - Evidence: logs, judgments, concerns, and quality checks
 - XIDs: stable references that survive file movement and restructuring
 
@@ -53,6 +53,8 @@ They let AI load targeted context and keep references valid even when files are 
 ## Quick Start
 
 XRefKit is designed to be used with an AI agent.
+
+Here, `sources/` is the human drop point for original materials, existing Skill artifacts, rules, and examples that the AI will turn into repository-managed assets.
 
 If you are migrating an existing Skill:
 
