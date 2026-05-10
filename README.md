@@ -12,6 +12,20 @@ It is a way to make AI work reviewable, repeatable, and governable.
 
 ▶️ Download the 2-minute overview: [Why XRefKit exists and how it helps AI teams use domain knowledge](https://raw.githubusercontent.com/synthaicode/XRefKit/main/readme.mp4)
 
+## Security and API Keys
+
+XRefKit does not require Claude, OpenAI, GitHub, or other provider API keys to explore the repository.
+
+This repository is a governance and knowledge-operations framework for AI-assisted work. It does not ask users to paste API keys into the repository, issue trackers, prompts, or configuration files.
+
+If you use XRefKit with an external AI agent such as Claude Code, Codex, or GitHub Copilot, authenticate that agent through the official provider mechanism outside this repository.
+
+Do not commit secrets, API keys, access tokens, `.env` files, or provider credentials to this repository.
+
+XRefKit does not include repository-managed Claude settings, hooks, MCP server auto-approval, or provider endpoint redirection.
+
+Before running any AI agent in this repository, review agent startup files and tool settings. XRefKit treats repository-controlled agent configuration as part of the trust boundary.
+
 ## The Problem
 
 Using AI for real work creates recurring operating problems:
@@ -31,7 +45,7 @@ XRefKit makes AI work explicit by separating:
 - Skills: executable work units that define how one or more capabilities are carried out
 - Knowledge: source-backed domain facts and local rules loaded only when needed
 - Evidence: logs, judgments, concerns, and quality checks
-- XIDs: stable references that survive file movement and restructuring
+- XIDs: stable references that survive file movement and restructuring so AI can load targeted context without treating the whole repository as one prompt
 
 This separation prevents prompts, domain facts, execution steps, review criteria,
 and handoff records from collapsing into one opaque instruction block.
@@ -43,12 +57,6 @@ and handoff records from collapsing into one opaque instruction block.
 3. Work is defined through `flows/`, `capabilities/`, and `skills/`.
 4. Agents are routed semantically to the right Skill and load only the relevant context.
 5. Evidence and quality gates make incomplete or unsupported work visible.
-
-## Why XIDs Matter
-
-XIDs provide stable references to source-backed knowledge fragments, policies, skills, and outputs.
-
-They let AI load targeted context and keep references valid even when files are renamed, moved, split, or merged.
 
 ## Quick Start
 
@@ -75,6 +83,16 @@ In both cases:
 1. Give the AI agent a concrete work request with the goal, expected output, and constraints.
 2. Inspect `work/` records, then refine the Skill, knowledge, and operating rules based on what happened.
 
+## How to Explore This Repository
+
+Point your AI agent at this repository and ask directly.
+
+Startup instruction files for Claude, Codex, and GitHub Copilot are included.
+
+These files are plain-text operating instructions. They do not contain API keys, provider credentials, hooks, MCP server definitions, or network redirection settings.
+
+The agent can read the operating contract and explain the repository structure in context.
+
 ## Repository Map
 
 - `docs/`: human-facing docs and policy
@@ -91,22 +109,3 @@ In both cases:
 
 - Human documentation: `docs/000_index.md`
 - Agent entry: `agent/000_agent_entry.md`
-
-## How to Explore This Repository
-
-Point your AI agent at this repository and ask directly.
-
-Startup files for Claude, Codex, and GitHub Copilot are included.
-The agent will load the operating contract automatically and can explain the structure in context.
-
-## Security and API Keys
-
-XRefKit does not require Claude, OpenAI, GitHub, or other provider API keys to explore the repository.
-
-This repository is a governance and knowledge-operations framework for AI-assisted work. It does not ask users to paste API keys into the repository, issue trackers, prompts, or configuration files.
-
-If you use XRefKit with an external AI agent such as Claude Code, Codex, or GitHub Copilot, authenticate that agent through the official provider mechanism outside this repository.
-
-Do not commit secrets, API keys, access tokens, `.env` files, or provider credentials to this repository.
-
-Before running any AI agent in this repository, review agent startup files and tool settings. XRefKit treats repository-controlled agent configuration as part of the trust boundary.
