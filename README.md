@@ -8,8 +8,6 @@ preserve evidence across handoffs, and close work through explicit quality gates
 It is not a prompt collection, a document repository, or a link-maintenance tool.
 It is a way to make AI work reviewable, repeatable, and governable.
 
-![XRefKit repository snapshot](en/docs/assets/xrefkit_repository_snapshot/xrefkit_repository_snapshot.png)
-
 ▶️ Download the 2-minute overview: [Why XRefKit exists and how it helps AI teams use domain knowledge](https://raw.githubusercontent.com/synthaicode/XRefKit/main/readme.mp4)
 
 ## Security and API Keys
@@ -30,6 +28,8 @@ Before running any AI agent in this repository, review agent startup files and t
 
 Using AI for real work creates recurring operating problems:
 
+![Why XRefKit is needed](en/docs/assets/why_xrefkit_needed/whatis_xrefkit.png)
+
 - the AI can act from incomplete context or unsupported guesses
 - procedures, domain facts, and judgment criteria get mixed together in prompts
 - execution, checking, and handoff collapse into one opaque step
@@ -49,6 +49,8 @@ XRefKit makes AI work explicit by separating:
 
 This separation prevents prompts, domain facts, execution steps, review criteria,
 and handoff records from collapsing into one opaque instruction block.
+
+![XRefKit repository snapshot](en/docs/assets/xrefkit_repository_snapshot/xrefkit_repository_snapshot.png)
 
 ## How It Works
 
