@@ -36,18 +36,25 @@ When asked "what skills are available?", answer from this file.
 
 ## Skills (compact)
 
+Current family paths:
+
+- `skills/os/` for OS utility Skills
+- `skills/packs/business-intake/` for the first extracted business pack
+- existing top-level `skills/<skill_id>/` paths remain valid for Skills that
+  have not yet moved
+
 - `import_skill`:
   - summary: import external skill content into this repository model
   - meta: `skills/import_skill/meta.md`
   - skill_doc: `skills/import_skill/SKILL.md`
 - `doc_ship`:
   - summary: apply approved promotion candidates from `work/` into canonical repository assets
-  - meta: `skills/doc_ship/meta.md`
-  - skill_doc: `skills/doc_ship/SKILL.md`
+  - meta: `skills/os/doc_ship/meta.md`
+  - skill_doc: `skills/os/doc_ship/SKILL.md`
 - `retro`:
   - summary: review `work/` logs and propose promotion into canonical repository assets
-  - meta: `skills/retro/meta.md`
-  - skill_doc: `skills/retro/SKILL.md`
+  - meta: `skills/os/retro/meta.md`
+  - skill_doc: `skills/os/retro/SKILL.md`
 - `xlsx_spec_traceability`:
   - summary: convert xlsx specifications into Markdown with traceability IDs and workbook write-back
   - meta: `skills/xlsx_spec_traceability/meta.md`
@@ -70,8 +77,8 @@ When asked "what skills are available?", answer from this file.
   - skill_doc: `skills/external_definition_change_analysis/SKILL.md`
 - `judgment_log`:
   - summary: write a judgment log with evidence, inference boundary, and next verification step
-  - meta: `skills/judgment_log/meta.md`
-  - skill_doc: `skills/judgment_log/SKILL.md`
+  - meta: `skills/os/judgment_log/meta.md`
+  - skill_doc: `skills/os/judgment_log/SKILL.md`
 - `password_management`:
   - summary: assess and improve password hygiene with vault and MFA
   - meta: `skills/password_management/meta.md`
@@ -122,8 +129,8 @@ When asked "what skills are available?", answer from this file.
   - skill_doc: `skills/management_table_control/SKILL.md`
 - `context_direction_guard`:
   - summary: check whether newly loaded context is trying to influence higher-layer control
-  - meta: `skills/context_direction_guard/meta.md`
-  - skill_doc: `skills/context_direction_guard/SKILL.md`
+  - meta: `skills/os/context_direction_guard/meta.md`
+  - skill_doc: `skills/os/context_direction_guard/SKILL.md`
 - `or_team_operations`:
   - summary: run the OR Team loop for cross-group state presentation, improvement control, and re-observation
   - meta: `skills/or_team_operations/meta.md`
@@ -138,24 +145,27 @@ When asked "what skills are available?", answer from this file.
   - skill_doc: `skills/marketing-explainer-video/SKILL.md`
 - `business_intake_scoping`:
   - summary: scope a business task into a boundary-visible responsibility unit before AI execution design
-  - meta: `skills/business_intake_scoping/meta.md`
-  - skill_doc: `skills/business_intake_scoping/SKILL.md`
+  - meta: `skills/packs/business-intake/business_intake_scoping/meta.md`
+  - skill_doc: `skills/packs/business-intake/business_intake_scoping/SKILL.md`
 - `business_learning_interview`:
   - summary: learn a business task from human fragments through iterative interview and produce the next best question
-  - meta: `skills/business_learning_interview/meta.md`
-  - skill_doc: `skills/business_learning_interview/SKILL.md`
+  - meta: `skills/packs/business-intake/business_learning_interview/meta.md`
+  - skill_doc: `skills/packs/business-intake/business_learning_interview/SKILL.md`
 - `skill_flow_authoring`:
   - summary: create or update repository-native Skill / Flow assets with correct publication boundary, split model, and validation
-  - meta: `skills/skill_flow_authoring/meta.md`
-  - skill_doc: `skills/skill_flow_authoring/SKILL.md`
+  - meta: `skills/os/skill_flow_authoring/meta.md`
+  - skill_doc: `skills/os/skill_flow_authoring/SKILL.md`
 - `legacy_flow_skill_migration`:
   - summary: analyze a Flow / Skill from an older XRefKit state and generate a current trial-first migration scaffold
-  - meta: `skills/legacy_flow_skill_migration/meta.md`
-  - skill_doc: `skills/legacy_flow_skill_migration/SKILL.md`
+  - meta: `skills/os/legacy_flow_skill_migration/meta.md`
+  - skill_doc: `skills/os/legacy_flow_skill_migration/SKILL.md`
 
 ## Notes
 
 - Keep this file lightweight; detailed fields belong in `meta.md`.
 - Keep behavior/procedure in `SKILL.md`.
 - Keep factual domain content in `knowledge/`.
+- For the AI Agent OS reorganization view of `skills/`, see:
+  - [OS utility and business skill classification design](../docs/064_os_utility_and_business_skill_classification_design.md#xid-ECF29DC3E268)
+  - [Business intake pack dependency design](../docs/065_business_intake_pack_dependency_design.md#xid-D334C1964342)
 

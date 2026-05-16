@@ -27,10 +27,10 @@ This page defines how an agent should route a user request through workflow, cap
 ## Intent-to-Workflow Mapping
 
 - Business learning from partial human fragments, tacit knowledge extraction, or "ask me the next best question":
-  - route to `skills/business_learning_interview/meta.md`
+  - route to `skills/packs/business-intake/business_learning_interview/meta.md`
 - Business intake requests with incomplete structure should default here first, not directly to scoping.
 - Business intake scoping after a first business hypothesis already exists and the business unit is already scope-ready:
-  - route to `skills/business_intake_scoping/meta.md`
+  - route to `skills/packs/business-intake/business_intake_scoping/meta.md`
 - Investigation or impact analysis:
   - [Investigation workflow](../docs/032_investigation_workflow.md#xid-8B31F02A4001)
 - Estimation, supplier check, or assumption clarification:

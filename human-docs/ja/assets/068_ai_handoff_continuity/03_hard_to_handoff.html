@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <style>:root {
+  --bg: #f8f9fa;
+  --ink: #172033;
+  --muted: #53627a;
+  --blue: #2563eb;
+  --blue-soft: #eaf2ff;
+  --line: #cad8ee;
+  --yellow: #ffd978;
+  --yellow-soft: #fff5cf;
+  --mint: #dff8ef;
+  --mint-line: #9de0c8;
+  --pink: #ffe5ec;
+  --pink-line: #f4b8c9;
+  --peach: #ffe8d2;
+  --peach-line: #f1c196;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", "Noto Sans JP", sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+.canvas {
+  width: 1600px;
+  height: 900px;
+  position: relative;
+  overflow: hidden;
+  padding: 44px 64px 122px;
+  background:
+    radial-gradient(circle at 85% 12%, rgba(191, 219, 254, 0.9), transparent 28%),
+    radial-gradient(circle at 8% 88%, rgba(255, 229, 236, 0.7), transparent 22%),
+    linear-gradient(180deg, #fcfdff 0%, #f8f9fa 100%);
+}
+
+.canvas.one-sheet {
+  padding: 54px 64px 54px;
+}
+
+.canvas.one-sheet h1 {
+  max-width: 1480px;
+  font-size: 54px;
+  line-height: 1.12;
+}
+
+.canvas.one-sheet .lead {
+  max-width: 1180px;
+  font-size: 28px;
+}
+
+.canvas.one-sheet .stage {
+  margin-top: 30px;
+}
+
+.canvas.one-sheet .panel {
+  min-height: 218px;
+}
+
+.bottom-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: 82px;
+  padding: 18px 72px 16px;
+  background: #eff6ff;
+  border-top: 4px solid var(--blue);
+  color: #21459a;
+  font-size: 27px;
+  line-height: 1.35;
+  font-weight: 850;
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-size: 22px;
+  font-weight: 850;
+}
+
+h1 {
+  margin: 16px 0 8px;
+  font-size: 64px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: 900;
+}
+
+.lead {
+  margin: 0;
+  max-width: 1180px;
+  color: var(--muted);
+  font-size: 29px;
+  line-height: 1.34;
+  font-weight: 750;
+}
+
+.stage {
+  margin-top: 22px;
+  position: relative;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 0.94fr 1.06fr;
+  gap: 28px;
+  align-items: stretch;
+}
+
+.hero.single {
+  grid-template-columns: 1fr;
+}
+
+.copy-block {
+  padding-top: 6px;
+}
+
+.soft-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 26px;
+}
+
+.soft-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--line);
+  box-shadow: 0 12px 28px rgba(23, 32, 51, 0.05);
+}
+
+.dot {
+  flex: 0 0 12px;
+  width: 12px;
+  height: 12px;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: var(--blue);
+}
+
+.soft-item span {
+  font-size: 28px;
+  line-height: 1.45;
+  font-weight: 760;
+  color: var(--ink);
+}
+
+.scene {
+  position: relative;
+  min-height: 560px;
+  border-radius: 34px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(252,253,255,0.94) 100%);
+  border: 2px solid rgba(202, 216, 238, 0.9);
+  box-shadow: 0 20px 50px rgba(23, 32, 51, 0.06);
+  overflow: hidden;
+}
+
+.scene::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 82% 10%, rgba(191, 219, 254, 0.35), transparent 26%),
+    radial-gradient(circle at 12% 84%, rgba(255, 229, 236, 0.45), transparent 22%);
+}
+
+.scene-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 290px;
+  gap: 16px;
+  height: 100%;
+  padding: 28px 28px 24px;
+}
+
+.scene-grid.wide-note {
+  grid-template-columns: 1fr 320px;
+}
+
+.scene-main {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.mini-note {
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 24px rgba(23, 32, 51, 0.04);
+}
+
+.mini-note h2 {
+  margin: 0 0 8px;
+  font-size: 30px;
+  line-height: 1.2;
+  font-weight: 900;
+}
+
+.mini-note p,
+.mini-note li {
+  margin: 0;
+  color: var(--muted);
+  font-size: 24px;
+  line-height: 1.42;
+  font-weight: 740;
+}
+
+.mini-note ul {
+  margin: 8px 0 0;
+  padding-left: 22px;
+}
+
+.label-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.label {
+  display: inline-flex;
+  padding: 12px 16px;
+  border-radius: 999px;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 850;
+  box-shadow: 0 8px 18px rgba(23, 32, 51, 0.05);
+}
+
+.label.yellow { background: var(--yellow-soft); border: 1px solid #efc45c; }
+.label.mint { background: var(--mint); border: 1px solid var(--mint-line); }
+.label.pink { background: var(--pink); border: 1px solid var(--pink-line); }
+.label.peach { background: var(--peach); border: 1px solid var(--peach-line); }
+
+.sticker-col {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.sticker {
+  padding: 16px 16px 14px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 22px rgba(23, 32, 51, 0.05);
+  transform: rotate(-1.5deg);
+}
+
+.sticker:nth-child(2n) {
+  transform: rotate(1.2deg);
+}
+
+.sticker h3 {
+  margin: 0 0 8px;
+  font-size: 25px;
+  line-height: 1.24;
+  font-weight: 900;
+}
+
+.sticker p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 21px;
+  line-height: 1.42;
+  font-weight: 740;
+}
+
+.character {
+  position: absolute;
+  right: 34px;
+  bottom: 24px;
+  width: 210px;
+  height: auto;
+  opacity: 0.96;
+  z-index: 1;
+}
+
+.character.small {
+  width: 170px;
+}
+
+.character.left {
+  right: auto;
+  left: 34px;
+}
+
+.scene-bubble {
+  position: absolute;
+  z-index: 2;
+  max-width: 320px;
+  padding: 16px 18px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 24px rgba(23, 32, 51, 0.05);
+  color: #21459a;
+  font-size: 22px;
+  line-height: 1.4;
+  font-weight: 840;
+}
+
+.scene-bubble.right {
+  right: 170px;
+  bottom: 82px;
+}
+
+.scene-bubble.left {
+  left: 168px;
+  bottom: 88px;
+}
+
+.four-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  position: relative;
+  z-index: 2;
+}
+
+.panel {
+  min-height: 190px;
+  padding: 16px 18px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 24px rgba(23, 32, 51, 0.05);
+}
+
+.panel h2 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 900;
+}
+
+.panel p,
+.panel li {
+  margin: 0;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1.34;
+  font-weight: 740;
+}
+
+.panel ul {
+  margin: 6px 0 0;
+  padding-left: 22px;
+}
+
+.panel.yellow { background: #fffaf0; }
+.panel.mint { background: #f3fcf8; }
+.panel.pink { background: #fff7fa; }
+.panel.blue { background: #f4f8ff; }
+
+.infographic-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 392px;
+  gap: 28px;
+  align-items: start;
+}
+
+.flow-area {
+  min-height: 520px;
+  padding: 34px 26px 24px;
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(202, 216, 238, 0.9);
+  box-shadow: 0 20px 50px rgba(23, 32, 51, 0.06);
+}
+
+.flow-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  column-gap: 34px;
+  position: relative;
+  align-items: stretch;
+}
+
+.flow-step {
+  min-height: 236px;
+  padding: 22px 18px 20px;
+  border-radius: 26px;
+  border: 1px solid rgba(202, 216, 238, 0.95);
+  box-shadow: 0 14px 30px rgba(23, 32, 51, 0.07);
+  display: grid;
+  align-content: start;
+  gap: 18px;
+}
+
+.flow-step strong {
+  font-size: 23px;
+  line-height: 1.34;
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.flow-step.final {
+  border-color: rgba(81, 180, 140, 0.9);
+  box-shadow: 0 18px 34px rgba(40, 140, 99, 0.13);
+}
+
+.step-no {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  background: #ffffff;
+  color: #21459a;
+  font-size: 22px;
+  font-weight: 900;
+  border: 1px solid rgba(202, 216, 238, 0.95);
+}
+
+.flow-arrow {
+  position: absolute;
+  top: 101px;
+  width: 34px;
+  color: #2563eb;
+  font-size: 34px;
+  line-height: 1;
+  font-weight: 900;
+  text-align: center;
+}
+
+.flow-arrow:nth-of-type(2) { left: calc(20% - 18px); }
+.flow-arrow:nth-of-type(4) { left: calc(40% - 10px); }
+.flow-arrow:nth-of-type(6) { left: calc(60% - 2px); }
+.flow-arrow:nth-of-type(8) { left: calc(80% + 6px); }
+
+.soft-blue { background: #f1f7ff; }
+.soft-gray { background: #f7f9fc; }
+.soft-pink { background: #fff6fa; }
+.soft-red { background: #fff2f1; }
+.soft-green { background: #f0fbf6; }
+
+.transform-note {
+  margin-top: 34px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 22px;
+  border-radius: 999px;
+  background: #eff6ff;
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  color: #21459a;
+  font-size: 28px;
+  line-height: 1.25;
+  font-weight: 900;
+}
+
+.transform-line {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.25), rgba(37, 99, 235, 0.95));
+}
+
+.package-side {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+.package-box {
+  padding: 22px 24px 20px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 2px solid rgba(37, 99, 235, 0.22);
+  box-shadow: 0 18px 42px rgba(23, 32, 51, 0.08);
+}
+
+.package-box h2 {
+  margin: 0 0 14px;
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 900;
+  color: #21459a;
+}
+
+.package-box ul {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  list-style: none;
+}
+
+.package-box li {
+  padding: 7px 12px;
+  border-radius: 12px;
+  background: #f4f8ff;
+  color: var(--ink);
+  font-size: 21px;
+  line-height: 1.24;
+  font-weight: 800;
+}
+
+.guide-wrap {
+  position: relative;
+  min-height: 150px;
+}
+
+.speech-bubble {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  width: 246px;
+  padding: 14px 16px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(202, 216, 238, 0.95);
+  box-shadow: 0 12px 28px rgba(23, 32, 51, 0.08);
+  color: #21459a;
+  font-size: 18px;
+  line-height: 1.42;
+  font-weight: 850;
+  z-index: 2;
+}
+
+.speech-bubble::after {
+  content: "";
+  position: absolute;
+  right: 38px;
+  bottom: -14px;
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  border-right: 1px solid rgba(202, 216, 238, 0.95);
+  border-bottom: 1px solid rgba(202, 216, 238, 0.95);
+  transform: rotate(45deg);
+}
+
+.guide-presenter {
+  position: absolute;
+  right: -4px;
+  bottom: 0;
+  width: 178px;
+  height: auto;
+  opacity: 0.98;
+  mix-blend-mode: multiply;
+  filter: saturate(0.95);
+}
+
+.guide-avatar {
+  position: absolute;
+  top: 58px;
+  right: 72px;
+  width: 112px;
+  height: 112px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 2px solid rgba(202, 216, 238, 0.9);
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 10px 24px rgba(23, 32, 51, 0.08);
+  z-index: 3;
+}
+
+.guide-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 58% 18%;
+  opacity: 0.9;
+}
+</style>
+</head>
+<body>
+    <main class="canvas ">
+      <div class="kicker">管理上のリスク</div>
+      <h1>文脈がないサービスは、動いていても管理できない</h1>
+      <p class="lead">問題は今動いているかではなく、次の変更と次の障害に耐えられるかです。</p>
+      <section class="stage">
+      <div class="hero single">
+        <div class="scene">
+          <div class="scene-grid wide-note">
+            <div class="scene-main">
+              
+  <div class="mini-note">
+    <h2>資産としてのサービス</h2>
+    <p>動いているサービスは事業上の資産であり、簡単には止められない。</p>
+  </div>
+              
+  <div class="mini-note">
+    <h2>負債化するサービス</h2>
+    <p>維持管理できないまま残ると、次の変更や障害対応で大きな負債になる。</p>
+  </div>
+              <div class="label-row">
+                <div class="label yellow">今動いているか</div>
+                <div class="label peach">次の変更に耐えられるか</div>
+                <div class="label mint">次の障害に耐えられるか</div>
+              </div>
+            </div>
+            <div class="sticker-col">
+              
+  <div class="sticker">
+    <h3>管理者に刺す表現</h3>
+    <p>動いているサービスは資産だが、維持管理できないサービスは負債になる。</p>
+  </div>
+            </div>
+          </div>
+        </div>
+      </div></section>
+    
+    <div class="bottom-bar">文脈のないサービスは、停止していなくても管理不能化のリスクを抱える</div>
+    </main></body>
+</html>

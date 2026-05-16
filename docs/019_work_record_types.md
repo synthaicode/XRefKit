@@ -3,7 +3,19 @@
 
 # Work Record Types
 
-This page defines the role split among the main record types under `work/` and their canonical follow-up paths.
+`work/` is not only an audit trail.
+It is the repository's operational memory for AI Agent work.
+
+These records are used not only to explain what happened, but also to improve:
+
+- Skills
+- Knowledge
+- guard policies
+- routing rules
+- quality gates
+
+This page defines the role split among the main record types under `work/` and
+their canonical follow-up paths.
 
 ## Record Types
 
@@ -15,6 +27,9 @@ This page defines the role split among the main record types under `work/` and t
   - structural feedback, retrospective diagnosis, and corrective context
 - canonical register pages in `docs/`
   - stable summaries that later cycles should consult first
+
+Together, these records form the operational memory that later runs use to
+improve the system rather than repeat the same failure or ambiguity.
 
 ## Which Record To Use
 
@@ -36,6 +51,7 @@ Use `work/retrospectives/` when the goal is to preserve:
 - structural failure patterns
 - upstream corrective context
 - quality-system feedback that should survive beyond one task
+- improvement input for Skill, Knowledge, guard, routing, or gate changes
 
 Use a canonical register page in `docs/` when the goal is to preserve:
 
@@ -48,6 +64,7 @@ Use a canonical register page in `docs/` when the goal is to preserve:
 - reasoning history: `work/judgments/`
 - structural feedback history: `work/retrospectives/`
 - stable reload point: `docs/` register page
+- improvement memory: promote repeated patterns from `work/` into canonical control assets
 
 ## Related
 

@@ -13,10 +13,10 @@
 - external-config:
   - `external_definition_change_analysis` -> `../external_definition_change_analysis/meta.md`
 - repository:
-  - `doc_ship` -> `../doc_ship/meta.md`
-  - `retro` -> `../retro/meta.md`
-  - `judgment_log` -> `../judgment_log/meta.md`
-  - `skill_flow_authoring` -> `../skill_flow_authoring/meta.md`
+  - `doc_ship` -> `../os/doc_ship/meta.md`
+  - `retro` -> `../os/retro/meta.md`
+  - `judgment_log` -> `../os/judgment_log/meta.md`
+  - `skill_flow_authoring` -> `../os/skill_flow_authoring/meta.md`
   - `pptx_spec_traceability` -> `../pptx_spec_traceability/meta.md`
   - `xlsx_spec_traceability` -> `../xlsx_spec_traceability/meta.md`
   - `investigation_flow` -> `../investigation_flow/meta.md`
@@ -34,7 +34,7 @@
   - `release_planning_flow` -> `../release_planning_flow/meta.md`
   - `cab_review_flow` -> `../cab_review_flow/meta.md`
   - `management_table_control` -> `../management_table_control/meta.md`
-  - `context_direction_guard` -> `../context_direction_guard/meta.md`
+  - `context_direction_guard` -> `../os/context_direction_guard/meta.md`
   - `or_team_operations` -> `../or_team_operations/meta.md`
 - password-manager:
   - `password_management` -> `../password_management/meta.md`

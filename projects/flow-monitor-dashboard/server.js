@@ -142,13 +142,14 @@ function extractNestedList(lines, sectionKey, key) {
 }
 
 function extractTopLevelSection(text, sectionName) {
+  const normalized = text.replace(/\r\n/g, "\n");
   const marker = `## ${sectionName}\n`;
-  const start = text.indexOf(marker);
+  const start = normalized.indexOf(marker);
   if (start < 0) {
     return "";
   }
   const afterMarker = start + marker.length;
-  const remaining = text.slice(afterMarker);
+  const remaining = normalized.slice(afterMarker);
   const nextSectionIndex = remaining.search(/\n## /);
   if (nextSectionIndex < 0) {
     return remaining.trim();
@@ -380,9 +381,12 @@ function parseSkillRunMarkdown(filePath) {
       concerns: concerns.length,
       output_artifacts: countsByArtifactKind.output || 0,
       evidence_artifacts: countsByArtifactKind.evidence || 0,
+      check_artifacts: countsByArtifactKind.check || 0,
+      handoff_artifacts: countsByArtifactKind.handoff || 0,
       open_unknowns: concerns.filter((item) => item.kind === "unknown" && item.status !== "resolved").length,
       open_risks: concerns.filter((item) => item.kind === "risk" && item.status === "open").length,
       open_judgments: concerns.filter((item) => item.kind === "judgment" && item.status === "open").length,
+      judgments: concerns.filter((item) => item.kind === "judgment").length,
     },
     latest_event_at: phaseEvents.length ? phaseEvents[phaseEvents.length - 1].date : extractBulletScalar(text, "date"),
     last_event: phaseEvents.length ? phaseEvents[phaseEvents.length - 1] : null,
@@ -425,8 +429,11 @@ function buildSkillSummaries(skillRuns, skillCatalog) {
         latest_unknown_risk_status: latestRun.unknown_risk_status || "",
         total_output_artifacts: runs.reduce((sum, run) => sum + run.counts.output_artifacts, 0),
         total_evidence_artifacts: runs.reduce((sum, run) => sum + run.counts.evidence_artifacts, 0),
+        total_check_artifacts: runs.reduce((sum, run) => sum + run.counts.check_artifacts, 0),
+        total_handoff_artifacts: runs.reduce((sum, run) => sum + run.counts.handoff_artifacts, 0),
         open_unknowns: runs.reduce((sum, run) => sum + run.counts.open_unknowns, 0),
         open_risks: runs.reduce((sum, run) => sum + run.counts.open_risks, 0),
+        open_judgments: runs.reduce((sum, run) => sum + run.counts.open_judgments, 0),
         recent_runs: runs.slice(0, 5),
       };
     })

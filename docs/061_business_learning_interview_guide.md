@@ -120,6 +120,11 @@ Once the interview reveals:
 
 the result is ready to hand off to business intake scoping.
 
+However, if ownership and business interpretation are both still provisional
+and no confirmation owner can be named, do not hand off yet.
+Keep the result in the learning stage and ask for the next confirmation that
+can identify the owner or resolve the interpretation boundary.
+
 ## Related
 
 - [Business intake scoping guide](060_business_intake_scoping_guide.md#xid-C91F7D2A6B40)

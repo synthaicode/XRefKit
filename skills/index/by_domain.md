@@ -4,18 +4,18 @@
 # Skills by Domain
 
 - operations:
-  - `doc_ship` -> `../doc_ship/meta.md`
-  - `retro` -> `../retro/meta.md`
-  - `judgment_log` -> `../judgment_log/meta.md`
+  - `doc_ship` -> `../os/doc_ship/meta.md`
+  - `retro` -> `../os/retro/meta.md`
+  - `judgment_log` -> `../os/judgment_log/meta.md`
   - `import_skill` -> `../import_skill/meta.md`
-  - `skill_flow_authoring` -> `../skill_flow_authoring/meta.md`
-  - `legacy_flow_skill_migration` -> `../legacy_flow_skill_migration/meta.md`
+  - `skill_flow_authoring` -> `../os/skill_flow_authoring/meta.md`
+  - `legacy_flow_skill_migration` -> `../os/legacy_flow_skill_migration/meta.md`
   - `management_table_control` -> `../management_table_control/meta.md`
   - `release_planning_flow` -> `../release_planning_flow/meta.md`
   - `cab_review_flow` -> `../cab_review_flow/meta.md`
   - `or_team_operations` -> `../or_team_operations/meta.md`
-  - `business_intake_scoping` -> `../business_intake_scoping/meta.md`
-  - `business_learning_interview` -> `../business_learning_interview/meta.md`
+  - `business_intake_scoping` -> `../packs/business-intake/business_intake_scoping/meta.md`
+  - `business_learning_interview` -> `../packs/business-intake/business_learning_interview/meta.md`
 - engineering:
   - `csharp_review` -> `../csharp_review/meta.md`
   - `dotnet_change_analysis` -> `../dotnet_change_analysis/meta.md`
@@ -37,7 +37,7 @@
   - `pptx_spec_traceability` -> `../pptx_spec_traceability/meta.md`
 - security:
   - `password_management` -> `../password_management/meta.md`
-  - `context_direction_guard` -> `../context_direction_guard/meta.md`
+  - `context_direction_guard` -> `../os/context_direction_guard/meta.md`
 - marketing:
   - `marketing_slide_png` -> `../marketing_slide_png/meta.md`
   - `marketing-explainer-video` -> `../marketing-explainer-video/meta.md`

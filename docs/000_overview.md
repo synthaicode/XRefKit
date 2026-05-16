@@ -3,15 +3,24 @@
 
 # Overview
 
-This repository is a workspace for building an AI/human collaborative “knowledge operations” system: keep original sources in-repo, extract AI-readable fragments, and keep references stable as the docs evolve.
+This repository is a workspace for building a repository-based AI Agent OS:
+keep original sources in-repo, extract AI-readable fragments, and keep
+references stable as the docs evolve.
+
+Here, OS means an operating layer for controlled AI Agent work, not a
+low-level system OS or an LLM runtime.
 
 Originally, the most visible mechanism in this repository was XID-based reference durability.
-The current repository should be understood more broadly as a controlled AI work base:
+The current repository should be understood more broadly as a controlled AI
+work base:
 
 - explicit AI operating rules
 - repository-specific knowledge routing
 - reusable workflow, capability, and skill structure
 - stable references across evolving knowledge assets
+
+For the explicit reorganization direction, see
+[AI Agent OS Reorganization Design](063_ai_agent_os_reorganization_design.md#xid-22CAE81A6D3E).
 
 ## The core problem
 
@@ -55,6 +64,10 @@ This repository intentionally keeps two layers together:
 
 See [Base control and xref routing layers](017_base_and_xref_layering.md#xid-5A1C8E4D2F90) for the exact boundary.
 
+As the repository is reorganized toward a clearer AI Agent OS shape, those
+layers should be treated as an operating core rather than as only
+documentation structure.
+
 ## What it means for AI to “manage XIDs”
 
 It does **not** mean the AI invents IDs. It means the AI (or CI) uses `fm` commands to keep the system consistent.
@@ -68,7 +81,8 @@ It does **not** mean the AI invents IDs. It means the AI (or CI) uses `fm` comma
 - `docs/`: Human-facing docs (background, design, operations)
 - `knowledge/`: Shared domain knowledge fragments (XID-managed)
 - `skills/`: Skill definitions (behavior/procedure, references to XIDs)
-- `work/`: AI-authored retrospectives and handover logs (non-canonical)
+- `work/`: AI-authored operational memory for sessions, judgments,
+  retrospectives, and handover logs (non-canonical)
 - `agent/`: Agent entry + contract (keep L0 short and stable)
 - `fm/`: CLI implementation (`python -m fm ...`)
 - `sources/`: Original materials (PDF/Excel/Web snapshots, etc.) for human review
@@ -100,6 +114,10 @@ python -m fm xref index > .xref/xid-index.json
 ```
 
 `.xref/` is for generated artifacts and caches (gitignored). XRefKit also uses `.xref/xid-index.json` as an index cache to avoid rescanning when nothing changed.
+
+`work/` is not only an audit trail.
+It is operational memory used to improve Skills, Knowledge, guard policies,
+routing rules, and quality gates after execution.
 
 Workflow: [Workflow](010_workflow.md#xid-7D1E1C0279F1)
 
