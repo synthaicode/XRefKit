@@ -46,4 +46,5 @@
   - `management_table_control` -> `../management_table_control/meta.md`
   - `context_direction_guard` -> `../os/context_direction_guard/meta.md`
   - `or_team_operations` -> `../or_team_operations/meta.md`
+  - `goal_mode` -> `../os/goal_mode/meta.md`
 

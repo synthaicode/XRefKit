@@ -159,6 +159,10 @@ Current family paths:
   - summary: analyze a Flow / Skill from an older XRefKit state and generate a current trial-first migration scaffold
   - meta: `skills/os/legacy_flow_skill_migration/meta.md`
   - skill_doc: `skills/os/legacy_flow_skill_migration/SKILL.md`
+- `goal_mode`:
+  - summary: preserve task state, wait for Codex usage recovery, and resume the same goal after the next 5-hour or weekly reset
+  - meta: `skills/os/goal_mode/meta.md`
+  - skill_doc: `skills/os/goal_mode/SKILL.md`
 
 ## Notes
 

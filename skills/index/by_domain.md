@@ -10,6 +10,7 @@
   - `import_skill` -> `../import_skill/meta.md`
   - `skill_flow_authoring` -> `../os/skill_flow_authoring/meta.md`
   - `legacy_flow_skill_migration` -> `../os/legacy_flow_skill_migration/meta.md`
+  - `goal_mode` -> `../os/goal_mode/meta.md`
   - `management_table_control` -> `../management_table_control/meta.md`
   - `release_planning_flow` -> `../release_planning_flow/meta.md`
   - `cab_review_flow` -> `../cab_review_flow/meta.md`

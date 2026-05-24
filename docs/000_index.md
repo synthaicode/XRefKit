@@ -80,6 +80,8 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Business intake pack entry](066_business_intake_pack_entry.md)
 - [Business intake workflow](067_business_intake_workflow.md#xid-7F2C8DA14E66)
 - [Change impact investigation decomposition](068_change_impact_investigation_decomposition.md)
+- [Codex goal mode usage guide](069_codex_goal_mode_usage_guide.md#xid-3E7B4C11A8D2)
+- [Codex goal mode auto resume design](070_codex_goal_mode_auto_resume_design.md#xid-6F4D2A18C9E7)
 - [AI Organization Explainer Video Team operating model](057_ai_organization_explainer_video_team_operating_model.md#xid-2E8F4A1C9B73)
 - [AI Organization Explainer Video Team usage guide](051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842)
 

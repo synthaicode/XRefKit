@@ -17,6 +17,7 @@
   - `retro` -> `../os/retro/meta.md`
   - `judgment_log` -> `../os/judgment_log/meta.md`
   - `skill_flow_authoring` -> `../os/skill_flow_authoring/meta.md`
+  - `goal_mode` -> `../os/goal_mode/meta.md`
   - `pptx_spec_traceability` -> `../pptx_spec_traceability/meta.md`
   - `xlsx_spec_traceability` -> `../xlsx_spec_traceability/meta.md`
   - `investigation_flow` -> `../investigation_flow/meta.md`

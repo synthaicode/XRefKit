@@ -92,6 +92,91 @@ def _build_parser() -> argparse.ArgumentParser:
     p_pack.add_argument("--out", default=None, help="Write to file instead of stdout")
     p_pack.add_argument("--json", action="store_true", help="Emit JSON (and still write --out if set)")
 
+    goal = subparsers.add_parser(
+        "goal",
+        help="Manage goal-mode continuation packets, wake state, and leases after semantic routing selected the goal_mode Skill",
+    )
+    goal_sub = goal.add_subparsers(dest="goal_cmd", required=True)
+
+    p_goal_packet = goal_sub.add_parser("packet", help="Manage append-only continuation packets")
+    p_goal_packet_sub = p_goal_packet.add_subparsers(dest="packet_cmd", required=True)
+
+    p_goal_packet_append = p_goal_packet_sub.add_parser("append", help="Append one continuation packet")
+    p_goal_packet_append.add_argument("--root", default=".", help="Project root (default: .)")
+    p_goal_packet_append.add_argument("--goal", required=True, help="Stable goal id")
+    p_goal_packet_append.add_argument("--summary", required=True, help="Goal state summary")
+    p_goal_packet_append.add_argument("--next-action", required=True, help="Exact next first action after resume")
+    p_goal_packet_append.add_argument("--created-by", default=None, help="Optional packet author label")
+    p_goal_packet_append.add_argument("--continuation-log", default=None, help="Continuation log path or reference")
+    p_goal_packet_append.add_argument("--artifact", action="append", default=[], help="Artifact path or reference; repeatable")
+    p_goal_packet_append.add_argument("--boundary", default=None, help="Current allowed continuation boundary")
+    p_goal_packet_append.add_argument("--stop-condition", action="append", default=[], help="Stop condition; repeatable")
+    p_goal_packet_append.add_argument("--drift-check", action="append", default=[], help="Drift-check point; repeatable")
+    p_goal_packet_append.add_argument(
+        "--status",
+        choices=sorted({"valid", "superseded", "blocked", "cancelled"}),
+        default="valid",
+        help="Packet status (default: valid)",
+    )
+    p_goal_packet_append.add_argument("--source-run-key", default=None, help="Optional source run key")
+    p_goal_packet_append.add_argument("--trace-id", default=None, help="Optional trace id")
+    p_goal_packet_append.add_argument("--parent-packet", default=None, help="Optional parent packet id")
+    p_goal_packet_append.add_argument("--subgoal", default=None, help="Optional subgoal id")
+    p_goal_packet_append.add_argument("--resume-blocker", action="append", default=[], help="Resume blocker; repeatable")
+    p_goal_packet_append.add_argument("--expiry-hint", default=None, help="Optional expiry hint")
+    p_goal_packet_append.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_goal_packet_latest = p_goal_packet_sub.add_parser("latest", help="Show the latest continuation packet")
+    p_goal_packet_latest.add_argument("--root", default=".", help="Project root (default: .)")
+    p_goal_packet_latest.add_argument("--goal", required=True, help="Stable goal id")
+    p_goal_packet_latest.add_argument("--valid-only", action="store_true", help="Return only the latest valid packet")
+    p_goal_packet_latest.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_goal_lease = goal_sub.add_parser("lease", help="Manage goal leases")
+    p_goal_lease_sub = p_goal_lease.add_subparsers(dest="lease_cmd", required=True)
+
+    p_goal_lease_acquire = p_goal_lease_sub.add_parser("acquire", help="Acquire the active lease for one goal")
+    p_goal_lease_acquire.add_argument("--root", default=".", help="Project root (default: .)")
+    p_goal_lease_acquire.add_argument("--goal", required=True, help="Stable goal id")
+    p_goal_lease_acquire.add_argument("--owner", required=True, help="Lease owner id")
+    p_goal_lease_acquire.add_argument("--source-packet", default=None, help="Optional packet id; defaults to latest valid packet")
+    p_goal_lease_acquire.add_argument("--ttl-hours", type=int, default=6, help="Lease duration in hours (default: 6)")
+    p_goal_lease_acquire.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_goal_lease_release = p_goal_lease_sub.add_parser("release", help="Release the active lease for one goal")
+    p_goal_lease_release.add_argument("--root", default=".", help="Project root (default: .)")
+    p_goal_lease_release.add_argument("--goal", required=True, help="Stable goal id")
+    p_goal_lease_release.add_argument("--owner", default=None, help="Lease owner id")
+    p_goal_lease_release.add_argument("--force", action="store_true", help="Force release even if owner does not match")
+    p_goal_lease_release.add_argument("--note", default=None, help="Optional release note")
+    p_goal_lease_release.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_goal_lease_show = p_goal_lease_sub.add_parser("show", help="Show the current lease state for one goal")
+    p_goal_lease_show.add_argument("--root", default=".", help="Project root (default: .)")
+    p_goal_lease_show.add_argument("--goal", required=True, help="Stable goal id")
+    p_goal_lease_show.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_goal_wake = goal_sub.add_parser("wake", help="Manage goal wake observation state")
+    p_goal_wake_sub = p_goal_wake.add_subparsers(dest="wake_cmd", required=True)
+
+    p_goal_wake_observe = p_goal_wake_sub.add_parser("observe", help="Record one wakeup observation for a goal")
+    p_goal_wake_observe.add_argument("--root", default=".", help="Project root (default: .)")
+    p_goal_wake_observe.add_argument("--goal", required=True, help="Stable goal id")
+    p_goal_wake_observe.add_argument("--source", required=True, help="Observer id such as provider poller or dashboard")
+    p_goal_wake_observe.add_argument(
+        "--recovery-type",
+        required=True,
+        choices=sorted({"five_hour", "weekly", "unknown"}),
+        help="Observed recovery type",
+    )
+    p_goal_wake_observe.add_argument("--note", default=None, help="Optional observation note")
+    p_goal_wake_observe.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_goal_wake_show = p_goal_wake_sub.add_parser("show", help="Show the current wake state for one goal")
+    p_goal_wake_show.add_argument("--root", default=".", help="Project root (default: .)")
+    p_goal_wake_show.add_argument("--goal", required=True, help="Stable goal id")
+    p_goal_wake_show.add_argument("--json", action="store_true", help="Emit JSON")
+
     skill = subparsers.add_parser("skill", help="Validate skill metadata before loading")
     skill_sub = skill.add_subparsers(dest="skill_cmd", required=True)
 
@@ -273,6 +358,11 @@ def main(argv: list[str] | None = None) -> int:
         from fm.skillmeta import cmd_skill
 
         return cmd_skill(args)
+
+    if args.command == "goal":
+        from fm.goalstate import cmd_goal
+
+        return cmd_goal(args)
 
     parser.print_help()
     return 2
