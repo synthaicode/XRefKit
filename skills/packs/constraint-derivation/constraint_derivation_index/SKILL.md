@@ -5,8 +5,8 @@
 
 ## Purpose
 
-Route design-oriented input to the correct constraint-derivation Skills before
-implementation starts.
+Route design or implementation artifacts to the correct constraint-derivation
+Skills before code behavior is accepted or expanded.
 
 ## Required Knowledge (XID)
 
@@ -17,7 +17,8 @@ implementation starts.
 ## Inputs
 
 - design specifications, diagrams, or partial design notes
-- known artifact classes such as DDL, UI spec, workflow, API contract, or auth matrix
+- code artifacts such as generated C# code or mixed code-plus-DDL review targets
+- known artifact classes such as DDL, UI spec, workflow, API contract, auth matrix, or integration boundary notes
 - optional outputs from earlier derivation runs
 
 ## Outputs
@@ -29,7 +30,7 @@ implementation starts.
 
 ## Startup
 
-- Confirm the request is about pre-implementation design confirmation, not final approval.
+- Confirm whether the request is design-downward, implementation-upward, or mixed-direction derivation.
 - Identify which artifact classes are present.
 - Load the routing table and shared principles from the framework knowledge page.
 - Determine the output path:
@@ -39,22 +40,27 @@ implementation starts.
 ## Execution
 
 1. Classify the input artifacts by design area.
-2. Route to every applicable primary Skill:
+2. Route to every applicable downward Skill when design artifacts are present:
    - `design_constraint_derivation`
    - `ui_constraint_derivation`
    - `logic_constraint_derivation`
    - `integration_constraint_derivation`
    - `async_constraint_derivation`
    - `auth_constraint_derivation`
-3. Preserve each Skill's ID prefix so later outputs stay traceable.
-4. If more than one primary Skill produced outputs, queue `commonality_derivation` after all primary lists are complete.
-5. Keep unresolved items explicit; do not answer them from context completion.
-6. Write the routing result to the output file and return that path.
+3. Route to every applicable upward Skill when implementation artifacts are present:
+   - `code_constraint_derivation`
+   - `cross_constraint_derivation`
+   - `integration_scenario_derivation`
+4. Preserve each Skill's ID prefix so later outputs stay traceable.
+5. If more than one primary Skill produced outputs, queue `commonality_derivation` after all primary lists are complete.
+6. Keep unresolved items explicit; do not answer them from context completion.
+7. Write the routing result to the output file and return that path.
 
 ## Monitoring and Control
 
 - Stop if someone tries to skip a matching primary Skill for convenience.
 - Do not treat derivation output as already approved requirements.
+- Do not treat upward derivation as a substitute for downward design confirmation when the design artifacts still exist.
 - Do not run the secondary pass before the primary outputs are complete.
 
 ## Closure

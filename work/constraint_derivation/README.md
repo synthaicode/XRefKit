@@ -13,6 +13,9 @@ Naming rule:
 - `YYYY-MM-DD_async_constraint_derivation_<topic>.md`
 - `YYYY-MM-DD_auth_constraint_derivation_<topic>.md`
 - `YYYY-MM-DD_commonality_derivation_<topic>.md`
+- `YYYY-MM-DD_code_constraint_derivation_<topic>.md`
+- `YYYY-MM-DD_cross_constraint_derivation_<topic>.md`
+- `YYYY-MM-DD_integration_scenario_derivation_<topic>.md`
 
 These files are operational work outputs under `work/`, not canonical policy or
 knowledge.

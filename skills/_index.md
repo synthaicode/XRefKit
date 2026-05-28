@@ -32,6 +32,9 @@ When asked "what skills are available?", answer from this file.
 - If the user asks for coding from partial design and the missing behavior would otherwise be guessed from context:
   - do not route directly to `implementation_flow`
   - derive and confirm the unresolved behavior through the constraint-derivation pack first
+- If the user provides generated C# code, DDL plus code, or code plus external-boundary behavior and asks whether the implementation hides assumptions or missed scenarios:
+  - route first to `constraint_derivation_index`
+  - then apply `code_constraint_derivation`, `cross_constraint_derivation`, or `integration_scenario_derivation` as appropriate
 - If multiple primary constraint-derivation Skills produced outputs and the task is heading toward one codebase change set:
   - run `commonality_derivation` before locking the implementation design so repeated patterns and boundary conflicts stay visible
 - If the user already has an approved requirements/planning/design/implementation stage, use the existing workflow and phase skills instead.
@@ -192,6 +195,18 @@ Current family paths:
   - summary: derive cross-cutting commonality candidates from completed primary constraint-derivation outputs
   - meta: `skills/packs/constraint-derivation/commonality_derivation/meta.md`
   - skill_doc: `skills/packs/constraint-derivation/commonality_derivation/SKILL.md`
+- `code_constraint_derivation`:
+  - summary: derive hidden assumptions and selected business constraints from generated or reviewed C# code
+  - meta: `skills/packs/constraint-derivation/code_constraint_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/code_constraint_derivation/SKILL.md`
+- `cross_constraint_derivation`:
+  - summary: compare DDL structure and C# processing structure to surface missing flows, implicit assumptions, and duplicated rule ownership
+  - meta: `skills/packs/constraint-derivation/cross_constraint_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/cross_constraint_derivation/SKILL.md`
+- `integration_scenario_derivation`:
+  - summary: derive integration-only failure and compensation scenarios from DDL, processing order, and external system boundaries
+  - meta: `skills/packs/constraint-derivation/integration_scenario_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/integration_scenario_derivation/SKILL.md`
 - `skill_flow_authoring`:
   - summary: create or update repository-native Skill / Flow assets with correct publication boundary, split model, and validation
   - meta: `skills/os/skill_flow_authoring/meta.md`

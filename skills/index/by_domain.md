@@ -37,6 +37,9 @@
   - `async_constraint_derivation` -> `../packs/constraint-derivation/async_constraint_derivation/meta.md`
   - `auth_constraint_derivation` -> `../packs/constraint-derivation/auth_constraint_derivation/meta.md`
   - `commonality_derivation` -> `../packs/constraint-derivation/commonality_derivation/meta.md`
+  - `code_constraint_derivation` -> `../packs/constraint-derivation/code_constraint_derivation/meta.md`
+  - `cross_constraint_derivation` -> `../packs/constraint-derivation/cross_constraint_derivation/meta.md`
+  - `integration_scenario_derivation` -> `../packs/constraint-derivation/integration_scenario_derivation/meta.md`
 - planning:
   - `investigation_flow` -> `../investigation_flow/meta.md`
   - `estimation_flow` -> `../estimation_flow/meta.md`

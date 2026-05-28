@@ -10,6 +10,9 @@
 - .NET:
   - `csharp_review` -> `../csharp_review/meta.md`
   - `dotnet_change_analysis` -> `../dotnet_change_analysis/meta.md`
+  - `code_constraint_derivation` -> `../packs/constraint-derivation/code_constraint_derivation/meta.md`
+  - `cross_constraint_derivation` -> `../packs/constraint-derivation/cross_constraint_derivation/meta.md`
+  - `integration_scenario_derivation` -> `../packs/constraint-derivation/integration_scenario_derivation/meta.md`
 - external-config:
   - `external_definition_change_analysis` -> `../external_definition_change_analysis/meta.md`
 - repository:
@@ -46,6 +49,9 @@
   - `async_constraint_derivation` -> `../packs/constraint-derivation/async_constraint_derivation/meta.md`
   - `auth_constraint_derivation` -> `../packs/constraint-derivation/auth_constraint_derivation/meta.md`
   - `commonality_derivation` -> `../packs/constraint-derivation/commonality_derivation/meta.md`
+  - `code_constraint_derivation` -> `../packs/constraint-derivation/code_constraint_derivation/meta.md`
+  - `cross_constraint_derivation` -> `../packs/constraint-derivation/cross_constraint_derivation/meta.md`
+  - `integration_scenario_derivation` -> `../packs/constraint-derivation/integration_scenario_derivation/meta.md`
 - password-manager:
   - `password_management` -> `../password_management/meta.md`
 - html-css-png:

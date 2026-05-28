@@ -18,6 +18,9 @@
   - `security_review` -> `../security_review/meta.md`
   - `license_review` -> `../license_review/meta.md`
   - `cab_review_flow` -> `../cab_review_flow/meta.md`
+  - `code_constraint_derivation` -> `../packs/constraint-derivation/code_constraint_derivation/meta.md`
+  - `cross_constraint_derivation` -> `../packs/constraint-derivation/cross_constraint_derivation/meta.md`
+  - `integration_scenario_derivation` -> `../packs/constraint-derivation/integration_scenario_derivation/meta.md`
 - investigate:
   - `dotnet_change_analysis` -> `../dotnet_change_analysis/meta.md`
   - `external_definition_change_analysis` -> `../external_definition_change_analysis/meta.md`
@@ -44,6 +47,9 @@
   - `async_constraint_derivation` -> `../packs/constraint-derivation/async_constraint_derivation/meta.md`
   - `auth_constraint_derivation` -> `../packs/constraint-derivation/auth_constraint_derivation/meta.md`
   - `commonality_derivation` -> `../packs/constraint-derivation/commonality_derivation/meta.md`
+  - `code_constraint_derivation` -> `../packs/constraint-derivation/code_constraint_derivation/meta.md`
+  - `cross_constraint_derivation` -> `../packs/constraint-derivation/cross_constraint_derivation/meta.md`
+  - `integration_scenario_derivation` -> `../packs/constraint-derivation/integration_scenario_derivation/meta.md`
 - implement:
   - `implementation_flow` -> `../implementation_flow/meta.md`
   - `marketing-explainer-video` -> `../marketing-explainer-video/meta.md`

@@ -5,9 +5,9 @@
 
 ## Purpose
 
-Run a secondary pass over completed primary derivation outputs to identify
-commonality candidates and scope-boundary checks without deciding integration
-automatically.
+Run a secondary pass over completed downward or upward derivation outputs to
+identify commonality candidates and scope-boundary checks without deciding
+integration automatically.
 
 ## Required Knowledge (XID)
 

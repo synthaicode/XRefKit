@@ -6,7 +6,7 @@
 - skill_id: `commonality_derivation`
 - summary: derive cross-cutting commonality candidates from completed primary constraint-derivation outputs
 - use_when: multiple primary derivation outputs exist and the user needs a second pass for shared implementation candidates or scope-boundary checks
-- input: completed DCD/UCD/LCD/ICD/ACD/AACD lists with traceable ids and optional pack-level design context
+- input: completed DCD/UCD/LCD/ICD/ACD/AACD/CCD/XCD/ISD lists with traceable ids and optional pack-level design context
 - output: CD-prefixed commonality file under `work/constraint_derivation/` by default, plus CB-prefixed boundary checks and grouped human confirmation points
 - maturity: `draft`
 - execution_mode: `local_default`

@@ -45,6 +45,9 @@ This page defines how an agent should route a user request through workflow, cap
 - Coding requests with partial design where implementation would otherwise need to guess missing edge behavior:
   - do not jump straight to manufacturing
   - derive and confirm unresolved behavior through the constraint-derivation pack first, then continue to design or manufacturing workflow
+- Review requests that include generated C# code, DDL plus code, or code plus external-boundary behavior and ask whether the implementation hides assumptions, mismatches, or integration-only failure scenarios:
+  - route first to `skills/packs/constraint-derivation/constraint_derivation_index/meta.md`
+  - apply `code_constraint_derivation`, `cross_constraint_derivation`, or `integration_scenario_derivation` as appropriate before accepting the implementation as design-valid
 - Implementation or unit testing:
   - [Manufacturing workflow](../docs/033_manufacturing_workflow.md#xid-8B31F02A4002)
 - Release-plan preparation:
