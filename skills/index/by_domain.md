@@ -29,6 +29,14 @@
   - `performance_review` -> `../performance_review/meta.md`
   - `security_review` -> `../security_review/meta.md`
   - `license_review` -> `../license_review/meta.md`
+  - `constraint_derivation_index` -> `../packs/constraint-derivation/constraint_derivation_index/meta.md`
+  - `design_constraint_derivation` -> `../packs/constraint-derivation/design_constraint_derivation/meta.md`
+  - `ui_constraint_derivation` -> `../packs/constraint-derivation/ui_constraint_derivation/meta.md`
+  - `logic_constraint_derivation` -> `../packs/constraint-derivation/logic_constraint_derivation/meta.md`
+  - `integration_constraint_derivation` -> `../packs/constraint-derivation/integration_constraint_derivation/meta.md`
+  - `async_constraint_derivation` -> `../packs/constraint-derivation/async_constraint_derivation/meta.md`
+  - `auth_constraint_derivation` -> `../packs/constraint-derivation/auth_constraint_derivation/meta.md`
+  - `commonality_derivation` -> `../packs/constraint-derivation/commonality_derivation/meta.md`
 - planning:
   - `investigation_flow` -> `../investigation_flow/meta.md`
   - `estimation_flow` -> `../estimation_flow/meta.md`

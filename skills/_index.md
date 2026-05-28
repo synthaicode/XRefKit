@@ -26,6 +26,14 @@ When asked "what skills are available?", answer from this file.
   - route to `business_learning_interview`
 - If the user already has a partial business hypothesis and wants to shape one business unit with previous side / current scope / next side:
   - route to `business_intake_scoping`
+- If the user provides design artifacts such as DDL, screen specs, state transitions, API contracts, batch designs, or auth matrices and asks to design or implement code:
+  - route first to `constraint_derivation_index`
+  - then apply every matching primary constraint-derivation Skill before finalizing design or code behavior
+- If the user asks for coding from partial design and the missing behavior would otherwise be guessed from context:
+  - do not route directly to `implementation_flow`
+  - derive and confirm the unresolved behavior through the constraint-derivation pack first
+- If multiple primary constraint-derivation Skills produced outputs and the task is heading toward one codebase change set:
+  - run `commonality_derivation` before locking the implementation design so repeated patterns and boundary conflicts stay visible
 - If the user already has an approved requirements/planning/design/implementation stage, use the existing workflow and phase skills instead.
 
 ## Category Indexes
@@ -40,6 +48,7 @@ Current family paths:
 
 - `skills/os/` for OS utility Skills
 - `skills/packs/business-intake/` for the first extracted business pack
+- `skills/packs/constraint-derivation/` for pre-implementation design constraint derivation
 - existing top-level `skills/<skill_id>/` paths remain valid for Skills that
   have not yet moved
 
@@ -151,6 +160,38 @@ Current family paths:
   - summary: learn a business task from human fragments through iterative interview and produce the next best question
   - meta: `skills/packs/business-intake/business_learning_interview/meta.md`
   - skill_doc: `skills/packs/business-intake/business_learning_interview/SKILL.md`
+- `constraint_derivation_index`:
+  - summary: route design artifacts to the correct constraint-derivation Skills and sequence the secondary commonality pass
+  - meta: `skills/packs/constraint-derivation/constraint_derivation_index/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/constraint_derivation_index/SKILL.md`
+- `design_constraint_derivation`:
+  - summary: derive requirement confirmation gates from data-structure and operation design
+  - meta: `skills/packs/constraint-derivation/design_constraint_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/design_constraint_derivation/SKILL.md`
+- `ui_constraint_derivation`:
+  - summary: derive requirement confirmation gates from UI structure, interaction states, and screen transitions
+  - meta: `skills/packs/constraint-derivation/ui_constraint_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/ui_constraint_derivation/SKILL.md`
+- `logic_constraint_derivation`:
+  - summary: derive requirement confirmation gates from branching, calculations, state transitions, and approval logic
+  - meta: `skills/packs/constraint-derivation/logic_constraint_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/logic_constraint_derivation/SKILL.md`
+- `integration_constraint_derivation`:
+  - summary: derive requirement confirmation gates from external APIs, webhooks, files, and messaging integration structure
+  - meta: `skills/packs/constraint-derivation/integration_constraint_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/integration_constraint_derivation/SKILL.md`
+- `async_constraint_derivation`:
+  - summary: derive requirement confirmation gates from asynchronous jobs, queues, schedules, and batch execution structure
+  - meta: `skills/packs/constraint-derivation/async_constraint_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/async_constraint_derivation/SKILL.md`
+- `auth_constraint_derivation`:
+  - summary: derive requirement confirmation gates from authentication, authorization, and account-governance structure
+  - meta: `skills/packs/constraint-derivation/auth_constraint_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/auth_constraint_derivation/SKILL.md`
+- `commonality_derivation`:
+  - summary: derive cross-cutting commonality candidates from completed primary constraint-derivation outputs
+  - meta: `skills/packs/constraint-derivation/commonality_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/commonality_derivation/SKILL.md`
 - `skill_flow_authoring`:
   - summary: create or update repository-native Skill / Flow assets with correct publication boundary, split model, and validation
   - meta: `skills/os/skill_flow_authoring/meta.md`

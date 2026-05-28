@@ -39,6 +39,12 @@ This page defines how an agent should route a user request through workflow, cap
   - [Requirements workflow](../docs/036_requirements_workflow.md#xid-8B31F02A4005)
 - Task decomposition or execution planning:
   - [Planning workflow](../docs/037_planning_workflow.md#xid-8B31F02A4006)
+- Design or coding requests that include design-side structure such as DDL, UI specs, state transitions, API contracts, batch models, or auth matrices and still leave behavior unresolved:
+  - route first to `skills/packs/constraint-derivation/constraint_derivation_index/meta.md`
+  - apply every matching primary derivation Skill before finalizing design or code behavior
+- Coding requests with partial design where implementation would otherwise need to guess missing edge behavior:
+  - do not jump straight to manufacturing
+  - derive and confirm unresolved behavior through the constraint-derivation pack first, then continue to design or manufacturing workflow
 - Implementation or unit testing:
   - [Manufacturing workflow](../docs/033_manufacturing_workflow.md#xid-8B31F02A4002)
 - Release-plan preparation:

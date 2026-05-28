@@ -48,11 +48,14 @@ Execute the manufacturing sequence `CAP-MFG-001 -> CAP-MFG-002` and prepare outp
 - Confirm target files are identified.
 - Confirm coding rules are available.
 - Record `unknown` if required evidence is missing.
+- If the task still depends on unresolved structural behavior from DDL, UI, state transitions, integrations, batch rules, or auth rules, route through `constraint_derivation_index` before coding.
 
 ## Planning
 
 - Define the implementation targets and test targets.
 - Treat implementation as realization of an already-defined difference, not as a place to discover new design intent.
+- Check whether the incoming design package still leaves structural behavior implicit.
+- If yes, stop implementation planning and route to the matching constraint-derivation Skills first.
 - Map each business activity to its supporting capability:
   - implementation -> `CAP-MFG-001`
   - unit test execution -> `CAP-MFG-002`
@@ -64,6 +67,8 @@ Execute the manufacturing sequence `CAP-MFG-001 -> CAP-MFG-002` and prepare outp
 - Perform implementation by executing `CAP-MFG-001`.
 - Perform unit test execution by executing `CAP-MFG-002`.
 - Modify source code only against the traced target set and approved change-design basis.
+- Treat confirmed constraint-derivation outputs as part of the coding basis when those outputs were needed to prevent guessed behavior.
+- Record the derivation output path in the implementation basis design reference or equivalent handoff artifact when derivation was required.
 - Prefer one coordinated pass over repeated local rework when the required change set is already known.
 - Record which design artifact or design basis reference each implementation change realizes.
 - Record which test design item each executed unit test realizes.
@@ -83,6 +88,7 @@ Execute the manufacturing sequence `CAP-MFG-001 -> CAP-MFG-002` and prepare outp
 - Check that every implementation assumption gap has a recorded classification and handling result.
 - Downgrade weakly supported completion claims to `unknown`.
 - Downgrade completion claims to `unknown` when the implemented diff cannot be traced back to the approved change-design basis.
+- Stop if coding starts to choose unresolved structural behavior locally instead of escalating back through design or constraint derivation.
 - Preserve explicit reasons for `out_of_scope` items.
 
 ## Closure

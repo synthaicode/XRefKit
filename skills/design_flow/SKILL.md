@@ -38,12 +38,18 @@ Execute `CAP-DSN-001` and prepare implementation-ready solution-design artifacts
 - Confirm planning outputs exist.
 - Confirm source modification policy and work plan are approved.
 - Record `unknown` if required design inputs are missing.
+- If the input still contains structural behavior that would otherwise be guessed during coding, route through `constraint_derivation_index` and the matching derivation Skills before closing design.
 
 ## Planning
 
 - Define design scope and handoff boundaries.
 - Treat this design work as change-design preparation, not as immediate implementation.
 - Preserve which requirement difference and impacted target each design area addresses.
+- Decide whether the incoming design material still needs constraint derivation:
+  - DDL or schema behavior gaps
+  - UI state or transition gaps
+  - logic or state-transition gaps
+  - integration, batch, or auth behavior gaps
 - Map the business activity to its supporting capability:
   - solution design drafting -> `CAP-DSN-001`
 - Prepare management rows for design outputs and unresolved assumptions.
@@ -51,6 +57,8 @@ Execute `CAP-DSN-001` and prepare implementation-ready solution-design artifacts
 ## Execution
 
 - Perform solution design drafting by executing `CAP-DSN-001`.
+- When constraint derivation is required, treat its confirmed outputs as the gate before freezing implementation-facing behavior.
+- Record the written derivation output path in the design artifacts or design basis reference when derivation was required.
 - Record which planning policy and planning basis source entry each design artifact realizes.
 - Describe the intended change method in design language before any implementation begins.
 - Consolidate overlapping changes that hit the same location so implementation can modify the code in one coordinated pass.
@@ -61,6 +69,7 @@ Execute `CAP-DSN-001` and prepare implementation-ready solution-design artifacts
 - Check that all required design areas have a recorded result.
 - Downgrade weakly supported design assumptions to `unknown`.
 - Downgrade design areas to `unknown` when the intended change method is not concrete enough to review before implementation.
+- Stop if design closure would force manufacturing to guess unresolved structural behavior that should have been derived first.
 - Preserve unresolved design constraints for manufacturing handoff.
 
 ## Closure

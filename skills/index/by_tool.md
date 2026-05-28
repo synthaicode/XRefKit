@@ -37,6 +37,15 @@
   - `management_table_control` -> `../management_table_control/meta.md`
   - `context_direction_guard` -> `../os/context_direction_guard/meta.md`
   - `or_team_operations` -> `../or_team_operations/meta.md`
+- specification:
+  - `constraint_derivation_index` -> `../packs/constraint-derivation/constraint_derivation_index/meta.md`
+  - `design_constraint_derivation` -> `../packs/constraint-derivation/design_constraint_derivation/meta.md`
+  - `ui_constraint_derivation` -> `../packs/constraint-derivation/ui_constraint_derivation/meta.md`
+  - `logic_constraint_derivation` -> `../packs/constraint-derivation/logic_constraint_derivation/meta.md`
+  - `integration_constraint_derivation` -> `../packs/constraint-derivation/integration_constraint_derivation/meta.md`
+  - `async_constraint_derivation` -> `../packs/constraint-derivation/async_constraint_derivation/meta.md`
+  - `auth_constraint_derivation` -> `../packs/constraint-derivation/auth_constraint_derivation/meta.md`
+  - `commonality_derivation` -> `../packs/constraint-derivation/commonality_derivation/meta.md`
 - password-manager:
   - `password_management` -> `../password_management/meta.md`
 - html-css-png:

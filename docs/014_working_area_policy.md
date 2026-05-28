@@ -18,6 +18,7 @@ Use `docs/` and `knowledge/` only for reviewed, stable outputs.
 - `work/judgments/`: non-trivial judgment logs with evidence, alternatives, and next checks
 - `work/retrospectives/`: summaries of decisions, tradeoffs, and outcomes
 - `work/handover/`: concise baton-pass notes for unfinished work
+- `work/constraint_derivation/`: task-level derivation outputs that surface unresolved structural behavior before design freeze or coding
 
 ## File Naming Rule (required)
 
