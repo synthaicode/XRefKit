@@ -38,3 +38,5 @@
   - `../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001`
   - `../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002`
   - `../../knowledge/csharp/110_custom_framework_analysis_criteria.md#xid-30E6A4F6F3AB`
+- observation_refs:
+  - `../../work/sessions/2026-06-06_session_csharp_review_mailkit_pooling_observation.md`
