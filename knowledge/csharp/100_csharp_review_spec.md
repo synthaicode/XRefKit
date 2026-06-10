@@ -52,6 +52,28 @@ Check at least the following:
 - blocking waits (`.Result`, `.Wait()`) in async flows
 - missing cancellation and timeout propagation
 - synchronization-context capture concerns where relevant
+- time-controlled or test-controlled async wait paths that cannot wake on the
+  state transition they are waiting for
+
+### Time-Controlled Wait Review
+
+When code uses a virtual clock, fake clock, polling delay, or scheduler-driven
+wait loop, verify whether the awaited state change also has a direct wake-up
+path.
+
+Check at least the following:
+
+- whether a waiter is blocked only on time progression (`Delay`, timer tick, or
+  scheduler advance) even though another actor can satisfy the waited
+  condition immediately
+- whether the producer-side state transition also emits a signal, notification,
+  channel write, task completion, or semaphore release that wakes waiters
+- whether tests using a fake or manually advanced clock can hang forever
+  because no one advances time after the required state transition already
+  happened
+- whether polling-only retry loops should be converted to `time or signal`
+  waiting so timeout behavior and immediate wake-up behavior both remain
+  testable
 
 ## Support Lifecycle Checks
 

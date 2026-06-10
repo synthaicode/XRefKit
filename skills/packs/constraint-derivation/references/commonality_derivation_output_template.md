@@ -1,3 +1,6 @@
+<!-- xid: B6A11501AD6D -->
+<a id="xid-B6A11501AD6D"></a>
+
 # Commonality Derivation Output Template
 
 - skill_id: `commonality_derivation`

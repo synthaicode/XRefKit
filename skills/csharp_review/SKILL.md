@@ -13,6 +13,10 @@ Check the following domains:
 - synchronization and concurrency correctness
 - support lifecycle expiration risks
 
+This includes async wait paths in tests or production code where a fake clock,
+virtual clock, or polling delay can block forever because the waited state
+change does not also wake the waiter directly.
+
 Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4F6F3AA`.
 
 ## Required Knowledge (XID)
@@ -85,6 +89,8 @@ Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4
   - lock ordering, deadlock risk, race-prone shared state
   - blocking in async paths and context-capture pitfalls
   - cancellation and timeout propagation
+  - fake-clock or virtual-clock wait loops that rely on time advancement alone
+    even though a producer-side state transition could notify the waiter
 - Execute support lifecycle checks:
   - target framework support status
   - package or runtime dependencies with expired or near-expired support

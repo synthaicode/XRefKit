@@ -5,7 +5,7 @@
 
 - skill_id: `csharp_review`
 - summary: review C# code with a manual focus on non-Roslyn-detectable risks
-- use_when: user asks for C# review beyond Roslyn/compiler diagnostics
+- use_when: user asks for C# review beyond Roslyn/compiler diagnostics, including async hangs, synchronization risks, or fake-clock wait behavior that Roslyn does not catch
 - input: target path, optional scope filters, optional output mode
 - output: evidence-based findings for attribute misuse, resource efficiency, synchronization, and lifecycle support
 - execution_mode: `subagent_preferred`
@@ -40,3 +40,4 @@
   - `../../knowledge/csharp/110_custom_framework_analysis_criteria.md#xid-30E6A4F6F3AB`
 - observation_refs:
   - `../../work/sessions/2026-06-06_session_csharp_review_mailkit_pooling_observation.md`
+  - `../../work/sessions/2026-06-06_session_csharp_review_fakeclock_hang_pattern.md`
