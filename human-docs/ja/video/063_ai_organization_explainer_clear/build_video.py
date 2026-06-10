@@ -8,8 +8,7 @@ import numpy as np
 from PIL import Image
 
 
-ROOT = Path(__file__).resolve().parents[4]
-VIDEO_DIR = ROOT / "ja" / "docs" / "video" / "063_ai_organization_explainer_clear"
+VIDEO_DIR = Path(__file__).resolve().parent
 MANIFEST = VIDEO_DIR / "manifest.tsv"
 OUTPUT = VIDEO_DIR / "ai_team_explainer_clear.mp4"
 FPS = 24

@@ -126,16 +126,15 @@ const burdenFlow = () => `
     </div>
   </div>`;
 
-const credit = () => `
+const credit = (engine, voiceItems, summary) => `
   <div class="definition-grid">
     <div class="definition-main">
       <div class="card-label">DEF</div>
       <h2>音声クレジット</h2>
-      <p>この動画の音声には、VOICEVOX を使用しています。</p>
+      <p>この動画の音声には、${engine} を使用しています。</p>
     </div>
     <div class="management-list">
-      <div class="management-item">VOICEVOX:ずんだもん</div>
-      <div class="management-item">VOICEVOX:四国めたん</div>
+      ${voiceItems.map((item) => `<div class="management-item">${item}</div>`).join("")}
       <div class="management-item">動画: AI Team Explainer</div>
       <div class="management-item">用途: AI 組織の説明</div>
     </div>
@@ -436,8 +435,26 @@ const slides = {
   "13_voicevox_credit": wrap({
     kicker: "クレジット",
     title: "音声ライセンス",
-    body: credit(),
+    body: credit(
+      "VOICEVOX",
+      ["VOICEVOX:ずんだもん", "VOICEVOX:四国めたん"],
+      "音声: VOICEVOX:ずんだもん / VOICEVOX:四国めたん"
+    ),
     summary: "音声: VOICEVOX:ずんだもん / VOICEVOX:四国めたん"
+  }),
+  "13_irodori_credit": wrap({
+    kicker: "クレジット",
+    title: "音声クレジット",
+    body: credit(
+      "Irodori-TTS",
+      [
+        "Irodori-TTS: Listener prompt voice",
+        "Irodori-TTS: Explainer prompt voice",
+        "Checkpoint: Aratako/Irodori-TTS-500M-v2-VoiceDesign"
+      ],
+      "音声: Irodori-TTS / VoiceDesign"
+    ),
+    summary: "音声: Irodori-TTS / VoiceDesign"
   })
 };
 

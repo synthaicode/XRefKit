@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import csv
-import json
 import os
+import shlex
+import shutil
 import subprocess
-import urllib.parse
-import urllib.request
 import wave
 from pathlib import Path
 
@@ -16,59 +15,49 @@ from PIL import Image
 
 
 VIDEO_DIR = Path(__file__).resolve().parent
-MANIFEST = VIDEO_DIR / "manifest.tsv"
-AUDIO_DIR = VIDEO_DIR / "voicevox_audio"
-SEGMENT_DIR = VIDEO_DIR / "voicevox_segments"
-CONCAT_FILE = VIDEO_DIR / "voicevox_concat.txt"
-OUTPUT = VIDEO_DIR / "ai_team_explainer_clear_voicevox.mp4"
+MANIFEST = VIDEO_DIR / "manifest_irodori.tsv"
+AUDIO_DIR = VIDEO_DIR / "irodori_audio"
+SEGMENT_DIR = VIDEO_DIR / "irodori_segments"
+CONCAT_FILE = VIDEO_DIR / "irodori_concat.txt"
+OUTPUT = VIDEO_DIR / "ai_team_explainer_clear_irodori.mp4"
 
-VOICEVOX_URL = os.environ.get("VOICEVOX_URL", "http://127.0.0.1:50021")
-SPEAKER_NAME = os.environ.get("VOICEVOX_SPEAKER_NAME", "四国めたん")
-STYLE_NAME = os.environ.get("VOICEVOX_STYLE_NAME", "ノーマル")
-LISTENER_SPEAKER_NAME = os.environ.get("VOICEVOX_LISTENER_SPEAKER_NAME", "ずんだもん")
-LISTENER_STYLE_NAME = os.environ.get("VOICEVOX_LISTENER_STYLE_NAME", "ノーマル")
+IRODORI_REPO_DIR = os.environ.get("IRODORI_REPO_DIR", "").strip()
+IRODORI_CHECKPOINT = os.environ.get(
+    "IRODORI_CHECKPOINT",
+    "Aratako/Irodori-TTS-500M-v2-VoiceDesign",
+)
+IRODORI_EXPLAINER_CAPTION = os.environ.get(
+    "IRODORI_EXPLAINER_CAPTION",
+    "落ち着いた解説者の声で、明瞭に自然な日本語で読み上げてください。",
+)
+IRODORI_LISTENER_CAPTION = os.environ.get(
+    "IRODORI_LISTENER_CAPTION",
+    "聞き手の声で、軽く自然な疑問を日本語で投げかけてください。",
+)
+IRODORI_EXTRA_ARGS = shlex.split(os.environ.get("IRODORI_EXTRA_ARGS", ""))
+
 FPS = "24"
 FPS_INT = 24
-QUESTION_PAUSE_SECONDS = float(os.environ.get("VOICEVOX_QUESTION_PAUSE_SECONDS", "0.8"))
-ANSWER_PAUSE_SECONDS = float(os.environ.get("VOICEVOX_ANSWER_PAUSE_SECONDS", "0.6"))
-SLIDE_END_PAUSE_SECONDS = float(os.environ.get("VOICEVOX_SLIDE_END_PAUSE_SECONDS", "1.0"))
-ANSWER_REVEAL_SECONDS = float(os.environ.get("VOICEVOX_ANSWER_REVEAL_SECONDS", "0.9"))
-WAV_RATE = 24000
+QUESTION_PAUSE_SECONDS = float(os.environ.get("IRODORI_QUESTION_PAUSE_SECONDS", "0.8"))
+ANSWER_PAUSE_SECONDS = float(os.environ.get("IRODORI_ANSWER_PAUSE_SECONDS", "0.6"))
+SLIDE_END_PAUSE_SECONDS = float(os.environ.get("IRODORI_SLIDE_END_PAUSE_SECONDS", "1.0"))
+ANSWER_REVEAL_SECONDS = float(os.environ.get("IRODORI_ANSWER_REVEAL_SECONDS", "0.9"))
+WAV_RATE = 48000
 WAV_CHANNELS = 1
 WAV_SAMPLE_WIDTH = 2
 FRAME_SIZE = (1600, 900)
 
 
-def request_json(url: str, data: bytes | None = None) -> object:
-    req = urllib.request.Request(url, data=data, method="POST" if data is not None else "GET")
-    with urllib.request.urlopen(req, timeout=60) as response:
-        return json.loads(response.read().decode("utf-8"))
-
-
-def request_bytes(url: str, payload: bytes, content_type: str = "application/json") -> bytes:
-    req = urllib.request.Request(
-        url,
-        data=payload,
-        method="POST",
-        headers={"Content-Type": content_type},
-    )
-    with urllib.request.urlopen(req, timeout=120) as response:
-        return response.read()
-
-
-def resolve_speaker_id(speaker_name: str, style_name: str) -> int:
-    speakers = request_json(f"{VOICEVOX_URL}/speakers")
-    for speaker in speakers:
-        if speaker.get("name") != speaker_name:
-            continue
-        styles = speaker.get("styles", [])
-        for style in styles:
-            if style.get("name") == style_name:
-                return int(style["id"])
-        if styles:
-            return int(styles[0]["id"])
-    available = ", ".join(s.get("name", "") for s in speakers)
-    raise RuntimeError(f"speaker not found: {speaker_name}. available: {available}")
+def ensure_irodori_repo() -> Path:
+    if not IRODORI_REPO_DIR:
+        raise RuntimeError(
+            "IRODORI_REPO_DIR is required. Point it at a local clone of Aratako/Irodori-TTS."
+        )
+    repo_dir = Path(IRODORI_REPO_DIR).expanduser().resolve()
+    infer_path = repo_dir / "infer.py"
+    if not infer_path.is_file():
+        raise RuntimeError(f"infer.py not found under IRODORI_REPO_DIR: {repo_dir}")
+    return repo_dir
 
 
 def read_manifest() -> list[dict[str, str]]:
@@ -92,15 +81,31 @@ def parse_turns(narration: str) -> list[tuple[str, str]]:
     return turns
 
 
-def synthesize(text: str, speaker_id: int, wav_path: Path, query_path: Path) -> None:
-    query = urllib.parse.urlencode({"text": text, "speaker": speaker_id})
-    audio_query = request_json(f"{VOICEVOX_URL}/audio_query?{query}", data=b"")
-    # Slightly speed up long narration so slide pacing stays compact.
-    audio_query["speedScale"] = 1.05
-    query_path.write_text(json.dumps(audio_query, ensure_ascii=False, indent=2), encoding="utf-8")
-    payload = json.dumps(audio_query, ensure_ascii=False).encode("utf-8")
-    wav = request_bytes(f"{VOICEVOX_URL}/synthesis?speaker={speaker_id}", payload)
-    wav_path.write_bytes(wav)
+def caption_for_role(role: str) -> str:
+    if role == "聞き手":
+        return IRODORI_LISTENER_CAPTION
+    return IRODORI_EXPLAINER_CAPTION
+
+
+def synthesize(text: str, role: str, wav_path: Path) -> None:
+    repo_dir = ensure_irodori_repo()
+    command = [
+        "uv",
+        "run",
+        "python",
+        "infer.py",
+        "--hf-checkpoint",
+        IRODORI_CHECKPOINT,
+        "--text",
+        text,
+        "--caption",
+        caption_for_role(role),
+        "--no-ref",
+        "--output-wav",
+        str(wav_path),
+        *IRODORI_EXTRA_ARGS,
+    ]
+    subprocess.run(command, cwd=repo_dir, check=True)
 
 
 def write_silence(path: Path, seconds: float) -> None:
@@ -173,14 +178,12 @@ def concat_audio(audio_paths: list[Path], output_path: Path) -> None:
     )
 
 
-def build_dialogue_audio(order: str, narration: str, speaker_ids: dict[str, int]) -> Path:
+def build_dialogue_audio(order: str, narration: str) -> Path:
     turns = parse_turns(narration)
     turn_paths: list[Path] = []
     for index, (role, text) in enumerate(turns, start=1):
-        speaker_id = speaker_ids.get(role, speaker_ids["解説"])
         wav_path = AUDIO_DIR / f"{order}_{index:02d}_{role}.wav"
-        query_path = AUDIO_DIR / f"{order}_{index:02d}_{role}_query.json"
-        synthesize(text, speaker_id, wav_path, query_path)
+        synthesize(text, role, wav_path)
         turn_paths.append(wav_path)
 
         pause_seconds = QUESTION_PAUSE_SECONDS if role == "聞き手" else ANSWER_PAUSE_SECONDS
@@ -289,10 +292,6 @@ def concat_segments(segment_paths: list[Path]) -> None:
 def main() -> None:
     AUDIO_DIR.mkdir(parents=True, exist_ok=True)
     SEGMENT_DIR.mkdir(parents=True, exist_ok=True)
-    speaker_ids = {
-        "解説": resolve_speaker_id(SPEAKER_NAME, STYLE_NAME),
-        "聞き手": resolve_speaker_id(LISTENER_SPEAKER_NAME, LISTENER_STYLE_NAME),
-    }
     rows = read_manifest()
     segments: list[Path] = []
     previous_slide_path: Path | None = None
@@ -302,7 +301,7 @@ def main() -> None:
         order = row["order"]
         slide_path = (VIDEO_DIR / row["slide_path"]).resolve()
         segment_path = SEGMENT_DIR / f"{order}.mp4"
-        wav_path = build_dialogue_audio(order, row["narration"], speaker_ids)
+        wav_path = build_dialogue_audio(order, row["narration"])
         is_answer_reveal = (
             order.endswith("b")
             and previous_slide_path is not None
@@ -317,10 +316,13 @@ def main() -> None:
         previous_order = order
 
     concat_segments(segments)
-    print(f"speaker=解説:{SPEAKER_NAME}/{STYLE_NAME} id={speaker_ids['解説']}")
-    print(f"speaker=聞き手:{LISTENER_SPEAKER_NAME}/{LISTENER_STYLE_NAME} id={speaker_ids['聞き手']}")
+    print(f"checkpoint={IRODORI_CHECKPOINT}")
+    print(f"listener_caption={IRODORI_LISTENER_CAPTION}")
+    print(f"explainer_caption={IRODORI_EXPLAINER_CAPTION}")
     print(OUTPUT)
 
 
 if __name__ == "__main__":
+    if shutil.which("uv") is None:
+        raise RuntimeError("uv is required in PATH to run Irodori-TTS inference.")
     main()

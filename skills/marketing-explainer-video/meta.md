@@ -34,5 +34,6 @@
   - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
   - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
+  - `../../knowledge/operations/150_marketing_video_tts_engine_guidance.md#xid-9C41D7B2A5E1`
 - observation_refs:
   - `../../work/retrospectives/2026-04-30_feedback_marketing-video-production-gaps.md`

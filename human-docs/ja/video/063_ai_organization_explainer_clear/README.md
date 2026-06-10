@@ -1,13 +1,16 @@
 # AI 組織説明動画 改善版
 
-- 状態: 掛け合い版スライド・ナレーション一式、無音 mp4、VOICEVOX 2 話者音声付き mp4
+- 状態: 掛け合い版スライド・ナレーション一式、無音 mp4、VOICEVOX 2 話者音声付き mp4、Irodori-TTS 音声付き mp4
 - 目的: 初見で離脱されにくい AI Team 説明動画を作る
 - 動画: `ai_team_explainer_clear.mp4`
 - 音声付き動画: `ai_team_explainer_clear_voicevox.mp4`
+- Irodori 版動画: `ai_team_explainer_clear_irodori.mp4`
 - シナリオ: `../../063_ai_organization_explainer_clear_script.md`
 - スライド画像: `../../assets/063_ai_organization_explainer_clear/`
 - プレビュー: `index.html`
 - 対応表: `manifest.tsv`
+- Irodori プレビュー: `index_irodori.html`
+- Irodori 対応表: `manifest_irodori.tsv`
 
 ## 改善方針
 
@@ -41,6 +44,20 @@
 `VOICEVOX:ずんだもん / ノーマル`。
 環境変数 `VOICEVOX_SPEAKER_NAME`、`VOICEVOX_STYLE_NAME`、
 `VOICEVOX_LISTENER_SPEAKER_NAME`、`VOICEVOX_LISTENER_STYLE_NAME` で変更できる。
+
+`build_irodori_video.py` は、ローカル clone した Irodori-TTS を呼び出し、
+`manifest_irodori.tsv` のナレーションを VoiceDesign で音声化して
+音声付き mp4 を生成する。
+
+最低限、次の環境変数が必要:
+
+- `IRODORI_REPO_DIR`: `Aratako/Irodori-TTS` のローカル clone
+- `IRODORI_CHECKPOINT`: 既定は `Aratako/Irodori-TTS-500M-v2-VoiceDesign`
+- `IRODORI_LISTENER_CAPTION`: 聞き手役の声質指示
+- `IRODORI_EXPLAINER_CAPTION`: 解説役の声質指示
+
+既定では、参照音声は使わず `VoiceDesign` の text prompt だけで
+聞き手役と解説役を分ける。
 
 ## 公開前確認
 
