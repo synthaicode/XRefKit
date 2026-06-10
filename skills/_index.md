@@ -29,6 +29,10 @@ When asked "what skills are available?", answer from this file.
 - If the user provides design artifacts such as DDL, screen specs, state transitions, API contracts, batch designs, or auth matrices and asks to design or implement code:
   - route first to `constraint_derivation_index`
   - then apply every matching primary constraint-derivation Skill before finalizing design or code behavior
+- If the user asks to review or diagnose C# async hangs, synchronization bugs,
+  race conditions, or fake-clock / virtual-clock wait behavior that compiler
+  diagnostics do not catch:
+  - route to `csharp_review`
 - If the user asks for coding from partial design and the missing behavior would otherwise be guessed from context:
   - do not route directly to `implementation_flow`
   - derive and confirm the unresolved behavior through the constraint-derivation pack first
@@ -52,6 +56,7 @@ Current family paths:
 - `skills/os/` for OS utility Skills
 - `skills/packs/business-intake/` for the first extracted business pack
 - `skills/packs/constraint-derivation/` for pre-implementation design constraint derivation
+- `skills/packs/editorial-ops/` for managed editorial drafting, review, and release preparation
 - existing top-level `skills/<skill_id>/` paths remain valid for Skills that
   have not yet moved
 
@@ -127,6 +132,22 @@ Current family paths:
   - summary: perform evidence-based QA review after implementation
   - meta: `skills/qa_gate_review/meta.md`
   - skill_doc: `skills/qa_gate_review/SKILL.md`
+- `attribute_review`:
+  - summary: review C# attributes for necessity, value correctness, and usage correctness
+  - meta: `skills/attribute_review/meta.md`
+  - skill_doc: `skills/attribute_review/SKILL.md`
+- `performance_review`:
+  - summary: review C# code and evidence for performance risks
+  - meta: `skills/performance_review/meta.md`
+  - skill_doc: `skills/performance_review/SKILL.md`
+- `security_review`:
+  - summary: review C# code and evidence for security risks
+  - meta: `skills/security_review/meta.md`
+  - skill_doc: `skills/security_review/SKILL.md`
+- `license_review`:
+  - summary: review dependency and provenance evidence for license compliance risks
+  - meta: `skills/license_review/meta.md`
+  - skill_doc: `skills/license_review/SKILL.md`
 - `release_planning_flow`:
   - summary: prepare release-plan materials and operational readiness evaluation
   - meta: `skills/release_planning_flow/meta.md`
@@ -207,6 +228,30 @@ Current family paths:
   - summary: derive integration-only failure and compensation scenarios from DDL, processing order, and external system boundaries
   - meta: `skills/packs/constraint-derivation/integration_scenario_derivation/meta.md`
   - skill_doc: `skills/packs/constraint-derivation/integration_scenario_derivation/SKILL.md`
+- `editorial_ops_index`:
+  - summary: route editorial requests to the correct editorial-ops Skills and keep review and release stages explicit
+  - meta: `skills/packs/editorial-ops/editorial_ops_index/meta.md`
+  - skill_doc: `skills/packs/editorial-ops/editorial_ops_index/SKILL.md`
+- `editorial_intake`:
+  - summary: scope an article task into topic, audience, evidence basis, quality target, and publication boundary before drafting
+  - meta: `skills/packs/editorial-ops/editorial_intake/meta.md`
+  - skill_doc: `skills/packs/editorial-ops/editorial_intake/SKILL.md`
+- `draft_authoring`:
+  - summary: produce an article draft from explicit intake framing and source basis without hiding unsupported claims
+  - meta: `skills/packs/editorial-ops/draft_authoring/meta.md`
+  - skill_doc: `skills/packs/editorial-ops/draft_authoring/SKILL.md`
+- `fact_review`:
+  - summary: review article claims for factual separation, source support, names, numbers, links, and channel-sensitive wording risks
+  - meta: `skills/packs/editorial-ops/fact_review/meta.md`
+  - skill_doc: `skills/packs/editorial-ops/fact_review/SKILL.md`
+- `reader_experience_review`:
+  - summary: review a draft from the target reader perspective to surface confusion, drop-off points, context gaps, and pacing issues
+  - meta: `skills/packs/editorial-ops/reader_experience_review/meta.md`
+  - skill_doc: `skills/packs/editorial-ops/reader_experience_review/SKILL.md`
+- `crosspost_release`:
+  - summary: prepare a reviewed article for per-channel publication with explicit adaptation notes, release blockers, and final human sign-off boundary
+  - meta: `skills/packs/editorial-ops/crosspost_release/meta.md`
+  - skill_doc: `skills/packs/editorial-ops/crosspost_release/SKILL.md`
 - `skill_flow_authoring`:
   - summary: create or update repository-native Skill / Flow assets with correct publication boundary, split model, and validation
   - meta: `skills/os/skill_flow_authoring/meta.md`

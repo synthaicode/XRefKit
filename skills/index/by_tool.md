@@ -40,6 +40,12 @@
   - `management_table_control` -> `../management_table_control/meta.md`
   - `context_direction_guard` -> `../os/context_direction_guard/meta.md`
   - `or_team_operations` -> `../or_team_operations/meta.md`
+  - `editorial_ops_index` -> `../packs/editorial-ops/editorial_ops_index/meta.md`
+  - `editorial_intake` -> `../packs/editorial-ops/editorial_intake/meta.md`
+  - `draft_authoring` -> `../packs/editorial-ops/draft_authoring/meta.md`
+  - `fact_review` -> `../packs/editorial-ops/fact_review/meta.md`
+  - `reader_experience_review` -> `../packs/editorial-ops/reader_experience_review/meta.md`
+  - `crosspost_release` -> `../packs/editorial-ops/crosspost_release/meta.md`
 - specification:
   - `constraint_derivation_index` -> `../packs/constraint-derivation/constraint_derivation_index/meta.md`
   - `design_constraint_derivation` -> `../packs/constraint-derivation/design_constraint_derivation/meta.md`

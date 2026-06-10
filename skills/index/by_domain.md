@@ -17,6 +17,9 @@
   - `or_team_operations` -> `../or_team_operations/meta.md`
   - `business_intake_scoping` -> `../packs/business-intake/business_intake_scoping/meta.md`
   - `business_learning_interview` -> `../packs/business-intake/business_learning_interview/meta.md`
+  - `editorial_ops_index` -> `../packs/editorial-ops/editorial_ops_index/meta.md`
+  - `editorial_intake` -> `../packs/editorial-ops/editorial_intake/meta.md`
+  - `crosspost_release` -> `../packs/editorial-ops/crosspost_release/meta.md`
 - engineering:
   - `csharp_review` -> `../csharp_review/meta.md`
   - `dotnet_change_analysis` -> `../dotnet_change_analysis/meta.md`
@@ -53,4 +56,7 @@
 - marketing:
   - `marketing_slide_png` -> `../marketing_slide_png/meta.md`
   - `marketing-explainer-video` -> `../marketing-explainer-video/meta.md`
+  - `draft_authoring` -> `../packs/editorial-ops/draft_authoring/meta.md`
+  - `fact_review` -> `../packs/editorial-ops/fact_review/meta.md`
+  - `reader_experience_review` -> `../packs/editorial-ops/reader_experience_review/meta.md`
 

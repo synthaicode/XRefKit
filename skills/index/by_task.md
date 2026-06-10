@@ -26,6 +26,7 @@
   - `external_definition_change_analysis` -> `../external_definition_change_analysis/meta.md`
   - `investigation_flow` -> `../investigation_flow/meta.md`
   - `business_learning_interview` -> `../packs/business-intake/business_learning_interview/meta.md`
+  - `editorial_intake` -> `../packs/editorial-ops/editorial_intake/meta.md`
 - estimate:
   - `estimation_flow` -> `../estimation_flow/meta.md`
 - define-requirements:
@@ -50,9 +51,13 @@
   - `code_constraint_derivation` -> `../packs/constraint-derivation/code_constraint_derivation/meta.md`
   - `cross_constraint_derivation` -> `../packs/constraint-derivation/cross_constraint_derivation/meta.md`
   - `integration_scenario_derivation` -> `../packs/constraint-derivation/integration_scenario_derivation/meta.md`
+  - `editorial_ops_index` -> `../packs/editorial-ops/editorial_ops_index/meta.md`
+  - `draft_authoring` -> `../packs/editorial-ops/draft_authoring/meta.md`
 - implement:
   - `implementation_flow` -> `../implementation_flow/meta.md`
   - `marketing-explainer-video` -> `../marketing-explainer-video/meta.md`
+- release:
+  - `crosspost_release` -> `../packs/editorial-ops/crosspost_release/meta.md`
 - control:
   - `doc_ship` -> `../os/doc_ship/meta.md`
   - `retro` -> `../os/retro/meta.md`
@@ -61,4 +66,6 @@
   - `context_direction_guard` -> `../os/context_direction_guard/meta.md`
   - `or_team_operations` -> `../or_team_operations/meta.md`
   - `goal_mode` -> `../os/goal_mode/meta.md`
+  - `fact_review` -> `../packs/editorial-ops/fact_review/meta.md`
+  - `reader_experience_review` -> `../packs/editorial-ops/reader_experience_review/meta.md`
 
