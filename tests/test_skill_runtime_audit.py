@@ -146,6 +146,38 @@ class SkillRuntimeAuditTests(unittest.TestCase):
             self.assertEqual(1, result.checked)
             self.assertEqual([], result.errors)
 
+    def test_local_default_run_requires_checker_subagent(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_valid_skill(root)
+            out = root / "work" / "sessions" / "run.md"
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill",
+                            "run",
+                            "--root",
+                            str(root),
+                            "--meta",
+                            "skills/sample/meta.md",
+                            "--task",
+                            "Checker context assignment",
+                            "--out",
+                            str(out),
+                        ]
+                    ),
+                )
+
+            log_text = out.read_text(encoding="utf-8")
+
+            self.assertIn(
+                "- checker_context: `independent_checker_subagent_required`",
+                log_text,
+            )
+            self.assertIn("- executor_context: `current_context_allowed`", log_text)
+
     def test_audit_rejects_skill_run_log_without_fm_load_gate(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

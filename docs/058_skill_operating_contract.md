@@ -296,9 +296,26 @@ unknown/risk/judgment concerns. The `--tracked-only` mode is used by
 `python tools/run_quality_gate.py fm` so historical local `work/` files do not
 require migration before the CI-facing gate can enforce the contract.
 
-Later runtime commands may use this same contract to launch separate execution
-and checking processes, but the role separation is already enforced at the
-runtime-log boundary.
+The check phase must be advanced from an independent checker subagent at every
+maturity level, including `trial`; `fm skill run` assigns
+`checker_context: independent_checker_subagent_required` regardless of
+`execution_mode`, which governs the executor side only. On Claude Code the
+checker subagent is defined in `.claude/agents/skill-checker.md`. The
+runtime-log boundary enforces role separation; the subagent boundary keeps the
+checker's context independent from the producer's.
+
+Skill metadata may also declare an optional `model_tier` field
+(`light` / `standard` / `heavy`) that selects the model class for the
+execution phase. `light` and `standard` skills are dispatched to the
+tier-matched executor subagents (`.claude/agents/skill-executor-light.md`,
+`.claude/agents/skill-executor-standard.md`); `heavy` and untiered skills run
+on the main-context model. The check phase is workflow-progression
+verification and always runs in the `skill-checker` subagent on the small
+fast model, whatever the executor tier; domain-level quality review belongs
+to review-oriented Skills, not to the check phase. `model_tier` is a
+cost-control knob for the executor side only — it never relaxes checker
+independence, role separation, or any closure condition. Dispatch rules live
+in [Capability routing](../agent/010_capability_routing.md#xid-1F93A7C24010).
 
 ## Relationship To Existing Controls
 

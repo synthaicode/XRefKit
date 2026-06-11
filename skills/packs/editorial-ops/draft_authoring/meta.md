@@ -10,6 +10,7 @@
 - output: authoring draft under `work/editorial_ops/` by default, plus claim-to-source notes and unresolved authoring questions
 - maturity: `draft`
 - execution_mode: `local_default`
+- model_tier: `heavy`
 - guard_policy: `required`
 - os_contract:
   - version: `1`

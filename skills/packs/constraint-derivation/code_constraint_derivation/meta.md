@@ -10,6 +10,7 @@
 - output: CCD-prefixed derivation file under `work/constraint_derivation/` by default, plus business-layer confirmation items and implementation-layer notes
 - maturity: `draft`
 - execution_mode: `local_default`
+- model_tier: `standard`
 - guard_policy: `required`
 - os_contract:
   - version: `1`

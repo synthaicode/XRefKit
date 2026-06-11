@@ -10,6 +10,7 @@
 - output: CD-prefixed commonality file under `work/constraint_derivation/` by default, plus CB-prefixed boundary checks and grouped human confirmation points
 - maturity: `draft`
 - execution_mode: `local_default`
+- model_tier: `standard`
 - guard_policy: `required`
 - os_contract:
   - version: `1`

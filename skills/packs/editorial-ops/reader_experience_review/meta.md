@@ -10,6 +10,7 @@
 - output: reader-experience review under `work/editorial_ops/` by default, plus friction points, capability-mismatch findings, likely reader questions, and revision priorities
 - maturity: `draft`
 - execution_mode: `subagent_preferred`
+- model_tier: `standard`
 - guard_policy: `required`
 - os_contract:
   - version: `1`

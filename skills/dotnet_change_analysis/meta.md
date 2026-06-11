@@ -5,10 +5,12 @@
 
 - skill_id: `dotnet_change_analysis`
 - summary: analyze .NET application structure and generate a Markdown change-analysis note for later design or implementation work
-- use_when: user needs repository-based .NET structure analysis, impact investigation, or a Markdown change-analysis note before changing code
+- use_when: user needs repository-based .NET structure analysis, impact investigation, or a Markdown change-analysis note before changing code, especially brownfield code where responsibility separation is not documented and must be read from the code
 - input: target path, change request or analysis objective, optional scope filters, optional output path
-- output: Markdown change-analysis note, scoped target list, impacted boundary list, uncertainty list, viewpoint check results
+- output: Markdown change-analysis note, scoped target list, impacted boundary list, uncertainty list, viewpoint check results, change placement basis, prohibited-changes list derived from extracted local rules, and a handoff list for defect-level or security-scope discoveries
+- maturity: `stable`
 - execution_mode: `subagent_preferred`
+- model_tier: `standard`
 - guard_policy: `required`
 - os_contract:
   - version: `1`
@@ -20,11 +22,11 @@
   - unknown_risk_policy: `explicit`
   - closure_gate: `required`
   - handoff_policy: `explicit`
-- constraints: do not decide implementation policy by default; record unknowns explicitly; confirm custom-attribute activation instead of stopping at inventory
+- constraints: do not decide implementation policy by default; record unknowns explicitly; confirm custom-attribute activation instead of stopping at inventory; record structure and change impact only — defect-level findings hand off to csharp_review and vulnerability assessment hands off to security_review
 - lifecycle:
   - startup: confirm target path, change objective, scope, and required viewpoints
   - planning: define scope, output path, viewpoint buckets, and safe scope split for read-only analysis
-  - execution: analyze structure, boundaries, logging, attributes, concurrency, performance, resources, tests, and generate a Markdown note
+  - execution: extract the de-facto responsibility split from behavior evidence, analyze structure, boundaries, DI registration lifetimes, local pipeline structure and ordering rules, convention-based discovery, build-configuration variants, error-handling contract, security boundary placement, logging, attributes, concurrency, performance, resources, tests, record the change placement basis, derive the prohibited-changes list from the extracted rules, and generate a Markdown note
   - monitoring_and_control: treat unrecorded viewpoints as leaks and downgrade weak conclusions to `unknown`
   - closure: return the Markdown note, impacted boundaries, and unresolved items with reasons
 - tags: `dotnet`, `csharp`, `analysis`, `investigation`, `markdown`
@@ -37,3 +39,8 @@
   - `../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001`
   - `../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002`
   - `../../knowledge/source_analysis/120_dotnet_change_analysis_viewpoints.md#xid-2E7B5A1FD201`
+- observation_refs:
+  - `../../work/reports/2026-06-11_skill_improvement_note_dotnet_change_analysis.md`
+  - `../../work/sessions/2026-06-11_skill_run_dotnet_change_analysis.md`
+- governance_refs:
+  - `../../work/reports/2026-06-11_promotion_record_dotnet_change_analysis.md`

@@ -33,6 +33,9 @@ This page defines how an agent should route a user request through workflow, cap
   - route to `skills/packs/business-intake/business_intake_scoping/meta.md`
 - Investigation or impact analysis:
   - [Investigation workflow](../docs/032_investigation_workflow.md#xid-8B31F02A4001)
+- .NET application structure analysis or change-impact investigation before design or implementation (structure, DI lifetimes, pipeline order, boundaries, attribute activation):
+  - route to `skills/dotnet_change_analysis/meta.md`
+  - the output is a change-analysis note handed to `planning_flow` or design work, not defect findings; suspected defects hand off to `skills/csharp_review/meta.md`, suspected security gaps to `skills/security_review/meta.md`
 - Estimation, supplier check, or assumption clarification:
   - [Estimation workflow](../docs/035_estimation_workflow.md#xid-8B31F02A4004)
 - Requirement drafting:
@@ -48,6 +51,10 @@ This page defines how an agent should route a user request through workflow, cap
 - Review requests that include generated C# code, DDL plus code, or code plus external-boundary behavior and ask whether the implementation hides assumptions, mismatches, or integration-only failure scenarios:
   - route first to `skills/packs/constraint-derivation/constraint_derivation_index/meta.md`
   - apply `code_constraint_derivation`, `cross_constraint_derivation`, or `integration_scenario_derivation` as appropriate before accepting the implementation as design-valid
+- Review requests focused on C# implementation risks beyond Roslyn/compiler diagnostics — async hangs, synchronization, resource efficiency, attribute misuse, support lifecycle, error/exception paths, or time/culture correctness:
+  - route to `skills/csharp_review/meta.md`
+  - if the request also leaves design-side behavior unresolved, apply the constraint-derivation pack first, then run `csharp_review` on the implementation
+  - security-scope findings discovered during the review hand off to `skills/security_review/meta.md`; design-assumption findings hand off back to the constraint-derivation pack
 - Implementation or unit testing:
   - [Manufacturing workflow](../docs/033_manufacturing_workflow.md#xid-8B31F02A4002)
 - Release-plan preparation:
@@ -72,6 +79,41 @@ This page defines how an agent should route a user request through workflow, cap
 - Subagent decomposition must preserve explicit scope boundaries; do not split work in a way that changes owner, evidence basis, or closure responsibility.
 - Review-oriented or `judgment`-heavy skills should prefer separate subagent execution so the reviewer runs in a different context from the producer.
 - When a skill `meta.md` declares `execution_mode: subagent_preferred` or `execution_mode: subagent_required`, validate that metadata before loading and follow the declared execution mode.
+- The check phase MUST be advanced from an independent checker subagent at every maturity level, including `trial` / `local_default`; `execution_mode` relaxes the executor side only, never the checker side. On Claude Code, use the `skill-checker` subagent defined in `.claude/agents/skill-checker.md`.
+
+## Model Tier Dispatch Rule
+
+Skill `meta.md` may declare an optional `model_tier` field that controls which
+model class executes the skill. This separates cost control (which model) from
+context control (`execution_mode`, which decides isolation).
+
+- `model_tier: light` — mechanical, routing, or template-bound work. Dispatch
+  the execution phase to the `skill-executor-light` subagent
+  (`.claude/agents/skill-executor-light.md`, small fast model).
+- `model_tier: standard` — analysis, review, and derivation work. Dispatch the
+  execution phase to the `skill-executor-standard` subagent (balanced model).
+- `model_tier: heavy` — judgment-heavy synthesis, cross-structure analysis, or
+  writing-quality work. Execute in the main context, or in the
+  `skill-executor-heavy` subagent (inherits the main model) when
+  `execution_mode` requires isolation.
+- When `model_tier` is absent, treat the skill as `heavy` (main-context model).
+
+Dispatch rules:
+
+- For `light` and `standard`, prefer subagent execution even when
+  `execution_mode` is `local_default` — `local_default` permits main-context
+  execution but does not require it, and tier dispatch is how the cheaper
+  model is realized.
+- Skills that require direct human interaction during execution (for example
+  interview-style skills) stay in the main context regardless of tier.
+- `model_tier` never affects the checker side. The check phase is
+  workflow-progression verification (worklist completion, run-log integrity,
+  artifact existence, role separation) and always runs in the `skill-checker`
+  subagent on the small fast model, whatever the executor tier. Domain-level
+  quality review is not the check phase's job — it belongs to review-oriented
+  Skills and the closure gate.
+- If a lower-tier executor reports escalation (work exceeded its tier), re-run
+  the execution phase one tier up; do not let the lower tier guess.
 
 ## Knowledge Loading Rule
 

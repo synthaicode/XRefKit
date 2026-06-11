@@ -23,6 +23,9 @@
 | Check Item | State | Evidence | Change Impact | Unknown / Follow-up |
 |------|------|------|------|------|
 | major layers and responsibilities are identified |  |  |  |  |
+| de-facto responsibilities are derived from behavior evidence (not names) |  |  |  |  |
+| name-behavior mismatches are recorded |  |  |  |  |
+| duplicated rule ownership is checked |  |  |  |  |
 | dependency direction is identified |  |  |  |  |
 | extension points are identified |  |  |  |  |
 
@@ -34,13 +37,45 @@
 | request, batch, and event entry points are identified |  |  |  |  |
 | main call chain is identified |  |  |  |  |
 
+## DI Registration And Lifetimes
+
+| Check Item | State | Evidence | Change Impact | Unknown / Follow-up |
+|------|------|------|------|------|
+| registration sites and lifetimes are identified |  |  |  |  |
+| captive-dependency risks are checked |  |  |  |  |
+| hosted services and background registrations are identified |  |  |  |  |
+
+## Pipeline Structure And Order
+
+| Check Item | State | Evidence | Change Impact | Unknown / Follow-up |
+|------|------|------|------|------|
+| local pipelines and their stages are identified |  |  |  |  |
+| the local ordering rule and its source (explicit or implicit) are extracted |  |  |  |  |
+| order-dependent behavior risks are checked |  |  |  |  |
+
+## Convention-Based Discovery
+
+| Check Item | State | Evidence | Change Impact | Unknown / Follow-up |
+|------|------|------|------|------|
+| convention-based wiring points (scanning, naming, placement) are identified |  |  |  |  |
+| the matching convention and scan scope are extracted |  |  |  |  |
+| rename-and-move sensitivity is recorded |  |  |  |  |
+
 ## Configuration Boundary
 
 | Check Item | State | Evidence | Change Impact | Unknown / Follow-up |
 |------|------|------|------|------|
 | configuration sources are identified |  |  |  |  |
 | options binding and consumers are identified |  |  |  |  |
-| environment-dependent behavior is identified |  |  |  |  |
+| environment-dependent behavior and feature toggles are identified |  |  |  |  |
+
+## Build Configuration Behavior
+
+| Check Item | State | Evidence | Change Impact | Unknown / Follow-up |
+|------|------|------|------|------|
+| conditional compilation symbols and gated behavior are identified |  |  |  |  |
+| multi-target and MSBuild-condition variants are identified |  |  |  |  |
+| configurations requiring verification for this change are recorded |  |  |  |  |
 
 ## API, Database, And External Integration Boundary
 
@@ -49,6 +84,22 @@
 | API boundary is identified |  |  |  |  |
 | database boundary is identified |  |  |  |  |
 | external service or messaging boundary is identified |  |  |  |  |
+
+## Error Handling Contract
+
+| Check Item | State | Evidence | Change Impact | Unknown / Follow-up |
+|------|------|------|------|------|
+| error representation conventions are identified |  |  |  |  |
+| translation and propagation points are identified |  |  |  |  |
+| retry and compensation conventions are identified |  |  |  |  |
+
+## Security Boundary Placement
+
+| Check Item | State | Evidence | Change Impact | Unknown / Follow-up |
+|------|------|------|------|------|
+| authentication and authorization enforcement points are identified |  |  |  |  |
+| unprotected entry paths are checked |  |  |  |  |
+| security-review handoff items are recorded when needed |  |  |  |  |
 
 ## Logging Policy
 
@@ -88,6 +139,24 @@
 |------|------|------|------|------|
 | related tests are identified |  |  |  |  |
 | missing regression coverage is identified |  |  |  |  |
+| test isolation risks (shared state, real time, ordering) are identified |  |  |  |  |
+
+## Change Placement Basis
+
+| Check Item | State | Evidence | Change Impact | Unknown / Follow-up |
+|------|------|------|------|------|
+| de-facto home of the affected logic is identified |  |  |  |  |
+| placement options and their responsibility impact are recorded |  |  |  |  |
+| second-owner risks are checked |  |  |  |  |
+
+## Prohibited Changes
+
+Derived from extracted local rules only — silent breakage with no compiler or
+analyzer diagnostic. Compiler-caught mistakes do not belong here.
+
+| Prohibited Change | Class | Basis (extracted rule) | Silent Breakage Mode | Evidence | Safe Alternative / Deviation Condition |
+|------|------|------|------|------|------|
+|  |  |  |  |  |  |
 
 ## Impacted Targets
 

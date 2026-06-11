@@ -741,15 +741,15 @@ def _validate_phase_role(text: str, *, phase: str, role: str | None) -> list[str
 
 
 def _assign_runtime_roles(*, skill_id: str, execution_mode: str) -> dict[str, str]:
+    # execution_mode governs the executor side only. The checker must run in
+    # an independent subagent at every maturity level, including trial.
     if execution_mode == "subagent_required":
         executor_context = "isolated_subagent_required"
-        checker_context = "independent_checker_subagent_required"
     elif execution_mode == "subagent_preferred":
         executor_context = "subagent_preferred"
-        checker_context = "independent_checker_subagent_preferred"
     else:
         executor_context = "current_context_allowed"
-        checker_context = "independent_check_required"
+    checker_context = "independent_checker_subagent_required"
 
     return {
         "executor": f"{skill_id}:executor",

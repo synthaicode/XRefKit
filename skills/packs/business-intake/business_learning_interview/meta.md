@@ -10,6 +10,7 @@
 - output: interview-cycle summary with goal hypothesis, learned facts, current hypothesis, decision hypothesis, required domain knowledge, required input information, quality viewpoints, open questions, next best question, and candidate business unit
 - maturity: `trial`
 - execution_mode: `local_default`
+- model_tier: `heavy`
 - guard_policy: `required`
 - os_contract:
   - version: `1`

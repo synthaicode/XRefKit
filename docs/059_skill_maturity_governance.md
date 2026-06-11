@@ -181,6 +181,11 @@ being clarified.
   - `../../work/sessions/<session>.md`
 ```
 
+`local_default` relaxes the executor side only. The checker runs in an
+independent subagent at every maturity level, including `trial`; the runtime
+assigns `checker_context: independent_checker_subagent_required` regardless of
+`execution_mode`.
+
 ## Stable Upgrade Template
 
 ```md

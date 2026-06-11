@@ -10,6 +10,7 @@
 - output: release package under `work/editorial_ops/` by default, plus channel adaptation notes, unresolved blockers, and final publish checklist
 - maturity: `draft`
 - execution_mode: `local_default`
+- model_tier: `light`
 - guard_policy: `required`
 - os_contract:
   - version: `1`

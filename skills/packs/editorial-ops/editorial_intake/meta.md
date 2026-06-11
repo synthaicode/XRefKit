@@ -10,6 +10,7 @@
 - output: intake record with topic focus, audience hypothesis, reader capability assumption, evidence basis, channel target, quality checkpoints, and explicit open questions
 - maturity: `draft`
 - execution_mode: `local_default`
+- model_tier: `light`
 - guard_policy: `required`
 - os_contract:
   - version: `1`

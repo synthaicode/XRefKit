@@ -10,6 +10,7 @@
 - output: fact-review result under `work/editorial_ops/` by default, plus claim findings, unresolved unknowns, and release blockers
 - maturity: `draft`
 - execution_mode: `subagent_preferred`
+- model_tier: `standard`
 - guard_policy: `required`
 - os_contract:
   - version: `1`

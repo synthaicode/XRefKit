@@ -10,6 +10,7 @@
 - output: discovery-first scoped intake note with known facts, provisional boundary, previous side, current responsibility, next side, the seven first-pass fields, and explicit missing confirmation points
 - maturity: `trial`
 - execution_mode: `local_default`
+- model_tier: `standard`
 - guard_policy: `required`
 - os_contract:
   - version: `1`

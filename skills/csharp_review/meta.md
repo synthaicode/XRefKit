@@ -7,8 +7,10 @@
 - summary: review C# code with a manual focus on non-Roslyn-detectable risks
 - use_when: user asks for C# review beyond Roslyn/compiler diagnostics, including async hangs, synchronization risks, or fake-clock wait behavior that Roslyn does not catch
 - input: target path, optional scope filters, optional output mode
-- output: evidence-based findings for attribute misuse, resource efficiency, synchronization, and lifecycle support
+- output: evidence-based findings for attribute misuse, resource efficiency, synchronization, lifecycle support, error handling, and time/culture correctness, plus a handoff list for out-of-scope findings
+- maturity: `stable`
 - execution_mode: `subagent_preferred`
+- model_tier: `standard`
 - guard_policy: `required`
 - os_contract:
   - version: `1`
@@ -20,7 +22,7 @@
   - unknown_risk_policy: `explicit`
   - closure_gate: `required`
   - handoff_policy: `explicit`
-- constraints: exclude Roslyn-detectable issues; do not hard-fail unknown attribute values by whitelist
+- constraints: exclude Roslyn-detectable issues; do not hard-fail unknown attribute values by whitelist; do not expand into security review or design-assumption derivation — route those findings to security_review or the constraint-derivation pack through the handoff list
 - lifecycle:
   - startup: confirm target path and review scope, then load the review spec
   - planning: define review scope, output mode, category buckets, custom-framework analysis targets, and subagent split when scope-separated parallel review is safe

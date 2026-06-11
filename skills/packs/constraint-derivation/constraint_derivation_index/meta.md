@@ -10,6 +10,7 @@
 - output: selected primary Skill set, execution order, shared derivation policy reminder, optional secondary-pass trigger decision, and a routing note written under `work/constraint_derivation/` unless the user specifies another path
 - maturity: `draft`
 - execution_mode: `local_default`
+- model_tier: `light`
 - guard_policy: `required`
 - os_contract:
   - version: `1`

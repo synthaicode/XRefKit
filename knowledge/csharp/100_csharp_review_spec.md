@@ -9,6 +9,10 @@ This fragment defines the canonical review scope for manual C# checks.
 
 - Primary boundary: exclude concerns that Roslyn diagnostics already detect.
 - This spec covers review signals that are often semantic, environment-dependent, or cross-file/project.
+- Security-scope findings (injection paths, hardcoded secrets, disabled
+  certificate validation) belong to the security review skill; design-assumption
+  findings belong to the constraint-derivation pack. Record them for handoff
+  instead of deep-diving them under this spec.
 
 ## Attribute Value Misuse Rule
 
@@ -74,6 +78,43 @@ Check at least the following:
 - whether polling-only retry loops should be converted to `time or signal`
   waiting so timeout behavior and immediate wake-up behavior both remain
   testable
+
+## Error Handling and Exception Path Checks
+
+Check at least the following:
+
+- swallowed exceptions: empty `catch`, catch-and-log-only paths where the
+  failure can silently lose data or leave state inconsistent
+- rethrow patterns that discard the original context (`throw ex;` beyond
+  analyzer coverage, wrapping that drops the inner exception)
+- `async void` outside event handlers, and event handlers whose exceptions
+  escape unobserved
+- retry loops without backoff/jitter, and retries around non-idempotent
+  operations
+- transaction and compensation boundaries: partial-commit windows where a
+  failure between two writes leaves no compensation path
+- error paths that bypass cleanup (`Dispose` not reached on the exception
+  path, missing `finally`/`await using` on failure routes)
+
+Findings must name the failure path concretely: which exception, raised
+where, and what state or resource is left behind.
+
+## Time and Culture Checks
+
+Check at least the following:
+
+- `DateTime.Now` / `DateTime.UtcNow` mixing in the same comparison, storage,
+  or scheduling flow, and `DateTimeKind` inconsistency across boundaries
+- timezone and DST assumptions: local-time arithmetic across DST transitions,
+  server-timezone dependence in stored timestamps
+- culture-sensitive `ToString()` / `Parse()` / string comparison used in
+  protocol, persistence, serialization, or interchange contexts that require
+  the invariant culture
+- format strings and decimal separators that change meaning under a
+  non-default culture
+
+Classify as `needs_confirmation` when the execution environment's timezone or
+culture configuration cannot be established from local evidence.
 
 ## Support Lifecycle Checks
 

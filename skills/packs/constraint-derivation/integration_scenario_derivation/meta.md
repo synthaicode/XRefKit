@@ -10,6 +10,7 @@
 - output: ISD-prefixed derivation file under `work/constraint_derivation/` by default, plus compensation-design items, partial-failure matrices, and post-confirmation test candidates
 - maturity: `draft`
 - execution_mode: `local_default`
+- model_tier: `heavy`
 - guard_policy: `required`
 - os_contract:
   - version: `1`

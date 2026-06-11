@@ -10,6 +10,7 @@
 - output: selected Skill sequence, routing rationale, unresolved prerequisites, and a routing note under `work/editorial_ops/` unless another path is specified
 - maturity: `draft`
 - execution_mode: `local_default`
+- model_tier: `light`
 - guard_policy: `required`
 - os_contract:
   - version: `1`

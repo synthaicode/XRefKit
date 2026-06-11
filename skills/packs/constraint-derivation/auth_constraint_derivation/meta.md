@@ -10,6 +10,7 @@
 - output: AACD-prefixed derivation file under `work/constraint_derivation/` by default, plus grouped confirmation items and permission or session matrices where required
 - maturity: `draft`
 - execution_mode: `local_default`
+- model_tier: `standard`
 - guard_policy: `required`
 - os_contract:
   - version: `1`

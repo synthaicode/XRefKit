@@ -10,6 +10,7 @@
 - output: ICD-prefixed derivation file under `work/constraint_derivation/` by default, plus grouped confirmation items and idempotency or retry matrices where required
 - maturity: `draft`
 - execution_mode: `local_default`
+- model_tier: `standard`
 - guard_policy: `required`
 - os_contract:
   - version: `1`
