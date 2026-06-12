@@ -30,6 +30,7 @@ Classify each gap as one of the following:
 | `evidence_missing` | required design, spec, or runtime evidence is absent | record as `unknown` and request evidence |
 | `scope_conflict` | resolving the gap would change approved scope or design policy | record as `out_of_scope` and escalate |
 | `local_choice_allowed` | local implementation choice is explicitly delegated by design or rule | record the evidence for delegation and continue |
+| `basis_refuted` | hard implementation-time evidence (compiler, runtime probe, resolved package surface) contradicts the upstream basis the work was instructed from (review finding, design note, spec claim) | record the refuting evidence as a non-trivial judgment, do not apply the refuted instruction, keep behavior consistent with the evidence, and register a correction handoff back to the originating skill run or artifact |
 
 ## Allowed Responses
 
@@ -42,6 +43,13 @@ Classify each gap as one of the following:
    - the implementation would otherwise rely on guessed intent
 3. Escalate as `out_of_scope` if:
    - resolving the gap changes design policy, business meaning, or approved scope
+4. Continue without applying the refuted instruction if:
+   - the gap is `basis_refuted`
+   - the refuting evidence is machine-checked or otherwise reproducible
+   - the refutation is recorded as a non-trivial judgment and routed back to
+     the originating run or artifact as a correction handoff; the upstream
+     artifact is annotated (or its owner notified) rather than silently
+     diverged from
 
 ## Required Record
 
@@ -60,6 +68,8 @@ Every implementation assumption gap must record:
   - `status: unknown` for `clarification_needed` and `evidence_missing`
   - `status: out_of_scope` for `scope_conflict`
   - `status: done` only for `local_choice_allowed` with explicit delegation evidence
+  - `status: done` for `basis_refuted` only when the refuting evidence, the
+    non-trivial judgment, and the correction handoff are all recorded
 
 ## Closure Rule
 

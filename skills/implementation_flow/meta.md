@@ -8,6 +8,7 @@
 - use_when: user asks to implement changes based on an approved design or explicitly bounded instructions
 - input: approved design or equivalent scope instruction, design basis policy reference, test plan, test design, test design basis policy reference, test-item requirement traceability reference, manufacturing test review result, target files, applicable coding rules, optional test viewpoints
 - output: code changes, unit test results, unit test execution basis reference, implementation basis design reference, referenced constraint-derivation output paths when used, uncertainty list, out-of-scope list
+- maturity: `trial`
 - execution_mode: `local_default`
 - guard_policy: `required`
 - os_contract:
@@ -31,6 +32,7 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
+  - `../../capabilities/management/150_cap_mgt_006_independent_run_verification.md#xid-E37644FAA6F2`
   - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
   - `../../capabilities/manufacturing/100_cap_mfg_001_implementation.md#xid-1A12C5C61269`
   - `../../capabilities/manufacturing/110_cap_mfg_002_unit_test_execution.md#xid-55CC9027ACAD`
@@ -40,3 +42,8 @@
   - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`
   - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`
   - `../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
+- observation_refs:
+  - `../../work/sessions/2026-06-12_skill_run_implementation_flow.md`
+  - `../../work/sessions/2026-06-12_skill_run_implementation_flow_2.md`
+  - `../../work/sessions/2026-06-12_skill_run_implementation_flow_3.md`
+  - `../../work/sessions/2026-06-12_implementation_flow_improvement_proposal.md`

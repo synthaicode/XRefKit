@@ -88,8 +88,10 @@ Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4
 
 - `csharp_review:checker` advances the check phase, always from the
   independent `skill-checker` subagent, never from the producer context.
-- The check verifies workflow progression: work items complete, claimed
-  evidence paths exist, findings recorded as artifacts, role separation kept.
+- The check executes
+  [CAP-MGT-006 Independent Run Verification](../../capabilities/management/150_cap_mgt_006_independent_run_verification.md#xid-E37644FAA6F2);
+  skill-specific delta: claimed finding evidence paths must exist and the
+  findings document must be recorded as an `output` artifact.
 - Domain-level dispute of individual findings is not the check phase's job;
   unresolved finding validity stays visible as `needs_confirmation`.
 
@@ -164,6 +166,14 @@ Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4
   - verify framework lifecycle from local evidence
   - verify framework extension points from base code and existing usage examples
   - treat unsupported assumptions about framework behavior as `needs_confirmation`
+- When a finding or its remediation asserts a third-party API surface fact
+  (member existence, signature, or interface implementation such as
+  `IAsyncDisposable`):
+  - verify the claim against the actually referenced package version (compile
+    probe, resolved-assembly inspection, or the package's documented API for
+    that exact version), not against general knowledge of the library
+  - if the claim cannot be verified, state the remediation conditionally and
+    mark the finding `needs_confirmation` with the unverified API fact named
 - Report findings with concrete evidence and remediation.
 
 ## Monitoring and Control
@@ -222,6 +232,9 @@ Closure is allowed only when all of the following hold:
 - Separate `unresolved attribute origin` from `precondition not satisfied`.
 - Include evidence in every finding (file path, config node, project setting, or package reference).
 - Do not assume public-framework behavior for an application-specific framework without local evidence.
+- Do not assert third-party API surface facts (member existence, signatures,
+  implemented interfaces) in remediations without verifying them against the
+  referenced package version; unverified API claims stay `needs_confirmation`.
 - Use subagents only when scope boundaries stay explicit and cross-scope reasoning is not required.
 - Do not silently drop out-of-scope discoveries and do not expand into
   security or design-derivation work; route them through the handoff list.

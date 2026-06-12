@@ -13,13 +13,20 @@
 - Add the context-direction guard unless the Skill is explicitly closed-world.
 - Choose the lowest justified maturity.
 - Add `observation_refs` before calling a Skill `trial`.
+- Maintain `observation_refs` when updating an existing Skill:
+  - append a run log only when that run changed the understanding of the
+    Skill (revealed a gap, refuted an assumption, or produced an accepted
+    improvement proposal); routine successful runs are not appended.
+  - reference the exact run-log filename including any `_N` suffix, so
+    same-day runs stay distinguishable.
+  - prune or replace refs that a later observation supersedes.
 - Require explicit inputs, outputs, closure, and handoff for authored Skills.
 - Require explicit inputs, outputs, handoff, sequence, and control rules for
   authored Flows.
 - Update public routing indexes when publishing to `skills/`.
-- Run `python -m fm xref init --include skills docs knowledge agent` when new
-  managed Markdown files are added.
-- Run `python -m fm xref fix --include skills docs knowledge agent`.
+- Run `python -m fm xref init --include skills docs knowledge agent capabilities`
+  when new managed Markdown files are added.
+- Run `python -m fm xref fix --include skills docs knowledge agent capabilities`.
 - Run `python -m fm skill check --meta ... --level <target>`.
 - Parse-check changed YAML before closure.
 - Keep unresolved gaps explicit instead of filling them by guess.

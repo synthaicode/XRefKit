@@ -155,16 +155,16 @@ carry explicit continuity structure.
    - add observation linkage
    - add closure wording
 8. When new managed Markdown files are added under `skills/`, `docs/`,
-   `knowledge/`, or `agent/`, run:
+   `knowledge/`, `agent/`, or `capabilities/`, run:
 
 ```powershell
-python -m fm xref init --include skills docs knowledge agent
+python -m fm xref init --include skills docs knowledge agent capabilities
 ```
 
 9. After edits, run:
 
 ```powershell
-python -m fm xref fix --include skills docs knowledge agent
+python -m fm xref fix --include skills docs knowledge agent capabilities
 ```
 
 10. Validate the created Skill at the intended maturity level:

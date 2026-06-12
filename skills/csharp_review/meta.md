@@ -32,7 +32,9 @@
 - tags: `csharp`, `review`, `dotnet`, `quality`
 - skill_doc: `./SKILL.md`
 - capability_refs:
+  - `../../capabilities/quality/180_cap_qa_010_beyond_diagnostics_code_risk_review.md#xid-4A3CA9ECFA71`
   - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
+  - `../../capabilities/management/150_cap_mgt_006_independent_run_verification.md#xid-E37644FAA6F2`
   - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
   - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`

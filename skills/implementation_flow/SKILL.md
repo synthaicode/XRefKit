@@ -72,13 +72,19 @@ Execute the manufacturing sequence `CAP-MFG-001 -> CAP-MFG-002` and prepare outp
 - Prefer one coordinated pass over repeated local rework when the required change set is already known.
 - Record which design artifact or design basis reference each implementation change realizes.
 - Record which test design item each executed unit test realizes.
-- Use temporary source comments for human traceability by default under the temporary traceability comment rule.
+- Use temporary source comments for human traceability under the temporary
+  traceability comment rule's applicability conditions: default ON when a
+  human review stage exists outside this run, default OFF for single-run
+  autonomous remediation whose traceability completes in external artifacts
+  (record the omission decision in planning or judgment notes).
 - Mark temporary traceability comments with the `TRACE-TEMP:` prefix and keep the lasting traceability in external evidence.
 - When an implementation assumption gap appears, classify it as:
   - `clarification_needed`
   - `evidence_missing`
   - `scope_conflict`
   - `local_choice_allowed`
+  - `basis_refuted` (implementation-time hard evidence contradicts the
+    upstream basis; do not apply the refuted instruction)
 - Record the gap using the implementation assumption gap handling rule.
 - Record `unknown` and `out_of_scope` where needed.
 
@@ -96,6 +102,11 @@ Execute the manufacturing sequence `CAP-MFG-001 -> CAP-MFG-002` and prepare outp
 - Confirm all rows are finalized as `done`, `unknown`, or `out_of_scope`.
 - When code review completion is declared for the target scope, remove any `TRACE-TEMP:` comments from source files in that scope before final completion.
 - Hand off code, test results, unit test execution basis reference, and implementation basis design reference to QA review.
+- When a `basis_refuted` gap was recorded, register a correction handoff
+  artifact targeting the originating skill run or artifact (for example the
+  review findings document), so the refuted basis is annotated at its source
+  instead of diverging silently; the refuting evidence and the non-trivial
+  judgment must be linked from that handoff.
 - Escalate out-of-scope items when reassignment is required.
 
 ## Rules
