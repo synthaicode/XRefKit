@@ -27,6 +27,7 @@ Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4
 - [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
 - [Custom framework common criteria](../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002)
 - [C# custom framework analysis criteria](../../knowledge/csharp/110_custom_framework_analysis_criteria.md#xid-30E6A4F6F3AB)
+- [Agent diff review gate design](../../knowledge/organization/180_agent_diff_review_gate_design.md#xid-7A2F4C8D1801)
 
 ## Inputs
 
@@ -46,6 +47,31 @@ Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4
   - error handling
   - time and culture
 - handoff list for out-of-scope findings (security, design assumptions)
+- a gate verdict block (see Gate Verdict Output)
+
+## Gate Verdict Output
+
+Emit one pre-CI review-routing verdict for the reviewed diff, separate from the
+per-finding severity model. The verdict follows
+[Agent diff review gate design](../../knowledge/organization/180_agent_diff_review_gate_design.md#xid-7A2F4C8D1801);
+it routes the diff, it does not assert the code is correct.
+
+```
+verdict: blocked | needs-review | proceed
+reason: <one line: why this verdict>
+evidence: <paths / artifact ids / baseline state supporting the verdict>
+downgrade_reason: <required when not proceed: which proceed condition failed>
+required_followup: <next owner or specialist Skill, or none>
+```
+
+- `blocked` when any `critical` finding stands, or a `block`-disposition
+  deterministic eval finding (e.g. secret leakage) is present.
+- `proceed` only when ALL hold: the run has trace, diff scope is declared,
+  triage is complete, the deterministic small eval is `clean`, the Roslyn
+  baseline state is explicit, every active category has a result, no
+  `needs_confirmation` finding affects closure, and no concern is open.
+- otherwise `needs-review`; an unsupported conclusion downgrades to
+  `needs-review`, never `proceed`.
 
 ## Startup
 

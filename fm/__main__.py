@@ -177,6 +177,32 @@ def _build_parser() -> argparse.ArgumentParser:
     p_goal_wake_show.add_argument("--goal", required=True, help="Stable goal id")
     p_goal_wake_show.add_argument("--json", action="store_true", help="Emit JSON")
 
+    gate = subparsers.add_parser(
+        "gate",
+        help="Agent diff review gate: deterministic, machine-only diff-content checks before CI",
+    )
+    gate_sub = gate.add_subparsers(dest="gate_cmd", required=True)
+
+    p_gate_eval = gate_sub.add_parser(
+        "eval",
+        help="Run deterministic small evals over a diff and emit a pre-CI eval verdict",
+    )
+    p_gate_eval.add_argument("--root", default=".", help="Project root (default: .)")
+    p_gate_eval.add_argument(
+        "--diff",
+        default=None,
+        help="Unified diff file to inspect, or - for stdin; omit to use git diff",
+    )
+    p_gate_eval.add_argument("--base", default=None, help="git diff base ref (e.g. main); used when --diff is omitted")
+    p_gate_eval.add_argument("--staged", action="store_true", help="Inspect staged changes (git diff --cached)")
+    p_gate_eval.add_argument(
+        "--scope",
+        nargs="*",
+        default=None,
+        help="Declared change-scope globs; files outside are flagged out_of_scope",
+    )
+    p_gate_eval.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
+
     skill = subparsers.add_parser("skill", help="Validate skill metadata before loading")
     skill_sub = skill.add_subparsers(dest="skill_cmd", required=True)
 
@@ -358,6 +384,11 @@ def main(argv: list[str] | None = None) -> int:
         from fm.skillmeta import cmd_skill
 
         return cmd_skill(args)
+
+    if args.command == "gate":
+        from fm.gate import cmd_gate
+
+        return cmd_gate(args)
 
     if args.command == "goal":
         from fm.goalstate import cmd_goal

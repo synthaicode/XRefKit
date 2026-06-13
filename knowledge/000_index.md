@@ -37,6 +37,7 @@ Skills should reference these pages by XID and load only what is needed.
 - [Context direction guard rules](organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601)
 - [XDDP basics](organization/170_xddp_basics.md#xid-7A2F4C8D1701)
 - [XDDP supporting methods](organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711)
+- [Agent diff review gate design](organization/180_agent_diff_review_gate_design.md#xid-7A2F4C8D1801)
 
 ## Private knowledge
 
