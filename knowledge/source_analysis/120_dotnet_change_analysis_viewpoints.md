@@ -5,6 +5,9 @@
 
 This page defines .NET-specific viewpoints for analyzing an existing application structure before change planning, design, or implementation.
 
+For the naming axis (matching new class/method names to existing de-facto
+conventions), see [CSharp naming-convention extraction](140_csharp_naming_convention_extraction.md#xid-B4F7E1A2C903).
+
 ## Core Viewpoints
 
 | Viewpoint | What to confirm |
