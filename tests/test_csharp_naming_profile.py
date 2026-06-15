@@ -3,6 +3,7 @@ import unittest
 from pathlib import Path
 
 from tools.csharp_naming_profile import (
+    KINDS,
     classify_casing,
     extract_text,
     profile_paths,
@@ -11,6 +12,12 @@ from tools.csharp_naming_profile import (
     changed_declarations,
     check_changed,
 )
+
+
+def _collect(src):
+    collect = {k: [] for k in KINDS}
+    extract_text("F.cs", src, collect, set())
+    return collect
 
 
 class CasingTests(unittest.TestCase):
@@ -33,9 +40,8 @@ class CasingTests(unittest.TestCase):
 
 
 def _extract(src):
-    types, interfaces, methods, names = [], [], [], set()
-    extract_text("F.cs", src, types, interfaces, methods, names)
-    return types, interfaces, methods
+    c = _collect(src)
+    return c["type"], c["interface"], c["method"]
 
 
 class ExtractTests(unittest.TestCase):
@@ -79,6 +85,53 @@ class ExtractTests(unittest.TestCase):
     def test_async_method_detected(self):
         _, _, methods = _extract("public class C {\n public async Task LoadAsync() {}\n}\n")
         self.assertIn("LoadAsync", [m[0] for m in methods])
+
+
+class PropertyFieldParamTests(unittest.TestCase):
+    def test_auto_property(self):
+        c = _collect("public class C {\n public int Count { get; set; }\n}\n")
+        self.assertIn("Count", [n for n, _, _ in c["property"]])
+
+    def test_expression_bodied_property(self):
+        c = _collect("public class C {\n public string Name => _name;\n}\n")
+        self.assertIn("Name", [n for n, _, _ in c["property"]])
+
+    def test_property_not_counted_as_field_or_method(self):
+        c = _collect("public class C {\n public int Count { get; set; }\n}\n")
+        self.assertNotIn("Count", [n for n, _, _ in c["field"]])
+        self.assertNotIn("Count", [n for n, _, _ in c["method"]])
+
+    def test_private_field_underscore(self):
+        c = _collect("public class C {\n private readonly int _buffer;\n}\n")
+        self.assertIn("_buffer", [n for n, _, _ in c["field"]])
+
+    def test_const_field(self):
+        c = _collect("public class C {\n private const int MaxRetries = 3;\n}\n")
+        self.assertIn("MaxRetries", [n for n, _, _ in c["field"]])
+
+    def test_field_with_initializer(self):
+        c = _collect("public class C {\n private Dictionary<int,string> _map = new();\n}\n")
+        self.assertIn("_map", [n for n, _, _ in c["field"]])
+
+    def test_parameters_extracted_from_method(self):
+        c = _collect("public class C {\n public void Do(int orderId, string customerName) {}\n}\n")
+        self.assertEqual({n for n, _, _ in c["parameter"]}, {"orderId", "customerName"})
+
+    def test_parameter_with_default_and_modifier(self):
+        c = _collect("public class C {\n public void Do(in T value, CancellationToken ct = default) {}\n}\n")
+        names = {n for n, _, _ in c["parameter"]}
+        self.assertEqual(names, {"value", "ct"})
+
+    def test_generic_parameter_not_split_on_inner_comma(self):
+        c = _collect("public class C {\n public void Do(Func<int,string> map) {}\n}\n")
+        self.assertEqual({n for n, _, _ in c["parameter"]}, {"map"})
+
+    def test_field_casing_not_enforced_on_change(self):
+        profile = {"field": {"dominant_casing": "_camelCase", "affixes": {}}}
+        # a new PascalCase (public) field must not be flagged just because private
+        # fields dominate the distribution
+        results = check_changed(profile, [("field", "PublicConst", "a.cs", 1)])
+        self.assertTrue(results[0]["conforms"])
 
 
 class ProfileTests(unittest.TestCase):

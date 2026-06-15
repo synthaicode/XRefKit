@@ -33,6 +33,9 @@ The deterministic extractor is `tools/csharp_naming_profile.py`.
 | type (`class` / `record` / `struct`) | `class`/`struct`/`record`/`record struct`/`record class` + name | dominant casing; common **type suffixes** (role vocabulary: `Service`, `Builder`, `Visitor`, `Options`, `Result`, `Exception`, ...) |
 | `interface` | `interface` + name | dominant casing; **`I` prefix** rate |
 | method | declaration carrying >= 1 access/declaration modifier + return type + name `(` | dominant casing; **`Async` suffix** rate among async methods |
+| property | modifier-bearing `Type Name { get/set/init` or `Type Name =>` (no parens) | dominant casing (typically `PascalCase`) |
+| field | modifier-bearing `Type Name = ...;` / `Type Name;` (no `{`/`(`) | casing distribution + **underscore-prefix** rate; **bimodal** (private `_camelCase` vs public/const `PascalCase`) |
+| parameter | identifiers parsed from detected method headers' parameter lists | dominant casing (typically `camelCase`) |
 
 ### Casing taxonomy
 
@@ -49,6 +52,9 @@ marker (`_camelCase`, `_PascalCase`) because the prefix is itself a convention.
 - type suffix vocabulary: the top single-token PascalCase suffixes, which encode
   the codebase's role naming (a new repository class should likely end in the
   suffix the codebase already uses for that role).
+- field underscore prefix: share of fields starting with `_`. Field casing is
+  **bimodal** (private `_camelCase` vs public/const `PascalCase`), so the
+  underscore-prefix rate is a better signal than a single dominant casing.
 
 ## How To Derive The Rule
 
@@ -90,6 +96,11 @@ Two more guards keep strictness honest:
 - **Confidence gate**: a convention is enforced only when its dominant share is
   high enough (the interface `I` prefix is demanded only when its existing share
   is `>= 90%`); a split distribution is left advisory, not guessed.
+- **Field casing is not strictly enforced on the delta**: field naming is
+  visibility-dependent (private `_camelCase` vs public/const `PascalCase`) and
+  the extractor does not resolve visibility, so a changed field is reported but
+  not flagged on casing. Use the underscore-prefix rate as the descriptive
+  signal instead.
 - **Advisory, per-case**: a flagged new name is a candidate for judgment, never
   an auto-rename. Deviating is acceptable when it matches an existing deliberate
   exception; otherwise conform.
@@ -100,16 +111,17 @@ in known findings.
 
 ## Limits (first version)
 
-- **Method detection is heuristic**: a declaration must carry at least one
-  access/declaration modifier, which cleanly excludes call sites and most
-  constructors but **misses interface-body and modifier-less (implicitly
-  private) method signatures**. Public-surface methods — the ones that matter
-  most for matching — almost always carry a modifier, so the casing profile
-  stays representative. Full coverage is a Roslyn follow-up.
+- **Member detection is heuristic**: method, property, and field declarations
+  must carry at least one access/declaration modifier, which cleanly excludes
+  call sites, locals, and most constructors but **misses interface-body and
+  modifier-less (implicitly private) members**. Public-surface members — the
+  ones that matter most for matching — almost always carry a modifier, so the
+  casing profile stays representative. Full coverage is a Roslyn follow-up.
 - Constructors are excluded by dropping method names equal to a known type name.
-- Properties, fields, parameters, enum members, and constants are out of scope
-  in the first version.
-- Suffix detection is a single trailing PascalCase token.
+- **Parameters** are read from detected method headers; constructor and
+  modifier-less method parameters are therefore missed.
+- Enum members are not yet a separate kind; suffix detection is a single
+  trailing PascalCase token.
 
 ## Relationship
 
