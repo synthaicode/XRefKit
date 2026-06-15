@@ -2,8 +2,10 @@
 
 Consumes SARIF 2.1.0 produced by a Roslyn analyzer run (`dotnet build` with an
 ErrorLog, `dotnet format analyzers`, etc.) and emits 131 *candidate* records
-using the verified rule map in
-``knowledge/source_analysis/132_csharp_error_policy_analyzer_rule_map.md``.
+using the verified rule maps in
+``knowledge/source_analysis/132_csharp_error_policy_analyzer_rule_map.md`` (the
+``cs.err.*`` family) and ``knowledge/csharp/130_csharp_custom_attribute_design_principles.md``
+(the ``cs.attr.*`` family).
 
 Contract (binding, from 131/132):
 
@@ -67,6 +69,17 @@ RULE_MAP: dict[str, RuleMapping] = {
     "CS4014": RuleMapping(*_FAF, "in-async only"),
     "AsyncFixer04": RuleMapping(*_FAF, "narrow: unawaited async call in using block"),
     "VSTHRD110": RuleMapping(*_FAF, "unobserved async result; broader contexts than CS4014"),
+    # --- custom-attribute design principles (knowledge/csharp/130) ---
+    # CA1710 intentionally NOT mapped: it is a multi-purpose suffix rule (also
+    # EventArgs/Exception/Collection), so a CA1710 hit cannot be attributed to an
+    # Attribute-derived type from the rule id alone. CA1018/CA1019/CA1813 are
+    # attribute-specific (they only fire on System.Attribute subclasses).
+    "CA1018": RuleMapping("cs.attr.attribute_usage", "csharp130:attribute/usage", "T2",
+                          "custom attribute should declare [AttributeUsage] with explicit targets"),
+    "CA1019": RuleMapping("cs.attr.argument_accessors", "csharp130:attribute/accessors", "T2",
+                          "attribute ctor arguments need accessor properties"),
+    "CA1813": RuleMapping("cs.attr.sealed", "csharp130:attribute/sealed", "T2",
+                          "seal the attribute type (or make it abstract)"),
 }
 
 

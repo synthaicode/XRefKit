@@ -64,15 +64,19 @@ Verified 2026-06-16 against Microsoft Learn (see Sources).
 
 ## Detection / Collection
 
-Enable CA1018, CA1019, CA1710, CA1813 in a collection profile (they are not on
-by default) and collect them through the verified
-`-p:ErrorLog=<file>%2cversion=2.1` build, then normalize. A future
-`cs.attr.*` locator family in `sarif_to_locator.py` would map:
+Enable CA1018, CA1019, CA1813 in a collection profile (they are not on by
+default) and collect them through the verified `-p:ErrorLog=<file>%2cversion=2.1`
+build, then normalize. `sarif_to_locator.py` maps the **`cs.attr.*`** family:
 
-- `CA1710` (on an `Attribute`-derived type) -> `cs.attr.suffix`
 - `CA1018` -> `cs.attr.attribute_usage`
 - `CA1019` -> `cs.attr.argument_accessors`
 - `CA1813` -> `cs.attr.sealed`
+
+**CA1710 is intentionally not mapped.** It is a multi-purpose suffix rule (it
+also fires for `EventArgs` / `Exception` / `Collection` types), so a CA1710 hit
+cannot be attributed to an `Attribute`-derived type from the rule id alone. The
+suffix principle (1) therefore stays advisory here; CA1018/CA1019/CA1813 are
+attribute-specific and safe to map.
 
 These never auto-fail; they are candidates for the authoring decision.
 

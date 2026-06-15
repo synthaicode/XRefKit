@@ -173,18 +173,47 @@ class UriTests(unittest.TestCase):
 
 
 class RuleMapTests(unittest.TestCase):
-    def test_map_covers_first_batch_locators(self):
+    def test_map_covers_error_policy_locators(self):
         locators = {m.locator_id for m in RULE_MAP.values()}
-        self.assertEqual(
-            locators,
-            {
-                "cs.err.throw_variable_rethrow",
-                "cs.err.empty_catch",
-                "cs.err.async_void_non_event",
-                "cs.err.sync_wait_result",
-                "cs.err.fire_and_forget",
-            },
-        )
+        self.assertTrue({
+            "cs.err.throw_variable_rethrow",
+            "cs.err.empty_catch",
+            "cs.err.async_void_non_event",
+            "cs.err.sync_wait_result",
+            "cs.err.fire_and_forget",
+        } <= locators)
+
+    def test_map_covers_attribute_locators(self):
+        locators = {m.locator_id for m in RULE_MAP.values()}
+        self.assertTrue({
+            "cs.attr.attribute_usage",
+            "cs.attr.argument_accessors",
+            "cs.attr.sealed",
+        } <= locators)
+
+    def test_ca1710_not_mapped_multi_purpose_suffix(self):
+        # CA1710 fires for EventArgs/Exception/Collection too -> not attributable
+        self.assertNotIn("CA1710", RULE_MAP)
+
+
+class AttributeMappingTests(unittest.TestCase):
+    def test_ca1018_maps_to_attribute_usage(self):
+        with tempfile.TemporaryDirectory() as d:
+            sarif = _write(d, _sarif("NetAnalyzers", [_result("CA1018", "BadAttr.cs", 2)]))
+            hits, _ = normalize([sarif])
+            self.assertEqual(hits[0].locator_id, "cs.attr.attribute_usage")
+
+    def test_ca1813_maps_to_sealed(self):
+        with tempfile.TemporaryDirectory() as d:
+            sarif = _write(d, _sarif("NetAnalyzers", [_result("CA1813", "BadAttr.cs", 2)]))
+            hits, _ = normalize([sarif])
+            self.assertEqual(hits[0].locator_id, "cs.attr.sealed")
+
+    def test_ca1019_maps_to_argument_accessors(self):
+        with tempfile.TemporaryDirectory() as d:
+            sarif = _write(d, _sarif("NetAnalyzers", [_result("CA1019", "BadAttr.cs", 5)]))
+            hits, _ = normalize([sarif])
+            self.assertEqual(hits[0].locator_id, "cs.attr.argument_accessors")
 
 
 if __name__ == "__main__":
