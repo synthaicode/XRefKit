@@ -38,8 +38,10 @@ Skills should reference these pages by XID and load only what is needed.
 - [XDDP basics](organization/170_xddp_basics.md#xid-7A2F4C8D1701)
 - [XDDP supporting methods](organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711)
 - [Agent diff review gate design](organization/180_agent_diff_review_gate_design.md#xid-7A2F4C8D1801)
+- [C# error-policy detection determinism tiers](source_analysis/131_csharp_error_policy_locator_tiers.md#xid-D1F4A7C3E209)
+- [C# error-policy external analyzer rule map](source_analysis/132_csharp_error_policy_analyzer_rule_map.md#xid-C7A1E94D3B62)
 
 ## Private knowledge
 
 Private domain knowledge lives in `knowledge_private/` (gitignored).
-See `knowledge_private/000_index.local.md` for entries.
+See `knowledge_private/000_index.local.md` for entries. <!-- private-ref-ok: boundary-convention pointer; target is gitignored and no private content is exposed -->
