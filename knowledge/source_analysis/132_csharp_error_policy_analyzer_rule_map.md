@@ -186,6 +186,20 @@ The profile is separate from the user's build policy:
 - Missing analyzer execution is reported as a scope / collection error, not as
   "no hits".
 
+Concrete implementation:
+
+- profile: `tools/profiles/error_policy_collection.editorconfig`
+- collection stage: `tools/collect_analyzer_sarif.py` -> SARIF
+- normalizer: `tools/sarif_to_locator.py` -> 131 candidates
+
+Verified 2026-06-15 (.NET SDK 10.0.301): the MSBuild `ErrorLog` property emits
+**SARIF v1.0.0 by default**; the normalizer rejects v1 as a collection error
+(never silent "no hits"). To get the v2.1 the normalizer needs, the comma
+before `version` must be `%2c`-escaped or MSBuild splits the value:
+`-p:ErrorLog=<file>%2cversion=2.1`. CA2200 (default-on) is collected with no
+extra config; default-off rules (e.g. CA1849) must be raised by the profile,
+which is a follow-up to verify per SDK.
+
 ## Conclusion / Policy
 
 - Actively use the verified rules — **CA2200, AsyncFixer03, MA0042/MA0045** (and

@@ -1,0 +1,36 @@
+# Error-policy locator COLLECTION profile (knowledge/source_analysis/132).
+#
+# Severity here is for LOCATOR COLLECTION ONLY. It is not the target project's
+# build quality policy. The 131 normalizer drops severity entirely and emits
+# every mapped hit as a `candidate`; severity is only used so the analyzer
+# reports the diagnostic at all (default-off rules must be raised above none).
+#
+# Apply by copying into the target tree as `.editorconfig` for a collection
+# build, or translate to a .ruleset passed via collect_analyzer_sarif.py
+# --ruleset. Build-time enablement of default-off rules is a follow-up to
+# verify per SDK.
+
+[*.cs]
+
+# --- Built-in .NET NetAnalyzers (ship with the SDK, no NuGet needed) ---
+dotnet_diagnostic.CA2200.severity = warning    # cs.err.throw_variable_rethrow (default-on)
+dotnet_diagnostic.CA1849.severity = warning    # cs.err.sync_wait_result incl. GetAwaiter().GetResult() (default-off)
+dotnet_diagnostic.CA1031.severity = suggestion # broad catch — empty_catch signal only
+
+# --- Third-party analyzers: require their PackageReference in the target ---
+# Meziantou.Analyzer (MIT)
+# dotnet_diagnostic.MA0042.severity = warning  # sync wait (async-migration policy)
+# dotnet_diagnostic.MA0045.severity = warning
+# AsyncFixer (Apache-2.0)
+# dotnet_diagnostic.AsyncFixer02.severity = warning  # blocking .Result/.Wait
+# dotnet_diagnostic.AsyncFixer03.severity = warning  # async void (non-event)
+# dotnet_diagnostic.AsyncFixer04.severity = warning  # unawaited async in using
+# Roslynator
+# dotnet_diagnostic.RCS1075.severity = warning # empty catch (System.Exception; flags comment-only)
+# SonarAnalyzer.CSharp (review SonarSource license before bundling)
+# dotnet_diagnostic.S2486.severity = warning
+# dotnet_diagnostic.S108.severity = warning
+# dotnet_diagnostic.S3168.severity = warning   # async void
+# dotnet_diagnostic.S4462.severity = warning   # blocking async
+# Microsoft.VisualStudio.Threading.Analyzers
+# dotnet_diagnostic.VSTHRD110.severity = warning  # observe async result (fire-and-forget)

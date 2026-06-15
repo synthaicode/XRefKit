@@ -7,11 +7,11 @@ from pathlib import Path
 from tools.sarif_to_locator import RULE_MAP, normalize
 
 
-def _sarif(tool, results, version=None):
+def _sarif(tool, results, version=None, sarif_version="2.1.0"):
     driver = {"name": tool}
     if version:
         driver["version"] = version
-    return {"version": "2.1.0", "runs": [{"tool": {"driver": driver}, "results": results}]}
+    return {"version": sarif_version, "runs": [{"tool": {"driver": driver}, "results": results}]}
 
 
 def _result(rule_id, uri, line, col=1, level="warning"):
@@ -74,6 +74,29 @@ class MappingTests(unittest.TestCase):
             hits, _ = normalize([sarif])
             self.assertEqual(hits[0].locator_id, "cs.err.empty_catch")
             self.assertIn("signal only", hits[0].notes)
+
+
+class SarifVersionTests(unittest.TestCase):
+    def test_v1_sarif_is_collection_error_not_no_hits(self):
+        with tempfile.TemporaryDirectory() as d:
+            # a v1 SARIF that actually contains a CA2200 hit must not be reported as 0
+            sarif = _write(d, _sarif("csc", [_result("CA2200", "a.cs", 3)], sarif_version="1.0.0"))
+            hits, scope = normalize([sarif])
+            self.assertEqual(hits, [])
+            self.assertTrue(any("unsupported SARIF version" in e for e in scope.collection_errors))
+
+    def test_missing_version_is_collection_error(self):
+        with tempfile.TemporaryDirectory() as d:
+            sarif = _write(d, _sarif("csc", [_result("CA2200", "a.cs", 3)], sarif_version=""))
+            _, scope = normalize([sarif])
+            self.assertTrue(any("unsupported SARIF version" in e for e in scope.collection_errors))
+
+    def test_full_driver_name_preserved(self):
+        with tempfile.TemporaryDirectory() as d:
+            sarif = _write(d, _sarif("Microsoft (R) Visual C# Compiler", [_result("CA2200", "a.cs", 3)]))
+            hits, _ = normalize([sarif])
+            self.assertEqual(hits[0].external_tool, "Microsoft (R) Visual C# Compiler")
+            self.assertEqual(hits[0].detection_method, "roslyn:Microsoft (R) Visual C# Compiler")
 
 
 class DedupTests(unittest.TestCase):

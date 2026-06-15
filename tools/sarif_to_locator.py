@@ -117,9 +117,9 @@ def _iter_results(sarif: dict):
         driver = (run.get("tool") or {}).get("driver") or {}
         name = driver.get("name") or "unknown"
         version = driver.get("version")
-        tool = f"{name} {version}".strip() if version else name
+        display = f"{name} {version}".strip() if version else name
         for result in run.get("results", []) or []:
-            yield tool, result
+            yield name, display, result
 
 
 def _location(result: dict) -> tuple[str, int, int] | None:
@@ -147,6 +147,7 @@ def normalize(
 
     deduped: dict[tuple[str, int, int, str], LocatorHit] = {}
     tools_seen: set[str] = set()
+    names_seen: set[str] = set()
     rules_fired: set[str] = set()
     unmapped: set[str] = set()
 
@@ -158,8 +159,20 @@ def normalize(
             scope.collection_errors.append(f"unreadable SARIF: {sarif_path}: {exc}")
             continue
 
-        for tool, result in _iter_results(sarif):
-            tools_seen.add(tool)
+        # Never silently treat a non-v2 SARIF as "no hits" (132 collection rule).
+        # The .NET ErrorLog default is SARIF v1.0.0; v2 needs version=2 with the
+        # comma escaped (e.g. -p:ErrorLog=out.sarif%2cversion=2.1).
+        version = str(sarif.get("version", ""))
+        if not version.startswith("2"):
+            scope.collection_errors.append(
+                f"unsupported SARIF version {version or 'missing'!r} "
+                f"(need 2.x; emit with version=2): {sarif_path}"
+            )
+            continue
+
+        for name, display, result in _iter_results(sarif):
+            tools_seen.add(display)
+            names_seen.add(name)
             rule_id = result.get("ruleId") or ""
             mapping = RULE_MAP.get(rule_id)
             if mapping is None:
@@ -177,7 +190,7 @@ def normalize(
             existing = deduped.get(key)
             if existing is None:
                 deduped[key] = LocatorHit(
-                    external_tool=tool.split(" ")[0],
+                    external_tool=name,
                     external_rule_id=rule_id,
                     locator_id=mapping.locator_id,
                     source_pattern_id=mapping.source_pattern_id,
@@ -185,7 +198,7 @@ def normalize(
                     file=rel,
                     line=line,
                     column=column,
-                    detection_method=f"roslyn:{tool.split(' ')[0]}",
+                    detection_method=f"roslyn:{name}",
                     scope_id=scan_id,
                     notes=mapping.note,
                 )
@@ -194,9 +207,8 @@ def normalize(
                 existing.external_rule_id = "+".join(rules)
 
     if expected_tools:
-        seen_names = {t.split(" ")[0].lower() for t in tools_seen}
         for want in expected_tools:
-            if want.lower() not in seen_names:
+            if not any(want.lower() in n.lower() for n in names_seen):
                 scope.collection_errors.append(
                     f"expected analyzer not found in SARIF (collection gap, not 'no hits'): {want}"
                 )
