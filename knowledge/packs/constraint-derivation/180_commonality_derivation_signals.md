@@ -60,3 +60,20 @@
 - `CD-` table for commonality candidates
 - `CB-` table for scope-boundary checks
 - explicit benefits and non-integration risks for every `CD-` item
+
+## Mechanical Detection
+
+Most signals above are semantic (judgment-bound). Two are deterministically
+detectable and are surfaced by `tools/csharp_commonality.py` (candidate-only):
+
+- **duplicate blocks** — `N`+ consecutive normalized content-lines (comments and
+  string literals scrubbed, punctuation-only lines ignored) appearing in `>= 2`
+  places; the copy-paste form of the repeated-pattern and cross-cutting groups.
+- **repeated literals** — a magic number (`>= 2` digits) or string literal in
+  `>= 3` places across `>= 2` files; the mechanical form of the repeated error
+  code / timeout value / validation value signals and their shared-constant
+  candidate kind.
+
+The tool points at duplication; the extract / factor-out decision stays with
+design per the Priority Rule (`>= 3` strong, `2` weak), and the remaining
+semantic signals stay with the `cross_constraint_derivation` skill's judgment.
