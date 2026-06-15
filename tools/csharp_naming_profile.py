@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
 from collections import Counter
 from dataclasses import asdict, dataclass, field
@@ -194,6 +195,84 @@ def profile_paths(paths, *, include_tests=False, root=None):
     return {k: asdict(v) for k, v in profile.items() if v}, scope
 
 
+def _parse_added_lines(diff_text: str) -> dict[str, set[int]]:
+    """Parse `git diff --unified=0` output -> {repo-relative file: set of added line numbers}."""
+    added: dict[str, set[int]] = {}
+    current: str | None = None
+    for line in diff_text.splitlines():
+        if line.startswith("+++ "):
+            target = line[4:].strip()
+            if target == "/dev/null":
+                current = None
+            else:
+                current = target[2:] if target.startswith(("a/", "b/")) else target
+                added.setdefault(current, set())
+        elif line.startswith("@@") and current is not None:
+            m = re.search(r"\+(\d+)(?:,(\d+))?", line)
+            if m:
+                start = int(m.group(1))
+                count = int(m.group(2)) if m.group(2) is not None else 1
+                added[current].update(range(start, start + count))
+    return {f: s for f, s in added.items() if s}
+
+
+def git_added_lines(rev_range: str, paths, cwd) -> dict[str, set[int]]:
+    out = subprocess.run(
+        ["git", "diff", "--unified=0", rev_range, "--", *[str(p) for p in paths]],
+        cwd=str(cwd), capture_output=True, text=True,
+    )
+    return _parse_added_lines(out.stdout)
+
+
+def changed_declarations(paths, added_lines, *, include_tests=False, root=None):
+    """Return (kind, name, file, line) for declarations whose line is in added_lines."""
+    root = root or Path.cwd()
+    out: list[tuple[str, str, str, int]] = []
+    for path in _discover([Path(p) for p in paths]):
+        rel = path.relative_to(root).as_posix() if path.is_relative_to(root) else str(path)
+        if rel not in added_lines:
+            continue
+        if _is_generated(path) or (not include_tests and _is_test(path)):
+            continue
+        try:
+            src = path.read_text(encoding="utf-8-sig")
+        except (OSError, UnicodeDecodeError):
+            continue
+        types, interfaces, methods, names = [], [], [], set()
+        extract_text(rel, src, types, interfaces, methods, names)
+        wanted = added_lines[rel]
+        for kind, items in (("type", types), ("interface", interfaces), ("method", methods)):
+            for name, f, ln in items:
+                if ln in wanted:
+                    out.append((kind, name, f, ln))
+    return out
+
+
+def check_changed(profile, changed_decls, *, i_prefix_threshold=0.9):
+    """Check only new/changed declarations against the derived dominant convention.
+
+    Existing code is never re-checked, so historical outliers are not flagged.
+    """
+    results = []
+    for kind, name, file, line in changed_decls:
+        kp = profile.get(kind)
+        actual = classify_casing(name)
+        expected = kp["dominant_casing"] if kp else None
+        issues = []
+        if expected and actual != expected:
+            issues.append(f"casing: expected {expected}, got {actual}")
+        if kind == "interface" and kp:
+            share = kp.get("affixes", {}).get("I_prefix", {}).get("share", 0)
+            if share >= i_prefix_threshold and not re.match(r"^I[A-Z]", name):
+                issues.append(f"interface 'I' prefix expected (existing share {share:.0%})")
+        results.append({
+            "kind": kind, "name": name, "file": file, "line": line,
+            "expected_casing": expected, "actual_casing": actual,
+            "conforms": not issues, "issues": issues,
+        })
+    return results
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Extract de-facto C# naming conventions (descriptive, not enforcing)"
@@ -203,11 +282,35 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", default=None)
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--max-outliers", type=int, default=15)
+    parser.add_argument(
+        "--changed-vs",
+        default=None,
+        metavar="GITREF",
+        help="check ONLY declarations on lines added vs GITREF (e.g. main, HEAD~1); "
+        "convention is still derived from the whole tree, so existing outliers are not flagged",
+    )
+    parser.add_argument("--strict", action="store_true", help="exit non-zero if a changed declaration deviates")
     args = parser.parse_args(argv)
 
     root = Path(args.root).resolve() if args.root else None
     paths = [Path(p).resolve() for p in args.paths]
     profile, scope = profile_paths(paths, include_tests=args.include_tests, root=root)
+
+    if args.changed_vs is not None:
+        base = root or Path.cwd()
+        added = git_added_lines(args.changed_vs, paths, cwd=base)
+        decls = changed_declarations(paths, added, include_tests=args.include_tests, root=base)
+        results = check_changed(profile, decls)
+        deviations = [r for r in results if not r["conforms"]]
+        if args.json:
+            print(json.dumps({"checked": len(results), "deviations": deviations}, indent=2))
+        else:
+            print(f"changed declarations checked vs {args.changed_vs}: {len(results)} "
+                  f"(existing code not re-checked)")
+            print(f"deviations from existing convention: {len(deviations)}")
+            for r in deviations:
+                print(f"  [{r['kind']}] {r['name']}  {r['file']}:{r['line']}  -> {'; '.join(r['issues'])}")
+        return 1 if (args.strict and deviations) else 0
 
     if args.json:
         print(json.dumps({"scope": asdict(scope), "profile": profile}, indent=2))

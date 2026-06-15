@@ -68,6 +68,36 @@ the choice should be escalated rather than guessed.
 - Before deviating, check the outliers: deviating is only safe if it matches an
   existing, deliberate exception pattern — otherwise conform.
 
+## Applying Strictly To New Code Only (delta scope)
+
+Enforcing a derived convention against the whole tree would flag the codebase's
+own existing deviations (the outliers above) — strictness on a brownfield repo
+lights up its history. The fix is to separate the **derivation** scope from the
+**application** scope:
+
+- derive the convention from the whole tree (accuracy), then
+- apply the strict check only to declarations on lines **added vs a base ref**.
+
+`csharp_naming_profile.py --changed-vs <gitref>` does exactly this: it derives
+the profile from the tree, then checks only declarations whose line is in the
+`git diff --unified=0 <ref>` added set. **Existing code is never re-checked, so
+historical outliers are not reported** — only new/changed names are held to the
+existing convention. New files must be tracked (staged or committed) to appear
+in the diff, per standard git semantics.
+
+Two more guards keep strictness honest:
+
+- **Confidence gate**: a convention is enforced only when its dominant share is
+  high enough (the interface `I` prefix is demanded only when its existing share
+  is `>= 90%`); a split distribution is left advisory, not guessed.
+- **Advisory, per-case**: a flagged new name is a candidate for judgment, never
+  an auto-rename. Deviating is acceptable when it matches an existing deliberate
+  exception; otherwise conform.
+
+This is the same "derive globally, apply to the delta, escalate the rest"
+pattern used to keep the error-policy locators from drowning a brownfield repo
+in known findings.
+
 ## Limits (first version)
 
 - **Method detection is heuristic**: a declaration must carry at least one
