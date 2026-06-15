@@ -219,8 +219,20 @@ and the output contract before noisier patterns are added.
 
 ## Handoff
 
-- Consumer: `csharp_error_policy_extraction` (today) and a future `fm audit`
-  locator pass.
-- Open question for the owner: whether the locator runs as a `csharp_review`
-  pre-pass (raises recall, judgment stays in the AI skill) or as a standalone
-  `fm audit` candidate report. Either way it never auto-fails the build.
+Implemented pipeline (all candidate-only; never auto-fails):
+
+```
+collect_analyzer_sarif.py -> SARIF v2.1 -> sarif_to_locator.py --.
+                                                                  >-- error_policy_audit.py -> unified 131 candidates
+error_policy_locator.py (custom cs.err.empty_catch) --------------'
+```
+
+- `tools/error_policy_audit.py` is the aggregation front (precursor to a real
+  `fm audit`): it merges the custom locator and the analyzer-normalized hits,
+  deduplicating by `(file, line, locator_id)` so a catch flagged by both the
+  custom locator and an analyzer (e.g. RCS1075) becomes one candidate with
+  corroborating `sources`.
+- Consumer: `csharp_error_policy_extraction` and `csharp_review`. The candidate
+  stream can feed a `csharp_review` pre-pass (raises recall, judgment stays in
+  the AI skill) or stand alone; either way judgment and per-case approval remain
+  downstream.
