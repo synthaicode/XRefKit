@@ -11,14 +11,17 @@ This module emits *candidates only*, per the binding boundary in 131:
 - no auto-fix, no auto-fail gate
 - detected-range-only with an explicit scan-scope declaration
 
-Currently enabled locators (131 First Batch):
+Enabled locator (131 First Batch):
 
-- ``cs.err.throw_variable_rethrow`` (#1) — throw of the enclosing catch variable
-- ``cs.err.empty_catch`` (#2) — catch block with no statements
+- ``cs.err.empty_catch`` (#2) — catch block with no statements (comment-only counts)
 
-The catch-variable binding is confirmed *lexically* (comments and string
-literals are scrubbed, catch-block scope is brace-matched). Full semantic
-symbol resolution is the deferred T2/Roslyn step; hits carry a note saying so.
+``cs.err.throw_variable_rethrow`` (#1) has been **retired** from this custom
+pass and delegated to the built-in analyzer CA2200 via the SARIF path
+(``tools/collect_analyzer_sarif.py`` -> ``tools/sarif_to_locator.py``). CA2200
+does true semantic rethrow analysis, so the lexical heuristic was redundant.
+Empty-catch detection scrubs comments/strings and brace-matches catch blocks;
+no analyzer matches the 131 empty-catch shape (comment-only + marker note), so
+it stays custom. See knowledge/132 for the delegation rationale.
 """
 
 from __future__ import annotations
@@ -37,15 +40,12 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 GENERATED_SUFFIXES = (".g.cs", ".designer.cs")
 GENERATED_DIR_PARTS = ("obj", "bin", "migrations")
 
-_CATCH_DECL_RE = re.compile(r"\bcatch\s*\(\s*[\w.<>\[\],\s]+?\s+(\w+)\s*\)")
-_THROW_IDENT_RE = re.compile(r"\bthrow\s+(\w+)\s*;")
 # PascalCase test-file leaf, case-sensitive so "Contest.cs"/"Pretest.cs" are not test files.
 _TEST_FILE_RE = re.compile(r"Tests?\.cs$")
 
-_THROW_VARIABLE_RETHROW = "cs.err.throw_variable_rethrow"
 _EMPTY_CATCH = "cs.err.empty_catch"
 
-_ENABLED_LOCATORS = [_THROW_VARIABLE_RETHROW, _EMPTY_CATCH]
+_ENABLED_LOCATORS = [_EMPTY_CATCH]
 
 
 @dataclass
@@ -225,32 +225,6 @@ def _match_pair(text: str, open_idx: int, open_ch: str, close_ch: str) -> int:
     return n
 
 
-def _catch_scopes(scrubbed: str) -> list[tuple[str, int, int]]:
-    """Return (var_name, block_start, block_end) for each catch block with a var."""
-    scopes: list[tuple[str, int, int]] = []
-    n = len(scrubbed)
-    for m in _CATCH_DECL_RE.finditer(scrubbed):
-        var = m.group(1)
-        pos = m.end()
-        while pos < n and scrubbed[pos].isspace():
-            pos += 1
-        # optional exception filter: when (...)
-        if scrubbed[pos : pos + 4] == "when" and (
-            pos + 4 >= n or not (scrubbed[pos + 4].isalnum() or scrubbed[pos + 4] == "_")
-        ):
-            pos += 4
-            while pos < n and scrubbed[pos].isspace():
-                pos += 1
-            if pos < n and scrubbed[pos] == "(":
-                pos = _match_pair(scrubbed, pos, "(", ")")
-                while pos < n and scrubbed[pos].isspace():
-                    pos += 1
-        if pos < n and scrubbed[pos] == "{":
-            block_end = _match_pair(scrubbed, pos, "{", "}")
-            scopes.append((var, pos + 1, block_end))
-    return scopes
-
-
 def _catch_blocks(scrubbed: str) -> list[tuple[int, int, int]]:
     """Return (catch_keyword_pos, body_start, body_end) for every catch block.
 
@@ -293,42 +267,12 @@ def _line_col(text: str, pos: int) -> tuple[int, int]:
 
 def scan_text(rel_path: str, src: str, scan_id: str) -> list[LocatorHit]:
     scrubbed = _scrub(src)
-    scopes = _catch_scopes(scrubbed)
     lines = src.splitlines()
 
     def snippet_at(line: int) -> str:
         return lines[line - 1].strip() if 0 <= line - 1 < len(lines) else ""
 
     hits: list[LocatorHit] = []
-
-    # cs.err.throw_variable_rethrow — throw of the enclosing catch variable
-    for m in _THROW_IDENT_RE.finditer(scrubbed):
-        ident = m.group(1)
-        start = m.start()
-        in_scope = any(
-            var == ident and block_start <= start < block_end
-            for var, block_start, block_end in scopes
-        )
-        if not in_scope:
-            continue
-        line, col = _line_col(scrubbed, start)
-        hits.append(
-            LocatorHit(
-                locator_id=_THROW_VARIABLE_RETHROW,
-                source_pattern_id="130:throw-sites/variable-rethrow",
-                file=rel_path,
-                line=line,
-                column=col,
-                snippet=snippet_at(line),
-                tier="T2",
-                detection_method="python_scrub_scope_heuristic",
-                scope_id=scan_id,
-                notes=(
-                    "catch-variable scope confirmed lexically; "
-                    "semantic symbol resolution deferred (T2 Roslyn)"
-                ),
-            )
-        )
 
     # cs.err.empty_catch — catch block with no statements (comment-only counts)
     for catch_pos, body_start, body_end in _catch_blocks(scrubbed):

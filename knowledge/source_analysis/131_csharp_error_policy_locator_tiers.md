@@ -93,7 +93,7 @@ safer home.
 |---|---|---|---|---|
 | `cs.err.throw_new` | `throw new <Exception>(...)` | T1 locate (lossy) | regex; misses qualified/generic names — candidate to promote to T2 | guard condition, message/data construction, whether the policy is correct |
 | `cs.err.throw_bare_rethrow` | `throw;` (bare rethrow) | T1 | regex `throw\s*;` | classification is mechanical (`rethrow_preserving`); none |
-| `cs.err.throw_variable_rethrow` | `throw ex;` (variable rethrow) | T2 | Roslyn: throw of the caught exception identifier (regex over-matches) | the reset itself is the finding; confirm the thrown symbol is the catch variable |
+| `cs.err.throw_variable_rethrow` | `throw ex;` (variable rethrow) | T2 | **delegated to CA2200** (see [132](132_csharp_error_policy_analyzer_rule_map.md#xid-C7A1E94D3B62)); custom heuristic retired | the reset itself is the finding; confirm the thrown symbol is the catch variable |
 | `cs.err.throw_edi_capture` | `ExceptionDispatchInfo.Capture(...).Throw()` | T1 | symbol match | marshaling reason / context |
 
 ## Catch Blocks
@@ -198,9 +198,13 @@ This shape lets the locator emit the 130 per-item record skeleton with
 Mechanize in this order. The ordering is by **review value per unit of
 false-positive noise**, not by raw usefulness:
 
-1. `cs.err.throw_variable_rethrow` (`throw ex;`) — high review value, few
-   candidates, easy to explain. T2.
-2. `cs.err.empty_catch` — high value, low count, unambiguous. T2.
+1. ~~`cs.err.throw_variable_rethrow` (`throw ex;`)~~ — **retired**: delegated to
+   the built-in analyzer CA2200, which does true semantic rethrow analysis. The
+   custom lexical heuristic was removed from `tools/error_policy_locator.py`;
+   the throw path now runs through the SARIF pipeline. See
+   [132](132_csharp_error_policy_analyzer_rule_map.md#xid-C7A1E94D3B62).
+2. `cs.err.empty_catch` — high value, low count, unambiguous; **stays custom**
+   (no analyzer matches the comment-only + marker-note shape). T2.
 3. `cs.err.async_void_non_event` — high value; the event-handler exclusion is
    the only tuning needed. T2.
 4. `cs.err.sync_wait_result` + `cs.err.sync_wait_getawaiter_getresult` —

@@ -58,7 +58,7 @@ arm is unconfirmed; CA1849 covers it instead).
 | `cs.err.throw_variable_rethrow` | .NET NetAnalyzers | **CA2200** | full | verified | map directly |
 | `cs.err.throw_variable_rethrow` | SonarAnalyzer.CSharp | **S3445** | full | verified | map directly (dedupe with CA2200) |
 | `cs.err.empty_catch` | SonarAnalyzer.CSharp | S2486 | partial (generic `Exception` only; comment exempts) | verified | signal only; do not suppress custom locator |
-| `cs.err.empty_catch` | SonarAnalyzer.CSharp | S108 | partial (empty block; comment exempts) | verified | signal only; do not suppress custom locator |
+| `cs.err.empty_catch` | SonarAnalyzer.CSharp | S108 | NOT mapped (fires on any empty block, not just catch) | verified (real build) | excluded from RULE_MAP — over-broad |
 | `cs.err.empty_catch` | Roslynator | RCS1075 | partial (`System.Exception` only; flags comment-only) | verified | signal only; closest on comment-only, still not 131 shape |
 | `cs.err.async_void_non_event` | AsyncFixer | **AsyncFixer03** | near-full | verified | map; verify event-handler exclusion vs target frameworks |
 | `cs.err.async_void_non_event` | SonarAnalyzer.CSharp | S3168 | near-full | verified | map; known event-handler FP gaps (UWP args, TimerCallback) |
@@ -199,6 +199,29 @@ before `version` must be `%2c`-escaped or MSBuild splits the value:
 `-p:ErrorLog=<file>%2cversion=2.1`. CA2200 (default-on) is collected with no
 extra config; default-off rules (e.g. CA1849) must be raised by the profile,
 which is a follow-up to verify per SDK.
+
+## Real-Build Verification (2026-06-15)
+
+A sample project referencing Meziantou.Analyzer, AsyncFixer, Roslynator.Analyzers,
+and SonarAnalyzer.CSharp (all floating-latest) was built with the collection
+incantation and normalized. **Mapped rules that fired on real code:**
+`AsyncFixer02`, `AsyncFixer03`, `CA1849`, `CS4014`, `MA0042`, `RCS1075`,
+`S2486`, `S3168` (and `S108`, now unmapped). The normalizer produced 7
+candidates with correct cross-analyzer corroboration, e.g. a single
+`cs.err.sync_wait_result` hit backed by `AsyncFixer02+CA1849+MA0042` on the same
+`.Result` line, and `cs.err.async_void_non_event` backed by `AsyncFixer03+S3168`.
+
+Findings:
+
+- **S108 is over-broad** — it fired on the empty `try { }` block as well as the
+  empty `catch { }`. It is not catch-specific, so it was removed from the
+  normalizer RULE_MAP; `S2486` / `RCS1075` (catch-scoped) remain as signals and
+  the custom locator stays authoritative for `cs.err.empty_catch`.
+- **S4462 did not fire** on a blocking `.Result` that `AsyncFixer02` / `CA1849` /
+  `MA0042` all flagged; its trigger is narrower than expected. Keep it mapped but
+  do not rely on it as the sole `sync_wait` signal.
+- Restore + build completed in ~13s; licensing for SonarAnalyzer was a *use*
+  against the sample (allowed), not bundling.
 
 ## Conclusion / Policy
 

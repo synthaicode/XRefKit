@@ -70,10 +70,19 @@ class MappingTests(unittest.TestCase):
 
     def test_empty_catch_rules_carry_signal_only_note(self):
         with tempfile.TemporaryDirectory() as d:
-            sarif = _write(d, _sarif("Sonar", [_result("S108", "a.cs", 3)]))
+            sarif = _write(d, _sarif("Roslynator", [_result("RCS1075", "a.cs", 3)]))
             hits, _ = normalize([sarif])
             self.assertEqual(hits[0].locator_id, "cs.err.empty_catch")
             self.assertIn("signal only", hits[0].notes)
+
+    def test_s108_not_mapped_because_over_broad(self):
+        # S108 fires on any empty block (try/if/while), not just catch — must not
+        # become a cs.err.empty_catch candidate
+        with tempfile.TemporaryDirectory() as d:
+            sarif = _write(d, _sarif("Sonar", [_result("S108", "a.cs", 3)]))
+            hits, scope = normalize([sarif])
+            self.assertEqual(hits, [])
+            self.assertIn("S108", scope.unmapped_rule_ids)
 
 
 class SarifVersionTests(unittest.TestCase):

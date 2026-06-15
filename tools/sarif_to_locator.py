@@ -53,7 +53,9 @@ RULE_MAP: dict[str, RuleMapping] = {
     "CA2200": RuleMapping(*_THROW),
     "S3445": RuleMapping(*_THROW),
     "S2486": RuleMapping(*_EMPTY, "signal only; empty_catch stays custom (generic Exception only; comment exempts)"),
-    "S108": RuleMapping(*_EMPTY, "signal only; empty_catch stays custom (comment exempts)"),
+    # S108 intentionally NOT mapped: verified 2026-06-15 to fire on ANY empty block
+    # (empty try/if/while), not just catch, so mapping it to empty_catch injects
+    # false positives. S2486 / RCS1075 are catch-scoped; the custom locator is authoritative.
     "RCS1075": RuleMapping(*_EMPTY, "signal only; System.Exception only; flags comment-only"),
     "AsyncFixer03": RuleMapping(*_AVOID, "near-full; verify event-handler exclusion vs target frameworks"),
     "S3168": RuleMapping(*_AVOID, "near-full; known event-handler FP gaps"),
