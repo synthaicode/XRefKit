@@ -16,6 +16,7 @@ Skills should reference these pages by XID and load only what is needed.
 ## Entries
 
 - [C# review spec](csharp/100_csharp_review_spec.md#xid-30E6A4F6F3AA)
+- [C# custom attribute design principles](csharp/130_csharp_custom_attribute_design_principles.md#xid-D9C3F0A7E412)
 - [Common source analysis criteria](source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
 - [Custom framework common criteria](source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002)
 - [C# custom framework analysis criteria](csharp/110_custom_framework_analysis_criteria.md#xid-30E6A4F6F3AB)
