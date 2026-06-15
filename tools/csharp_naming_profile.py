@@ -305,6 +305,30 @@ def check_changed(profile, changed_decls, *, i_prefix_threshold=0.9):
     return results
 
 
+def _outlier_key(o: dict) -> str:
+    return f"{o['file']}::{o['name']}"
+
+
+def baseline_from_profile(profile: dict) -> dict:
+    """Snapshot the current outliers as an accepted baseline (file::name per kind)."""
+    return {
+        k: sorted({_outlier_key(o) for o in p["outliers"]})
+        for k, p in profile.items()
+        if p["outliers"]
+    }
+
+
+def new_outliers(profile: dict, baseline: dict) -> dict:
+    """Return only outliers not present in the accepted baseline, per kind."""
+    out: dict = {}
+    for k, p in profile.items():
+        accepted = set(baseline.get(k, []))
+        fresh = [o for o in p["outliers"] if _outlier_key(o) not in accepted]
+        if fresh:
+            out[k] = fresh
+    return out
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Extract de-facto C# naming conventions (descriptive)")
     parser.add_argument("paths", nargs="+")
@@ -315,11 +339,22 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--changed-vs", default=None, metavar="GITREF",
                         help="check ONLY declarations on lines added vs GITREF; convention still derived from the whole tree")
     parser.add_argument("--strict", action="store_true", help="exit non-zero if a changed declaration deviates")
+    parser.add_argument("--write-baseline", default=None, metavar="PATH",
+                        help="snapshot current outliers as an accepted baseline (file::name per kind) and exit")
+    parser.add_argument("--baseline", default=None, metavar="PATH",
+                        help="JSON baseline of accepted outliers; full-profile mode then shows only NEW outliers")
     args = parser.parse_args(argv)
 
     root = Path(args.root).resolve() if args.root else None
     paths = [Path(p).resolve() for p in args.paths]
     profile, scope = profile_paths(paths, include_tests=args.include_tests, root=root)
+
+    if args.write_baseline is not None:
+        bl = baseline_from_profile(profile)
+        Path(args.write_baseline).write_text(json.dumps(bl, indent=2), encoding="utf-8")
+        total = sum(len(v) for v in bl.values())
+        print(f"baseline written: {total} accepted outliers across {len(bl)} kinds -> {args.write_baseline}")
+        return 0
 
     if args.changed_vs is not None:
         base = root or Path.cwd()
@@ -336,11 +371,19 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"  [{r['kind']}] {r['name']}  {r['file']}:{r['line']}  -> {'; '.join(r['issues'])}")
         return 1 if (args.strict and deviations) else 0
 
+    baseline = json.loads(Path(args.baseline).read_text(encoding="utf-8")) if args.baseline else {}
+    fresh = new_outliers(profile, baseline) if baseline else None
+
     if args.json:
-        print(json.dumps({"scope": asdict(scope), "profile": profile}, indent=2))
+        payload = {"scope": asdict(scope), "profile": profile}
+        if baseline:
+            payload["new_outliers"] = fresh
+        print(json.dumps(payload, indent=2))
         return 0
     print(f"files: {scope.included_files} (excluded generated {scope.excluded_generated}, tests {scope.excluded_tests})")
     print(f"member detection: {scope.method_detection}")
+    if baseline:
+        print("baseline applied: showing NEW outliers only (accepted existing outliers suppressed)")
     for kind, p in profile.items():
         print(f"\n## {kind}  (n={p['count']})")
         print(f"  dominant casing: {p['dominant_casing']}  ({p['dominant_share']:.0%})")
@@ -349,9 +392,17 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  affixes: {p['affixes']}")
         if p["top_suffixes"]:
             print(f"  top suffixes: {p['top_suffixes'][:6]}")
-        if p["outliers"]:
-            print(f"  outliers ({len(p['outliers'])}): " + ", ".join(
-                f"{o['name']}({o['casing']}) {o['file']}:{o['line']}" for o in p["outliers"][: args.max_outliers]))
+        shown = fresh.get(kind, []) if baseline else p["outliers"]
+        if baseline:
+            suppressed = len(p["outliers"]) - len(shown)
+            label = f"new outliers ({len(shown)}; {suppressed} baselined)"
+        else:
+            label = f"outliers ({len(shown)})"
+        if shown:
+            print(f"  {label}: " + ", ".join(
+                f"{o['name']}({o['casing']}) {o['file']}:{o['line']}" for o in shown[: args.max_outliers]))
+        elif baseline and p["outliers"]:
+            print(f"  {label}")
     return 0
 
 

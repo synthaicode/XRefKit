@@ -11,6 +11,8 @@ from tools.csharp_naming_profile import (
     _parse_added_lines,
     changed_declarations,
     check_changed,
+    baseline_from_profile,
+    new_outliers,
 )
 
 
@@ -224,6 +226,38 @@ class DeltaScopeTests(unittest.TestCase):
         profile = {"interface": {"dominant_casing": "PascalCase", "affixes": {"I_prefix": {"share": 0.4}}}}
         results = check_changed(profile, [("interface", "Repository", "a.cs", 1)])
         self.assertTrue(results[0]["conforms"])  # weak convention -> not enforced
+
+
+class BaselineTests(unittest.TestCase):
+    def _profile(self):
+        return {
+            "type": {
+                "outliers": [
+                    {"name": "legacy_a", "file": "A.cs", "line": 3, "casing": "other"},
+                    {"name": "legacy_b", "file": "B.cs", "line": 4, "casing": "camelCase"},
+                ]
+            }
+        }
+
+    def test_baseline_from_profile(self):
+        bl = baseline_from_profile(self._profile())
+        self.assertEqual(bl["type"], ["A.cs::legacy_a", "B.cs::legacy_b"])
+
+    def test_roundtrip_no_new_outliers(self):
+        profile = self._profile()
+        bl = baseline_from_profile(profile)
+        self.assertEqual(new_outliers(profile, bl), {})  # everything baselined
+
+    def test_new_outlier_beyond_baseline_is_reported(self):
+        profile = self._profile()
+        bl = {"type": ["A.cs::legacy_a"]}  # only one accepted
+        fresh = new_outliers(profile, bl)
+        self.assertEqual([o["name"] for o in fresh["type"]], ["legacy_b"])
+
+    def test_empty_baseline_reports_all(self):
+        profile = self._profile()
+        fresh = new_outliers(profile, {})
+        self.assertEqual(len(fresh["type"]), 2)
 
 
 if __name__ == "__main__":

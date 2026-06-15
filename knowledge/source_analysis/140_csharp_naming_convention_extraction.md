@@ -109,6 +109,17 @@ This is the same "derive globally, apply to the delta, escalate the rest"
 pattern used to keep the error-policy locators from drowning a brownfield repo
 in known findings.
 
+### Baseline ratchet (full-scan complement)
+
+When a git delta is not available (a periodic full scan rather than a PR check),
+use a baseline instead: `--write-baseline <path>` snapshots the current outliers
+as accepted (keyed `file::name` per kind), and `--baseline <path>` then reports
+only outliers **not** in that snapshot. Existing deviations are suppressed; only
+*new* ones since the baseline surface. This ratchets a brownfield repo — it does
+not force existing names to change, but stops new deviations from accumulating.
+Delta-scope and baseline are complementary: delta gates a change at PR time,
+baseline gates the whole tree over time.
+
 ## Limits (first version)
 
 - **Member detection is heuristic**: method, property, and field declarations
