@@ -87,11 +87,14 @@ Use the canonical viewpoints in `knowledge/source_analysis/120_dotnet_change_ana
 
 ## Check Role
 
-- `dotnet_change_analysis:checker` advances the check phase, always from the
-  independent `skill-checker` subagent, never from the producer context.
-- The check verifies workflow progression: every viewpoint has a recorded
-  state, claimed evidence paths exist, the note artifact exists, role
-  separation kept.
+- The check phase is advanced deterministically by `python -m fm skill verify`
+  under the `dotnet_change_analysis:checker` role, never from the producer
+  context.
+- The check verifies workflow progression at the record level: every viewpoint
+  has a recorded state, the note is recorded as an `output` artifact, evidence
+  artifacts are recorded and linked, role separation kept. Whether the note and
+  cited evidence paths resolve on disk is the quality axis, not the progression
+  check.
 - Disputing individual structure conclusions is not the check phase's job;
   weakly supported conclusions stay visible as `unknown`.
 

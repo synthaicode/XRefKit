@@ -135,6 +135,78 @@ class SkillRuntimeAuditTests(unittest.TestCase):
             self.assertEqual(0, main(["skill", "close", "--log", str(out)]))
         return out
 
+    def _open_run_through_execution(self, root: Path, *, with_artifacts: bool) -> Path:
+        self._write_valid_skill(root)
+        out = root / "work" / "sessions" / "run.md"
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(
+                0,
+                main(
+                    [
+                        "skill", "run", "--root", str(root),
+                        "--meta", "skills/sample/meta.md",
+                        "--task", "Verify progression", "--out", str(out),
+                    ]
+                ),
+            )
+            self.assertEqual(
+                0,
+                main(
+                    [
+                        "skill", "workitem", "--log", str(out), "--item", "WI-001",
+                        "--text", "Implement controlled output", "--status", "done",
+                        "--role", "sample_skill:executor",
+                    ]
+                ),
+            )
+            if with_artifacts:
+                for artifact_id, kind, target, role in (
+                    ("OUT-001", "output", "docs/output.md", "sample_skill:executor"),
+                    ("EVD-001", "evidence", "python tools/run_quality_gate.py fm", "sample_skill:checker"),
+                ):
+                    self.assertEqual(
+                        0,
+                        main(
+                            [
+                                "skill", "artifact", "--log", str(out),
+                                "--artifact", artifact_id, "--kind", kind,
+                                "--target", target, "--item", "WI-001",
+                                "--status", "done", "--role", role,
+                            ]
+                        ),
+                    )
+            self.assertEqual(
+                0,
+                main(
+                    [
+                        "skill", "phase", "--log", str(out), "--phase", "execution",
+                        "--status", "done", "--role", "sample_skill:executor",
+                    ]
+                ),
+            )
+        return out
+
+    def test_verify_advances_check_when_progression_complete(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = self._open_run_through_execution(root, with_artifacts=True)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(0, main(["skill", "verify", "--log", str(out)]))
+
+            log_text = out.read_text(encoding="utf-8")
+            self.assertIn("`check` -> `done` role=`sample_skill:checker`", log_text)
+            self.assertIn("## Check Role\n\n- status: `done`", log_text)
+
+    def test_verify_blocks_when_artifact_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = self._open_run_through_execution(root, with_artifacts=False)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(1, main(["skill", "verify", "--log", str(out)]))
+
+            log_text = out.read_text(encoding="utf-8")
+            self.assertIn("`check` -> `blocked`", log_text)
+
     def test_audit_accepts_closed_skill_run_log(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -146,7 +218,7 @@ class SkillRuntimeAuditTests(unittest.TestCase):
             self.assertEqual(1, result.checked)
             self.assertEqual([], result.errors)
 
-    def test_local_default_run_requires_checker_subagent(self) -> None:
+    def test_local_default_run_assigns_deterministic_checker(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self._write_valid_skill(root)
@@ -173,7 +245,7 @@ class SkillRuntimeAuditTests(unittest.TestCase):
             log_text = out.read_text(encoding="utf-8")
 
             self.assertIn(
-                "- checker_context: `independent_checker_subagent_required`",
+                "- checker_context: `deterministic_fm_verification`",
                 log_text,
             )
             self.assertIn("- executor_context: `current_context_allowed`", log_text)

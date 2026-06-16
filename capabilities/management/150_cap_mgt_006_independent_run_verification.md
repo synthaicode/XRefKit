@@ -49,7 +49,7 @@
 ## Constraints
 
 - verify workflow progression, not domain validity; disputing individual finding or output validity is not this capability's job — unresolved validity stays visible as `needs_confirmation`
-- never execute from the producer context; an independent checker context is required
+- never advance from the producer context; the deterministic `fm skill verify` command provides the required context-independent verification
 - do not advance the closure or handoff phases
 - do not fix or rework producer output; a failed verification is reported as `blocked` with the failure named
 - resolve a `CHK-` concern only with evidence already present in the run; otherwise leave it `open` or `escalated`
@@ -57,7 +57,7 @@
 ## Assignment
 
 - check phase of any Skill run whose os_contract declares `check_role: required`
-- executed by the independent checker subagent (`skill-checker`)
+- advanced deterministically by `python -m fm skill verify --log <run-log>`
 
 ## Notes
 

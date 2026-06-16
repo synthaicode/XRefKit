@@ -79,7 +79,7 @@ This page defines how an agent should route a user request through workflow, cap
 - Subagent decomposition must preserve explicit scope boundaries; do not split work in a way that changes owner, evidence basis, or closure responsibility.
 - Review-oriented or `judgment`-heavy skills should prefer separate subagent execution so the reviewer runs in a different context from the producer.
 - When a skill `meta.md` declares `execution_mode: subagent_preferred` or `execution_mode: subagent_required`, validate that metadata before loading and follow the declared execution mode.
-- The check phase MUST be advanced from an independent checker subagent at every maturity level, including `trial` / `local_default`; `execution_mode` relaxes the executor side only, never the checker side. On Claude Code, use the `skill-checker` subagent defined in `.claude/agents/skill-checker.md`.
+- The check phase MUST be advanced deterministically with `python -m fm skill verify --log <run-log>` at every maturity level, including `trial` / `local_default`; `execution_mode` relaxes the executor side only, never the check side. Deterministic verification is context-independent by construction and uses the assigned `checker` role, which must differ from the `executor` role.
 
 ## Model Tier Dispatch Rule
 
@@ -106,12 +106,12 @@ Dispatch rules:
   model is realized.
 - Skills that require direct human interaction during execution (for example
   interview-style skills) stay in the main context regardless of tier.
-- `model_tier` never affects the checker side. The check phase is
+- `model_tier` never affects the check side. The check phase is
   workflow-progression verification (worklist completion, run-log integrity,
-  artifact existence, role separation) and always runs in the `skill-checker`
-  subagent on the small fast model, whatever the executor tier. Domain-level
-  quality review is not the check phase's job — it belongs to review-oriented
-  Skills and the closure gate.
+  artifact recording and linkage, role separation) and is advanced
+  deterministically by `python -m fm skill verify`, not by a model, whatever
+  the executor tier. Domain-level quality review is not the check phase's job —
+  it belongs to review-oriented Skills.
 - If a lower-tier executor reports escalation (work exceeded its tier), re-run
   the execution phase one tier up; do not let the lower tier guess.
 

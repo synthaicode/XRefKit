@@ -48,8 +48,8 @@ context.
 
 ## Boundaries
 
-- Never advance the check phase. That belongs to the independent
-  skill-checker subagent.
+- Never advance the check phase. It is advanced deterministically by
+  `fm skill verify`, run from the main session, not the producer context.
 - Never close the run. Closure is gated by `fm skill close` after check and
   handoff are done.
 - Keep unknowns and unsupported assumptions explicit in the run log.

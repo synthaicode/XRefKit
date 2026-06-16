@@ -324,6 +324,14 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_close.add_argument("--note", default=None, help="Optional closure event note")
     p_skill_close.add_argument("--json", action="store_true", help="Emit JSON")
 
+    p_skill_verify = skill_sub.add_parser(
+        "verify",
+        help="Deterministically verify workflow progression and advance the check phase",
+    )
+    p_skill_verify.add_argument("--log", required=True, help="Skill run log to verify")
+    p_skill_verify.add_argument("--note", default=None, help="Optional check event note")
+    p_skill_verify.add_argument("--json", action="store_true", help="Emit JSON")
+
     return parser
 
 
@@ -380,6 +388,10 @@ def main(argv: list[str] | None = None) -> int:
             from fm.skillrun import cmd_skill_close
 
             return cmd_skill_close(args)
+        if args.skill_cmd == "verify":
+            from fm.skillrun import cmd_skill_verify
+
+            return cmd_skill_verify(args)
 
         from fm.skillmeta import cmd_skill
 

@@ -112,12 +112,15 @@ required_followup: <next owner or specialist Skill, or none>
 
 ## Check Role
 
-- `csharp_review:checker` advances the check phase, always from the
-  independent `skill-checker` subagent, never from the producer context.
+- The check phase is advanced deterministically by `python -m fm skill verify`
+  under the `csharp_review:checker` role, never from the producer context.
 - The check executes
-  [CAP-MGT-006 Independent Run Verification](../../capabilities/management/150_cap_mgt_006_independent_run_verification.md#xid-E37644FAA6F2);
-  skill-specific delta: claimed finding evidence paths must exist and the
-  findings document must be recorded as an `output` artifact.
+  [CAP-MGT-006 Independent Run Verification](../../capabilities/management/150_cap_mgt_006_independent_run_verification.md#xid-E37644FAA6F2)
+  at the record level; skill-specific delta: the findings document must be
+  recorded as an `output` artifact and evidence artifacts must be recorded and
+  linked. Whether finding evidence paths resolve and whether the findings are
+  correct is the quality axis, handled when the output is reviewed, not by the
+  progression check.
 - Domain-level dispute of individual findings is not the check phase's job;
   unresolved finding validity stays visible as `needs_confirmation`.
 
