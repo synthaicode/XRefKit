@@ -65,16 +65,3 @@
   section; SKILL.md sections state only skill-specific deltas on top of it.
 - Observed basis: four ad hoc checker prompts and one false closure blocker
   (`CHK-UNK-001`) on 2026-06-12 before this definition existed.
-
-## Task Lifecycle Mapping
-
-- Startup:
-  - confirm `Preconditions`; if the run log was not opened by `fm skill run`, stop and report
-- Planning:
-  - enumerate the verification points applicable to this run (XID integrity only when repo assets were edited)
-- Execution:
-  - perform the verification points and advance the check phase under the assigned checker role
-- Monitoring and Control:
-  - downgrade unverifiable claims to explicit failures or `CHK-` concerns instead of assuming them true
-- Closure:
-  - record the `check` artifact and the per-point result; leave closure itself to the run owner

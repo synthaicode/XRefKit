@@ -70,19 +70,3 @@
   expresses. Attribute-oriented checks can be deepened through `CAP-QA-005`.
 - Observed basis: csharp_review runs on 2026-06-12, including one refuted
   remediation (F-002) caused by an unverified third-party API surface claim.
-
-## Task Lifecycle Mapping
-
-- Startup:
-  - use `Preconditions`, `Trigger`, and `Inputs` to confirm the capability can start
-  - record `baseline_unavailable` when the diagnostics baseline cannot be collected, and continue
-- Planning:
-  - define scope, category buckets, and the handoff boundary for out-of-scope domains
-- Execution:
-  - produce the outputs defined in this capability within its stated constraints
-- Monitoring and Control:
-  - downgrade unclear or unverifiable results to `needs_confirmation`
-  - keep diagnostics-covered issues excluded
-- Closure:
-  - confirm every category has a findings result or an explicit empty result
-  - preserve out-of-scope discoveries on the handoff list

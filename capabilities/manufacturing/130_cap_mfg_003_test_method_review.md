@@ -52,19 +52,3 @@
 
 - `manufacturing-side test-method review` is a business activity in test work.
 - This capability exists so manufacturing knowledge can confirm feasible test methods without taking ownership of requirement intent.
-
-## Task Lifecycle Mapping
-
-- Startup:
-  - use `Preconditions`, `Trigger`, and `Inputs` to confirm the capability can start
-  - if required evidence is missing, record `unknown` before continuing
-- Planning:
-  - define review targets, work rows, and handoff boundaries for this capability
-- Execution:
-  - produce the outputs defined in this capability within its stated constraints
-- Monitoring and Control:
-  - check progress and evidence quality through management-table and metrics rules
-  - downgrade weakly supported conclusions to `unknown`
-- Closure:
-  - confirm the capability result is finalized as `done`, `unknown`, or `out_of_scope`
-  - preserve unresolved and out-of-scope items for handoff or escalation

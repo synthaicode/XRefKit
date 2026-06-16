@@ -9,6 +9,7 @@ Keep domain facts in `knowledge/` and executable procedures in `skills/`.
 ## Rules
 
 - One capability page per coherent reusable unit.
+- Keep a capability page to its schema (definition, inputs, outputs, preconditions, triggers, constraints); do not restate task lifecycle per page. The runtime lifecycle is centralized in [CAP-MGT-005 Skill Runtime Envelope](management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5).
 - Keep workflow and governance in `docs/`.
 - Keep business activity names in `docs/` workflows and responsibilities, not as capability names.
 - Keep domain knowledge references XID-based.

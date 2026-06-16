@@ -54,17 +54,3 @@
 
 - This capability is a specialized review under the `specification` domain.
 - Use it when specification conformance depends on attribute semantics or framework attribute preconditions.
-
-## Task Lifecycle Mapping
-
-- Startup:
-  - confirm code and evidence exist
-  - record `unknown` if required evidence is missing
-- Planning:
-  - define attribute review targets and management rows
-- Execution:
-  - review attribute necessity, values, and usage patterns
-- Monitoring and Control:
-  - downgrade unsupported conclusions to `unknown`
-- Closure:
-  - finalize review results and preserve unresolved items
