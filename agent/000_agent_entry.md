@@ -22,6 +22,7 @@ Related: [Overview](../docs/000_overview.md#xid-7C6C2B46A9D1)
 - Skill-backed work MUST record outputs and evidence with `python -m fm skill artifact --log <run-log> --artifact <id> --kind <kind> --target <target> --status <status> --role <assigned-role>` before closure
 - Skill-backed work MUST record closure-relevant unknowns, risks, and non-trivial judgments with `python -m fm skill concern --log <run-log> --concern <id> --kind <unknown|risk|judgment> --status <open|resolved|escalated> --role <assigned-role>` before closure when they exist
 - During Skill execution, update the run log with `python -m fm skill phase --log <run-log> --phase <phase> --status <status> --role <assigned-role>`
+- The check phase MUST be advanced deterministically with `python -m fm skill verify --log <run-log>` at every maturity level, including `trial`; the producer context must not advance its own check phase, and deterministic verification (context-independent by construction) satisfies that separation
 - Before treating Skill-backed work as complete, run `python -m fm skill close --log <run-log>` and resolve or escalate any failed closure checks
 - MUST write execution logs/retrospectives to `work/` automatically (non-canonical)
 - MUST use date-prefixed filenames for `work/` logs (`YYYY-MM-DD_<type>_<topic>.md`)
@@ -47,7 +48,7 @@ Related: [Overview](../docs/000_overview.md#xid-7C6C2B46A9D1)
 5. Add concrete task items with `python -m fm skill workitem --log <run-log> --item <id> --text "<item>" --status pending --role <assigned-role>`
 6. Record output and evidence links with `python -m fm skill artifact --log <run-log> --artifact <id> --kind <kind> --target <target> --status done --role <assigned-role>`
 7. Record closure-relevant unknowns, risks, and non-trivial judgments with `python -m fm skill concern --log <run-log> --concern <id> --kind <kind> --status <status> --role <assigned-role>` when they exist
-8. Use the returned assigned roles; mark runtime progress with `python -m fm skill phase --log <run-log> --phase <phase> --status <status> --role <assigned-role>`
+8. Use the returned assigned roles; mark runtime progress with `python -m fm skill phase --log <run-log> --phase <phase> --status <status> --role <assigned-role>`; advance the check phase with `python -m fm skill verify --log <run-log>` (deterministic), never from the producer context
 9. Before completion, run `python -m fm skill close --log <run-log>` and keep failed closure checks explicit
 10. Read the entry index: [Docs Index](../docs/000_index.md#xid-56DD6EB68343)
 11. If the task maps to the business-capability model, follow [Capability Routing for Agents](010_capability_routing.md#xid-1F93A7C24010)

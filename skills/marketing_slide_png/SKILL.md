@@ -77,7 +77,7 @@ This skill may also be used in `single_image_infographic` mode when Marketing Gr
 
 ## Execution
 
-- Create or reuse an asset folder under `ja/docs/assets/<deck-name>/` when the deck is Japanese, or the matching docs tree when not.
+- Create or reuse an asset folder under `human-docs/ja/assets/<deck-name>/` when the deck is Japanese, or the matching human-docs tree when not.
 - Create:
   - `diagram.css` for shared visual rules
   - `render.mjs` for deterministic HTML generation
@@ -95,7 +95,7 @@ This skill may also be used in `single_image_infographic` mode when Marketing Gr
 - Prefer reproducible local commands. In this repository, the working pattern is:
 
 ```powershell
-node ja/docs/assets/<deck-name>/render.mjs
+node human-docs/ja/assets/<deck-name>/render.mjs
 npx --yes playwright install chromium
 npx --yes playwright screenshot --browser chromium --viewport-size "1600,900" file:///.../01_example.html .../01_example.png
 ```

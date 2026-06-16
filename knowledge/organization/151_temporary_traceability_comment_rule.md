@@ -34,6 +34,25 @@ TRACE-TEMP: REQ-123 / tax rounding branch
 TRACE-TEMP: DSN-045 / preserve retry boundary from approved design
 ```
 
+## Applicability
+
+Whether temporary traceability comments are the default depends on whether a
+human review stage exists outside the producing run:
+
+- **Default ON (use `TRACE-TEMP:`)** when a human code-review stage exists
+  outside the run that writes the code: the comments bridge the gap between
+  implementation and that later review, and are removed when review
+  completion is declared for the target scope.
+- **Default OFF (omit)** for a single-run autonomous remediation where the
+  run itself builds, tests, and closes the change and the traceability
+  already completes in external artifacts (review findings document, run
+  log, implementation note). Adding comments that the same run must remove
+  before closure provides no review value. Record the omission decision in
+  the run's planning or judgment notes so checkers do not re-litigate it.
+
+The previous "trivial change" exception is a special case of Default OFF and
+remains valid.
+
 ## Allowed Usage
 
 Temporary traceability comments should be added during implementation when all of the following are true:
@@ -77,7 +96,10 @@ Before the implementation task is closed for the target scope:
 
 - remove all `TRACE-TEMP:` comments from source files
 - confirm the same traceability remains available in external evidence
-- if any temporary traceability comment must remain for a pending review, mark the task as not ready for final completion
+- if any temporary traceability comment must remain for a pending review,
+  record that pending human review explicitly as a handoff artifact; only
+  then may the comments persist past run closure, and the task is marked as
+  not ready for final completion until that review concludes
 
 ## Review Rule
 

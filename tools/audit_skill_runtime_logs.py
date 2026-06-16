@@ -12,8 +12,10 @@ if str(REPO_ROOT) not in sys.path:
 
 from fm.skillrun import (
     ACCEPTED_CLOSE_STATUSES,
+    QUALITY_REQUIRED_TIERS,
     _assigned_role,
     _evaluate_closure_linkage,
+    _log_model_tier,
     _parse_artifacts,
     _parse_concerns,
     _parse_work_items,
@@ -136,6 +138,25 @@ def _audit_one(path: Path, root: Path) -> list[str]:
     concerns = _parse_concerns(text)
     concern_errors, _ = _evaluate_closure_linkage(concerns=concerns, artifacts=artifacts)
     errors.extend(concern_errors)
+
+    # Tier-conditional quality gate, mirroring close_skill_run. Mandatory for
+    # standard/heavy tiers; light/untiered logs may close without it.
+    model_tier = _log_model_tier(text)
+    if model_tier in QUALITY_REQUIRED_TIERS:
+        quality_status = _section_status(text, "Quality Gate")
+        if quality_status not in ACCEPTED_CLOSE_STATUSES:
+            errors.append(
+                f"Quality Gate must be done or escalated for model_tier {model_tier}; current={quality_status or 'missing'}"
+            )
+        if not any(artifact["kind"] == "check" for artifact in artifacts):
+            errors.append(
+                f"at least one acceptance check artifact is required for model_tier {model_tier}"
+            )
+        quality_reviewer = _assigned_role(text, "quality_reviewer")
+        if quality_reviewer and not _phase_has_role_event(text, phase="quality", role=quality_reviewer):
+            errors.append(
+                f"quality phase was not completed by assigned quality_reviewer role {quality_reviewer}"
+            )
 
     return [_format_error(path, root, error) for error in errors]
 

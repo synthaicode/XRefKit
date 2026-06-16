@@ -52,17 +52,3 @@
 ## Notes
 
 - This capability covers the `license` review domain.
-
-## Task Lifecycle Mapping
-
-- Startup:
-  - confirm dependency or provenance evidence exists
-  - record `unknown` if required evidence is missing
-- Planning:
-  - define license review targets and management rows
-- Execution:
-  - review package licenses, compatibility, notices, and provenance
-- Monitoring and Control:
-  - downgrade unsupported conclusions to `unknown`
-- Closure:
-  - finalize review results and preserve unresolved items

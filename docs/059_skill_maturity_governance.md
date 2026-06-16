@@ -181,6 +181,13 @@ being clarified.
   - `../../work/sessions/<session>.md`
 ```
 
+`local_default` relaxes the executor side only. The check phase is advanced
+deterministically by `fm skill verify` at every maturity level, including
+`trial`; the runtime assigns `checker_context: deterministic_fm_verification`
+regardless of `execution_mode`. Deterministic verification is
+context-independent by construction, and the check phase still uses the
+assigned `checker` role, which must differ from the `executor` role.
+
 ## Stable Upgrade Template
 
 ```md

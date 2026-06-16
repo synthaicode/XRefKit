@@ -1,0 +1,101 @@
+# Expected-findings manifest for the csharp_review drift-detection eval.
+# Fixture: MailKit.Pooling @ tag csharp-review-eval-fixture-v1 (commit 100b3d5).
+# Ground truth source: work/sessions/2026-06-12_csharp_review_mailkit_pooling_findings.md
+# (every entry was verified by applying the fix and passing the test suite).
+#
+# Matching rule (see score_findings.py): same file, same category,
+# line within +/- 20 of expected_line, severity at or above min_severity
+# unless calibration_max_severity is set.
+
+fixture:
+  repo: C:\dev\MailKit.Pooling
+  tag: csharp-review-eval-fixture-v1
+  commit: 100b3d5
+
+findings:
+  - id: F-004
+    category: resource_efficiency
+    file: src/MailKit.Pooling/Metrics/SystemDiagnosticsSmtpPoolMetrics.cs
+    expected_line: 95
+    min_severity: minor
+    gist: ObserveGauge full-dictionary scan per collection cycle
+
+  - id: F-005
+    category: synchronization
+    file: tests/MailKit.Pooling.Tests/Pool/PoolStateTransitionTests.cs
+    expected_line: 174
+    min_severity: major
+    gist: await Task.Yield() gives no guarantee the blocked acquire parked on its timer before clock.Advance
+
+  - id: F-006
+    category: synchronization
+    file: tests/MailKit.Pooling.Tests/Pool/PoolStateTransitionTests.cs
+    expected_line: 198
+    min_severity: major
+    gist: await Task.Yield() gives no guarantee WaitingCallers was incremented before snapshot assert
+
+  - id: F-007
+    category: synchronization
+    file: tests/MailKit.Pooling.Tests/Pool/PoolStateTransitionTests.cs
+    expected_line: 719
+    min_severity: major
+    gist: IdleTimeout test uses real SystemClock and Task.Delay(100) instead of FakeClock
+
+  - id: F-008
+    category: synchronization
+    file: src/MailKit.Pooling/Pooling/SmtpPool.cs
+    expected_line: 374
+    min_severity: needs_confirmation
+    gist: caller cancellation token propagates into ReturnLeaseAsync cleanup/refill path
+
+  - id: F-010
+    category: support_lifecycle
+    file: Directory.Build.props
+    expected_line: 3
+    min_severity: minor
+    gist: net8.0 TFM end of support 2026-11-10
+
+  - id: F-011
+    category: support_lifecycle
+    file: src/MailKit.Pooling/MailKit.Pooling.csproj
+    expected_line: 31
+    min_severity: minor
+    gist: Microsoft.Extensions.DependencyInjection 9.0.x line EOS 2026-11-10, mismatched with TFMs
+
+  - id: F-012
+    category: error_handling
+    file: src/MailKit.Pooling/Pooling/SmtpPool.cs
+    expected_line: 484
+    min_severity: major
+    gist: ValidateLeasedConnectionAsync catch calls ReturnLeaseAsync with the live caller token; cleanup can be interrupted
+
+  - id: F-014
+    category: time_culture
+    file: tests/MailKit.Pooling.IntegrationTests/Smtp4Dev/Smtp4DevSmokeTests.cs
+    expected_line: 280
+    min_severity: minor
+    gist: timeout measured by DateTimeOffset.UtcNow delta instead of Stopwatch
+
+# Calibration cases: detection is allowed, but an over-confident result is a failure.
+
+calibration:
+  - id: F-002
+    category: resource_efficiency
+    file: src/MailKit.Pooling/MailKit/MailKitSmtpClientAdapter.cs
+    expected_line: 62
+    rule: >
+      A finding claiming SmtpClient implements IAsyncDisposable / that
+      DisposeAsync() delegation is the fix MUST be needs_confirmation or
+      absent. MailKit 4.16.0 SmtpClient has no DisposeAsync (verified by
+      compile probe CS1061 on 2026-06-12). An actionable remediation
+      asserting the unverified API surface counts as a calibration failure.
+    calibration_max_severity: needs_confirmation
+
+  - id: F-003
+    category: handoff
+    file: src/MailKit.Pooling/MailKit/MailKitSmtpClientAdapter.cs
+    expected_line: 46
+    rule: >
+      The object-typed ISmtpClientAdapter.SendAsync signature is a design
+      assumption. Expected disposition: on the handoff list (design /
+      constraint derivation), not a deep-dived finding with an in-run fix.

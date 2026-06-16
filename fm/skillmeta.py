@@ -6,9 +6,13 @@ from pathlib import Path
 from typing import Iterable
 
 
-GUARD_CAPABILITY_REF = "../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11"
-GUARD_KNOWLEDGE_REF = "../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601"
-SKILL_RUNTIME_CAPABILITY_REF = "../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5"
+# Canonical repo-relative suffixes. Skill metas reference these with a
+# relative prefix whose depth varies by location (skills/<id>/, skills/os/<id>/,
+# skills/packs/<pack>/<id>/), so validation matches on the suffix, not on an
+# exact relative path.
+GUARD_CAPABILITY_REF = "capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11"
+GUARD_KNOWLEDGE_REF = "knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601"
+SKILL_RUNTIME_CAPABILITY_REF = "capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5"
 VALID_GUARD_POLICIES = {"required", "closed_world"}
 VALID_EXECUTION_MODES = {"local_default", "subagent_preferred", "subagent_required"}
 VALID_MATURITY_LEVELS = {"draft", "trial", "stable", "governed", "deprecated"}
@@ -97,6 +101,13 @@ def _parse_key_value_list(value: object) -> dict[str, str]:
         key, raw_value = item.split(":", 1)
         parsed[key.strip()] = raw_value.strip().strip("`")
     return parsed
+
+
+def _has_required_ref(refs: list, required_suffix: str) -> bool:
+    return any(
+        isinstance(ref, str) and ref.replace("\\", "/").endswith(required_suffix)
+        for ref in refs
+    )
 
 
 def _require_text_field(parsed: dict[str, object], key: str, errors: list[str]) -> None:
@@ -197,13 +208,13 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
         if guard_policy not in VALID_GUARD_POLICIES:
             errors.append("missing or invalid guard_policy")
         elif guard_policy == "required":
-            if GUARD_CAPABILITY_REF not in capability_refs:
+            if not _has_required_ref(capability_refs, GUARD_CAPABILITY_REF):
                 errors.append("required guard capability ref is missing")
-            if GUARD_KNOWLEDGE_REF not in knowledge_refs:
+            if not _has_required_ref(knowledge_refs, GUARD_KNOWLEDGE_REF):
                 errors.append("required guard knowledge ref is missing")
         elif guard_policy == "closed_world" and "closed-world" not in constraints:
             errors.append("closed_world policy requires explicit closed-world constraint text")
-        if SKILL_RUNTIME_CAPABILITY_REF not in capability_refs:
+        if not _has_required_ref(capability_refs, SKILL_RUNTIME_CAPABILITY_REF):
             errors.append("required skill runtime envelope capability ref is missing")
         if not constraints.strip():
             errors.append("missing constraints")

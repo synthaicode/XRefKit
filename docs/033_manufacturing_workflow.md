@@ -47,11 +47,12 @@ flowchart TD
 ## Sequence
 
 1. Confirm the approved design or equivalent scoped instruction.
-2. Perform implementation by applying [CAP-MFG-001 Scoped Code Realization](../capabilities/manufacturing/100_cap_mfg_001_implementation.md#xid-1A12C5C61269).
-3. Perform unit test execution by applying [CAP-MFG-002 Unit-Level Verification](../capabilities/manufacturing/110_cap_mfg_002_unit_test_execution.md#xid-55CC9027ACAD).
-4. Perform manufacturing self check by applying [CAP-MFG-004 Design Alignment Self Evaluation](../capabilities/manufacturing/120_cap_mfg_004_manufacturing_self_check.md#xid-6F5A9C1B4401).
-5. Hand off implementation results to QA review.
-6. Record unresolved items and out-of-scope items for control handling.
+2. If the scoped instruction still leaves structural behavior unresolved and coding would otherwise guess it, route through the constraint-derivation pack before implementation starts.
+3. Perform implementation by applying [CAP-MFG-001 Scoped Code Realization](../capabilities/manufacturing/100_cap_mfg_001_implementation.md#xid-1A12C5C61269).
+4. Perform unit test execution by applying [CAP-MFG-002 Unit-Level Verification](../capabilities/manufacturing/110_cap_mfg_002_unit_test_execution.md#xid-55CC9027ACAD).
+5. Perform manufacturing self check by applying [CAP-MFG-004 Design Alignment Self Evaluation](../capabilities/manufacturing/120_cap_mfg_004_manufacturing_self_check.md#xid-6F5A9C1B4401).
+6. Hand off implementation results to QA review.
+7. Record unresolved items and out-of-scope items for control handling.
 
 ## Inputs
 
@@ -82,6 +83,7 @@ flowchart TD
 
 - Manufacturing does not change design policy.
 - Manufacturing stays inside the approved boundary.
+- Manufacturing must not resolve unresolved structural design behavior by local coding choice when the constraint-derivation pack should have been used first.
 - Manufacturing performs a group-internal self-check within the manufacturing responsibility boundary before external QA review.
 - That self-check covers only manufacturing-owned work:
   - implementation result
@@ -96,6 +98,7 @@ flowchart TD
 ## Related Skills
 
 - [implementation_flow](../skills/implementation_flow/SKILL.md#xid-0ACF69A599D3)
+- [constraint_derivation_index](../skills/packs/constraint-derivation/constraint_derivation_index/SKILL.md#xid-A103B5C7D901)
 - [manufacturing_self_check](../skills/manufacturing_self_check/SKILL.md#xid-5D4E91B0D110)
 - [qa_gate_review](../skills/qa_gate_review/SKILL.md#xid-09B250B1A8FB)
 - [management_table_control](../skills/management_table_control/SKILL.md#xid-D6DDBAC513BF)

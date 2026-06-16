@@ -522,6 +522,8 @@ function renderSkillRuntimeCards(skillSummary) {
             ${badge(`artifacts ${run.counts?.artifacts || 0}`, (run.counts?.artifacts || 0) ? "active" : "muted")}
             ${badge(`outputs ${run.counts?.output_artifacts || 0}`, (run.counts?.output_artifacts || 0) ? "active" : "muted")}
             ${badge(`evidence ${run.counts?.evidence_artifacts || 0}`, (run.counts?.evidence_artifacts || 0) ? "active" : "muted")}
+            ${badge(`handoff ${run.counts?.handoff_artifacts || 0}`, (run.counts?.handoff_artifacts || 0) ? "active" : "muted")}
+            ${badge(`judgment ${run.counts?.judgments || 0}`, (run.counts?.judgments || 0) ? "warn" : "muted")}
             ${badge(`concerns ${run.counts?.concerns || 0}`, (run.counts?.concerns || 0) ? "warn" : "ok")}
           </div>
           <p class="skill-card-text">
@@ -557,7 +559,8 @@ function renderSkillRuntimeTable(flow) {
         <td>${skill.run_count}</td>
         <td>${skill.total_output_artifacts}</td>
         <td>${skill.total_evidence_artifacts}</td>
-        <td>${badge(`unknown ${skill.open_unknowns}`, skill.open_unknowns ? "warn" : "ok")} ${badge(`risk ${skill.open_risks}`, skill.open_risks ? "warn" : "ok")}</td>
+        <td>${skill.total_handoff_artifacts}</td>
+        <td>${badge(`unknown ${skill.open_unknowns}`, skill.open_unknowns ? "warn" : "ok")} ${badge(`risk ${skill.open_risks}`, skill.open_risks ? "warn" : "ok")} ${badge(`judgment ${skill.open_judgments}`, skill.open_judgments ? "warn" : "ok")}</td>
         <td><a class="table-doc-link" href="#${escapeHtml(skillRowId(flow.name, skill.skill_id))}">definition</a></td>
       </tr>
       <tr class="sequence-detail-row">
@@ -578,6 +581,7 @@ function renderSkillRuntimeTable(flow) {
           <th>Runs</th>
           <th>Outputs</th>
           <th>Evidence</th>
+          <th>Handoff</th>
           <th>Open Concerns</th>
           <th>Link</th>
         </tr>

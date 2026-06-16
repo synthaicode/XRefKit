@@ -6,6 +6,11 @@ This page defines the alignment policy and event contract for `projects/flow-mon
 
 The flow monitor contract is a monitor-side specification.
 
+This dashboard is the human-facing viewer for AI behavior logs and related Flow
+evidence.
+Reorganization of the repository or AI agent OS layers must not silently break
+that viewing function.
+
 It should not be treated as shared domain knowledge in `knowledge/`.
 
 Reason:
@@ -38,6 +43,12 @@ Define one canonical monitoring-event schema for the monitor and make the follow
 - dashboard ingestion
 - Flow logging recommendations
 - project-side monitoring traces written under `projects/`
+
+The dashboard must continue to let a human inspect:
+
+- Flow run progression
+- observed steps, decisions, checklists, and paths
+- Skill runtime log status such as execution, check, concerns, closure, and handoff
 
 Skill metadata should remain artifact-oriented.
 
@@ -153,6 +164,14 @@ Display priority:
 2. `flows/*.yaml` `monitoring:` definition
 3. `flow-log-presets.json` fallback during migration
 
+For Skill runtime logs, the dashboard should also surface the observed output
+structure that humans need for review:
+
+- output artifacts
+- evidence artifacts
+- handoff artifacts
+- unknown / risk / judgment concerns
+
 ### 4. Allow optional Skill-side guidance only when needed
 
 If a Skill needs to mention monitoring explicitly, it should only say that when monitor traces are written for execution evidence, they must follow this monitor-side spec.
@@ -187,3 +206,4 @@ Alignment is complete when all of the following are true:
 - dashboard recommendations are derived from Flow YAML, not from a separate manual preset file
 - Skill `output` fields remain artifact-oriented
 - project monitoring traces under `projects/*/flows/*/monitoring/` conform to this spec
+- the dashboard still detects at least one project-side Flow run and at least one Skill runtime log from repository data during local checks

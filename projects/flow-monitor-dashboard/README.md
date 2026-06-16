@@ -2,6 +2,9 @@
 
 `projects/` 配下のブラウンフィールド案件に後付けできる、Flow 実行モニタリング用の軽量ダッシュボードです。
 
+このツールは、人間が AI の動作ログを見るための監視面です。
+OS 再編や周辺構造の変更があっても、この可視化機能は壊さない前提で扱います。
+
 ## 目的
 
 - どの Flow が通ったか
@@ -10,6 +13,7 @@
 - チェックリストが使われたか
 - Flow に紐づく各 Skill の runtime log がどう閉じられたか
 - 未観測ステップが残っていないか
+- AI の実行、判断、証跡、closure の状態が人間から追えるか
 
 を一覧できるようにします。
 
@@ -33,6 +37,7 @@ npm run check
 
 - JavaScript 構文チェック
 - 監視用 JSON ファイルの parse 検証
+- ダッシュボード集計が実データから Flow run と Skill runtime log を検出できること
 
 ## 配置前提
 
@@ -132,6 +137,6 @@ monitoring:
 
 - 最新の `work/sessions/*_skill_run_*.md`
 - `Execution Role` / `Check Role` / `Closure Gate` / `Handoff` の状態
-- `output` / `evidence` artifact 数
-- open の unknown / risk
+- `output` / `evidence` / `handoff` artifact 数
+- judgment を含む concern と open の unknown / risk
 - 元の session log / `meta.md` / `SKILL.md` へのリンク

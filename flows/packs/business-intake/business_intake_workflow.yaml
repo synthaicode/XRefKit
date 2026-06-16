@@ -1,0 +1,51 @@
+flow_id: FLOW-BUSINESS-INTAKE
+name: business_intake_workflow
+doc_xid: 7F2C8DA14E66
+phase: bootstrap
+owner:
+  primary: planning_group
+runs_after:
+  - FLOW-APPLICATION
+runs_before:
+  - FLOW-INVESTIGATION
+  - FLOW-REQUIREMENTS
+  - FLOW-PLANNING
+inputs:
+  - human_fragment
+  - business_seed
+  - goal_or_expected_result
+  - artifact_example
+  - known_owner_or_handoff
+outputs:
+  - interview_cycle_summary
+  - current_business_hypothesis
+  - scoped_business_unit
+  - unresolved_intake_items
+  - next_confirmation_point
+handoff:
+  output_to:
+    - FLOW-INVESTIGATION
+    - FLOW-REQUIREMENTS
+    - FLOW-PLANNING
+  artifacts:
+    - scoped_business_unit
+    - interview_cycle_summary
+    - unresolved_intake_items
+    - next_confirmation_point
+  escalation:
+    - unresolved_business_interpretation_explicit
+    - ownership_or_boundary_ambiguity_to_human_confirmation
+sequence:
+  - identify_visible_business_seed
+  - run_business_learning_interview_cycle
+  - preserve_hypothesis_and_unresolved_items
+  - check_scope_readiness
+  - run_business_intake_scoping
+  - handoff_scoped_business_unit
+control_rules:
+  - do_not_require_full_business_map_before_start
+  - learning_must_precede_scoping_when_structure_is_incomplete
+  - keep_fact_hypothesis_and_unresolved_items_separate
+  - do_not_start_from_local_work_steps
+  - previous_current_next_boundary_must_remain_explicit
+  - unresolved_scope_gaps_must_remain_visible

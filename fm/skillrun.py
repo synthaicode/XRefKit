@@ -47,7 +47,7 @@ class SkillRunResult:
         }
 
 
-VALID_PHASES = {"startup", "planning", "execution", "check", "closure", "handoff"}
+VALID_PHASES = {"startup", "planning", "execution", "check", "quality", "closure", "handoff"}
 VALID_PHASE_STATUSES = {"pending", "in_progress", "done", "blocked", "unknown", "escalated"}
 VALID_WORKITEM_STATUSES = {"pending", "in_progress", "done", "blocked", "unknown", "escalated"}
 VALID_ARTIFACT_STATUSES = {"pending", "in_progress", "done", "blocked", "unknown", "escalated"}
@@ -55,17 +55,21 @@ VALID_ARTIFACT_KINDS = {"output", "evidence", "check", "judgment", "source", "ha
 VALID_CONCERN_KINDS = {"unknown", "risk", "judgment"}
 VALID_CONCERN_STATUSES = {"open", "resolved", "escalated"}
 VALID_JUDGMENT_TYPES = {"trivial", "non_trivial"}
+# model_tier values that make the quality gate mandatory at closure.
+QUALITY_REQUIRED_TIERS = {"standard", "heavy"}
 PHASE_LABELS = {
     "startup": "Startup",
     "planning": "Planning",
     "execution": "Execution",
     "check": "Check",
+    "quality": "Quality",
     "closure": "Closure",
     "handoff": "Handoff",
 }
 PHASE_SECTIONS = {
     "execution": "Execution Role",
     "check": "Check Role",
+    "quality": "Quality Gate",
     "closure": "Closure Gate",
     "handoff": "Handoff",
 }
@@ -74,6 +78,7 @@ ACCEPTED_CLOSE_STATUSES = {"done", "escalated"}
 PHASE_REQUIRED_ROLES = {
     "execution": "executor",
     "check": "checker",
+    "quality": "quality_reviewer",
     "handoff": "handoff_owner",
 }
 
@@ -153,7 +158,10 @@ def _render_log(
     task: str,
     os_contract: dict[str, str],
     handoff_sources: list[dict[str, str]],
+    model_tier: str | None,
 ) -> str:
+    tier_label = model_tier or "unset"
+    quality_policy = "required" if model_tier in QUALITY_REQUIRED_TIERS else "optional"
     contract_lines = "\n".join(f"- {key}: `{value}`" for key, value in os_contract.items())
     worklist_lines = "\n".join(
         f"- [ ] {name}: {description}" for name, description in WORKLIST_ROWS
@@ -180,12 +188,15 @@ def _render_log(
 
 - guard_policy: `{guard_policy}`
 - execution_mode: `{execution_mode}`
+- model_tier: `{tier_label}`
 - executor: `{assigned_roles["executor"]}`
 - checker: `{assigned_roles["checker"]}`
+- quality_reviewer: `{assigned_roles["quality_reviewer"]}`
 - handoff_owner: `{assigned_roles["handoff_owner"]}`
-- separation_rule: `execution and check must be advanced by different runtime roles`
+- separation_rule: `execution, check, and quality must be advanced by different runtime roles from the executor`
 - executor_context: `{assigned_roles["executor_context"]}`
 - checker_context: `{assigned_roles["checker_context"]}`
+- quality_reviewer_context: `{assigned_roles["quality_reviewer_context"]}`
 
 ## OS Contract
 
@@ -218,7 +229,14 @@ def _render_log(
 ## Check Role
 
 - status: `pending`
-- responsibility: independently check evidence, boundaries, output quality, unknowns, closure, and handoff readiness
+- responsibility: deterministically verify workflow-progression records (worklist, work items, artifact recording and linkage, concerns, role separation) with `fm skill verify`; output quality is the quality gate's responsibility, not this one
+
+## Quality Gate
+
+- status: `pending`
+- model_tier: `{tier_label}`
+- policy: `{quality_policy}`
+- rule: declare acceptance check items as `check`-kind artifacts at planning; an independent quality reviewer sets each to `done` (pass) or `blocked` (fail) with `fm skill artifact`; domain reviews run as separate review Skills orchestrated by the main session and linked here. Required when model_tier is `standard` or `heavy`; optional otherwise
 
 ## Unknowns And Risks
 
@@ -294,6 +312,19 @@ def _log_skill_id(text: str) -> str | None:
     if end == -1:
         return None
     return text[start:end]
+
+
+def _log_model_tier(text: str) -> str | None:
+    prefix = "- model_tier: `"
+    start = text.find(prefix)
+    if start == -1:
+        return None
+    start += len(prefix)
+    end = text.find("`", start)
+    if end == -1:
+        return None
+    value = text[start:end]
+    return None if value in {"", "unset"} else value
 
 
 def _set_phase_status(text: str, *, phase: str, status: str) -> str:
@@ -740,23 +771,36 @@ def _validate_phase_role(text: str, *, phase: str, role: str | None) -> list[str
     return []
 
 
-def _assign_runtime_roles(*, skill_id: str, execution_mode: str) -> dict[str, str]:
+def _assign_runtime_roles(*, skill_id: str, execution_mode: str, model_tier: str | None) -> dict[str, str]:
+    # execution_mode governs the executor side only. The check phase is
+    # workflow-progression verification, which `fm skill verify` performs
+    # deterministically; deterministic code is context-independent by
+    # construction, so no checker subagent is assigned.
     if execution_mode == "subagent_required":
         executor_context = "isolated_subagent_required"
-        checker_context = "independent_checker_subagent_required"
     elif execution_mode == "subagent_preferred":
         executor_context = "subagent_preferred"
-        checker_context = "independent_checker_subagent_preferred"
     else:
         executor_context = "current_context_allowed"
-        checker_context = "independent_check_required"
+    checker_context = "deterministic_fm_verification"
+
+    # The quality phase is the quality axis: output acceptance and domain
+    # review, exercised by an independent quality reviewer separate from the
+    # executor. It runs in an independent subagent when the quality gate is
+    # mandatory for this tier; otherwise it is optional.
+    if model_tier in QUALITY_REQUIRED_TIERS:
+        quality_reviewer_context = "independent_quality_subagent_required"
+    else:
+        quality_reviewer_context = "optional_for_this_tier"
 
     return {
         "executor": f"{skill_id}:executor",
         "checker": f"{skill_id}:checker",
+        "quality_reviewer": f"{skill_id}:quality_reviewer",
         "handoff_owner": f"{skill_id}:handoff_owner",
         "executor_context": executor_context,
         "checker_context": checker_context,
+        "quality_reviewer_context": quality_reviewer_context,
     }
 
 
@@ -932,6 +976,96 @@ def _validate_handoff_sources(root: Path, source_logs: list[str]) -> tuple[list[
     return validated, errors
 
 
+def _progression_record_errors(
+    text: str,
+) -> tuple[list[str], list[dict[str, str]], list[dict[str, str]], list[dict[str, str]], dict[str, str]]:
+    """Deterministic work-item / artifact / concern checks shared by verify and close."""
+    errors: list[str] = []
+
+    work_items = _parse_work_items(text)
+    if not work_items:
+        errors.append("at least one concrete work item is required before closure")
+    for item in work_items:
+        if item["status"] not in ACCEPTED_CLOSE_STATUSES:
+            errors.append(
+                f"work item {item['item_id']} must be done or escalated before closure; current={item['status']}"
+            )
+
+    artifacts = _parse_artifacts(text)
+    artifact_kinds = {artifact["kind"] for artifact in artifacts}
+    if "output" not in artifact_kinds:
+        errors.append("at least one output artifact is required before closure")
+    if "evidence" not in artifact_kinds:
+        errors.append("at least one evidence artifact is required before closure")
+    for artifact in artifacts:
+        if artifact["status"] not in ACCEPTED_CLOSE_STATUSES:
+            errors.append(
+                f"artifact {artifact['artifact_id']} must be done or escalated before closure; current={artifact['status']}"
+            )
+
+    concerns = _parse_concerns(text)
+    linkage_errors, closure_checks = _evaluate_closure_linkage(concerns=concerns, artifacts=artifacts)
+    errors.extend(linkage_errors)
+
+    return errors, work_items, artifacts, concerns, closure_checks
+
+
+def verify_progression_run(args) -> SkillRunResult:
+    """Deterministically verify workflow progression and advance the check phase.
+
+    This replaces the LLM checker subagent for the check phase. The check is
+    record-level only (worklist completion, work items, artifact recording and
+    linkage, concern resolution, role separation); it does not open artifact
+    targets, judge content, or assess output quality. Quality is a separate
+    axis owned by review-oriented Skills.
+    """
+    log_path = Path(args.log).resolve()
+    if not log_path.exists():
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"log not found: {log_path}"])
+
+    text = log_path.read_text(encoding="utf-8")
+    if "## Skill Load Gate\n\n- status: `opened_by_fm_skill_run`" not in text:
+        return SkillRunResult(
+            ok=False,
+            skill_id=None,
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=["skill run log is missing an opened Skill Load Gate"],
+        )
+
+    errors: list[str] = []
+    executor = _assigned_role(text, "executor")
+    checker = _assigned_role(text, "checker")
+    if not executor or not checker:
+        errors.append("runtime role assignment is incomplete")
+    elif executor == checker:
+        errors.append("executor and checker roles must be different")
+    elif not _phase_has_role_event(text, phase="execution", role=executor):
+        errors.append(f"execution phase must be advanced by executor role {executor}")
+
+    record_errors, work_items, artifacts, concerns, closure_checks = _progression_record_errors(text)
+    errors.extend(record_errors)
+
+    new_status = "blocked" if errors else "done"
+    role = checker or "fm:progression_checker"
+    note = args.note or ("progression record verified" if not errors else "progression record incomplete")
+    text = _set_phase_status(text, phase="check", status=new_status)
+    text = _append_phase_event(text, phase="check", status=new_status, role=role, note=note)
+    log_path.write_text(text, encoding="utf-8")
+
+    return SkillRunResult(
+        ok=not errors,
+        skill_id=_log_skill_id(text),
+        skill_doc=None,
+        run_log=str(log_path),
+        errors=errors,
+        work_items=work_items,
+        artifacts=artifacts,
+        concerns=concerns,
+        closure_checks=closure_checks,
+    )
+
+
 def close_skill_run(args) -> SkillRunResult:
     log_path = Path(args.log).resolve()
     if not log_path.exists():
@@ -970,30 +1104,31 @@ def close_skill_run(args) -> SkillRunResult:
         if not _phase_has_role_event(text, phase="handoff", role=handoff_owner):
             errors.append(f"handoff phase must be advanced by handoff_owner role {handoff_owner}")
 
-    work_items = _parse_work_items(text)
-    if not work_items:
-        errors.append("at least one concrete work item is required before closure")
-    for item in work_items:
-        if item["status"] not in ACCEPTED_CLOSE_STATUSES:
-            errors.append(
-                f"work item {item['item_id']} must be done or escalated before closure; current={item['status']}"
-            )
+    record_errors, work_items, artifacts, concerns, closure_checks = _progression_record_errors(text)
+    errors.extend(record_errors)
 
-    artifacts = _parse_artifacts(text)
-    artifact_kinds = {artifact["kind"] for artifact in artifacts}
-    if "output" not in artifact_kinds:
-        errors.append("at least one output artifact is required before closure")
-    if "evidence" not in artifact_kinds:
-        errors.append("at least one evidence artifact is required before closure")
-    for artifact in artifacts:
-        if artifact["status"] not in ACCEPTED_CLOSE_STATUSES:
+    # Tier-conditional quality gate. For standard/heavy tiers the quality axis
+    # is mandatory: the quality phase must be advanced and at least one
+    # acceptance `check`-kind artifact must exist. Light/untiered skills may
+    # close without a quality gate. Artifact statuses themselves are already
+    # enforced by _progression_record_errors.
+    model_tier = _log_model_tier(text)
+    quality_status = _section_status(text, "Quality Gate")
+    statuses["Quality Gate"] = quality_status
+    if model_tier in QUALITY_REQUIRED_TIERS:
+        quality_reviewer = _assigned_role(text, "quality_reviewer")
+        if quality_status not in ACCEPTED_CLOSE_STATUSES:
             errors.append(
-                f"artifact {artifact['artifact_id']} must be done or escalated before closure; current={artifact['status']}"
+                f"Quality Gate must be done or escalated before closure for model_tier {model_tier}; current={quality_status or 'missing'}"
             )
-
-    concerns = _parse_concerns(text)
-    linkage_errors, closure_checks = _evaluate_closure_linkage(concerns=concerns, artifacts=artifacts)
-    errors.extend(linkage_errors)
+        if not any(artifact["kind"] == "check" for artifact in artifacts):
+            errors.append(
+                f"at least one acceptance check artifact is required before closure for model_tier {model_tier}"
+            )
+        if quality_reviewer and executor and quality_reviewer == executor:
+            errors.append("executor and quality_reviewer roles must be different")
+        if quality_reviewer and not _phase_has_role_event(text, phase="quality", role=quality_reviewer):
+            errors.append(f"quality phase must be advanced by quality_reviewer role {quality_reviewer}")
 
     if errors:
         return SkillRunResult(
@@ -1117,7 +1252,11 @@ def run_skill(args) -> SkillRunResult:
             errors=handoff_source_errors,
             handoff_sources=validated_handoff_sources,
         )
-    assigned_roles = _assign_runtime_roles(skill_id=skill_id, execution_mode=execution_mode)
+    raw_model_tier = parsed.get("model_tier")
+    model_tier = str(raw_model_tier) if raw_model_tier else None
+    assigned_roles = _assign_runtime_roles(
+        skill_id=skill_id, execution_mode=execution_mode, model_tier=model_tier
+    )
 
     out_path = Path(args.out) if args.out else _default_log_path(root, skill_id)
     if not out_path.is_absolute():
@@ -1135,6 +1274,7 @@ def run_skill(args) -> SkillRunResult:
         task=str(task),
         os_contract=os_contract,
         handoff_sources=validated_handoff_sources,
+        model_tier=model_tier,
     )
     out_path.write_text(log, encoding="utf-8")
 
@@ -1240,6 +1380,20 @@ def cmd_skill_close(args) -> int:
         print("  closure: accepted")
     else:
         print("fail: skill close")
+        for error in result.errors:
+            print(f"  error: {error}")
+    return 0 if result.ok else 1
+
+
+def cmd_skill_verify(args) -> int:
+    result = verify_progression_run(args)
+    if args.json:
+        print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+    elif result.ok:
+        print(f"ok: {result.run_log}")
+        print("  check: progression verified")
+    else:
+        print("fail: skill verify")
         for error in result.errors:
             print(f"  error: {error}")
     return 0 if result.ok else 1

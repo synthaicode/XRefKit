@@ -1,12 +1,17 @@
 <!-- xid: 72FB974C8236 -->
 <a id="xid-72FB974C8236"></a>
 
-# Language Policy (English Canonical + Japanese Archive)
+# Language Policy (AI Canonical Docs + Human Language Trees)
 
-This repository intentionally maintains **two language trees**:
+This repository intentionally separates:
 
-- English: `docs/`, `knowledge/`, and `agent/` (canonical operational knowledge)
-- Japanese: `ja/docs/` and `ja/agent/` (human-facing Japanese copies/notes)
+- canonical AI-facing operational docs in `docs/`, `knowledge/`, and `agent/`
+- human-facing language trees under `human-docs/`
+
+Current human-facing trees:
+
+- Japanese: `human-docs/ja/`
+- English: `human-docs/en/`
 
 ## Why we do *not* cross-link languages by XID
 
@@ -21,14 +26,15 @@ If we managed both languages under the same XID index, we would create unavoidab
 Therefore:
 
 - **All managed XID references live in the English tree** (`docs/`, `knowledge/`, `agent/`)
-- The Japanese tree under `ja/` is **excluded from the XID index** and does not participate in `xref rewrite/check`
+- The human-facing trees under `human-docs/` are **excluded from the XID index** and do not participate in `xref rewrite/check`
 
 ## What to do when you need bilingual navigation
 
 If you want to point between English and Japanese pages, use a simple, explicit pointer (non-managed link), for example:
 
-- In English: `- Japanese: ../ja/docs/<path>.md`
-- In Japanese: `- English: ../../docs/<path>.md`
+- In canonical docs: `- Japanese: ../human-docs/ja/<path>.md`
+- In Japanese human docs: `- English canonical: ../../docs/<path>.md`
+- In English human docs: `- English canonical: ../../docs/<path>.md`
 
 These links are not rewritten by XRefKit; keep them stable and minimal.
 
@@ -37,4 +43,4 @@ These links are not rewritten by XRefKit; keep them stable and minimal.
 - `knowledge/` is the canonical domain knowledge the AI reads and references by XID
 - `docs/` is canonical operational documentation for this repository
 - `sources/` holds originals for human verification
-- `ja/` is a parallel human-facing copy; it may drift and is not part of the managed reference graph
+- `human-docs/` holds human-facing language trees, materials, and presentation assets; it may drift and is not part of the managed reference graph

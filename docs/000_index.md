@@ -19,7 +19,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Business intake scoping guide](060_business_intake_scoping_guide.md#xid-C91F7D2A6B40)
 - [Business learning interview guide](061_business_learning_interview_guide.md#xid-D2A41E8C7B51)
 - [Legacy Flow Skill migration guide](062_legacy_flow_skill_migration_guide.md#xid-E3B7D5A18C62)
-- [Language policy (English canonical + Japanese archive)](030_language_policy.md#xid-72FB974C8236)
+- [Language policy (AI canonical docs + human language trees)](030_language_policy.md#xid-72FB974C8236)
 
 ## Base Control And Repository Rules
 
@@ -52,6 +52,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 
 - [Capability layering](031_capability_layering.md#xid-8D50A972BA9F)
 - [Application workflow](045_application_workflow.md#xid-8B31F02A4014)
+- [Business intake workflow](067_business_intake_workflow.md#xid-7F2C8DA14E66)
 - [Investigation workflow](032_investigation_workflow.md#xid-8B31F02A4001)
 - [Manufacturing workflow](033_manufacturing_workflow.md#xid-8B31F02A4002)
 - [Closure workflow](034_closure_workflow.md#xid-8B31F02A4003)
@@ -73,6 +74,14 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [OR Team operating model](048_or_team_operating_model.md#xid-1D7A8E2C5F10)
 - [OR Team usage guide](049_or_team_usage_guide.md#xid-4E2F91A6B8C1)
 - [Codex MCP job inbox design](050_codex_mcp_job_inbox_design.md#xid-77BCEAA247E3)
+- [AI agent OS reorganization design](063_ai_agent_os_reorganization_design.md#xid-22CAE81A6D3E)
+- [OS utility and business skill classification design](064_os_utility_and_business_skill_classification_design.md#xid-ECF29DC3E268)
+- [Business intake pack dependency design](065_business_intake_pack_dependency_design.md#xid-D334C1964342)
+- [Business intake pack entry](066_business_intake_pack_entry.md)
+- [Business intake workflow](067_business_intake_workflow.md#xid-7F2C8DA14E66)
+- [Change impact investigation decomposition](068_change_impact_investigation_decomposition.md)
+- [Codex goal mode usage guide](069_codex_goal_mode_usage_guide.md#xid-3E7B4C11A8D2)
+- [Codex goal mode auto resume design](070_codex_goal_mode_auto_resume_design.md#xid-6F4D2A18C9E7)
 - [AI Organization Explainer Video Team operating model](057_ai_organization_explainer_video_team_operating_model.md#xid-2E8F4A1C9B73)
 - [AI Organization Explainer Video Team usage guide](051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842)
 

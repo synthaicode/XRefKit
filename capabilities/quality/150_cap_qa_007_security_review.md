@@ -51,17 +51,3 @@
 ## Notes
 
 - This capability covers the `security` review domain.
-
-## Task Lifecycle Mapping
-
-- Startup:
-  - confirm code and security-relevant evidence exist
-  - record `unknown` if required evidence is missing
-- Planning:
-  - define security review targets and management rows
-- Execution:
-  - review input handling, secrets, auth, data protection, and logging
-- Monitoring and Control:
-  - downgrade unsupported conclusions to `unknown`
-- Closure:
-  - finalize review results and preserve unresolved items

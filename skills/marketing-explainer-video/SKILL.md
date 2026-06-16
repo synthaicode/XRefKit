@@ -72,7 +72,9 @@ Create short marketing explainer videos that are understandable to first-time vi
 ## TTS
 
 - Keep secrets in environment variables. Never write API keys into scripts or manifests.
+- Choose the TTS path explicitly by loading [Marketing video TTS engine guidance](../../knowledge/operations/150_marketing_video_tts_engine_guidance.md#xid-9C41D7B2A5E1) before synthesis planning.
 - For VOICEVOX, include explicit credit slides and final visible credit text for all voices used.
+- For Irodori-TTS, treat it as offline segment generation and record the checkpoint family and prompting method in build notes.
 - For Azure Speech, read `AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` from the environment.
 - Use different voices for question and answer roles when available.
 - Generate segment videos from still PNG + audio, then concatenate and re-encode the final MP4 to avoid timestamp/fps issues.

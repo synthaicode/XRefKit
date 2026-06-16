@@ -9,6 +9,7 @@ Keep domain facts in `knowledge/` and executable procedures in `skills/`.
 ## Rules
 
 - One capability page per coherent reusable unit.
+- Keep a capability page to its schema (definition, inputs, outputs, preconditions, triggers, constraints); do not restate task lifecycle per page. The runtime lifecycle is centralized in [CAP-MGT-005 Skill Runtime Envelope](management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5).
 - Keep workflow and governance in `docs/`.
 - Keep business activity names in `docs/` workflows and responsibilities, not as capability names.
 - Keep domain knowledge references XID-based.
@@ -69,6 +70,7 @@ Keep domain facts in `knowledge/` and executable procedures in `skills/`.
 - [CAP-QA-007 Security Review](quality/150_cap_qa_007_security_review.md#xid-5A1C2F0E5507)
 - [CAP-QA-008 License Compliance Check](quality/160_cap_qa_008_license_compliance_check.md#xid-5A1C2F0E5508)
 - [CAP-QA-009 Integration and Regression Verification](quality/170_cap_qa_009_integration_regression_verification.md#xid-5A1C2F0E5509)
+- [CAP-QA-010 Beyond-Diagnostics Code Risk Review](quality/180_cap_qa_010_beyond_diagnostics_code_risk_review.md#xid-4A3CA9ECFA71)
 - [CAP-BIZ-001 Value-Constraint Alignment Evaluation](business/100_cap_biz_001_value_constraint_fit_evaluation.md#xid-837CDB1183C9)
 - [CAP-MKT-001 Presentation Material Structuring](marketing/100_cap_mkt_001_presentation_material_structuring.md#xid-A4E9B13D7C20)
 - [CAP-MKT-002 Repository Infographic Snapshot](marketing/110_cap_mkt_002_repository_infographic_snapshot.md#xid-C8D4A92F61E0)
@@ -77,4 +79,5 @@ Keep domain facts in `knowledge/` and executable procedures in `skills/`.
 - [CAP-MGT-003 Out-of-Scope Escalation](management/120_cap_mgt_003_out_of_scope_escalation.md#xid-1E3B2AA5B328)
 - [CAP-MGT-004 Context Direction Guard](management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11)
 - [CAP-MGT-005 Skill Runtime Envelope](management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5)
+- [CAP-MGT-006 Independent Run Verification](management/150_cap_mgt_006_independent_run_verification.md#xid-E37644FAA6F2)
 

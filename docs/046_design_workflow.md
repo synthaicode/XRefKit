@@ -42,12 +42,14 @@ flowchart TD
 ## Sequence
 
 1. Confirm work plan and implementation policies are approved.
-2. Perform solution design drafting by applying [CAP-DSN-001 Solution Design Structuring](../capabilities/design/100_cap_dsn_001_solution_design_structuring.md#xid-6C1A2D9F4501).
-3. Record which planning policy and planning basis source entry each design artifact realizes.
-4. Prepare approved design artifacts and target paths for test and manufacturing handoff.
+2. If the incoming material still includes unresolved structural behavior in DDL, UI, logic, integration, batch, or auth design, route through the constraint-derivation pack before design closure.
+3. Perform solution design drafting by applying [CAP-DSN-001 Solution Design Structuring](../capabilities/design/100_cap_dsn_001_solution_design_structuring.md#xid-6C1A2D9F4501).
+4. Record which planning policy and planning basis source entry each design artifact realizes.
+5. Prepare approved design artifacts and target paths for test and manufacturing handoff.
 
 ## Related Skills
 
 - [design_flow](../skills/design_flow/SKILL.md#xid-3D7A91B54210)
+- [constraint_derivation_index](../skills/packs/constraint-derivation/constraint_derivation_index/SKILL.md#xid-A103B5C7D901)
 - [test_flow](../skills/test_flow/SKILL.md#xid-62F9F44D7711)
 - [management_table_control](../skills/management_table_control/SKILL.md#xid-D6DDBAC513BF)

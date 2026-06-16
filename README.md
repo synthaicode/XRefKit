@@ -1,12 +1,18 @@
 # XRefKit
 
-XRefKit is a repository-based operating layer for controlled AI work.
+XRefKit is a repository-based AI Agent OS.
 
-It helps teams define reusable Skills, route AI to the right domain knowledge,
-preserve evidence across handoffs, and close work through explicit quality gates.
+It does not run the language model itself.
+It provides the operating layer that controls how AI Agents load knowledge,
+select Skills, record judgments, preserve handoffs, and close work through
+explicit quality gates.
 
-It is not a prompt collection, a document repository, or a link-maintenance tool.
-It is a way to make AI work reviewable, repeatable, and governable.
+Here, OS means an operating layer for controlled AI Agent work, not a
+low-level system OS or an LLM runtime.
+
+It is not a prompt collection, a document repository, or a link-maintenance
+tool.
+It is a way to make AI Agent work controllable, reviewable, and improvable.
 
 ▶️ Download the 2-minute overview: [Why XRefKit exists and how it helps AI teams use domain knowledge](https://raw.githubusercontent.com/synthaicode/XRefKit/main/readme.mp4)
 
@@ -28,7 +34,7 @@ Before running any AI agent in this repository, review agent startup files and t
 
 Using AI for real work creates recurring operating problems:
 
-![Why XRefKit is needed](en/docs/assets/why_xrefkit_needed/whatis_xrefkit.png)
+![Why XRefKit is needed](human-docs/en/assets/why_xrefkit_needed/whatis_xrefkit.png)
 
 - the AI can act from incomplete context or unsupported guesses
 - procedures, domain facts, and judgment criteria get mixed together in prompts
@@ -50,7 +56,7 @@ XRefKit makes AI work explicit by separating:
 This separation prevents prompts, domain facts, execution steps, review criteria,
 and handoff records from collapsing into one opaque instruction block.
 
-![XRefKit repository snapshot](en/docs/assets/xrefkit_repository_snapshot/xrefkit_repository_snapshot.png)
+![XRefKit repository snapshot](human-docs/en/assets/xrefkit_repository_snapshot/xrefkit_repository_snapshot.png)
 
 ## How It Works
 
@@ -83,7 +89,7 @@ If you are creating a new Skill:
 In both cases:
 
 1. Give the AI agent a concrete work request with the goal, expected output, and constraints.
-2. Inspect `work/` records, then refine the Skill, knowledge, and operating rules based on what happened.
+2. Inspect `work/` records as operational memory, then refine the Skill, knowledge, guard conditions, routing rules, and quality gates based on what happened.
 
 ## How to Explore This Repository
 
@@ -103,11 +109,13 @@ The agent can read the operating contract and explain the repository structure i
 - `knowledge/`: source-backed knowledge fragments
 - `sources/`: original materials for verification
 - `skills/`: Skill definitions and routing index
-- `work/`: execution logs, judgments, handoffs, and retrospectives
+- `work/`: operational memory for execution logs, judgments, handoffs, retrospectives, and improvement input
 - `agent/`: agent entry and operating contract
 - `fm/`: runtime and CLI implementation
+- `human-docs/`: human-facing Japanese and English docs, materials, assets, and video packages
 
 ## Entry Points
 
 - Human documentation: `docs/000_index.md`
+- Human-facing language trees: `human-docs/ja/000_index.md`, `human-docs/en/`
 - Agent entry: `agent/000_agent_entry.md`

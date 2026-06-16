@@ -31,12 +31,38 @@ Execute the four QA review domains `specification / performance / security / lic
 - domain review results for specification, performance, security, and license
 - finding list with evidence
 - uncertainty list
+- a gate verdict block (see Gate Verdict Output)
+
+## Gate Verdict Output
+
+Emit one pre-CI review-routing verdict for the reviewed diff, aggregated across
+the four domains. The verdict follows
+[Agent diff review gate design](../../knowledge/organization/180_agent_diff_review_gate_design.md#xid-7A2F4C8D1801);
+it routes the diff, it does not assert the code is correct.
+
+```
+verdict: blocked | needs-review | proceed
+reason: <one line: why this verdict>
+evidence: <per-domain result ids / artifact ids supporting the verdict>
+downgrade_reason: <required when not proceed: which proceed condition failed>
+required_followup: <next owner or specialist Skill, or none>
+```
+
+- `blocked` when any domain raises a blocking finding (e.g. a security finding
+  or a `block`-disposition deterministic eval finding such as secret leakage).
+- `proceed` only when ALL hold: the run has trace, diff scope is declared,
+  triage is complete, the deterministic small eval is `clean`, every domain has
+  a recorded result, no result is downgraded to `unknown`, and no concern is
+  open.
+- otherwise `needs-review`; an unsupported conclusion downgrades to
+  `needs-review`, never `proceed`.
 
 ## Required Knowledge (XID)
 
 - [Temporary traceability comment rule](../../knowledge/organization/151_temporary_traceability_comment_rule.md#xid-22E4C7AC7063)
 - [XDDP basics](../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701)
 - [XDDP supporting methods](../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711)
+- [Agent diff review gate design](../../knowledge/organization/180_agent_diff_review_gate_design.md#xid-7A2F4C8D1801)
 
 ## Startup
 

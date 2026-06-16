@@ -82,8 +82,13 @@ For audio generation work, recognize VOICEVOX Engine Docker as an available stan
 
 Use `VOICEVOX: 青山龍星` as the default baseline voice unless the request explicitly requires a different speaker.
 Use `VOICEVOX: No.7` as the next candidate voice when `VOICEVOX: 青山龍星` is not suitable for tone, clarity, or presentation fit.
+Use `Irodori-TTS` as an optional local Japanese narration path when expressive
+line reading or text-driven voice design matters more than the repository's
+baseline HTTP-synthesis flow.
 
 The upstream README describes VOICEVOX Engine as an HTTP server and presents Docker usage for both CPU and GPU operation.
+For `Irodori-TTS`, use the repository-native selection and verification rules in
+[Marketing video TTS engine guidance](../knowledge/operations/150_marketing_video_tts_engine_guidance.md#xid-9C41D7B2A5E1).
 
 Reference:
 

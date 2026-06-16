@@ -52,17 +52,3 @@
 ## Notes
 
 - This capability covers the `performance` review domain.
-
-## Task Lifecycle Mapping
-
-- Startup:
-  - confirm target and performance evidence exist
-  - record `unknown` if required evidence is missing
-- Planning:
-  - define performance review targets and management rows
-- Execution:
-  - review bottlenecks, allocations, I/O, and async behavior
-- Monitoring and Control:
-  - downgrade unsupported conclusions to `unknown`
-- Closure:
-  - finalize review results and preserve unresolved items

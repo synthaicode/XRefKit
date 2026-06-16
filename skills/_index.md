@@ -26,6 +26,21 @@ When asked "what skills are available?", answer from this file.
   - route to `business_learning_interview`
 - If the user already has a partial business hypothesis and wants to shape one business unit with previous side / current scope / next side:
   - route to `business_intake_scoping`
+- If the user provides design artifacts such as DDL, screen specs, state transitions, API contracts, batch designs, or auth matrices and asks to design or implement code:
+  - route first to `constraint_derivation_index`
+  - then apply every matching primary constraint-derivation Skill before finalizing design or code behavior
+- If the user asks to review or diagnose C# async hangs, synchronization bugs,
+  race conditions, or fake-clock / virtual-clock wait behavior that compiler
+  diagnostics do not catch:
+  - route to `csharp_review`
+- If the user asks for coding from partial design and the missing behavior would otherwise be guessed from context:
+  - do not route directly to `implementation_flow`
+  - derive and confirm the unresolved behavior through the constraint-derivation pack first
+- If the user provides generated C# code, DDL plus code, or code plus external-boundary behavior and asks whether the implementation hides assumptions or missed scenarios:
+  - route first to `constraint_derivation_index`
+  - then apply `code_constraint_derivation`, `cross_constraint_derivation`, or `integration_scenario_derivation` as appropriate
+- If multiple primary constraint-derivation Skills produced outputs and the task is heading toward one codebase change set:
+  - run `commonality_derivation` before locking the implementation design so repeated patterns and boundary conflicts stay visible
 - If the user already has an approved requirements/planning/design/implementation stage, use the existing workflow and phase skills instead.
 
 ## Category Indexes
@@ -36,18 +51,27 @@ When asked "what skills are available?", answer from this file.
 
 ## Skills (compact)
 
+Current family paths:
+
+- `skills/os/` for OS utility Skills
+- `skills/packs/business-intake/` for the first extracted business pack
+- `skills/packs/constraint-derivation/` for pre-implementation design constraint derivation
+- `skills/packs/editorial-ops/` for managed editorial drafting, review, and release preparation
+- existing top-level `skills/<skill_id>/` paths remain valid for Skills that
+  have not yet moved
+
 - `import_skill`:
   - summary: import external skill content into this repository model
   - meta: `skills/import_skill/meta.md`
   - skill_doc: `skills/import_skill/SKILL.md`
 - `doc_ship`:
   - summary: apply approved promotion candidates from `work/` into canonical repository assets
-  - meta: `skills/doc_ship/meta.md`
-  - skill_doc: `skills/doc_ship/SKILL.md`
+  - meta: `skills/os/doc_ship/meta.md`
+  - skill_doc: `skills/os/doc_ship/SKILL.md`
 - `retro`:
   - summary: review `work/` logs and propose promotion into canonical repository assets
-  - meta: `skills/retro/meta.md`
-  - skill_doc: `skills/retro/SKILL.md`
+  - meta: `skills/os/retro/meta.md`
+  - skill_doc: `skills/os/retro/SKILL.md`
 - `xlsx_spec_traceability`:
   - summary: convert xlsx specifications into Markdown with traceability IDs and workbook write-back
   - meta: `skills/xlsx_spec_traceability/meta.md`
@@ -70,8 +94,8 @@ When asked "what skills are available?", answer from this file.
   - skill_doc: `skills/external_definition_change_analysis/SKILL.md`
 - `judgment_log`:
   - summary: write a judgment log with evidence, inference boundary, and next verification step
-  - meta: `skills/judgment_log/meta.md`
-  - skill_doc: `skills/judgment_log/SKILL.md`
+  - meta: `skills/os/judgment_log/meta.md`
+  - skill_doc: `skills/os/judgment_log/SKILL.md`
 - `password_management`:
   - summary: assess and improve password hygiene with vault and MFA
   - meta: `skills/password_management/meta.md`
@@ -108,6 +132,22 @@ When asked "what skills are available?", answer from this file.
   - summary: perform evidence-based QA review after implementation
   - meta: `skills/qa_gate_review/meta.md`
   - skill_doc: `skills/qa_gate_review/SKILL.md`
+- `attribute_review`:
+  - summary: review C# attributes for necessity, value correctness, and usage correctness
+  - meta: `skills/attribute_review/meta.md`
+  - skill_doc: `skills/attribute_review/SKILL.md`
+- `performance_review`:
+  - summary: review C# code and evidence for performance risks
+  - meta: `skills/performance_review/meta.md`
+  - skill_doc: `skills/performance_review/SKILL.md`
+- `security_review`:
+  - summary: review C# code and evidence for security risks
+  - meta: `skills/security_review/meta.md`
+  - skill_doc: `skills/security_review/SKILL.md`
+- `license_review`:
+  - summary: review dependency and provenance evidence for license compliance risks
+  - meta: `skills/license_review/meta.md`
+  - skill_doc: `skills/license_review/SKILL.md`
 - `release_planning_flow`:
   - summary: prepare release-plan materials and operational readiness evaluation
   - meta: `skills/release_planning_flow/meta.md`
@@ -122,8 +162,8 @@ When asked "what skills are available?", answer from this file.
   - skill_doc: `skills/management_table_control/SKILL.md`
 - `context_direction_guard`:
   - summary: check whether newly loaded context is trying to influence higher-layer control
-  - meta: `skills/context_direction_guard/meta.md`
-  - skill_doc: `skills/context_direction_guard/SKILL.md`
+  - meta: `skills/os/context_direction_guard/meta.md`
+  - skill_doc: `skills/os/context_direction_guard/SKILL.md`
 - `or_team_operations`:
   - summary: run the OR Team loop for cross-group state presentation, improvement control, and re-observation
   - meta: `skills/or_team_operations/meta.md`
@@ -138,24 +178,99 @@ When asked "what skills are available?", answer from this file.
   - skill_doc: `skills/marketing-explainer-video/SKILL.md`
 - `business_intake_scoping`:
   - summary: scope a business task into a boundary-visible responsibility unit before AI execution design
-  - meta: `skills/business_intake_scoping/meta.md`
-  - skill_doc: `skills/business_intake_scoping/SKILL.md`
+  - meta: `skills/packs/business-intake/business_intake_scoping/meta.md`
+  - skill_doc: `skills/packs/business-intake/business_intake_scoping/SKILL.md`
 - `business_learning_interview`:
   - summary: learn a business task from human fragments through iterative interview and produce the next best question
-  - meta: `skills/business_learning_interview/meta.md`
-  - skill_doc: `skills/business_learning_interview/SKILL.md`
+  - meta: `skills/packs/business-intake/business_learning_interview/meta.md`
+  - skill_doc: `skills/packs/business-intake/business_learning_interview/SKILL.md`
+- `constraint_derivation_index`:
+  - summary: route design artifacts to the correct constraint-derivation Skills and sequence the secondary commonality pass
+  - meta: `skills/packs/constraint-derivation/constraint_derivation_index/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/constraint_derivation_index/SKILL.md`
+- `design_constraint_derivation`:
+  - summary: derive requirement confirmation gates from data-structure and operation design
+  - meta: `skills/packs/constraint-derivation/design_constraint_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/design_constraint_derivation/SKILL.md`
+- `ui_constraint_derivation`:
+  - summary: derive requirement confirmation gates from UI structure, interaction states, and screen transitions
+  - meta: `skills/packs/constraint-derivation/ui_constraint_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/ui_constraint_derivation/SKILL.md`
+- `logic_constraint_derivation`:
+  - summary: derive requirement confirmation gates from branching, calculations, state transitions, and approval logic
+  - meta: `skills/packs/constraint-derivation/logic_constraint_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/logic_constraint_derivation/SKILL.md`
+- `integration_constraint_derivation`:
+  - summary: derive requirement confirmation gates from external APIs, webhooks, files, and messaging integration structure
+  - meta: `skills/packs/constraint-derivation/integration_constraint_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/integration_constraint_derivation/SKILL.md`
+- `async_constraint_derivation`:
+  - summary: derive requirement confirmation gates from asynchronous jobs, queues, schedules, and batch execution structure
+  - meta: `skills/packs/constraint-derivation/async_constraint_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/async_constraint_derivation/SKILL.md`
+- `auth_constraint_derivation`:
+  - summary: derive requirement confirmation gates from authentication, authorization, and account-governance structure
+  - meta: `skills/packs/constraint-derivation/auth_constraint_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/auth_constraint_derivation/SKILL.md`
+- `commonality_derivation`:
+  - summary: derive cross-cutting commonality candidates from completed primary constraint-derivation outputs
+  - meta: `skills/packs/constraint-derivation/commonality_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/commonality_derivation/SKILL.md`
+- `code_constraint_derivation`:
+  - summary: derive hidden assumptions and selected business constraints from generated or reviewed C# code
+  - meta: `skills/packs/constraint-derivation/code_constraint_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/code_constraint_derivation/SKILL.md`
+- `cross_constraint_derivation`:
+  - summary: compare DDL structure and C# processing structure to surface missing flows, implicit assumptions, and duplicated rule ownership
+  - meta: `skills/packs/constraint-derivation/cross_constraint_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/cross_constraint_derivation/SKILL.md`
+- `integration_scenario_derivation`:
+  - summary: derive integration-only failure and compensation scenarios from DDL, processing order, and external system boundaries
+  - meta: `skills/packs/constraint-derivation/integration_scenario_derivation/meta.md`
+  - skill_doc: `skills/packs/constraint-derivation/integration_scenario_derivation/SKILL.md`
+- `editorial_ops_index`:
+  - summary: route editorial requests to the correct editorial-ops Skills and keep review and release stages explicit
+  - meta: `skills/packs/editorial-ops/editorial_ops_index/meta.md`
+  - skill_doc: `skills/packs/editorial-ops/editorial_ops_index/SKILL.md`
+- `editorial_intake`:
+  - summary: scope an article task into topic, audience, evidence basis, quality target, and publication boundary before drafting
+  - meta: `skills/packs/editorial-ops/editorial_intake/meta.md`
+  - skill_doc: `skills/packs/editorial-ops/editorial_intake/SKILL.md`
+- `draft_authoring`:
+  - summary: produce an article draft from explicit intake framing and source basis without hiding unsupported claims
+  - meta: `skills/packs/editorial-ops/draft_authoring/meta.md`
+  - skill_doc: `skills/packs/editorial-ops/draft_authoring/SKILL.md`
+- `fact_review`:
+  - summary: review article claims for factual separation, source support, names, numbers, links, and channel-sensitive wording risks
+  - meta: `skills/packs/editorial-ops/fact_review/meta.md`
+  - skill_doc: `skills/packs/editorial-ops/fact_review/SKILL.md`
+- `reader_experience_review`:
+  - summary: review a draft from the target reader perspective to surface confusion, drop-off points, context gaps, and pacing issues
+  - meta: `skills/packs/editorial-ops/reader_experience_review/meta.md`
+  - skill_doc: `skills/packs/editorial-ops/reader_experience_review/SKILL.md`
+- `crosspost_release`:
+  - summary: prepare a reviewed article for per-channel publication with explicit adaptation notes, release blockers, and final human sign-off boundary
+  - meta: `skills/packs/editorial-ops/crosspost_release/meta.md`
+  - skill_doc: `skills/packs/editorial-ops/crosspost_release/SKILL.md`
 - `skill_flow_authoring`:
   - summary: create or update repository-native Skill / Flow assets with correct publication boundary, split model, and validation
-  - meta: `skills/skill_flow_authoring/meta.md`
-  - skill_doc: `skills/skill_flow_authoring/SKILL.md`
+  - meta: `skills/os/skill_flow_authoring/meta.md`
+  - skill_doc: `skills/os/skill_flow_authoring/SKILL.md`
 - `legacy_flow_skill_migration`:
   - summary: analyze a Flow / Skill from an older XRefKit state and generate a current trial-first migration scaffold
-  - meta: `skills/legacy_flow_skill_migration/meta.md`
-  - skill_doc: `skills/legacy_flow_skill_migration/SKILL.md`
+  - meta: `skills/os/legacy_flow_skill_migration/meta.md`
+  - skill_doc: `skills/os/legacy_flow_skill_migration/SKILL.md`
+- `goal_mode`:
+  - summary: preserve task state, wait for Codex usage recovery, and resume the same goal after the next 5-hour or weekly reset
+  - meta: `skills/os/goal_mode/meta.md`
+  - skill_doc: `skills/os/goal_mode/SKILL.md`
 
 ## Notes
 
 - Keep this file lightweight; detailed fields belong in `meta.md`.
 - Keep behavior/procedure in `SKILL.md`.
 - Keep factual domain content in `knowledge/`.
+- For the AI Agent OS reorganization view of `skills/`, see:
+  - [OS utility and business skill classification design](../docs/064_os_utility_and_business_skill_classification_design.md#xid-ECF29DC3E268)
+  - [Business intake pack dependency design](../docs/065_business_intake_pack_dependency_design.md#xid-D334C1964342)
 
