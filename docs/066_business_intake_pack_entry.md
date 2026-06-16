@@ -20,6 +20,18 @@ Related:
 The `business-intake` pack learns incomplete business fragments and shapes them
 into one scope-ready business unit before later execution design.
 
+## Canonical Manifest
+
+The machine-checkable definition of this pack is its manifest:
+
+- `skills/packs/business-intake/pack.md`
+
+The manifest declares what the pack OWNS (exclusive) versus what it USES (shared
+references that may live anywhere, including the OS core), and pins the OS-core
+contract version it depends on. Validate it with `python -m fm pack lint`. This
+page remains the human-facing entry; the manifest is the source of truth for
+membership and boundary.
+
 ## Pack-Owned Assets
 
 ### Skills

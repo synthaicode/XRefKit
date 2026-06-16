@@ -9,6 +9,7 @@
 - input: approved requirements, work plan, test policy, approved design, planning basis source list
 - output: test plan, test design, requirement traceability reference, integration regression test design, manufacturing test review result
 - execution_mode: `subagent_preferred`
+- model_tier: `standard`
 - guard_policy: `required`
 - os_contract:
   - version: `1`
