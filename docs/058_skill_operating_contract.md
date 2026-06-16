@@ -113,13 +113,14 @@ the referenced `SKILL.md` file exists, then writes a session log containing:
 
 - the active Skill
 - the resolved `skill_doc` path that may be opened next
-- assigned runtime roles for executor, checker, and handoff owner
+- assigned runtime roles for executor, checker, quality reviewer, and handoff owner
 - the task
 - the declared OS contract
 - a required worklist
 - a concrete work-item section for task-specific items
 - a runtime artifact section for outputs, evidence, checks, judgments, sources, and handoff links
 - separated execution and check role sections
+- a quality gate section (quality axis), tier-conditional
 - unknown/risk handling
 - closure gate
 - handoff section
@@ -146,10 +147,12 @@ shows `Closure Gate` as `done` or `escalated` and `Handoff` as `done` or
 
 - `executor`: advances the execution phase
 - `checker`: advances the check phase
+- `quality_reviewer`: advances the quality phase (quality axis)
 - `handoff_owner`: advances the handoff phase
 
 The assigned roles are returned in JSON and written to the `Runtime Role
-Assignment` section. The execution and check roles must be different.
+Assignment` section. The execution, check, and quality roles must each differ
+from the executor role.
 
 The generated log also contains a `Concrete Work Items` section. Add or update
 task-specific work items with:
@@ -234,6 +237,7 @@ Supported phases:
 - `planning`
 - `execution`
 - `check`
+- `quality`
 - `closure`
 - `handoff`
 
@@ -276,12 +280,41 @@ The closure command reads the run log and rejects closure unless:
 - every unknown is `resolved`
 - every risk is `resolved` or `escalated`
 - every `non_trivial` judgment has a `judgment` artifact or `work/judgments/` reference
+- when `model_tier` is `standard` or `heavy`: the `Quality Gate` is `done` or
+  `escalated`, at least one acceptance `check` artifact exists, and the quality
+  phase was advanced by the assigned `quality_reviewer` role (different from the
+  executor); `light` and untiered skills may close without a quality gate
 
 When the gate passes, it updates `Closure Gate`, records the unknown/risk/
 judgment inspection results under `Closure Checks`, and appends a phase event.
 If any required section is still `pending`, `blocked`, `unknown`, or missing,
 or if required concern linkage is absent, the run remains open and the missing
 closure conditions are printed as errors.
+
+### Quality Gate (Quality Axis)
+
+The quality phase is the quality axis, separate from progression. Where the
+check phase asks "did the recorded process run correctly," the quality gate
+asks "is the output acceptable." The two are kept apart on purpose: the check
+phase is deterministic and never judges output content, so output acceptance
+needs its own owner.
+
+Quality check items are recorded as `check`-kind artifacts. Declare them at
+planning with `status: pending`; an independent quality reviewer sets each to
+`done` (pass) or `blocked` (fail). An acceptance check item is a criterion the
+output must meet; a domain-review check item names a review-oriented Skill
+(for example `csharp_review`) whose own run vouches for the output. Because a
+subagent cannot start another subagent, the quality reviewer subagent performs
+generic acceptance verification, and the main session orchestrates any
+domain-review Skill runs and links their verdicts back as `check` artifacts.
+
+The quality gate is mandatory only for `model_tier` `standard` and `heavy`;
+`light` and untiered skills may close without it. This keeps routing- and
+intake-style skills lightweight while holding analysis, review, and derivation
+skills to an explicit acceptance step. The quality reviewer role must differ
+from the executor role, so the producer never signs off its own output. On
+Claude Code the quality reviewer subagent is defined in
+`.claude/agents/skill-quality.md`.
 
 The FM quality gate also audits Skill runtime logs:
 

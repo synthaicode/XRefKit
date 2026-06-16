@@ -111,7 +111,16 @@ Dispatch rules:
   artifact recording and linkage, role separation) and is advanced
   deterministically by `python -m fm skill verify`, not by a model, whatever
   the executor tier. Domain-level quality review is not the check phase's job —
-  it belongs to review-oriented Skills.
+  it belongs to the quality phase.
+- The quality phase is the quality axis, mandatory at closure for `standard`
+  and `heavy` (optional for `light` / untiered). Declare acceptance check items
+  as `check`-kind artifacts at planning; run the independent `skill-quality`
+  subagent (defined in `.claude/agents/skill-quality.md`) under the
+  `quality_reviewer` role to set each to pass (`done`) or fail (`blocked`).
+  Because a subagent cannot start another subagent, the quality subagent does
+  generic acceptance verification only; when a check item names a domain-review
+  Skill (e.g. `csharp_review`), the main session runs that Skill and links its
+  verdict back. The quality reviewer role must differ from the executor.
 - If a lower-tier executor reports escalation (work exceeded its tier), re-run
   the execution phase one tier up; do not let the lower tier guess.
 

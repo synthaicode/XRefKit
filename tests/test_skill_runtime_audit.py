@@ -10,10 +10,11 @@ from tools.audit_skill_runtime_logs import audit_skill_runtime_logs
 
 
 class SkillRuntimeAuditTests(unittest.TestCase):
-    def _valid_meta_text(self) -> str:
+    def _valid_meta_text(self, model_tier: str | None = None) -> str:
         os_contract = "".join(
             f"  - {key}: `{value}`\n" for key, value in REQUIRED_OS_CONTRACT.items()
         )
+        tier_line = f"- model_tier: `{model_tier}`\n" if model_tier else ""
         return (
             "# Skill Meta: sample\n\n"
             "- skill_id: `sample_skill`\n"
@@ -24,6 +25,7 @@ class SkillRuntimeAuditTests(unittest.TestCase):
             "- maturity: `stable`\n"
             "- execution_mode: `local_default`\n"
             "- guard_policy: `required`\n"
+            f"{tier_line}"
             "- os_contract:\n"
             f"{os_contract}"
             "- constraints: keep observed boundary explicit\n"
@@ -37,10 +39,10 @@ class SkillRuntimeAuditTests(unittest.TestCase):
             "  - `../../work/sessions/sample.md`\n"
         )
 
-    def _write_valid_skill(self, root: Path) -> None:
+    def _write_valid_skill(self, root: Path, model_tier: str | None = None) -> None:
         meta = root / "skills" / "sample" / "meta.md"
         meta.parent.mkdir(parents=True, exist_ok=True)
-        meta.write_text(self._valid_meta_text(), encoding="utf-8")
+        meta.write_text(self._valid_meta_text(model_tier=model_tier), encoding="utf-8")
         (meta.parent / "SKILL.md").write_text("# Sample Skill\n", encoding="utf-8")
 
     def _write_closed_skill_run(self, root: Path) -> Path:
@@ -206,6 +208,87 @@ class SkillRuntimeAuditTests(unittest.TestCase):
 
             log_text = out.read_text(encoding="utf-8")
             self.assertIn("`check` -> `blocked`", log_text)
+
+    def _standard_run_ready_to_close(self, root: Path, *, with_quality: bool) -> Path:
+        self._write_valid_skill(root, model_tier="standard")
+        out = root / "work" / "sessions" / "run.md"
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(
+                0,
+                main(
+                    [
+                        "skill", "run", "--root", str(root),
+                        "--meta", "skills/sample/meta.md",
+                        "--task", "Standard tier quality gate", "--out", str(out),
+                    ]
+                ),
+            )
+            self.assertEqual(
+                0,
+                main(
+                    [
+                        "skill", "workitem", "--log", str(out), "--item", "WI-001",
+                        "--text", "do work", "--status", "done", "--role", "sample_skill:executor",
+                    ]
+                ),
+            )
+            artifacts = [
+                ("OUT-001", "output", "docs/output.md", "sample_skill:executor"),
+                ("EVD-001", "evidence", "python tools/run_quality_gate.py fm", "sample_skill:checker"),
+            ]
+            if with_quality:
+                artifacts.append(("QC-001", "check", "output meets acceptance criteria", "sample_skill:quality_reviewer"))
+            for artifact_id, kind, target, role in artifacts:
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill", "artifact", "--log", str(out), "--artifact", artifact_id,
+                            "--kind", kind, "--target", target, "--item", "WI-001",
+                            "--status", "done", "--role", role,
+                        ]
+                    ),
+                )
+            phases = [
+                ("execution", "sample_skill:executor"),
+                ("check", "sample_skill:checker"),
+            ]
+            if with_quality:
+                phases.append(("quality", "sample_skill:quality_reviewer"))
+            phases.append(("handoff", "sample_skill:handoff_owner"))
+            for phase, role in phases:
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill", "phase", "--log", str(out), "--phase", phase,
+                            "--status", "done", "--role", role,
+                        ]
+                    ),
+                )
+        return out
+
+    def test_standard_tier_close_blocks_without_quality_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = self._standard_run_ready_to_close(root, with_quality=False)
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                rc = main(["skill", "close", "--log", str(out)])
+            self.assertEqual(1, rc)
+            output = buf.getvalue()
+            self.assertIn("Quality Gate must be done or escalated", output)
+            self.assertIn("acceptance check artifact is required", output)
+
+    def test_standard_tier_close_passes_with_quality_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = self._standard_run_ready_to_close(root, with_quality=True)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(0, main(["skill", "close", "--log", str(out)]))
+            self.assertTrue(
+                audit_skill_runtime_logs(root=root, sessions_dir=root / "work" / "sessions").ok
+            )
 
     def test_audit_accepts_closed_skill_run_log(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

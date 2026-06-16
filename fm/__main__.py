@@ -242,7 +242,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_phase.add_argument(
         "--phase",
         required=True,
-        choices=["startup", "planning", "execution", "check", "closure", "handoff"],
+        choices=["startup", "planning", "execution", "check", "quality", "closure", "handoff"],
         help="Phase to update",
     )
     p_skill_phase.add_argument(
