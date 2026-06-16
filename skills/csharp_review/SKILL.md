@@ -29,6 +29,13 @@ Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4
 - [C# custom framework analysis criteria](../../knowledge/csharp/110_custom_framework_analysis_criteria.md#xid-30E6A4F6F3AB)
 - [Agent diff review gate design](../../knowledge/organization/180_agent_diff_review_gate_design.md#xid-7A2F4C8D1801)
 
+## Drift-Detection Eval
+
+- [csharp_review drift-detection eval](./references/eval/eval_drift_detection.md):
+  run it after changes to this skill's assets and before maturity promotion.
+  It is a regression alarm, not an optimization target; never load
+  `references/eval/eval_manifest_heldout.yaml` during skill authoring.
+
 ## Inputs
 
 - target path (repository root, solution, or project)
@@ -176,7 +183,11 @@ required_followup: <next owner or specialist Skill, or none>
   - blocking in async paths and context-capture pitfalls
   - cancellation and timeout propagation
   - fake-clock or virtual-clock wait loops that rely on time advancement alone
-    even though a producer-side state transition could notify the waiter
+    even though a producer-side state transition could notify the waiter;
+    remediation follows the adopted patterns in
+    [C# test synchronization patterns](../../knowledge/csharp/120_csharp_test_synchronization_patterns.md#xid-4314A1A73CAF),
+    whose application mode is per-case proposal and approval — never bulk
+    auto-apply
 - Execute support lifecycle checks:
   - target framework support status
   - package or runtime dependencies with expired or near-expired support

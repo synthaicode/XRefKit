@@ -1,0 +1,31 @@
+# HELD-OUT manifest for the csharp_review drift-detection eval.
+#
+# CONTEXT DIRECTION GUARD — DO NOT LOAD DURING SKILL AUTHORING.
+# This file must be read only by score_findings.py at eval time.
+# Loading it while editing skills/csharp_review/ assets (SKILL.md, meta.md,
+# knowledge refs) defeats the held-out purpose: the skill would be tuned
+# toward these specific defects and the eval would stop measuring drift.
+# If a skill-authoring run finds this file in its context, stop and record
+# a guard violation.
+
+findings:
+  - id: F-001
+    category: attribute_value_misuse
+    file: src/MailKit.Pooling/Properties/AssemblyInfo.cs
+    expected_line: 7
+    min_severity: minor
+    gist: InternalsVisibleTo strings are not structurally synchronized with AssemblyName overrides; rename breaks silently
+
+  - id: F-009
+    category: synchronization
+    file: src/MailKit.Pooling/Pooling/SmtpPool.cs
+    expected_line: 21
+    min_severity: minor
+    gist: disposed field read lock-free in ThrowIfDisposed without volatile/Volatile.Read; safe but implicit
+
+  - id: F-013
+    category: error_handling
+    file: src/MailKit.Pooling/Sending/SmtpSender.cs
+    expected_line: 181
+    min_severity: minor
+    gist: abandoned completionTask fault observed via ContinueWith but the fault detail is silently dropped
