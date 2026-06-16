@@ -317,6 +317,18 @@ cost-control knob for the executor side only — it never relaxes checker
 independence, role separation, or any closure condition. Dispatch rules live
 in [Capability routing](../agent/010_capability_routing.md#xid-1F93A7C24010).
 
+This boundary is concrete about artifacts: progression closure verifies that
+output and evidence artifacts are *recorded, linked, and status-complete* in
+the run log. It does not verify that an artifact `target` exists on disk, is
+reproducible, or that its content supports the claim. Those are quality-axis
+checks owned by review-oriented Skills, which inherently require the output to
+exist in order to review it. A run that closes on progression therefore
+asserts process integrity only — that the work ran and was recorded
+correctly — and makes no claim about output existence or quality. When an
+output must be vouched for, route it to the responsible review Skill through
+the handoff; for a run with no downstream review, the gap is intentional and
+explicit, not a silent default.
+
 ## Relationship To Existing Controls
 
 This contract composes with:
