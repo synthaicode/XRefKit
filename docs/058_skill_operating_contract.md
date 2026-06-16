@@ -301,12 +301,17 @@ needs its own owner.
 
 Quality check items are recorded as `check`-kind artifacts. Declare them at
 planning with `status: pending`; an independent quality reviewer sets each to
-`done` (pass) or `blocked` (fail). An acceptance check item is a criterion the
-output must meet; a domain-review check item names a review-oriented Skill
-(for example `csharp_review`) whose own run vouches for the output. Because a
-subagent cannot start another subagent, the quality reviewer subagent performs
-generic acceptance verification, and the main session orchestrates any
-domain-review Skill runs and links their verdicts back as `check` artifacts.
+`done` (pass), `blocked` (fail), or `na` (not applicable to this run). An
+acceptance check item is a criterion the output must meet; a domain-review
+check item names a review-oriented Skill (for example `csharp_review`) whose
+own run vouches for the output; a tool-type check item runs a deterministic
+tool. Tool checks are content-conditional, not uniform: a skill declares it can
+apply one by referencing the capability (for example `CAP-QA-011` for the
+Roslyn analyzer), and a per-run content probe decides whether it applies or is
+`na`. Because a subagent cannot start another subagent, the quality reviewer
+subagent performs generic acceptance verification and runs deterministic tools
+itself, while the main session orchestrates any domain-review Skill runs and
+links their verdicts back as `check` artifacts.
 
 The quality gate is mandatory only for `model_tier` `standard` and `heavy`;
 `light` and untiered skills may close without it. This keeps routing- and

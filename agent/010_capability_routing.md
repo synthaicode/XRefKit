@@ -121,6 +121,12 @@ Dispatch rules:
   generic acceptance verification only; when a check item names a domain-review
   Skill (e.g. `csharp_review`), the main session runs that Skill and links its
   verdict back. The quality reviewer role must differ from the executor.
+- Tool-type quality checks are content-conditional, not uniform. A skill
+  declares it can apply such a check by referencing the capability (e.g.
+  `CAP-QA-011` for the Roslyn analyzer); per run, `python tools/cs_scope_probe.py`
+  decides whether it applies, and the item is marked `na` when out of scope. The
+  quality subagent runs deterministic tools itself; see
+  [Roslyn analyzer quality-check applicability](../knowledge/source_analysis/150_roslyn_analyzer_quality_check_applicability.md#xid-A1B243BF7D5D).
 - If a lower-tier executor reports escalation (work exceeded its tier), re-run
   the execution phase one tier up; do not let the lower tier guess.
 

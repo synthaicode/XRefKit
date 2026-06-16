@@ -42,14 +42,25 @@ guessing.
    `python -m fm skill artifact --log <run-log> --artifact <id> --kind check --status done --role <skill_id>:quality_reviewer --target "<criterion>" --note "<what you verified>"`
    for a pass, or `--status blocked` with the failure named. Verify output
    existence here as part of judging it — a missing or empty output fails.
-5. If a check item requires a domain-review Skill (for example `csharp_review`),
+5. For a content-conditional tool check (for example the Roslyn analyzer
+   acceptance check, CAP-QA-011), first decide applicability deterministically:
+   `python tools/cs_scope_probe.py --target <run-target> --json`. If
+   `cs_in_scope` is false, set that check artifact to `na` (it does not gate
+   closure). If true, run the tool yourself — you have Bash — e.g.
+   `tools/collect_analyzer_sarif.py` -> `tools/sarif_to_locator.py`, then
+   disposition the candidates (accepted / refuted / `needs_confirmation`) and
+   set the artifact to `done` or `blocked`. The analyzer is not an auto-fail
+   gate: a candidate alone does not fail the run; record `baseline_unavailable`
+   if no buildable target exists. See
+   `knowledge/source_analysis/150_roslyn_analyzer_quality_check_applicability.md`.
+6. If a check item requires a domain-review Skill (for example `csharp_review`),
    do NOT try to run it yourself — you cannot start another subagent. Leave it
    `pending` or `blocked` and report it so the main session can run that Skill
    and link the verdict.
-6. Record any new acceptance concern you find with
+7. Record any new acceptance concern you find with
    `python -m fm skill concern --log <run-log> --concern <id> --kind risk --status open --text "<text>" --role <skill_id>:quality_reviewer`.
-7. Only when every acceptance check item you own is `done`, advance the quality
-   phase:
+8. Only when every acceptance check item you own is `done` or `na`, advance the
+   quality phase:
    `python -m fm skill phase --log <run-log> --phase quality --status done --role <skill_id>:quality_reviewer --note "<acceptance summary>"`.
    If any item is `blocked`, set the quality phase to `blocked` instead and say
    why.
