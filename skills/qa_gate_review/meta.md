@@ -7,7 +7,7 @@
 - summary: execute evidence-based QA across specification, performance, security, and license domains
 - use_when: user asks for QA review against design, performance, security, or license expectations
 - input: target code paths, design evidence, coding rules, optional performance evidence, optional dependency provenance
-- output: per-domain review results, findings with evidence, uncertainty list
+- output: per-domain review results, diff-consistency result, findings with evidence, uncertainty list
 - execution_mode: `subagent_required`
 - guard_policy: `required`
 - os_contract:
@@ -24,7 +24,7 @@
 - lifecycle:
   - startup: confirm domain evidence exists for specification, performance, security, and license review
   - planning: define review domains, delta-bounded targets, management rows, and subagent split when scope-separated parallel review is safe
-  - execution: run `CAP-QA-001`, `CAP-QA-006`, `CAP-QA-007`, and `CAP-QA-008`, with `CAP-QA-005` when attribute analysis is required, while checking delta appropriateness against traced intent
+  - execution: run `CAP-QA-001`, `CAP-QA-006`, `CAP-QA-007`, and `CAP-QA-008`, with `CAP-QA-005` when attribute analysis is required, while checking delta appropriateness against traced intent, semantic structure evidence, and graph-backed impact candidates when available
   - monitoring_and_control: downgrade unsupported conclusions or unclear delta coverage to `unknown`
   - closure: finalize states, return per-domain findings with evidence, and hand off target-scope cleanup when code review completion is declared
 - tags: `qa`, `review`, `quality`
@@ -41,4 +41,9 @@
   - `../../knowledge/organization/151_temporary_traceability_comment_rule.md#xid-22E4C7AC7063`
   - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`
   - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`
+  - `../../knowledge/organization/180_agent_diff_review_gate_design.md#xid-7A2F4C8D1801`
+  - `../../knowledge/source_analysis/120_dotnet_change_analysis_viewpoints.md#xid-2E7B5A1FD201`
+  - `../../knowledge/source_analysis/160_structure_graph_tm_backstop.md#xid-163AD9936979`
+- observation_refs:
+  - `../../work/sessions/2026-06-18_skill_run_skill_flow_authoring.md`
 
