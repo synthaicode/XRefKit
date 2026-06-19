@@ -40,6 +40,10 @@ Business Pack は単なる Skill 集ではなく、業務の流れ、実行手�
 - 何でも入る巨大パックを推奨するものではない
 - 他の概念との差分説明をこの図だけで完結させるものではない
 
+## 正典ページ
+
+- 概念の正典定義は [Business Pack model](../../docs/071_business_pack_model.md#xid-40511A8A06CD)。この図はその概念図、各パック固有の設計は個別 doc を参照。
+
 ## 関連図
 
 - [01 XRefKitは、AIに業務を依頼するための基盤](01_xrefkit_as_ai_agent_os.md)

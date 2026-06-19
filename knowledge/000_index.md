@@ -42,6 +42,7 @@ Skills should reference these pages by XID and load only what is needed.
 - [C# error-policy detection determinism tiers](source_analysis/131_csharp_error_policy_locator_tiers.md#xid-D1F4A7C3E209)
 - [C# error-policy external analyzer rule map](source_analysis/132_csharp_error_policy_analyzer_rule_map.md#xid-C7A1E94D3B62)
 - [C# naming-convention extraction (brownfield)](source_analysis/140_csharp_naming_convention_extraction.md#xid-B4F7E1A2C903)
+- [Structure graph as TM coverage backstop](source_analysis/160_structure_graph_tm_backstop.md#xid-163AD9936979)
 
 ## Private knowledge
 

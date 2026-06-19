@@ -23,6 +23,7 @@
   - `integration_scenario_derivation` -> `../packs/constraint-derivation/integration_scenario_derivation/meta.md`
 - investigate:
   - `dotnet_change_analysis` -> `../dotnet_change_analysis/meta.md`
+  - `csharp_error_policy_extraction` -> `../csharp_error_policy_extraction/meta.md`
   - `external_definition_change_analysis` -> `../external_definition_change_analysis/meta.md`
   - `investigation_flow` -> `../investigation_flow/meta.md`
   - `business_learning_interview` -> `../packs/business-intake/business_learning_interview/meta.md`
@@ -37,6 +38,7 @@
   - `business_intake_scoping` -> `../packs/business-intake/business_intake_scoping/meta.md`
 - design:
   - `design_flow` -> `../design_flow/meta.md`
+  - `test_flow` -> `../test_flow/meta.md`
   - `marketing_slide_png` -> `../marketing_slide_png/meta.md`
   - `marketing-explainer-video` -> `../marketing-explainer-video/meta.md`
   - `skill_flow_authoring` -> `../os/skill_flow_authoring/meta.md`

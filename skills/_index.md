@@ -17,6 +17,15 @@ When asked "what skills are available?", answer from this file.
 6. Open the selected `SKILL.md` and execute its procedure.
 7. If domain knowledge is needed, resolve by XID from `knowledge/` via `xref`.
 
+For whole-job requests (the user hands over a job, not one task), route
+job-first: identify the Business Pack before the Skill. The canonical pack
+catalog is derived from pack manifests, not hand-maintained:
+
+- `python -m fm pack list` (pack_id, summary, owned Skills per pack)
+
+Pick the pack whose summary matches the job, then select a Skill from that
+pack's owned Skills above. See [Business Pack model](../docs/071_business_pack_model.md#xid-40511A8A06CD).
+
 ## Semantic Routing Cues
 
 - Default business-intake route:
@@ -33,6 +42,12 @@ When asked "what skills are available?", answer from this file.
   race conditions, or fake-clock / virtual-clock wait behavior that compiler
   diagnostics do not catch:
   - route to `csharp_review`
+- If the user asks to make the existing error policy of a C# codebase explicit
+  (throw/catch conventions, swallowed errors, fail-fast versus degrade
+  inconsistency) before changing error handling or arbitrating conventions:
+  - route to `csharp_error_policy_extraction`
+  - for a general structure or change-impact analysis where error handling is
+    only one viewpoint, route to `dotnet_change_analysis` instead
 - If the user asks for coding from partial design and the missing behavior would otherwise be guessed from context:
   - do not route directly to `implementation_flow`
   - derive and confirm the unresolved behavior through the constraint-derivation pack first
@@ -54,9 +69,8 @@ When asked "what skills are available?", answer from this file.
 Current family paths:
 
 - `skills/os/` for OS utility Skills
-- `skills/packs/business-intake/` for the first extracted business pack
-- `skills/packs/constraint-derivation/` for pre-implementation design constraint derivation
-- `skills/packs/editorial-ops/` for managed editorial drafting, review, and release preparation
+- `skills/packs/<pack>/` for Business Packs; the canonical, non-drifting pack
+  catalog is `python -m fm pack list` (sourced from each `pack.md` manifest)
 - existing top-level `skills/<skill_id>/` paths remain valid for Skills that
   have not yet moved
 
@@ -88,6 +102,10 @@ Current family paths:
   - summary: analyze .NET application structure and generate a Markdown change-analysis note
   - meta: `skills/dotnet_change_analysis/meta.md`
   - skill_doc: `skills/dotnet_change_analysis/SKILL.md`
+- `csharp_error_policy_extraction`:
+  - summary: extract the de-facto error policy from C# source as inventory, category x disposition matrix, contradictions, and coverage limits
+  - meta: `skills/csharp_error_policy_extraction/meta.md`
+  - skill_doc: `skills/csharp_error_policy_extraction/SKILL.md`
 - `external_definition_change_analysis`:
   - summary: analyze applications driven by XML or other external definitions and generate a Markdown change-analysis note
   - meta: `skills/external_definition_change_analysis/meta.md`
@@ -120,6 +138,10 @@ Current family paths:
   - summary: convert planning outputs into implementation-ready design artifacts
   - meta: `skills/design_flow/meta.md`
   - skill_doc: `skills/design_flow/SKILL.md`
+- `test_flow`:
+  - summary: produce a reviewed test package (test plan, test design, integration/regression test design, manufacturing test-method review) from approved requirements and design
+  - meta: `skills/test_flow/meta.md`
+  - skill_doc: `skills/test_flow/SKILL.md`
 - `implementation_flow`:
   - summary: implement changes and collect unit test results within approved scope
   - meta: `skills/implementation_flow/meta.md`

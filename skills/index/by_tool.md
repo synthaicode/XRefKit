@@ -10,6 +10,7 @@
 - .NET:
   - `csharp_review` -> `../csharp_review/meta.md`
   - `dotnet_change_analysis` -> `../dotnet_change_analysis/meta.md`
+  - `csharp_error_policy_extraction` -> `../csharp_error_policy_extraction/meta.md`
   - `code_constraint_derivation` -> `../packs/constraint-derivation/code_constraint_derivation/meta.md`
   - `cross_constraint_derivation` -> `../packs/constraint-derivation/cross_constraint_derivation/meta.md`
   - `integration_scenario_derivation` -> `../packs/constraint-derivation/integration_scenario_derivation/meta.md`
@@ -28,6 +29,7 @@
   - `requirements_flow` -> `../requirements_flow/meta.md`
   - `planning_flow` -> `../planning_flow/meta.md`
   - `design_flow` -> `../design_flow/meta.md`
+  - `test_flow` -> `../test_flow/meta.md`
   - `implementation_flow` -> `../implementation_flow/meta.md`
   - `manufacturing_self_check` -> `../manufacturing_self_check/meta.md`
   - `qa_gate_review` -> `../qa_gate_review/meta.md`

@@ -28,5 +28,8 @@
   when new managed Markdown files are added.
 - Run `python -m fm xref fix --include skills docs knowledge agent capabilities`.
 - Run `python -m fm skill check --meta ... --level <target>`.
+- Run `python -m fm skill list` before committing or publishing skill assets;
+  violations must be zero. Suppress a reviewed boundary-convention pointer
+  only with an inline `private-ref-ok: <reason>` justification.
 - Parse-check changed YAML before closure.
 - Keep unresolved gaps explicit instead of filling them by guess.

@@ -21,6 +21,7 @@ into one concrete dependency map.
 
 Related:
 
+- [Business Pack model](071_business_pack_model.md#xid-40511A8A06CD)
 - [AI Agent OS Reorganization Design](063_ai_agent_os_reorganization_design.md#xid-22CAE81A6D3E)
 - [Capability Routing for Agents](../agent/010_capability_routing.md#xid-1F93A7C24010)
 - [Business intake workflow](067_business_intake_workflow.md#xid-7F2C8DA14E66)

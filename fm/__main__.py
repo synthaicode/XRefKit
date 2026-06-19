@@ -203,6 +203,28 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_gate_eval.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
 
+    pack = subparsers.add_parser("pack", help="Validate Business Pack manifests (pack.md)")
+    pack_sub = pack.add_subparsers(dest="pack_cmd", required=True)
+
+    p_pack_lint = pack_sub.add_parser(
+        "lint",
+        help="Validate pack manifests: ownership, OS-core contract version, asset resolution, boundary",
+    )
+    p_pack_lint.add_argument("--root", default=".", help="Project root (default: .)")
+    p_pack_lint.add_argument(
+        "--manifest",
+        default=None,
+        help="Relative path to a single pack.md to validate (default: all skills/packs/*/pack.md)",
+    )
+    p_pack_lint.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_pack_list = pack_sub.add_parser(
+        "list",
+        help="List Business Packs (pack_id, summary, owned skills) derived from manifests for job-first routing",
+    )
+    p_pack_list.add_argument("--root", default=".", help="Project root (default: .)")
+    p_pack_list.add_argument("--json", action="store_true", help="Emit JSON")
+
     skill = subparsers.add_parser("skill", help="Validate skill metadata before loading")
     skill_sub = skill.add_subparsers(dest="skill_cmd", required=True)
 
@@ -222,6 +244,13 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Validation level; auto uses declared maturity/status (default: auto)",
     )
     p_skill_check.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_skill_list = skill_sub.add_parser(
+        "list",
+        help="List skills with publication boundary (public/private) and detect private-leak violations",
+    )
+    p_skill_list.add_argument("--root", default=".", help="Project root (default: .)")
+    p_skill_list.add_argument("--json", action="store_true", help="Emit JSON")
 
     p_skill_run = skill_sub.add_parser("run", help="Create a Skill runtime envelope and session log")
     p_skill_run.add_argument("--root", default=".", help="Project root (default: .)")
@@ -364,6 +393,10 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_ctx(args, cfg)
 
     if args.command == "skill":
+        if args.skill_cmd == "list":
+            from fm.skillmeta import cmd_skill_list
+
+            return cmd_skill_list(args)
         if args.skill_cmd == "run":
             from fm.skillrun import cmd_skill_run
 
@@ -396,6 +429,16 @@ def main(argv: list[str] | None = None) -> int:
         from fm.skillmeta import cmd_skill
 
         return cmd_skill(args)
+
+    if args.command == "pack":
+        if args.pack_cmd == "list":
+            from fm.packmeta import cmd_pack_list
+
+            return cmd_pack_list(args)
+
+        from fm.packmeta import cmd_pack_lint
+
+        return cmd_pack_lint(args)
 
     if args.command == "gate":
         from fm.gate import cmd_gate

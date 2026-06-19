@@ -22,6 +22,7 @@ procedures as if they were one flat catalog.
 
 Related:
 
+- [Business Pack model](071_business_pack_model.md#xid-40511A8A06CD)
 - [AI Agent OS Reorganization Design](063_ai_agent_os_reorganization_design.md#xid-22CAE81A6D3E)
 - [Skills Index](../skills/_index.md#xid-8D91F66DDBB7)
 - [Capability Routing for Agents](../agent/010_capability_routing.md#xid-1F93A7C24010)

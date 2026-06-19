@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import re
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -238,6 +240,162 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
         ok=not errors,
         errors=errors,
     )
+
+
+# Publication boundary handling for `fm skill list`.
+# Boundary truth is the directory: skills/ is public, skills_private/ is
+# private. A bare mention of `skills_private/` in public text is a legal
+# conceptual reference (authoring rules talk about the boundary itself);
+# only a concrete path below it leaks a private skill.
+PRIVATE_SCOPE_DIRS = ("skills_private", "knowledge_private", "sources_private")
+PUBLIC_TEXT_DIRS = ("skills", "docs", "knowledge", "capabilities", "agent", "flows", "work/retrospectives")
+PRIVATE_CONCRETE_REF = re.compile(
+    r"(?:skills|knowledge|sources)_private/[\w\-./]+"
+)
+
+
+@dataclass
+class SkillListEntry:
+    skill_id: str | None
+    boundary: str
+    path: str
+    maturity: str | None
+    indexed: bool | None
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "skill_id": self.skill_id,
+            "boundary": self.boundary,
+            "path": self.path,
+            "maturity": self.maturity,
+            "indexed": self.indexed,
+        }
+
+
+def _collect_boundary_entries(root: Path) -> list[SkillListEntry]:
+    index_path = root / "skills" / "_index.md"
+    index_text = index_path.read_text(encoding="utf-8") if index_path.exists() else ""
+
+    entries: list[SkillListEntry] = []
+    for scope_name, boundary in (("skills", "public"), ("skills_private", "private")):
+        base = root / scope_name
+        if not base.exists():
+            continue
+        for meta_path in sorted(base.rglob("meta.md")):
+            parsed = _parse_meta_lines(meta_path.read_text(encoding="utf-8"))
+            skill_id = parsed.get("skill_id")
+            maturity, _ = _resolve_maturity(parsed)
+            rel_dir = meta_path.parent.relative_to(root).as_posix()
+            indexed: bool | None = None
+            if boundary == "public":
+                indexed = f"{rel_dir}/meta.md" in index_text or f"{rel_dir}/SKILL.md" in index_text
+            entries.append(
+                SkillListEntry(
+                    skill_id=str(skill_id) if skill_id else None,
+                    boundary=boundary,
+                    path=rel_dir,
+                    maturity=maturity,
+                    indexed=indexed,
+                )
+            )
+    return entries
+
+
+def _git_tracked_private_files(root: Path) -> list[str] | None:
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(root), "ls-files", "--", *PRIVATE_SCOPE_DIRS],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError:
+        return None
+    if proc.returncode != 0:
+        return None
+    return [line for line in proc.stdout.splitlines() if line.strip()]
+
+
+def _private_refs_from_public(root: Path) -> list[str]:
+    hits: list[str] = []
+    for scope in PUBLIC_TEXT_DIRS:
+        base = root / scope
+        if not base.exists():
+            continue
+        for path in sorted(base.rglob("*")):
+            if path.suffix.lower() not in {".md", ".yaml", ".yml"}:
+                continue
+            try:
+                text = path.read_text(encoding="utf-8")
+            except (UnicodeDecodeError, OSError):
+                continue
+            lines = text.splitlines()
+            for match in PRIVATE_CONCRETE_REF.finditer(text):
+                line_no = text.count("\n", 0, match.start()) + 1
+                # Inline suppression with justification, same idiom as the
+                # repo's CA1031 pragmas: a line carrying `private-ref-ok`
+                # is a reviewed, deliberate boundary-convention pointer.
+                if "private-ref-ok" in lines[line_no - 1]:
+                    continue
+                rel = path.relative_to(root).as_posix()
+                hits.append(f"{rel}:{line_no}: {match.group(0)}")
+    return hits
+
+
+def cmd_skill_list(args) -> int:
+    root = Path(args.root).resolve()
+    entries = _collect_boundary_entries(root)
+
+    violations: list[str] = []
+    warnings: list[str] = []
+
+    tracked_private = _git_tracked_private_files(root)
+    if tracked_private is None:
+        warnings.append("git unavailable: tracked-private check skipped")
+    else:
+        for tracked in tracked_private:
+            violations.append(f"private file is git-tracked (will be published on push): {tracked}")
+
+    for hit in _private_refs_from_public(root):
+        violations.append(f"public asset references a concrete private path: {hit}")
+
+    public_ids = {e.skill_id for e in entries if e.boundary == "public" and e.skill_id}
+    for entry in entries:
+        if entry.boundary == "public" and entry.indexed is False:
+            warnings.append(
+                f"public skill not registered in skills/_index.md (misplaced private skill?): {entry.path}"
+            )
+        if entry.boundary == "private" and entry.skill_id in public_ids:
+            warnings.append(
+                f"skill_id exists on both sides of the boundary (mid-migration?): {entry.skill_id}"
+            )
+
+    payload = {
+        "skills": [entry.to_dict() for entry in entries],
+        "public_count": sum(1 for e in entries if e.boundary == "public"),
+        "private_count": sum(1 for e in entries if e.boundary == "private"),
+        "violations": violations,
+        "warnings": warnings,
+    }
+
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        for boundary in ("public", "private"):
+            group = [e for e in entries if e.boundary == boundary]
+            print(f"{boundary} ({len(group)}):")
+            for entry in group:
+                indexed = ""
+                if entry.indexed is not None:
+                    indexed = " indexed" if entry.indexed else " NOT-INDEXED"
+                print(f"  {entry.skill_id or '?':40} {entry.maturity or '?':10}{indexed}  {entry.path}")
+        for warning in warnings:
+            print(f"warning: {warning}")
+        for violation in violations:
+            print(f"VIOLATION: {violation}")
+        print(f"violations: {len(violations)}")
+
+    return 1 if violations else 0
 
 
 def _iter_meta_files(root: Path, scope: str) -> Iterable[Path]:

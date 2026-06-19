@@ -167,12 +167,21 @@ python -m fm xref init --include skills docs knowledge agent capabilities
 python -m fm xref fix --include skills docs knowledge agent capabilities
 ```
 
-10. Validate the created Skill at the intended maturity level:
+10. Validate the created Skill at the intended maturity level, and confirm
+    the publication boundary is clean (zero violations required before any
+    commit or publication):
 
 ```powershell
 python -m fm skill check --meta <path-to-skill>/meta.md --level draft
 python -m fm skill check --meta <path-to-skill>/meta.md --level trial
+python -m fm skill list
 ```
+
+    `fm skill list` shows every skill with its public/private boundary and
+    fails when a private file is git-tracked or a public asset references a
+    concrete private path. A reviewed boundary-convention pointer may carry
+    an inline `private-ref-ok: <reason>` suppression, same idiom as the
+    CA1031 pragmas.
 
 11. If a Flow YAML file was added or changed, run a deterministic YAML parse
     check before closure.
