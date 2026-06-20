@@ -174,7 +174,7 @@ one-compilation-per-csproj model), and `DbContext`/migration subclass surfacing
 ## Where-step decision: pack is not a standard backstop (A/B outcome)
 
 A controlled A/B at two codebase scales
-([2026-06-21 deterministic pack vs LLM](../../work/reports/2026-06-21_deterministic_pack_vs_llm_ab_test.md))
+([ADR 0001](../../docs/adr/0001-where-step-grep-first.md))
 showed the pack gives **no token or accuracy gain** over an LLM using `grep`/`rg` for
 **text-greppable impact discovery** (type names, method names, construction sites,
 references). Cause: `grep` returns a type's full reference surface in one pass at any

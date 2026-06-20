@@ -181,7 +181,7 @@ lists and filters it on demand.
 ## Connection to dotnet_change_analysis
 
 > **Superseded by measurement (2026-06-21).** A controlled A/B
-> ([report](../../work/reports/2026-06-21_deterministic_pack_vs_llm_ab_test.md),
+> ([ADR 0001](../../docs/adr/0001-where-step-grep-first.md),
 > summary in [121](121_structure_analysis_determinism_tiers.md#xid-5301B897BA41))
 > found that backing the Where impacted-boundary list with graph traversal gives no
 > token or accuracy gain over an LLM using `grep` for **text-greppable** impact, at

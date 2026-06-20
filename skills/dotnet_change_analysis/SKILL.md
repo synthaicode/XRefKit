@@ -147,7 +147,7 @@ Use the canonical viewpoints in `knowledge/source_analysis/120_dotnet_change_ana
 ## Where Impacted-Boundary Analysis (grep-first)
 
 The standard Where path is **grep-first, not pack-first**. An A/B test
-([2026-06-21 deterministic pack vs LLM](../../work/reports/2026-06-21_deterministic_pack_vs_llm_ab_test.md))
+([ADR 0001](../../docs/adr/0001-where-step-grep-first.md))
 showed that for text-greppable impact — type names, method names, construction
 sites, references — the deterministic structure pack gives **no token or accuracy
 gain** over grep at any codebase scale, because `grep`/`rg` returns the full
