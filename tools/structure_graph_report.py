@@ -56,6 +56,21 @@ def main() -> int:
         if e["type"] == "uses-name":
             name_users[e["to"]].add(e["from"])
 
+    # Dependency direction: type-reference (`uses`) and project-reference edges.
+    uses_in: dict[str, set[str]] = defaultdict(set)   # type -> types that use it
+    uses_out: dict[str, set[str]] = defaultdict(set)  # type -> types it uses
+    project_deps: list[tuple[str, str]] = []
+    # State ownership: which members write each field (reverse of `writes`).
+    field_writers: dict[str, set[str]] = defaultdict(set)
+    for e in edges:
+        if e["type"] == "uses":
+            uses_out[e["from"]].add(e["to"])
+            uses_in[e["to"]].add(e["from"])
+        elif e["type"] == "uses-project":
+            project_deps.append((e["from"], e["to"]))
+        elif e["type"] == "writes":
+            field_writers[e["to"]].add(e["from"])
+
     def label(nid: str) -> str:
         n = nodes.get(nid)
         if not n:
@@ -107,6 +122,32 @@ def main() -> int:
         print(f"## Most external calls (boundary to framework / NuGet)  top {n}")
         for nid, c in sorted(ext.items(), key=lambda kv: -kv[1])[:n]:
             print(f"  external-calls={c:3d}  {label(nid)}")
+        print()
+
+    if project_deps:
+        print("## Project dependencies (assembly-boundary direction)")
+        for frm, to in sorted(project_deps):
+            fn = nodes.get(frm, {}).get("name", frm)
+            tn = nodes.get(to, {}).get("name", to)
+            print(f"  {fn} -> {tn}")
+        print()
+
+    if uses_out or uses_in:
+        dep_nodes = set(uses_in) | set(uses_out)
+        print(f"## Type dependency `uses` — high fan-in (most depended-upon types)  top {n}")
+        for nid in sorted(dep_nodes, key=lambda x: (-len(uses_in[x]), x))[:n]:
+            print(f"  uses-in={len(uses_in[nid]):3d} uses-out={len(uses_out[nid]):3d}  {label(nid)}")
+        print()
+        print(f"## Type dependency `uses` — high fan-out (most dependent types)  top {n}")
+        for nid in sorted(dep_nodes, key=lambda x: (-len(uses_out[x]), x))[:n]:
+            print(f"  uses-out={len(uses_out[nid]):3d} uses-in={len(uses_in[nid]):3d}  {label(nid)}")
+        print()
+
+    if field_writers:
+        print(f"## State ownership — fields with the most distinct writers  top {n}")
+        print("   (many writers across types = diffuse mutable-state ownership)")
+        for nid, writers in sorted(field_writers.items(), key=lambda kv: (-len(kv[1]), kv[0]))[:n]:
+            print(f"  writers={len(writers):3d}  {label(nid)}")
     return 0
 
 

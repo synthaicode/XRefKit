@@ -126,6 +126,14 @@ Define the seam explicitly:
 - Dynamic edges discovered during spec-out are **fed back as additional seeds**
   and re-traversed, so the TM converges instead of leaving a silent gap.
 
+Note that many dynamic channels leave a **static footprint in custom attributes**
+(`[ApiController]`, `[Route]`, `[FromKeyedServices]`, `[Table]`/`[Column]`,
+serialization and mapping markers). That footprint is deterministically
+extractable and is captured by the attribute inventory (principle 8), so it is
+**not** left to spec-out even though the channel's runtime effect is. Spec-out
+keeps only the genuinely non-static residue (reflection over runtime strings,
+convention-by-name, configuration-driven switching with no attribute).
+
 ### 7. Reuse the existing Roslyn front-end; do not build a second harness
 
 Reuse the verified analyzer-build invocation in `tools/collect_analyzer_sarif.py`
@@ -137,9 +145,52 @@ existing error-policy tooling. See
 [C# error-policy detection determinism tiers](131_csharp_error_policy_locator_tiers.md#xid-D1F4A7C3E209)
 and [Roslyn analyzer quality-check applicability](150_roslyn_analyzer_quality_check_applicability.md#xid-A1B243BF7D5D).
 
+### 8. Custom attributes are a deterministic static footprint — extract them
+
+Custom-attribute applications are statically and exactly available from Roslyn
+(`ISymbol.GetAttributes()`, with constructor and named argument values constant
+folded by the compiler — `nameof(...)`, `const` references, and enums resolve to
+their values). They are therefore **decomposition-free relation facts** in the
+sense of principle 1 and must not be relegated to the LLM "principle" / spec-out
+channel just because the channel they configure (DI, routing, serialization,
+mapping) behaves dynamically at runtime.
+
+Because attributes are not relation edges between two source nodes but a labelled
+fact *about* one node (often with values), they are emitted as a **separate
+deterministic inventory** rather than as graph edges — a sibling output to the
+relation graph, consumed on demand:
+
+- `target` — DocID of the annotated type / method / property / field (parameter
+  and return-value attributes carry no DocID and are keyed by the containing
+  method, with the parameter named in the display).
+- `attribute` — DocID of the attribute type; `attributeName` — its short name.
+- `ctorArgs` / `namedArgs` — constant-folded argument values.
+- `file` / `line` — application site.
+
+The inventory's value to the Where step is as a **static seed source**: "every
+type carrying `[Topic]`", "every parameter with `[FromKeyedServices("x")]`",
+"every `[Obsolete]` member in the cut" are deterministic queries a human performs
+poorly and the inventory answers exactly. Framework-injected assembly attributes
+(generated `obj/` `AssemblyInfo`) are kept in the inventory for completeness but
+filtered by default at the reporting layer.
+
+Tooling: `tools/structure_graph --attributes <attrs.json>` (same Roslyn
+front-end, per principle 7) emits the inventory; `tools/attribute_inventory_report.py`
+lists and filters it on demand.
+
 ## Connection to dotnet_change_analysis
 
-The minimal entry point is to back the **Where** output of
+> **Superseded by measurement (2026-06-21).** A controlled A/B
+> ([report](../../work/reports/2026-06-21_deterministic_pack_vs_llm_ab_test.md),
+> summary in [121](121_structure_analysis_determinism_tiers.md#xid-5301B897BA41))
+> found that backing the Where impacted-boundary list with graph traversal gives no
+> token or accuracy gain over an LLM using `grep` for **text-greppable** impact, at
+> small and large scale. The Where step is therefore **grep-first by default**; the
+> graph traversal is kept only for transitive impact with no textual footprint and
+> for the grep-weak semantic inventories (attribute values, DI lifetimes, etc.). The
+> paragraph below describes the original (now non-default) entry point.
+
+The originally proposed entry point was to back the **Where** output of
 [dotnet_change_analysis](../../skills/dotnet_change_analysis/SKILL.md#xid-D94E3B3A7C11)
 — its impacted boundary list — with graph traversal candidate generation instead
 of LLM-inferred structure. The LLM is not the primary candidate generator; it
@@ -247,6 +298,7 @@ knowledge, the `dotnet_change_analysis` impacted boundary list, and the
 `requirements_flow → design_flow` chain, the net-new scope is limited to:
 
 - Roslyn structure-graph generation (reusing the existing front-end, DocID-keyed)
+- a deterministic custom-attribute inventory as a static seed source (principle 8)
 - explicit USDM-to-seed derivation
 - seed traversal with over-reach damping
 - the four TM checks

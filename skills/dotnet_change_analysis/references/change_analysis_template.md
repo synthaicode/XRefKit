@@ -18,6 +18,16 @@
 | project |  |  |  |
 | feature/module |  |  |  |
 
+## Semantic-Inventory Mode (only if used)
+
+Leave empty unless a grep-weak question required the deterministic pack (DI
+lifetimes, attribute values, async-CT, IDisposable ownership, reflection binding,
+transitive impact). Inventory output is a candidate fact, not a verdict.
+
+| Grep-weak Question | Inventory Tool / File | Generated | Notes |
+|------|------|------|------|
+|  |  |  |  |
+
 ## Structure And Responsibility Split
 
 | Check Item | State | Evidence | Change Impact | Unknown / Follow-up |
@@ -160,9 +170,21 @@ analyzer diagnostic. Compiler-caught mistakes do not belong here.
 
 ## Impacted Targets
 
-| Target | Impact Type | Evidence | Notes |
-|------|------|------|------|
-|  |  |  |  |
+Found grep-first (full reference surface), then classified by impact pattern.
+Separate the two boundaries: every referencing file is in the review boundary; only
+the sites the change actually breaks are must-change.
+
+### Must-change boundary (sites the change breaks)
+
+| Target | Why it breaks | Evidence |
+|------|------|------|
+|  |  |  |
+
+### Review boundary (references to thread the change, may not break)
+
+| Target | Why review | Evidence |
+|------|------|------|
+|  |  |  |
 
 ## Unresolved Items
 
