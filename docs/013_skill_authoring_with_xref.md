@@ -50,6 +50,28 @@ For `draft`, it may be omitted.
 
 Review-oriented skills should not use `local_default`.
 
+## Subagent Prompt Efficiency Rule
+
+When a skill dispatches work to a subagent, the prompt drives the token cost. These
+rules come from measured A/B runs
+([ADR 0001](adr/0001-where-step-grep-first.md#xid-F4B92B6AC13E)) — record the cost as
+`token_cost` per [Metrics definition](../knowledge/organization/120_metrics_definition.md#xid-7A2F4C8D1201).
+
+- **Specify a compact output contract.** Ask for paths / tables / IDs, not per-item
+  prose. "List impacted files, one repo-relative path per line" instead of "explain
+  each impacted file" — the second multiplies output and downstream tokens.
+- **Do not force expensive justification.** Requiring a written reason for every
+  excluded or negative case makes the subagent read material it would otherwise skip.
+  In a measured run, an "explain every exclusion" instruction drove a ~49% token
+  increase for the same answer. Prefer trust-based curation; justify only the
+  genuinely uncertain cases.
+- **Budget reads: locate, then read a sample.** Instruct the subagent to `grep`/`rg`
+  to locate, then read a small representative subset — not every hit. For
+  text-greppable questions this matches or beats a pre-built structure pack (ADR 0001).
+- **Pass only the context the task needs.** Hand a scoped candidate set or the
+  specific file list, not a whole inventory dump; a low-precision dump forces the
+  subagent to spend tokens ruling out noise.
+
 ## Authoring Flow
 
 1. Define the skill task boundary and create a `draft` hypothesis.
