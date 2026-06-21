@@ -6,8 +6,8 @@
 This page defines two related schemas:
 
 1. the **documentation shape** used by workflow pages in `docs/` (human view);
-2. the **flow definition schema** for the machine-readable flow files in
-   `flows/*.yaml` (execution view).
+2. the **flow definition schema** for the machine-readable flow files under
+   `flows/` (execution view).
 
 The documentation page is the readable view; the flow definition is authoritative
 for execution and is what `flow doctor` validates. They must not contradict each

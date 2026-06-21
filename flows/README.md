@@ -1,3 +1,6 @@
+<!-- xid: 93153ED6E4CC -->
+<a id="xid-93153ED6E4CC"></a>
+
 # Flow Models
 
 This directory stores machine-readable workflow control structures in YAML.
@@ -37,6 +40,8 @@ This directory stores machine-readable workflow control structures in YAML.
 
 ## Notes
 
+- `python -m fm flow doctor` scans YAML files recursively under `flows/`,
+  including pack-owned flow files under `flows/packs/`.
 - YAML files here are not XID-managed.
 - Human-readable workflow interpretation remains in `docs/`.
 - When updating a workflow, update both the YAML model and the matching `docs/` page.

@@ -80,6 +80,15 @@ CLOSURE_OUTCOMES = {"complete", "needs_fix", "escalate", "uncertain", "blocked"}
 CANONICAL_VERDICTS = {"Go", "Kill", "Hold", "Recycle"}
 
 
+def _project_root_for_flow(path: Path) -> Path:
+    """Resolve the project root for top-level and pack-owned flow files."""
+    resolved = path.resolve()
+    for parent in resolved.parents:
+        if parent.name == FLOWS_DIR:
+            return parent.parent
+    return resolved.parent.parent
+
+
 @dataclass
 class FlowDoctorResult:
     flow_path: str
@@ -195,7 +204,7 @@ def validate_flow(path: Path) -> FlowDoctorResult:
         return FlowDoctorResult(str(path), flow_id_s, "unknown", False, errors, warnings)
 
     step_names = set(steps)
-    cap_ids = _capability_ids(path.resolve().parent.parent)
+    cap_ids = _capability_ids(_project_root_for_flow(path))
 
     # C4 — entry exists.
     entry = data.get("entry")
@@ -378,7 +387,7 @@ def _discover_flows(root: Path) -> list[Path]:
     base = root / FLOWS_DIR
     if not base.exists():
         return []
-    return sorted(base.glob("*.yaml")) + sorted(base.glob("*.yml"))
+    return sorted(base.rglob("*.yaml")) + sorted(base.rglob("*.yml"))
 
 
 def cmd_flow_doctor(args) -> int:
