@@ -89,14 +89,16 @@
   "manufacturing_workflow": {
     "decisions": [
       "implementation_boundary_review",
-      "assumption_gap_recording"
+      "assumption_gap_recording",
+      "quality_feedback_classification"
     ],
     "checklists": [
       "manufacturing_self_check"
     ],
     "paths": [
       "handoff_to_quality_review",
-      "out_of_scope_to_coordinator"
+      "out_of_scope_to_coordinator",
+      "quality_feedback_tradeoff_or_scope_conflict_to_coordinator"
     ]
   },
   "release_planning_workflow": {

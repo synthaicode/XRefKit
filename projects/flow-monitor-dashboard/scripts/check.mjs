@@ -43,6 +43,15 @@ const flowWithRuns = data.flow_summaries.find((flow) => (flow.recent_runs || [])
 assert.ok(flowWithRuns, "at least one flow summary must include recent monitored runs");
 assert.ok(Array.isArray(flowWithRuns.step_coverage), "flow summary with runs must include step coverage");
 
+// Steps must parse from the current flow schema (deterministic `steps:` mapping
+// or legacy `sequence:`); empty steps mean the dashboard lost step visibility.
+const flowWithSteps = data.flow_summaries.find((flow) => (flow.sequence || []).length > 0);
+assert.ok(flowWithSteps, "at least one flow must expose parsed steps from the flow schema");
+assert.ok(
+  flowWithSteps.step_coverage.length === flowWithSteps.sequence.length,
+  "step coverage must cover every parsed step"
+);
+
 const flowWithSkillRuntime = data.flow_summaries.find((flow) => (flow.skill_runtime_summaries || []).length > 0);
 assert.ok(flowWithSkillRuntime, "at least one flow summary must include skill runtime summaries");
 
