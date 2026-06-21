@@ -1,0 +1,170 @@
+# Pilot migration of FLOW-CLOSURE to the deterministic-control schema (docs/018,
+# docs/073). Coexists with the legacy closure_workflow.yaml.
+# Closure is a control flow: it audits the management table and routes findings —
+# incomplete rows back to the responsible group, out-of-scope to the coordinator,
+# final unknowns to a human, and repeated/upstream leaks to the feedback loop.
+# Branch labels that classify content (complete/incomplete, final/not_final,
+# feedback_needed/no_feedback) are not acceptance verdicts; they are produced by
+# the evaluation capability.
+
+flow_id: FLOW-CLOSURE
+name: closure_workflow
+doc_xid: 8B31F02A4003
+phase: control
+owner:
+  primary: quality_group
+  support:
+    - coordinator
+runs_after:
+  - any_workflow
+
+inputs:
+  - management_table
+  - metrics_log
+  - unresolved_list
+  - out_of_scope_list
+outputs:
+  - leak_detection_result
+  - return_instructions
+  - closure_confirmation_result
+  - escalation_record
+  - unknown_escalation_record
+  - structural_quality_feedback_record
+handoff:
+  output_to:
+    - responsible_execution_group
+    - coordinator_routing
+    - human_confirmation_or_approval
+    - FLOW-SYSTEM-QUALITY-FEEDBACK
+  artifacts:
+    - return_instructions
+    - closure_confirmation_result
+    - escalation_record
+    - structural_quality_feedback_record
+
+invariants:
+  - missing_is_not_final
+  - low_confidence_is_not_normal_completion
+  - repeated_leaks_must_not_be_handled_only_locally
+
+global_handback:
+  uncertainty:
+    to: coordinator
+    ask: "resolve blocking unknown before continuing closure"
+    resume: inspect_management_table
+
+entry: inspect_management_table
+
+steps:
+  # ③ tool — inspect the management table.
+  inspect_management_table:
+    facets: [closer_persona, inspection_policy]
+    permission: { edit: false }
+    result_map: { complete: Go }
+    on:
+      Go: management_table_check
+      _invalid_or_absent: ABORT
+
+  # ② evaluation — check completeness/leaks (content classification).
+  management_table_check:
+    facets: [closer_persona, table_check_policy]
+    permission: { edit: false }
+    capability: CAP-CLO-TABLE-CHECK
+    on:
+      complete: confirm_final_statuses
+      incomplete: return_incomplete_rows
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "table check produced no valid result"
+          resume: { resolved: management_table_check, rejected: ABORT }
+
+  # ① route — return incomplete rows to the responsible execution group.
+  return_incomplete_rows:
+    facets: [closer_persona, return_policy]
+    permission: { edit: true, paths: ["work/closure/**"] }
+    on:
+      Hold:
+        handback:
+          to: responsible_execution_group
+          reason: incomplete_rows
+          ask: "complete the returned incomplete rows"
+          resume: { completed: confirm_final_statuses, rejected: ABORT }
+      _invalid_or_absent: ABORT
+
+  # ② evaluation — confirm final statuses (missing is not final; low confidence is
+  # not normal completion).
+  confirm_final_statuses:
+    facets: [closer_persona, final_status_policy]
+    permission: { edit: false }
+    capability: CAP-CLO-FINAL-STATUS
+    on:
+      final: out_of_scope_escalation
+      not_final: return_incomplete_rows
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "final status confirmation produced no valid result"
+          resume: { resolved: confirm_final_statuses, rejected: ABORT }
+
+  # ② evaluation — out-of-scope escalation.
+  out_of_scope_escalation:
+    facets: [closer_persona, out_of_scope_policy]
+    permission: { edit: false }
+    capability: CAP-CLO-OUT-OF-SCOPE
+    on:
+      Go: route_final_unknown_to_human
+      Hold:
+        handback:
+          to: coordinator
+          reason: out_of_scope
+          ask: "out-of-scope items need coordinator routing"
+          resume: { resolved: route_final_unknown_to_human, rejected: ABORT }
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "out-of-scope evaluation produced no valid verdict"
+          resume: { resolved: out_of_scope_escalation, rejected: ABORT }
+
+  # ② evaluation — route final unknowns to a human.
+  route_final_unknown_to_human:
+    facets: [closer_persona, final_unknown_policy]
+    permission: { edit: false }
+    capability: CAP-CLO-FINAL-UNKNOWN
+    on:
+      Go: emit_structural_feedback_when_needed
+      Hold:
+        handback:
+          to: human_confirmation_or_approval
+          reason: unresolved_final_unknown
+          ask: "an unresolved final unknown needs a human decision"
+          resume: { resolved: emit_structural_feedback_when_needed, rejected: ABORT }
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "final-unknown routing produced no valid verdict"
+          resume: { resolved: route_final_unknown_to_human, rejected: ABORT }
+
+  # ② decision — emit structural feedback only when warranted (repeated/upstream
+  # leaks must not be handled only locally).
+  emit_structural_feedback_when_needed:
+    facets: [closer_persona, feedback_decision_policy]
+    permission: { edit: false }
+    capability: CAP-CLO-FEEDBACK-DECISION
+    on:
+      feedback_needed: emit_structural_feedback
+      no_feedback: COMPLETE
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "feedback decision produced no valid result"
+          resume: { resolved: emit_structural_feedback_when_needed, rejected: ABORT }
+
+  # ③ tool — emit the structural feedback record to the feedback loop.
+  emit_structural_feedback:
+    facets: [closer_persona, feedback_emit_policy]
+    permission: { edit: true, paths: ["work/feedback/**"] }
+    result_map: { complete: Go }
+    on:
+      Go: COMPLETE
+      _invalid_or_absent: ABORT

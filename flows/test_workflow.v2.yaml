@@ -1,0 +1,167 @@
+# Pilot migration of FLOW-TEST to the deterministic-control schema (docs/018,
+# docs/073). Coexists with the legacy test_workflow.yaml.
+# Manufacturing reviews method suitability only; unsupported methods Hold back to
+# design. The reviewed test package is handed off deterministically.
+
+flow_id: FLOW-TEST
+name: test_workflow
+doc_xid: 8B31F02A4016
+phase: normal
+owner:
+  primary: design_group
+  review_support:
+    - manufacturing_group
+runs_after:
+  - FLOW-PLANNING
+  - FLOW-DESIGN
+runs_before:
+  - FLOW-MANUFACTURING
+  - quality_verification
+
+inputs:
+  - approved_requirements
+  - work_plan
+  - test_policy
+  - planning_basis_source_list
+  - approved_design
+  - source_modification_design
+  - target_paths
+outputs:
+  - test_plan
+  - test_plan_basis_policy_reference
+  - test_design
+  - test_design_basis_policy_reference
+  - test_item_requirement_traceability_reference
+  - integration_regression_test_design
+  - integration_regression_test_basis_policy_reference
+  - manufacturing_test_review_result
+  - unresolved_list
+handoff:
+  output_to:
+    - FLOW-MANUFACTURING
+    - quality_verification
+  artifacts:
+    - test_plan
+    - test_design
+    - test_item_requirement_traceability_reference
+    - integration_regression_test_design
+    - manufacturing_test_review_result
+
+invariants:
+  - each_test_item_must_identify_requirement_traceability
+  - manufacturing_review_confirms_method_suitability_only
+  - unresolved_test_assumptions_must_remain_explicit
+
+global_handback:
+  uncertainty:
+    to: coordinator
+    ask: "resolve blocking unknown before continuing test design"
+    resume: test_plan_drafting
+
+entry: confirm_test_inputs
+
+steps:
+  # ③ tool gate — confirm test inputs (input check).
+  confirm_test_inputs:
+    facets: [test_designer_persona, input_check_policy]
+    permission: { edit: false }
+    result_map: { complete: Go, blocked: Hold }
+    on:
+      Go: test_plan_drafting
+      Hold:
+        handback:
+          to: coordinator
+          reason: test_inputs_missing
+          ask: "test inputs are missing; cannot start test design"
+          resume:
+            resolved: confirm_test_inputs
+            rejected: ABORT
+      _invalid_or_absent: ABORT
+
+  # ② generation — test plan; review gate accepts.
+  test_plan_drafting:
+    facets: [test_designer_persona, test_plan_policy]
+    permission: { edit: false }
+    capability: CAP-TST-PLAN
+    acceptance:
+      - { review: independent_quality_review }
+    on:
+      Go: test_item_drafting
+      Recycle: test_plan_drafting
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "test plan drafting could not complete"
+          resume:
+            resolved: test_plan_drafting
+            rejected: ABORT
+
+  # ② generation — test items (must cite requirement traceability); review accepts.
+  test_item_drafting:
+    facets: [test_designer_persona, test_item_policy]
+    permission: { edit: false }
+    capability: CAP-TST-ITEMS
+    acceptance:
+      - { review: independent_quality_review }
+    on:
+      Go: integration_regression_test_design_drafting
+      Recycle: test_item_drafting
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "test item drafting could not complete"
+          resume:
+            resolved: test_item_drafting
+            rejected: ABORT
+
+  # ② generation — integration/regression test design; review accepts.
+  integration_regression_test_design_drafting:
+    facets: [test_designer_persona, integration_test_policy]
+    permission: { edit: false }
+    capability: CAP-TST-INTEGRATION
+    acceptance:
+      - { review: independent_quality_review }
+    on:
+      Go: manufacturing_test_method_review
+      Recycle: integration_regression_test_design_drafting
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "integration/regression test design could not complete"
+          resume:
+            resolved: integration_regression_test_design_drafting
+            rejected: ABORT
+
+  # ② evaluation — manufacturing reviews method suitability (the suitability axis
+  # is the gate). Unsupported methods Hold back to design.
+  manufacturing_test_method_review:
+    facets: [manufacturing_reviewer_persona, method_suitability_policy]
+    permission: { edit: false }
+    capability: CAP-TST-METHOD-REVIEW
+    on:
+      Go: handoff_reviewed_test_package
+      Hold:
+        handback:
+          to: design_group
+          reason: unsupported_test_methods
+          ask: "test methods are unsupported; design must revise"
+          resume:
+            design_revised: test_plan_drafting
+            rejected: ABORT
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "method review produced no valid verdict"
+          resume:
+            resolved: manufacturing_test_method_review
+            rejected: ABORT
+
+  # ③ tool gate — assemble and hand off the reviewed test package.
+  handoff_reviewed_test_package:
+    facets: [test_designer_persona, handoff_policy]
+    permission: { edit: true, paths: ["work/test/**"] }
+    result_map: { complete: Go, needs_fix: Recycle }
+    on:
+      Go: COMPLETE
+      Recycle: test_item_drafting
+      _invalid_or_absent: ABORT
