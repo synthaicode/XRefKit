@@ -1,3 +1,9 @@
+# FLOW-ESTIMATION to the deterministic-control schema
+# (docs/018, docs/073).
+# Estimation does not approve supplier adoption or budget (invariants), so it
+# ends deterministically (no human approval gate); supplier/budget and unresolved
+# assumptions Hold to the coordinator.
+
 flow_id: FLOW-ESTIMATION
 name: estimation_workflow
 doc_xid: 8B31F02A4004
@@ -8,6 +14,7 @@ runs_after:
   - FLOW-INVESTIGATION
 runs_before:
   - FLOW-REQUIREMENTS
+
 inputs:
   - investigation_outputs
   - supplier_definitions
@@ -26,15 +33,104 @@ handoff:
     - cost_patterns
     - solution_options
     - unresolved_assumptions
+
   escalation:
     - supplier_or_budget_items_to_coordinator
     - unresolved_assumptions_for_confirmation
-sequence:
-  - supplier_four_condition_check
-  - cost_estimation
-  - solution_option_generation
-  - assumption_ambiguity_classification
-control_rules:
+invariants:
   - does_not_approve_supplier_adoption
   - does_not_approve_final_budget
   - unresolved_assumptions_must_remain_explicit
+
+global_handback:
+  uncertainty:
+    to: coordinator
+    ask: "resolve blocking unknown before continuing estimation"
+    resume: supplier_four_condition_check
+
+entry: supplier_four_condition_check
+
+steps:
+  # ② evaluation — supplier four-condition check; the conditions are the axis.
+  supplier_four_condition_check:
+    facets: [estimator_persona, supplier_condition_policy]
+    permission: { edit: false }
+    capability: CAP-EST-SUPPLIER-CHECK
+    on:
+      Go: cost_estimation
+      Hold:
+        handback:
+          to: coordinator
+          reason: supplier_or_budget_item
+          ask: "supplier/budget item needs coordinator decision"
+          resume:
+            resolved: cost_estimation
+            rejected: ABORT
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "supplier check produced no valid verdict"
+          resume:
+            resolved: supplier_four_condition_check
+            rejected: ABORT
+
+  # ② generation — cost patterns; review gate accepts.
+  cost_estimation:
+    facets: [estimator_persona, cost_policy]
+    permission: { edit: false }
+    capability: CAP-EST-COST
+    acceptance:
+      - { review: independent_quality_review }
+    on:
+      Go: solution_option_generation
+      Recycle: cost_estimation
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "cost estimation could not complete"
+          resume:
+            resolved: cost_estimation
+            rejected: ABORT
+
+  # ② generation — solution options; review gate accepts.
+  solution_option_generation:
+    facets: [estimator_persona, solution_option_policy]
+    permission: { edit: false }
+    capability: CAP-EST-OPTIONS
+    acceptance:
+      - { review: independent_quality_review }
+    on:
+      Go: assumption_ambiguity_classification
+      Recycle: solution_option_generation
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "solution option generation could not complete"
+          resume:
+            resolved: solution_option_generation
+            rejected: ABORT
+
+  # ② evaluation — classify assumptions/ambiguity; the classification axis is the
+  # gate. Unresolved assumptions Hold for confirmation; otherwise estimation is
+  # done (no approval).
+  assumption_ambiguity_classification:
+    facets: [estimator_persona, ambiguity_policy]
+    permission: { edit: true, paths: ["work/estimation/**"] }
+    capability: CAP-EST-AMBIGUITY
+    on:
+      Go: COMPLETE
+      Hold:
+        handback:
+          to: coordinator
+          reason: unresolved_assumptions
+          ask: "unresolved assumptions need confirmation"
+          resume:
+            resolved: assumption_ambiguity_classification
+            rejected: ABORT
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "assumption classification produced no valid verdict"
+          resume:
+            resolved: assumption_ambiguity_classification
+            rejected: ABORT

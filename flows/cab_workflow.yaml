@@ -1,3 +1,16 @@
+# FLOW-CAB to the deterministic-control schema (docs/018,
+# docs/073).
+#
+# CAB does evaluation, NOT the release decision (invariant evaluation_not_decision).
+# Every 作業 ends in an acceptance gate; the transition is its canonical verdict
+# (Go / Kill / Hold / Recycle). Gate kinds:
+#   - the three evaluations + consolidation → evaluation steps: the evaluation
+#     axis IS the gate; the capability emits the verdict. The pass/fail result is
+#     recorded as an output and carried to the human, who decides (so each
+#     evaluation proceeds with Go and only Holds when it cannot evaluate).
+#   - emit_structural_feedback → a tool gate (result_map).
+#   - human_release_gate → the human gate; the release decision is the human's.
+
 flow_id: FLOW-CAB
 name: cab_workflow
 doc_xid: 8B31F02A4008
@@ -11,6 +24,7 @@ runs_after:
   - FLOW-RELEASE-PLANNING
 runs_before:
   - human_release_decision
+
 inputs:
   - release_planning_materials
   - manufacturing_outputs
@@ -31,15 +45,141 @@ handoff:
     - operational_readiness_result
     - value_gate_result
     - unresolved_list
+
   escalation:
     - unresolved_risks_to_human_decision
     - upstream_structural_causes_to_feedback_loop
-sequence:
-  - release_plan_suitability_review
-  - operational_readiness_evaluation
-  - value_constraint_fit_evaluation
-  - handoff_to_human_decision_layer
-  - emit_structural_feedback_when_needed
-control_rules:
+invariants:
   - evaluation_not_decision
   - preserves_separation_between_evaluation_and_approval
+
+global_handback:
+  uncertainty:
+    to: coordinator
+    ask: "resolve blocking unknown before continuing CAB evaluation"
+    resume: release_plan_suitability_review
+
+entry: release_plan_suitability_review
+
+steps:
+  # ② evaluation — release-plan suitability. Axis IS the gate; the result is an
+  # output carried to the human. Proceeds (Go) regardless of pass/fail; Holds
+  # only when it cannot evaluate.
+  release_plan_suitability_review:
+    facets: [cab_reviewer_persona, release_suitability_policy]
+    permission: { edit: false }
+    capability: CAP-CAB-PLAN-SUITABILITY
+    on:
+      Go: operational_readiness_evaluation
+      Hold:
+        handback:
+          to: coordinator
+          reason: suitability_evaluation_blocked
+          ask: "suitability evaluation could not be completed"
+          resume:
+            resolved: release_plan_suitability_review
+            rejected: ABORT
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "suitability evaluation produced no valid verdict"
+          resume:
+            resolved: release_plan_suitability_review
+            rejected: ABORT
+
+  # ② evaluation — operational readiness.
+  operational_readiness_evaluation:
+    facets: [cab_reviewer_persona, operational_readiness_policy]
+    permission: { edit: false }
+    capability: CAP-CAB-OPS-READINESS
+    on:
+      Go: value_constraint_fit_evaluation
+      Hold:
+        handback:
+          to: coordinator
+          reason: readiness_evaluation_blocked
+          ask: "operational readiness evaluation could not be completed"
+          resume:
+            resolved: operational_readiness_evaluation
+            rejected: ABORT
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "readiness evaluation produced no valid verdict"
+          resume:
+            resolved: operational_readiness_evaluation
+            rejected: ABORT
+
+  # ② evaluation — value / constraint fit.
+  value_constraint_fit_evaluation:
+    facets: [cab_reviewer_persona, value_constraint_policy]
+    permission: { edit: false }
+    capability: CAP-CAB-VALUE-FIT
+    on:
+      Go: consolidate_evaluation
+      Hold:
+        handback:
+          to: coordinator
+          reason: value_evaluation_blocked
+          ask: "value/constraint evaluation could not be completed"
+          resume:
+            resolved: value_constraint_fit_evaluation
+            rejected: ABORT
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "value evaluation produced no valid verdict"
+          resume:
+            resolved: value_constraint_fit_evaluation
+            rejected: ABORT
+
+  # ② evaluation/decision — consolidate the three results and decide whether
+  # upstream structural feedback is warranted. feedback_needed/no_feedback is a
+  # content decision (not an acceptance verdict), produced by the capability.
+  consolidate_evaluation:
+    facets: [cab_consolidation_policy]
+    permission: { edit: false }
+    capability: CAP-CAB-CONSOLIDATE
+    on:
+      feedback_needed: emit_structural_feedback
+      no_feedback: human_release_gate
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "evaluation consolidation produced no valid result"
+          resume:
+            resolved: consolidate_evaluation
+            rejected: ABORT
+
+  # ③ tool gate — emit the structural feedback record, then proceed. result_map
+  # derives the verdict (complete→Go).
+  emit_structural_feedback:
+    facets: [feedback_emit_policy]
+    permission: { edit: true, paths: ["work/feedback/**"] }
+    result_map: { complete: Go }
+    on:
+      Go: human_release_gate
+      _invalid_or_absent: ABORT
+
+  # ① human gate — the release decision belongs to the human. approved/rejected
+  # both COMPLETE CAB (it obtained a decision); needs_reevaluation loops back.
+  human_release_gate:
+    facets: [cab_handoff_policy]
+    permission: { edit: false }
+    on:
+      ready_for_decision:
+        gate:
+          to: human_decision_layer
+          ask: "release decision — CAB evaluation complete; approval is the human's"
+          resume:
+            approved: COMPLETE
+            rejected: COMPLETE
+            needs_reevaluation: release_plan_suitability_review
+      _invalid_or_absent:
+        handback:
+          to: human_decision_layer
+          reason: release_handoff_blocked
+          ask: "release handoff could not complete"
+          resume:
+            resolved: human_release_gate
+            rejected: ABORT

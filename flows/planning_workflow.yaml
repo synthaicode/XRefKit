@@ -1,3 +1,8 @@
+# FLOW-PLANNING to the deterministic-control schema (docs/018,
+# docs/073).
+# Planning produces the work plan and policies — human-owned commitments that gate
+# all downstream flows — so it ends in a human approval gate.
+
 flow_id: FLOW-PLANNING
 name: planning_workflow
 doc_xid: 8B31F02A4006
@@ -8,6 +13,7 @@ runs_after:
   - FLOW-REQUIREMENTS
 runs_before:
   - FLOW-DESIGN
+
 inputs:
   - approved_requirements
   - change_target_list
@@ -36,15 +42,11 @@ handoff:
     - test_tool_policy
     - release_policy
     - planning_basis_source_list
+
   escalation:
-    - unresolved_planning_assumptions_explicit
     - scope_conflicts_to_coordinator
-sequence:
-  - confirm_requirements_approved
-  - read_domain_knowledge_and_current_source_findings
-  - work_planning_and_policy_drafting
-  - initialize_management_control
-control_rules:
+    - unresolved_planning_assumptions_explicit
+invariants:
   - design_group_owns_planning_structure
   - source_modification_policy_follows_current_source_structure_by_default
   - data_correction_tool_requirements_must_be_explicit
@@ -52,3 +54,97 @@ control_rules:
   - each_policy_must_cite_its_current_source_basis
   - structural_deviation_requires_explicit_reason
   - unresolved_planning_assumptions_must_remain_explicit
+
+global_handback:
+  uncertainty:
+    to: coordinator
+    ask: "resolve blocking unknown before continuing planning"
+    resume: work_planning_and_policy_drafting
+
+entry: confirm_requirements_approved
+
+steps:
+  # ③ tool gate — confirm requirements are approved (input check).
+  confirm_requirements_approved:
+    facets: [planner_persona, input_check_policy]
+    permission: { edit: false }
+    result_map: { complete: Go, blocked: Hold }
+    on:
+      Go: read_domain_knowledge_and_current_source_findings
+      Hold:
+        handback:
+          to: coordinator
+          reason: requirements_not_approved
+          ask: "requirements are not approved; cannot start planning"
+          resume:
+            resolved: confirm_requirements_approved
+            rejected: ABORT
+      _invalid_or_absent: ABORT
+
+  # ② generation — read and consolidate domain knowledge + current-source
+  # findings; review gate accepts.
+  read_domain_knowledge_and_current_source_findings:
+    facets: [planner_persona, source_reading_policy]
+    permission: { edit: false }
+    capability: CAP-PLN-READ-FINDINGS
+    acceptance:
+      - { review: independent_quality_review }
+    on:
+      Go: work_planning_and_policy_drafting
+      Recycle: read_domain_knowledge_and_current_source_findings
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "reading findings could not complete"
+          resume:
+            resolved: read_domain_knowledge_and_current_source_findings
+            rejected: ABORT
+
+  # ② generation — draft work plan and policies; review gate accepts.
+  work_planning_and_policy_drafting:
+    facets: [planner_persona, planning_policy]
+    permission: { edit: false }
+    capability: CAP-PLN-POLICY-DRAFT
+    acceptance:
+      - { review: independent_quality_review }
+    on:
+      Go: initialize_management_control
+      Recycle: work_planning_and_policy_drafting
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "work planning / policy drafting could not complete"
+          resume:
+            resolved: work_planning_and_policy_drafting
+            rejected: ABORT
+
+  # ③ tool gate — initialize management control; needs_fix returns to drafting.
+  initialize_management_control:
+    facets: [planner_persona, management_control_policy]
+    permission: { edit: true, paths: ["work/planning/**"] }
+    result_map: { complete: Go, needs_fix: Recycle }
+    on:
+      Go: planning_approval
+      Recycle: work_planning_and_policy_drafting
+      _invalid_or_absent: ABORT
+
+  # ① human gate — the work plan and policies are human-owned commitments.
+  planning_approval:
+    facets: [planner_persona, approval_policy]
+    permission: { edit: false }
+    on:
+      ready_for_approval:
+        gate:
+          to: design_group_owner
+          ask: "approve the work plan and policies before design starts"
+          resume:
+            approved: COMPLETE
+            rework: work_planning_and_policy_drafting
+            rejected: ABORT
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "planning approval handoff could not complete"
+          resume:
+            resolved: planning_approval
+            rejected: ABORT

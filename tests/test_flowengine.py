@@ -4,7 +4,7 @@ from pathlib import Path
 from fm.flowdoctor import _load_flow
 from fm.flowengine import run_flow
 
-CAB_V2 = Path(__file__).resolve().parents[1] / "flows" / "cab_workflow.v2.yaml"
+CAB_V2 = Path(__file__).resolve().parents[1] / "flows" / "cab_workflow.yaml"
 
 
 def _small_flow() -> dict:

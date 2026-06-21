@@ -1,3 +1,8 @@
+# FLOW-RELEASE-PLANNING to the deterministic-control schema
+# (docs/018, docs/073).
+# Release planning prepares plans and verifies readiness, then hands off to CAB
+# (which owns the human release decision), so it ends deterministically.
+
 flow_id: FLOW-RELEASE-PLANNING
 name: release_planning_workflow
 doc_xid: 8B31F02A4007
@@ -8,6 +13,7 @@ runs_after:
   - FLOW-MANUFACTURING
 runs_before:
   - FLOW-CAB
+
 inputs:
   - manufacturing_outputs
   - integration_regression_verification_result
@@ -32,24 +38,126 @@ handoff:
   artifacts:
     - test_environment_release_plan
     - production_environment_release_plan
-    - release_basis_reference
-    - environment_release_basis_reference
     - monitoring_specification
     - event_response_procedure_draft
     - operational_readiness_result
     - release_verification_result
+    - release_basis_reference
+    - environment_release_basis_reference
     - release_verification_basis_reference
+
   escalation:
     - operational_gaps_as_unknown
     - out_of_scope_operational_items_to_coordinator
-sequence:
-  - release_plan_draft_creation
-  - split_environment_release_plans
-  - record_release_to_policy_trace
-  - monitoring_design
-  - event_response_procedure_drafting
-  - operational_readiness_gate
-  - release_verification
-control_rules:
+invariants:
   - operations_group_owns_release_preparation
   - readiness_evidence_must_be_explicit
+
+global_handback:
+  uncertainty:
+    to: coordinator
+    ask: "resolve blocking unknown before continuing release planning"
+    resume: release_plan_draft_creation
+
+entry: release_plan_draft_creation
+
+steps:
+  release_plan_draft_creation:
+    facets: [release_planner_persona, release_plan_policy]
+    permission: { edit: false }
+    capability: CAP-REL-PLAN-DRAFT
+    acceptance:
+      - { review: independent_quality_review }
+    on:
+      Go: split_environment_release_plans
+      Recycle: release_plan_draft_creation
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "release plan draft could not complete"
+          resume: { resolved: release_plan_draft_creation, rejected: ABORT }
+
+  split_environment_release_plans:
+    facets: [release_planner_persona, environment_split_policy]
+    permission: { edit: false }
+    capability: CAP-REL-ENV-SPLIT
+    acceptance:
+      - { review: independent_quality_review }
+    on:
+      Go: record_release_to_policy_trace
+      Recycle: split_environment_release_plans
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "environment split could not complete"
+          resume: { resolved: split_environment_release_plans, rejected: ABORT }
+
+  record_release_to_policy_trace:
+    facets: [release_planner_persona, trace_policy]
+    permission: { edit: true, paths: ["work/release/**"] }
+    result_map: { complete: Go, needs_fix: Recycle }
+    on:
+      Go: monitoring_design
+      Recycle: release_plan_draft_creation
+      _invalid_or_absent: ABORT
+
+  monitoring_design:
+    facets: [release_planner_persona, monitoring_policy]
+    permission: { edit: false }
+    capability: CAP-REL-MONITORING
+    acceptance:
+      - { review: independent_quality_review }
+    on:
+      Go: event_response_procedure_drafting
+      Recycle: monitoring_design
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "monitoring design could not complete"
+          resume: { resolved: monitoring_design, rejected: ABORT }
+
+  event_response_procedure_drafting:
+    facets: [release_planner_persona, event_response_policy]
+    permission: { edit: false }
+    capability: CAP-REL-EVENT-RESPONSE
+    acceptance:
+      - { review: independent_quality_review }
+    on:
+      Go: operational_readiness_gate
+      Recycle: event_response_procedure_drafting
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "event response drafting could not complete"
+          resume: { resolved: event_response_procedure_drafting, rejected: ABORT }
+
+  # ② evaluation — operational readiness (readiness evidence axis is the gate).
+  # Deficient readiness Recycles to plan revision; operational gaps Hold.
+  operational_readiness_gate:
+    facets: [release_planner_persona, readiness_policy]
+    permission: { edit: false }
+    capability: CAP-REL-READINESS
+    on:
+      Go: release_verification
+      Recycle: release_plan_draft_creation
+      Hold:
+        handback:
+          to: coordinator
+          reason: operational_gaps
+          ask: "operational gaps need coordinator decision (recorded as unknown)"
+          resume: { resolved: release_verification, rejected: ABORT }
+      _invalid_or_absent:
+        handback:
+          to: coordinator
+          ask: "readiness evaluation produced no valid verdict"
+          resume: { resolved: operational_readiness_gate, rejected: ABORT }
+
+  # ③ tool gate — release verification.
+  release_verification:
+    facets: [release_planner_persona, verification_policy]
+    permission: { edit: false }
+    result_map: { complete: Go, needs_fix: Recycle }
+    on:
+      Go: COMPLETE
+      Recycle: release_plan_draft_creation
+      _invalid_or_absent: ABORT
