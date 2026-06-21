@@ -226,6 +226,31 @@ function extractTask(text) {
   return match ? match[1].trim() : "";
 }
 
+function extractTokenUsage(text) {
+  const section = extractTopLevelSection(text, "Token Usage");
+  if (!section) {
+    return null;
+  }
+  const num = (key) => {
+    const match = section.match(new RegExp(`^- ${key}: \`([^\`]*)\``, "m"));
+    if (!match) {
+      return null;
+    }
+    const value = Number(match[1]);
+    return Number.isFinite(value) ? value : null;
+  };
+  const input = num("input");
+  const output = num("output");
+  let total = num("total");
+  if (total === null && (input !== null || output !== null)) {
+    total = (input || 0) + (output || 0);
+  }
+  if (input === null && output === null && total === null) {
+    return null;
+  }
+  return { input, output, total };
+}
+
 function mergeLoggingRecommendation(flowMonitoring, fallbackMonitoring) {
   // The deterministic flow schema can express step paths (handoff.escalation)
   // but not domain decision/checklist labels, so fall back per-kind: the flow
@@ -369,13 +394,14 @@ function loadSkillCatalog() {
   return catalog;
 }
 
-function parseSkillRunMarkdown(filePath) {
+function parseSkillRunMarkdown(filePath, project = "(repo)") {
   const text = readFileSafe(filePath);
   if (!text.includes("# Skill Run Log")) {
     return null;
   }
 
   const relativePath = path.relative(REPO_ROOT, filePath).replace(/\\/g, "/");
+  const tokens = extractTokenUsage(text);
   const workItemsSection = extractTopLevelSection(text, "Concrete Work Items");
   const artifactsSection = extractTopLevelSection(text, "Runtime Artifacts");
   const concernsSection = extractTopLevelSection(text, "Unknowns And Risks");
@@ -424,6 +450,8 @@ function parseSkillRunMarkdown(filePath) {
     meta: extractBulletScalar(text, "meta"),
     skill_doc: extractBulletScalar(text, "skill_doc"),
     task: extractTask(text),
+    project,
+    tokens,
     log_path: relativePath,
     load_gate_status: extractSectionStatus(text, "Skill Load Gate"),
     workitem_status: extractSectionStatus(text, "Concrete Work Items"),
@@ -450,16 +478,40 @@ function parseSkillRunMarkdown(filePath) {
       open_risks: concerns.filter((item) => item.kind === "risk" && item.status === "open").length,
       open_judgments: concerns.filter((item) => item.kind === "judgment" && item.status === "open").length,
       judgments: concerns.filter((item) => item.kind === "judgment").length,
+      tokens_total: tokens && Number.isFinite(tokens.total) ? tokens.total : 0,
     },
     latest_event_at: phaseEvents.length ? phaseEvents[phaseEvents.length - 1].date : extractBulletScalar(text, "date"),
     last_event: phaseEvents.length ? phaseEvents[phaseEvents.length - 1] : null,
   };
 }
 
+function collectSkillRunFiles() {
+  const files = [];
+  // Repository maintenance runs live under work/sessions/.
+  for (const entry of readDirSafe(WORK_SESSIONS_DIR)) {
+    if (entry.isFile() && SKILL_RUN_FILE_PATTERN.test(entry.name)) {
+      files.push({ filePath: path.join(WORK_SESSIONS_DIR, entry.name), project: "(repo)" });
+    }
+  }
+  // Per-project runs live under projects/<project>/logs/.
+  const appDirName = path.basename(APP_DIR);
+  for (const entry of readDirSafe(PROJECTS_DIR)) {
+    if (!entry.isDirectory() || SKIP_DIRS.has(entry.name) || entry.name === appDirName) {
+      continue;
+    }
+    const logsDir = path.join(PROJECTS_DIR, entry.name, "logs");
+    for (const logEntry of readDirSafe(logsDir)) {
+      if (logEntry.isFile() && SKILL_RUN_FILE_PATTERN.test(logEntry.name)) {
+        files.push({ filePath: path.join(logsDir, logEntry.name), project: entry.name });
+      }
+    }
+  }
+  return files;
+}
+
 function loadSkillRuns() {
-  return readDirSafe(WORK_SESSIONS_DIR)
-    .filter((entry) => entry.isFile() && SKILL_RUN_FILE_PATTERN.test(entry.name))
-    .map((entry) => parseSkillRunMarkdown(path.join(WORK_SESSIONS_DIR, entry.name)))
+  return collectSkillRunFiles()
+    .map(({ filePath, project }) => parseSkillRunMarkdown(filePath, project))
     .filter(Boolean)
     .filter((run) => run.skill_id)
     .sort((left, right) => (right.latest_event_at || "").localeCompare(left.latest_event_at || ""));
@@ -497,6 +549,8 @@ function buildSkillSummaries(skillRuns, skillCatalog) {
         open_unknowns: runs.reduce((sum, run) => sum + run.counts.open_unknowns, 0),
         open_risks: runs.reduce((sum, run) => sum + run.counts.open_risks, 0),
         open_judgments: runs.reduce((sum, run) => sum + run.counts.open_judgments, 0),
+        total_tokens: runs.reduce((sum, run) => sum + (run.counts.tokens_total || 0), 0),
+        token_run_count: runs.filter((run) => (run.counts.tokens_total || 0) > 0).length,
         recent_runs: runs.slice(0, 5),
       };
     })
@@ -847,6 +901,13 @@ function buildDashboardData() {
     };
   });
 
+  const tokensByProject = new Map();
+  for (const run of skillRuns) {
+    const key = run.project || "(repo)";
+    tokensByProject.set(key, (tokensByProject.get(key) || 0) + (run.counts.tokens_total || 0));
+  }
+  const totalTokens = skillRuns.reduce((sum, run) => sum + (run.counts.tokens_total || 0), 0);
+
   const projectSummaries = [...new Set(runs.map((run) => run.project))]
     .filter(Boolean)
     .map((projectName) => {
@@ -857,6 +918,7 @@ function buildDashboardData() {
         flow_count: new Set(projectRuns.map((run) => run.flow_name)).size,
         decision_count: projectRuns.reduce((sum, run) => sum + run.decisions.length, 0),
         checklist_count: projectRuns.reduce((sum, run) => sum + run.checklist_usage.length, 0),
+        token_total: tokensByProject.get(projectName) || 0,
         latest_at: projectRuns.map((run) => run.latest_at).sort().slice(-1)[0] || "",
       };
     })
@@ -870,6 +932,7 @@ function buildDashboardData() {
     run_count: runs.length,
     skill_count: skillSummaries.length,
     skill_run_count: skillRuns.length,
+    total_tokens: totalTokens,
     project_count: projectSummaries.length,
     flow_summaries: flowSummaries,
     project_summaries: projectSummaries,

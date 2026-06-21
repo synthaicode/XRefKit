@@ -424,6 +424,57 @@ class SkillRuntimeAuditTests(unittest.TestCase):
                 result.errors,
             )
 
+    def _open_run(self, root: Path) -> Path:
+        self._write_valid_skill(root)
+        out = root / "work" / "sessions" / "run.md"
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(
+                0,
+                main(
+                    [
+                        "skill", "run", "--root", str(root),
+                        "--meta", "skills/sample/meta.md",
+                        "--task", "Token usage", "--out", str(out),
+                    ]
+                ),
+            )
+        return out
+
+    def test_skill_tokens_records_usage_and_defaults_total(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = self._open_run(root)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    0,
+                    main(["skill", "tokens", "--log", str(out), "--input", "1200", "--output", "3400"]),
+                )
+
+            log_text = out.read_text(encoding="utf-8")
+            self.assertIn("## Token Usage\n\n- status: `recorded`", log_text)
+            self.assertIn("- input: `1200`", log_text)
+            self.assertIn("- output: `3400`", log_text)
+            self.assertIn("- total: `4600`", log_text)
+            self.assertIn("`tokens` -> `recorded`", log_text)
+
+    def test_skill_tokens_requires_a_value(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = self._open_run(root)
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                self.assertEqual(1, main(["skill", "tokens", "--log", str(out)]))
+            self.assertIn("provide at least one of --input, --output, or --total", buf.getvalue())
+
+    def test_skill_tokens_does_not_block_closure(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            # A closed run with no token usage recorded still passes the audit.
+            self._write_closed_skill_run(root)
+            self.assertTrue(
+                audit_skill_runtime_logs(root=root, sessions_dir=root / "work" / "sessions").ok
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

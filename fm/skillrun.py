@@ -252,6 +252,14 @@ def _render_log(
 
 - status: `pending`
 - rule: record outputs, unresolved items, next owner, and human decision points
+
+## Token Usage
+
+- status: `pending`
+- input: `-`
+- output: `-`
+- total: `-`
+- rule: record tokens consumed by this skill run with `fm skill tokens` (informational; does not gate closure)
 """
 
 
@@ -1163,6 +1171,102 @@ def close_skill_run(args) -> SkillRunResult:
     )
 
 
+def _parse_token_usage(text: str) -> dict[str, str] | None:
+    body, _, _ = _section_body(text, "Token Usage")
+    if body is None:
+        return None
+
+    def field(key: str) -> str | None:
+        match = re.search(rf"^- {key}: `([^`]*)`", body, re.MULTILINE)
+        return match.group(1) if match else None
+
+    return {
+        "status": field("status") or "",
+        "input": field("input") or "",
+        "output": field("output") or "",
+        "total": field("total") or "",
+    }
+
+
+def _render_token_usage_section(
+    *, input_value: str, output_value: str, total_value: str, note: str | None
+) -> str:
+    lines = [
+        "## Token Usage",
+        "",
+        "- status: `recorded`",
+        f"- input: `{input_value}`",
+        f"- output: `{output_value}`",
+        f"- total: `{total_value}`",
+        "- rule: record tokens consumed by this skill run with `fm skill tokens` (informational; does not gate closure)",
+    ]
+    if note:
+        lines.append(f"- note: {note}")
+    return "\n".join(lines) + "\n"
+
+
+def _replace_token_usage_section(text: str, new_body: str) -> str:
+    body, start, end = _section_body(text, "Token Usage")
+    if body is None:
+        # Older logs created before this section existed: insert it just before
+        # the Phase Events log, or append it at the end.
+        block = "\n" + new_body.rstrip() + "\n"
+        insert_at = text.find("\n## Phase Events")
+        if insert_at == -1:
+            return text.rstrip() + "\n\n" + new_body.rstrip() + "\n"
+        return text[:insert_at] + "\n" + block + text[insert_at:]
+    return text[:start] + new_body + text[end:]
+
+
+def update_token_usage(args) -> SkillRunResult:
+    log_path = Path(args.log).resolve()
+    if not log_path.exists():
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"log not found: {log_path}"])
+
+    def _coerce(name: str, value) -> tuple[int | None, str | None]:
+        if value is None:
+            return None, None
+        try:
+            number = int(value)
+        except (TypeError, ValueError):
+            return None, f"{name} must be an integer: {value}"
+        if number < 0:
+            return None, f"{name} must be >= 0: {value}"
+        return number, None
+
+    input_tokens, e_in = _coerce("input", args.input)
+    output_tokens, e_out = _coerce("output", args.output)
+    total_arg, e_total = _coerce("total", args.total)
+    coerce_errors = [error for error in (e_in, e_out, e_total) if error]
+    if coerce_errors:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=coerce_errors)
+    if input_tokens is None and output_tokens is None and total_arg is None:
+        return SkillRunResult(
+            ok=False, skill_id=None, skill_doc=None, run_log=str(log_path),
+            errors=["provide at least one of --input, --output, or --total"],
+        )
+
+    text = log_path.read_text(encoding="utf-8")
+    if "## Skill Load Gate\n\n- status: `opened_by_fm_skill_run`" not in text:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["skill run log is missing an opened Skill Load Gate"])
+
+    total_tokens = total_arg if total_arg is not None else (input_tokens or 0) + (output_tokens or 0)
+    note = str(args.note or "").strip() or None
+    new_body = _render_token_usage_section(
+        input_value=str(input_tokens) if input_tokens is not None else "-",
+        output_value=str(output_tokens) if output_tokens is not None else "-",
+        total_value=str(total_tokens),
+        note=note,
+    )
+    text = _replace_token_usage_section(text, new_body)
+    text = _append_phase_event(
+        text, phase="tokens", status="recorded", role=None,
+        note=note or f"input={input_tokens if input_tokens is not None else '-'} output={output_tokens if output_tokens is not None else '-'} total={total_tokens}",
+    )
+    log_path.write_text(text, encoding="utf-8")
+    return SkillRunResult(ok=True, skill_id=_log_skill_id(text), skill_doc=None, run_log=str(log_path), errors=[])
+
+
 def run_skill(args) -> SkillRunResult:
     root = Path(args.root).resolve()
     meta_path = (root / args.meta).resolve()
@@ -1380,6 +1484,20 @@ def cmd_skill_close(args) -> int:
         print("  closure: accepted")
     else:
         print("fail: skill close")
+        for error in result.errors:
+            print(f"  error: {error}")
+    return 0 if result.ok else 1
+
+
+def cmd_skill_tokens(args) -> int:
+    result = update_token_usage(args)
+    if args.json:
+        print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+    elif result.ok:
+        print(f"ok: {result.run_log}")
+        print("  token usage: recorded")
+    else:
+        print("fail: skill tokens")
         for error in result.errors:
             print(f"  error: {error}")
     return 0 if result.ok else 1

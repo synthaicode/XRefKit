@@ -176,6 +176,13 @@ structure that humans need for review:
 - evidence artifacts
 - handoff artifacts
 - unknown / risk / judgment concerns
+- token usage (input / output / total) recorded by `fm skill tokens`
+
+Skill runtime logs are collected from two locations: repository maintenance
+runs in `work/sessions/` (attributed to project `(repo)`) and per-project runs
+in `projects/<project>/logs/` (attributed to that project). Token usage is
+aggregated into a repository total, a per-project total, and a per-Skill total.
+It is an informational runtime field and does not gate Skill closure.
 
 ### 4. Allow optional Skill-side guidance only when needed
 
