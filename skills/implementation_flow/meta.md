@@ -7,7 +7,7 @@
 - summary: execute manufacturing business activities through reusable scoped realization and unit-level verification capabilities
 - use_when: user asks to implement changes based on an approved design or explicitly bounded instructions
 - input: approved design or equivalent scope instruction, design basis policy reference, test plan, test design, test design basis policy reference, test-item requirement traceability reference, manufacturing test review result, target files, applicable coding rules, optional test viewpoints
-- output: code changes, unit test results, unit test execution basis reference, implementation basis design reference, referenced constraint-derivation output paths when used, uncertainty list, out-of-scope list
+- output: code changes, unit test results, unit test execution basis reference, implementation basis design reference, referenced constraint-derivation output paths when used, quality-feedback response when applicable, uncertainty list, out-of-scope list
 - maturity: `trial`
 - execution_mode: `local_default`
 - guard_policy: `required`
@@ -21,7 +21,7 @@
   - unknown_risk_policy: `explicit`
   - closure_gate: `required`
   - handoff_policy: `explicit`
-- constraints: do not change design policy; keep unresolved items explicit; implement only traced and approved differences by default; when coding would require guessing unresolved structural behavior from design artifacts, route through the constraint-derivation pack before implementation
+- constraints: do not change design policy; keep unresolved items explicit; implement only traced and approved differences by default; when coding would require guessing unresolved structural behavior from design artifacts, route through the constraint-derivation pack before implementation; handle concrete in-scope quality feedback when no tradeoff exists among active findings
 - lifecycle:
   - startup: confirm approved scope, reviewed test package, target files, and coding rules exist; stop if the task still depends on unresolved structural behavior that should be derived before coding
   - planning: define implementation and test targets and management rows from design and reviewed test design; if structural behavior remains implicit, route back through constraint derivation before coding
@@ -39,6 +39,7 @@
 - knowledge_refs:
   - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../knowledge/organization/151_temporary_traceability_comment_rule.md#xid-22E4C7AC7063`
+  - `../../knowledge/organization/190_quality_feedback_return_rules.md#xid-7A2F4C8D1901`
   - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`
   - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`
   - `../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`

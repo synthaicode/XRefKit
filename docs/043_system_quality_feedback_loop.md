@@ -126,6 +126,7 @@ Instead, it must choose one of two return paths:
 
 1. local correction path
    - use when the issue is local to the current workflow and not structurally recurring
+   - for implementation artifacts, follow [Quality feedback return rules](../knowledge/organization/190_quality_feedback_return_rules.md#xid-7A2F4C8D1901): implementation fixes concrete in-scope findings when no tradeoff exists, and escalates tradeoffs or scope conflicts instead of deciding locally
 2. upstream corrective path
    - use when the issue indicates a fault in an earlier workflow, earlier lifecycle layer, or repeated pattern
 
