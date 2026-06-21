@@ -23,6 +23,8 @@ Use the canonical viewpoints in `knowledge/source_analysis/120_dotnet_change_ana
 - [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
 - [Custom framework common criteria](../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002)
 - [Dotnet change analysis viewpoints](../../knowledge/source_analysis/120_dotnet_change_analysis_viewpoints.md#xid-2E7B5A1FD201)
+- [Structure-analysis determinism tiers](../../knowledge/source_analysis/121_structure_analysis_determinism_tiers.md#xid-5301B897BA41)
+- [Structure graph as TM coverage backstop](../../knowledge/source_analysis/160_structure_graph_tm_backstop.md#xid-163AD9936979)
 
 ## Optional References
 
@@ -38,8 +40,10 @@ Use the canonical viewpoints in `knowledge/source_analysis/120_dotnet_change_ana
 ## Outputs
 
 - Markdown change-analysis note
+- impacted boundary list split into review boundary and must-change boundary
+- (only when Semantic-Inventory Mode is used) the specific deterministic inventory
+  generated for a grep-weak question, recorded as evidence
 - scoped target list
-- impacted boundary list
 - uncertainty list
 - check results by viewpoint
 - change placement basis (de-facto home of the affected logic and the
@@ -117,6 +121,10 @@ Use the canonical viewpoints in `knowledge/source_analysis/120_dotnet_change_ana
 - Define the output path:
   - user-specified path
   - default working Markdown path when no path is supplied
+- Plan the Where path as grep-first; decide which viewpoints (if any) need
+  Semantic-Inventory Mode (the grep-weak questions: DI lifetimes, attribute values,
+  async-CT, IDisposable ownership, reflection binding, transitive impact) and
+  restore the target only if a pack inventory is needed.
 - Prepare viewpoint buckets for:
   - structure and responsibility split
   - entry points and dependency direction
@@ -136,8 +144,58 @@ Use the canonical viewpoints in `knowledge/source_analysis/120_dotnet_change_ana
   - change impact and unresolved items
 - If the scope can be separated by solution or project without cross-scope consistency risk, decompose the read-only investigation by scope and execute through subagents.
 
+## Where Impacted-Boundary Analysis (grep-first)
+
+The standard Where path is **grep-first, not pack-first**. An A/B test
+([ADR 0001](../../docs/adr/0001-where-step-grep-first.md))
+showed that for text-greppable impact — type names, method names, construction
+sites, references — the deterministic structure pack gives **no token or accuracy
+gain** over grep at any codebase scale, because `grep`/`rg` returns the full
+reference surface in one pass and an LLM classifies the impact pattern without
+reading most files. Do **not** generate the structure pack as a standard Where
+backstop.
+
+Standard path for text-greppable impact:
+
+- `grep` / `rg` for the changed entity (type, method, config key) to get the full
+  reference surface in a single pass.
+- Read a small representative subset (the declaration, a few call sites) — not every
+  hit — to read the impact pattern.
+- Classify the impact pattern with the LLM (e.g. "object-initializer construction →
+  a new required constructor parameter breaks every site"; "additive property →
+  read-only consumers do not break").
+- Separate the **review boundary** (everything referencing the entity, to check
+  whether it must thread the change) from the **must-change boundary** (the sites
+  the change actually breaks).
+
+## Semantic-Inventory Mode (deterministic pack — grep-weak questions only)
+
+Invoke the deterministic pack **only** for questions `grep` answers poorly — where
+the fact needs constant folding, type/lifetime resolution, or transitive graph
+traversal with no textual footprint. Precondition: restore the target
+(`dotnet restore <sln-or-csproj>`) so Roslyn resolves symbols; pass the solution or
+root project (referenced projects load transitively). Generate only the inventory
+the question needs, not the whole pack. See
+[Structure-analysis determinism tiers](../../knowledge/source_analysis/121_structure_analysis_determinism_tiers.md#xid-5301B897BA41).
+
+| Grep-weak question | Pack tool |
+|------|------|
+| custom attribute values (constant-folded ctor/named args) | `tools/structure_graph --attributes` + `tools/attribute_inventory_report.py` |
+| DI lifetime graph / captive-dependency | `tools/structure_graph --di` + `tools/di_registration_report.py --graph` |
+| async methods lacking CancellationToken | `tools/structure_graph --decl` + `tools/declaration_facts_report.py --category async --missing-ct` |
+| IDisposable / IAsyncDisposable ownership | `implements` edges in `graph.json` + the CA2000 / CA2213 analyzer pipeline |
+| reflection / convention-based binding sites | `tools/structure_graph --invocations` + `tools/invocation_facts_report.py --category discovery` |
+| transitive impact with no textual reference | `tools/where_seed_traversal.py --seed <s>` (the one impact case grep cannot follow) |
+
+These are candidate facts, not verdicts: confirm activation / consuming mechanism,
+curate against the change objective, and record what the pack cannot establish as
+`unknown`. Record any generated inventory file as an `evidence` artifact.
+
 ## Execution
 
+- For text-greppable viewpoints, run the grep-first Where path; invoke the
+  deterministic pack only in Semantic-Inventory Mode for the grep-weak questions
+  listed there. The pack is a fallback for specific questions, not a standard pass.
 - Identify the solution, projects, startup paths, and major module boundaries.
 - Extract the de-facto responsibility split from behavior evidence:
   - derive each component's actual responsibility from what calls it, which

@@ -40,6 +40,8 @@
   - `../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001`
   - `../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002`
   - `../../knowledge/source_analysis/120_dotnet_change_analysis_viewpoints.md#xid-2E7B5A1FD201`
+  - `../../knowledge/source_analysis/121_structure_analysis_determinism_tiers.md#xid-5301B897BA41`
+  - `../../knowledge/source_analysis/160_structure_graph_tm_backstop.md#xid-163AD9936979`
 - observation_refs:
   - `../../work/reports/2026-06-11_skill_improvement_note_dotnet_change_analysis.md`
   - `../../work/sessions/2026-06-11_skill_run_dotnet_change_analysis.md`

@@ -35,6 +35,22 @@ For the boundary between base AI control and XRefKit-specific routing, see [Base
 - Keep references XID-based (`#xid-...`) and keep existing XID blocks unchanged.
 - After edits, run `python -m fm xref fix`.
 
+## Execution Environment
+
+This repository is developed on **Windows**, where the default shell is
+**PowerShell**. Do not assume a POSIX / Bash shell.
+
+- Bash-only syntax fails on the default shell and triggers retry loops that silently
+  inflate token cost (each retry re-transmits the whole conversation plus the error).
+  Do not assume: `&&` / `||` (unsupported in PowerShell 5.1), `export`, `/dev/null`,
+  `ls -la`, or inline `VAR=value cmd`.
+- Use PowerShell equivalents (`$env:VAR = 'x'`, `2>$null`, `Get-ChildItem -Force`),
+  or run a Bash-compatible shell explicitly (Git Bash / WSL) when POSIX syntax is
+  needed — and keep every command in the syntax of the shell it actually runs in.
+- If the agent can pin its terminal, prefer one known shell (for example Git Bash)
+  so the model's shell habits match the environment.
+- This is a token-cost control; see [Metrics definition](../knowledge/organization/120_metrics_definition.md#xid-7A2F4C8D1201).
+
 ## Centralized Detail
 
 - Entry index: [Docs Index](000_index.md#xid-56DD6EB68343)

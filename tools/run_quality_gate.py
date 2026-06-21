@@ -24,6 +24,7 @@ def _run_fm_stage() -> None:
     _run([sys.executable, "-m", "fm", "xref", "check"], cwd=REPO_ROOT)
     _run([sys.executable, "-m", "fm", "skill", "check", "--scope", "all"], cwd=REPO_ROOT)
     _run([sys.executable, "-m", "fm", "pack", "lint"], cwd=REPO_ROOT)
+    _run([sys.executable, "-m", "fm", "flow", "doctor"], cwd=REPO_ROOT)
     _run([sys.executable, "tools/audit_skill_runtime_logs.py", "--tracked-only"], cwd=REPO_ROOT)
     _run([sys.executable, "tools/check_project_quality_baseline.py"], cwd=REPO_ROOT)
     _run([sys.executable, "tools/check_feedback_register.py"], cwd=REPO_ROOT)

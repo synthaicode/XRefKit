@@ -1,3 +1,9 @@
+# FLOW-APPLICATION to the deterministic-control schema
+# (docs/018, docs/073).
+# Application is the bootstrap flow: the human owns the configuration decisions
+# and there are no silent defaults, so it ends in a human confirmation gate that
+# owns all configuration before the completion record is issued.
+
 flow_id: FLOW-APPLICATION
 name: application_workflow
 doc_xid: 8B31F02A4014
@@ -8,6 +14,7 @@ owner:
     - ai_support
 runs_before:
   - FLOW-INVESTIGATION
+
 inputs:
   - framework_baseline
   - project_brief
@@ -30,20 +37,157 @@ handoff:
     - domain_knowledge_injection_record
     - capability_tuning_record
     - threshold_configuration_record
+
   escalation:
     - unresolved_configuration_gap_to_human_decision_layer
-sequence:
-  - collect_project_materials
-  - identify_framework_gaps
-  - inject_domain_knowledge
-  - configure_capability_tuning
-  - configure_thresholds_and_output_level
-  - conduct_interview_verification
-  - record_unresolved_gaps
-  - obtain_human_confirmation
-  - issue_application_completion_record
-control_rules:
+invariants:
   - must_complete_before_normal_workflows
   - human_owns_configuration_decisions
   - no_silent_defaults
   - unresolved_configuration_gaps_must_be_recorded
+
+global_handback:
+  uncertainty:
+    to: human_decision_layer
+    ask: "resolve blocking unknown before continuing application"
+    resume: collect_project_materials
+
+entry: collect_project_materials
+
+steps:
+  collect_project_materials:
+    facets: [application_persona, collection_policy]
+    permission: { edit: false }
+    capability: CAP-APP-COLLECT
+    acceptance:
+      - { review: independent_quality_review }
+    on:
+      Go: identify_framework_gaps
+      Recycle: collect_project_materials
+      _invalid_or_absent:
+        handback:
+          to: human_decision_layer
+          ask: "material collection could not complete"
+          resume: { resolved: collect_project_materials, rejected: ABORT }
+
+  # ② evaluation — identify framework gaps (gap axis is the gate).
+  identify_framework_gaps:
+    facets: [application_persona, gap_policy]
+    permission: { edit: false }
+    capability: CAP-APP-GAPS
+    on:
+      Go: inject_domain_knowledge
+      _invalid_or_absent:
+        handback:
+          to: human_decision_layer
+          ask: "gap identification produced no valid verdict"
+          resume: { resolved: identify_framework_gaps, rejected: ABORT }
+
+  # ② generation — prepare the domain-knowledge injection proposal (the human
+  # owns the decision at the confirmation gate).
+  inject_domain_knowledge:
+    facets: [application_persona, domain_injection_policy]
+    permission: { edit: false }
+    capability: CAP-APP-DOMAIN-INJECT
+    acceptance:
+      - { review: independent_quality_review }
+    on:
+      Go: configure_capability_tuning
+      Recycle: inject_domain_knowledge
+      _invalid_or_absent:
+        handback:
+          to: human_decision_layer
+          ask: "domain knowledge preparation could not complete"
+          resume: { resolved: inject_domain_knowledge, rejected: ABORT }
+
+  configure_capability_tuning:
+    facets: [application_persona, capability_tuning_policy]
+    permission: { edit: false }
+    capability: CAP-APP-CAPABILITY-TUNE
+    acceptance:
+      - { review: independent_quality_review }
+    on:
+      Go: configure_thresholds_and_output_level
+      Recycle: configure_capability_tuning
+      _invalid_or_absent:
+        handback:
+          to: human_decision_layer
+          ask: "capability tuning preparation could not complete"
+          resume: { resolved: configure_capability_tuning, rejected: ABORT }
+
+  configure_thresholds_and_output_level:
+    facets: [application_persona, threshold_policy]
+    permission: { edit: false }
+    capability: CAP-APP-THRESHOLDS
+    acceptance:
+      - { review: independent_quality_review }
+    on:
+      Go: conduct_interview_verification
+      Recycle: configure_thresholds_and_output_level
+      _invalid_or_absent:
+        handback:
+          to: human_decision_layer
+          ask: "threshold/output-level preparation could not complete"
+          resume: { resolved: configure_thresholds_and_output_level, rejected: ABORT }
+
+  # ② evaluation — verify the prepared configuration via interview; a failed
+  # verification Recycles to reconfigure.
+  conduct_interview_verification:
+    facets: [application_persona, interview_policy]
+    permission: { edit: false }
+    capability: CAP-APP-INTERVIEW
+    on:
+      Go: record_unresolved_gaps
+      Recycle: inject_domain_knowledge
+      _invalid_or_absent:
+        handback:
+          to: human_decision_layer
+          ask: "interview verification produced no valid verdict"
+          resume: { resolved: conduct_interview_verification, rejected: ABORT }
+
+  # ② evaluation — record unresolved configuration gaps; a blocking gap Holds.
+  record_unresolved_gaps:
+    facets: [application_persona, gap_record_policy]
+    permission: { edit: true, paths: ["work/application/**"] }
+    capability: CAP-APP-RECORD-GAPS
+    on:
+      Go: obtain_human_confirmation
+      Hold:
+        handback:
+          to: human_decision_layer
+          reason: unresolved_configuration_gap
+          ask: "an unresolved configuration gap needs the human decision layer"
+          resume: { resolved: obtain_human_confirmation, rejected: ABORT }
+      _invalid_or_absent:
+        handback:
+          to: human_decision_layer
+          ask: "gap recording produced no valid verdict"
+          resume: { resolved: record_unresolved_gaps, rejected: ABORT }
+
+  # ① human gate — the human owns all configuration decisions; no silent defaults.
+  obtain_human_confirmation:
+    facets: [application_persona, confirmation_policy]
+    permission: { edit: false }
+    on:
+      ready_for_confirmation:
+        gate:
+          to: human_decision_layer
+          ask: "confirm all configuration decisions before the application completes"
+          resume:
+            confirmed: issue_application_completion_record
+            reconfigure: inject_domain_knowledge
+            rejected: ABORT
+      _invalid_or_absent:
+        handback:
+          to: human_decision_layer
+          ask: "human confirmation handoff could not complete"
+          resume: { resolved: obtain_human_confirmation, rejected: ABORT }
+
+  # ③ tool — issue the application completion record.
+  issue_application_completion_record:
+    facets: [application_persona, completion_policy]
+    permission: { edit: true, paths: ["work/application/**"] }
+    result_map: { complete: Go }
+    on:
+      Go: COMPLETE
+      _invalid_or_absent: ABORT

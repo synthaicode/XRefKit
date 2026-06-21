@@ -29,6 +29,8 @@ Execute the four QA review domains `specification / performance / security / lic
 ## Outputs
 
 - domain review results for specification, performance, security, and license
+- diff-consistency result across XDDP framing, semantic structure evidence, and
+  graph-backed impact candidates when available
 - finding list with evidence
 - uncertainty list
 - a gate verdict block (see Gate Verdict Output)
@@ -63,6 +65,8 @@ required_followup: <next owner or specialist Skill, or none>
 - [XDDP basics](../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701)
 - [XDDP supporting methods](../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711)
 - [Agent diff review gate design](../../knowledge/organization/180_agent_diff_review_gate_design.md#xid-7A2F4C8D1801)
+- [Dotnet change analysis viewpoints](../../knowledge/source_analysis/120_dotnet_change_analysis_viewpoints.md#xid-2E7B5A1FD201)
+- [Structure graph as TM coverage backstop](../../knowledge/source_analysis/160_structure_graph_tm_backstop.md#xid-163AD9936979)
 
 ## Startup
 
@@ -77,6 +81,15 @@ required_followup: <next owner or specialist Skill, or none>
 
 - Define the review scope and target files.
 - Define the intended change difference before reading the implementation in detail.
+- Define the diff-consistency framing:
+  - XDDP frame: change reason, requirement, declared Where, and intended How.
+  - semantic structure evidence: existing responsibility split, boundary,
+    entry point, DI, configuration, pipeline, data, and external-interface
+    placement evidence from `dotnet_change_analysis` or equivalent source
+    analysis.
+  - graph evidence: structure-graph seeds, traversal direction/depth,
+    included candidates, excluded candidates with reasons, convergence or
+    coupling candidates, and dynamic-channel handoff points when available.
 - Narrow the review target to the appropriateness of the stated difference rather than re-reviewing the whole implementation surface.
 - Define the review domains:
   - specification
@@ -93,19 +106,38 @@ required_followup: <next owner or specialist Skill, or none>
   - the change requirement specification
   - the traced impact targets
   - the intended change method when available
+- Check diff consistency in three layers:
+  - XDDP: the diff must have a declared change frame and must not mix unrelated
+    Why / What / Where / How decisions into one unbounded change.
+  - semantic structure: the diff must fit the current responsibility split and
+    boundary evidence, or record why the structure is intentionally being
+    changed.
+  - graph-backed Where: graph traversal candidates must be included, excluded
+    with evidence, or handed off as `unknown` when the graph cannot cover the
+    relation channel.
 - Execute `CAP-QA-001` for specification conformance against design evidence and coding rules.
 - Execute `CAP-QA-006` for performance risk review.
 - Execute `CAP-QA-007` for security review.
 - Execute `CAP-QA-008` for license compliance check.
 - Execute `CAP-QA-005` when attribute semantics need specification-focused deep review.
 - Confirm that the reviewed code or diff matches the intended change scope and does not silently expand beyond the traced targets without explanation.
+- Treat unexplained graph candidates outside the declared scope as
+  missing-impact candidates, not as confirmed defects.
+- Treat high fan-in / fan-out / convergence points as coupling or overlap
+  review triggers, not as automatic blockers.
+- Record dynamic channels outside the graph's mechanical coverage as
+  `unknown` or handoff items unless separately evidenced.
 - Produce findings with concrete evidence.
 
 ## Monitoring and Control
 
 - Check that each review domain has a recorded result.
+- Check that the diff-consistency result records XDDP, semantic structure, and
+  graph-backed impact handling, or marks unavailable evidence explicitly.
 - Downgrade unsupported conclusions to `unknown`.
 - Downgrade review coverage to `unknown` when the intended difference is not clear enough to bound the review target.
+- Downgrade to `needs-review` when graph-backed impact candidates or dynamic
+  relation channels remain unexplained and could affect the declared scope.
 - Preserve explicit evidence gaps.
 
 ## Closure
@@ -122,4 +154,3 @@ required_followup: <next owner or specialist Skill, or none>
 - Do not decide design or implementation policy.
 - Use subagents only when scope boundaries stay explicit and parallel execution is safe.
 - Do not expand review into full-codebase inspection when the intended delta can be reviewed more narrowly and correctly.
-
