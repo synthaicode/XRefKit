@@ -86,7 +86,10 @@ projects/
 - 推奨 path は `handoff.escalation`（旧 `monitoring.paths` も併用）から取得します
 - 推奨 decision / checklist はスキーマで表現されないため `flow-log-presets.json` から取得します
 - `projects/` 配下の `flow-events.jsonl`, `trace.jsonl`, `events.jsonl`, `flow-monitor.json`, `flow-monitoring.json` を収集します
-- `work/sessions/*_skill_run_*.md` を収集し、Skill runtime log の phase / artifact / concern / closure 状態を表示します
+- Skill runtime log を次の2系統から収集し、phase / artifact / concern / closure 状態と使用トークンを表示します
+  - リポジトリ自体のメンテナンス: `work/sessions/*_skill_run_*.md`（project は `(repo)`）
+  - プロジェクト別: `projects/<project>/logs/*_skill_run_*.md`（project はそのフォルダ名）
+- 各 Skill runtime log の `## Token Usage`（`input` / `output` / `total`）を集計し、総トークン・project 別トークン・Skill 別トークンを表示します
 - `flow_id` または `flow_name` が一致すれば該当 Flow に紐づけます
 - `step`, `path`, `decision`, `checklist` 系フィールドから集計します
 - Skill runtime log は `flow-skill-map.json` と `flow-step-skill-map.json` を使って Flow 上の Skill 定義に紐づけます
@@ -146,4 +149,7 @@ handoff:
 - `Execution Role` / `Check Role` / `Closure Gate` / `Handoff` の状態
 - `output` / `evidence` / `handoff` artifact 数
 - judgment を含む concern と open の unknown / risk
+- その Skill run が使用したトークン（`fm skill tokens` で記録された `## Token Usage`）
 - 元の session log / `meta.md` / `SKILL.md` へのリンク
+
+トークンは `fm skill tokens --log <run-log> --input <n> --output <n>` で各 Skill run に記録します（`total` は省略時 `input + output`）。closure はトークン記録を要求しません（情報項目）。

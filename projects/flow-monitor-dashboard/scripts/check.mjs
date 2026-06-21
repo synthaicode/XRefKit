@@ -79,6 +79,21 @@ assert.ok(
   "dashboard must retain concern parsing for judgments and unknowns"
 );
 
+// Token usage plumbing must be wired even when no run has recorded tokens yet.
+assert.equal(typeof data.total_tokens, "number", "dashboard must expose a total_tokens number");
+assert.ok(
+  data.skill_summaries.every((skill) => typeof skill.total_tokens === "number"),
+  "every skill summary must expose total_tokens"
+);
+assert.ok(
+  runtimeRuns.every((run) => "tokens" in run && typeof run.counts?.tokens_total === "number"),
+  "every skill run must expose token usage fields"
+);
+assert.ok(
+  data.project_summaries.every((project) => typeof project.token_total === "number"),
+  "every project summary must expose token_total"
+);
+
 assert.equal(
   data.monitored_root,
   path.relative(repoRoot, path.join(repoRoot, "projects")).replace(/\\/g, "/"),

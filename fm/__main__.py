@@ -384,6 +384,14 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_concern.add_argument("--role", required=True, help="Runtime role recording the concern")
     p_skill_concern.add_argument("--json", action="store_true", help="Emit JSON")
 
+    p_skill_tokens = skill_sub.add_parser("tokens", help="Record token usage consumed by a Skill run")
+    p_skill_tokens.add_argument("--log", required=True, help="Skill run log to update")
+    p_skill_tokens.add_argument("--input", type=int, default=None, help="Input (prompt) tokens consumed")
+    p_skill_tokens.add_argument("--output", type=int, default=None, help="Output (completion) tokens consumed")
+    p_skill_tokens.add_argument("--total", type=int, default=None, help="Total tokens; defaults to input + output")
+    p_skill_tokens.add_argument("--note", default=None, help="Optional token usage note")
+    p_skill_tokens.add_argument("--json", action="store_true", help="Emit JSON")
+
     p_skill_close = skill_sub.add_parser("close", help="Apply the Skill run closure gate")
     p_skill_close.add_argument("--log", required=True, help="Skill run log to close")
     p_skill_close.add_argument("--note", default=None, help="Optional closure event note")
@@ -453,6 +461,10 @@ def main(argv: list[str] | None = None) -> int:
             from fm.skillrun import cmd_skill_concern
 
             return cmd_skill_concern(args)
+        if args.skill_cmd == "tokens":
+            from fm.skillrun import cmd_skill_tokens
+
+            return cmd_skill_tokens(args)
         if args.skill_cmd == "close":
             from fm.skillrun import cmd_skill_close
 
