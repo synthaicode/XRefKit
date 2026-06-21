@@ -23,12 +23,14 @@ inputs:
   - coding_rules
   - naming_rules
   - test_viewpoints
+  - quality_feedback_items
 outputs:
   - implemented_code
   - unit_test_results
   - unit_test_execution_basis_reference
   - implementation_basis_design_reference
   - self_check_result
+  - quality_feedback_response
   - unresolved_list
   - uncertainty_list
   - out_of_scope_list
@@ -42,20 +44,29 @@ handoff:
     - unit_test_execution_basis_reference
     - implementation_basis_design_reference
     - self_check_result
+    - quality_feedback_response
     - unresolved_list
     - out_of_scope_list
   escalation:
     - implementation_assumption_gap_to_unknown_or_out_of_scope
+    - quality_feedback_tradeoff_or_scope_conflict_to_coordinator
     - out_of_scope_to_coordinator
 sequence:
   - confirm_approved_scope
+  - classify_quality_feedback_items
   - implementation
   - unit_test_execution
   - record_implementation_to_design_trace
+  - return_quality_feedback_response
+  - quality_source_recheck_or_redisposition
   - manufacturing_self_check
   - handoff_to_quality_review
 control_rules:
   - stays_inside_approved_boundary
   - does_not_change_design_policy
   - implementation_assumption_gaps_must_be_recorded
+  - quality_feedback_without_tradeoff_is_fixed_by_implementation
+  - quality_feedback_with_tradeoff_or_scope_conflict_is_escalated
+  - quality_source_must_recheck_or_redispose_after_feedback_fix
+  - pending_runtime_tests_do_not_block_source_quality_feedback
   - group_internal_self_check_before_external_review
