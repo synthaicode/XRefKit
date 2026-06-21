@@ -8,7 +8,7 @@
 - use_when: business-logic specs may leave boundary, exception, or transition behavior to implicit AI completion
 - input: flowcharts, calculation rules, state models, approval rules, and logic design notes
 - output: LCD-prefixed derivation file under `work/constraint_derivation/` by default, plus grouped confirmation items and any required state-transition matrix
-- maturity: `draft`
+- maturity: `trial`
 - execution_mode: `local_default`
 - model_tier: `standard`
 - guard_policy: `required`
@@ -38,3 +38,5 @@
   - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
   - `../../../../knowledge/packs/constraint-derivation/140_logic_constraint_derivation_catalog.md#xid-4E5B8923C912`
+- observation_refs:
+  - ../../../../work/sessions/2026-06-21_skill_run_skill_flow_authoring.md

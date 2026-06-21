@@ -8,7 +8,7 @@
 - use_when: DDL, code, and external-boundary specs together may hide partial-failure, retry, or compensation scenarios that unit-level reasoning misses
 - input: DDL or schema definitions, processing-order-aware code, external API or boundary specs, and optional retry or transaction notes
 - output: ISD-prefixed derivation file under `work/constraint_derivation/` by default, plus compensation-design items, partial-failure matrices, and post-confirmation test candidates
-- maturity: `draft`
+- maturity: `trial`
 - execution_mode: `local_default`
 - model_tier: `heavy`
 - guard_policy: `required`
@@ -39,4 +39,5 @@
   - `../../../../docs/014_working_area_policy.md#xid-111D282CA0EA`
   - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
   - `../../../../knowledge/packs/constraint-derivation/210_integration_scenario_derivation_catalog.md#xid-C3F60AEB5D93`
-
+- observation_refs:
+  - ../../../../work/sessions/2026-06-21_skill_run_skill_flow_authoring.md

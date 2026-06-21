@@ -8,7 +8,7 @@
 - use_when: design specifications or implementation artifacts need derivation of missing confirmations, hidden assumptions, or boundary scenarios without implicit AI completion
 - input: design artifacts, code artifacts, partial specs, expected implementation target, and optional already-derived constraint lists
 - output: selected primary Skill set, execution order, shared derivation policy reminder, optional secondary-pass trigger decision, and a routing note written under `work/constraint_derivation/` unless the user specifies another path
-- maturity: `draft`
+- maturity: `trial`
 - execution_mode: `local_default`
 - model_tier: `light`
 - guard_policy: `required`
@@ -37,3 +37,5 @@
 - knowledge_refs:
   - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
+- observation_refs:
+  - ../../../../work/sessions/2026-06-21_skill_run_skill_flow_authoring.md

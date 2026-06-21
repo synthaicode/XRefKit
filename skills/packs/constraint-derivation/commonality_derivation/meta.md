@@ -8,7 +8,7 @@
 - use_when: multiple primary derivation outputs exist and the user needs a second pass for shared implementation candidates or scope-boundary checks
 - input: completed DCD/UCD/LCD/ICD/ACD/AACD/CCD/XCD/ISD lists with traceable ids and optional pack-level design context
 - output: CD-prefixed commonality file under `work/constraint_derivation/` by default, plus CB-prefixed boundary checks and grouped human confirmation points
-- maturity: `draft`
+- maturity: `trial`
 - execution_mode: `local_default`
 - model_tier: `standard`
 - guard_policy: `required`
@@ -38,3 +38,5 @@
   - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
   - `../../../../knowledge/packs/constraint-derivation/180_commonality_derivation_signals.md#xid-9C27AE51D648`
+- observation_refs:
+  - ../../../../work/sessions/2026-06-21_skill_run_skill_flow_authoring.md

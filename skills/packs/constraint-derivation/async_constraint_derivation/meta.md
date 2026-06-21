@@ -8,7 +8,7 @@
 - use_when: queue, job, or batch specs may leave retry, restart, duplicate-run, or partial-failure behavior to implicit AI completion
 - input: job definitions, batch designs, queue models, schedule rules, and async processing notes
 - output: ACD-prefixed derivation file under `work/constraint_derivation/` by default, plus grouped confirmation items and rerun or restart matrices where required
-- maturity: `draft`
+- maturity: `trial`
 - execution_mode: `local_default`
 - model_tier: `standard`
 - guard_policy: `required`
@@ -38,3 +38,5 @@
   - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
   - `../../../../knowledge/packs/constraint-derivation/160_async_constraint_derivation_catalog.md#xid-72ECA94D1B35`
+- observation_refs:
+  - ../../../../work/sessions/2026-06-21_skill_run_skill_flow_authoring.md
