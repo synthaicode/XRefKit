@@ -55,7 +55,7 @@ steps:
   supplier_four_condition_check:
     facets: [estimator_persona, supplier_condition_policy]
     permission: { edit: false }
-    capability: CAP-EST-SUPPLIER-CHECK
+    capability: CAP-SUP-001
     on:
       Go: cost_estimation
       Hold:
@@ -78,7 +78,7 @@ steps:
   cost_estimation:
     facets: [estimator_persona, cost_policy]
     permission: { edit: false }
-    capability: CAP-EST-COST
+    capability: CAP-SUP-002
     acceptance:
       - { review: independent_quality_review }
     on:
@@ -96,7 +96,7 @@ steps:
   solution_option_generation:
     facets: [estimator_persona, solution_option_policy]
     permission: { edit: false }
-    capability: CAP-EST-OPTIONS
+    capability: CAP-EST-001
     acceptance:
       - { review: independent_quality_review }
     on:
@@ -116,7 +116,7 @@ steps:
   assumption_ambiguity_classification:
     facets: [estimator_persona, ambiguity_policy]
     permission: { edit: true, paths: ["work/estimation/**"] }
-    capability: CAP-EST-AMBIGUITY
+    capability: CAP-EST-002
     on:
       Go: COMPLETE
       Hold:

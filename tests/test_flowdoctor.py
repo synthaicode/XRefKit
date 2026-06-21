@@ -58,6 +58,19 @@ class FlowDoctorTests(unittest.TestCase):
             path.write_text(yaml.safe_dump(data), encoding="utf-8")
             return validate_flow(path)
 
+    def _check_with_capabilities(self, data: dict, capability_ids: list[str]):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            flow_dir = root / "flows"
+            cap_dir = root / "capabilities"
+            flow_dir.mkdir()
+            cap_dir.mkdir()
+            path = flow_dir / "flow.yaml"
+            path.write_text(yaml.safe_dump(data), encoding="utf-8")
+            cap_text = "\n".join(f"- capability_id: `{cap_id}`" for cap_id in capability_ids)
+            (cap_dir / "declared.md").write_text(cap_text, encoding="utf-8")
+            return validate_flow(path)
+
     def test_valid_flow_passes(self):
         result = self._check(_valid_flow())
         self.assertTrue(result.ok, result.errors)
@@ -84,6 +97,18 @@ class FlowDoctorTests(unittest.TestCase):
         result = self._check(data)
         self.assertFalse(result.ok)
         self.assertTrue(any("K3/K5" in e for e in result.errors))
+
+    def test_unresolved_capability_fails_g3(self):
+        data = _valid_flow()
+        result = self._check_with_capabilities(data, ["CAP-MFG-001"])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("(G3)" in e for e in result.errors))
+        self.assertFalse(any("(G3)" in w for w in result.warnings))
+
+    def test_declared_capability_passes_g3(self):
+        data = _valid_flow()
+        result = self._check_with_capabilities(data, ["CAP-DRAFT"])
+        self.assertTrue(result.ok, result.errors)
 
     def test_handback_without_resume_fails_h1(self):
         data = _valid_flow()

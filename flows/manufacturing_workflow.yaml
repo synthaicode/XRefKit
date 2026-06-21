@@ -93,12 +93,12 @@ steps:
             rejected: ABORT
       _invalid_or_absent: ABORT
 
-  # ② evaluation — classify quality feedback (tradeoff vs no-tradeoff is the axis).
+  # ③ route — classify quality feedback from recorded labels.
   # No tradeoff proceeds to implementation; a tradeoff / scope conflict Holds.
   classify_quality_feedback_items:
     facets: [manufacturer_persona, feedback_classification_policy]
     permission: { edit: false }
-    capability: CAP-MFG-CLASSIFY-FEEDBACK
+    result_map: { complete: Go, escalate: Hold }
     on:
       Go: implementation
       Hold:
@@ -121,7 +121,7 @@ steps:
   implementation:
     facets: [manufacturer_persona, implementation_policy]
     permission: { edit: true, paths: ["src/**", "work/manufacturing/**"] }
-    capability: CAP-MFG-IMPLEMENT
+    capability: CAP-MFG-001
     acceptance:
       - { review: independent_quality_review }
     on:
@@ -155,11 +155,11 @@ steps:
       Recycle: implementation
       _invalid_or_absent: ABORT
 
-  # ② evaluation — respond to quality feedback. A tradeoff / scope conflict Holds.
+  # ③ route — respond to quality feedback. A tradeoff / scope conflict Holds.
   return_quality_feedback_response:
     facets: [manufacturer_persona, feedback_response_policy]
     permission: { edit: true, paths: ["work/manufacturing/**"] }
-    capability: CAP-MFG-FEEDBACK-RESPONSE
+    result_map: { complete: Go, escalate: Hold }
     on:
       Go: quality_source_recheck_or_redisposition
       Hold:
@@ -178,12 +178,12 @@ steps:
             resolved: return_quality_feedback_response
             rejected: ABORT
 
-  # ② evaluation — recheck/redispose the quality source after the fix (the source
-  # quality axis is the gate). Redisposition that needs more code Recycles.
+  # ③ tool gate — recheck/redispose the quality source after the fix. A result
+  # that needs more code Recycles.
   quality_source_recheck_or_redisposition:
     facets: [manufacturer_persona, quality_source_policy]
     permission: { edit: false }
-    capability: CAP-MFG-QUALITY-RECHECK
+    result_map: { complete: Go, needs_fix: Recycle }
     on:
       Go: manufacturing_self_check
       Recycle: implementation
@@ -200,7 +200,7 @@ steps:
   manufacturing_self_check:
     facets: [manufacturer_persona, self_check_policy]
     permission: { edit: false }
-    capability: CAP-MFG-SELF-CHECK
+    capability: CAP-MFG-004
     on:
       Go: handoff_to_quality_review
       Recycle: implementation

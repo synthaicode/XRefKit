@@ -73,7 +73,7 @@ steps:
   management_table_check:
     facets: [closer_persona, table_check_policy]
     permission: { edit: false }
-    capability: CAP-CLO-TABLE-CHECK
+    capability: CAP-QA-004
     on:
       complete: confirm_final_statuses
       incomplete: return_incomplete_rows
@@ -101,7 +101,7 @@ steps:
   confirm_final_statuses:
     facets: [closer_persona, final_status_policy]
     permission: { edit: false }
-    capability: CAP-CLO-FINAL-STATUS
+    result_map: { complete: final, needs_fix: not_final }
     on:
       final: out_of_scope_escalation
       not_final: return_incomplete_rows
@@ -115,7 +115,6 @@ steps:
   out_of_scope_escalation:
     facets: [closer_persona, out_of_scope_policy]
     permission: { edit: false }
-    capability: CAP-CLO-OUT-OF-SCOPE
     on:
       Go: route_final_unknown_to_human
       Hold:
@@ -134,7 +133,6 @@ steps:
   route_final_unknown_to_human:
     facets: [closer_persona, final_unknown_policy]
     permission: { edit: false }
-    capability: CAP-CLO-FINAL-UNKNOWN
     on:
       Go: emit_structural_feedback_when_needed
       Hold:
@@ -154,7 +152,7 @@ steps:
   emit_structural_feedback_when_needed:
     facets: [closer_persona, feedback_decision_policy]
     permission: { edit: false }
-    capability: CAP-CLO-FEEDBACK-DECISION
+    result_map: { complete: no_feedback, needs_fix: feedback_needed }
     on:
       feedback_needed: emit_structural_feedback
       no_feedback: COMPLETE

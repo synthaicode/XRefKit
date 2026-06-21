@@ -68,7 +68,7 @@ steps:
   release_plan_suitability_review:
     facets: [cab_reviewer_persona, release_suitability_policy]
     permission: { edit: false }
-    capability: CAP-CAB-PLAN-SUITABILITY
+    capability: CAP-QA-003
     on:
       Go: operational_readiness_evaluation
       Hold:
@@ -91,7 +91,7 @@ steps:
   operational_readiness_evaluation:
     facets: [cab_reviewer_persona, operational_readiness_policy]
     permission: { edit: false }
-    capability: CAP-CAB-OPS-READINESS
+    capability: CAP-OPS-004
     on:
       Go: value_constraint_fit_evaluation
       Hold:
@@ -114,7 +114,7 @@ steps:
   value_constraint_fit_evaluation:
     facets: [cab_reviewer_persona, value_constraint_policy]
     permission: { edit: false }
-    capability: CAP-CAB-VALUE-FIT
+    capability: CAP-BIZ-001
     on:
       Go: consolidate_evaluation
       Hold:
@@ -139,7 +139,7 @@ steps:
   consolidate_evaluation:
     facets: [cab_consolidation_policy]
     permission: { edit: false }
-    capability: CAP-CAB-CONSOLIDATE
+    result_map: { complete: no_feedback, needs_fix: feedback_needed }
     on:
       feedback_needed: emit_structural_feedback
       no_feedback: human_release_gate

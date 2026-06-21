@@ -65,7 +65,7 @@ steps:
   release_plan_draft_creation:
     facets: [release_planner_persona, release_plan_policy]
     permission: { edit: false }
-    capability: CAP-REL-PLAN-DRAFT
+    capability: CAP-OPS-001
     acceptance:
       - { review: independent_quality_review }
     on:
@@ -80,9 +80,7 @@ steps:
   split_environment_release_plans:
     facets: [release_planner_persona, environment_split_policy]
     permission: { edit: false }
-    capability: CAP-REL-ENV-SPLIT
-    acceptance:
-      - { review: independent_quality_review }
+    result_map: { complete: Go, needs_fix: Recycle }
     on:
       Go: record_release_to_policy_trace
       Recycle: split_environment_release_plans
@@ -104,7 +102,7 @@ steps:
   monitoring_design:
     facets: [release_planner_persona, monitoring_policy]
     permission: { edit: false }
-    capability: CAP-REL-MONITORING
+    capability: CAP-OPS-002
     acceptance:
       - { review: independent_quality_review }
     on:
@@ -119,7 +117,7 @@ steps:
   event_response_procedure_drafting:
     facets: [release_planner_persona, event_response_policy]
     permission: { edit: false }
-    capability: CAP-REL-EVENT-RESPONSE
+    capability: CAP-OPS-003
     acceptance:
       - { review: independent_quality_review }
     on:
@@ -136,7 +134,7 @@ steps:
   operational_readiness_gate:
     facets: [release_planner_persona, readiness_policy]
     permission: { edit: false }
-    capability: CAP-REL-READINESS
+    capability: CAP-OPS-004
     on:
       Go: release_verification
       Recycle: release_plan_draft_creation

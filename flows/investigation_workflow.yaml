@@ -73,7 +73,7 @@ steps:
   service_catalog_analysis:
     facets: [investigator_persona, service_catalog_policy]
     permission: { edit: false }
-    capability: CAP-INV-SERVICE-SCOPE
+    capability: CAP-INV-001
     on:
       Go: source_and_dependency_analysis
       Hold:
@@ -98,7 +98,7 @@ steps:
   source_and_dependency_analysis:
     facets: [investigator_persona, source_analysis_policy]
     permission: { edit: false }
-    capability: CAP-INV-SOURCE-DEPENDENCY
+    capability: CAP-INV-002
     acceptance:
       - { review: independent_quality_review }
     on:
@@ -116,7 +116,7 @@ steps:
   change_target_summarization:
     facets: [investigator_persona, summarization_policy]
     permission: { edit: false }
-    capability: CAP-INV-CHANGE-SUMMARY
+    capability: CAP-INV-003
     acceptance:
       - { review: independent_quality_review }
     on:
@@ -135,7 +135,6 @@ steps:
   record_uncertainty_and_evidence_gaps:
     facets: [investigator_persona, uncertainty_policy]
     permission: { edit: true, paths: ["work/investigation/**"] }
-    capability: CAP-INV-UNCERTAINTY
     on:
       Go: verify_coverage
       Hold:

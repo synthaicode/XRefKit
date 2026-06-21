@@ -88,6 +88,8 @@ Each step is one 作業 and declares:
 - `capability` — **optional, and the only place non-determinism is allowed.**
   Present only at a context-consolidation point (② — a decision or a generation).
   A step with no `capability` is deterministic (① routing or ③ tool/verification).
+  When present, the value must be a declared capability id from `capabilities/`;
+  unresolved or fabricated ids fail `flow doctor`.
 - `acceptance` — the acceptance criterion for this 作業 (see *Acceptance* below)
 - `result_map` — for ③ steps only: the mapping from closure outcomes
   (`complete` / `needs_fix` / `escalate` / `uncertain` / `blocked`) to exit
@@ -222,6 +224,8 @@ A conforming flow passes the **flow doctor Check Items** (graph closure,
 determinism closure, human-edge contract, capability localization, per-step
 declaration) enumerated in
 [Deterministic flow control kernel design](073_deterministic_flow_control_kernel_design.md#xid-4C7E9A2B1D63).
+In particular, `capability:` is not a free-form label: it must resolve to the
+real capability catalog, and unresolved references are hard validation failures.
 
 ## Authoring Rule
 
