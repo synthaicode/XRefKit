@@ -125,6 +125,9 @@ This yields an auditable invariant:
 - Tool execution and verification (③) must be deterministic — no capability, even
   when invoked **inside** a consolidation step;
 - a context-consolidation point is the only place a capability is declared;
+- a declared capability must resolve to a real catalog id under `capabilities/`;
+  fabricated ids are not placeholders, because they create an unaudited
+  non-deterministic surface;
 - a generation 作業's transition label must come from deterministic verification
   (③), not from the generated artifact;
 - a hidden branch or an undeclared consolidation is flagged.
@@ -482,6 +485,8 @@ model.
   point) is flagged as misplaced
 - K6 — a generation 作業's transition label is produced by deterministic
   verification (③), not by the generated artifact
+- G3 — every `capability:` value resolves to a declared capability id in
+  `capabilities/`; unresolved or fabricated ids are hard failures, not warnings
 
 **Per-step declaration**
 

@@ -92,6 +92,53 @@ function extractList(lines, key) {
   return values;
 }
 
+function extractStepNames(lines) {
+  // Deterministic flow schema (docs/018, docs/073) replaced the legacy
+  // `sequence:` list with a `steps:` mapping. Step names are the shallowest
+  // mapping keys directly under `steps:`; everything deeper (facets, on,
+  // handback, resume, ...) is step body and must be ignored.
+  const names = [];
+  let inSteps = false;
+  let stepsIndent = 0;
+  let stepIndent = -1;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) {
+      continue;
+    }
+
+    const indent = line.length - line.trimStart().length;
+
+    if (!inSteps) {
+      if (line.startsWith("steps:")) {
+        inSteps = true;
+        stepsIndent = indent;
+      }
+      continue;
+    }
+
+    if (indent <= stepsIndent) {
+      break;
+    }
+
+    if (stepIndent === -1) {
+      stepIndent = indent;
+    }
+
+    if (indent !== stepIndent) {
+      continue;
+    }
+
+    const match = trimmed.match(/^([A-Za-z0-9_]+):$/);
+    if (match) {
+      names.push(match[1]);
+    }
+  }
+
+  return names;
+}
+
 function extractNestedList(lines, sectionKey, key) {
   const values = [];
   const sectionPrefix = `${sectionKey}:`;
@@ -180,17 +227,19 @@ function extractTask(text) {
 }
 
 function mergeLoggingRecommendation(flowMonitoring, fallbackMonitoring) {
-  const flowDefined = flowMonitoring
-    && (flowMonitoring.decisions.length || flowMonitoring.checklists.length || flowMonitoring.paths.length);
+  // The deterministic flow schema can express step paths (handoff.escalation)
+  // but not domain decision/checklist labels, so fall back per-kind: the flow
+  // YAML owns whatever it defines, and `flow-log-presets.json` supplies the
+  // kinds the schema does not model.
+  const flow = flowMonitoring || { decisions: [], checklists: [], paths: [] };
+  const fallback = fallbackMonitoring || { decisions: [], checklists: [], paths: [] };
+  const pick = (kind) =>
+    (flow[kind] && flow[kind].length ? flow[kind] : fallback[kind] || []);
 
-  if (flowDefined) {
-    return flowMonitoring;
-  }
-
-  return fallbackMonitoring || {
-    decisions: [],
-    checklists: [],
-    paths: [],
+  return {
+    decisions: pick("decisions"),
+    checklists: pick("checklists"),
+    paths: pick("paths"),
   };
 }
 
@@ -212,21 +261,35 @@ function loadFlowDefinitions(skillCatalog = loadSkillCatalog()) {
       const filePath = path.join(FLOWS_DIR, entry.name);
       const content = readFileSafe(filePath);
       const lines = content.split(/\r?\n/);
+      // Prefer the deterministic schema's `steps:` mapping; fall back to the
+      // legacy `sequence:` list for any flow not yet migrated.
+      const stepNames = extractStepNames(lines);
+      const legacySequence = extractList(lines, "sequence");
       const flow = {
         file_name: entry.name,
         flow_id: extractScalar(lines, "flow_id"),
         name: extractScalar(lines, "name"),
         phase: extractScalar(lines, "phase"),
         doc_xid: extractScalar(lines, "doc_xid"),
-        sequence: extractList(lines, "sequence"),
+        entry: extractScalar(lines, "entry"),
+        sequence: stepNames.length ? stepNames : legacySequence,
         control_rules: extractList(lines, "control_rules"),
         inputs: extractList(lines, "inputs"),
         outputs: extractList(lines, "outputs"),
       };
+      // Recommended paths come from the schema's escalation routes
+      // (handoff.escalation) plus any legacy `monitoring.paths`. Decisions and
+      // checklists are not modeled by the schema, so they stay preset-sourced.
+      const escalationPaths = extractNestedList(lines, "handoff", "escalation");
       const monitoring = {
         decisions: extractNestedList(lines, "monitoring", "decisions"),
         checklists: extractNestedList(lines, "monitoring", "checklists"),
-        paths: extractNestedList(lines, "monitoring", "paths"),
+        paths: [
+          ...new Set([
+            ...extractNestedList(lines, "monitoring", "paths"),
+            ...escalationPaths,
+          ]),
+        ],
       };
       flow.slug = normalizeKey(flow.name || flow.flow_id || entry.name.replace(/\.yaml$/i, ""));
       flow.logging_recommendation = mergeLoggingRecommendation(monitoring, logPresets[flow.name] || {

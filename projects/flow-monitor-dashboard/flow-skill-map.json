@@ -29,6 +29,7 @@
   ],
   "manufacturing_workflow": [
     "implementation_flow",
+    "csharp_review",
     "manufacturing_self_check",
     "qa_gate_review",
     "management_table_control"

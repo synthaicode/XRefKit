@@ -52,6 +52,24 @@ def _load_flow(path: Path) -> object:
     return yaml.load(path.read_text(encoding="utf-8"), Loader=_FlowLoader)
 
 
+_CAP_ID_RE = re.compile(r"CAP-[A-Z]+-\d+")
+_CAP_CACHE: dict[str, set[str]] = {}
+
+
+def _capability_ids(root: Path) -> set[str]:
+    """Collect declared capability ids (CAP-XXX-NNN) from capabilities/."""
+    key = str(root)
+    if key in _CAP_CACHE:
+        return _CAP_CACHE[key]
+    ids: set[str] = set()
+    capdir = root / "capabilities"
+    if capdir.exists():
+        for p in capdir.rglob("*.md"):
+            ids |= set(_CAP_ID_RE.findall(p.read_text(encoding="utf-8", errors="ignore")))
+    _CAP_CACHE[key] = ids
+    return ids
+
+
 FLOWS_DIR = "flows"
 TERMINALS = {"COMPLETE", "ABORT"}
 FALLBACK_LABEL = "_invalid_or_absent"
@@ -60,6 +78,15 @@ CLOSURE_OUTCOMES = {"complete", "needs_fix", "escalate", "uncertain", "blocked"}
 # Canonical acceptance-gate verdicts (Stage-Gate vocabulary; see 073/018). Each
 # verdict constrains the kind of target it may route to.
 CANONICAL_VERDICTS = {"Go", "Kill", "Hold", "Recycle"}
+
+
+def _project_root_for_flow(path: Path) -> Path:
+    """Resolve the project root for top-level and pack-owned flow files."""
+    resolved = path.resolve()
+    for parent in resolved.parents:
+        if parent.name == FLOWS_DIR:
+            return parent.parent
+    return resolved.parent.parent
 
 
 @dataclass
@@ -177,6 +204,7 @@ def validate_flow(path: Path) -> FlowDoctorResult:
         return FlowDoctorResult(str(path), flow_id_s, "unknown", False, errors, warnings)
 
     step_names = set(steps)
+    cap_ids = _capability_ids(_project_root_for_flow(path))
 
     # C4 — entry exists.
     entry = data.get("entry")
@@ -192,6 +220,16 @@ def validate_flow(path: Path) -> FlowDoctorResult:
 
         has_cap = bool(sdef.get("capability"))
         has_result_map = "result_map" in sdef and sdef.get("result_map") is not None
+
+        # G3 — capability references must resolve to a declared capability.
+        cap = sdef.get("capability")
+        caprefs = [cap] if isinstance(cap, str) else (cap if isinstance(cap, list) else [])
+        for c in caprefs:
+            if cap_ids and c not in cap_ids:
+                errors.append(
+                    f"{where}: capability '{c}' does not resolve to a declared capability "
+                    "in capabilities/ (G3)"
+                )
 
         # P1 / P2 — declaration completeness (warnings).
         if "facets" not in sdef:
@@ -349,7 +387,7 @@ def _discover_flows(root: Path) -> list[Path]:
     base = root / FLOWS_DIR
     if not base.exists():
         return []
-    return sorted(base.glob("*.yaml")) + sorted(base.glob("*.yml"))
+    return sorted(base.rglob("*.yaml")) + sorted(base.rglob("*.yml"))
 
 
 def cmd_flow_doctor(args) -> int:

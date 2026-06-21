@@ -8,7 +8,7 @@
 - use_when: external integration specs may leave failure, timing, retry, or idempotency behavior to implicit AI completion
 - input: API specs, integration flow diagrams, webhook notes, file exchange definitions, and messaging contracts
 - output: ICD-prefixed derivation file under `work/constraint_derivation/` by default, plus grouped confirmation items and idempotency or retry matrices where required
-- maturity: `draft`
+- maturity: `trial`
 - execution_mode: `local_default`
 - model_tier: `standard`
 - guard_policy: `required`
@@ -38,3 +38,5 @@
   - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
   - `../../../../knowledge/packs/constraint-derivation/150_integration_constraint_derivation_catalog.md#xid-6F0D7C1A2E44`
+- observation_refs:
+  - ../../../../work/sessions/2026-06-21_skill_run_skill_flow_authoring.md

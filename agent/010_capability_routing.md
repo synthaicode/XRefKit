@@ -31,6 +31,15 @@ This page defines how an agent should route a user request through workflow, cap
 - Business intake requests with incomplete structure should default here first, not directly to scoping.
 - Business intake scoping after a first business hypothesis already exists and the business unit is already scope-ready:
   - route to `skills/packs/business-intake/business_intake_scoping/meta.md`
+- Business-intake startup must use the decision table in
+  [Business intake pack entry](../docs/066_business_intake_pack_entry.md#xid-732E41DCA2E8):
+  - no visible business seed -> ask for one seed before starting the pack
+  - visible seed but unclear goal, judgment, ownership, or handoff ->
+    `business_learning_interview`
+  - visible target or candidate business unit with previous/current/next
+    boundary evidence -> `business_intake_scoping`
+  - only local screen clicks or personal habits -> recover the business goal and
+    responsibility boundary before treating the request as scope-ready
 - Investigation or impact analysis:
   - [Investigation workflow](../docs/032_investigation_workflow.md#xid-8B31F02A4001)
 - .NET application structure analysis or change-impact investigation before design or implementation (structure, DI lifetimes, pipeline order, boundaries, attribute activation):
@@ -157,5 +166,4 @@ Then use the control path defined by:
 - [Agent Entry](000_agent_entry.md#xid-0B5C58B5E5B2)
 - [Startup xref routing policy](../docs/011_startup_xref_routing.md#xid-6C0B62D6366A)
 - [Capability layering](../docs/031_capability_layering.md#xid-8D50A972BA9F)
-
 

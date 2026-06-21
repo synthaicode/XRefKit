@@ -236,7 +236,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_flow_doctor.add_argument(
         "--flow",
         default=None,
-        help="Relative path to a single flow file (default: all flows/*.yaml)",
+        help="Relative path to a single flow file (default: all flows/**/*.yaml)",
     )
     p_flow_doctor.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
 

@@ -75,7 +75,7 @@ steps:
   solution_design_drafting:
     facets: [designer_persona, design_policy]
     permission: { edit: false }
-    capability: CAP-DSN-SOLUTION
+    capability: CAP-DSN-001
     acceptance:
       - { review: independent_quality_review }
     on:
@@ -103,9 +103,7 @@ steps:
   prepare_test_and_manufacturing_handoff:
     facets: [designer_persona, handoff_policy]
     permission: { edit: false }
-    capability: CAP-DSN-HANDOFF-PREP
-    acceptance:
-      - { review: independent_quality_review }
+    result_map: { complete: Go, needs_fix: Recycle }
     on:
       Go: design_approval
       Recycle: prepare_test_and_manufacturing_handoff

@@ -24,6 +24,7 @@ Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4
 ## Required Knowledge (XID)
 
 - [C# review spec](../../knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4F6F3AA)
+- [Quality feedback return rules](../../knowledge/organization/190_quality_feedback_return_rules.md#xid-7A2F4C8D1901)
 - [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
 - [Custom framework common criteria](../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002)
 - [C# custom framework analysis criteria](../../knowledge/csharp/110_custom_framework_analysis_criteria.md#xid-30E6A4F6F3AB)
@@ -44,6 +45,8 @@ Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4
 
 ## Outputs
 
+- check item matrix with each reviewed category and deterministic baseline
+  marked `pass`, `fail`, `pass-after-fix`, `escalated`, or `not_applicable`
 - findings list with severity (`critical`, `major`, `minor`, `needs_confirmation`)
 - for each finding: evidence path, violated condition, and remediation
 - summary by category:
@@ -54,6 +57,7 @@ Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4
   - error handling
   - time and culture
 - handoff list for out-of-scope findings (security, design assumptions)
+- implementation-return feedback items for implementation-local findings
 - a gate verdict block (see Gate Verdict Output)
 
 ## Gate Verdict Output
@@ -230,6 +234,17 @@ required_followup: <next owner or specialist Skill, or none>
   - if the claim cannot be verified, state the remediation conditionally and
     mark the finding `needs_confirmation` with the unverified API fact named
 - Report findings with concrete evidence and remediation.
+- Emit a check item matrix before the findings list. The matrix must include
+  each active review category, deterministic baseline checks, pending
+  validation boundaries, status, evidence, and notes. Categories with no
+  finding must still be present as `pass` or `not_applicable`; do not make
+  clean categories invisible.
+- For findings that are implementation-local under
+  [Quality feedback return rules](../../knowledge/organization/190_quality_feedback_return_rules.md#xid-7A2F4C8D1901),
+  mark the required follow-up as a return to `implementation_flow`.
+- Pending runtime, integration, or manual tests do not block source review.
+  Keep those tests as validation handoff items while still returning
+  source-evaluable implementation findings.
 
 ## Monitoring and Control
 
@@ -260,6 +275,8 @@ Closure is allowed only when all of the following hold:
 
 - the Roslyn baseline state is explicit (`collected` or `baseline_unavailable`)
 - every active category has a findings result or an explicit empty result
+- the findings output includes a check item matrix covering every active
+  category and deterministic baseline
 - every finding carries evidence, severity, and remediation (or
   `needs_confirmation` with the missing evidence named)
 - out-of-scope discoveries are on the handoff list, not silently dropped
@@ -269,6 +286,14 @@ Closure is allowed only when all of the following hold:
 
 - Hand the findings list and category summaries to the requester or the fix
   owner; fixes are a separate run, not part of this skill.
+- Hand implementation-local findings back to `implementation_flow` with the
+  finding id, evidence, violated condition, remediation direction, and any
+  pending validation boundary. If findings conflict with each other or require
+  design/business/security/dependency decisions, mark them as escalation
+  instead of implementation-local.
+- After implementation returns a fix response, rerun the relevant source check
+  or explicitly re-dispose the finding from the returned evidence before
+  changing the source gate verdict to `proceed`.
 - Security-scope findings (injection paths, hardcoded secrets, disabled
   certificate validation, and similar) are handed off to
   `skills/security_review/meta.md` — record them on the handoff list, do not

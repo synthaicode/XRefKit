@@ -145,7 +145,9 @@ conventions.
 ### Business Or Domain Pack
 
 A business or domain pack is the part that defines what concrete work the agent
-is doing.
+is doing. This is the business work (業務) the OS exists to execute — the
+purpose of the OS, not a demonstration of it. The OS core is the reusable
+substrate; business packs are why that substrate exists.
 
 It owns:
 
@@ -277,6 +279,14 @@ split between:
 ## Design Rules
 
 - Do not describe business packs as if they are the OS.
+- Do not treat business packs as demonstrations of the OS; the OS exists to
+  execute business work (業務) efficiently, so business is the purpose, not a
+  sample.
+- Define business (業務) from established domain knowledge (industry standards
+  and established practice), not from self-styled invention; this prevents
+  reinventing the wheel and avoids baking defects into the design.
+- For the deterministic part of a task (作業), prefer reusing established OSS
+  over building bespoke tools (reuse-before-build).
 - Do not bury OS-core controls inside business-only explanations.
 - Do not claim extraction readiness before compatibility boundaries are named.
 - Do not treat `xref` as the whole OS; it is one core subsystem.

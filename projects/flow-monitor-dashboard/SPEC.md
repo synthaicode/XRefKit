@@ -127,32 +127,37 @@ Skill `output` fields must continue to describe artifact outputs such as:
 
 They should not be redefined as monitor event logs.
 
-### 2. Move recommended monitor events into Flow YAML
+### 2. Derive monitor recommendations from the deterministic flow schema
 
-Each `flows/*.yaml` should gain a section such as:
+`flows/*.yaml` now uses the deterministic-control schema (`docs/018`,
+`docs/073`): a `steps:` mapping plus per-step `on`/`handback` transitions and a
+`handoff.escalation` list. The monitor derives recommendations directly from
+this schema instead of a separate `monitoring:` block:
+
+- step sequence: keys of the `steps:` mapping (legacy `sequence:` is read only
+  for any not-yet-migrated flow)
+- recommended paths: `handoff.escalation` entries (legacy `monitoring.paths`
+  is still merged when present)
 
 ```yaml
-monitoring:
-  decisions:
-    - implementation_boundary_review
-    - assumption_gap_recording
-  checklists:
-    - manufacturing_self_check
-  paths:
-    - handoff_to_quality_review
+steps:
+  implementation:
+    ...
+handoff:
+  escalation:
     - out_of_scope_to_coordinator
+    - quality_feedback_tradeoff_or_scope_conflict_to_coordinator
 ```
 
-This should become the canonical source for monitor recommendations.
+The schema is the canonical source for steps and paths.
 
-### 3. Treat `flow-log-presets.json` as migration-only
+### 3. Treat `flow-log-presets.json` as the source for decisions and checklists
 
-`flow-log-presets.json` should be one of the following:
-
-- removed after migration, or
-- retained temporarily only while Flow YAML files are being updated
-
-It should not remain the long-term source of truth.
+The deterministic schema does not model domain decision or checklist labels, so
+`flow-log-presets.json` is retained as the curated source for those two kinds.
+It is no longer the source of truth for steps or paths (those come from the
+schema), and it remains the fallback for paths only when a flow defines no
+escalation.
 
 ### 3a. Dashboard display should prefer observed keys
 
@@ -161,8 +166,8 @@ When a Flow already has monitoring traces, the dashboard display should prefer o
 Display priority:
 
 1. observed keys from project monitoring traces
-2. `flows/*.yaml` `monitoring:` definition
-3. `flow-log-presets.json` fallback during migration
+2. flow YAML schema (`steps:` for steps, `handoff.escalation` for paths)
+3. `flow-log-presets.json` (source for decisions and checklists; path fallback)
 
 For Skill runtime logs, the dashboard should also surface the observed output
 structure that humans need for review:
@@ -186,13 +191,14 @@ Adopt this file as the canonical monitor-side event specification.
 
 ### Phase 2
 
-Add `monitoring:` sections to Flow YAML files and mirror current preset values there.
+Flow YAML adopted the deterministic-control schema (`steps:` mapping and
+`handoff.escalation`) instead of a separate `monitoring:` block.
 
 ### Phase 3
 
-Update `server.js` to read recommended decisions / checklists / paths from `flows/*.yaml`.
-
-During migration, `flow-log-presets.json` may remain as fallback only when a Flow file does not yet define `monitoring:`.
+Update `server.js` to read the step sequence from `steps:` and recommended
+paths from `handoff.escalation`, keeping `flow-log-presets.json` as the source
+for decisions and checklists (and the fallback for paths).
 
 ### Phase 4
 
@@ -203,7 +209,7 @@ Update sample logs under `projects/*/flows/*/monitoring/` to conform exactly to 
 Alignment is complete when all of the following are true:
 
 - the monitor event schema is defined in this monitor-side spec
-- dashboard recommendations are derived from Flow YAML, not from a separate manual preset file
+- dashboard step and path recommendations are derived from the Flow YAML schema, with `flow-log-presets.json` owning only decisions and checklists
 - Skill `output` fields remain artifact-oriented
 - project monitoring traces under `projects/*/flows/*/monitoring/` conform to this spec
 - the dashboard still detects at least one project-side Flow run and at least one Skill runtime log from repository data during local checks

@@ -86,9 +86,7 @@ steps:
   read_domain_knowledge_and_current_source_findings:
     facets: [planner_persona, source_reading_policy]
     permission: { edit: false }
-    capability: CAP-PLN-READ-FINDINGS
-    acceptance:
-      - { review: independent_quality_review }
+    result_map: { complete: Go, needs_fix: Recycle }
     on:
       Go: work_planning_and_policy_drafting
       Recycle: read_domain_knowledge_and_current_source_findings
@@ -104,7 +102,7 @@ steps:
   work_planning_and_policy_drafting:
     facets: [planner_persona, planning_policy]
     permission: { edit: false }
-    capability: CAP-PLN-POLICY-DRAFT
+    capability: CAP-PLN-001
     acceptance:
       - { review: independent_quality_review }
     on:

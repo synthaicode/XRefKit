@@ -48,6 +48,11 @@ The primary value of this repository is to **connect each skill to domain knowle
 - Supporting: `fm xref` maintains IDs, link paths, and breakage checks
 - Outcome: skill-to-knowledge wiring stays stable even when tools or agents change
 
+In operating-model terms, this wiring is the OS's nervous system: `xref` is how
+the OS delivers `knowledge/` fragments to the task (作業) that needs them. See
+[Operating model: the OS drives business through tasks](#operating-model-the-os-drives-business-through-tasks)
+below.
+
 The repository therefore manages more than link stability:
 
 - base AI control rules
@@ -67,6 +72,63 @@ See [Base control and xref routing layers](017_base_and_xref_layering.md#xid-5A1
 As the repository is reorganized toward a clearer AI Agent OS shape, those
 layers should be treated as an operating core rather than as only
 documentation structure.
+
+## Operating model: the OS drives business through tasks
+
+Read together, those layers are the **OS**: base control plus xref routing form
+the operating core that **drives business work (業務)**. The OS behaves like the
+nervous system that carries control and knowledge to where work actually happens.
+
+The operating model has four levels:
+
+1. **OS** (base control + xref routing): routing, load gating,
+   execution/check separation, closure, audit, and `xref` durability. The OS
+   *executes business work*; it does not host detachable "apps".
+2. **Business (業務)**: a work domain (for example, C# code review). A business
+   is a **bundle of tasks** and requires domain knowledge to carry out. It is
+   expressed as a Business Pack (Flow / Capability / Skill / Knowledge).
+3. **Task (作業)**: a single work unit, done efficiently with a fit-for-purpose
+   tool. A task reaches the domain knowledge it needs through **XID**.
+4. **Tools (`tools/`)**: task-specialized determinism — a shared deterministic
+   primitive layer (like syscalls/libc). Both the OS control plane and business
+   tasks call into it; it is not partitioned by which layer calls a tool.
+
+Domain knowledge lives in `knowledge/`, and `xref`/XID is how the OS makes that
+knowledge reachable and usable by the right task. This is why `xref` is not a
+side feature: it is the conduit the OS uses to deliver knowledge to work.
+
+### Reuse established knowledge and tools
+
+The same principle applies at every level: **reuse established external authority
+instead of homegrown invention.**
+
+- **Business (業務)** is defined *from existing, established domain knowledge*
+  (industry standards and established practice — for ITSM, for example, ITIL,
+  ISO/IEC 20000, CAB). This prevents reinventing the wheel and suppresses flawed
+  self-styled (自己流) processes that bake defects into the design itself.
+- A **task (作業)** splits into a deterministic part and a non-deterministic part.
+  Push as much as possible into the deterministic part and, for it, **prefer
+  reusing established OSS over building bespoke tools** (reuse-before-build, as
+  with Roslyn + SARIF). Reserve the non-deterministic part for genuine LLM
+  judgment only.
+
+Both are the same move: validated external authority carries fewer defects, so it
+needs less rework. Self-styled approaches embed defects at the design root, which
+is far cheaper to prevent upstream than to recover through downstream gates. This
+fits the source-backed knowledge model (`sources/` → `knowledge/`; see
+[Sources](020_sources.md#xid-2FAD591BF725)).
+
+### Control is the source of efficiency
+
+The OS is optimized for **efficient task processing**, where efficiency means
+**minimizing rework, re-execution, and audit failure**. Control and quality
+gates are therefore kept and strengthened, not treated as overhead — they are
+how work stays efficient. The through-line at every level is **determinism**:
+deterministic checks at the OS level (`fm skill verify`,
+`tools/run_quality_gate.py`) and deterministic tools at the task level (the
+`tools/` extractors) make output reproducible, which removes rework and keeps
+work auditable. Determinism is both the efficiency mechanism and the control
+mechanism.
 
 ## What it means for AI to “manage XIDs”
 

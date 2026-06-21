@@ -71,7 +71,7 @@ steps:
   requirement_draft_creation:
     facets: [requirements_persona, requirement_policy]
     permission: { edit: false }
-    capability: CAP-REQ-DRAFT
+    capability: CAP-REQ-001
     acceptance:
       - { review: independent_quality_review }
     on:
@@ -89,7 +89,7 @@ steps:
   performance_requirement_definition:
     facets: [requirements_persona, performance_policy]
     permission: { edit: false }
-    capability: CAP-REQ-PERFORMANCE
+    capability: CAP-REQ-002
     acceptance:
       - { review: independent_quality_review }
     on:
@@ -108,7 +108,6 @@ steps:
   preserve_unresolved_evidence_gaps:
     facets: [requirements_persona, uncertainty_policy]
     permission: { edit: true, paths: ["work/requirements/**"] }
-    capability: CAP-REQ-EVIDENCE-GAPS
     on:
       Go: COMPLETE
       Hold:

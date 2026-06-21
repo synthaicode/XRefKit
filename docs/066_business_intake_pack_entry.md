@@ -20,6 +20,26 @@ Related:
 The `business-intake` pack learns incomplete business fragments and shapes them
 into one scope-ready business unit before later execution design.
 
+## Startup Decision Table
+
+Use this table before selecting either business-intake Skill. The pack may start
+from a single visible business seed; it must not require a complete business map
+before helping.
+
+| Visible input state | Start with | Reason |
+| --- | --- | --- |
+| No business seed is visible | Ask for one seed first | The pack needs at least a goal, task name, role, artifact, bottleneck, approval point, repeated error, or partial handoff. |
+| One or more seeds are visible, but the goal, judgment, ownership, or handoff is still unclear | `business_learning_interview` | The request is still in learning mode; produce an interview cycle and the smallest next question. |
+| A goal and candidate business unit are visible, but previous/current/next boundaries are incomplete | `business_learning_interview`, then reassess scoping readiness | Ownership and interpretation must not be promoted to scope-ready while both are provisional. |
+| A target task or candidate business unit is visible and at least part of the previous side, current responsibility, and next side can be named | `business_intake_scoping` | The request can be shaped into a responsibility-level scope, even if the result remains partial. |
+| The user provides only screen clicks, private habits, or local implementation steps | `business_intake_scoping` only to recover a business-level boundary; otherwise ask for the business goal | Work-step detail is not a valid starting level unless the business and responsibility levels are already explicit. |
+| The scope-ready fields are visible: start trigger, inputs, judgment point, outputs, send-back or stop condition, and next owner or next side | `business_intake_scoping` | The pack can produce a scoped intake note and handoff candidate for investigation, requirements, or planning. |
+
+`business_learning_interview` may recommend handoff to
+`business_intake_scoping`, but only when the scoping readiness fields are visible.
+`business_intake_scoping` may still return `partial`; partial scoping is valid
+when the missing boundary and next confirmation point are explicit.
+
 ## Canonical Manifest
 
 The machine-checkable definition of this pack is its manifest:

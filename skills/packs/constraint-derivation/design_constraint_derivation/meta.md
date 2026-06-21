@@ -8,7 +8,7 @@
 - use_when: DDL, schema, ER, or CRUD-oriented design structures may hide unresolved behavior that AI would otherwise complete implicitly
 - input: DDL, schema definitions, ER models, CRUD design notes, and related operation descriptions
 - output: DCD-prefixed derivation file under `work/constraint_derivation/` by default, plus design-time decision list and any required combination-expansion matrix
-- maturity: `draft`
+- maturity: `trial`
 - execution_mode: `local_default`
 - model_tier: `standard`
 - guard_policy: `required`
@@ -38,3 +38,5 @@
   - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
   - `../../../../knowledge/packs/constraint-derivation/120_design_constraint_derivation_catalog.md#xid-2D14F88A6C01`
+- observation_refs:
+  - ../../../../work/sessions/2026-06-21_skill_run_skill_flow_authoring.md

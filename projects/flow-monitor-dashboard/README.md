@@ -8,7 +8,7 @@ OS 再編や周辺構造の変更があっても、この可視化機能は壊�
 ## 目的
 
 - どの Flow が通ったか
-- 各 Flow でどの `sequence` ステップが観測されたか
+- 各 Flow でどの `steps` ステップが観測されたか
 - 判断イベントが記録されたか
 - チェックリストが使われたか
 - Flow に紐づく各 Skill の runtime log がどう閉じられたか
@@ -82,6 +82,9 @@ projects/
 ## 読み取りルール
 
 - `flows/*.yaml` を基準定義として読みます
+- ステップ系列は決定論的制御スキーマの `steps:` マップのキーから取得します（旧 `sequence:` リストは未移行 Flow の fallback としてのみ読みます）
+- 推奨 path は `handoff.escalation`（旧 `monitoring.paths` も併用）から取得します
+- 推奨 decision / checklist はスキーマで表現されないため `flow-log-presets.json` から取得します
 - `projects/` 配下の `flow-events.jsonl`, `trace.jsonl`, `events.jsonl`, `flow-monitor.json`, `flow-monitoring.json` を収集します
 - `work/sessions/*_skill_run_*.md` を収集し、Skill runtime log の phase / artifact / concern / closure 状態を表示します
 - `flow_id` または `flow_name` が一致すれば該当 Flow に紐づけます
@@ -110,25 +113,29 @@ projects/
 
 ダッシュボード上で表示する decision / checklist / path キーは、観測済みログがある場合はそのキーを優先します。
 
-定義値としては `flows/*.yaml` の `monitoring:` セクションを正本とし、未観測時の表示候補として扱います。
+未観測時の表示候補は、種類ごとに次の正本から取得します。
+
+- path: `flows/*.yaml` の `handoff.escalation`（決定論的制御スキーマのエスカレーション経路）
+- decision / checklist: `flow-log-presets.json`（決定論的スキーマがドメインの判断・チェックリストラベルを表現しないため、これらの正本として残す）
 
 ```yaml
-monitoring:
-  decisions:
-    - implementation_boundary_review
-  checklists:
-    - manufacturing_self_check
-  paths:
-    - handoff_to_quality_review
+handoff:
+  escalation:
+    - out_of_scope_to_coordinator
+    - quality_feedback_tradeoff_or_scope_conflict_to_coordinator
 ```
 
-移行中は `flow-log-presets.json` を fallback として読みます。
+表示優先順位は次のとおりです。
+
+1. プロジェクト側の観測トレースに含まれるキー
+2. Flow YAML 由来（path は `handoff.escalation`）
+3. `flow-log-presets.json`（decision / checklist の正本、path は fallback）
 
 例:
 
 - `investigation_workflow`: `coverage_assessment`, `unknown_classification`, `investigation_coverage_checklist`
 - `planning_workflow`: `test_tool_selection`, `planning_policy_completeness_check`
-- `manufacturing_workflow`: `implementation_boundary_review`, `manufacturing_self_check`
+- `manufacturing_workflow`: `implementation_boundary_review`, `quality_feedback_classification`, `manufacturing_self_check`, `quality_feedback_tradeoff_or_scope_conflict_to_coordinator`
 - `release_planning_workflow`: `operational_readiness_gate`, `monitoring_design_review`
 
 ## Skill runtime log 表示

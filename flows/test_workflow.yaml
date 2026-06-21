@@ -85,7 +85,7 @@ steps:
   test_plan_drafting:
     facets: [test_designer_persona, test_plan_policy]
     permission: { edit: false }
-    capability: CAP-TST-PLAN
+    capability: CAP-DSN-004
     acceptance:
       - { review: independent_quality_review }
     on:
@@ -103,7 +103,7 @@ steps:
   test_item_drafting:
     facets: [test_designer_persona, test_item_policy]
     permission: { edit: false }
-    capability: CAP-TST-ITEMS
+    capability: CAP-DSN-002
     acceptance:
       - { review: independent_quality_review }
     on:
@@ -121,7 +121,7 @@ steps:
   integration_regression_test_design_drafting:
     facets: [test_designer_persona, integration_test_policy]
     permission: { edit: false }
-    capability: CAP-TST-INTEGRATION
+    capability: CAP-DSN-003
     acceptance:
       - { review: independent_quality_review }
     on:
@@ -140,7 +140,7 @@ steps:
   manufacturing_test_method_review:
     facets: [manufacturing_reviewer_persona, method_suitability_policy]
     permission: { edit: false }
-    capability: CAP-TST-METHOD-REVIEW
+    capability: CAP-MFG-003
     on:
       Go: handoff_reviewed_test_package
       Hold:

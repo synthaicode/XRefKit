@@ -58,6 +58,19 @@ class FlowDoctorTests(unittest.TestCase):
             path.write_text(yaml.safe_dump(data), encoding="utf-8")
             return validate_flow(path)
 
+    def _check_with_capabilities(self, data: dict, capability_ids: list[str]):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            flow_dir = root / "flows"
+            cap_dir = root / "capabilities"
+            flow_dir.mkdir()
+            cap_dir.mkdir()
+            path = flow_dir / "flow.yaml"
+            path.write_text(yaml.safe_dump(data), encoding="utf-8")
+            cap_text = "\n".join(f"- capability_id: `{cap_id}`" for cap_id in capability_ids)
+            (cap_dir / "declared.md").write_text(cap_text, encoding="utf-8")
+            return validate_flow(path)
+
     def test_valid_flow_passes(self):
         result = self._check(_valid_flow())
         self.assertTrue(result.ok, result.errors)
@@ -84,6 +97,18 @@ class FlowDoctorTests(unittest.TestCase):
         result = self._check(data)
         self.assertFalse(result.ok)
         self.assertTrue(any("K3/K5" in e for e in result.errors))
+
+    def test_unresolved_capability_fails_g3(self):
+        data = _valid_flow()
+        result = self._check_with_capabilities(data, ["CAP-MFG-001"])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("(G3)" in e for e in result.errors))
+        self.assertFalse(any("(G3)" in w for w in result.warnings))
+
+    def test_declared_capability_passes_g3(self):
+        data = _valid_flow()
+        result = self._check_with_capabilities(data, ["CAP-DRAFT"])
+        self.assertTrue(result.ok, result.errors)
 
     def test_handback_without_resume_fails_h1(self):
         data = _valid_flow()
@@ -205,6 +230,45 @@ class FlowDoctorTests(unittest.TestCase):
             with contextlib.redirect_stdout(io.StringIO()):
                 rc = main(["flow", "doctor", "--root", str(root), "--json"])
             self.assertEqual(0, rc)
+
+    def test_cli_discovers_pack_owned_nested_flow(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            top_flow_dir = root / "flows"
+            pack_flow_dir = top_flow_dir / "packs" / "sample"
+            pack_flow_dir.mkdir(parents=True)
+            (top_flow_dir / "top.yaml").write_text(yaml.safe_dump(_valid_flow()), encoding="utf-8")
+            (pack_flow_dir / "nested.yaml").write_text(
+                yaml.safe_dump(
+                    {
+                        "flow_id": "FLOW-NESTED-LEGACY",
+                        "name": "nested_legacy",
+                        "sequence": ["a", "b"],
+                        "control_rules": ["x"],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                rc = main(["flow", "doctor", "--root", str(root), "--json"])
+            self.assertEqual(0, rc)
+            self.assertIn("nested.yaml", out.getvalue())
+
+    def test_nested_flow_resolves_capabilities_from_project_root(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            flow_dir = root / "flows" / "packs" / "sample"
+            cap_dir = root / "capabilities"
+            flow_dir.mkdir(parents=True)
+            cap_dir.mkdir()
+            path = flow_dir / "nested.yaml"
+            data = _valid_flow()
+            path.write_text(yaml.safe_dump(data), encoding="utf-8")
+            (cap_dir / "declared.md").write_text("- capability_id: `CAP-MFG-001`\n", encoding="utf-8")
+            result = validate_flow(path)
+            self.assertFalse(result.ok)
+            self.assertTrue(any("(G3)" in e for e in result.errors))
 
 
 if __name__ == "__main__":

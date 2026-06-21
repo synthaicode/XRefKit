@@ -8,7 +8,7 @@
 - use_when: screen specifications, wireframes, or UI behavior notes may leave states or transitions to implicit AI completion
 - input: screen specs, wireframes, UI notes, interaction flows, and client-side validation descriptions
 - output: UCD-prefixed derivation file under `work/constraint_derivation/` by default, plus grouped confirmation items and explicit design-time UI decisions
-- maturity: `draft`
+- maturity: `trial`
 - execution_mode: `local_default`
 - model_tier: `standard`
 - guard_policy: `required`
@@ -38,3 +38,5 @@
   - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
   - `../../../../knowledge/packs/constraint-derivation/130_ui_constraint_derivation_catalog.md#xid-31C5A06B7E22`
+- observation_refs:
+  - ../../../../work/sessions/2026-06-21_skill_run_skill_flow_authoring.md

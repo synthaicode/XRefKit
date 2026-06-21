@@ -8,7 +8,7 @@
 - use_when: AI-generated or manually reviewed C# code may embed asymmetric branches, implicit preconditions, or hidden business thresholds that need human confirmation
 - input: C# code files, optional target classes or methods, and optional related design context
 - output: CCD-prefixed derivation file under `work/constraint_derivation/` by default, plus business-layer confirmation items and implementation-layer notes
-- maturity: `draft`
+- maturity: `trial`
 - execution_mode: `local_default`
 - model_tier: `standard`
 - guard_policy: `required`
@@ -39,4 +39,5 @@
   - `../../../../docs/014_working_area_policy.md#xid-111D282CA0EA`
   - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
   - `../../../../knowledge/packs/constraint-derivation/190_code_constraint_derivation_catalog.md#xid-A1D4E8C93B71`
-
+- observation_refs:
+  - ../../../../work/sessions/2026-06-21_skill_run_skill_flow_authoring.md
