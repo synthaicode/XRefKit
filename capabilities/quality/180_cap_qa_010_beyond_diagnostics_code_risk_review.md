@@ -37,6 +37,10 @@
   time advancement alone when a producer-side state change could notify the
   waiter
 - resource lifetime, ownership, and efficiency
+- operational resilience: source-visible paths where resource use can become
+  an operational failure scenario, including host-level shared resource
+  exhaustion, outbound connection storms, retry storms, backlog-drain spikes,
+  pool misuse, and loss of incident diagnosability
 - error handling and exception path integrity
 - support lifecycle status of frameworks and dependencies
 - time and culture correctness
@@ -54,6 +58,9 @@
 - every finding must cite concrete evidence; unverifiable results are `needs_confirmation` with the missing evidence named
 - third-party API surface claims (member existence, signatures, implemented interfaces) must be verified against the actually referenced package version — by compile probe, resolved-assembly inspection, or version-exact documentation — before a remediation is stated as actionable; unverified claims stay `needs_confirmation`
 - support lifecycle claims must cite the official source URL checked
+- resource-efficiency concerns must be severity-escalated when the code path
+  can exhaust OS, process, runtime, or service-host shared resources and affect
+  unrelated workloads; do not leave these as performance-only findings
 - findings only: do not apply fixes inside this capability
 - do not expand into security review or design-assumption derivation; route those to the handoff list
 

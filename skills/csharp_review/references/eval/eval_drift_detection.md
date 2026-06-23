@@ -22,6 +22,8 @@ decision, 2026-06-13).
 
 - Repository: `C:\dev\MailKit.Pooling`
 - Tag: `csharp-review-eval-fixture-v1` (commit `100b3d5`, the pre-fix state)
+- Visible micro-fixtures: `references/eval/fixtures/`, used for compact
+  regression cases extracted from later reviews
 - Ground truth: 14 findings verified on 2026-06-12 by applying fixes and
   passing the full test suite (`work/sessions/2026-06-12_csharp_review_mailkit_pooling_findings.md`)
 
@@ -38,7 +40,7 @@ decision, 2026-06-13).
    ```yaml
    findings:
      - id: R-001
-       category: synchronization        # one of the skill's six categories
+       category: synchronization        # one of the skill's categories
        file: tests/MailKit.Pooling.Tests/Pool/PoolStateTransitionTests.cs
        line: 174
        severity: major                  # critical | major | minor | needs_confirmation
@@ -58,6 +60,11 @@ decision, 2026-06-13).
 The scorer exits non-zero (alarm) when any of:
 
 - a `major`-or-above expected finding is missed in a run
+- the SMTP per-message micro-fixture is downgraded to resource efficiency only,
+  or below `major`, instead of `operational_resilience`
+- the file-import micro-fixture misses discovery/enumeration outside the
+  observed failure boundary, or misses source identity/correlation loss before
+  delete/archive/update
 - a calibration rule fails:
   - F-002: an actionable remediation asserts the unverified
     `SmtpClient.DisposeAsync` API surface (must be `needs_confirmation` or

@@ -10,6 +10,7 @@ Check the following domains:
 
 - attribute value misuse (rule-based, not fixed whitelist)
 - resource usage efficiency
+- operational resilience and shared-resource failure scenarios
 - synchronization and concurrency correctness
 - support lifecycle expiration risks
 - error handling and exception path integrity
@@ -52,6 +53,7 @@ Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4
 - summary by category:
   - attribute value misuse
   - resource efficiency
+  - operational resilience
   - synchronization
   - support lifecycle
   - error handling
@@ -173,6 +175,7 @@ required_followup: <next owner or specialist Skill, or none>
 - Prepare review targets and category buckets for:
   - attribute value misuse
   - resource efficiency
+  - operational resilience
   - synchronization
   - support lifecycle
   - error handling
@@ -197,6 +200,40 @@ required_followup: <next owner or specialist Skill, or none>
   - disposable resource lifetime and ownership
   - avoidable allocations and buffering patterns
   - network, file, or database usage patterns that cause unnecessary overhead
+- Execute operational resilience checks:
+  - loops or batch workers that repeatedly create, open, close, or dispose
+    network clients or outbound TCP connections
+  - host-level shared resource exhaustion paths: ephemeral ports, sockets, file
+    handles, threads, worker queues, and connection pools
+  - TCP connection churn, `TIME_WAIT`, socket exhaustion, connection pool
+    misuse, backlog-drain spikes, retry storms, and resend loops
+  - missing rate limit, throttle, backpressure, bounded batch, queue lease,
+    failure persistence, logs, metrics, or correlation evidence
+  - discovery or enumeration failures that occur outside the observed failure
+    boundary, including directory traversal, recursive file listing, source
+    listing, or queue reads before per-item handling starts
+  - source identity/correlation loss across import, queue, file, or
+    external-boundary processing, especially when only a display name is
+    persisted before the source is deleted, archived, or updated
+  - blast radius to unrelated workloads on the same OS, process, runtime, or
+    service host
+  - severity escalation: raise to `major` or higher when network client
+    creation is inside a batch loop, the client owns outbound TCP connections,
+    disposal or close likely terminates physical connections, batch size is
+    unbounded or large, no throttle/backpressure is visible, failures are
+    swallowed or not persisted, and the code may run on a shared host or
+    service VM
+  - SMTP-specific observation: per-message `SmtpClient` creation/disposal in a
+    mail queue loop must be reviewed as a potential operational failure path
+    through SMTP/TCP connection churn, `TIME_WAIT`, Windows dynamic-port
+    exhaustion, host-level blast radius, and loss of diagnosability; do not
+    stop at "repeated expensive setup"
+  - file/import-specific observation: review discovery separately from
+    per-item processing; if recursive enumeration or source listing happens
+    before the `try`/observed boundary, report run-level discovery failure
+    risk. If source identity is reduced to `Path.GetFileName` or another
+    non-unique display value before delete/archive/update, report correlation,
+    deduplication, replay, and audit risk.
 - Execute synchronization checks:
   - lock ordering, deadlock risk, race-prone shared state
   - blocking in async paths and context-capture pitfalls

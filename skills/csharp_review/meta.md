@@ -7,7 +7,7 @@
 - summary: review C# code with a manual focus on non-Roslyn-detectable risks
 - use_when: user asks for C# review beyond Roslyn/compiler diagnostics, including async hangs, synchronization risks, or fake-clock wait behavior that Roslyn does not catch
 - input: target path, optional scope filters, optional output mode
-- output: check item matrix with pass/fail/escalated/not-applicable statuses, evidence-based findings for attribute misuse, resource efficiency, synchronization, lifecycle support, error handling, and time/culture correctness, implementation-return feedback items when applicable, plus a handoff list for out-of-scope findings
+- output: check item matrix with pass/fail/escalated/not-applicable statuses, evidence-based findings for attribute misuse, resource efficiency, operational resilience, synchronization, lifecycle support, error handling, and time/culture correctness, implementation-return feedback items when applicable, plus a handoff list for out-of-scope findings
 - maturity: `stable`
 - execution_mode: `subagent_preferred`
 - model_tier: `standard`
@@ -48,3 +48,5 @@
 - observation_refs:
   - `../../work/sessions/2026-06-06_session_csharp_review_mailkit_pooling_observation.md`
   - `../../work/sessions/2026-06-06_session_csharp_review_fakeclock_hang_pattern.md`
+  - `../../work/sessions/2026-06-23_session_csharp_review_smtp_operational_resilience_observation.md`
+  - `../../work/sessions/2026-06-23_session_csharp_review_file_import_observation.md`

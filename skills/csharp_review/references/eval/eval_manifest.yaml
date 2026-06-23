@@ -1,5 +1,7 @@
 # Expected-findings manifest for the csharp_review drift-detection eval.
 # Fixture: MailKit.Pooling @ tag csharp-review-eval-fixture-v1 (commit 100b3d5).
+# Additional visible micro-fixtures under references/eval/fixtures cover
+# compact regression cases that came from later real reviews.
 # Ground truth source: work/sessions/2026-06-12_csharp_review_mailkit_pooling_findings.md
 # (every entry was verified by applying the fix and passing the test suite).
 #
@@ -75,6 +77,27 @@ findings:
     expected_line: 280
     min_severity: minor
     gist: timeout measured by DateTimeOffset.UtcNow delta instead of Stopwatch
+
+  - id: F-015
+    category: operational_resilience
+    file: skills/csharp_review/references/eval/fixtures/bad_mail_sender/BadMailSender.cs
+    expected_line: 35
+    min_severity: major
+    gist: per-message SmtpClient creation/disposal in a mail queue loop can exhaust host-level ephemeral ports during backlog drains
+
+  - id: F-016
+    category: operational_resilience
+    file: skills/csharp_review/references/eval/fixtures/bad_file_import_worker/BadFileImportWorker.cs
+    expected_line: 18
+    min_severity: major
+    gist: recursive Directory.GetFiles runs outside the observed per-file failure boundary
+
+  - id: F-017
+    category: operational_resilience
+    file: skills/csharp_review/references/eval/fixtures/bad_file_import_worker/BadFileImportWorker.cs
+    expected_line: 31
+    min_severity: major
+    gist: source identity is reduced to Path.GetFileName before source deletion, losing path and correlation
 
 # Calibration cases: detection is allowed, but an over-confident result is a failure.
 
