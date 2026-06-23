@@ -226,23 +226,20 @@ required_followup: <next owner or specialist Skill, or none>
     unbounded or large, no throttle/backpressure is visible, failures are
     swallowed or not persisted, and the code may run on a shared host or
     service VM
-  - per-unit outbound client lifecycle: for each loop, batch worker, queue
-    consumer, retry loop, import/export job, or request fan-out, identify
-    whether one unit creates, opens, closes, or disposes a
-    client/session/connection/handle backed by shared resources. Apply this
-    generically to TCP sockets, HTTP handlers, SMTP clients, SQL connections,
-    message-broker channels, file handles, cloud SDK clients, threads, timers,
-    and worker-queue leases; do not require the exact API type to be listed
-    before escalating beyond "repeated expensive setup"
+  - per-unit shared-resource lifecycle: for each repeated unit of work,
+    identify whether that unit creates, opens, closes, or disposes a
+    client/session/connection/handle/execution slot backed by shared host,
+    process, runtime, or service resources. Do not encode the check as a
+    whitelist of known API types; escalate by ownership, lifecycle, resource
+    scope, volume, and observability evidence
   - for visible per-unit resource lifecycles, name the concrete path from
     backlog or retry volume to resource churn, shared-resource exhaustion,
     blast radius to unrelated workloads, and loss of diagnosability
-  - file/import-specific observation: review discovery separately from
-    per-item processing; if recursive enumeration or source listing happens
-    before the `try`/observed boundary, report run-level discovery failure
-    risk. If source identity is reduced to `Path.GetFileName` or another
-    non-unique display value before delete/archive/update, report correlation,
-    deduplication, replay, and audit risk.
+  - discovery and identity boundary: review source discovery separately from
+    per-item processing. If discovery happens before the observed failure
+    boundary, report run-level discovery failure risk. If durable state keeps
+    only a non-unique display identity before the source is deleted, archived,
+    or updated, report correlation, deduplication, replay, and audit risk
 - Execute synchronization checks:
   - lock ordering, deadlock risk, race-prone shared state
   - blocking in async paths and context-capture pitfalls

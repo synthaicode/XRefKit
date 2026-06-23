@@ -23,7 +23,9 @@ decision, 2026-06-13).
 - Repository: `C:\dev\MailKit.Pooling`
 - Tag: `csharp-review-eval-fixture-v1` (commit `100b3d5`, the pre-fix state)
 - Visible micro-fixtures: `references/eval/fixtures/`, used for compact
-  regression cases extracted from later reviews
+  regression cases extracted from later reviews. `eval_manifest.yaml` names
+  them by `fixture_case`; concrete source paths and line anchors live in
+  `references/eval/fixtures/fixture_manifest.yaml`.
 - Ground truth: 14 findings verified on 2026-06-12 by applying fixes and
   passing the full test suite (`work/sessions/2026-06-12_csharp_review_mailkit_pooling_findings.md`)
 
@@ -60,16 +62,11 @@ decision, 2026-06-13).
 The scorer exits non-zero (alarm) when any of:
 
 - a `major`-or-above expected finding is missed in a run
-- the SMTP per-message micro-fixture is downgraded to resource efficiency only,
-  or below `major`, instead of `operational_resilience`
-- the file-import micro-fixture misses discovery/enumeration outside the
+- the per-unit outbound-connection micro-fixture is downgraded to resource
+  efficiency only, or below `major`, instead of `operational_resilience`
+- the source-processing micro-fixture misses discovery/enumeration outside the
   observed failure boundary, or misses source identity/correlation loss before
-  delete/archive/update
-- the invoice micro-fixture detects only the throwing missing-input path and
-  misses the sibling silent fallback path where absent tax configuration
-  returns zero and billing continues; both should be reported under the
-  dedicated `required_input_integrity` category, not only under generic
-  error-handling
+  source removal
 - a calibration rule fails:
   - F-002: an actionable remediation asserts the unverified
     `SmtpClient.DisposeAsync` API surface (must be `needs_confirmation` or
@@ -104,5 +101,7 @@ small findings does not page anyone by itself.
 
 - `eval_manifest.yaml` — visible expected findings + calibration cases
 - `eval_manifest_heldout.yaml` — held-out expected findings (guarded)
+- `fixtures/fixture_manifest.yaml` — concrete source map for visible
+  micro-fixture cases referenced by `fixture_case`
 - `score_findings.py` — scorer (exit 0 = no drift, 1 = alarm)
 - `baseline_score.json` — created by the first eval execution (absent until then)

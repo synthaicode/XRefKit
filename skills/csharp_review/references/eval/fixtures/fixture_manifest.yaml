@@ -1,0 +1,17 @@
+# Micro-fixture source map for csharp_review eval cases.
+#
+# Keep concrete fixture source paths and line anchors here so
+# eval_manifest.yaml can stay focused on expected review behavior.
+
+cases:
+  per_unit_outbound_connection_churn:
+    file: skills/csharp_review/references/eval/fixtures/bad_mail_sender/BadMailSender.cs
+    expected_line: 35
+
+  source_discovery_boundary:
+    file: skills/csharp_review/references/eval/fixtures/bad_file_import_worker/BadFileImportWorker.cs
+    expected_line: 18
+
+  source_identity_loss:
+    file: skills/csharp_review/references/eval/fixtures/bad_file_import_worker/BadFileImportWorker.cs
+    expected_line: 31

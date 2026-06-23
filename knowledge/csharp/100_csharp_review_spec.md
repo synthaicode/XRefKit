@@ -108,15 +108,15 @@ client can own scarce external or host-level resources.
 
 For each loop, batch worker, queue consumer, retry loop, import/export job, or
 request fan-out, identify whether one unit of work creates, opens, closes, or
-disposes a client/session/connection/handle that is backed by shared resources.
-Examples include TCP sockets, HTTP handlers, SMTP clients, SQL connections,
-message-broker channels, file handles, cloud SDK clients, threads, timers, and
-worker-queue leases.
+disposes a client/session/connection/handle/execution slot that is backed by
+shared host, process, runtime, or service resources. Classify by resource
+ownership, lifecycle, scope, volume, and observability evidence instead of by
+matching a named API or library.
 
 When this pattern is visible, name the concrete risk path from backlog or
 retry volume to resource churn, shared-resource exhaustion, blast radius to
 unrelated workloads, and loss of diagnosability. Do not stop at "repeated
-expensive setup" merely because the specific API type is not listed here.
+expensive setup" merely because the specific API type is unfamiliar.
 
 ### File and Import Worker Review
 
@@ -143,11 +143,10 @@ correlation to diagnose, deduplicate, replay, audit, and compensate:
 - correlation between source read, sink write, delete/archive/quarantine, and
   logged failure records
 
-If code reduces identity to a non-unique display name, such as only
-`Path.GetFileName(file)`, while recursively importing or deleting the source,
-report the loss as operational resilience or data-boundary risk. Escalate to
-`major` when duplicate names, replay/audit, or incident correlation can be
-lost.
+If code reduces identity to a non-unique display value while importing,
+deleting, archiving, or updating the source, report the loss as operational
+resilience or data-boundary risk. Escalate to `major` when duplicate names,
+replay/audit, or incident correlation can be lost.
 
 ## Synchronization Checks
 
