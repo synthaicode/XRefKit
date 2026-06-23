@@ -20,19 +20,21 @@ decision, 2026-06-13).
 
 ## Fixture
 
-- Repository: `C:\dev\MailKit.Pooling`
-- Tag: `csharp-review-eval-fixture-v1` (commit `100b3d5`, the pre-fix state)
+- Repository: external fixture checkout supplied by the eval runner.
+- Revision: the runner must check out the recorded fixture revision from
+  `eval_manifest.yaml`.
 - Visible micro-fixtures: `references/eval/fixtures/`, used for compact
   regression cases extracted from later reviews. `eval_manifest.yaml` names
   them by `fixture_case`; concrete source paths and line anchors live in
   `references/eval/fixtures/fixture_manifest.yaml`.
-- Ground truth: 14 findings verified on 2026-06-12 by applying fixes and
-  passing the full test suite (`work/sessions/2026-06-12_csharp_review_mailkit_pooling_findings.md`)
+- Ground truth: expected findings are recorded in `eval_manifest.yaml` and
+  the guarded held-out split.
 
 ## Run Protocol
 
-1. Check out the fixture tag into a scratch worktree:
-   `git -C C:\dev\MailKit.Pooling worktree add <scratch> csharp-review-eval-fixture-v1`
+1. Check out the fixture revision named in `eval_manifest.yaml` into a
+   scratch worktree. The source repository location is runner-provided and
+   must not be hard-coded in this Skill asset.
 2. Run `csharp_review` against the scratch path through the normal runtime
    (`fm skill run`), output mode `findings-only`. The eval run must NOT load
    this eval directory; the executor sees the fixture cold.
@@ -43,12 +45,12 @@ decision, 2026-06-13).
    findings:
      - id: R-001
        category: synchronization        # one of the skill's categories
-       file: tests/MailKit.Pooling.Tests/Pool/PoolStateTransitionTests.cs
+       file: tests/<fixture-tests>/<path>.cs
        line: 174
        severity: major                  # critical | major | minor | needs_confirmation
        gist: one line
    handoff:
-     - file: src/MailKit.Pooling/MailKit/MailKitSmtpClientAdapter.cs
+     - file: src/<fixture-project>/<path>.cs
        gist: one line
    ```
 
@@ -67,12 +69,7 @@ The scorer exits non-zero (alarm) when any of:
 - the source-processing micro-fixture misses discovery/enumeration outside the
   observed failure boundary, or misses source identity/correlation loss before
   source removal
-- a calibration rule fails:
-  - F-002: an actionable remediation asserts the unverified
-    `SmtpClient.DisposeAsync` API surface (must be `needs_confirmation` or
-    absent — the API does not exist in MailKit 4.16.0)
-  - F-003: the `SendAsync(object)` design assumption is deep-dived instead
-    of routed to the handoff list
+- a calibration rule defined in `eval_manifest.yaml` fails
 - recall regresses against the supplied baseline
 
 Misses of `minor` / `needs_confirmation` expected findings lower recall and

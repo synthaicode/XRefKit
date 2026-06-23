@@ -1,17 +1,17 @@
 # Expected-findings manifest for the csharp_review drift-detection eval.
-# Fixture: MailKit.Pooling @ tag csharp-review-eval-fixture-v1 (commit 100b3d5).
+# Fixture: external csharp_review regression fixture at the recorded revision.
 # Additional visible micro-fixtures under references/eval/fixtures cover
 # compact regression cases that came from later real reviews. Their concrete
 # source paths and line anchors live in fixtures/fixture_manifest.yaml.
-# Ground truth source: work/sessions/2026-06-12_csharp_review_mailkit_pooling_findings.md
-# (every entry was verified by applying the fix and passing the test suite).
+# Expected entries are fixture-local paths relative to the runner-provided
+# checkout.
 #
 # Matching rule (see score_findings.py): same file, same category,
 # line within +/- 20 of expected_line, severity at or above min_severity
 # unless calibration_max_severity is set.
 
 fixture:
-  repo: C:\dev\MailKit.Pooling
+  repo: external-csharp-review-regression-fixture
   tag: csharp-review-eval-fixture-v1
   commit: 100b3d5
 
