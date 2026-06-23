@@ -47,6 +47,98 @@ Check at least the following:
 - inefficient I/O and data access patterns (chatty calls, repeated serialization, redundant buffering)
 - cache and pooling opportunities where repeated expensive creation is observed
 
+Resource efficiency covers waste, cost, and local performance. Do not stop at
+this category when the same pattern creates an operational failure path.
+
+## Operational Resilience Checks
+
+Operational resilience covers failure paths, blast radius, and incident
+diagnosability. It sits above resource efficiency: a wasteful pattern becomes
+an operational-resilience finding when it can exhaust shared resources or make
+production failures difficult to attribute.
+
+Check at least the following:
+
+- OS-shared resource exhaustion, including ephemeral ports, sockets, file
+  handles, threads, and worker queues
+- TCP connection churn, `TIME_WAIT` accumulation, ephemeral port exhaustion,
+  and socket exhaustion
+- connection-pool misuse, including per-operation client creation where the
+  client owns outbound TCP connections
+- backlog-drain spikes, retry storms, queue accumulation, and resend loops
+- missing rate limits, throttles, backpressure, leases, or bounded batches on
+  external I/O loops
+- blast radius to unrelated workloads on the same OS, process, runtime, or
+  service host
+- missing logs, metrics, failure persistence, or correlation that would prevent
+  operators from identifying the causal component during an incident
+- discovery/enumeration failures that occur outside the observed failure
+  boundary, such as directory traversal, file listing, queue discovery, or
+  source enumeration before per-item error handling starts
+- loss of source identity or correlation across import, queue, file, or
+  external-boundary processing, especially when a later delete/archive/update
+  removes the original evidence
+
+### Operational Escalation Rule
+
+If a loop or batch worker repeatedly creates, opens, or disposes network
+clients or outbound TCP connections, review the path as an operational failure
+scenario, not only as resource efficiency.
+
+Check whether the pattern can exhaust host-level shared resources such as
+ephemeral ports, sockets, connection pools, file handles, threads, or worker
+queues.
+
+If the exhausted resource is shared at OS, process, runtime, or service-host
+level, assess whether unrelated workloads on the same host can be affected.
+
+Escalate to `major` or higher when all or most of the following are visible:
+
+- network client creation occurs inside a batch loop
+- the client owns outbound TCP connections
+- disposal or close likely terminates physical connections
+- batch size is unbounded or large
+- no rate limit, throttle, or backpressure is visible
+- failures are swallowed or not persisted
+- the code may run on a shared host or service VM
+
+For SMTP queue senders, do not stop at "repeated expensive setup" when a
+per-message SMTP/TCP lifecycle is visible. Name the risk path through
+backlog-drain connection churn, `TIME_WAIT`, Windows dynamic-port exhaustion,
+host-level blast radius, and loss of diagnosability when the evidence supports
+that path.
+
+### File and Import Worker Review
+
+For file import, directory import, queue import, and similar source-to-sink
+workers, review the discovery phase separately from per-item processing.
+
+Check whether source discovery runs inside an observed failure boundary:
+
+- directory traversal and file listing
+- recursive enumeration
+- queue reads or source listing before item-level processing begins
+- permission, missing path, locked/offline share, path length, malformed input,
+  or transient storage failures
+
+If discovery failure can stop the whole run before per-item handling starts,
+report it as an error-boundary and operational-resilience finding.
+
+Check whether the imported record preserves enough source identity and
+correlation to diagnose, deduplicate, replay, audit, and compensate:
+
+- full path or normalized relative path when policy permits
+- source root or source system id
+- content hash, file size, timestamp, and import attempt id where useful
+- correlation between source read, sink write, delete/archive/quarantine, and
+  logged failure records
+
+If code reduces identity to a non-unique display name, such as only
+`Path.GetFileName(file)`, while recursively importing or deleting the source,
+report the loss as operational resilience or data-boundary risk. Escalate to
+`major` when duplicate names, replay/audit, or incident correlation can be
+lost.
+
 ## Synchronization Checks
 
 Check at least the following:
