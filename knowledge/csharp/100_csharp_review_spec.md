@@ -102,11 +102,21 @@ Escalate to `major` or higher when all or most of the following are visible:
 - failures are swallowed or not persisted
 - the code may run on a shared host or service VM
 
-For SMTP queue senders, do not stop at "repeated expensive setup" when a
-per-message SMTP/TCP lifecycle is visible. Name the risk path through
-backlog-drain connection churn, `TIME_WAIT`, Windows dynamic-port exhaustion,
-host-level blast radius, and loss of diagnosability when the evidence supports
-that path.
+Do not encode this review as a list of known client types. Apply the same
+operational escalation to any per-unit outbound client lifecycle when the
+client can own scarce external or host-level resources.
+
+For each loop, batch worker, queue consumer, retry loop, import/export job, or
+request fan-out, identify whether one unit of work creates, opens, closes, or
+disposes a client/session/connection/handle/execution slot that is backed by
+shared host, process, runtime, or service resources. Classify by resource
+ownership, lifecycle, scope, volume, and observability evidence instead of by
+matching a named API or library.
+
+When this pattern is visible, name the concrete risk path from backlog or
+retry volume to resource churn, shared-resource exhaustion, blast radius to
+unrelated workloads, and loss of diagnosability. Do not stop at "repeated
+expensive setup" merely because the specific API type is unfamiliar.
 
 ### File and Import Worker Review
 
@@ -133,11 +143,10 @@ correlation to diagnose, deduplicate, replay, audit, and compensate:
 - correlation between source read, sink write, delete/archive/quarantine, and
   logged failure records
 
-If code reduces identity to a non-unique display name, such as only
-`Path.GetFileName(file)`, while recursively importing or deleting the source,
-report the loss as operational resilience or data-boundary risk. Escalate to
-`major` when duplicate names, replay/audit, or incident correlation can be
-lost.
+If code reduces identity to a non-unique display value while importing,
+deleting, archiving, or updating the source, report the loss as operational
+resilience or data-boundary risk. Escalate to `major` when duplicate names,
+replay/audit, or incident correlation can be lost.
 
 ## Synchronization Checks
 
@@ -170,6 +179,46 @@ Check at least the following:
 - whether polling-only retry loops should be converted to `time or signal`
   waiting so timeout behavior and immediate wake-up behavior both remain
   testable
+
+## Required Business Input Integrity Checks
+
+When code derives billing, authorization, routing, eligibility, tax, rate,
+limit, or other decision-critical behavior from external configuration or
+cache state, review both visible failures and silent fallbacks.
+
+Check paired paths for the same required input class:
+
+- key lookup that throws on missing input
+- `TryGet` / `ContainsKey` branches that return a default value
+- `return 0`, `false`, empty collection/string, default enum, or null fallback
+- catch-and-default behavior after config/API/cache failure
+
+If the value is required to decide whether processing may continue, a missing
+input must become a controlled outcome such as blocked, failed, needs
+configuration, dead-letter, or explicit handoff. Do not treat a syntactically
+valid fallback as safe merely because it does not throw.
+
+Escalate to `major` or higher when the silent fallback can cause billing,
+payment, entitlement, tax, authorization, routing, or compliance behavior to
+proceed with an invented value. For tax and pricing code, distinguish a
+configured zero value from absent configuration; missing tax/rate inputs must
+stop charge/payment until disposition is explicit.
+
+This check is not a subtype of exception handling. Apply it even when the code
+has no `catch`, no thrown exception, and no immediately visible side effect.
+The review target is the required-input path itself: whether absence is
+detected, represented, and dispositioned before the business operation
+continues.
+
+Report at least:
+
+- required input name and business decision it gates
+- source of the input, such as cache, API, DB, file, message, or config
+- missing-input behavior: throw, default substitution, catch-and-default,
+  `??` fallback, `TryGet` fallback, default enum/null/empty value, or skipped
+  branch
+- whether the default value is explicitly configured or invented by code
+- controlled disposition that should replace the missing-input path
 
 ## Error Handling and Exception Path Checks
 

@@ -62,6 +62,28 @@ def match(expected: dict, actual_findings: list[dict], used: set[int] | None = N
     return None
 
 
+def resolve_fixture_cases(manifest: dict) -> dict:
+    fixture_map_path = HERE / "fixtures" / "fixture_manifest.yaml"
+    fixture_cases = {}
+    if fixture_map_path.exists():
+        fixture_cases = load_yaml(fixture_map_path).get("cases", {})
+
+    resolved = dict(manifest)
+    resolved_findings = []
+    for finding in manifest.get("findings", []):
+        item = dict(finding)
+        case_id = item.get("fixture_case")
+        if case_id:
+            case = fixture_cases.get(case_id)
+            if case is None:
+                raise KeyError(f"Unknown fixture_case: {case_id}")
+            item.setdefault("file", case["file"])
+            item.setdefault("expected_line", case["expected_line"])
+        resolved_findings.append(item)
+    resolved["findings"] = resolved_findings
+    return resolved
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--actual", required=True)
@@ -72,7 +94,7 @@ def main() -> int:
     actual_findings = actual.get("findings", [])
     actual_handoff = actual.get("handoff", [])
 
-    visible = load_yaml(HERE / "eval_manifest.yaml")
+    visible = resolve_fixture_cases(load_yaml(HERE / "eval_manifest.yaml"))
     heldout = load_yaml(HERE / "eval_manifest_heldout.yaml")
     expected = visible.get("findings", []) + heldout.get("findings", [])
     calibrations = visible.get("calibration", [])

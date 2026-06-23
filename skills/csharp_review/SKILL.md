@@ -12,6 +12,7 @@ Check the following domains:
 - resource usage efficiency
 - operational resilience and shared-resource failure scenarios
 - synchronization and concurrency correctness
+- required business input integrity
 - support lifecycle expiration risks
 - error handling and exception path integrity
 - time and culture correctness
@@ -55,6 +56,7 @@ Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4
   - resource efficiency
   - operational resilience
   - synchronization
+  - required business input integrity
   - support lifecycle
   - error handling
   - time and culture
@@ -177,6 +179,7 @@ required_followup: <next owner or specialist Skill, or none>
   - resource efficiency
   - operational resilience
   - synchronization
+  - required business input integrity
   - support lifecycle
   - error handling
   - time and culture
@@ -223,17 +226,20 @@ required_followup: <next owner or specialist Skill, or none>
     unbounded or large, no throttle/backpressure is visible, failures are
     swallowed or not persisted, and the code may run on a shared host or
     service VM
-  - SMTP-specific observation: per-message `SmtpClient` creation/disposal in a
-    mail queue loop must be reviewed as a potential operational failure path
-    through SMTP/TCP connection churn, `TIME_WAIT`, Windows dynamic-port
-    exhaustion, host-level blast radius, and loss of diagnosability; do not
-    stop at "repeated expensive setup"
-  - file/import-specific observation: review discovery separately from
-    per-item processing; if recursive enumeration or source listing happens
-    before the `try`/observed boundary, report run-level discovery failure
-    risk. If source identity is reduced to `Path.GetFileName` or another
-    non-unique display value before delete/archive/update, report correlation,
-    deduplication, replay, and audit risk.
+  - per-unit shared-resource lifecycle: for each repeated unit of work,
+    identify whether that unit creates, opens, closes, or disposes a
+    client/session/connection/handle/execution slot backed by shared host,
+    process, runtime, or service resources. Do not encode the check as a
+    whitelist of known API types; escalate by ownership, lifecycle, resource
+    scope, volume, and observability evidence
+  - for visible per-unit resource lifecycles, name the concrete path from
+    backlog or retry volume to resource churn, shared-resource exhaustion,
+    blast radius to unrelated workloads, and loss of diagnosability
+  - discovery and identity boundary: review source discovery separately from
+    per-item processing. If discovery happens before the observed failure
+    boundary, report run-level discovery failure risk. If durable state keeps
+    only a non-unique display identity before the source is deleted, archived,
+    or updated, report correlation, deduplication, replay, and audit risk
 - Execute synchronization checks:
   - lock ordering, deadlock risk, race-prone shared state
   - blocking in async paths and context-capture pitfalls
@@ -244,6 +250,20 @@ required_followup: <next owner or specialist Skill, or none>
     [C# test synchronization patterns](../../knowledge/csharp/120_csharp_test_synchronization_patterns.md#xid-4314A1A73CAF),
     whose application mode is per-case proposal and approval — never bulk
     auto-apply
+- Execute required business input integrity checks:
+  - identify inputs that gate billing, payment, tax, entitlement,
+    authorization, routing, eligibility, limit, or compliance behavior
+  - inspect both exception-producing and non-throwing paths for the same
+    required-input class; do not stop after finding the branch that throws
+  - flag missing required input converted into plausible defaults such as
+    `return 0`, `false`, empty collections/strings, default enums, null,
+    `??` fallback, `TryGet` fallback, or catch-and-default
+  - distinguish explicitly configured values from invented code defaults,
+    especially configured zero tax/rate versus absent tax/rate configuration
+  - require a controlled disposition before the business operation continues:
+    blocked, failed, needs configuration, dead-letter, handoff, or equivalent
+  - report the required input name, source, missing-input behavior, business
+    decision it gates, and remediation direction
 - Execute support lifecycle checks:
   - target framework support status
   - package or runtime dependencies with expired or near-expired support
