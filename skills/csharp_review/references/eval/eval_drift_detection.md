@@ -65,6 +65,11 @@ The scorer exits non-zero (alarm) when any of:
 - the file-import micro-fixture misses discovery/enumeration outside the
   observed failure boundary, or misses source identity/correlation loss before
   delete/archive/update
+- the invoice micro-fixture detects only the throwing missing-input path and
+  misses the sibling silent fallback path where absent tax configuration
+  returns zero and billing continues; both should be reported under the
+  dedicated `required_input_integrity` category, not only under generic
+  error-handling
 - a calibration rule fails:
   - F-002: an actionable remediation asserts the unverified
     `SmtpClient.DisposeAsync` API surface (must be `needs_confirmation` or

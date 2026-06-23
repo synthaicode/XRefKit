@@ -99,6 +99,20 @@ findings:
     min_severity: major
     gist: source identity is reduced to Path.GetFileName before source deletion, losing path and correlation
 
+  - id: F-018
+    category: required_input_integrity
+    file: skills/csharp_review/references/eval/fixtures/invoice_service/InvoiceService.cs
+    expected_line: 14
+    min_severity: major
+    gist: missing currency rate throws instead of controlled invoice disposition
+
+  - id: F-019
+    category: required_input_integrity
+    file: skills/csharp_review/references/eval/fixtures/invoice_service/InvoiceService.cs
+    expected_line: 25
+    min_severity: major
+    gist: missing tax region silently returns zero and lets billing continue with absent required input
+
 # Calibration cases: detection is allowed, but an over-confident result is a failure.
 
 calibration:
