@@ -1,18 +1,21 @@
 # XRefKit
 
-XRefKit is a repository-based AI Agent OS.
+AI agents often stop halfway, guess missing context, or produce work that looks
+plausible but cannot be reviewed or handed off.
 
-It does not run the language model itself.
-It provides the operating layer that controls how AI Agents load knowledge,
-select Skills, record judgments, preserve handoffs, and close work through
-explicit quality gates.
+XRefKit is a repository-based governance harness for AI-assisted development.
 
-Here, OS means an operating layer for controlled AI Agent work, not a
-low-level system OS or an LLM runtime.
+It runs as its own control repository and helps AI agents:
 
-It is not a prompt collection, a document repository, or a link-maintenance
-tool.
-It is a way to make AI Agent work controllable, reviewable, and improvable.
+- load the right knowledge before acting
+- select reusable Skills
+- record judgments and evidence
+- preserve handoffs across humans, agents, and sessions
+- close work only through explicit quality gates
+
+It is not an LLM runtime, prompt collection, or generic CLI tool.
+It is an operating layer for making AI agent work reviewable, repeatable, and
+improvable.
 
 ▶️ Download the 2-minute overview: [Why XRefKit exists and how it helps AI teams use domain knowledge](https://raw.githubusercontent.com/synthaicode/XRefKit/main/readme.mp4)
 
