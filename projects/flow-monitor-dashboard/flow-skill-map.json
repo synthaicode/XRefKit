@@ -1,6 +1,7 @@
 {
   "investigation_workflow": [
     "investigation_flow",
+    "dotnet_change_analysis",
     "management_table_control"
   ],
   "estimation_workflow": [
