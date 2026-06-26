@@ -30,6 +30,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Shared memory operations (AI-authored logs)](015_shared_memory_operations.md#xid-4A423E72D2ED)
 - [Uncertainty protocol ("I don't know" policy)](016_uncertainty_protocol.md#xid-8A666C1FD121)
 - [Work record types](019_work_record_types.md#xid-4F8C21B7D4A2)
+- [Document update policy](074_document_update_policy.md#xid-B1D42A6F90C3)
 
 ## XRefKit Routing And Authoring
 
@@ -94,5 +95,3 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - Agent routing: [Capability Routing for Agents](../agent/010_capability_routing.md#xid-1F93A7C24010)
 - Domain knowledge entry: [Knowledge Index](../knowledge/000_index.md#xid-23059118FBB9)
 - Capability entry: [Capabilities Index](../capabilities/000_index.md#xid-C14253A74C4F)
-
-

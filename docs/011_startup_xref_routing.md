@@ -16,6 +16,7 @@ For the boundary between base AI control and XRefKit-specific routing, see [Base
 - Manage skill definitions and domain knowledge as separate files.
 - Treat domain knowledge in `knowledge/` as shared/common.
 - Treat capability definitions in `capabilities/` as reusable work-unit definitions.
+- When updating repository documents, apply the [Document update policy](074_document_update_policy.md#xid-B1D42A6F90C3): target documents describe the latest authoritative state, and decision history is kept in separate records such as ADRs.
 - Each skill reads only what it needs, on demand, via `xref`.
 - Treat `skills/_index.md` as the canonical skill catalog for listing/routing skills.
 - Select the target Skill by semantic routing from user intent, available fragments, and routing indexes before opening any specific Skill.
