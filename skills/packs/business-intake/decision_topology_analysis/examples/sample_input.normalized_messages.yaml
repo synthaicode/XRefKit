@@ -1,0 +1,98 @@
+analysis_request:
+  target_topic: "本番リリース方式の決定"
+  target_period:
+    from: "2026-06-20T00:00:00+09:00"
+    to: "2026-06-21T23:59:59+09:00"
+  source_system: "example-chat"
+  requested_decision: "次回会議までに誰と何を確認するべきか"
+  source_handling: "internal"
+  sensitive_content_flags: []
+
+known_knowledge:
+  organization:
+    - knowledge_id: "K-ORG-01"
+      statement: "AさんはSecurity Review Leadである"
+      review_status: "human_confirmed"
+  decision_rights:
+    - knowledge_id: "K-DR-01"
+      statement: "本番リリース前にSecurity Review Leadのリスク確認が必要である"
+      review_status: "human_confirmed"
+  missing:
+    - "段階リリース時に通常の確認経路を短縮できるか"
+
+messages:
+  - id: "msg-001"
+    source_system: "example-chat"
+    source_url: "https://example.invalid/conversations/release/thread-1/msg-001"
+    conversation_type: "channel_thread"
+    conversation_id: "release"
+    thread_id: "thread-1"
+    reply_to_id: null
+    sender:
+      id: "user-b"
+      display_name: "Bさん"
+      formal_role: null
+    created_at: "2026-06-20T10:00:00+09:00"
+    body_text: "金曜に全ユーザーへ一括リリースする案で進めたいです。"
+    mentions: []
+    attachments: []
+    reactions: []
+
+  - id: "msg-002"
+    source_system: "example-chat"
+    source_url: "https://example.invalid/conversations/release/thread-1/msg-002"
+    conversation_type: "channel_thread"
+    conversation_id: "release"
+    thread_id: "thread-1"
+    reply_to_id: "msg-001"
+    sender:
+      id: "user-a"
+      display_name: "Aさん"
+      formal_role: "Security Review Lead"
+    created_at: "2026-06-20T10:12:00+09:00"
+    body_text: "監査ログの欠損時にロールバックできる証跡がまだありません。段階リリースと停止条件を確認したいです。"
+    mentions: []
+    attachments:
+      - id: "att-001"
+        title: "監査ログ確認項目"
+        source_url: "https://example.invalid/documents/audit-checks"
+    reactions: []
+
+  - id: "msg-003"
+    source_system: "example-chat"
+    source_url: "https://example.invalid/conversations/release/thread-1/msg-003"
+    conversation_type: "channel_thread"
+    conversation_id: "release"
+    thread_id: "thread-1"
+    reply_to_id: "msg-002"
+    sender:
+      id: "user-b"
+      display_name: "Bさん"
+      formal_role: null
+    created_at: "2026-06-20T10:20:00+09:00"
+    body_text: "Aさんの懸念を解消して確認を得るまで、一括リリースの決定は保留します。"
+    mentions:
+      - "user-a"
+    attachments: []
+    reactions: []
+
+  - id: "msg-004"
+    source_system: "example-chat"
+    source_url: "https://example.invalid/conversations/release/thread-1/msg-004"
+    conversation_type: "channel_thread"
+    conversation_id: "release"
+    thread_id: "thread-1"
+    reply_to_id: "msg-003"
+    sender:
+      id: "user-c"
+      display_name: "Cさん"
+      formal_role: null
+    created_at: "2026-06-20T10:31:00+09:00"
+    body_text: "段階リリース案と停止条件を準備し、次回会議前にAさんへ説明します。"
+    mentions:
+      - "user-a"
+    attachments: []
+    reactions:
+      - type: "acknowledge"
+        sender_ids:
+          - "user-b"

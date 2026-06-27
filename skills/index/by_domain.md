@@ -17,6 +17,7 @@
   - `or_team_operations` -> `../or_team_operations/meta.md`
   - `business_intake_scoping` -> `../packs/business-intake/business_intake_scoping/meta.md`
   - `business_learning_interview` -> `../packs/business-intake/business_learning_interview/meta.md`
+  - `decision_topology_analysis` -> `../packs/business-intake/decision_topology_analysis/meta.md`
   - `editorial_ops_index` -> `../packs/editorial-ops/editorial_ops_index/meta.md`
   - `editorial_intake` -> `../packs/editorial-ops/editorial_intake/meta.md`
   - `crosspost_release` -> `../packs/editorial-ops/crosspost_release/meta.md`
@@ -61,4 +62,3 @@
   - `draft_authoring` -> `../packs/editorial-ops/draft_authoring/meta.md`
   - `fact_review` -> `../packs/editorial-ops/fact_review/meta.md`
   - `reader_experience_review` -> `../packs/editorial-ops/reader_experience_review/meta.md`
-

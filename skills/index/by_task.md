@@ -27,6 +27,7 @@
   - `external_definition_change_analysis` -> `../external_definition_change_analysis/meta.md`
   - `investigation_flow` -> `../investigation_flow/meta.md`
   - `business_learning_interview` -> `../packs/business-intake/business_learning_interview/meta.md`
+  - `decision_topology_analysis` -> `../packs/business-intake/decision_topology_analysis/meta.md`
   - `editorial_intake` -> `../packs/editorial-ops/editorial_intake/meta.md`
 - estimate:
   - `estimation_flow` -> `../estimation_flow/meta.md`
@@ -70,4 +71,3 @@
   - `goal_mode` -> `../os/goal_mode/meta.md`
   - `fact_review` -> `../packs/editorial-ops/fact_review/meta.md`
   - `reader_experience_review` -> `../packs/editorial-ops/reader_experience_review/meta.md`
-

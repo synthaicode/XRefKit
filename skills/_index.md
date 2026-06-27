@@ -206,6 +206,10 @@ Current family paths:
   - summary: learn a business task from human fragments through iterative interview and produce the next best question
   - meta: `skills/packs/business-intake/business_learning_interview/meta.md`
   - skill_doc: `skills/packs/business-intake/business_learning_interview/SKILL.md`
+- `decision_topology_analysis`:
+  - summary: convert normalized online business conversation evidence into an evidence-bound Decision Topology and Stakeholder Influence Map for choosing the next business action
+  - meta: `skills/packs/business-intake/decision_topology_analysis/meta.md`
+  - skill_doc: `skills/packs/business-intake/decision_topology_analysis/SKILL.md`
 - `constraint_derivation_index`:
   - summary: route design artifacts to the correct constraint-derivation Skills and sequence the secondary commonality pass
   - meta: `skills/packs/constraint-derivation/constraint_derivation_index/meta.md`
@@ -295,4 +299,3 @@ Current family paths:
 - For the AI Agent OS reorganization view of `skills/`, see:
   - [OS utility and business skill classification design](../docs/064_os_utility_and_business_skill_classification_design.md#xid-ECF29DC3E268)
   - [Business intake pack dependency design](../docs/065_business_intake_pack_dependency_design.md#xid-D334C1964342)
-

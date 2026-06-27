@@ -48,6 +48,8 @@
   - `fact_review` -> `../packs/editorial-ops/fact_review/meta.md`
   - `reader_experience_review` -> `../packs/editorial-ops/reader_experience_review/meta.md`
   - `crosspost_release` -> `../packs/editorial-ops/crosspost_release/meta.md`
+- normalized-conversation:
+  - `decision_topology_analysis` -> `../packs/business-intake/decision_topology_analysis/meta.md`
 - specification:
   - `constraint_derivation_index` -> `../packs/constraint-derivation/constraint_derivation_index/meta.md`
   - `design_constraint_derivation` -> `../packs/constraint-derivation/design_constraint_derivation/meta.md`
@@ -67,4 +69,3 @@
   - `marketing-explainer-video` -> `../marketing-explainer-video/meta.md`
 - video-tts:
   - `marketing-explainer-video` -> `../marketing-explainer-video/meta.md`
-
