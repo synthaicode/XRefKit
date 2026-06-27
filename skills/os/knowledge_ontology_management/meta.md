@@ -41,3 +41,4 @@
 - observation_refs:
   - `../../../work/sessions/2026-06-28_session_knowledge_ontology_management_seed.md`
   - `../../../work/sessions/2026-06-28_skill_run_knowledge_ontology_management.md`
+  - `../../../work/sessions/2026-06-28_skill_run_knowledge_ontology_management_2.md`

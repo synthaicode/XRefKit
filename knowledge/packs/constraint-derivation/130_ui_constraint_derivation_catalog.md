@@ -32,3 +32,6 @@
 - grouped confirmation items by screen or UI element
 - explicit UI design-time decisions
 
+## Knowledge Relations
+
+- part_of: [Constraint Derivation Framework](110_constraint_derivation_framework.md#xid-81A6C4E2B190)

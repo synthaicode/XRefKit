@@ -9,6 +9,7 @@ from pathlib import Path
 
 
 XID_RE = re.compile(r"<!--\s*xid\s*:\s*([A-Za-z0-9_-]+)\s*-->", re.IGNORECASE)
+TITLE_RE = re.compile(r"^#\s+(.+?)\s*$", re.MULTILINE)
 LINK_XID_RE = re.compile(r"#xid-([A-Za-z0-9_-]+)|\[\[([A-Za-z0-9_-]+)\]\]")
 RELATION_RE = re.compile(r"^-\s+([a-z_]+)\s*:\s*(.+?)\s*$")
 ALLOWED_RELATIONS = {
@@ -51,6 +52,7 @@ def validate(root: Path) -> list[str]:
     knowledge = root / "knowledge"
     documents: dict[Path, tuple[str | None, str]] = {}
     known_xids: set[str] = set()
+    titles: dict[str, list[Path]] = {}
     errors: list[str] = []
 
     for path in sorted(knowledge.rglob("*.md")):
@@ -60,6 +62,24 @@ def validate(root: Path) -> list[str]:
         documents[path] = (xid, text)
         if xid:
             known_xids.add(xid)
+        title_match = TITLE_RE.search(text)
+        if title_match and path.name != "000_index.md":
+            title = title_match.group(1).strip().casefold()
+            titles.setdefault(title, []).append(path)
+
+    index_text = (knowledge / "000_index.md").read_text(encoding="utf-8")
+    for path, (xid, _) in documents.items():
+        if path == knowledge / "000_index.md" or not xid:
+            continue
+        if f"#xid-{xid}" not in index_text:
+            errors.append(
+                f"{path.relative_to(root)}: canonical fragment missing from knowledge/000_index.md"
+            )
+
+    for title, paths in sorted(titles.items()):
+        if len(paths) > 1:
+            rendered = ", ".join(str(path.relative_to(root)) for path in paths)
+            errors.append(f"duplicate primary title '{title}': {rendered}")
 
     for path, (source_xid, text) in documents.items():
         seen: set[tuple[str, str]] = set()

@@ -77,3 +77,7 @@ detectable and are surfaced by `tools/csharp_commonality.py` (candidate-only):
 The tool points at duplication; the extract / factor-out decision stays with
 design per the Priority Rule (`>= 3` strong, `2` weak), and the remaining
 semantic signals stay with the `cross_constraint_derivation` skill's judgment.
+
+## Knowledge Relations
+
+- part_of: [Constraint Derivation Framework](110_constraint_derivation_framework.md#xid-81A6C4E2B190)

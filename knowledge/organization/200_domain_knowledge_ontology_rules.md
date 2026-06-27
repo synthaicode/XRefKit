@@ -101,6 +101,8 @@ For each addition or material revision, record:
 - Every relationship target must resolve to an existing XID.
 - A fragment must not relate to itself.
 - Duplicate relationship pairs are invalid.
+- Every public canonical knowledge fragment must appear in
+  `knowledge/000_index.md`.
 - An unresolved semantic conflict blocks canonical publication.
 - A source gap remains an explicit unknown; do not fill it from model recall.
 

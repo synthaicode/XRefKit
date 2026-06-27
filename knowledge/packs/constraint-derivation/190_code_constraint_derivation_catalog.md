@@ -39,3 +39,6 @@ embeddings.
 - high-priority confirmation items
 - implementation-layer notes when justified
 
+## Knowledge Relations
+
+- part_of: [Constraint Derivation Framework](110_constraint_derivation_framework.md#xid-81A6C4E2B190)
