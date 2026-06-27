@@ -192,7 +192,12 @@ python -m fm skill run --meta skills/<skill_id>/meta.md --task "task text"
 ## Update Pattern
 
 - If only skill behavior changed: update skill file, keep references.
-- If domain knowledge changed: update knowledge fragment first, then verify skill references still point to valid XIDs.
+- If canonical domain knowledge is added or materially changed: route the work
+  through [knowledge_ontology_management](../skills/os/knowledge_ontology_management/meta.md#xid-83EDDDB5E158),
+  then verify Skill references still point to valid XIDs.
+- If the knowledge change is only wording, formatting, or mechanical XID-link
+  maintenance: update the fragment directly and verify references; ontology
+  routing is not required.
 - If a concept became semantically different: create a new XID and preserve compatibility via `xref deprecate`.
 
 ## Related

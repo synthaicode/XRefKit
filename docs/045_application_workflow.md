@@ -59,6 +59,11 @@ Populate `knowledge/` with project-specific material:
 - terminology and classification schemes
 - known constraints and non-negotiable boundaries
 
+Prepare domain-knowledge additions through
+[knowledge_ontology_management](../skills/os/knowledge_ontology_management/meta.md#xid-83EDDDB5E158).
+Keep the Skill in `proposal_only` mode until the human decision layer authorizes
+canonical application.
+
 ### 2. Capability Tuning
 
 Specify how base capabilities are specialized for this project:

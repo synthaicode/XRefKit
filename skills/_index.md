@@ -54,6 +54,12 @@ pack's owned Skills above. See [Business Pack model](../docs/071_business_pack_m
 - If the user provides generated C# code, DDL plus code, or code plus external-boundary behavior and asks whether the implementation hides assumptions or missed scenarios:
   - route first to `constraint_derivation_index`
   - then apply `code_constraint_derivation`, `cross_constraint_derivation`, or `integration_scenario_derivation` as appropriate
+- If the user asks to add a canonical domain-knowledge fragment, promote source
+  material into `knowledge/`, or materially revise a knowledge concept,
+  applicability boundary, or semantic relationship:
+  - route to `knowledge_ontology_management`
+  - do not route typo-only, formatting-only, or mechanical XID-link changes
+    through this Skill
 - If multiple primary constraint-derivation Skills produced outputs and the task is heading toward one codebase change set:
   - run `commonality_derivation` before locking the implementation design so repeated patterns and boundary conflicts stay visible
 - If the user already has an approved requirements/planning/design/implementation stage, use the existing workflow and phase skills instead.
@@ -290,6 +296,10 @@ Current family paths:
   - summary: preserve task state, wait for Codex usage recovery, and resume the same goal after the next 5-hour or weekly reset
   - meta: `skills/os/goal_mode/meta.md`
   - skill_doc: `skills/os/goal_mode/SKILL.md`
+- `knowledge_ontology_management`:
+  - summary: curate additions and material revisions to canonical domain knowledge through concept and typed-relationship assessment
+  - meta: `skills/os/knowledge_ontology_management/meta.md`
+  - skill_doc: `skills/os/knowledge_ontology_management/SKILL.md`
 
 ## Notes
 

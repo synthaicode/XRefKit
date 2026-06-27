@@ -42,6 +42,12 @@ This page defines how an agent should route a user request through workflow, cap
     responsibility boundary before treating the request as scope-ready
 - Investigation or impact analysis:
   - [Investigation workflow](../docs/032_investigation_workflow.md#xid-8B31F02A4001)
+- Addition of canonical domain knowledge, promotion of source material into
+  `knowledge/`, or a material revision to concept identity, scope,
+  applicability, or semantic relationships:
+  - route to `skills/os/knowledge_ontology_management/meta.md`
+  - mechanical wording, formatting, and XID-link maintenance do not use this
+    route
 - .NET application structure analysis or change-impact investigation before design or implementation (structure, DI lifetimes, pipeline order, boundaries, attribute activation):
   - route to `skills/dotnet_change_analysis/meta.md`
   - the output is a change-analysis note handed to `planning_flow` or design work, not defect findings; suspected defects hand off to `skills/csharp_review/meta.md`, suspected security gaps to `skills/security_review/meta.md`
@@ -166,4 +172,3 @@ Then use the control path defined by:
 - [Agent Entry](000_agent_entry.md#xid-0B5C58B5E5B2)
 - [Startup xref routing policy](../docs/011_startup_xref_routing.md#xid-6C0B62D6366A)
 - [Capability layering](../docs/031_capability_layering.md#xid-8D50A972BA9F)
-

@@ -6,6 +6,7 @@
 - operations:
   - `doc_ship` -> `../os/doc_ship/meta.md`
   - `retro` -> `../os/retro/meta.md`
+  - `knowledge_ontology_management` -> `../os/knowledge_ontology_management/meta.md`
   - `judgment_log` -> `../os/judgment_log/meta.md`
   - `import_skill` -> `../import_skill/meta.md`
   - `skill_flow_authoring` -> `../os/skill_flow_authoring/meta.md`
