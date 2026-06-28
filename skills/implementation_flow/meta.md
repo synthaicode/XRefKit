@@ -6,6 +6,34 @@
 - skill_id: `implementation_flow`
 - summary: execute manufacturing business activities through reusable scoped realization and unit-level verification capabilities
 - use_when: user asks to implement changes based on an approved design or explicitly bounded instructions
+- intent:
+  - implement an approved and bounded software change
+  - execute scoped code realization followed by unit-level verification
+  - return implementation evidence and unresolved items to QA review
+- applies_when:
+  - the requested work has an approved design or equivalent bounded instruction or concrete quality-feedback item
+  - target source and test areas are known or can be named before coding
+  - implementation can proceed without locally inventing missing structural behavior
+- target_artifacts:
+  - source code changes
+  - unit tests or unit-level verification evidence
+  - implementation basis design reference
+  - unit test execution basis reference
+  - unresolved and uncertainty and out-of-scope and quality-feedback handoff records
+- not_for:
+  - discovering new design intent
+  - resolving unresolved business or security or release or dependency or license decisions locally
+  - deriving hidden structural behavior from DDL or UI or state transitions or integrations or batch rules or auth rules
+  - replacing QA review or closing the quality source finding from the implementation context
+- required_tools:
+  - `fm skill run`
+  - `fm skill workitem`
+  - `fm skill artifact`
+  - `fm skill concern`
+  - `fm skill verify`
+  - `fm skill close`
+  - `fm xref search`
+  - `fm xref show`
 - input: approved design or equivalent scope instruction, design basis policy reference, test plan, test design, test design basis policy reference, test-item requirement traceability reference, manufacturing test review result, target files, applicable coding rules, optional test viewpoints
 - output: code changes, unit test results, unit test execution basis reference, implementation basis design reference, referenced constraint-derivation output paths when used, quality-feedback response when applicable, uncertainty list, out-of-scope list
 - maturity: `trial`
