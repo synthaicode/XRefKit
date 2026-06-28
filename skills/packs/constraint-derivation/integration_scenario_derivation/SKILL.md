@@ -13,7 +13,7 @@ boundaries.
 
 - [Constraint derivation framework](../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190)
 - [Integration scenario derivation catalog](../../../../knowledge/packs/constraint-derivation/210_integration_scenario_derivation_catalog.md#xid-C3F60AEB5D93)
-- [Working area policy](../../../../docs/014_working_area_policy.md#xid-111D282CA0EA)
+- [Working area policy](../../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA)
 
 ## Optional References
 

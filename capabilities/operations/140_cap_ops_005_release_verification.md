@@ -52,4 +52,4 @@
 ## Assignment
 
 - release planning phase
-- [Operations Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+- [Operations Group](../../docs/reference/040_group_definitions.md#xid-8B31F02A4009)

@@ -66,7 +66,7 @@ AI ベンダーごとの起動ファイル差分（配置や形式）は、各�
 
 - 起動ファイルには `xref` で知識を読む導線だけを書く
 - 詳細な運用ルールは `docs/000_index.md#xid-56DD6EB68343` と `agent/000_agent_entry.md#xid-0B5C58B5E5B2` に一元化する
-- 共通起動ポリシーは `docs/011_startup_xref_routing.md#xid-6C0B62D6366A` を参照する
+- 共通起動ポリシーは `docs/core/contracts/011_startup_xref_routing.md#xid-6C0B62D6366A` を参照する
 
 運用フロー: [運用フロー](010_workflow.md#xid-7D1E1C0279F1)
 

@@ -91,3 +91,7 @@ For this repository, the two-method view implies:
 - source_url: https://affordd.jp/derivative-development/xddp/method/
 - captured_path: ../sources/web/affordd.jp/xddp-method-2026-04-10.html
 - captured_at: 2026-04-10
+
+## Knowledge Relations
+
+- depends_on: [XDDP Basics](170_xddp_basics.md#xid-7A2F4C8D1701)

@@ -42,7 +42,7 @@ personal power or employee value.
 ## Required Knowledge (XID)
 
 - [Context direction guard rules](../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601)
-- [Uncertainty protocol](../../../../docs/016_uncertainty_protocol.md#xid-8A666C1FD121)
+- [Uncertainty protocol](../../../../docs/core/contracts/016_uncertainty_protocol.md#xid-8A666C1FD121)
 
 ## Required Trial Examples
 

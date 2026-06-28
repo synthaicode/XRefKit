@@ -20,7 +20,7 @@ work base:
 - stable references across evolving knowledge assets
 
 For the explicit reorganization direction, see
-[AI Agent OS Reorganization Design](063_ai_agent_os_reorganization_design.md#xid-22CAE81A6D3E).
+[AI Agent OS Reorganization Design](designs/063_ai_agent_os_reorganization_design.md#xid-22CAE81A6D3E).
 
 ## The core problem
 
@@ -67,7 +67,7 @@ This repository intentionally keeps two layers together:
 - base control: common AI behavior control such as guard, uncertainty handling, and startup contract
 - xref routing: XRefKit-specific knowledge loading and reference management
 
-See [Base control and xref routing layers](017_base_and_xref_layering.md#xid-5A1C8E4D2F90) for the exact boundary.
+See [Base control and xref routing layers](core/models/017_base_and_xref_layering.md#xid-5A1C8E4D2F90) for the exact boundary.
 
 As the repository is reorganized toward a clearer AI Agent OS shape, those
 layers should be treated as an operating core rather than as only
@@ -116,7 +116,7 @@ Both are the same move: validated external authority carries fewer defects, so i
 needs less rework. Self-styled approaches embed defects at the design root, which
 is far cheaper to prevent upstream than to recover through downstream gates. This
 fits the source-backed knowledge model (`sources/` → `knowledge/`; see
-[Sources](020_sources.md#xid-2FAD591BF725)).
+[Sources](reference/020_sources.md#xid-2FAD591BF725)).
 
 ### Control is the source of efficiency
 
@@ -153,7 +153,7 @@ It does **not** mean the AI invents IDs. It means the AI (or CI) uses `fm` comma
 ## Tool integrations (examples)
 
 Keep vendor startup files minimal (`xref` route + central links), and centralize detailed policy in `docs/` + `agent/`.
-Shared startup policy: [Startup xref routing policy](011_startup_xref_routing.md#xid-6C0B62D6366A)
+Shared startup policy: [Startup xref routing policy](core/contracts/011_startup_xref_routing.md#xid-6C0B62D6366A)
 
 - GitHub Copilot: `.github/copilot-instructions.md`
 - Claude Code: `CLAUDE.md`
@@ -181,6 +181,6 @@ python -m fm xref index > .xref/xid-index.json
 It is operational memory used to improve Skills, Knowledge, guard policies,
 routing rules, and quality gates after execution.
 
-Workflow: [Workflow](010_workflow.md#xid-7D1E1C0279F1)
+Workflow: [Workflow](guides/010_workflow.md#xid-7D1E1C0279F1)
 
 Agent entry: [Agent Entry](../agent/000_agent_entry.md#xid-0B5C58B5E5B2)

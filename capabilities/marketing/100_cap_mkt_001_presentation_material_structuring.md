@@ -55,7 +55,7 @@
 ## Assignment
 
 - marketing and orientation presentation preparation
-- [AI Organization Explainer Video Team](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+- [AI Organization Explainer Video Team](../../docs/reference/040_group_definitions.md#xid-8B31F02A4009)
 
 ## Notes
 

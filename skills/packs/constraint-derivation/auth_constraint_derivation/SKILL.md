@@ -12,7 +12,7 @@ structure before access behavior is completed implicitly.
 
 - [Constraint derivation framework](../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190)
 - [Auth constraint derivation catalog](../../../../knowledge/packs/constraint-derivation/170_auth_constraint_derivation_catalog.md#xid-8B14D9E70326)
-- [Working area policy](../../../../docs/014_working_area_policy.md#xid-111D282CA0EA)
+- [Working area policy](../../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA)
 
 ## Optional References
 

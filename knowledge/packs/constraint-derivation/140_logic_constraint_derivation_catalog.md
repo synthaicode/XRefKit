@@ -36,3 +36,6 @@
 - grouped confirmation items by logic unit
 - explicit transition matrix when required
 
+## Knowledge Relations
+
+- part_of: [Constraint Derivation Framework](110_constraint_derivation_framework.md#xid-81A6C4E2B190)

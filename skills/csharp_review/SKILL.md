@@ -200,50 +200,25 @@ required_followup: <next owner or specialist Skill, or none>
   - verify those preconditions in the project
   - if preconditions are not satisfied, report a finding
 - Execute resource efficiency checks:
-  - disposable resource lifetime and ownership
-  - avoidable allocations and buffering patterns
-  - network, file, or database usage patterns that cause unnecessary overhead
+  - apply language-neutral resource efficiency review from
+    [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+  - apply C# overlays from the C# review spec, including
+    `IDisposable`/`IAsyncDisposable`, strings, buffers, LINQ chains, boxing,
+    and repeated serialization
 - Execute operational resilience checks:
+  - apply language-neutral operational resilience review from
+    [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001),
+    including the operational hazard taxonomy, escalation rule, and
+    source/import worker review
   - loops or batch workers that repeatedly create, open, close, or dispose
     network clients or outbound TCP connections
-  - host-level shared resource exhaustion paths: ephemeral ports, sockets, file
-    handles, threads, worker queues, and connection pools
-  - TCP connection churn, `TIME_WAIT`, socket exhaustion, connection pool
-    misuse, backlog-drain spikes, retry storms, and resend loops
-  - missing rate limit, throttle, backpressure, bounded batch, queue lease,
-    failure persistence, logs, metrics, or correlation evidence
-  - discovery or enumeration failures that occur outside the observed failure
-    boundary, including directory traversal, recursive file listing, source
-    listing, or queue reads before per-item handling starts
-  - source identity/correlation loss across import, queue, file, or
-    external-boundary processing, especially when only a display name is
-    persisted before the source is deleted, archived, or updated
-  - blast radius to unrelated workloads on the same OS, process, runtime, or
-    service host
-  - severity escalation: raise to `major` or higher when network client
-    creation is inside a batch loop, the client owns outbound TCP connections,
-    disposal or close likely terminates physical connections, batch size is
-    unbounded or large, no throttle/backpressure is visible, failures are
-    swallowed or not persisted, and the code may run on a shared host or
-    service VM
-  - per-unit shared-resource lifecycle: for each repeated unit of work,
-    identify whether that unit creates, opens, closes, or disposes a
-    client/session/connection/handle/execution slot backed by shared host,
-    process, runtime, or service resources. Do not encode the check as a
-    whitelist of known API types; escalate by ownership, lifecycle, resource
-    scope, volume, and observability evidence
-  - for visible per-unit resource lifecycles, name the concrete path from
-    backlog or retry volume to resource churn, shared-resource exhaustion,
-    blast radius to unrelated workloads, and loss of diagnosability
-  - discovery and identity boundary: review source discovery separately from
-    per-item processing. If discovery happens before the observed failure
-    boundary, report run-level discovery failure risk. If durable state keeps
-    only a non-unique display identity before the source is deleted, archived,
-    or updated, report correlation, deduplication, replay, and audit risk
+  - .NET ThreadPool saturation, worker-queue pressure, connection-pool misuse,
+    memory/LOH pressure, TCP connection churn, `TIME_WAIT`, socket exhaustion,
+    and ephemeral port exhaustion
 - Execute synchronization checks:
-  - lock ordering, deadlock risk, race-prone shared state
-  - blocking in async paths and context-capture pitfalls
-  - cancellation and timeout propagation
+  - apply language-neutral synchronization and concurrency review from
+    [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+  - check C# async blocking and context-capture pitfalls
   - fake-clock or virtual-clock wait loops that rely on time advancement alone
     even though a producer-side state transition could notify the waiter;
     remediation follows the adopted patterns in
@@ -251,31 +226,25 @@ required_followup: <next owner or specialist Skill, or none>
     whose application mode is per-case proposal and approval — never bulk
     auto-apply
 - Execute required business input integrity checks:
-  - identify inputs that gate billing, payment, tax, entitlement,
-    authorization, routing, eligibility, limit, or compliance behavior
-  - inspect both exception-producing and non-throwing paths for the same
-    required-input class; do not stop after finding the branch that throws
-  - flag missing required input converted into plausible defaults such as
-    `return 0`, `false`, empty collections/strings, default enums, null,
-    `??` fallback, `TryGet` fallback, or catch-and-default
-  - distinguish explicitly configured values from invented code defaults,
-    especially configured zero tax/rate versus absent tax/rate configuration
-  - require a controlled disposition before the business operation continues:
-    blocked, failed, needs configuration, dead-letter, handoff, or equivalent
-  - report the required input name, source, missing-input behavior, business
-    decision it gates, and remediation direction
+  - apply language-neutral required input integrity review from
+    [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+  - check C# silent fallback forms such as `return 0`, `false`, empty
+    collections/strings, default enums, null, `??` fallback, `TryGet`
+    fallback, and catch-and-default
+  - distinguish explicitly configured values from invented code defaults
 - Execute support lifecycle checks:
   - target framework support status
   - package or runtime dependencies with expired or near-expired support
 - Execute error handling and exception path checks:
-  - swallowed exceptions and log-and-continue paths that can lose data
+  - apply language-neutral error handling and exception path review from
+    [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+  - swallowed C# exceptions and log-and-continue paths that can lose data
   - rethrow patterns that discard the original exception context
-  - retry loops without backoff or without idempotency guarantees
-  - transaction or compensation boundaries that allow partial commits
   - error paths that skip resource cleanup
 - Execute time and culture checks:
+  - apply language-neutral time and culture review from
+    [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
   - `DateTime.Now` / `DateTime.UtcNow` mixing and `DateTimeKind` inconsistency
-  - timezone and DST boundary assumptions in scheduling or comparison logic
   - culture-sensitive `ToString` / `Parse` in protocol, persistence, or
     interchange contexts where invariant culture is required
 - When a custom framework is present:

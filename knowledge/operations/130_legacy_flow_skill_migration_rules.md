@@ -76,6 +76,6 @@ The migration is ready for current use only when:
 ## Sources
 
 - source_type: repo_doc
-- source_path: ../../docs/062_legacy_flow_skill_migration_guide.md
+- source_path: ../../docs/guides/062_legacy_flow_skill_migration_guide.md#xid-E3B7D5A18C62
 - source_locator: whole_page
 - extracted_at: 2026-05-02

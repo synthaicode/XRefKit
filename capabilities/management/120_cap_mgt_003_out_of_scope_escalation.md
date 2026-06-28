@@ -44,6 +44,6 @@
 
 ## Assignment
 
-- [All Groups](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+- [All Groups](../../docs/reference/040_group_definitions.md#xid-8B31F02A4009)
 - execution management role
-- [Coordinator](../../docs/040_group_definitions.md#xid-8B31F02A4009) handoff path
+- [Coordinator](../../docs/reference/040_group_definitions.md#xid-8B31F02A4009) handoff path

@@ -9,7 +9,7 @@ Convert spreadsheet-based specifications into Markdown artifacts with stable tra
 
 ## Required References (XID)
 
-- [Sources (PDF/Excel/Web): ingestion and referencing](../../docs/020_sources.md#xid-2FAD591BF725)
+- [Sources (PDF/Excel/Web): ingestion and referencing](../../docs/reference/020_sources.md#xid-2FAD591BF725)
 
 ## Inputs
 

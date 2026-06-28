@@ -16,10 +16,10 @@ Execute the OR Team operating loop for cross-group AI-organization optimization:
 
 ## Required References (XID)
 
-- [OR Team operating model](../../docs/048_or_team_operating_model.md#xid-1D7A8E2C5F10)
-- [OR Team usage guide](../../docs/049_or_team_usage_guide.md#xid-4E2F91A6B8C1)
-- [Group definitions](../../docs/040_group_definitions.md#xid-8B31F02A4009)
-- [System quality feedback loop](../../docs/043_system_quality_feedback_loop.md#xid-8B31F02A4012)
+- [OR Team operating model](../../docs/operating-models/048_or_team_operating_model.md#xid-1D7A8E2C5F10)
+- [OR Team usage guide](../../docs/guides/049_or_team_usage_guide.md#xid-4E2F91A6B8C1)
+- [Group definitions](../../docs/reference/040_group_definitions.md#xid-8B31F02A4009)
+- [System quality feedback loop](../../docs/quality/043_system_quality_feedback_loop.md#xid-8B31F02A4012)
 
 ## Inputs
 

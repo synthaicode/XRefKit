@@ -34,3 +34,6 @@
 - grouped confirmation items by integration surface
 - explicit retry or idempotency matrix when required
 
+## Knowledge Relations
+
+- part_of: [Constraint Derivation Framework](110_constraint_derivation_framework.md#xid-81A6C4E2B190)

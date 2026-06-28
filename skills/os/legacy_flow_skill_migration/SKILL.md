@@ -15,7 +15,7 @@ Use the canonical rules in
 
 - [Context direction guard rules](../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601)
 - [Legacy Flow / Skill migration rules](../../../knowledge/operations/130_legacy_flow_skill_migration_rules.md#xid-7B3E5D1A6104)
-- [Legacy Flow / Skill migration guide](../../../docs/062_legacy_flow_skill_migration_guide.md#xid-E3B7D5A18C62)
+- [Legacy Flow / Skill migration guide](../../../docs/guides/062_legacy_flow_skill_migration_guide.md#xid-E3B7D5A18C62)
 
 ## Optional References
 

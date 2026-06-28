@@ -104,3 +104,7 @@ topic bias.
 - If the article uses multiple technical layers, flag missing role clarification when the reader cannot safely infer the shift.
 - If the article depends on environment-specific values, require qualification unless the assumed reader is specialist and the scope is explicitly narrow.
 - If the article omits concrete examples while `abstraction_tolerance` is low, flag likely reader drop-off.
+
+## Knowledge Relations
+
+- part_of: [Editorial Operations Framework](110_editorial_operations_framework.md#xid-F9E58E2BAD21)

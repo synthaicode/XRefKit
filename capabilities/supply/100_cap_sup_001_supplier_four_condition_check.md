@@ -46,7 +46,7 @@
 ## Assignment
 
 - estimation phase
-- [Planning Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+- [Planning Group](../../docs/reference/040_group_definitions.md#xid-8B31F02A4009)
 
 ## Notes
 

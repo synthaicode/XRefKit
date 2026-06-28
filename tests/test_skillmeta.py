@@ -7,6 +7,7 @@ from fm.skillmeta import (
     GUARD_KNOWLEDGE_REF,
     REQUIRED_OS_CONTRACT,
     SKILL_RUNTIME_CAPABILITY_REF,
+    build_skill_merge_plan,
     validate_skill_meta,
 )
 
@@ -184,6 +185,142 @@ class SkillMetaTests(unittest.TestCase):
 
             self.assertFalse(result.ok)
             self.assertIn("governed skills must include at least one governance_refs entry", result.errors)
+
+    def test_skill_merge_plan_adopts_distinct_legacy_skill(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "work" / "imports" / "legacy"
+            source.mkdir(parents=True)
+            (source / "meta.md").write_text(
+                "# Legacy Meta\n\n"
+                "- skill_id: `legacy_skill`\n"
+                "- summary: old skill\n"
+                "- use_when: old use\n"
+                "- input: old input\n"
+                "- output: old output\n"
+                "- skill_doc: `./SKILL.md`\n"
+                "- maturity: `draft`\n",
+                encoding="utf-8",
+            )
+            (source / "SKILL.md").write_text(
+                "<!-- xid: LEGACY123456 -->\n<a id=\"xid-LEGACY123456\"></a>\n\n# Legacy\n",
+                encoding="utf-8",
+            )
+
+            plan = build_skill_merge_plan(root=root, source=source)
+
+            self.assertEqual("adopt", plan["classification"]["proposed"])
+            self.assertEqual("legacy_skill", plan["identity"]["source_skill_id"])
+            self.assertIn("LEGACY123456", plan["identity"]["source_xids"])
+
+    def test_skill_merge_plan_merges_exact_skill_id_candidate(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            current = root / "skills" / "legacy" / "meta.md"
+            current.parent.mkdir(parents=True)
+            current.write_text(
+                "# Current Meta\n\n"
+                "- skill_id: `legacy_skill`\n"
+                "- summary: current skill\n"
+                "- use_when: current use\n"
+                "- input: current input\n"
+                "- output: current output\n"
+                "- skill_doc: `./SKILL.md`\n"
+                "- maturity: `draft`\n",
+                encoding="utf-8",
+            )
+            (current.parent / "SKILL.md").write_text("# Current\n", encoding="utf-8")
+            source = root / "work" / "imports" / "legacy"
+            source.mkdir(parents=True)
+            (source / "meta.md").write_text(current.read_text(encoding="utf-8"), encoding="utf-8")
+            (source / "SKILL.md").write_text("# Legacy\n", encoding="utf-8")
+
+            plan = build_skill_merge_plan(root=root, source=source)
+
+            self.assertEqual("merge", plan["classification"]["proposed"])
+            self.assertEqual("exact_skill_id", plan["identity"]["candidate_targets"][0]["reasons"][0])
+
+    def test_skill_merge_plan_does_not_match_referenced_xids(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            current = root / "skills" / "current" / "meta.md"
+            current.parent.mkdir(parents=True)
+            current.write_text(
+                "# Current Meta\n\n"
+                "- skill_id: `current_skill`\n"
+                "- summary: current skill\n"
+                "- use_when: current use\n"
+                "- input: current input\n"
+                "- output: current output\n"
+                "- skill_doc: `./SKILL.md`\n"
+                "- maturity: `draft`\n",
+                encoding="utf-8",
+            )
+            (current.parent / "SKILL.md").write_text(
+                "<!-- xid: CURRENTOWN123 -->\n# Current\n\nSee [Shared](../../docs/shared.md#xid-SHAREDREF123).\n",
+                encoding="utf-8",
+            )
+            source = root / "work" / "imports" / "legacy"
+            source.mkdir(parents=True)
+            (source / "meta.md").write_text(
+                "# Legacy Meta\n\n"
+                "- skill_id: `legacy_skill`\n"
+                "- summary: legacy skill\n"
+                "- use_when: legacy use\n"
+                "- input: legacy input\n"
+                "- output: legacy output\n"
+                "- skill_doc: `./SKILL.md`\n"
+                "- maturity: `draft`\n",
+                encoding="utf-8",
+            )
+            (source / "SKILL.md").write_text(
+                "<!-- xid: LEGACYOWN123 -->\n# Legacy\n\nSee [Shared](../../docs/shared.md#xid-SHAREDREF123).\n",
+                encoding="utf-8",
+            )
+
+            plan = build_skill_merge_plan(root=root, source=source)
+
+            self.assertEqual("adopt", plan["classification"]["proposed"])
+            self.assertEqual([], plan["identity"]["candidate_targets"])
+            self.assertIn("LEGACYOWN123", plan["identity"]["source_xids"])
+            self.assertIn("SHAREDREF123", plan["identity"]["referenced_xids"])
+
+    def test_skill_merge_plan_splits_os_core_rule_copy(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "work" / "imports" / "legacy"
+            source.mkdir(parents=True)
+            (source / "meta.md").write_text(
+                "# Legacy Meta\n\n"
+                "- skill_id: `mixed_skill`\n"
+                "- summary: mixed skill\n"
+                "- use_when: mixed use\n"
+                "- input: mixed input\n"
+                "- output: mixed output\n"
+                "- skill_doc: `./SKILL.md`\n"
+                "- maturity: `draft`\n",
+                encoding="utf-8",
+            )
+            (source / "SKILL.md").write_text(
+                "# Mixed\n\n## Domain Facts\n\nBusiness facts.\n\nStartup Xref Routing Policy\n",
+                encoding="utf-8",
+            )
+
+            plan = build_skill_merge_plan(root=root, source=source)
+
+            self.assertEqual("split", plan["classification"]["proposed"])
+            self.assertIn("possible_os_core_rule_copy", plan["classification"]["reasons"])
+
+    def test_skill_merge_plan_archives_non_skill_source(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "work" / "imports" / "not_skill"
+            source.mkdir(parents=True)
+            (source / "notes.txt").write_text("not a skill", encoding="utf-8")
+
+            plan = build_skill_merge_plan(root=root, source=source)
+
+            self.assertEqual("archive", plan["classification"]["proposed"])
 
 
 if __name__ == "__main__":

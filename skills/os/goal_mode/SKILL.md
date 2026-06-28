@@ -9,11 +9,11 @@ Continue toward one goal across Codex quota exhaustion by preserving restart-rea
 
 ## Required Knowledge (XID)
 
-- [OR Team usage guide](../../../docs/049_or_team_usage_guide.md#xid-4E2F91A6B8C1)
-- [Codex MCP job inbox design](../../../docs/050_codex_mcp_job_inbox_design.md#xid-77BCEAA247E3)
-- [Skill operating contract](../../../docs/058_skill_operating_contract.md#xid-B7A2C94F0E61)
-- [Codex goal mode usage guide](../../../docs/069_codex_goal_mode_usage_guide.md#xid-3E7B4C11A8D2)
-- [Codex goal mode auto resume design](../../../docs/070_codex_goal_mode_auto_resume_design.md#xid-6F4D2A18C9E7)
+- [OR Team usage guide](../../../docs/guides/049_or_team_usage_guide.md#xid-4E2F91A6B8C1)
+- [Codex MCP job inbox design](../../../docs/designs/050_codex_mcp_job_inbox_design.md#xid-77BCEAA247E3)
+- [Skill operating contract](../../../docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61)
+- [Codex goal mode usage guide](../../../docs/guides/069_codex_goal_mode_usage_guide.md#xid-3E7B4C11A8D2)
+- [Codex goal mode auto resume design](../../../docs/designs/070_codex_goal_mode_auto_resume_design.md#xid-6F4D2A18C9E7)
 
 ## Inputs
 

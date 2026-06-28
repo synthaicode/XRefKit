@@ -36,7 +36,7 @@
   - `../../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
   - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
-  - `../../../../docs/016_uncertainty_protocol.md#xid-8A666C1FD121`
+  - `../../../../docs/core/contracts/016_uncertainty_protocol.md#xid-8A666C1FD121`
 - observation_refs:
   - `../../../../work/sessions/2026-06-27_skill_run_skill_flow_authoring.md`
   - `../../../../work/sessions/2026-06-27_skill_run_skill_flow_authoring_2.md`

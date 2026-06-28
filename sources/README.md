@@ -17,7 +17,7 @@ Store original materials here (PDF/Excel/Web snapshots, etc.).
 
 At the end of each fragment under `docs/`, record a source pointer such as `source_path` / `source_locator`.
 
-See: `docs/020_sources.md`
+See: `docs/reference/020_sources.md`
 
 ## Private sources
 

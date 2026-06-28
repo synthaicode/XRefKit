@@ -12,7 +12,7 @@ locks in implicit behavior.
 
 - [Constraint derivation framework](../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190)
 - [UI constraint derivation catalog](../../../../knowledge/packs/constraint-derivation/130_ui_constraint_derivation_catalog.md#xid-31C5A06B7E22)
-- [Working area policy](../../../../docs/014_working_area_policy.md#xid-111D282CA0EA)
+- [Working area policy](../../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA)
 
 ## Optional References
 

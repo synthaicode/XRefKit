@@ -65,7 +65,7 @@ A solution option must be differentiated by at least one explicit branching axis
 ## Assignment
 
 - estimation phase
-- [Planning Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+- [Planning Group](../../docs/reference/040_group_definitions.md#xid-8B31F02A4009)
 
 ## Notes
 

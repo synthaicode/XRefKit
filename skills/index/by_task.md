@@ -64,6 +64,7 @@
 - control:
   - `doc_ship` -> `../os/doc_ship/meta.md`
   - `retro` -> `../os/retro/meta.md`
+  - `knowledge_ontology_management` -> `../os/knowledge_ontology_management/meta.md`
   - `judgment_log` -> `../os/judgment_log/meta.md`
   - `management_table_control` -> `../management_table_control/meta.md`
   - `context_direction_guard` -> `../os/context_direction_guard/meta.md`

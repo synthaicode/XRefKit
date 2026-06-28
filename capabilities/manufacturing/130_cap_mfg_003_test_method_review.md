@@ -46,7 +46,7 @@
 ## Assignment
 
 - test phase review support
-- [Manufacturing Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+- [Manufacturing Group](../../docs/reference/040_group_definitions.md#xid-8B31F02A4009)
 
 ## Notes
 

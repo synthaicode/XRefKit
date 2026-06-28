@@ -229,6 +229,43 @@ class CliTests(unittest.TestCase):
             self.assertTrue(payload[0]["ok"])
             self.assertEqual("draft", payload[0]["checked_level"])
 
+    def test_main_skill_merge_plan_json_reports_adopt(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "work" / "imports" / "legacy"
+            source.mkdir(parents=True)
+            (source / "meta.md").write_text(
+                "# Legacy Meta\n\n"
+                "- skill_id: `legacy_skill`\n"
+                "- summary: old skill\n"
+                "- use_when: old use\n"
+                "- input: old input\n"
+                "- output: old output\n"
+                "- skill_doc: `./SKILL.md`\n"
+                "- maturity: `draft`\n",
+                encoding="utf-8",
+            )
+            (source / "SKILL.md").write_text("# Legacy\n", encoding="utf-8")
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        "skill",
+                        "merge-plan",
+                        "--root",
+                        str(root),
+                        "--source",
+                        "work/imports/legacy",
+                        "--json",
+                    ]
+                )
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(0, exit_code)
+            self.assertEqual("legacy_skill", payload["identity"]["source_skill_id"])
+            self.assertEqual("adopt", payload["classification"]["proposed"])
+
     def test_main_skill_run_writes_runtime_log(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

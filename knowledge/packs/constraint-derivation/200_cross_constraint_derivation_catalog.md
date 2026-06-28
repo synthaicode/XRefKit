@@ -33,3 +33,6 @@ flows or undocumented assumptions.
 - implicit-assumption confirmations
 - duplicated-definition checks
 
+## Knowledge Relations
+
+- part_of: [Constraint Derivation Framework](110_constraint_derivation_framework.md#xid-81A6C4E2B190)

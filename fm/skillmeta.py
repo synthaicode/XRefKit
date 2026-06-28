@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 import subprocess
+import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -252,6 +253,248 @@ PUBLIC_TEXT_DIRS = ("skills", "docs", "knowledge", "capabilities", "agent", "flo
 PRIVATE_CONCRETE_REF = re.compile(
     r"(?:skills|knowledge|sources)_private/[\w\-./]+"
 )
+OWN_XID_RE = re.compile(r"<!--\s*xid:\s*([A-Za-z0-9_-]+)\s*-->")
+XID_RE = re.compile(r"(?:<!--\s*xid:\s*([A-Za-z0-9_-]+)\s*-->|#xid-([A-Za-z0-9_-]+))")
+LOCAL_MD_REF_RE = re.compile(r"\]\(([^)#]+\.md)(?:#xid-([A-Za-z0-9_-]+))?\)")
+
+
+def _stable_file_hash(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _extract_xids(text: str) -> list[str]:
+    xids: list[str] = []
+    for match in XID_RE.finditer(text):
+        xid = match.group(1) or match.group(2)
+        if xid and xid not in xids:
+            xids.append(xid)
+    return xids
+
+
+def _extract_own_xids(text: str) -> list[str]:
+    xids: list[str] = []
+    for match in OWN_XID_RE.finditer(text):
+        xid = match.group(1)
+        if xid and xid not in xids:
+            xids.append(xid)
+    return xids
+
+
+def _read_text_or_empty(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return ""
+
+
+def _repo_rel(path: Path, root: Path) -> str:
+    try:
+        return path.relative_to(root).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
+def _source_files(source: Path) -> list[Path]:
+    if source.is_file():
+        return [source]
+    if not source.exists():
+        return []
+    return sorted(path for path in source.rglob("*") if path.is_file())
+
+
+def _find_case_insensitive_file(source: Path, name: str) -> Path | None:
+    if source.is_file():
+        return source if source.name.lower() == name.lower() else None
+    if not source.exists():
+        return None
+    for path in sorted(source.rglob("*")):
+        if path.is_file() and path.name.lower() == name.lower():
+            return path
+    return None
+
+
+def _reference_issues(source: Path, files: list[Path]) -> list[dict[str, str]]:
+    issues: list[dict[str, str]] = []
+    text_files = [path for path in files if path.suffix.lower() in {".md", ".yaml", ".yml"}]
+    for path in text_files:
+        text = _read_text_or_empty(path)
+        for match in LOCAL_MD_REF_RE.finditer(text):
+            raw_target = match.group(1)
+            xid = match.group(2)
+            target_path = (path.parent / raw_target).resolve()
+            if not xid:
+                issues.append(
+                    {
+                        "kind": "missing_xid_fragment",
+                        "file": _repo_rel(path, source),
+                        "target": raw_target,
+                    }
+                )
+            if not target_path.exists():
+                issues.append(
+                    {
+                        "kind": "missing_target",
+                        "file": _repo_rel(path, source),
+                        "target": raw_target,
+                    }
+                )
+    return issues
+
+
+def _current_skill_candidates(root: Path, source_skill_id: str | None, source_xids: list[str]) -> list[dict[str, object]]:
+    candidates: list[dict[str, object]] = []
+    for meta_path in sorted((root / "skills").rglob("meta.md")):
+        parsed = _parse_meta_lines(_read_text_or_empty(meta_path))
+        skill_id = parsed.get("skill_id")
+        skill_dir = meta_path.parent
+        current_own_xids: list[str] = []
+        for current_file in (meta_path, skill_dir / "SKILL.md"):
+            if current_file.exists():
+                current_own_xids.extend(
+                    x for x in _extract_own_xids(_read_text_or_empty(current_file)) if x not in current_own_xids
+                )
+        reasons: list[str] = []
+        if source_skill_id and skill_id == source_skill_id:
+            reasons.append("exact_skill_id")
+        overlap = sorted(set(source_xids).intersection(current_own_xids))
+        if overlap:
+            reasons.append("exact_own_xid")
+        if reasons:
+            candidates.append(
+                {
+                    "skill_id": str(skill_id) if skill_id else None,
+                    "path": _repo_rel(skill_dir, root),
+                    "reasons": reasons,
+                    "xid_overlap": overlap,
+                }
+            )
+    return candidates
+
+
+def _contract_gaps(meta_path: Path | None) -> list[str]:
+    if meta_path is None:
+        return ["missing meta.md"]
+    result = validate_skill_meta(meta_path, check_level="trial")
+    return result.errors
+
+
+def _body_split_indicators(skill_doc: Path | None) -> list[str]:
+    if skill_doc is None:
+        return []
+    text = _read_text_or_empty(skill_doc).lower()
+    indicators: list[str] = []
+    if "os_contract:" in text or "startup xref routing policy" in text or "uncertainty protocol" in text:
+        indicators.append("possible_os_core_rule_copy")
+    if "## domain facts" in text or "## factual rules" in text or "## source facts" in text:
+        indicators.append("possible_knowledge_in_skill_body")
+    return indicators
+
+
+def build_skill_merge_plan(
+    *,
+    root: Path,
+    source: Path,
+    target_skill: str | None = None,
+    source_version: str | None = None,
+) -> dict[str, object]:
+    root = root.resolve()
+    source = source.resolve()
+    files = _source_files(source)
+    meta_path = _find_case_insensitive_file(source, "meta.md")
+    skill_doc = _find_case_insensitive_file(source, "SKILL.md")
+    parsed_meta = _parse_meta_lines(_read_text_or_empty(meta_path)) if meta_path else {}
+    source_skill_id = parsed_meta.get("skill_id")
+
+    source_xids: list[str] = []
+    referenced_xids: list[str] = []
+    for path in files:
+        if path.suffix.lower() in {".md", ".yaml", ".yml"}:
+            text = _read_text_or_empty(path)
+            source_xids.extend(xid for xid in _extract_own_xids(text) if xid not in source_xids)
+            referenced_xids.extend(
+                xid for xid in _extract_xids(text) if xid not in source_xids and xid not in referenced_xids
+            )
+
+    candidates = _current_skill_candidates(
+        root,
+        str(source_skill_id) if source_skill_id else target_skill,
+        source_xids,
+    )
+    reference_issues = _reference_issues(source, files)
+    contract_gaps = _contract_gaps(meta_path)
+    split_indicators = _body_split_indicators(skill_doc)
+
+    safe_transformations: list[str] = []
+    if source.exists():
+        safe_transformations.append("run fm xref fix after placing accepted files in the repository")
+    if meta_path and contract_gaps:
+        safe_transformations.append("scaffold missing trial-level metadata fields before promotion")
+
+    judgment_required: list[str] = []
+    if candidates:
+        judgment_required.append("confirm whether the old Skill and candidate current Skill are semantically the same")
+    if split_indicators:
+        judgment_required.append("review whether detected Skill body sections must be split into knowledge or core references")
+    if reference_issues:
+        judgment_required.append("review unmanaged or missing references before promotion")
+
+    if not source.exists():
+        proposed = "archive"
+        reasons = ["source path does not exist"]
+    elif not meta_path and not skill_doc:
+        proposed = "archive"
+        reasons = ["no meta.md or SKILL.md found"]
+    elif split_indicators:
+        proposed = "split"
+        reasons = split_indicators
+    elif candidates:
+        proposed = "merge"
+        reasons = ["exact structural candidate found"]
+    else:
+        proposed = "adopt"
+        reasons = ["no exact current Skill candidate found"]
+
+    if target_skill and not candidates:
+        proposed = "escalate"
+        reasons = ["target_skill was supplied but no exact current Skill candidate matched"]
+        judgment_required.append("decide whether supplied target_skill is the intended merge target")
+
+    return {
+        "source": {
+            "path": str(source),
+            "source_version": source_version,
+            "files": [
+                {
+                    "path": _repo_rel(path, source),
+                    "sha256": _stable_file_hash(path),
+                }
+                for path in files
+            ],
+        },
+        "identity": {
+            "source_skill_id": str(source_skill_id) if source_skill_id else None,
+            "source_xids": source_xids,
+            "referenced_xids": referenced_xids,
+            "candidate_targets": candidates,
+        },
+        "classification": {
+            "proposed": proposed,
+            "reasons": reasons,
+        },
+        "safe_transformations": safe_transformations,
+        "judgment_required": sorted(set(judgment_required)),
+        "contract_gaps": contract_gaps,
+        "reference_issues": reference_issues,
+        "ownership_issues": [],
+        "validation": {
+            "commands": [
+                "python -m fm xref fix",
+                "python -m fm skill check --scope all",
+                "python -m fm pack lint",
+                "python tools/run_quality_gate.py fm",
+            ]
+        },
+    }
 
 
 @dataclass
@@ -396,6 +639,34 @@ def cmd_skill_list(args) -> int:
         print(f"violations: {len(violations)}")
 
     return 1 if violations else 0
+
+
+def cmd_skill_merge_plan(args) -> int:
+    root = Path(args.root).resolve()
+    source = (root / args.source).resolve() if not Path(args.source).is_absolute() else Path(args.source).resolve()
+    payload = build_skill_merge_plan(
+        root=root,
+        source=source,
+        target_skill=args.target_skill,
+        source_version=args.source_version,
+    )
+
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        classification = payload["classification"]
+        identity = payload["identity"]
+        print(f"source: {payload['source']['path']}")
+        print(f"source_skill_id: {identity['source_skill_id'] or '-'}")
+        print(f"proposed: {classification['proposed']}")
+        for reason in classification["reasons"]:
+            print(f"  reason: {reason}")
+        for item in payload["judgment_required"]:
+            print(f"judgment_required: {item}")
+        for gap in payload["contract_gaps"]:
+            print(f"contract_gap: {gap}")
+
+    return 0
 
 
 def _iter_meta_files(root: Path, scope: str) -> Iterable[Path]:

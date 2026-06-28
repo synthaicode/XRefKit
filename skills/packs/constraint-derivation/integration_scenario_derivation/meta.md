@@ -36,7 +36,7 @@
   - `../../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
   - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
-  - `../../../../docs/014_working_area_policy.md#xid-111D282CA0EA`
+  - `../../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA`
   - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
   - `../../../../knowledge/packs/constraint-derivation/210_integration_scenario_derivation_catalog.md#xid-C3F60AEB5D93`
 - observation_refs:

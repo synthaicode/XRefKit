@@ -44,7 +44,7 @@
 
 ## Required Domain Knowledge
 
-- [Skill Operating Contract](../../docs/058_skill_operating_contract.md#xid-B7A2C94F0E61)
+- [Skill Operating Contract](../../docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61)
 
 ## Constraints
 

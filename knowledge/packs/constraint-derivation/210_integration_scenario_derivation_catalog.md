@@ -36,3 +36,6 @@ combination of DDL, processing order, and external system boundaries.
 - partial-failure matrix
 - post-confirmation test-case candidates
 
+## Knowledge Relations
+
+- part_of: [Constraint Derivation Framework](110_constraint_derivation_framework.md#xid-81A6C4E2B190)

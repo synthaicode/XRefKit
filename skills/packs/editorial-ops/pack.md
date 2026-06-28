@@ -7,7 +7,7 @@ This manifest is the canonical, machine-checkable definition of the
 `editorial-ops` Business Pack. It declares which assets the pack OWNS
 (exclusive) and which it USES (shared, may live anywhere including the OS core).
 For the Business Pack concept see
-[Business Pack model](../../../docs/071_business_pack_model.md#xid-40511A8A06CD).
+[Business Pack model](../../../docs/core/models/071_business_pack_model.md#xid-40511A8A06CD).
 
 - pack_id: `editorial-ops`
 - summary: take an article through intake, drafting, review (factual and reader-experience), and multi-channel release as explicit stages, so review and release are never skipped
