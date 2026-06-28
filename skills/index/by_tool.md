@@ -21,6 +21,7 @@
   - `doc_ship` -> `../os/doc_ship/meta.md`
   - `retro` -> `../os/retro/meta.md`
   - `knowledge_ontology_management` -> `../os/knowledge_ontology_management/meta.md`
+  - `consultation_research_mapping` -> `../os/consultation_research_mapping/meta.md`
   - `judgment_log` -> `../os/judgment_log/meta.md`
   - `skill_flow_authoring` -> `../os/skill_flow_authoring/meta.md`
   - `goal_mode` -> `../os/goal_mode/meta.md`
@@ -51,6 +52,7 @@
   - `reader_experience_review` -> `../packs/editorial-ops/reader_experience_review/meta.md`
   - `crosspost_release` -> `../packs/editorial-ops/crosspost_release/meta.md`
 - normalized-conversation:
+  - `conversation_topic_branch_mapping` -> `../packs/business-intake/conversation_topic_branch_mapping/meta.md`
   - `decision_topology_analysis` -> `../packs/business-intake/decision_topology_analysis/meta.md`
 - specification:
   - `constraint_derivation_index` -> `../packs/constraint-derivation/constraint_derivation_index/meta.md`

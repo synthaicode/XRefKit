@@ -35,6 +35,11 @@ pack's owned Skills above. See [Business Pack model](../docs/core/models/071_bus
   - route to `business_learning_interview`
 - If the user already has a partial business hypothesis and wants to shape one business unit with previous side / current scope / next side:
   - route to `business_intake_scoping`
+- If the user provides multi-person conversation evidence where one topic
+  branches into subtopics and wants topic organization, participant involvement
+  per branch, central participant candidates, or bridge participants:
+  - route to `conversation_topic_branch_mapping`
+  - then route branch-specific decision movement to `decision_topology_analysis`
 - If the user provides design artifacts such as DDL, screen specs, state transitions, API contracts, batch designs, or auth matrices and asks to design or implement code:
   - route first to `constraint_derivation_index`
   - then apply every matching primary constraint-derivation Skill before finalizing design or code behavior
@@ -60,6 +65,12 @@ pack's owned Skills above. See [Business Pack model](../docs/core/models/071_bus
   - route to `knowledge_ontology_management`
   - do not route typo-only, formatting-only, or mechanical XID-link changes
     through this Skill
+- If the user brings a consultation topic and wants to avoid reinventing the
+  wheel by identifying prior research, established approaches, reusable
+  patterns, deterministic extraction work, and remaining judgment space:
+  - route to `consultation_research_mapping`
+  - use current sources for drift-prone topics; do not answer from model memory
+    alone when prior art or current practice matters
 - If multiple primary constraint-derivation Skills produced outputs and the task is heading toward one codebase change set:
   - run `commonality_derivation` before locking the implementation design so repeated patterns and boundary conflicts stay visible
 - If the user already has an approved requirements/planning/design/implementation stage, use the existing workflow and phase skills instead.
@@ -216,6 +227,10 @@ Current family paths:
   - summary: convert normalized online business conversation evidence into an evidence-bound Decision Topology and Stakeholder Influence Map for choosing the next business action
   - meta: `skills/packs/business-intake/decision_topology_analysis/meta.md`
   - skill_doc: `skills/packs/business-intake/decision_topology_analysis/SKILL.md`
+- `conversation_topic_branch_mapping`:
+  - summary: separate branching topics in multi-person conversation evidence and map participant involvement and central participants per branch
+  - meta: `skills/packs/business-intake/conversation_topic_branch_mapping/meta.md`
+  - skill_doc: `skills/packs/business-intake/conversation_topic_branch_mapping/SKILL.md`
 - `constraint_derivation_index`:
   - summary: route design artifacts to the correct constraint-derivation Skills and sequence the secondary commonality pass
   - meta: `skills/packs/constraint-derivation/constraint_derivation_index/meta.md`
@@ -300,6 +315,10 @@ Current family paths:
   - summary: curate additions and material revisions to canonical domain knowledge through concept and typed-relationship assessment
   - meta: `skills/os/knowledge_ontology_management/meta.md`
   - skill_doc: `skills/os/knowledge_ontology_management/SKILL.md`
+- `consultation_research_mapping`:
+  - summary: map consultation topics to prior art, reusable patterns, deterministic extraction candidates, and remaining judgment space
+  - meta: `skills/os/consultation_research_mapping/meta.md`
+  - skill_doc: `skills/os/consultation_research_mapping/SKILL.md`
 
 ## Notes
 

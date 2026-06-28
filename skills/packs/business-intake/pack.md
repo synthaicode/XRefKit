@@ -19,6 +19,7 @@ and [Business intake pack entry](../../../docs/packs/business-intake/066_busines
 - owns_skills:
   - `skills/packs/business-intake/business_learning_interview`
   - `skills/packs/business-intake/business_intake_scoping`
+  - `skills/packs/business-intake/conversation_topic_branch_mapping`
   - `skills/packs/business-intake/decision_topology_analysis`
 - owns_knowledge:
   - `knowledge/packs/business-intake/120_business_learning_interview_rules.md`
