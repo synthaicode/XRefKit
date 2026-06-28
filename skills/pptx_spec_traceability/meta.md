@@ -34,4 +34,4 @@
   - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
   - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
-  - `../../docs/020_sources.md#xid-2FAD591BF725`
+  - `../../docs/reference/020_sources.md#xid-2FAD591BF725`

@@ -37,7 +37,7 @@
 - knowledge_refs:
   - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../../knowledge/packs/business-intake/120_business_learning_interview_rules.md#xid-7B3E5D1A6103`
-  - `../../../../docs/061_business_learning_interview_guide.md#xid-D2A41E8C7B51`
-  - `../../../../docs/060_business_intake_scoping_guide.md#xid-C91F7D2A6B40`
+  - `../../../../docs/packs/business-intake/061_business_learning_interview_guide.md#xid-D2A41E8C7B51`
+  - `../../../../docs/packs/business-intake/060_business_intake_scoping_guide.md#xid-C91F7D2A6B40`
 - observation_refs:
   - `../../../../work/sessions/2026-05-01_session_business_learning_interview_skill_seed.md`

@@ -35,8 +35,8 @@
   - `../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
   - `../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
-  - `../../../docs/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B`
-  - `../../../docs/058_skill_operating_contract.md#xid-B7A2C94F0E61`
-  - `../../../docs/059_skill_maturity_governance.md#xid-4E7B8D9C1A20`
+  - `../../../docs/guides/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B`
+  - `../../../docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`
+  - `../../../docs/core/contracts/059_skill_maturity_governance.md#xid-4E7B8D9C1A20`
 - observation_refs:
   - `../../../work/sessions/2026-05-10_session_skill_flow_authoring_seed.md`

@@ -57,7 +57,7 @@
 ## Assignment
 
 - planning phase
-- [Design Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+- [Design Group](../../docs/reference/040_group_definitions.md#xid-8B31F02A4009)
 
 ## Notes
 

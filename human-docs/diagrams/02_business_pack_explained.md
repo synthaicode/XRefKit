@@ -42,7 +42,7 @@ Business Pack は単なる Skill 集ではなく、業務の流れ、実行手�
 
 ## 正典ページ
 
-- 概念の正典定義は [Business Pack model](../../docs/071_business_pack_model.md#xid-40511A8A06CD)。この図はその概念図、各パック固有の設計は個別 doc を参照。
+- 概念の正典定義は [Business Pack model](../../docs/core/models/071_business_pack_model.md#xid-40511A8A06CD)。この図はその概念図、各パック固有の設計は個別 doc を参照。
 
 ## 関連図
 

@@ -12,7 +12,7 @@ Skills before code behavior is accepted or expanded.
 
 - [Constraint derivation framework](../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190)
 - [Context direction guard rules](../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601)
-- [Working area policy](../../../../docs/014_working_area_policy.md#xid-111D282CA0EA)
+- [Working area policy](../../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA)
 
 ## Inputs
 

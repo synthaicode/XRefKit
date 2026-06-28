@@ -36,8 +36,8 @@
 - knowledge_refs:
   - `../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../knowledge/organization/200_domain_knowledge_ontology_rules.md#xid-5803607419B9`
-  - `../../../docs/020_sources.md#xid-2FAD591BF725`
-  - `../../../docs/074_document_update_policy.md#xid-B1D42A6F90C3`
+  - `../../../docs/reference/020_sources.md#xid-2FAD591BF725`
+  - `../../../docs/policies/074_document_update_policy.md#xid-B1D42A6F90C3`
 - observation_refs:
   - `../../../work/sessions/2026-06-28_session_knowledge_ontology_management_seed.md`
   - `../../../work/sessions/2026-06-28_skill_run_knowledge_ontology_management.md`

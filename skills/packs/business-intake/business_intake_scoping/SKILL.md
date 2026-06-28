@@ -23,7 +23,7 @@ Use the canonical rules in
 
 - [Context direction guard rules](../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601)
 - [Business intake scoping rules](../../../../knowledge/packs/business-intake/110_business_intake_scoping_rules.md#xid-7B3E5D1A6102)
-- [Business intake scoping guide](../../../../docs/060_business_intake_scoping_guide.md#xid-C91F7D2A6B40)
+- [Business intake scoping guide](../../../../docs/packs/business-intake/060_business_intake_scoping_guide.md#xid-C91F7D2A6B40)
 
 ## Optional References
 

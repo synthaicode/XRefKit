@@ -7,7 +7,7 @@ This manifest is the canonical, machine-checkable definition of the
 `constraint-derivation` Business Pack. It declares which assets the pack OWNS
 (exclusive) and which it USES (shared, may live anywhere including the OS core).
 For the Business Pack concept see
-[Business Pack model](../../../docs/071_business_pack_model.md#xid-40511A8A06CD).
+[Business Pack model](../../../docs/core/models/071_business_pack_model.md#xid-40511A8A06CD).
 
 - pack_id: `constraint-derivation`
 - summary: from already-built design and code artifacts, derive the use cases and confirmation points they imply and check whether they match the original intent (reverse, intent-alignment verification)

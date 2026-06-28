@@ -35,10 +35,10 @@
   - `../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
   - `../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
-  - `../../../docs/049_or_team_usage_guide.md#xid-4E2F91A6B8C1`
-  - `../../../docs/050_codex_mcp_job_inbox_design.md#xid-77BCEAA247E3`
-  - `../../../docs/058_skill_operating_contract.md#xid-B7A2C94F0E61`
-  - `../../../docs/069_codex_goal_mode_usage_guide.md#xid-3E7B4C11A8D2`
-  - `../../../docs/070_codex_goal_mode_auto_resume_design.md#xid-6F4D2A18C9E7`
+  - `../../../docs/guides/049_or_team_usage_guide.md#xid-4E2F91A6B8C1`
+  - `../../../docs/designs/050_codex_mcp_job_inbox_design.md#xid-77BCEAA247E3`
+  - `../../../docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`
+  - `../../../docs/guides/069_codex_goal_mode_usage_guide.md#xid-3E7B4C11A8D2`
+  - `../../../docs/designs/070_codex_goal_mode_auto_resume_design.md#xid-6F4D2A18C9E7`
 - observation_refs:
   - `../../../work/sessions/2026-05-24_session_goal_mode_skill_seed.md`

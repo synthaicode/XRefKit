@@ -13,8 +13,8 @@ relationships to existing XID-backed knowledge.
 ## Required Knowledge (XID)
 
 - [Domain knowledge ontology rules](../../../knowledge/organization/200_domain_knowledge_ontology_rules.md#xid-5803607419B9)
-- [Sources ingestion and referencing](../../../docs/020_sources.md#xid-2FAD591BF725)
-- [Document update policy](../../../docs/074_document_update_policy.md#xid-B1D42A6F90C3)
+- [Sources ingestion and referencing](../../../docs/reference/020_sources.md#xid-2FAD591BF725)
+- [Document update policy](../../../docs/policies/074_document_update_policy.md#xid-B1D42A6F90C3)
 - [Context direction guard rules](../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601)
 
 ## Inputs

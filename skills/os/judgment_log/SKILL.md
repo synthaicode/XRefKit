@@ -11,8 +11,8 @@ Use the canonical schema in `knowledge/organization/121_judgment_log_schema.md#x
 
 ## Required Knowledge (XID)
 
-- [Working area policy](../../../docs/014_working_area_policy.md#xid-111D282CA0EA)
-- [Shared memory operations](../../../docs/015_shared_memory_operations.md#xid-4A423E72D2ED)
+- [Working area policy](../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA)
+- [Shared memory operations](../../../docs/core/contracts/015_shared_memory_operations.md#xid-4A423E72D2ED)
 - [Metrics definition](../../../knowledge/organization/120_metrics_definition.md#xid-7A2F4C8D1201)
 - [Judgment log schema](../../../knowledge/organization/121_judgment_log_schema.md#xid-7B4C2D91E621)
 

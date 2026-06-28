@@ -18,4 +18,4 @@ For diagram entry points, see
 [human-docs/diagrams/index.md](diagrams/index.md).
 
 For the canonical language boundary, see
-[docs/030_language_policy.md](../docs/030_language_policy.md#xid-72FB974C8236).
+[docs/policies/030_language_policy.md](../docs/policies/030_language_policy.md#xid-72FB974C8236).

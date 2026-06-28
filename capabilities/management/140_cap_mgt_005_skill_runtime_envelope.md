@@ -48,9 +48,9 @@
 
 ## Required Domain Knowledge
 
-- [Skill Operating Contract](../../docs/058_skill_operating_contract.md#xid-B7A2C94F0E61)
-- [Context direction security guard](../../docs/053_context_direction_security_guard.md#xid-A7F3C92D4E11)
-- [Judgment log usage](../../docs/055_judgment_log_usage.md#xid-9D64B2F18E44)
+- [Skill Operating Contract](../../docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61)
+- [Context direction security guard](../../docs/core/contracts/053_context_direction_security_guard.md#xid-A7F3C92D4E11)
+- [Judgment log usage](../../docs/guides/055_judgment_log_usage.md#xid-9D64B2F18E44)
 
 ## Constraints
 

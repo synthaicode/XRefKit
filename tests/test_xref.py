@@ -53,6 +53,118 @@ class XrefTests(unittest.TestCase):
             rewritten = source.read_text(encoding="utf-8")
             self.assertIn("[Go](../target.md#xid-ABCDEF123456)", rewritten)
 
+    def test_xref_rewrite_updates_bare_refs_in_skill_meta_and_pack_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = root / "docs" / "core" / "target.md"
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(
+                "<!-- xid: TARGET123456 -->\n"
+                '<a id="xid-TARGET123456"></a>\n\n'
+                "# Target\n",
+                encoding="utf-8",
+            )
+            meta = root / "skills" / "sample" / "meta.md"
+            meta.parent.mkdir(parents=True, exist_ok=True)
+            meta.write_text(
+                "<!-- xid: META123456789 -->\n"
+                '<a id="xid-META123456789"></a>\n\n'
+                "# Meta\n\n"
+                "- knowledge_refs:\n"
+                "  - `../../docs/old.md#xid-TARGET123456`\n",
+                encoding="utf-8",
+            )
+            manifest = root / "skills" / "packs" / "sample" / "pack.md"
+            manifest.parent.mkdir(parents=True, exist_ok=True)
+            manifest.write_text(
+                "<!-- xid: PACK123456789 -->\n"
+                '<a id="xid-PACK123456789"></a>\n\n'
+                "# Pack\n\n"
+                "- entry: `docs/old.md#xid-TARGET123456`\n",
+                encoding="utf-8",
+            )
+
+            result = xref_rewrite(XrefConfig(root=str(root)), dry_run=False)
+
+            self.assertEqual(
+                [
+                    "skills/packs/sample/pack.md",
+                    "skills/sample/meta.md",
+                ],
+                sorted(self._normalized_paths(result["changed_files"])),
+            )
+            self.assertIn(
+                "`../../docs/core/target.md#xid-TARGET123456`",
+                meta.read_text(encoding="utf-8"),
+            )
+            self.assertIn(
+                "`docs/core/target.md#xid-TARGET123456`",
+                manifest.read_text(encoding="utf-8"),
+            )
+
+    def test_xref_check_reports_stale_bare_ref_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = root / "docs" / "core" / "target.md"
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(
+                "<!-- xid: TARGET123456 -->\n"
+                '<a id="xid-TARGET123456"></a>\n\n'
+                "# Target\n",
+                encoding="utf-8",
+            )
+            meta = root / "skills" / "sample" / "meta.md"
+            meta.parent.mkdir(parents=True, exist_ok=True)
+            meta.write_text(
+                "<!-- xid: META123456789 -->\n"
+                '<a id="xid-META123456789"></a>\n\n'
+                "# Meta\n\n"
+                "- knowledge_refs:\n"
+                "  - `../../docs/old.md#xid-TARGET123456`\n",
+                encoding="utf-8",
+            )
+
+            result = xref_check(XrefConfig(root=str(root)))
+
+            stale = [
+                issue
+                for issue in result["issues"]
+                if issue["type"] == "stale_xref_path"
+            ]
+            self.assertEqual(1, len(stale))
+            self.assertEqual("../../docs/old.md", stale[0]["path"])
+            self.assertEqual("../../docs/core/target.md", stale[0]["expected"])
+
+    def test_xref_rewrite_leaves_bare_refs_in_fenced_examples_unchanged(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = root / "docs" / "core" / "target.md"
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(
+                "<!-- xid: TARGET123456 -->\n"
+                '<a id="xid-TARGET123456"></a>\n\n'
+                "# Target\n",
+                encoding="utf-8",
+            )
+            source = root / "docs" / "guide.md"
+            source.write_text(
+                "<!-- xid: GUIDE1234567 -->\n"
+                '<a id="xid-GUIDE1234567"></a>\n\n'
+                "# Guide\n\n"
+                "```md\n"
+                "- `../old.md#xid-TARGET123456`\n"
+                "```\n",
+                encoding="utf-8",
+            )
+
+            result = xref_rewrite(XrefConfig(root=str(root)), dry_run=False)
+
+            self.assertEqual([], result["changed_files"])
+            self.assertIn(
+                "`../old.md#xid-TARGET123456`",
+                source.read_text(encoding="utf-8"),
+            )
+
     def test_xref_check_reports_duplicates_and_broken_links(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

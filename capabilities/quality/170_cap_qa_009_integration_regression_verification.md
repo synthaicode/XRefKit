@@ -46,4 +46,4 @@
 ## Assignment
 
 - quality verification phase
-- [Quality Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+- [Quality Group](../../docs/reference/040_group_definitions.md#xid-8B31F02A4009)

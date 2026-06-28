@@ -40,189 +40,68 @@ Apply this sequence per attribute usage under review:
 
 ## Resource Efficiency Checks
 
-Check at least the following:
+Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+for language-neutral resource efficiency review.
 
-- disposable lifetimes are bounded and ownership is clear
-- avoidable allocations in hot paths (strings, buffers, LINQ chains, boxing)
-- inefficient I/O and data access patterns (chatty calls, repeated serialization, redundant buffering)
-- cache and pooling opportunities where repeated expensive creation is observed
+For C#, also check common allocation and lifetime patterns such as strings,
+buffers, LINQ chains, boxing, `IDisposable`/`IAsyncDisposable` ownership, and
+unnecessary repeated serialization.
 
-Resource efficiency covers waste, cost, and local performance. Do not stop at
-this category when the same pattern creates an operational failure path.
+Do not stop at resource efficiency when the same pattern creates an
+operational failure path.
 
 ## Operational Resilience Checks
 
-Operational resilience covers failure paths, blast radius, and incident
-diagnosability. It sits above resource efficiency: a wasteful pattern becomes
-an operational-resilience finding when it can exhaust shared resources or make
-production failures difficult to attribute.
+Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+for language-neutral operational resilience review, including the operational
+hazard taxonomy, operational escalation rule, and source/import worker review.
 
-Check at least the following:
+For C#, also check at least the following:
 
-- OS-shared resource exhaustion, including ephemeral ports, sockets, file
-  handles, threads, and worker queues
-- TCP connection churn, `TIME_WAIT` accumulation, ephemeral port exhaustion,
-  and socket exhaustion
-- connection-pool misuse, including per-operation client creation where the
-  client owns outbound TCP connections
-- backlog-drain spikes, retry storms, queue accumulation, and resend loops
-- missing rate limits, throttles, backpressure, leases, or bounded batches on
-  external I/O loops
-- blast radius to unrelated workloads on the same OS, process, runtime, or
-  service host
-- missing logs, metrics, failure persistence, or correlation that would prevent
-  operators from identifying the causal component during an incident
-- discovery/enumeration failures that occur outside the observed failure
-  boundary, such as directory traversal, file listing, queue discovery, or
-  source enumeration before per-item error handling starts
-- loss of source identity or correlation across import, queue, file, or
-  external-boundary processing, especially when a later delete/archive/update
-  removes the original evidence
-
-### Operational Escalation Rule
-
-If a loop or batch worker repeatedly creates, opens, or disposes network
-clients or outbound TCP connections, review the path as an operational failure
-scenario, not only as resource efficiency.
-
-Check whether the pattern can exhaust host-level shared resources such as
-ephemeral ports, sockets, connection pools, file handles, threads, or worker
-queues.
-
-If the exhausted resource is shared at OS, process, runtime, or service-host
-level, assess whether unrelated workloads on the same host can be affected.
-
-Escalate to `major` or higher when all or most of the following are visible:
-
-- network client creation occurs inside a batch loop
-- the client owns outbound TCP connections
-- disposal or close likely terminates physical connections
-- batch size is unbounded or large
-- no rate limit, throttle, or backpressure is visible
-- failures are swallowed or not persisted
-- the code may run on a shared host or service VM
-
-Do not encode this review as a list of known client types. Apply the same
-operational escalation to any per-unit outbound client lifecycle when the
-client can own scarce external or host-level resources.
-
-For each loop, batch worker, queue consumer, retry loop, import/export job, or
-request fan-out, identify whether one unit of work creates, opens, closes, or
-disposes a client/session/connection/handle/execution slot that is backed by
-shared host, process, runtime, or service resources. Classify by resource
-ownership, lifecycle, scope, volume, and observability evidence instead of by
-matching a named API or library.
-
-When this pattern is visible, name the concrete risk path from backlog or
-retry volume to resource churn, shared-resource exhaustion, blast radius to
-unrelated workloads, and loss of diagnosability. Do not stop at "repeated
-expensive setup" merely because the specific API type is unfamiliar.
-
-### File and Import Worker Review
-
-For file import, directory import, queue import, and similar source-to-sink
-workers, review the discovery phase separately from per-item processing.
-
-Check whether source discovery runs inside an observed failure boundary:
-
-- directory traversal and file listing
-- recursive enumeration
-- queue reads or source listing before item-level processing begins
-- permission, missing path, locked/offline share, path length, malformed input,
-  or transient storage failures
-
-If discovery failure can stop the whole run before per-item handling starts,
-report it as an error-boundary and operational-resilience finding.
-
-Check whether the imported record preserves enough source identity and
-correlation to diagnose, deduplicate, replay, audit, and compensate:
-
-- full path or normalized relative path when policy permits
-- source root or source system id
-- content hash, file size, timestamp, and import attempt id where useful
-- correlation between source read, sink write, delete/archive/quarantine, and
-  logged failure records
-
-If code reduces identity to a non-unique display value while importing,
-deleting, archiving, or updating the source, report the loss as operational
-resilience or data-boundary risk. Escalate to `major` when duplicate names,
-replay/audit, or incident correlation can be lost.
+- per-operation or per-item creation/disposal of .NET outbound clients,
+  sessions, database connections, file handles, timers, or similar wrappers
+  that own shared host, runtime, or downstream resources
+- .NET ThreadPool saturation, worker-queue pressure, connection-pool misuse,
+  memory/LOH pressure, TCP connection churn, `TIME_WAIT`, socket exhaustion,
+  and ephemeral port exhaustion
+- retry, backlog, and import/export paths where .NET runtime behavior can
+  amplify the language-neutral operational hazard
 
 ## Synchronization Checks
 
-Check at least the following:
+Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+for language-neutral synchronization and concurrency review.
 
-- deadlock-prone lock ordering and nested locking risks
-- race-prone shared mutable state
+For C#, also check at least the following:
+
 - blocking waits (`.Result`, `.Wait()`) in async flows
-- missing cancellation and timeout propagation
 - synchronization-context capture concerns where relevant
 - time-controlled or test-controlled async wait paths that cannot wake on the
   state transition they are waiting for
 
 ### Time-Controlled Wait Review
 
-When code uses a virtual clock, fake clock, polling delay, or scheduler-driven
-wait loop, verify whether the awaited state change also has a direct wake-up
-path.
-
-Check at least the following:
-
-- whether a waiter is blocked only on time progression (`Delay`, timer tick, or
-  scheduler advance) even though another actor can satisfy the waited
-  condition immediately
-- whether the producer-side state transition also emits a signal, notification,
-  channel write, task completion, or semaphore release that wakes waiters
-- whether tests using a fake or manually advanced clock can hang forever
-  because no one advances time after the required state transition already
-  happened
-- whether polling-only retry loops should be converted to `time or signal`
-  waiting so timeout behavior and immediate wake-up behavior both remain
-  testable
+For C# time-controlled waits, use the common time-or-signal rule and the
+adopted patterns in
+[C# test synchronization patterns](120_csharp_test_synchronization_patterns.md#xid-4314A1A73CAF).
 
 ## Required Business Input Integrity Checks
 
-When code derives billing, authorization, routing, eligibility, tax, rate,
-limit, or other decision-critical behavior from external configuration or
-cache state, review both visible failures and silent fallbacks.
+Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+for language-neutral required input integrity review.
 
-Check paired paths for the same required input class:
-
-- key lookup that throws on missing input
-- `TryGet` / `ContainsKey` branches that return a default value
-- `return 0`, `false`, empty collection/string, default enum, or null fallback
-- catch-and-default behavior after config/API/cache failure
-
-If the value is required to decide whether processing may continue, a missing
-input must become a controlled outcome such as blocked, failed, needs
-configuration, dead-letter, or explicit handoff. Do not treat a syntactically
-valid fallback as safe merely because it does not throw.
-
-Escalate to `major` or higher when the silent fallback can cause billing,
-payment, entitlement, tax, authorization, routing, or compliance behavior to
-proceed with an invented value. For tax and pricing code, distinguish a
-configured zero value from absent configuration; missing tax/rate inputs must
-stop charge/payment until disposition is explicit.
-
-This check is not a subtype of exception handling. Apply it even when the code
-has no `catch`, no thrown exception, and no immediately visible side effect.
-The review target is the required-input path itself: whether absence is
-detected, represented, and dispositioned before the business operation
-continues.
-
-Report at least:
-
-- required input name and business decision it gates
-- source of the input, such as cache, API, DB, file, message, or config
-- missing-input behavior: throw, default substitution, catch-and-default,
-  `??` fallback, `TryGet` fallback, default enum/null/empty value, or skipped
-  branch
-- whether the default value is explicitly configured or invented by code
-- controlled disposition that should replace the missing-input path
+For C#, common silent fallback forms include `return 0`, `false`, empty
+collection/string, default enum, null, `??` fallback, `TryGet` fallback, and
+catch-and-default behavior. For tax and pricing code, distinguish a configured
+zero value from absent configuration; missing tax/rate inputs must stop
+charge/payment until disposition is explicit.
 
 ## Error Handling and Exception Path Checks
 
-Check at least the following:
+Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+for language-neutral error handling and exception path review.
+
+For C#, also check at least the following:
 
 - swallowed exceptions: empty `catch`, catch-and-log-only paths where the
   failure can silently lose data or leave state inconsistent
@@ -237,25 +116,20 @@ Check at least the following:
 - error paths that bypass cleanup (`Dispose` not reached on the exception
   path, missing `finally`/`await using` on failure routes)
 
-Findings must name the failure path concretely: which exception, raised
-where, and what state or resource is left behind.
-
 ## Time and Culture Checks
 
-Check at least the following:
+Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+for language-neutral time and culture review.
+
+For C#, also check at least the following:
 
 - `DateTime.Now` / `DateTime.UtcNow` mixing in the same comparison, storage,
   or scheduling flow, and `DateTimeKind` inconsistency across boundaries
-- timezone and DST assumptions: local-time arithmetic across DST transitions,
-  server-timezone dependence in stored timestamps
 - culture-sensitive `ToString()` / `Parse()` / string comparison used in
   protocol, persistence, serialization, or interchange contexts that require
   the invariant culture
 - format strings and decimal separators that change meaning under a
   non-default culture
-
-Classify as `needs_confirmation` when the execution environment's timezone or
-culture configuration cannot be established from local evidence.
 
 ## Support Lifecycle Checks
 

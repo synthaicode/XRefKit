@@ -10,7 +10,7 @@ class FeedbackRegisterTests(unittest.TestCase):
     def test_validate_feedback_register_accepts_real_row_with_existing_record(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            register = root / "docs" / "044_system_quality_feedback_register.md"
+            register = root / "docs" / "quality" / "044_system_quality_feedback_register.md"
             record = root / "work" / "retrospectives" / "2026-04-18_feedback_sample.md"
             register.parent.mkdir(parents=True, exist_ok=True)
             record.parent.mkdir(parents=True, exist_ok=True)
@@ -32,7 +32,7 @@ class FeedbackRegisterTests(unittest.TestCase):
     def test_validate_feedback_register_rejects_placeholder_with_real_rows(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            register = root / "docs" / "044_system_quality_feedback_register.md"
+            register = root / "docs" / "quality" / "044_system_quality_feedback_register.md"
             record = root / "work" / "retrospectives" / "2026-04-18_feedback_sample.md"
             register.parent.mkdir(parents=True, exist_ok=True)
             record.parent.mkdir(parents=True, exist_ok=True)

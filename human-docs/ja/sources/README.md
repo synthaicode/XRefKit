@@ -15,4 +15,4 @@
 
 `docs/` の断片 Markdown 末尾に `source_path` / `source_locator` などの形で、参照元を必ず残します。
 
-詳細: `docs/020_sources.md`
+詳細: `docs/reference/020_sources.md`

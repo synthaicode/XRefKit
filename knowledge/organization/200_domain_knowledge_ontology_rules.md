@@ -126,6 +126,6 @@ relationships. It does not replace:
 
 - [Knowledge Index](../000_index.md#xid-23059118FBB9)
 - [Context direction guard rules](160_context_direction_guard_rules.md#xid-7A2F4C8D1601)
-- [Flow Capability Skill Knowledge model](../../docs/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
-- [Sources ingestion and referencing](../../docs/020_sources.md#xid-2FAD591BF725)
-- [Document update policy](../../docs/074_document_update_policy.md#xid-B1D42A6F90C3)
+- [Flow Capability Skill Knowledge model](../../docs/core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
+- [Sources ingestion and referencing](../../docs/reference/020_sources.md#xid-2FAD591BF725)
+- [Document update policy](../../docs/policies/074_document_update_policy.md#xid-B1D42A6F90C3)

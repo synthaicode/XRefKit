@@ -19,8 +19,8 @@ Use the canonical rules in
 
 - [Context direction guard rules](../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601)
 - [Business learning interview rules](../../../../knowledge/packs/business-intake/120_business_learning_interview_rules.md#xid-7B3E5D1A6103)
-- [Business learning interview guide](../../../../docs/061_business_learning_interview_guide.md#xid-D2A41E8C7B51)
-- [Business intake scoping guide](../../../../docs/060_business_intake_scoping_guide.md#xid-C91F7D2A6B40)
+- [Business learning interview guide](../../../../docs/packs/business-intake/061_business_learning_interview_guide.md#xid-D2A41E8C7B51)
+- [Business intake scoping guide](../../../../docs/packs/business-intake/060_business_intake_scoping_guide.md#xid-C91F7D2A6B40)
 
 ## Optional References
 

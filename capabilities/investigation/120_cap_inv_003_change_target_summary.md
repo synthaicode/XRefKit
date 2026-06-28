@@ -44,9 +44,9 @@
 ## Assignment
 
 - investigation phase step 3
-- [Planning Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
-- [Design Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
-- [Quality Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+- [Planning Group](../../docs/reference/040_group_definitions.md#xid-8B31F02A4009)
+- [Design Group](../../docs/reference/040_group_definitions.md#xid-8B31F02A4009)
+- [Quality Group](../../docs/reference/040_group_definitions.md#xid-8B31F02A4009)
 
 ## Notes
 

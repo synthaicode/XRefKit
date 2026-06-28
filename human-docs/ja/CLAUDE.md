@@ -2,4 +2,4 @@
 
 このファイルは最小限の起動導線だけを持ちます。
 
-- 共通起動ポリシー: `docs/011_startup_xref_routing.md#xid-6C0B62D6366A`
+- 共通起動ポリシー: `docs/core/contracts/011_startup_xref_routing.md#xid-6C0B62D6366A`

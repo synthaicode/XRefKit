@@ -19,9 +19,9 @@ reconstructing everything from scratch.
 
 ## Required Knowledge (XID)
 
-- [Skill authoring with Xref](../../../docs/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B)
-- [Skill Operating Contract](../../../docs/058_skill_operating_contract.md#xid-B7A2C94F0E61)
-- [Skill maturity governance](../../../docs/059_skill_maturity_governance.md#xid-4E7B8D9C1A20)
+- [Skill authoring with Xref](../../../docs/guides/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B)
+- [Skill Operating Contract](../../../docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61)
+- [Skill maturity governance](../../../docs/core/contracts/059_skill_maturity_governance.md#xid-4E7B8D9C1A20)
 - [Context direction guard rules](../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601)
 
 ## Optional References

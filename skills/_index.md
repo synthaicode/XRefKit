@@ -24,7 +24,7 @@ catalog is derived from pack manifests, not hand-maintained:
 - `python -m fm pack list` (pack_id, summary, owned Skills per pack)
 
 Pick the pack whose summary matches the job, then select a Skill from that
-pack's owned Skills above. See [Business Pack model](../docs/071_business_pack_model.md#xid-40511A8A06CD).
+pack's owned Skills above. See [Business Pack model](../docs/core/models/071_business_pack_model.md#xid-40511A8A06CD).
 
 ## Semantic Routing Cues
 
@@ -307,5 +307,5 @@ Current family paths:
 - Keep behavior/procedure in `SKILL.md`.
 - Keep factual domain content in `knowledge/`.
 - For the AI Agent OS reorganization view of `skills/`, see:
-  - [OS utility and business skill classification design](../docs/064_os_utility_and_business_skill_classification_design.md#xid-ECF29DC3E268)
-  - [Business intake pack dependency design](../docs/065_business_intake_pack_dependency_design.md#xid-D334C1964342)
+  - [OS utility and business skill classification design](../docs/designs/064_os_utility_and_business_skill_classification_design.md#xid-ECF29DC3E268)
+  - [Business intake pack dependency design](../docs/packs/business-intake/065_business_intake_pack_dependency_design.md#xid-D334C1964342)

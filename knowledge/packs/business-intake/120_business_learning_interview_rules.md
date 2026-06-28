@@ -117,6 +117,6 @@ Treat the cycle as weak when:
 ## Sources
 
 - source_type: repo_doc
-- source_path: ../../../docs/061_business_learning_interview_guide.md
+- source_path: ../../../docs/packs/business-intake/061_business_learning_interview_guide.md#xid-D2A41E8C7B51
 - source_locator: whole_page
 - extracted_at: 2026-05-01

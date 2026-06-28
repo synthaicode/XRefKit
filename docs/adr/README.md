@@ -3,11 +3,11 @@
 
 # Architecture Decision Records
 
-Decision records for XRefKit. Each ADR captures a decision, its context, the
-evidence behind it, and its consequences. ADRs are immutable once accepted; a later
-decision supersedes rather than edits an earlier one.
+Decision records for XRefKit. This folder is retained for existing records only.
+Do not add new ADRs; this repository relies on Git history for superseded
+document states and decision diffs. Current documentation update rules are in
+[Document Update Policy](../policies/074_document_update_policy.md#xid-B1D42A6F90C3).
 
 | ADR | Title | Status |
 |---|---|---|
 | [0001](0001-where-step-grep-first.md) | Where step is grep-first; the deterministic pack is for grep-weak questions only | Accepted |
-| [0002](0002-document-update-current-state-only.md) | Keep target documents current-state only | Accepted |

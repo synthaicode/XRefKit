@@ -20,6 +20,11 @@ XID_ANCHOR_RE = re.compile(
 )
 WIKI_XREF_RE = re.compile(r"\[\[([A-Za-z0-9_-]{6,64})\]\]")
 MANAGED_FRAGMENT_RE = re.compile(r"#xid-([A-Za-z0-9_-]{6,64})\b")
+BARE_MANAGED_REF_RE = re.compile(
+    r"(?<![A-Za-z0-9_./-])"
+    r"(?P<path>(?:(?:\.\.?|[A-Za-z0-9_.-]+)/)*[A-Za-z0-9_.-]+\.md)"
+    r"#xid-(?P<xid>[A-Za-z0-9_-]{6,64})\b"
+)
 _PLACEHOLDER_XIDS = {"TBD", "TODO", "TEMP", "PLACEHOLDER"}
 _XID_INDEX_CACHE_VERSION = 1
 _XID_RELATION_SECTION_TITLE = "互換性（XID関係）"
@@ -401,6 +406,21 @@ def _relative_url(from_path: Path, to_path: Path) -> str:
     return Path(rel).as_posix()
 
 
+def _managed_ref_path(
+    *,
+    source_path: Path,
+    target_path: Path,
+    root: Path,
+    original_path: str,
+) -> str:
+    normalized = original_path.replace("\\", "/")
+    if not normalized.startswith(("./", "../")):
+        top_level = normalized.split("/", 1)[0]
+        if (root / top_level).is_dir():
+            return target_path.relative_to(root).as_posix()
+    return _relative_url(source_path, target_path)
+
+
 def _rewrite_managed_links_in_text(
     *,
     text: str,
@@ -452,6 +472,28 @@ def _rewrite_managed_links_in_text(
             return m.group(0).replace(url + rest, new_url + rest, 1)
 
         rewritten = link_re.sub(repl, line)
+
+        def repl_bare(m: re.Match[str]) -> str:
+            xid = m.group("xid")
+            if xid not in index:
+                issue = {
+                    "type": "broken_xref",
+                    "xid": xid,
+                    "from": str(source_path.relative_to(root)),
+                }
+                if issue not in issues:
+                    issues.append(issue)
+                return m.group(0)
+            target_path = index[xid].path
+            new_path = _managed_ref_path(
+                source_path=source_path,
+                target_path=target_path,
+                root=root,
+                original_path=m.group("path"),
+            )
+            return f"{new_path}#xid-{xid}"
+
+        rewritten = BARE_MANAGED_REF_RE.sub(repl_bare, rewritten)
 
         # Convert wiki xrefs [[XID]] into standard links, so link checking works everywhere.
         def repl_wiki(m: re.Match[str]) -> str:
@@ -597,6 +639,34 @@ def xref_check(cfg: XrefConfig, *, review: bool = False) -> dict[str, object]:
                         "from": str(path.relative_to(root)),
                     }
                 )
+        in_fence = False
+        for line in text.splitlines():
+            if line.lstrip().startswith("```"):
+                in_fence = not in_fence
+                continue
+            if in_fence:
+                continue
+            for m in BARE_MANAGED_REF_RE.finditer(line):
+                xid = m.group("xid")
+                target = index.get(xid)
+                if target is None:
+                    continue
+                expected_path = _managed_ref_path(
+                    source_path=path,
+                    target_path=target.path,
+                    root=root,
+                    original_path=m.group("path"),
+                )
+                if m.group("path").replace("\\", "/") != expected_path:
+                    issues.append(
+                        {
+                            "type": "stale_xref_path",
+                            "xid": xid,
+                            "from": str(path.relative_to(root)),
+                            "path": m.group("path"),
+                            "expected": expected_path,
+                        }
+                    )
 
     payload: dict[str, object] = {"index_size": len(index), "missing_xid": missing_xid, "issues": issues}
     if review:

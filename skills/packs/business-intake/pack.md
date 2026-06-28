@@ -7,15 +7,15 @@ This manifest is the canonical, machine-checkable definition of the
 `business-intake` Business Pack. It declares which assets the pack OWNS
 (exclusive) and which it USES (shared, may live anywhere including the OS core).
 For the human-facing rationale and dependency map see
-[Business intake pack dependency design](../../../docs/065_business_intake_pack_dependency_design.md#xid-D334C1964342)
-and [Business intake pack entry](../../../docs/066_business_intake_pack_entry.md#xid-732E41DCA2E8).
+[Business intake pack dependency design](../../../docs/packs/business-intake/065_business_intake_pack_dependency_design.md#xid-D334C1964342)
+and [Business intake pack entry](../../../docs/packs/business-intake/066_business_intake_pack_entry.md#xid-732E41DCA2E8).
 
 - pack_id: `business-intake`
 - summary: learn incomplete business fragments and shape them into one scope-ready business unit before later execution design
 - maturity: `trial`
 - depends_on:
   - os_contract_version: `1`
-- entry: `../../../docs/066_business_intake_pack_entry.md#xid-732E41DCA2E8`
+- entry: `../../../docs/packs/business-intake/066_business_intake_pack_entry.md#xid-732E41DCA2E8`
 - owns_skills:
   - `skills/packs/business-intake/business_learning_interview`
   - `skills/packs/business-intake/business_intake_scoping`

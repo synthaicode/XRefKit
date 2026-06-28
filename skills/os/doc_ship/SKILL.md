@@ -9,9 +9,9 @@ Take approved promotion candidates from `work/` and apply them to canonical repo
 
 ## Required Knowledge (XID)
 
-- [Skill authoring with Xref](../../../docs/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B)
-- [Working area policy](../../../docs/014_working_area_policy.md#xid-111D282CA0EA)
-- [Shared memory operations](../../../docs/015_shared_memory_operations.md#xid-4A423E72D2ED)
+- [Skill authoring with Xref](../../../docs/guides/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B)
+- [Working area policy](../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA)
+- [Shared memory operations](../../../docs/core/contracts/015_shared_memory_operations.md#xid-4A423E72D2ED)
 
 ## Inputs
 

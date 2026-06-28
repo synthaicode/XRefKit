@@ -141,6 +141,6 @@ missing boundary explicit.
 ## Sources
 
 - source_type: repo_doc
-- source_path: ../../../docs/060_business_intake_scoping_guide.md
+- source_path: ../../../docs/packs/business-intake/060_business_intake_scoping_guide.md#xid-C91F7D2A6B40
 - source_locator: whole_page
 - extracted_at: 2026-05-01

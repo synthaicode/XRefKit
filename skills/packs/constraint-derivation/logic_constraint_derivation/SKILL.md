@@ -12,7 +12,7 @@ exception paths are filled in implicitly.
 
 - [Constraint derivation framework](../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190)
 - [Logic constraint derivation catalog](../../../../knowledge/packs/constraint-derivation/140_logic_constraint_derivation_catalog.md#xid-4E5B8923C912)
-- [Working area policy](../../../../docs/014_working_area_policy.md#xid-111D282CA0EA)
+- [Working area policy](../../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA)
 
 ## Optional References
 

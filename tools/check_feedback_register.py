@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-REGISTER_PATH = REPO_ROOT / "docs" / "044_system_quality_feedback_register.md"
+REGISTER_PATH = REPO_ROOT / "docs" / "quality" / "044_system_quality_feedback_register.md"
 VALID_STATUS = {"open", "in_progress", "closed", "watch"}
 VALID_SEVERITY = {"critical", "high", "medium", "low", "-"}
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")

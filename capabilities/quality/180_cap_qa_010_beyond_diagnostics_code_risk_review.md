@@ -40,7 +40,11 @@
 - operational resilience: source-visible paths where resource use can become
   an operational failure scenario, including host-level shared resource
   exhaustion, outbound connection storms, retry storms, backlog-drain spikes,
-  pool misuse, and loss of incident diagnosability
+  pool misuse, boundary partial commits, missing claims/leases, blast-radius
+  failures, deadline/cancellation leaks, overload feedback loops, uncontrolled
+  external-input resource consumption, and loss of incident diagnosability; use
+  the language-neutral operational hazard taxonomy and overload/resource-control
+  lenses in [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
 - error handling and exception path integrity
 - support lifecycle status of frameworks and dependencies
 - time and culture correctness
@@ -67,7 +71,7 @@
 ## Assignment
 
 - quality review step
-- [Quality Group](../../docs/040_group_definitions.md#xid-8B31F02A4009)
+- [Quality Group](../../docs/reference/040_group_definitions.md#xid-8B31F02A4009)
 - implemented for C# by `skills/csharp_review/`
 
 ## Notes

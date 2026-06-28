@@ -32,7 +32,7 @@ This page defines how an agent should route a user request through workflow, cap
 - Business intake scoping after a first business hypothesis already exists and the business unit is already scope-ready:
   - route to `skills/packs/business-intake/business_intake_scoping/meta.md`
 - Business-intake startup must use the decision table in
-  [Business intake pack entry](../docs/066_business_intake_pack_entry.md#xid-732E41DCA2E8):
+  [Business intake pack entry](../docs/packs/business-intake/066_business_intake_pack_entry.md#xid-732E41DCA2E8):
   - no visible business seed -> ask for one seed before starting the pack
   - visible seed but unclear goal, judgment, ownership, or handoff ->
     `business_learning_interview`
@@ -41,7 +41,7 @@ This page defines how an agent should route a user request through workflow, cap
   - only local screen clicks or personal habits -> recover the business goal and
     responsibility boundary before treating the request as scope-ready
 - Investigation or impact analysis:
-  - [Investigation workflow](../docs/032_investigation_workflow.md#xid-8B31F02A4001)
+  - [Investigation workflow](../docs/workflows/032_investigation_workflow.md#xid-8B31F02A4001)
 - Addition of canonical domain knowledge, promotion of source material into
   `knowledge/`, or a material revision to concept identity, scope,
   applicability, or semantic relationships:
@@ -52,11 +52,11 @@ This page defines how an agent should route a user request through workflow, cap
   - route to `skills/dotnet_change_analysis/meta.md`
   - the output is a change-analysis note handed to `planning_flow` or design work, not defect findings; suspected defects hand off to `skills/csharp_review/meta.md`, suspected security gaps to `skills/security_review/meta.md`
 - Estimation, supplier check, or assumption clarification:
-  - [Estimation workflow](../docs/035_estimation_workflow.md#xid-8B31F02A4004)
+  - [Estimation workflow](../docs/workflows/035_estimation_workflow.md#xid-8B31F02A4004)
 - Requirement drafting:
-  - [Requirements workflow](../docs/036_requirements_workflow.md#xid-8B31F02A4005)
+  - [Requirements workflow](../docs/workflows/036_requirements_workflow.md#xid-8B31F02A4005)
 - Task decomposition or execution planning:
-  - [Planning workflow](../docs/037_planning_workflow.md#xid-8B31F02A4006)
+  - [Planning workflow](../docs/workflows/037_planning_workflow.md#xid-8B31F02A4006)
 - Design or coding requests that include design-side structure such as DDL, UI specs, state transitions, API contracts, batch models, or auth matrices and still leave behavior unresolved:
   - route first to `skills/packs/constraint-derivation/constraint_derivation_index/meta.md`
   - apply every matching primary derivation Skill before finalizing design or code behavior
@@ -71,13 +71,13 @@ This page defines how an agent should route a user request through workflow, cap
   - if the request also leaves design-side behavior unresolved, apply the constraint-derivation pack first, then run `csharp_review` on the implementation
   - security-scope findings discovered during the review hand off to `skills/security_review/meta.md`; design-assumption findings hand off back to the constraint-derivation pack
 - Implementation or unit testing:
-  - [Manufacturing workflow](../docs/033_manufacturing_workflow.md#xid-8B31F02A4002)
+  - [Manufacturing workflow](../docs/workflows/033_manufacturing_workflow.md#xid-8B31F02A4002)
 - Release-plan preparation:
-  - [Release planning workflow](../docs/038_release_planning_workflow.md#xid-8B31F02A4007)
+  - [Release planning workflow](../docs/workflows/038_release_planning_workflow.md#xid-8B31F02A4007)
 - CAB-style evaluation:
-  - [CAB workflow](../docs/039_cab_workflow.md#xid-8B31F02A4008)
+  - [CAB workflow](../docs/workflows/039_cab_workflow.md#xid-8B31F02A4008)
 - Leak detection, closure confirmation, or out-of-scope escalation:
-  - [Closure workflow](../docs/034_closure_workflow.md#xid-8B31F02A4003)
+  - [Closure workflow](../docs/workflows/034_closure_workflow.md#xid-8B31F02A4003)
 
 ## Capability-to-Skill Rule
 
@@ -164,11 +164,11 @@ If the task produces `unknown`, `out_of_scope`, or closure-state questions, load
 
 Then use the control path defined by:
 
-- [Closure workflow](../docs/034_closure_workflow.md#xid-8B31F02A4003)
+- [Closure workflow](../docs/workflows/034_closure_workflow.md#xid-8B31F02A4003)
 - `skills/management_table_control/SKILL.md`
 
 ## Related
 
 - [Agent Entry](000_agent_entry.md#xid-0B5C58B5E5B2)
-- [Startup xref routing policy](../docs/011_startup_xref_routing.md#xid-6C0B62D6366A)
-- [Capability layering](../docs/031_capability_layering.md#xid-8D50A972BA9F)
+- [Startup xref routing policy](../docs/core/contracts/011_startup_xref_routing.md#xid-6C0B62D6366A)
+- [Capability layering](../docs/reference/031_capability_layering.md#xid-8D50A972BA9F)

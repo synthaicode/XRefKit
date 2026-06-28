@@ -34,6 +34,6 @@
   - `../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
   - `../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
-  - `../../../docs/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B`
-  - `../../../docs/014_working_area_policy.md#xid-111D282CA0EA`
-  - `../../../docs/015_shared_memory_operations.md#xid-4A423E72D2ED`
+  - `../../../docs/guides/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B`
+  - `../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA`
+  - `../../../docs/core/contracts/015_shared_memory_operations.md#xid-4A423E72D2ED`

@@ -36,6 +36,6 @@
 - knowledge_refs:
   - `../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../knowledge/operations/130_legacy_flow_skill_migration_rules.md#xid-7B3E5D1A6104`
-  - `../../../docs/062_legacy_flow_skill_migration_guide.md#xid-E3B7D5A18C62`
+  - `../../../docs/guides/062_legacy_flow_skill_migration_guide.md#xid-E3B7D5A18C62`
 - observation_refs:
   - `../../../work/sessions/2026-05-02_session_legacy_flow_skill_migration_seed.md`
