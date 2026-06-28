@@ -19,7 +19,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "--include",
             nargs="*",
             default=None,
-            help="Top-level folders to include (default: docs agent knowledge)",
+            help="Top-level folders to include (default: docs agent knowledge capabilities skills)",
         )
         p.add_argument(
             "--exclude",
@@ -288,6 +288,16 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_list.add_argument("--root", default=".", help="Project root (default: .)")
     p_skill_list.add_argument("--json", action="store_true", help="Emit JSON")
 
+    p_skill_merge_plan = skill_sub.add_parser(
+        "merge-plan",
+        help="Create a deterministic report for importing an older Skill asset",
+    )
+    p_skill_merge_plan.add_argument("--root", default=".", help="Project root (default: .)")
+    p_skill_merge_plan.add_argument("--source", required=True, help="Source Skill folder or import bundle")
+    p_skill_merge_plan.add_argument("--target-skill", default=None, help="Optional intended current target skill_id")
+    p_skill_merge_plan.add_argument("--source-version", default=None, help="Optional source version label")
+    p_skill_merge_plan.add_argument("--json", action="store_true", help="Emit JSON")
+
     p_skill_run = skill_sub.add_parser("run", help="Create a Skill runtime envelope and session log")
     p_skill_run.add_argument("--root", default=".", help="Project root (default: .)")
     p_skill_run.add_argument("--meta", required=True, help="Relative path to the Skill meta.md to run")
@@ -441,6 +451,10 @@ def main(argv: list[str] | None = None) -> int:
             from fm.skillmeta import cmd_skill_list
 
             return cmd_skill_list(args)
+        if args.skill_cmd == "merge-plan":
+            from fm.skillmeta import cmd_skill_merge_plan
+
+            return cmd_skill_merge_plan(args)
         if args.skill_cmd == "run":
             from fm.skillrun import cmd_skill_run
 
