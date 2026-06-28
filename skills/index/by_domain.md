@@ -7,6 +7,7 @@
   - `doc_ship` -> `../os/doc_ship/meta.md`
   - `retro` -> `../os/retro/meta.md`
   - `knowledge_ontology_management` -> `../os/knowledge_ontology_management/meta.md`
+  - `consultation_research_mapping` -> `../os/consultation_research_mapping/meta.md`
   - `judgment_log` -> `../os/judgment_log/meta.md`
   - `import_skill` -> `../import_skill/meta.md`
   - `skill_flow_authoring` -> `../os/skill_flow_authoring/meta.md`
@@ -18,6 +19,7 @@
   - `or_team_operations` -> `../or_team_operations/meta.md`
   - `business_intake_scoping` -> `../packs/business-intake/business_intake_scoping/meta.md`
   - `business_learning_interview` -> `../packs/business-intake/business_learning_interview/meta.md`
+  - `conversation_topic_branch_mapping` -> `../packs/business-intake/conversation_topic_branch_mapping/meta.md`
   - `decision_topology_analysis` -> `../packs/business-intake/decision_topology_analysis/meta.md`
   - `editorial_ops_index` -> `../packs/editorial-ops/editorial_ops_index/meta.md`
   - `editorial_intake` -> `../packs/editorial-ops/editorial_intake/meta.md`

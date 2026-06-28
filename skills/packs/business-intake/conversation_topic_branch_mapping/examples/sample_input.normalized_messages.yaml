@@ -1,0 +1,154 @@
+root_topic: "API retry policy"
+period:
+  from: "2026-06-20T09:00:00+09:00"
+  to: "2026-06-27T11:00:00+09:00"
+source_system: "sample-chat"
+handling_hint: "internal planning only"
+messages:
+  - id: "m001"
+    source_system: "sample-chat"
+    source_url: "https://example.invalid/messages/m001"
+    conversation_type: "channel"
+    conversation_id: "conv-retry"
+    thread_id: "t-root"
+    reply_to_id: null
+    sender:
+      id: "u-a"
+      display_name: "Aki"
+      formal_role: null
+    created_at: "2026-06-20T09:05:00+09:00"
+    body_text: "API retry policy needs a decision before the release review."
+    mentions: []
+    attachments: []
+    reactions: []
+  - id: "m002"
+    source_system: "sample-chat"
+    source_url: "https://example.invalid/messages/m002"
+    conversation_type: "channel"
+    conversation_id: "conv-retry"
+    thread_id: "t-root"
+    reply_to_id: "m001"
+    sender:
+      id: "u-b"
+      display_name: "Bo"
+      formal_role: null
+    created_at: "2026-06-20T09:10:00+09:00"
+    body_text: "For payment API, retrying 5xx is fine, but duplicate charge prevention needs idempotency confirmation."
+    mentions: []
+    attachments: []
+    reactions: []
+  - id: "m003"
+    source_system: "sample-chat"
+    source_url: "https://example.invalid/messages/m003"
+    conversation_type: "channel"
+    conversation_id: "conv-retry"
+    thread_id: "t-root"
+    reply_to_id: "m002"
+    sender:
+      id: "u-c"
+      display_name: "Chen"
+      formal_role: null
+    created_at: "2026-06-20T09:18:00+09:00"
+    body_text: "Batch sync has a different issue. The retry window conflicts with the nightly maintenance period."
+    mentions: []
+    attachments: []
+    reactions: []
+  - id: "m004"
+    source_system: "sample-chat"
+    source_url: "https://example.invalid/messages/m004"
+    conversation_type: "channel"
+    conversation_id: "conv-retry"
+    thread_id: "t-root"
+    reply_to_id: "m003"
+    sender:
+      id: "u-d"
+      display_name: "Dina"
+      formal_role: null
+    created_at: "2026-06-20T09:25:00+09:00"
+    body_text: "I can confirm the batch maintenance window and propose the retry cutoff."
+    mentions: []
+    attachments: []
+    reactions: []
+  - id: "m005"
+    source_system: "sample-chat"
+    source_url: "https://example.invalid/messages/m005"
+    conversation_type: "channel"
+    conversation_id: "conv-retry"
+    thread_id: "t-root"
+    reply_to_id: "m002"
+    sender:
+      id: "u-a"
+      display_name: "Aki"
+      formal_role: null
+    created_at: "2026-06-20T09:32:00+09:00"
+    body_text: "Let's split payment idempotency and batch retry window. Bo, please write the payment confirmation point. Dina, please own the batch window check."
+    mentions:
+      - "u-b"
+      - "u-d"
+    attachments: []
+    reactions: []
+  - id: "m006"
+    source_system: "sample-chat"
+    source_url: "https://example.invalid/messages/m006"
+    conversation_type: "channel"
+    conversation_id: "conv-retry"
+    thread_id: "t-root"
+    reply_to_id: "m005"
+    sender:
+      id: "u-b"
+      display_name: "Bo"
+      formal_role: null
+    created_at: "2026-06-20T09:40:00+09:00"
+    body_text: "I will draft the payment idempotency question and bring it to the API owner."
+    mentions: []
+    attachments: []
+    reactions: []
+  - id: "m007"
+    source_system: "sample-chat"
+    source_url: "https://example.invalid/messages/m007"
+    conversation_type: "channel"
+    conversation_id: "conv-retry"
+    thread_id: "t-root"
+    reply_to_id: "m006"
+    sender:
+      id: "u-b"
+      display_name: "Bo"
+      formal_role: null
+    created_at: "2026-06-21T10:05:00+09:00"
+    body_text: "The payment idempotency question is still open. I need the API owner route before we can close retry policy."
+    mentions: []
+    attachments: []
+    reactions: []
+  - id: "m008"
+    source_system: "sample-chat"
+    source_url: "https://example.invalid/messages/m008"
+    conversation_type: "channel"
+    conversation_id: "conv-retry"
+    thread_id: "t-root"
+    reply_to_id: "m007"
+    sender:
+      id: "u-e"
+      display_name: "Ema"
+      formal_role: null
+    created_at: "2026-06-27T09:30:00+09:00"
+    body_text: "For API owner route, Cora should confirm whether idempotency key is required for payment retry."
+    mentions:
+      - "u-cora"
+    attachments: []
+    reactions: []
+  - id: "m009"
+    source_system: "sample-chat"
+    source_url: "https://example.invalid/messages/m009"
+    conversation_type: "channel"
+    conversation_id: "conv-retry"
+    thread_id: "t-root"
+    reply_to_id: "m004"
+    sender:
+      id: "u-d"
+      display_name: "Dina"
+      formal_role: null
+    created_at: "2026-06-27T10:00:00+09:00"
+    body_text: "Batch retry cutoff can be before maintenance. I will add the cutoff proposal to the release note."
+    mentions: []
+    attachments: []
+    reactions: []

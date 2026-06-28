@@ -34,6 +34,23 @@ Execute the manufacturing sequence `CAP-MFG-001 -> CAP-MFG-002` and prepare outp
 - [XDDP basics](../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701)
 - [XDDP supporting methods](../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711)
 
+## Client-Delivered Runtime Use
+
+When this Skill is obtained through XRefKit MCP, the client treats the
+transferred `meta.md` and `SKILL.md` bodies as the procedure source.
+
+- Resolve capability and knowledge links by XID through the client-visible XRef
+  resolver, not by assuming a local XRefKit checkout.
+- Use the MCP-provided Skill catalog and `get_skill` response to load this
+  procedure before execution.
+- Run `fm skill run` in the client execution environment to create the runtime
+  envelope before opening the procedure for operational use.
+- Execute deterministic `fm` commands and any implementation tools in the
+  client environment; the MCP server distributes content and contracts only.
+- Keep the run log, work items, artifacts, concerns, verification evidence, and
+  handoff records on the client side unless a separate approved publication
+  flow transfers them back.
+
 ## Outputs
 
 - implemented code
@@ -50,6 +67,8 @@ Execute the manufacturing sequence `CAP-MFG-001 -> CAP-MFG-002` and prepare outp
 - Confirm approved scope exists.
 - Confirm target files are identified.
 - Confirm coding rules are available.
+- Confirm the client has loaded this Skill through the active XRefKit routing
+  surface and can resolve required capability and knowledge XIDs on demand.
 - If the run starts from quality feedback, confirm each finding has evidence,
   remediation direction, scope, and a tradeoff assessment basis.
 - Record `unknown` if required evidence is missing.

@@ -26,7 +26,9 @@
   - `csharp_error_policy_extraction` -> `../csharp_error_policy_extraction/meta.md`
   - `external_definition_change_analysis` -> `../external_definition_change_analysis/meta.md`
   - `investigation_flow` -> `../investigation_flow/meta.md`
+  - `consultation_research_mapping` -> `../os/consultation_research_mapping/meta.md`
   - `business_learning_interview` -> `../packs/business-intake/business_learning_interview/meta.md`
+  - `conversation_topic_branch_mapping` -> `../packs/business-intake/conversation_topic_branch_mapping/meta.md`
   - `decision_topology_analysis` -> `../packs/business-intake/decision_topology_analysis/meta.md`
   - `editorial_intake` -> `../packs/editorial-ops/editorial_intake/meta.md`
 - estimate:
@@ -65,6 +67,7 @@
   - `doc_ship` -> `../os/doc_ship/meta.md`
   - `retro` -> `../os/retro/meta.md`
   - `knowledge_ontology_management` -> `../os/knowledge_ontology_management/meta.md`
+  - `consultation_research_mapping` -> `../os/consultation_research_mapping/meta.md`
   - `judgment_log` -> `../os/judgment_log/meta.md`
   - `management_table_control` -> `../management_table_control/meta.md`
   - `context_direction_guard` -> `../os/context_direction_guard/meta.md`
