@@ -170,6 +170,40 @@ class SkillMetaTests(unittest.TestCase):
                 result.errors,
             )
 
+    def test_validate_skill_meta_rejects_protocol_owned_role_responsibilities(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                "# Skill Meta: trial\n\n"
+                "- skill_id: `trial_skill`\n"
+                "- summary: trial summary\n"
+                "- use_when: observed use\n"
+                "- input: observed input\n"
+                "- output: observed output\n"
+                "- maturity: `trial`\n"
+                "- execution_mode: `local_default`\n"
+                "- guard_policy: `required`\n"
+                "- capability_layering: `required`\n"
+                "- workflow_protocol: `required`\n"
+                "- tuning: trial specialization\n"
+                "- role_responsibilities:\n"
+                "  - executor: trial execution responsibility\n"
+                "  - quality_reviewer: old boilerplate quality responsibility\n"
+                "  - handoff_owner: old boilerplate handoff responsibility\n"
+                "- skill_doc: `./SKILL.md`\n"
+                "- observation_refs:\n"
+                "  - `../../work/sessions/trial.md`\n",
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertFalse(result.ok)
+            self.assertIn(
+                "role_responsibilities must not define protocol-owned roles: handoff_owner, quality_reviewer",
+                result.errors,
+            )
+
     def test_validate_skill_meta_rejects_governed_without_governance_refs(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             meta = Path(tmp) / "meta.md"

@@ -36,6 +36,18 @@ def _parse_meta_lines(text: str) -> dict[str, object]:
     return data
 
 
+def _parse_key_value_list(value: object) -> dict[str, str]:
+    if not isinstance(value, list):
+        return {}
+    parsed: dict[str, str] = {}
+    for item in value:
+        if not isinstance(item, str) or ":" not in item:
+            continue
+        key, raw_value = item.split(":", 1)
+        parsed[key.strip()] = raw_value.strip().strip("`")
+    return parsed
+
+
 def _heading_exists(text: str, heading: str) -> bool:
     return any(line.strip().lower() == f"## {heading}".lower() for line in text.splitlines())
 
@@ -57,6 +69,7 @@ def _detect_source_inventory(source_dir: Path) -> list[str]:
 
 def _detect_migration_gaps(skill_text: str, parsed_meta: dict[str, object], inventory: list[str]) -> list[str]:
     gaps: list[str] = []
+    role_responsibilities = _parse_key_value_list(parsed_meta.get("role_responsibilities"))
     if "meta.md" not in inventory:
         gaps.append("missing_runtime_fields")
     else:
@@ -66,6 +79,16 @@ def _detect_migration_gaps(skill_text: str, parsed_meta: dict[str, object], inve
             gaps.append("missing_runtime_fields")
         if "guard_policy" not in parsed_meta:
             gaps.append("missing_runtime_fields")
+        if "capability_layering" not in parsed_meta:
+            gaps.append("missing_runtime_fields")
+        if "workflow_protocol" not in parsed_meta:
+            gaps.append("missing_runtime_fields")
+        if "tuning" not in parsed_meta:
+            gaps.append("missing_runtime_fields")
+        if not role_responsibilities.get("executor"):
+            gaps.append("missing_runtime_fields")
+        if {"checker", "quality_reviewer", "handoff_owner"}.intersection(role_responsibilities):
+            gaps.append("protocol_owned_role_responsibilities")
     if not _heading_exists(skill_text, "Purpose"):
         gaps.append("missing_goal")
     if "Required Knowledge" not in skill_text and "knowledge/" not in skill_text:
@@ -111,6 +134,11 @@ def _build_meta_scaffold(skill_id: str, parsed_meta: dict[str, object]) -> str:
             "- maturity: `trial`",
             "- execution_mode: `local_default`",
             "- guard_policy: `required`",
+            "- capability_layering: `required`",
+            "- workflow_protocol: `required`",
+            "- tuning: migrated legacy Flow / Skill scaffold",
+            "- role_responsibilities:",
+            f"  - executor: migrate {skill_id} from legacy source into current XRefKit structure",
             "- skill_doc: `./SKILL.md`",
             "- observation_refs:",
             "  - `../../work/sessions/<migration-session>.md`",

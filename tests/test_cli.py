@@ -497,7 +497,7 @@ class CliTests(unittest.TestCase):
             self.assertFalse(payload["ok"])
             self.assertIn("draft skills are not load-ready", payload["errors"][0])
 
-    def test_main_skill_run_accepts_trial_skill_with_provisional_runtime_defaults(self) -> None:
+    def test_main_skill_run_rejects_trial_skill_without_runtime_fields(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             meta = root / "skills" / "sample" / "meta.md"
@@ -535,16 +535,12 @@ class CliTests(unittest.TestCase):
                 )
 
             payload = json.loads(stdout.getvalue())
-            self.assertEqual(0, exit_code)
-            self.assertTrue(payload["ok"])
-            text = out.read_text(encoding="utf-8")
-            self.assertIn("- maturity: `trial`", text)
-            self.assertIn("- guard_policy: `required`", text)
-            self.assertIn("- capability_layering: `required`", text)
-            self.assertIn("- workflow_protocol: `required`", text)
-            self.assertIn("- tuning: `not declared`", text)
-            self.assertIn("- executor: `not declared`", text)
-            self.assertIn("- execution_mode: `local_default`", text)
+            self.assertEqual(1, exit_code)
+            self.assertFalse(payload["ok"])
+            self.assertIn("missing or invalid capability_layering", payload["errors"])
+            self.assertIn("missing or invalid workflow_protocol", payload["errors"])
+            self.assertIn("missing tuning", payload["errors"])
+            self.assertIn("missing role_responsibilities.executor", payload["errors"])
 
     def test_main_skill_phase_updates_runtime_log(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

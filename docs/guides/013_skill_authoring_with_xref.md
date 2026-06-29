@@ -66,6 +66,8 @@ Keep the authoring split simple:
   runtime controls.
 - `tuning` and `role_responsibilities.executor` describe this concrete
   Skill's use.
+- `role_responsibilities` must not define `checker`, `quality_reviewer`, or
+  `handoff_owner`; those roles are protocol-owned.
 - `capability_refs` names the controlling capability definitions; it is not
   evidence and does not define tuning or responsibility.
 
@@ -111,9 +113,10 @@ python -m fm xref show <XID>
 ```
 
 4. Decide whether the skill loads external context during execution.
-5. For `trial` or higher, add provisional or final `guard_policy`,
-   `capability_layering`, `workflow_protocol`, direct `tuning`, Skill-specific
-   `role_responsibilities.executor`, and `execution_mode`.
+5. For `trial` or higher, add `guard_policy`, `capability_layering`,
+   `workflow_protocol`, direct `tuning`, Skill-specific
+   `role_responsibilities.executor`, and `execution_mode`; do not add
+   protocol-owned role responsibilities.
 6. If the Skill loads external context, compose the context-direction guard in
    `meta.md` and `SKILL.md`.
 7. In the Skill, record required references as XID links (not copied text).

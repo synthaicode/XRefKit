@@ -46,8 +46,11 @@ references, not the tuning or responsibility definition and not evidence.
 runtime roles are owned by the workflow protocol: `checker` performs the
 deterministic run-record check through `fm skill verify`; `quality_reviewer`
 owns output-content acceptance when the quality gate is required; and
-`handoff_owner` advances explicit handoff. Repeat those common responsibilities
-in a Skill only when the Skill has a real, Skill-specific delta.
+`handoff_owner` advances explicit handoff. `trial`, `stable`, and `governed`
+Skill metadata must not define `checker`, `quality_reviewer`, or
+`handoff_owner` under `role_responsibilities`; Skill-specific acceptance or
+handoff deltas belong in `lifecycle`, `constraints`, `closure`, or check
+artifacts.
 
 ## Required Meta Block
 

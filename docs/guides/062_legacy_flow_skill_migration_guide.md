@@ -86,6 +86,7 @@ Reasons:
 - old artifacts often lack explicit `maturity`
 - old artifacts often lack `execution_mode`
 - old artifacts often lack `guard_policy`
+- old artifacts often repeat runtime role prose that is now protocol-owned
 - old artifacts often lack observation linkage
 - old artifacts often mix procedure and domain facts
 
@@ -97,8 +98,10 @@ Reasons:
 4. split facts from procedure
 5. rebuild target files under current `skills/`, `docs/`, `flows/`, and
    `knowledge/`
-6. validate with `python -m fm xref fix`
-7. validate the new target with `python -m fm skill check --level trial`
+6. remove `checker`, `quality_reviewer`, and `handoff_owner` from
+   `role_responsibilities`; keep only the Skill-specific `executor` entry
+7. validate with `python -m fm xref fix`
+8. validate the new target with `python -m fm skill check --level trial`
 
 ## Related
 

@@ -61,8 +61,8 @@ Notes:
 - Common runtime roles are not Skill-specific role responsibilities:
   `checker` is assigned by the workflow protocol and advanced
   deterministically with `fm skill verify`; `quality_reviewer` and
-  `handoff_owner` use the common protocol responsibility unless the Skill has
-  a real delta.
+  `handoff_owner` use the common protocol responsibility and must not be
+  defined under `role_responsibilities`.
 - If later AI runs would need to remember something critical, encode it as
   `input`, `output`, `constraints`, `knowledge_refs`, `observation_refs`, or
   handoff/closure wording instead of leaving it unstated.

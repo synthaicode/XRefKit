@@ -102,6 +102,8 @@ To pass `stable` check, the Skill must satisfy operational completeness:
 - `workflow_protocol: required`
 - explicit `tuning`
 - Skill-specific `role_responsibilities.executor`
+- no protocol-owned roles (`checker`, `quality_reviewer`, `handoff_owner`) in
+  `role_responsibilities`
 - `constraints`
 - required runtime capability reference
 - required guard references when `guard_policy: required`
@@ -146,8 +148,8 @@ python -m fm skill check --meta skills/<skill_id>/meta.md --level governed
   defined in
   `docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`
 
-For `trial`, provisional runtime defaults may be used while the Skill is still
-being clarified.
+For `trial`, runtime decisions may still be provisional in meaning, but the
+runtime fields themselves must be explicit before the Skill is load-ready.
 
 ## Improvement Flow
 
@@ -185,12 +187,16 @@ being clarified.
 - guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
+- tuning: <direct specialization for this Skill>
+- role_responsibilities:
+  - executor: <what the executor produces or changes>
 - observation_refs:
   - `../../work/sessions/<session>.md`
 ```
 
-`local_default` relaxes the executor side only. Runtime check behavior is
-defined by the Skill Operating Contract, not by this maturity page.
+`local_default` relaxes the executor side only. Runtime check behavior, quality
+review, and handoff ownership are defined by the Skill Operating Contract, not
+by Skill-local `role_responsibilities`.
 
 ## Stable Upgrade Template
 

@@ -22,6 +22,7 @@ VALID_WORKFLOW_PROTOCOL_POLICIES = {"required"}
 VALID_EXECUTION_MODES = {"local_default", "subagent_preferred", "subagent_required"}
 VALID_MATURITY_LEVELS = {"draft", "trial", "stable", "governed", "deprecated"}
 VALID_CHECK_LEVELS = {"auto", "draft", "trial", "stable", "governed"}
+PROTOCOL_OWNED_ROLE_RESPONSIBILITIES = {"checker", "quality_reviewer", "handoff_owner"}
 LEGACY_DEFAULT_MATURITY = "stable"
 TRIAL_DEFAULT_EXECUTION_MODE = "local_default"
 TRIAL_DEFAULT_GUARD_POLICY = "required"
@@ -122,6 +123,11 @@ def _has_skill_role_responsibilities(value: object) -> bool:
     return all(parsed.get(role, "").strip() for role in required)
 
 
+def _protocol_owned_role_responsibilities(value: object) -> list[str]:
+    parsed = _parse_key_value_list(value)
+    return sorted(PROTOCOL_OWNED_ROLE_RESPONSIBILITIES.intersection(parsed))
+
+
 def _has_required_ref(refs: list, required_suffix: str) -> bool:
     return any(
         isinstance(ref, str) and ref.replace("\\", "/").endswith(required_suffix)
@@ -219,6 +225,20 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
     if require_observation_refs:
         if not observation_refs:
             errors.append("trial-or-higher skills must include at least one observation_refs entry")
+        if capability_layering not in VALID_CAPABILITY_LAYERING_POLICIES:
+            errors.append("missing or invalid capability_layering")
+        if workflow_protocol not in VALID_WORKFLOW_PROTOCOL_POLICIES:
+            errors.append("missing or invalid workflow_protocol")
+        if not isinstance(tuning, str) or not tuning.strip():
+            errors.append("missing tuning")
+        if not _has_skill_role_responsibilities(parsed.get("role_responsibilities")):
+            errors.append("missing role_responsibilities.executor")
+        protocol_roles = _protocol_owned_role_responsibilities(parsed.get("role_responsibilities"))
+        if protocol_roles:
+            errors.append(
+                "role_responsibilities must not define protocol-owned roles: "
+                + ", ".join(protocol_roles)
+            )
     if effective_check_level == "trial":
         if execution_mode and execution_mode not in VALID_EXECUTION_MODES:
             errors.append("invalid execution_mode")
@@ -241,7 +261,7 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
         if not isinstance(tuning, str) or not tuning.strip():
             errors.append("missing tuning")
         if not _has_skill_role_responsibilities(parsed.get("role_responsibilities")):
-            errors.append("missing role_responsibilities")
+            errors.append("missing role_responsibilities.executor")
         if guard_policy == "required":
             if not _has_required_ref(capability_refs, GUARD_CAPABILITY_REF):
                 errors.append("required guard capability ref is missing")
