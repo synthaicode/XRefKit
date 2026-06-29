@@ -17,8 +17,6 @@
 - tuning: derive requirement confirmation gates from UI structure, interaction states, and screen transitions
 - role_responsibilities:
   - executor: screen specifications, wireframes, or UI behavior notes may leave states or transitions to implicit AI completion
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

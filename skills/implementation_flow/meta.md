@@ -44,8 +44,6 @@
 - tuning: execute manufacturing business activities through reusable scoped realization and unit-level verification capabilities
 - role_responsibilities:
   - executor: user asks to implement changes based on an approved design or explicitly bounded instructions
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

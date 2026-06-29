@@ -15,8 +15,6 @@
 - tuning: execute design business activity through reusable solution-design capability
 - role_responsibilities:
   - executor: user needs implementation-ready design after planning outputs are approved
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

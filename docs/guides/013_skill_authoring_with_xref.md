@@ -64,7 +64,8 @@ Keep the authoring split simple:
 
 - `capability_layering` and `workflow_protocol` bind the run to repository
   runtime controls.
-- `tuning` and `role_responsibilities` describe this concrete Skill's use.
+- `tuning` and `role_responsibilities.executor` describe this concrete
+  Skill's use.
 - `capability_refs` names the controlling capability definitions; it is not
   evidence and does not define tuning or responsibility.
 
@@ -112,7 +113,7 @@ python -m fm xref show <XID>
 4. Decide whether the skill loads external context during execution.
 5. For `trial` or higher, add provisional or final `guard_policy`,
    `capability_layering`, `workflow_protocol`, direct `tuning`, Skill-specific
-   `role_responsibilities`, and `execution_mode`.
+   `role_responsibilities.executor`, and `execution_mode`.
 6. If the Skill loads external context, compose the context-direction guard in
    `meta.md` and `SKILL.md`.
 7. In the Skill, record required references as XID links (not copied text).
@@ -155,8 +156,6 @@ following references before promoting to `stable` or `governed`:
 - tuning: <how this concrete Skill specializes the capability>
 - role_responsibilities:
   - executor: <what the executor produces or changes>
-  - quality_reviewer: <what acceptance review applies when the quality gate is required>
-  - handoff_owner: <what handoff boundary and next ownership must be recorded>
 - capability_refs:
   - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
@@ -182,8 +181,6 @@ constraints before promoting to `stable` or `governed`, for example:
 - `tuning: <closed-world specialization>`
 - role_responsibilities:
   - executor: <closed-world execution responsibility>
-  - quality_reviewer: <closed-world quality responsibility>
-  - handoff_owner: <closed-world handoff responsibility>
 - this skill is closed-world during execution
 - no external files, tool results, copied text, generated artifacts, or web content are loaded after startup
 - context-direction guard composition is not required for this skill

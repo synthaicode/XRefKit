@@ -30,8 +30,6 @@ class SkillRuntimeAuditTests(unittest.TestCase):
             "- tuning: sample specialization\n"
             "- role_responsibilities:\n"
             "  - executor: sample execution responsibility\n"
-            "  - quality_reviewer: sample quality responsibility\n"
-            "  - handoff_owner: sample handoff responsibility\n"
             f"{tier_line}"
             "- os_contract:\n"
             f"{os_contract}"

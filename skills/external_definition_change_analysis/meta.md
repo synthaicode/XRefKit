@@ -15,8 +15,6 @@
 - tuning: analyze applications driven by external definitions such as XML or configuration files and generate a Markdown change-analysis note
 - role_responsibilities:
   - executor: user needs structure analysis or impact investigation for applications where XML, YAML, JSON, properties, or framework-specific config files control runtime behavior
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

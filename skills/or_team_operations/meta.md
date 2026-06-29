@@ -15,8 +15,6 @@
 - tuning: run the OR Team loop for AI-organization state presentation, problem structuring, approval routing, execution control, and re-observation
 - role_responsibilities:
   - executor: user needs cross-group operating optimization, drift handling, stop-or-continue decisions, or structured improvement control beyond a local fix
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

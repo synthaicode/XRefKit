@@ -118,7 +118,7 @@ def _parse_key_value_list(value: object) -> dict[str, str]:
 
 def _has_skill_role_responsibilities(value: object) -> bool:
     parsed = _parse_key_value_list(value)
-    required = {"executor", "quality_reviewer", "handoff_owner"}
+    required = {"executor"}
     return all(parsed.get(role, "").strip() for role in required)
 
 

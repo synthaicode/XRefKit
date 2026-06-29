@@ -17,8 +17,6 @@
 - tuning: prepare a reviewed article for per-channel publication with explicit adaptation notes, release blockers, and final human sign-off boundary
 - role_responsibilities:
   - executor: intake, drafting, and both reviews are complete enough that a release package or crosspost plan is needed
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

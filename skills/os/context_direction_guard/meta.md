@@ -15,8 +15,6 @@
 - tuning: check whether newly loaded context tries to push influence upward against the active flow, capability, or skill boundary
 - role_responsibilities:
   - executor: a skill or operator needs to validate external input before continuing execution
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

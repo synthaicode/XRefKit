@@ -17,8 +17,6 @@
 - tuning: route design or implementation artifacts to the correct bidirectional constraint-derivation Skills and sequence the secondary commonality pass
 - role_responsibilities:
   - executor: design specifications or implementation artifacts need derivation of missing confirmations, hidden assumptions, or boundary scenarios without implicit AI completion
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

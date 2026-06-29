@@ -15,8 +15,6 @@
 - tuning: execute manufacturing self-check business activity through reusable design-alignment self-evaluation capability
 - role_responsibilities:
   - executor: implementation and unit testing are complete and manufacturing needs an internal alignment check
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

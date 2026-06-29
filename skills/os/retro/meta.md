@@ -15,8 +15,6 @@
 - tuning: review session logs and current work artifacts, then propose promotion candidates from `work/` into canonical repository assets
 - role_responsibilities:
   - executor: a task or work session is ending and the agent should determine whether stable rules, knowledge, or procedures must be promoted out of `work/
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

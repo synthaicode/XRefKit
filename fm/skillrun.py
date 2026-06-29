@@ -173,8 +173,12 @@ def _render_log(
     capability_ref_lines = "\n".join(
         f"- `{ref}`" for ref in capability_refs
     ) or "- none declared"
+    protocol_role_responsibilities = {
+        "quality_reviewer": "protocol-owned output-content acceptance when the quality gate is required",
+        "handoff_owner": "protocol-owned explicit handoff progression",
+    }
     role_responsibility_lines = "\n".join(
-        f"- {role}: `{role_responsibilities.get(role, 'not declared')}`"
+        f"- {role}: `{role_responsibilities.get(role) or protocol_role_responsibilities.get(role, 'not declared')}`"
         for role in ("executor", "quality_reviewer", "handoff_owner")
     )
     worklist_lines = "\n".join(

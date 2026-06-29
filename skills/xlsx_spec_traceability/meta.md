@@ -15,8 +15,6 @@
 - tuning: extract spreadsheet specifications into Markdown, assign traceability IDs, connect embedded images to nearby specification text, and write the IDs back into the workbook
 - role_responsibilities:
   - executor: user needs to convert Excel-based specifications into Markdown artifacts while preserving source traceability and reducing review burden in the original workbook
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

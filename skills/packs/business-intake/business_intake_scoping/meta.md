@@ -17,8 +17,6 @@
 - tuning: discover and scope one business task into a boundary-visible responsibility unit even when the user only knows partial materials or structure
 - role_responsibilities:
   - executor: a user wants to import business work into this repository, but only knows fragments such as a task name, one owner, one artifact, one trouble point, or a partial handoff and needs the AI to build the first usable scope
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

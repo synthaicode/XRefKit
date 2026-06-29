@@ -15,8 +15,6 @@
 - tuning: execute planning business activity through reusable work-and-policy planning capability grounded in domain knowledge and current-source findings
 - role_responsibilities:
   - executor: user needs planning after requirements are approved
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

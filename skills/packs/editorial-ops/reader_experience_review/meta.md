@@ -17,8 +17,6 @@
 - tuning: review a draft from the target reader perspective to surface confusion, drop-off points, context gaps, and pacing issues
 - role_responsibilities:
   - executor: a draft exists and the team needs reader-side feedback before release or before final restructuring
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

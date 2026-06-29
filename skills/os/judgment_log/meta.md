@@ -15,8 +15,6 @@
 - tuning: write a judgment log that records decision, evidence, inference boundary, confidence, and next verification step
 - role_responsibilities:
   - executor: a task produces a non-trivial judgment that should be inspectable or reusable later, especially when confidence is mixed or alternatives exist
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

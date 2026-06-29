@@ -76,36 +76,26 @@ Use the canonical viewpoints in `knowledge/source_analysis/120_dotnet_change_ana
   scope, plus one work item for note generation.
 - When the scope is split across solutions or projects, create viewpoint work
   items per scope unit so subagent decomposition keeps explicit boundaries.
-- Record work items with `python -m fm skill workitem` under the
-  `dotnet_change_analysis:executor` role; every work item must be `done` or
-  `escalated` before closure.
+- Use the runtime work-item protocol from the Skill Operating Contract.
 
 ## Execution Role
 
-- `dotnet_change_analysis:executor` advances the execution phase.
-- Execution runs in the tier-matched executor subagent per `model_tier`
-  (standard); scope-disjoint read-only investigation may run as parallel
-  subagents when no cross-scope reasoning is required.
 - The executor produces the analysis note and artifacts; it never advances the
   check phase and never closes the run.
+- Scope-disjoint read-only investigation may run as parallel subagents when no
+  cross-scope reasoning is required.
 
 ## Check Role
 
-- The check phase is advanced deterministically by `python -m fm skill verify`
-  under the `dotnet_change_analysis:checker` role, never from the producer
-  context.
-- The check verifies workflow progression at the record level: every viewpoint
-  has a recorded state, the note is recorded as an `output` artifact, evidence
-  artifacts are recorded and linked, role separation kept. Whether the note and
-  cited evidence paths resolve on disk is the quality axis, not the progression
-  check.
+- The check role is the protocol-owned deterministic run-record check.
+- Skill-specific delta: every viewpoint has a recorded state, the note is
+  recorded as an `output` artifact, and evidence artifacts are recorded and
+  linked.
 - Disputing individual structure conclusions is not the check phase's job;
   weakly supported conclusions stay visible as `unknown`.
 
 ## Logging
 
-- Operational runs start with `python -m fm skill run --meta skills/dotnet_change_analysis/meta.md --task "..."`;
-  the returned run log is the active runtime record.
 - Record the change-analysis note as an `output` artifact and the commands or
   search patterns used to establish structure as `evidence` artifacts.
 - Record non-trivial scope or impact judgments as `judgment` concerns when

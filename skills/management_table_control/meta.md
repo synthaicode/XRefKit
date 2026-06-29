@@ -15,8 +15,6 @@
 - tuning: inspect management-table state and produce closure or return actions
 - role_responsibilities:
   - executor: user needs leak detection, closure confirmation, or out-of-scope escalation handling
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

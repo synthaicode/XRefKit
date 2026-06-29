@@ -17,8 +17,6 @@
 - tuning: derive requirement confirmation gates from branching, calculations, state transitions, and approval logic
 - role_responsibilities:
   - executor: business-logic specs may leave boundary, exception, or transition behavior to implicit AI completion
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

@@ -17,8 +17,6 @@
 - tuning: derive integration-only failure and compensation scenarios from DDL, processing order, and external system boundaries
 - role_responsibilities:
   - executor: DDL, code, and external-boundary specs together may hide partial-failure, retry, or compensation scenarios that unit-level reasoning misses
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

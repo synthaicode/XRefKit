@@ -15,8 +15,6 @@
 - tuning: extract presentation specifications into Markdown, assign traceability IDs, connect slide images and shapes to nearby explanatory text, and write the IDs back into the deck
 - role_responsibilities:
   - executor: user needs to convert PowerPoint-based specifications into Markdown artifacts while preserving slide-level traceability and reducing review burden in the original deck
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

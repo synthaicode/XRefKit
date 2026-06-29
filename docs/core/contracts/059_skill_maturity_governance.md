@@ -101,7 +101,7 @@ To pass `stable` check, the Skill must satisfy operational completeness:
 - `capability_layering: required`
 - `workflow_protocol: required`
 - explicit `tuning`
-- Skill-specific `role_responsibilities`
+- Skill-specific `role_responsibilities.executor`
 - `constraints`
 - required runtime capability reference
 - required guard references when `guard_policy: required`
@@ -156,7 +156,7 @@ being clarified.
 3. Run the Skill and record session/judgment/review evidence.
 4. Add or refine `use_when`, `input`, `output`, `constraints`,
    `execution_mode`, `guard_policy`, `capability_layering`,
-   `workflow_protocol`, `tuning`, `role_responsibilities`,
+   `workflow_protocol`, `tuning`, `role_responsibilities.executor`,
    `capability_refs`, and `knowledge_refs`.
 5. Link the observed evidence through `observation_refs`.
 6. Promote to `stable` after the operating contract is explicit.
@@ -203,8 +203,6 @@ defined by the Skill Operating Contract, not by this maturity page.
 - tuning: <direct specialization for this Skill>
 - role_responsibilities:
   - executor: <what the executor produces or changes>
-  - quality_reviewer: <what acceptance review applies when required>
-  - handoff_owner: <what handoff boundary must be recorded>
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

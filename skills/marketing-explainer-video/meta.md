@@ -15,8 +15,6 @@
 - tuning: create repository-ready narrated marketing explainer videos with staged slide reveals, TTS audio, licensing credits, previews, and README placement
 - role_responsibilities:
   - executor: user needs a short product overview video, AI/team explainer video, narrated slide video, Japanese or English marketing video, README-linked MP4, or conversion of a message flow into a video package
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

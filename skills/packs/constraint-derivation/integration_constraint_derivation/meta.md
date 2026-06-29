@@ -17,8 +17,6 @@
 - tuning: derive requirement confirmation gates from external APIs, webhooks, files, and messaging integration structure
 - role_responsibilities:
   - executor: external integration specs may leave failure, timing, retry, or idempotency behavior to implicit AI completion
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

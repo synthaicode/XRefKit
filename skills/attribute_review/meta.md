@@ -15,8 +15,6 @@
 - tuning: review C# attributes for necessity, value correctness, and usage correctness
 - role_responsibilities:
   - executor: user needs focused validation of C# attributes
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

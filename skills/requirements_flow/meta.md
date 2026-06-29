@@ -15,8 +15,6 @@
 - tuning: execute requirements business activities through reusable requirement and performance-constraint structuring capabilities
 - role_responsibilities:
   - executor: user needs requirement drafting after investigation and estimation
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

@@ -15,8 +15,6 @@
 - tuning: execute the investigation workflow from service catalog analysis through change-target summary using reusable investigation capabilities
 - role_responsibilities:
   - executor: user needs impact investigation before estimation or design
-  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
-  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

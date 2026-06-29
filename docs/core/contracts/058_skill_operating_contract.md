@@ -38,15 +38,16 @@ capability-layer declaration. `workflow_protocol` binds the Skill run to the
 repository runtime protocol for work items, artifacts, role separation,
 deterministic checking, closure, and handoff. Because current Skills are not
 fully generalized Capability templates, `meta.md` also declares direct
-`tuning` and role-specific `role_responsibilities` values for the Skill's
+`tuning` and Skill-specific `role_responsibilities.executor` for the Skill's
 concrete use. The `capability_refs` list remains a list of control-definition
 references, not the tuning or responsibility definition and not evidence.
 
-`role_responsibilities` is Skill-specific and contains `executor`,
-`quality_reviewer`, and `handoff_owner`. It does not define `checker`.
-The `checker` responsibility is owned by the workflow protocol and is always
-the deterministic run-record check performed by `fm skill verify`;
-output-content acceptance belongs to `quality_reviewer`, not to `checker`.
+`role_responsibilities` is Skill-specific and must contain `executor`. Common
+runtime roles are owned by the workflow protocol: `checker` performs the
+deterministic run-record check through `fm skill verify`; `quality_reviewer`
+owns output-content acceptance when the quality gate is required; and
+`handoff_owner` advances explicit handoff. Repeat those common responsibilities
+in a Skill only when the Skill has a real, Skill-specific delta.
 
 ## Required Meta Block
 

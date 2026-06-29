@@ -29,8 +29,6 @@ class CliTests(unittest.TestCase):
             "- tuning: sample specialization\n"
             "- role_responsibilities:\n"
             "  - executor: sample execution responsibility\n"
-            "  - quality_reviewer: sample quality responsibility\n"
-            "  - handoff_owner: sample handoff responsibility\n"
             "- os_contract:\n"
             f"{os_contract}"
             "- constraints: keep observed boundary explicit\n"
@@ -313,10 +311,10 @@ class CliTests(unittest.TestCase):
             self.assertIn("- tuning: `sample specialization`", text)
             self.assertIn("## Role Responsibilities", text)
             self.assertIn("- executor: `sample execution responsibility`", text)
-            self.assertIn("- quality_reviewer: `sample quality responsibility`", text)
-            self.assertIn("- handoff_owner: `sample handoff responsibility`", text)
             self.assertIn("## Workflow Protocol", text)
             self.assertIn("- checker: `protocol-owned deterministic workflow-progression verification via fm skill verify`", text)
+            self.assertIn("- quality_reviewer: `protocol-owned output-content acceptance when the quality gate is required`", text)
+            self.assertIn("- handoff_owner: `protocol-owned explicit handoff progression`", text)
             self.assertIn(f"- `{SKILL_RUNTIME_CAPABILITY_REF}`", text)
             self.assertIn("## Worklist", text)
             self.assertIn("## Concrete Work Items", text)
