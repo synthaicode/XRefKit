@@ -12,6 +12,11 @@
 - execution_mode: `subagent_preferred`
 - model_tier: `standard`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: review C# code with a manual focus on non-Roslyn-detectable risks
+- role_responsibilities:
+  - executor: user asks for C# review beyond Roslyn/compiler diagnostics, including async hangs, synchronization risks, or fake-clock wait behavior that Roslyn does not catch
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

@@ -12,6 +12,11 @@
 - execution_mode: `local_default`
 - model_tier: `heavy`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: produce an article draft from explicit intake framing and source basis without hiding unsupported claims
+- role_responsibilities:
+  - executor: intake has already defined the article boundary and a first draft or revision draft is needed
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

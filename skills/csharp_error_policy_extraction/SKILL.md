@@ -91,36 +91,28 @@ and does not perform vulnerability assessment (that is `security_review`).
 - Create one work item each for Phase 2 (normalization and matrix),
   Phase 3 (contradiction detection and coverage limits), and report
   generation.
-- Record work items with `python -m fm skill workitem` under the
-  `csharp_error_policy_extraction:executor` role; every work item must be
-  `done` or `escalated` before closure.
+- Use the runtime work-item protocol from the Skill Operating Contract.
 
 ## Execution Role
 
-- `csharp_error_policy_extraction:executor` advances the execution phase.
-- Execution runs per `model_tier` (standard); scope-disjoint inventory
-  buckets may run as parallel subagents when no cross-bucket reasoning is
-  required — Phase 2 and Phase 3 always run in a single context because the
-  matrix and contradiction detection need the whole inventory.
+- Scope-disjoint inventory buckets may run as parallel subagents when no
+  cross-bucket reasoning is required; Phase 2 and Phase 3 always run in a
+  single context because the matrix and contradiction detection need the whole
+  inventory.
+- The executor produces the report and artifacts; it never advances the check
+  phase and never closes the run.
 
 ## Check Role
 
-- The check phase is advanced deterministically by `python -m fm skill verify`
-  under the `csharp_error_policy_extraction:checker` role, never from the
-  producer context.
-- The check verifies workflow progression at the record level: every bucket
-  has a recorded state, the report is recorded as an `output` artifact,
-  evidence artifacts are recorded and linked, role separation kept. Whether the
-  report and cited evidence paths resolve on disk is the quality axis, not the
-  progression check.
+- The check role is the protocol-owned deterministic run-record check.
+- Skill-specific delta: every bucket has a recorded state, the report is
+  recorded as an `output` artifact, and evidence artifacts are recorded and
+  linked.
 - Disputing individual classifications is not the check phase's job;
   weak classifications stay visible as `unclassified` or `inferred`.
 
 ## Logging
 
-- Operational runs start with
-  `python -m fm skill run --meta skills/csharp_error_policy_extraction/meta.md --task "..."`;
-  the returned run log is the active runtime record.
 - Record the report as an `output` artifact and the search patterns or
   commands used as `evidence` artifacts.
 - Record non-trivial classification or contradiction judgments as

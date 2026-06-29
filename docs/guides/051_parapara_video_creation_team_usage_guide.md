@@ -14,7 +14,6 @@ This page is a team-specific usage guide.
 It is not a general repository operating model and not a system integration design page.
 For the team structure and operating loop, see
 [AI Organization Explainer Video Team operating model](../operating-models/057_ai_organization_explainer_video_team_operating_model.md#xid-2E8F4A1C9B73).
-For the boundary among operating models, usage guides, and design pages, see [Operating models, usage guides, and design pages](../reference/022_operating_models_guides_and_designs.md#xid-9C4E2A71D583).
 
 ## Purpose
 

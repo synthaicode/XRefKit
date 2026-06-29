@@ -12,6 +12,11 @@
 - execution_mode: `subagent_preferred`
 - model_tier: `standard`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: map business conversation topics across days and show each topic's current state, participant involvement, central coordination candidates, unknowns, and ontology-promotion candidates
+- role_responsibilities:
+  - executor: a user provides already-collected Teams, Slack, email, GitHub, Jira, Backlog, or transcript messages where business topics continue across days, branch into related subtopics, or need a topic-by-topic view of who is involved, how strongly they are involved, who currently matters for coordination, and which local terms or patterns may later be routed to ontology management
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

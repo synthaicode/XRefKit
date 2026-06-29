@@ -10,6 +10,11 @@
 - output: risk findings, prioritized fixes, vault/MFA rollout plan, recovery checklist, updated confidential state record
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: assess and improve password hygiene with vault, MFA, and prioritized remediation
+- role_responsibilities:
+  - executor: user asks to build, review, or migrate password management practices for personal or team accounts
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

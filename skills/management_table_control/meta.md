@@ -10,6 +10,11 @@
 - output: leak detection result, closure confirmation, escalation record when needed
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: inspect management-table state and produce closure or return actions
+- role_responsibilities:
+  - executor: user needs leak detection, closure confirmation, or out-of-scope escalation handling
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

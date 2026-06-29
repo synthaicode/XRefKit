@@ -10,6 +10,11 @@
 - output: Markdown specification fragments, slide-item descriptions, traceability ID map, updated pptx with written-back IDs, unresolved list
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: extract presentation specifications into Markdown, assign traceability IDs, connect slide images and shapes to nearby explanatory text, and write the IDs back into the deck
+- role_responsibilities:
+  - executor: user needs to convert PowerPoint-based specifications into Markdown artifacts while preserving slide-level traceability and reducing review burden in the original deck
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

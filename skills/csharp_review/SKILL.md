@@ -112,30 +112,20 @@ required_followup: <next owner or specialist Skill, or none>
 - When the scope is split across projects or directories, create the category
   work items per scope unit so subagent decomposition keeps explicit
   boundaries.
-- Record work items with `python -m fm skill workitem` under the
-  `csharp_review:executor` role; every work item must be `done` or `escalated`
-  before closure.
+- Use the runtime work-item protocol from the Skill Operating Contract.
 
 ## Execution Role
 
-- `csharp_review:executor` advances the execution phase.
-- Execution runs in the tier-matched executor subagent per `model_tier`
-  (standard); scope-disjoint category passes may run as parallel subagents
-  when no cross-scope reasoning is required.
 - The executor produces findings and artifacts; it never advances the check
   phase and never closes the run.
+- Scope-disjoint category passes may run as parallel subagents when no
+  cross-scope reasoning is required.
 
 ## Check Role
 
-- The check phase is advanced deterministically by `python -m fm skill verify`
-  under the `csharp_review:checker` role, never from the producer context.
-- The check executes
-  [CAP-MGT-006 Independent Run Verification](../../capabilities/management/150_cap_mgt_006_independent_run_verification.md#xid-E37644FAA6F2)
-  at the record level; skill-specific delta: the findings document must be
-  recorded as an `output` artifact and evidence artifacts must be recorded and
-  linked. Whether finding evidence paths resolve and whether the findings are
-  correct is the quality axis, handled when the output is reviewed, not by the
-  progression check.
+- The check role is the protocol-owned deterministic run-record check.
+- Skill-specific delta: the findings document must be recorded as an `output`
+  artifact and evidence artifacts must be recorded and linked.
 - Domain-level dispute of individual findings is not the check phase's job;
   unresolved finding validity stays visible as `needs_confirmation`.
 
@@ -156,8 +146,6 @@ required_followup: <next owner or specialist Skill, or none>
 
 ## Logging
 
-- Operational runs start with `python -m fm skill run --meta skills/csharp_review/meta.md --task "..."`;
-  the returned run log is the active runtime record.
 - Record the findings document as an `output` artifact and the Roslyn baseline
   (command or report path) as an `evidence` artifact.
 - Record non-trivial severity judgments or scope-exclusion decisions as

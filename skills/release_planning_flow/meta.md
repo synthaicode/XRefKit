@@ -10,6 +10,11 @@
 - output: release plan draft, release procedure draft, release confirmation procedure draft, rollback procedure draft, monitoring specification, event-response procedure draft, operational readiness result
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: execute release-planning business activities through reusable release-material, release-procedure, release-confirmation, signal-specification, response-structuring, and readiness-evaluation capabilities
+- role_responsibilities:
+  - executor: user needs release-planning work after manufacturing and testing
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

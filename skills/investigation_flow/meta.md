@@ -10,6 +10,11 @@
 - output: in-scope service list, out-of-scope service list with reasons, change viewpoints, test viewpoints, change target list, uncertainty list
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: execute the investigation workflow from service catalog analysis through change-target summary using reusable investigation capabilities
+- role_responsibilities:
+  - executor: user needs impact investigation before estimation or design
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

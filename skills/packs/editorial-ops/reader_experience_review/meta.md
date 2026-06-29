@@ -12,6 +12,11 @@
 - execution_mode: `subagent_preferred`
 - model_tier: `standard`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: review a draft from the target reader perspective to surface confusion, drop-off points, context gaps, and pacing issues
+- role_responsibilities:
+  - executor: a draft exists and the team needs reader-side feedback before release or before final restructuring
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

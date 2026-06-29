@@ -12,6 +12,11 @@
 - execution_mode: `local_default`
 - model_tier: `standard`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: derive requirement confirmation gates from UI structure, interaction states, and screen transitions
+- role_responsibilities:
+  - executor: screen specifications, wireframes, or UI behavior notes may leave states or transitions to implicit AI completion
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

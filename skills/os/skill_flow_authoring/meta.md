@@ -11,6 +11,11 @@
 - maturity: `trial`
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: create or update repository-native Skill / Flow assets in XRefKit with correct split, publication boundary, runtime envelope, forgetting countermeasures, and validation
+- role_responsibilities:
+  - executor: a user wants to create a new Skill, a new Flow, or both in this repository, especially when the work must be reusable, publicly published under the correct `skills/` family path, aligned with `flows/` as machine-readable workflow control, and forced to carry anti-forgetting structure for later AI reuse
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

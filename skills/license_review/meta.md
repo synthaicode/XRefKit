@@ -10,6 +10,11 @@
 - output: license review result, incompatible or unknown license findings, unresolved list
 - execution_mode: `subagent_preferred`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: review dependency and provenance evidence for license compliance risks
+- role_responsibilities:
+  - executor: user needs focused license validation
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

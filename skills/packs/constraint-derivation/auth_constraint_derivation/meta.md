@@ -12,6 +12,11 @@
 - execution_mode: `local_default`
 - model_tier: `standard`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: derive requirement confirmation gates from authentication, authorization, and account-governance structure
+- role_responsibilities:
+  - executor: auth or permission specs may leave session, role, or access-boundary behavior to implicit AI completion
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

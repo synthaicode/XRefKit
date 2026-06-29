@@ -10,6 +10,11 @@
 - output: promotion candidate list, target location per candidate, reasons, evidence references, already-promoted checks, stay-in-work decisions, optional draft update plan
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: review session logs and current work artifacts, then propose promotion candidates from `work/` into canonical repository assets
+- role_responsibilities:
+  - executor: a task or work session is ending and the agent should determine whether stable rules, knowledge, or procedures must be promoted out of `work/
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

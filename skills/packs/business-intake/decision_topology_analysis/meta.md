@@ -12,6 +12,11 @@
 - execution_mode: `subagent_preferred`
 - model_tier: `standard`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: convert normalized online business conversation evidence into an evidence-bound Decision Topology and Stakeholder Influence Map for choosing the next business action
+- role_responsibilities:
+  - executor: a user provides already-collected Teams, Slack, email, GitHub, Jira, Backlog, or transcript messages and wants to identify topic-specific decision influence, blockers, gatekeepers, concern owners, approval dependencies, unresolved issues, missing Domain Grounding, and the next evidence-supported business action
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

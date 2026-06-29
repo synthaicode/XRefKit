@@ -16,6 +16,11 @@ Use this when creating a new Skill in XRefKit.
 - maturity: `draft|trial`
 - execution_mode: `local_default|subagent_preferred|subagent_required`
 - guard_policy: `required|closed_world`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: <direct specialization of the capability for this Skill>
+- role_responsibilities:
+  - executor: <what the executor produces or changes>
 - os_contract:
   - version: `1`
   - worklist_policy: `required`
@@ -53,6 +58,11 @@ Notes:
   release.
 - Replace the relative-path placeholders to match the actual family path such
   as `skills/os/<skill_id>/` or `skills/packs/<pack>/<skill_id>/`.
+- Common runtime roles are not Skill-specific role responsibilities:
+  `checker` is assigned by the workflow protocol and advanced
+  deterministically with `fm skill verify`; `quality_reviewer` and
+  `handoff_owner` use the common protocol responsibility and must not be
+  defined under `role_responsibilities`.
 - If later AI runs would need to remember something critical, encode it as
   `input`, `output`, `constraints`, `knowledge_refs`, `observation_refs`, or
   handoff/closure wording instead of leaving it unstated.

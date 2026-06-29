@@ -90,6 +90,8 @@ At minimum, check:
 - `guard_policy`
 - `os_contract.version`
 - runtime roles
+- `role_responsibilities.executor` only; protocol-owned roles are not copied
+  into Skill metadata
 - startup assumptions
 - work item expectations
 - artifact and evidence expectations
@@ -117,7 +119,8 @@ python -m fm skill merge-plan --source work/imports/<legacy-skill> --json
 5. Decide XID handling using the XID decision rules above.
 6. Remove or replace copied OS/core rules with references to current core docs.
 7. Move factual or domain content into `knowledge/` when it is not procedure.
-8. Rebuild `meta.md` to match the current Skill operating contract.
+8. Rebuild `meta.md` to match the current Skill operating contract, with only
+   `role_responsibilities.executor` under Skill-specific role responsibilities.
 9. Put the target Skill into `trial` unless there is enough current evidence to
    justify a higher maturity.
 10. Run XRef repair and validation.

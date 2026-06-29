@@ -10,6 +10,11 @@
 - output: attribute review result, invalid usage findings, unresolved list
 - execution_mode: `subagent_preferred`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: review C# attributes for necessity, value correctness, and usage correctness
+- role_responsibilities:
+  - executor: user needs focused validation of C# attributes
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

@@ -12,6 +12,11 @@
 - execution_mode: `local_default`
 - model_tier: `heavy`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: compare DDL structure and C# processing structure to surface missing flows, implicit assumptions, and duplicated rule ownership
+- role_responsibilities:
+  - executor: DDL and corresponding C# code both exist and their mismatch may expose missing use-case handling or undocumented assumptions
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

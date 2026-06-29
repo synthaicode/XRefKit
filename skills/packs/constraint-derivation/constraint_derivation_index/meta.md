@@ -12,6 +12,11 @@
 - execution_mode: `local_default`
 - model_tier: `light`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: route design or implementation artifacts to the correct bidirectional constraint-derivation Skills and sequence the secondary commonality pass
+- role_responsibilities:
+  - executor: design specifications or implementation artifacts need derivation of missing confirmations, hidden assumptions, or boundary scenarios without implicit AI completion
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

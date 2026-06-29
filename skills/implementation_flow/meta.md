@@ -39,6 +39,11 @@
 - maturity: `trial`
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: execute manufacturing business activities through reusable scoped realization and unit-level verification capabilities
+- role_responsibilities:
+  - executor: user asks to implement changes based on an approved design or explicitly bounded instructions
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

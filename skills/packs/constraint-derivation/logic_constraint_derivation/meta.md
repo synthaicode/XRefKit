@@ -12,6 +12,11 @@
 - execution_mode: `local_default`
 - model_tier: `standard`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: derive requirement confirmation gates from branching, calculations, state transitions, and approval logic
+- role_responsibilities:
+  - executor: business-logic specs may leave boundary, exception, or transition behavior to implicit AI completion
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

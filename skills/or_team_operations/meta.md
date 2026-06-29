@@ -10,6 +10,11 @@
 - output: current state, problem list, cause hypotheses, improvement list, approval requirements, implementation method, re-observation method, unresolved items
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: run the OR Team loop for AI-organization state presentation, problem structuring, approval routing, execution control, and re-observation
+- role_responsibilities:
+  - executor: user needs cross-group operating optimization, drift handling, stop-or-continue decisions, or structured improvement control beyond a local fix
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

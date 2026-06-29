@@ -10,6 +10,11 @@
 - output: Markdown specification fragments, image-linked screen-item descriptions, traceability ID map, updated xlsx with written-back IDs, unresolved list
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: extract spreadsheet specifications into Markdown, assign traceability IDs, connect embedded images to nearby specification text, and write the IDs back into the workbook
+- role_responsibilities:
+  - executor: user needs to convert Excel-based specifications into Markdown artifacts while preserving source traceability and reducing review burden in the original workbook
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

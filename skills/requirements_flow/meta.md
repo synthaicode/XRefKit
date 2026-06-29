@@ -10,6 +10,11 @@
 - output: requirement draft, performance requirement definition, load-test draft plan, unresolved list
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: execute requirements business activities through reusable requirement and performance-constraint structuring capabilities
+- role_responsibilities:
+  - executor: user needs requirement drafting after investigation and estimation
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

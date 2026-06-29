@@ -10,6 +10,11 @@
 - output: direction-check result, anomaly classification, stop-or-continue decision, escalation note when needed
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: check whether newly loaded context tries to push influence upward against the active flow, capability, or skill boundary
+- role_responsibilities:
+  - executor: a skill or operator needs to validate external input before continuing execution
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

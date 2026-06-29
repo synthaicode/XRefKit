@@ -10,6 +10,11 @@
 - output: HTML/CSS slide sources, PNG slide states, narration manifest, preview HTML, video build scripts, final MP4, and optional README/docs link
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: create repository-ready narrated marketing explainer videos with staged slide reveals, TTS audio, licensing credits, previews, and README placement
+- role_responsibilities:
+  - executor: user needs a short product overview video, AI/team explainer video, narrated slide video, Japanese or English marketing video, README-linked MP4, or conversion of a message flow into a video package
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

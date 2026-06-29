@@ -10,6 +10,11 @@
 - output: security review result, risk findings, unresolved list
 - execution_mode: `subagent_preferred`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: review C# code and evidence for security risks
+- role_responsibilities:
+  - executor: user needs focused security validation
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

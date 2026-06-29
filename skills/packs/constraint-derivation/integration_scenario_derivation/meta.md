@@ -12,6 +12,11 @@
 - execution_mode: `local_default`
 - model_tier: `heavy`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: derive integration-only failure and compensation scenarios from DDL, processing order, and external system boundaries
+- role_responsibilities:
+  - executor: DDL, code, and external-boundary specs together may hide partial-failure, retry, or compensation scenarios that unit-level reasoning misses
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

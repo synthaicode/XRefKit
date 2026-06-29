@@ -10,6 +10,11 @@
 - output: updated canonical files, `work/` pointer updates, unresolved or skipped candidate list, xref validation result
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: apply approved promotion candidates from `work/` into canonical repository assets and leave traceable moved-to pointers
+- role_responsibilities:
+  - executor: retro` or an equivalent review has identified stable promotion candidates and the user wants those candidates reflected in `docs/`, `knowledge/`, `skills/`, or `agent/
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

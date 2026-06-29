@@ -12,6 +12,11 @@
 - execution_mode: `local_default`
 - model_tier: `standard`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: derive requirement confirmation gates from data-structure, database, relationship, and operation design
+- role_responsibilities:
+  - executor: DDL, schema, ER, or CRUD-oriented design structures may hide unresolved behavior that AI would otherwise complete implicitly
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

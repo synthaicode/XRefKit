@@ -10,6 +10,11 @@
 - output: approved design, target paths, source modification design, data change design, design basis policy reference, and referenced constraint-derivation output paths when derivation was required
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: execute design business activity through reusable solution-design capability
+- role_responsibilities:
+  - executor: user needs implementation-ready design after planning outputs are approved
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

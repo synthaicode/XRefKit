@@ -24,6 +24,11 @@ class CliTests(unittest.TestCase):
             "- maturity: `stable`\n"
             "- execution_mode: `local_default`\n"
             "- guard_policy: `required`\n"
+            "- capability_layering: `required`\n"
+            "- workflow_protocol: `required`\n"
+            "- tuning: sample specialization\n"
+            "- role_responsibilities:\n"
+            "  - executor: sample execution responsibility\n"
             "- os_contract:\n"
             f"{os_contract}"
             "- constraints: keep observed boundary explicit\n"
@@ -300,6 +305,17 @@ class CliTests(unittest.TestCase):
             text = out.read_text(encoding="utf-8")
             self.assertIn("## Skill Load Gate", text)
             self.assertIn("## Runtime Role Assignment", text)
+            self.assertIn("## Capability Layering", text)
+            self.assertIn("- capability_layering: `required`", text)
+            self.assertIn("- workflow_protocol: `required`", text)
+            self.assertIn("- tuning: `sample specialization`", text)
+            self.assertIn("## Role Responsibilities", text)
+            self.assertIn("- executor: `sample execution responsibility`", text)
+            self.assertIn("## Workflow Protocol", text)
+            self.assertIn("- checker: `protocol-owned deterministic workflow-progression verification via fm skill verify`", text)
+            self.assertIn("- quality_reviewer: `protocol-owned output-content acceptance when the quality gate is required`", text)
+            self.assertIn("- handoff_owner: `protocol-owned explicit handoff progression`", text)
+            self.assertIn(f"- `{SKILL_RUNTIME_CAPABILITY_REF}`", text)
             self.assertIn("## Worklist", text)
             self.assertIn("## Concrete Work Items", text)
             self.assertIn("## Runtime Artifacts", text)
@@ -481,7 +497,7 @@ class CliTests(unittest.TestCase):
             self.assertFalse(payload["ok"])
             self.assertIn("draft skills are not load-ready", payload["errors"][0])
 
-    def test_main_skill_run_accepts_trial_skill_with_provisional_runtime_defaults(self) -> None:
+    def test_main_skill_run_rejects_trial_skill_without_runtime_fields(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             meta = root / "skills" / "sample" / "meta.md"
@@ -519,12 +535,12 @@ class CliTests(unittest.TestCase):
                 )
 
             payload = json.loads(stdout.getvalue())
-            self.assertEqual(0, exit_code)
-            self.assertTrue(payload["ok"])
-            text = out.read_text(encoding="utf-8")
-            self.assertIn("- maturity: `trial`", text)
-            self.assertIn("- guard_policy: `required`", text)
-            self.assertIn("- execution_mode: `local_default`", text)
+            self.assertEqual(1, exit_code)
+            self.assertFalse(payload["ok"])
+            self.assertIn("missing or invalid capability_layering", payload["errors"])
+            self.assertIn("missing or invalid workflow_protocol", payload["errors"])
+            self.assertIn("missing tuning", payload["errors"])
+            self.assertIn("missing role_responsibilities.executor", payload["errors"])
 
     def test_main_skill_phase_updates_runtime_log(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

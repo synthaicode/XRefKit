@@ -7,7 +7,6 @@ This page explains how to use the OR Team in day-to-day AI-organization operatio
 
 This page is the practical usage guide.
 It assumes the OR function itself is defined in [OR Team operating model](../operating-models/048_or_team_operating_model.md#xid-1D7A8E2C5F10).
-For the boundary among operating models, usage guides, and design pages, see [Operating models, usage guides, and design pages](../reference/022_operating_models_guides_and_designs.md#xid-9C4E2A71D583).
 
 ## Purpose
 

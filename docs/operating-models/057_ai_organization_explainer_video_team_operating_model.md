@@ -11,8 +11,6 @@ slide decks, short slide-based videos, and standalone repository infographics.
 
 For day-to-day request format and production guidance, see
 [AI Organization Explainer Video Team usage guide](../guides/051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842).
-For the boundary among operating models, usage guides, and design pages, see
-[Operating models, usage guides, and design pages](../reference/022_operating_models_guides_and_designs.md#xid-9C4E2A71D583).
 
 ## Purpose
 

@@ -11,6 +11,11 @@
 - maturity: `trial`
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: preserve task state, wait for Codex usage recovery, and resume the same goal after the next 5-hour or weekly reset
+- role_responsibilities:
+  - executor: a user wants Codex work to continue toward the same goal even when usage remaining can reach `0%`, and the repository must preserve a restart-ready continuation packet instead of silently stopping
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

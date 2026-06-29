@@ -8,7 +8,7 @@ This page clarifies the internal split between the base AI control layer and the
 The repository currently keeps both layers together because the startup path must stay simple and reliable. The goal is not to split repositories now. The goal is to keep the layers conceptually separate so they can be evolved or extracted later if needed.
 
 This page is the boundary definition.
-It does not restate the startup-file architecture in detail; see [Single-link startup architecture](../../designs/012_single_link_startup_architecture.md#xid-AB27F6C19DF5) for that.
+It does not restate the startup-file architecture in detail.
 
 ## Layer 1: Base Control
 
@@ -25,13 +25,8 @@ Typical contents:
 
 These rules are about controlling a capable model so it does not silently change scope, authority, or confidence level.
 
-Representative pages in this repository:
-
-- [Agent Entry](../../../agent/000_agent_entry.md#xid-0B5C58B5E5B2)
-- [Startup xref routing policy](../contracts/011_startup_xref_routing.md#xid-6C0B62D6366A)
-- [Shared memory operations](../contracts/015_shared_memory_operations.md#xid-4A423E72D2ED)
-- [Uncertainty protocol](../contracts/016_uncertainty_protocol.md#xid-8A666C1FD121)
-- [Context direction security guard](../contracts/053_context_direction_security_guard.md#xid-A7F3C92D4E11)
+Representative pages are listed from `docs/000_index.md#xid-56DD6EB68343`
+when lookup is needed.
 
 ## Layer 2: XRefKit-Specific Routing
 
@@ -48,12 +43,8 @@ Typical contents:
 
 These rules are about how XRefKit routes knowledge and keeps references durable.
 
-Representative pages in this repository:
-
-- [Overview](../../000_overview.md#xid-7C6C2B46A9D1)
-- [Workflow](../../guides/010_workflow.md#xid-7D1E1C0279F1)
-- [Skill authoring with xref](../../guides/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B)
-- [Flow Capability Skill Knowledge model](052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
+Representative pages are listed from `docs/000_index.md#xid-56DD6EB68343`
+when lookup is needed.
 
 ## Why Keep Them Together For Now
 
@@ -91,10 +82,3 @@ If these layers are ever separated into different repositories, the extraction b
   - `fm xref` commands
   - repository structure and routing
   - skill / capability / flow / knowledge organization
-
-## Related
-
-- [Single-link startup architecture](../../designs/012_single_link_startup_architecture.md#xid-AB27F6C19DF5)
-- [Startup xref routing policy](../contracts/011_startup_xref_routing.md#xid-6C0B62D6366A)
-- [Uncertainty protocol](../contracts/016_uncertainty_protocol.md#xid-8A666C1FD121)
-- [Context direction security guard](../contracts/053_context_direction_security_guard.md#xid-A7F3C92D4E11)

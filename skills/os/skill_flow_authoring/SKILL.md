@@ -65,6 +65,10 @@ carry explicit continuity structure.
 
 - For a Skill, require:
   - explicit `input` and `output`
+  - explicit `capability_layering`, `workflow_protocol`, `tuning`, and
+    `role_responsibilities.executor` before `trial` or higher use
+  - no protocol-owned role responsibilities (`checker`, `quality_reviewer`,
+    or `handoff_owner`) in `meta.md`
   - explicit startup, execution, monitoring, closure, and handoff behavior
   - explicit `observation_refs` from `trial` upward
   - explicit references to reusable knowledge instead of burying facts in the
@@ -176,6 +180,10 @@ python -m fm skill check --meta <path-to-skill>/meta.md --level draft
 python -m fm skill check --meta <path-to-skill>/meta.md --level trial
 python -m fm skill list
 ```
+
+    `trial` or higher validation is a hard gate for the runtime role rule:
+    `role_responsibilities.executor` must be present, and `checker`,
+    `quality_reviewer`, and `handoff_owner` must not be defined there.
 
     `fm skill list` shows every skill with its public/private boundary and
     fails when a private file is git-tracked or a public asset references a

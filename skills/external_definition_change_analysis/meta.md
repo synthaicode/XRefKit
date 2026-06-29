@@ -10,6 +10,11 @@
 - output: Markdown change-analysis note, definition-to-code mapping list, impacted boundary list, unresolved dependency list, viewpoint check results
 - execution_mode: `subagent_preferred`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: analyze applications driven by external definitions such as XML or configuration files and generate a Markdown change-analysis note
+- role_responsibilities:
+  - executor: user needs structure analysis or impact investigation for applications where XML, YAML, JSON, properties, or framework-specific config files control runtime behavior
 - os_contract:
   - version: `1`
   - worklist_policy: `required`
