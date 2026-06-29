@@ -5,7 +5,6 @@
 
 This page is a design document for a concrete integration.
 It is not the OR Team operating model and not a day-to-day usage guide.
-For the boundary among operating models, usage guides, and design pages, see [Operating models, usage guides, and design pages](../reference/022_operating_models_guides_and_designs.md#xid-9C4E2A71D583).
 
 ## Purpose
 

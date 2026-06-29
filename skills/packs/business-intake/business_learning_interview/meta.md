@@ -12,6 +12,13 @@
 - execution_mode: `local_default`
 - model_tier: `heavy`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: learn a business task from a human through goal-first interview and convert partial fragments into a structured business hypothesis
+- role_responsibilities:
+  - executor: a user wants to teach the AI about a business task conversationally, but can better explain the intended goal than the full process, or only knows fragments, tacit operational knowledge, bottlenecks, or partial handoffs
+  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
+  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

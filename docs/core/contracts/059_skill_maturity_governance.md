@@ -70,6 +70,8 @@ Recommended additions before the first run:
 - maturity: `trial`
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
 ```
 
 Required to pass `trial` check:
@@ -96,6 +98,10 @@ To pass `stable` check, the Skill must satisfy operational completeness:
 - `observation_refs`
 - valid `execution_mode`
 - valid `guard_policy`
+- `capability_layering: required`
+- `workflow_protocol: required`
+- explicit `tuning`
+- Skill-specific `role_responsibilities`
 - `constraints`
 - required runtime capability reference
 - required guard references when `guard_policy: required`
@@ -136,11 +142,9 @@ python -m fm skill check --meta skills/<skill_id>/meta.md --level governed
 
 - `draft` is not load-ready
 - `deprecated` is not load-ready
-- `trial`, `stable`, and `governed` may be opened with:
-
-```powershell
-python -m fm skill run --meta skills/<skill_id>/meta.md --task "task text"
-```
+- `trial`, `stable`, and `governed` may be opened through the runtime envelope
+  defined in
+  `docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`
 
 For `trial`, provisional runtime defaults may be used while the Skill is still
 being clarified.
@@ -151,7 +155,9 @@ being clarified.
 2. Add a first `SKILL.md` procedure and promote to `trial`.
 3. Run the Skill and record session/judgment/review evidence.
 4. Add or refine `use_when`, `input`, `output`, `constraints`,
-   `execution_mode`, `guard_policy`, `capability_refs`, and `knowledge_refs`.
+   `execution_mode`, `guard_policy`, `capability_layering`,
+   `workflow_protocol`, `tuning`, `role_responsibilities`,
+   `capability_refs`, and `knowledge_refs`.
 5. Link the observed evidence through `observation_refs`.
 6. Promote to `stable` after the operating contract is explicit.
 7. Add governance and audit basis through `governance_refs`.
@@ -177,16 +183,14 @@ being clarified.
 - maturity: `trial`
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
 - observation_refs:
   - `../../work/sessions/<session>.md`
 ```
 
-`local_default` relaxes the executor side only. The check phase is advanced
-deterministically by `fm skill verify` at every maturity level, including
-`trial`; the runtime assigns `checker_context: deterministic_fm_verification`
-regardless of `execution_mode`. Deterministic verification is
-context-independent by construction, and the check phase still uses the
-assigned `checker` role, which must differ from the `executor` role.
+`local_default` relaxes the executor side only. Runtime check behavior is
+defined by the Skill Operating Contract, not by this maturity page.
 
 ## Stable Upgrade Template
 
@@ -194,6 +198,13 @@ assigned `checker` role, which must differ from the `executor` role.
 - maturity: `stable`
 - execution_mode: `subagent_preferred`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: <direct specialization for this Skill>
+- role_responsibilities:
+  - executor: <what the executor produces or changes>
+  - quality_reviewer: <what acceptance review applies when required>
+  - handoff_owner: <what handoff boundary must be recorded>
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

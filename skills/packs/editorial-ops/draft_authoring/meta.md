@@ -12,6 +12,13 @@
 - execution_mode: `local_default`
 - model_tier: `heavy`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: produce an article draft from explicit intake framing and source basis without hiding unsupported claims
+- role_responsibilities:
+  - executor: intake has already defined the article boundary and a first draft or revision draft is needed
+  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
+  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

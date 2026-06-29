@@ -10,6 +10,13 @@
 - output: slide-ready PNG diagrams or a standalone infographic PNG, reusable `diagram.css`, reusable `render.mjs`, and updated deck markdown when the output is a deck
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: create marketing-group slide visuals or standalone repository infographics by rendering CSS/HTML diagrams to PNG
+- role_responsibilities:
+  - executor: user needs presentation diagrams, figure-first slides, or a one-page repository explainer image where the final visual must be readable and rerenderable
+  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
+  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

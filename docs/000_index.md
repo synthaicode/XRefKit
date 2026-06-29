@@ -24,6 +24,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 ## Base Control And Repository Rules
 
 - [Startup xref routing policy (shared for vendor startup files)](core/contracts/011_startup_xref_routing.md#xid-6C0B62D6366A)
+- [Initialization sequence reference](core/contracts/077_initialization_sequence.md#xid-A264E296AC71)
 - [Single-link startup architecture](designs/012_single_link_startup_architecture.md#xid-AB27F6C19DF5)
 - [Base control and xref routing layers](core/models/017_base_and_xref_layering.md#xid-5A1C8E4D2F90)
 - [Working area policy (for in-progress notes)](policies/014_working_area_policy.md#xid-111D282CA0EA)

@@ -12,6 +12,13 @@
 - execution_mode: `local_default`
 - model_tier: `light`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: scope an article task into topic, audience, evidence basis, quality target, and publication boundary before drafting
+- role_responsibilities:
+  - executor: article work starts from fragments, loose notes, or vague publication intent and the execution target is not yet stable enough for drafting
+  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
+  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

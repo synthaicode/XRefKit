@@ -10,6 +10,13 @@
 - output: license review result, incompatible or unknown license findings, unresolved list
 - execution_mode: `subagent_preferred`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: review dependency and provenance evidence for license compliance risks
+- role_responsibilities:
+  - executor: user needs focused license validation
+  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
+  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

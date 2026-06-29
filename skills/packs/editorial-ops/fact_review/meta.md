@@ -12,6 +12,13 @@
 - execution_mode: `subagent_preferred`
 - model_tier: `standard`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: review article claims for factual separation, source support, names, numbers, links, and channel-sensitive wording risks
+- role_responsibilities:
+  - executor: a draft exists and the article needs evidence-backed checking before release or before further polishing
+  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
+  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

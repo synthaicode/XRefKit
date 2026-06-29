@@ -7,8 +7,6 @@ This page is a design document for the first business-pack dependency map in
 the AI Agent OS reorganization.
 It defines the dependency boundary for the business-intake route.
 It is not a usage guide.
-For the boundary among operating models, usage guides, and design pages, see
-[Operating models, usage guides, and design pages](../../reference/022_operating_models_guides_and_designs.md#xid-9C4E2A71D583).
 
 ## Purpose
 

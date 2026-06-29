@@ -67,7 +67,8 @@ Example:
 
 - For review-oriented `judgment` capabilities, LLM internal knowledge is supplementary only.
 - Primary evidence must come from local artifacts and referenced canonical knowledge.
-- See [LLM review knowledge usage rules](../../knowledge/organization/140_llm_review_knowledge_usage_rules.md#xid-7A2F4C8D1401).
+- Review knowledge usage rules are defined in
+  `knowledge/organization/140_llm_review_knowledge_usage_rules.md#xid-7A2F4C8D1401`.
 
 ## Group Work Rule
 

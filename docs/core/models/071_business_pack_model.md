@@ -7,8 +7,6 @@ This page is the canonical concept page for the Business Pack unit.
 It defines what a Business Pack is, what it bundles, and where its boundary
 with the AI Agent OS core lies.
 It is a concept/model page, not a usage guide and not a pack-specific design.
-For the boundary among operating models, usage guides, and design pages, see
-[Operating models, usage guides, and design pages](../../reference/022_operating_models_guides_and_designs.md#xid-9C4E2A71D583).
 
 Related:
 

@@ -17,6 +17,8 @@ GUARD_CAPABILITY_REF = "capabilities/management/130_cap_mgt_004_context_directio
 GUARD_KNOWLEDGE_REF = "knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601"
 SKILL_RUNTIME_CAPABILITY_REF = "capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5"
 VALID_GUARD_POLICIES = {"required", "closed_world"}
+VALID_CAPABILITY_LAYERING_POLICIES = {"required"}
+VALID_WORKFLOW_PROTOCOL_POLICIES = {"required"}
 VALID_EXECUTION_MODES = {"local_default", "subagent_preferred", "subagent_required"}
 VALID_MATURITY_LEVELS = {"draft", "trial", "stable", "governed", "deprecated"}
 VALID_CHECK_LEVELS = {"auto", "draft", "trial", "stable", "governed"}
@@ -43,6 +45,10 @@ class SkillMetaResult:
     maturity: str | None
     checked_level: str
     guard_policy: str | None
+    capability_layering: str | None
+    workflow_protocol: str | None
+    tuning: str | None
+    role_responsibilities: dict[str, str]
     execution_mode: str | None
     ok: bool
     errors: list[str]
@@ -54,6 +60,10 @@ class SkillMetaResult:
             "maturity": self.maturity,
             "checked_level": self.checked_level,
             "guard_policy": self.guard_policy,
+            "capability_layering": self.capability_layering,
+            "workflow_protocol": self.workflow_protocol,
+            "tuning": self.tuning,
+            "role_responsibilities": self.role_responsibilities,
             "execution_mode": self.execution_mode,
             "ok": self.ok,
             "errors": self.errors,
@@ -104,6 +114,12 @@ def _parse_key_value_list(value: object) -> dict[str, str]:
         key, raw_value = item.split(":", 1)
         parsed[key.strip()] = raw_value.strip().strip("`")
     return parsed
+
+
+def _has_skill_role_responsibilities(value: object) -> bool:
+    parsed = _parse_key_value_list(value)
+    required = {"executor", "quality_reviewer", "handoff_owner"}
+    return all(parsed.get(role, "").strip() for role in required)
 
 
 def _has_required_ref(refs: list, required_suffix: str) -> bool:
@@ -165,6 +181,10 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
     is_legacy_meta = explicit_maturity is None
     effective_check_level = _resolve_check_level(maturity=maturity, check_level=check_level)
     guard_policy = parsed.get("guard_policy")
+    capability_layering = parsed.get("capability_layering")
+    workflow_protocol = parsed.get("workflow_protocol")
+    tuning = parsed.get("tuning")
+    role_responsibilities = _parse_key_value_list(parsed.get("role_responsibilities"))
     execution_mode = parsed.get("execution_mode")
     constraints = str(parsed.get("constraints", ""))
     capability_refs = parsed.get("capability_refs", [])
@@ -204,13 +224,25 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
             errors.append("invalid execution_mode")
         if guard_policy and guard_policy not in VALID_GUARD_POLICIES:
             errors.append("invalid guard_policy")
+        if capability_layering and capability_layering not in VALID_CAPABILITY_LAYERING_POLICIES:
+            errors.append("invalid capability_layering")
+        if workflow_protocol and workflow_protocol not in VALID_WORKFLOW_PROTOCOL_POLICIES:
+            errors.append("invalid workflow_protocol")
 
     if effective_check_level in {"stable", "governed"}:
         if execution_mode not in VALID_EXECUTION_MODES:
             errors.append("missing or invalid execution_mode")
         if guard_policy not in VALID_GUARD_POLICIES:
             errors.append("missing or invalid guard_policy")
-        elif guard_policy == "required":
+        if capability_layering not in VALID_CAPABILITY_LAYERING_POLICIES:
+            errors.append("missing or invalid capability_layering")
+        if workflow_protocol not in VALID_WORKFLOW_PROTOCOL_POLICIES:
+            errors.append("missing or invalid workflow_protocol")
+        if not isinstance(tuning, str) or not tuning.strip():
+            errors.append("missing tuning")
+        if not _has_skill_role_responsibilities(parsed.get("role_responsibilities")):
+            errors.append("missing role_responsibilities")
+        if guard_policy == "required":
             if not _has_required_ref(capability_refs, GUARD_CAPABILITY_REF):
                 errors.append("required guard capability ref is missing")
             if not _has_required_ref(knowledge_refs, GUARD_KNOWLEDGE_REF):
@@ -237,6 +269,10 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
         maturity=maturity,
         checked_level=effective_check_level,
         guard_policy=str(guard_policy) if guard_policy else None,
+        capability_layering=str(capability_layering) if capability_layering else None,
+        workflow_protocol=str(workflow_protocol) if workflow_protocol else None,
+        tuning=str(tuning) if tuning else None,
+        role_responsibilities=role_responsibilities,
         execution_mode=str(execution_mode) if execution_mode else None,
         ok=not errors,
         errors=errors,

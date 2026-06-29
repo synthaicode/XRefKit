@@ -7,7 +7,6 @@ This page is a design document for fully automatic `goal_mode` resume.
 
 It is not a usage guide.
 It is not a team operating model.
-For the boundary among operating models, usage guides, and design pages, see [Operating models, usage guides, and design pages](../reference/022_operating_models_guides_and_designs.md#xid-9C4E2A71D583).
 
 ## Purpose
 

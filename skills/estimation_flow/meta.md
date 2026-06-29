@@ -10,6 +10,13 @@
 - output: supplier check results, cost patterns, solution options, assumption list, ambiguity classification
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: execute estimation business activities through reusable comparison, projection, option-structuring, and ambiguity-classification capabilities
+- role_responsibilities:
+  - executor: user needs estimate options, supplier checks, or assumption clarification before requirements
+  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
+  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

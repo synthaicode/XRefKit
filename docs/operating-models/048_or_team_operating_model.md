@@ -7,7 +7,6 @@ This page defines the cross-functional OR Team for AI-organization performance m
 
 This page defines the OR Team as an operating model.
 For day-to-day use, request format, and interpretation, see [OR Team usage guide](../guides/049_or_team_usage_guide.md#xid-4E2F91A6B8C1).
-For the boundary among operating models, usage guides, and design pages, see [Operating models, usage guides, and design pages](../reference/022_operating_models_guides_and_designs.md#xid-9C4E2A71D583).
 
 ## Purpose
 

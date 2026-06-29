@@ -24,6 +24,12 @@ This page defines how an agent should route a user request through workflow, cap
 8. Execute the skill.
 9. If work state must be tracked, apply management-table and metrics knowledge before closure.
 
+Document links discovered during this sequence are non-transitive by default:
+they prove navigability and traceability, but they do not authorize loading the
+linked page unless that page is needed for the current route, evidence basis, or
+closure condition. Prefer one selected XID fragment over following a chain of
+`Related` links.
+
 ## Intent-to-Workflow Mapping
 
 - Business learning from partial human fragments, tacit knowledge extraction, or "ask me the next best question":
@@ -83,6 +89,13 @@ This page defines how an agent should route a user request through workflow, cap
 
 - Capability pages define what must be done.
 - Skill pages define how to execute it.
+- Load-ready Skill `meta.md` files declare `capability_layering: required`
+  and `workflow_protocol: required`;
+  because current Skills are concrete, the same metadata directly declares
+  `tuning` and Skill-specific `role_responsibilities`. `fm skill run` carries
+  those declarations, the workflow protocol setting, and the selected Skill's
+  `capability_refs` into the runtime envelope. The `checker` responsibility is
+  workflow-protocol owned and is not repeated in each Skill.
 - Semantic routing may select a Skill directly from strong intent cues before a full capability chain is opened, but the chosen Skill must still remain consistent with repository layering and business boundary rules.
 - For business-task intake, the default semantic path is:
   - learn the business from fragments
@@ -155,6 +168,10 @@ When a skill needs evidence or local rules:
 
 Never treat capability definitions as domain evidence. Capability pages are control definitions; evidence belongs in `knowledge/`.
 
+Do not expand `docs/` cross-references transitively. A referenced document is
+loaded only when its own XID is selected as task-relevant; otherwise keep the
+link as a reference and leave its body unloaded.
+
 ## Control Rule
 
 If the task produces `unknown`, `out_of_scope`, or closure-state questions, load:
@@ -166,9 +183,3 @@ Then use the control path defined by:
 
 - [Closure workflow](../docs/workflows/034_closure_workflow.md#xid-8B31F02A4003)
 - `skills/management_table_control/SKILL.md`
-
-## Related
-
-- [Agent Entry](000_agent_entry.md#xid-0B5C58B5E5B2)
-- [Startup xref routing policy](../docs/core/contracts/011_startup_xref_routing.md#xid-6C0B62D6366A)
-- [Capability layering](../docs/reference/031_capability_layering.md#xid-8D50A972BA9F)

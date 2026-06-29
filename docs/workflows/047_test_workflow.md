@@ -5,7 +5,6 @@
 
 This workflow defines how test planning, requirement-traceable test-item structuring, and manufacturing-side test-method confirmation are orchestrated before execution and verification.
 
-This page follows the shared [Workflow page schema](018_workflow_page_schema.md#xid-6D2E4A9C0B71). The sections below focus on workflow-specific content.
 
 ## Purpose
 

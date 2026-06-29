@@ -6,9 +6,6 @@
 This workflow defines how incomplete business fragments are learned and scoped
 before later execution-design or delivery workflows.
 
-This page follows the shared [Workflow page schema](../../workflows/018_workflow_page_schema.md#xid-6D2E4A9C0B71).
-The sections below focus on workflow-specific content.
-
 ## Purpose
 
 Turn partial business fragments into one boundary-visible, scope-ready business

@@ -5,7 +5,6 @@
 
 This workflow defines how implementation and unit testing are orchestrated inside an approved scope.
 
-This page follows the shared [Workflow page schema](018_workflow_page_schema.md#xid-6D2E4A9C0B71). The sections below focus on workflow-specific content.
 
 ## Purpose
 

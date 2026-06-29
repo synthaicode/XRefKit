@@ -12,6 +12,13 @@
 - execution_mode: `subagent_preferred`
 - model_tier: `standard`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: analyze .NET application structure and generate a Markdown change-analysis note for later design or implementation work
+- role_responsibilities:
+  - executor: user needs repository-based .NET structure analysis, impact investigation, or a Markdown change-analysis note before changing code, especially brownfield code where responsibility separation is not documented and must be read from the code
+  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
+  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

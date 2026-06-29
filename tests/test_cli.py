@@ -24,6 +24,13 @@ class CliTests(unittest.TestCase):
             "- maturity: `stable`\n"
             "- execution_mode: `local_default`\n"
             "- guard_policy: `required`\n"
+            "- capability_layering: `required`\n"
+            "- workflow_protocol: `required`\n"
+            "- tuning: sample specialization\n"
+            "- role_responsibilities:\n"
+            "  - executor: sample execution responsibility\n"
+            "  - quality_reviewer: sample quality responsibility\n"
+            "  - handoff_owner: sample handoff responsibility\n"
             "- os_contract:\n"
             f"{os_contract}"
             "- constraints: keep observed boundary explicit\n"
@@ -300,6 +307,17 @@ class CliTests(unittest.TestCase):
             text = out.read_text(encoding="utf-8")
             self.assertIn("## Skill Load Gate", text)
             self.assertIn("## Runtime Role Assignment", text)
+            self.assertIn("## Capability Layering", text)
+            self.assertIn("- capability_layering: `required`", text)
+            self.assertIn("- workflow_protocol: `required`", text)
+            self.assertIn("- tuning: `sample specialization`", text)
+            self.assertIn("## Role Responsibilities", text)
+            self.assertIn("- executor: `sample execution responsibility`", text)
+            self.assertIn("- quality_reviewer: `sample quality responsibility`", text)
+            self.assertIn("- handoff_owner: `sample handoff responsibility`", text)
+            self.assertIn("## Workflow Protocol", text)
+            self.assertIn("- checker: `protocol-owned deterministic workflow-progression verification via fm skill verify`", text)
+            self.assertIn(f"- `{SKILL_RUNTIME_CAPABILITY_REF}`", text)
             self.assertIn("## Worklist", text)
             self.assertIn("## Concrete Work Items", text)
             self.assertIn("## Runtime Artifacts", text)
@@ -524,6 +542,10 @@ class CliTests(unittest.TestCase):
             text = out.read_text(encoding="utf-8")
             self.assertIn("- maturity: `trial`", text)
             self.assertIn("- guard_policy: `required`", text)
+            self.assertIn("- capability_layering: `required`", text)
+            self.assertIn("- workflow_protocol: `required`", text)
+            self.assertIn("- tuning: `not declared`", text)
+            self.assertIn("- executor: `not declared`", text)
             self.assertIn("- execution_mode: `local_default`", text)
 
     def test_main_skill_phase_updates_runtime_log(self) -> None:

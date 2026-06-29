@@ -10,6 +10,13 @@
 - output: risk findings, prioritized fixes, vault/MFA rollout plan, recovery checklist, updated confidential state record
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: assess and improve password hygiene with vault, MFA, and prioritized remediation
+- role_responsibilities:
+  - executor: user asks to build, review, or migrate password management practices for personal or team accounts
+  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
+  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

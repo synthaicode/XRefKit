@@ -10,6 +10,13 @@
 - output: normalized `skills/<skill_id>/SKILL.md` and index registration
 - execution_mode: `local_default`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: import external skill content into this repository split model
+- role_responsibilities:
+  - executor: external skill needs to be made runnable in this repo
+  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
+  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`

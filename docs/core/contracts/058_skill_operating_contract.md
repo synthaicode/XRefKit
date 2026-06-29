@@ -31,6 +31,23 @@ is not considered `stable` or `governed`.
 `trial` Skills may still be carrying provisional runtime choices while they are
 being clarified through actual use.
 
+Every load-ready Skill must also declare `capability_layering: required` and
+`workflow_protocol: required` in `meta.md`. `capability_layering` is the
+usage-time setting that makes the runtime envelope carry the selected Skill's
+capability-layer declaration. `workflow_protocol` binds the Skill run to the
+repository runtime protocol for work items, artifacts, role separation,
+deterministic checking, closure, and handoff. Because current Skills are not
+fully generalized Capability templates, `meta.md` also declares direct
+`tuning` and role-specific `role_responsibilities` values for the Skill's
+concrete use. The `capability_refs` list remains a list of control-definition
+references, not the tuning or responsibility definition and not evidence.
+
+`role_responsibilities` is Skill-specific and contains `executor`,
+`quality_reviewer`, and `handoff_owner`. It does not define `checker`.
+The `checker` responsibility is owned by the workflow protocol and is always
+the deterministic run-record check performed by `fm skill verify`;
+output-content acceptance belongs to `quality_reviewer`, not to `checker`.
+
 ## Required Meta Block
 
 ```md
@@ -116,6 +133,8 @@ the referenced `SKILL.md` file exists, then writes a session log containing:
 - assigned runtime roles for executor, checker, quality reviewer, and handoff owner
 - the task
 - the declared OS contract
+- the declared capability layering setting, workflow protocol setting, direct
+  tuning, Skill-specific role responsibilities, and capability references
 - a required worklist
 - a concrete work-item section for task-specific items
 - a runtime artifact section for outputs, evidence, checks, judgments, sources, and handoff links
@@ -149,6 +168,10 @@ shows `Closure Gate` as `done` or `escalated` and `Handoff` as `done` or
 - `checker`: advances the check phase
 - `quality_reviewer`: advances the quality phase (quality axis)
 - `handoff_owner`: advances the handoff phase
+
+The `checker` role is assigned at runtime, but its responsibility is protocol
+owned: deterministic workflow-progression verification by `fm skill verify`.
+Do not repeat this responsibility in each Skill's `role_responsibilities`.
 
 The assigned roles are returned in JSON and written to the `Runtime Role
 Assignment` section. The execution, check, and quality roles must each differ
@@ -362,7 +385,7 @@ model, whatever the executor tier; domain-level quality review belongs to
 review-oriented Skills, not to the check phase. `model_tier` is a cost-control
 knob for the executor side only — it never relaxes deterministic check
 verification, role separation, or any closure condition. Dispatch rules live
-in [Capability routing](../../../agent/010_capability_routing.md#xid-1F93A7C24010).
+in `agent/010_capability_routing.md#xid-1F93A7C24010`.
 
 This boundary is concrete about artifacts: progression closure verifies that
 output and evidence artifacts are *recorded, linked, and status-complete* in
@@ -378,15 +401,11 @@ explicit, not a silent default.
 
 ## Relationship To Existing Controls
 
-This contract composes with:
+This contract composes with the startup and routing order defined in
+`docs/core/contracts/011_startup_xref_routing.md#xid-6C0B62D6366A`.
+It does not require recursively loading related control pages. When a task
+needs a specific control definition, resolve that document through
+`docs/000_index.md#xid-56DD6EB68343` or direct XID lookup.
 
-- [Agent Entry](../../../agent/000_agent_entry.md#xid-0B5C58B5E5B2)
-- [Context direction security guard](053_context_direction_security_guard.md#xid-A7F3C92D4E11)
-- [Judgment log usage](../../guides/055_judgment_log_usage.md#xid-9D64B2F18E44)
-- [Flow Capability Skill Knowledge model](../models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
-
-The contract does not replace those pages. It makes their runtime expectations
-part of every loadable Skill.
-
-For maturity progression and promotion templates, see
-[Skill maturity governance](059_skill_maturity_governance.md#xid-4E7B8D9C1A20).
+Maturity progression and promotion templates are defined in
+`docs/core/contracts/059_skill_maturity_governance.md#xid-4E7B8D9C1A20`.

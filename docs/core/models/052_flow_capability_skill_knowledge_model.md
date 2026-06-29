@@ -44,7 +44,8 @@ The repository routing order is:
 ## Skill Runtime Envelope
 
 A Skill is not only a procedure document. A loadable Skill must also carry the
-repository operating envelope defined in [Skill Operating Contract](../contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61).
+repository operating envelope defined in
+`docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`.
 
 New Skills do not need to start at that fully mature state. In this repository,
 Skills are managed as maturity-based assets: `draft` -> `trial` -> `stable` ->
@@ -65,8 +66,8 @@ This keeps the repository closer to an operating foundation: Skills are loaded
 with execution/check separation, records, closure, and handoff expectations
 already attached.
 
-For the lifecycle and promotion rules, see
-[Skill maturity governance](../contracts/059_skill_maturity_governance.md#xid-4E7B8D9C1A20).
+Lifecycle and promotion rules are defined in
+`docs/core/contracts/059_skill_maturity_governance.md#xid-4E7B8D9C1A20`.
 
 ## Design Rules
 
@@ -119,10 +120,3 @@ The four-layer model becomes operationally traceable when paired with execution 
 - `work/` records what was executed, why, and with which basis
 
 This separation supports replay, review, and audit without requiring one long prompt to hold the entire operating model.
-
-## Related
-
-- [Capability layering](../../reference/031_capability_layering.md#xid-8D50A972BA9F)
-- [Capability Routing for Agents](../../../agent/010_capability_routing.md#xid-1F93A7C24010)
-- [Flow-to-group matrix](../../reference/041_flow_to_group_matrix.md#xid-8B31F02A4010)
-- [Skill authoring with xref](../../guides/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B)

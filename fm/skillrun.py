@@ -8,6 +8,8 @@ from pathlib import Path
 
 from fm.skillmeta import (
     REQUIRED_OS_CONTRACT,
+    VALID_CAPABILITY_LAYERING_POLICIES,
+    VALID_WORKFLOW_PROTOCOL_POLICIES,
     TRIAL_DEFAULT_EXECUTION_MODE,
     TRIAL_DEFAULT_GUARD_POLICY,
     _parse_key_value_list,
@@ -154,6 +156,11 @@ def _render_log(
     skill_doc: Path,
     execution_mode: str,
     guard_policy: str,
+    capability_layering: str,
+    workflow_protocol: str,
+    tuning: str,
+    role_responsibilities: dict[str, str],
+    capability_refs: list[str],
     assigned_roles: dict[str, str],
     task: str,
     os_contract: dict[str, str],
@@ -163,6 +170,13 @@ def _render_log(
     tier_label = model_tier or "unset"
     quality_policy = "required" if model_tier in QUALITY_REQUIRED_TIERS else "optional"
     contract_lines = "\n".join(f"- {key}: `{value}`" for key, value in os_contract.items())
+    capability_ref_lines = "\n".join(
+        f"- `{ref}`" for ref in capability_refs
+    ) or "- none declared"
+    role_responsibility_lines = "\n".join(
+        f"- {role}: `{role_responsibilities.get(role, 'not declared')}`"
+        for role in ("executor", "quality_reviewer", "handoff_owner")
+    )
     worklist_lines = "\n".join(
         f"- [ ] {name}: {description}" for name, description in WORKLIST_ROWS
     )
@@ -187,6 +201,9 @@ def _render_log(
 ## Runtime Role Assignment
 
 - guard_policy: `{guard_policy}`
+- capability_layering: `{capability_layering}`
+- workflow_protocol: `{workflow_protocol}`
+- tuning: `{tuning}`
 - execution_mode: `{execution_mode}`
 - model_tier: `{tier_label}`
 - executor: `{assigned_roles["executor"]}`
@@ -198,9 +215,27 @@ def _render_log(
 - checker_context: `{assigned_roles["checker_context"]}`
 - quality_reviewer_context: `{assigned_roles["quality_reviewer_context"]}`
 
+## Role Responsibilities
+
+{role_responsibility_lines}
+
+## Workflow Protocol
+
+- workflow_protocol: `{workflow_protocol}`
+- checker: `protocol-owned deterministic workflow-progression verification via fm skill verify`
+- rule: checker responsibility is assigned by the runtime workflow protocol, not repeated in Skill meta
+
 ## OS Contract
 
 {contract_lines}
+
+## Capability Layering
+
+- capability_layering: `{capability_layering}`
+- tuning: `{tuning}`
+- rule: execute the Skill inside the declared capability boundary; capability definitions are control definitions, not evidence
+- capability_refs:
+{capability_ref_lines}
 
 ## Startup Inputs
 
@@ -1331,6 +1366,30 @@ def run_skill(args) -> SkillRunResult:
         )
     raw_guard_policy = parsed.get("guard_policy")
     guard_policy = str(raw_guard_policy) if raw_guard_policy else TRIAL_DEFAULT_GUARD_POLICY
+    raw_capability_layering = parsed.get("capability_layering")
+    capability_layering = str(raw_capability_layering) if raw_capability_layering else "required"
+    if capability_layering not in VALID_CAPABILITY_LAYERING_POLICIES:
+        return SkillRunResult(
+            ok=False,
+            skill_id=skill_id,
+            skill_doc=None,
+            run_log=None,
+            errors=[f"invalid capability_layering for skill run: {capability_layering}"],
+        )
+    raw_workflow_protocol = parsed.get("workflow_protocol")
+    workflow_protocol = str(raw_workflow_protocol) if raw_workflow_protocol else "required"
+    if workflow_protocol not in VALID_WORKFLOW_PROTOCOL_POLICIES:
+        return SkillRunResult(
+            ok=False,
+            skill_id=skill_id,
+            skill_doc=None,
+            run_log=None,
+            errors=[f"invalid workflow_protocol for skill run: {workflow_protocol}"],
+        )
+    raw_capability_refs = parsed.get("capability_refs", [])
+    capability_refs = [str(ref) for ref in raw_capability_refs] if isinstance(raw_capability_refs, list) else []
+    tuning = str(parsed.get("tuning") or "not declared")
+    role_responsibilities = _parse_key_value_list(parsed.get("role_responsibilities"))
     raw_skill_doc = str(parsed.get("skill_doc"))
     skill_doc_path = (meta_path.parent / raw_skill_doc).resolve()
     if not skill_doc_path.exists():
@@ -1374,6 +1433,11 @@ def run_skill(args) -> SkillRunResult:
         skill_doc=skill_doc_path.relative_to(root),
         execution_mode=execution_mode,
         guard_policy=guard_policy,
+        capability_layering=capability_layering,
+        workflow_protocol=workflow_protocol,
+        tuning=tuning,
+        role_responsibilities=role_responsibilities,
+        capability_refs=capability_refs,
         assigned_roles=assigned_roles,
         task=str(task),
         os_contract=os_contract,

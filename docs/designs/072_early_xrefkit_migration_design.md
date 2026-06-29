@@ -7,8 +7,6 @@ This page is a design document for migrating an **early-state XRefKit** into the
 current AI Agent OS model, with the migration carried out by the AI.
 It is not a usage guide; for the human-facing migration guide see
 [Legacy Flow Skill migration guide](../guides/062_legacy_flow_skill_migration_guide.md#xid-E3B7D5A18C62).
-For the boundary among operating models, usage guides, and design pages, see
-[Operating models, usage guides, and design pages](../reference/022_operating_models_guides_and_designs.md#xid-9C4E2A71D583).
 
 Related:
 

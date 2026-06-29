@@ -10,6 +10,13 @@
 - output: per-domain review results, diff-consistency result, findings with evidence, uncertainty list
 - execution_mode: `subagent_required`
 - guard_policy: `required`
+- capability_layering: `required`
+- workflow_protocol: `required`
+- tuning: execute evidence-based QA across specification, performance, security, and license domains
+- role_responsibilities:
+  - executor: user asks for QA review against design, performance, security, or license expectations
+  - quality_reviewer: independently review output acceptance when this Skill run requires a quality gate
+  - handoff_owner: record outputs, unresolved items, next owner, and handoff boundary for this Skill run
 - os_contract:
   - version: `1`
   - worklist_policy: `required`
