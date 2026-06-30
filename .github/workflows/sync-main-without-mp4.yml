@@ -1,4 +1,4 @@
-name: Sync main without MP4
+name: Sync main without generated assets
 
 on:
   push:
@@ -36,15 +36,20 @@ jobs:
           git fetch origin "refs/heads/$target_branch:refs/remotes/origin/$target_branch" || true
           git switch --force-create "$target_branch"
 
-          mapfile -t mp4_files < <(git ls-files ':(icase)*.mp4')
-          if [ "${#mp4_files[@]}" -gt 0 ]; then
-            git rm -- "${mp4_files[@]}"
+          mapfile -t excluded_files < <(
+            {
+              git ls-files ':(icase)*.mp4'
+              git ls-files site
+            } | sort -u
+          )
+          if [ "${#excluded_files[@]}" -gt 0 ]; then
+            git rm -r -- "${excluded_files[@]}"
           fi
 
           if git diff --cached --quiet; then
-            echo "No tracked MP4 files found on main."
+            echo "No tracked MP4 or site files found on main."
           else
-            git commit -m "Sync main without MP4 assets"
+            git commit -m "Sync main without generated assets"
           fi
 
       - name: Push generated branch
