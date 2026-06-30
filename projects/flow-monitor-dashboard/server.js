@@ -251,6 +251,11 @@ function extractTokenUsage(text) {
   return { input, output, total };
 }
 
+function tokenNumber(tokens, key) {
+  const value = tokens ? Number(tokens[key]) : 0;
+  return Number.isFinite(value) ? value : 0;
+}
+
 function mergeLoggingRecommendation(flowMonitoring, fallbackMonitoring) {
   // The deterministic flow schema can express step paths (handoff.escalation)
   // but not domain decision/checklist labels, so fall back per-kind: the flow
@@ -479,6 +484,8 @@ function parseSkillRunMarkdown(filePath, project = "(repo)") {
       open_judgments: concerns.filter((item) => item.kind === "judgment" && item.status === "open").length,
       judgments: concerns.filter((item) => item.kind === "judgment").length,
       tokens_total: tokens && Number.isFinite(tokens.total) ? tokens.total : 0,
+      tokens_input: tokenNumber(tokens, "input"),
+      tokens_output: tokenNumber(tokens, "output"),
     },
     latest_event_at: phaseEvents.length ? phaseEvents[phaseEvents.length - 1].date : extractBulletScalar(text, "date"),
     last_event: phaseEvents.length ? phaseEvents[phaseEvents.length - 1] : null,
@@ -550,6 +557,8 @@ function buildSkillSummaries(skillRuns, skillCatalog) {
         open_risks: runs.reduce((sum, run) => sum + run.counts.open_risks, 0),
         open_judgments: runs.reduce((sum, run) => sum + run.counts.open_judgments, 0),
         total_tokens: runs.reduce((sum, run) => sum + (run.counts.tokens_total || 0), 0),
+        input_tokens: runs.reduce((sum, run) => sum + (run.counts.tokens_input || 0), 0),
+        output_tokens: runs.reduce((sum, run) => sum + (run.counts.tokens_output || 0), 0),
         token_run_count: runs.filter((run) => (run.counts.tokens_total || 0) > 0).length,
         recent_runs: runs.slice(0, 5),
       };
@@ -904,9 +913,16 @@ function buildDashboardData() {
   const tokensByProject = new Map();
   for (const run of skillRuns) {
     const key = run.project || "(repo)";
-    tokensByProject.set(key, (tokensByProject.get(key) || 0) + (run.counts.tokens_total || 0));
+    const current = tokensByProject.get(key) || { input: 0, output: 0, total: 0 };
+    tokensByProject.set(key, {
+      input: current.input + (run.counts.tokens_input || 0),
+      output: current.output + (run.counts.tokens_output || 0),
+      total: current.total + (run.counts.tokens_total || 0),
+    });
   }
   const totalTokens = skillRuns.reduce((sum, run) => sum + (run.counts.tokens_total || 0), 0);
+  const inputTokens = skillRuns.reduce((sum, run) => sum + (run.counts.tokens_input || 0), 0);
+  const outputTokens = skillRuns.reduce((sum, run) => sum + (run.counts.tokens_output || 0), 0);
 
   const projectSummaries = [...new Set(runs.map((run) => run.project))]
     .filter(Boolean)
@@ -918,7 +934,9 @@ function buildDashboardData() {
         flow_count: new Set(projectRuns.map((run) => run.flow_name)).size,
         decision_count: projectRuns.reduce((sum, run) => sum + run.decisions.length, 0),
         checklist_count: projectRuns.reduce((sum, run) => sum + run.checklist_usage.length, 0),
-        token_total: tokensByProject.get(projectName) || 0,
+        token_input: tokensByProject.get(projectName)?.input || 0,
+        token_output: tokensByProject.get(projectName)?.output || 0,
+        token_total: tokensByProject.get(projectName)?.total || 0,
         latest_at: projectRuns.map((run) => run.latest_at).sort().slice(-1)[0] || "",
       };
     })
@@ -932,7 +950,15 @@ function buildDashboardData() {
     run_count: runs.length,
     skill_count: skillSummaries.length,
     skill_run_count: skillRuns.length,
+    input_tokens: inputTokens,
+    output_tokens: outputTokens,
     total_tokens: totalTokens,
+    token_usage: {
+      input: inputTokens,
+      output: outputTokens,
+      total: totalTokens,
+      run_count: skillRuns.filter((run) => run.tokens).length,
+    },
     project_count: projectSummaries.length,
     flow_summaries: flowSummaries,
     project_summaries: projectSummaries,

@@ -81,17 +81,35 @@ assert.ok(
 
 // Token usage plumbing must be wired even when no run has recorded tokens yet.
 assert.equal(typeof data.total_tokens, "number", "dashboard must expose a total_tokens number");
+assert.equal(typeof data.input_tokens, "number", "dashboard must expose an input_tokens number");
+assert.equal(typeof data.output_tokens, "number", "dashboard must expose an output_tokens number");
+assert.equal(typeof data.token_usage, "object", "dashboard must expose token_usage totals");
+assert.equal(typeof data.token_usage.input, "number", "token_usage must expose input");
+assert.equal(typeof data.token_usage.output, "number", "token_usage must expose output");
+assert.equal(typeof data.token_usage.total, "number", "token_usage must expose total");
 assert.ok(
   data.skill_summaries.every((skill) => typeof skill.total_tokens === "number"),
   "every skill summary must expose total_tokens"
+);
+assert.ok(
+  data.skill_summaries.every((skill) => typeof skill.input_tokens === "number" && typeof skill.output_tokens === "number"),
+  "every skill summary must expose input_tokens and output_tokens"
 );
 assert.ok(
   runtimeRuns.every((run) => "tokens" in run && typeof run.counts?.tokens_total === "number"),
   "every skill run must expose token usage fields"
 );
 assert.ok(
+  runtimeRuns.every((run) => typeof run.counts?.tokens_input === "number" && typeof run.counts?.tokens_output === "number"),
+  "every skill run must expose input and output token counts"
+);
+assert.ok(
   data.project_summaries.every((project) => typeof project.token_total === "number"),
   "every project summary must expose token_total"
+);
+assert.ok(
+  data.project_summaries.every((project) => typeof project.token_input === "number" && typeof project.token_output === "number"),
+  "every project summary must expose token_input and token_output"
 );
 
 assert.equal(
