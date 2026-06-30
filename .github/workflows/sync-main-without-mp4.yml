@@ -1,0 +1,56 @@
+name: Sync main without generated assets
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-main-without-mp4
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Configure Git author
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Build branch without MP4 assets
+        run: |
+          set -euo pipefail
+
+          target_branch="codex/main-without-mp4"
+          git fetch origin "refs/heads/$target_branch:refs/remotes/origin/$target_branch" || true
+          git switch --force-create "$target_branch"
+
+          mapfile -t excluded_files < <(
+            {
+              git ls-files ':(icase)*.mp4'
+              git ls-files site
+            } | sort -u
+          )
+          if [ "${#excluded_files[@]}" -gt 0 ]; then
+            git rm -r -- "${excluded_files[@]}"
+          fi
+
+          if git diff --cached --quiet; then
+            echo "No tracked MP4 or site files found on main."
+          else
+            git commit -m "Sync main without generated assets"
+          fi
+
+      - name: Push generated branch
+        run: git push --force-with-lease origin codex/main-without-mp4:codex/main-without-mp4
