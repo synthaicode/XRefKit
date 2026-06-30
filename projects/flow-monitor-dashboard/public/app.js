@@ -49,6 +49,10 @@ function formatNumber(value) {
   return Number.isFinite(number) ? number.toLocaleString("en-US") : "0";
 }
 
+function formatTokenUsage(input, output, total) {
+  return `in ${formatNumber(input)} / out ${formatNumber(output)} / total ${formatNumber(total)}`;
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -107,7 +111,9 @@ function renderSummary(data) {
   summaryGrid.appendChild(metricCard("Runs", String(data.run_count), "検出した実行単位"));
   summaryGrid.appendChild(metricCard("Skills", String(data.skill_count || 0), "runtime log を持つ Skill 数"));
   summaryGrid.appendChild(metricCard("Skill Runs", String(data.skill_run_count || 0), "検出した Skill runtime log 数"));
-  summaryGrid.appendChild(metricCard("Tokens", formatNumber(data.total_tokens), "記録された総トークン数"));
+  summaryGrid.appendChild(metricCard("Input Tokens", formatNumber(data.input_tokens), "記録された入力トークン数"));
+  summaryGrid.appendChild(metricCard("Output Tokens", formatNumber(data.output_tokens), "記録された出力トークン数"));
+  summaryGrid.appendChild(metricCard("Total Tokens", formatNumber(data.total_tokens), "記録された総トークン数"));
 
   const decisionRuns = data.flow_summaries.reduce((sum, flow) => sum + flow.decision_run_count, 0);
   const checklistRuns = data.flow_summaries.reduce((sum, flow) => sum + flow.checklist_run_count, 0);
@@ -246,7 +252,9 @@ function renderProjectSummary(data, project, projectFlows, projectRuns) {
   target.appendChild(metricCard("Flows", String(project.flow_count), "この project で動いた Flow 数"));
   target.appendChild(metricCard("Decisions", String(project.decision_count), "記録された判断イベント"));
   target.appendChild(metricCard("Checklists", String(project.checklist_count), "記録されたチェックリスト"));
-  target.appendChild(metricCard("Tokens", formatNumber(project.token_total), "この project の Skill が使用したトークン"));
+  target.appendChild(metricCard("Input Tokens", formatNumber(project.token_input), "この project の入力トークン"));
+  target.appendChild(metricCard("Output Tokens", formatNumber(project.token_output), "この project の出力トークン"));
+  target.appendChild(metricCard("Total Tokens", formatNumber(project.token_total), "この project の総トークン"));
   target.appendChild(metricCard("Latest Run", projectRuns[0]?.flow_name || "-", "直近に動いた Flow"));
   target.appendChild(metricCard("Monitoring Root", data.monitored_root, "監視ルート"));
 }
@@ -532,7 +540,7 @@ function renderSkillRuntimeCards(skillSummary) {
             ${badge(`handoff ${run.counts?.handoff_artifacts || 0}`, (run.counts?.handoff_artifacts || 0) ? "active" : "muted")}
             ${badge(`judgment ${run.counts?.judgments || 0}`, (run.counts?.judgments || 0) ? "warn" : "muted")}
             ${badge(`concerns ${run.counts?.concerns || 0}`, (run.counts?.concerns || 0) ? "warn" : "ok")}
-            ${badge(`tokens ${run.tokens ? formatNumber(run.tokens.total) : "未記録"}`, run.tokens ? "active" : "muted")}
+            ${badge(`tokens ${run.tokens ? formatTokenUsage(run.tokens.input, run.tokens.output, run.tokens.total) : "未記録"}`, run.tokens ? "active" : "muted")}
           </div>
           <p class="skill-card-text">
             latest event:
@@ -568,7 +576,7 @@ function renderSkillRuntimeTable(flow) {
         <td>${skill.total_output_artifacts}</td>
         <td>${skill.total_evidence_artifacts}</td>
         <td>${skill.total_handoff_artifacts}</td>
-        <td>${formatNumber(skill.total_tokens)}</td>
+        <td>${formatTokenUsage(skill.input_tokens, skill.output_tokens, skill.total_tokens)}</td>
         <td>${badge(`unknown ${skill.open_unknowns}`, skill.open_unknowns ? "warn" : "ok")} ${badge(`risk ${skill.open_risks}`, skill.open_risks ? "warn" : "ok")} ${badge(`judgment ${skill.open_judgments}`, skill.open_judgments ? "warn" : "ok")}</td>
         <td><a class="table-doc-link" href="#${escapeHtml(skillRowId(flow.name, skill.skill_id))}">definition</a></td>
       </tr>
@@ -591,7 +599,7 @@ function renderSkillRuntimeTable(flow) {
           <th>Outputs</th>
           <th>Evidence</th>
           <th>Handoff</th>
-          <th>Tokens</th>
+          <th>Token Usage</th>
           <th>Open Concerns</th>
           <th>Link</th>
         </tr>
