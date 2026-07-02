@@ -42,5 +42,5 @@
   - `../../knowledge/source_analysis/120_dotnet_change_analysis_viewpoints.md#xid-2E7B5A1FD201`
   - `../../knowledge/source_analysis/160_structure_graph_tm_backstop.md#xid-163AD9936979`
 - observation_refs:
-  - `../../work/sessions/2026-06-18_skill_run_skill_flow_authoring.md`
+  - `../../observations/2026-06-18_skill_run_skill_flow_authoring.md`
 

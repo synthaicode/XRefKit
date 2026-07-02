@@ -34,5 +34,5 @@
   - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../../docs/core/contracts/016_uncertainty_protocol.md#xid-8A666C1FD121`
 - observation_refs:
-  - `../../../../work/sessions/2026-06-28_session_conversation_topic_branch_mapping_seed.md`
-  - `../../../../work/sessions/2026-06-28_session_conversation_topic_involvement_public_skill_update.md`
+  - `../../../../observations/2026-06-28_session_conversation_topic_branch_mapping_seed.md`
+  - `../../../../observations/2026-06-28_session_conversation_topic_involvement_public_skill_update.md`

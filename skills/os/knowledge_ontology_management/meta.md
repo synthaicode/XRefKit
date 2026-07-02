@@ -35,6 +35,6 @@
   - `../../../docs/reference/020_sources.md#xid-2FAD591BF725`
   - `../../../docs/policies/074_document_update_policy.md#xid-B1D42A6F90C3`
 - observation_refs:
-  - `../../../work/sessions/2026-06-28_session_knowledge_ontology_management_seed.md`
-  - `../../../work/sessions/2026-06-28_skill_run_knowledge_ontology_management.md`
-  - `../../../work/sessions/2026-06-28_skill_run_knowledge_ontology_management_2.md`
+  - `../../../observations/2026-06-28_session_knowledge_ontology_management_seed.md`
+  - `../../../observations/2026-06-28_skill_run_knowledge_ontology_management.md`
+  - `../../../observations/2026-06-28_skill_run_knowledge_ontology_management_2.md`

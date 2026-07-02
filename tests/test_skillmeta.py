@@ -46,7 +46,7 @@ class SkillMetaTests(unittest.TestCase):
                 "- knowledge_refs:\n"
                 f"  - `{GUARD_KNOWLEDGE_REF}`\n"
                 "- observation_refs:\n"
-                "  - `../../work/sessions/sample.md`\n",
+                "  - `../../observations/sample.md`\n",
                 encoding="utf-8",
             )
 
@@ -80,7 +80,7 @@ class SkillMetaTests(unittest.TestCase):
             "- knowledge_refs:\n"
             f"  - `{GUARD_KNOWLEDGE_REF}`\n"
             "- observation_refs:\n"
-            "  - `../../work/sessions/sample.md`\n"
+            "  - `../../observations/sample.md`\n"
         )
 
     def test_validate_skill_meta_accepts_os_contract_shorthand(self) -> None:
@@ -109,6 +109,24 @@ class SkillMetaTests(unittest.TestCase):
             self.assertTrue(result.ok)
             self.assertEqual([], result.errors)
 
+    def test_validate_skill_meta_rejects_work_observation_ref(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                self._meta_with_os_contract("- os_contract: v1\n").replace(
+                    "  - `../../observations/sample.md`\n",
+                    "  - `../../work/sessions/sample.md`\n",
+                ),
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(
+                any("points into work/" in e for e in result.errors), result.errors
+            )
+
     def test_validate_skill_meta_rejects_untracked_observation_ref(self) -> None:
         import subprocess
 
@@ -117,14 +135,14 @@ class SkillMetaTests(unittest.TestCase):
             subprocess.run(["git", "init", "-q", str(root)], check=True, capture_output=True)
             meta_dir = root / "skills" / "sample"
             meta_dir.mkdir(parents=True)
-            record = root / "work" / "sessions" / "obs.md"
+            record = root / "observations" / "obs.md"
             record.parent.mkdir(parents=True)
             record.write_text("observation\n", encoding="utf-8")
             meta = meta_dir / "meta.md"
             meta.write_text(
                 self._meta_with_os_contract("- os_contract: v1\n").replace(
-                    "  - `../../work/sessions/sample.md`\n",
-                    "  - `../../work/sessions/obs.md`\n",
+                    "  - `../../observations/sample.md`\n",
+                    "  - `../../observations/obs.md`\n",
                 ),
                 encoding="utf-8",
             )
@@ -139,7 +157,7 @@ class SkillMetaTests(unittest.TestCase):
             )
 
             subprocess.run(
-                ["git", "-C", str(root), "add", "-f", "work/sessions/obs.md"],
+                ["git", "-C", str(root), "add", "observations/obs.md"],
                 check=True,
                 capture_output=True,
             )
@@ -165,7 +183,7 @@ class SkillMetaTests(unittest.TestCase):
             text = self._meta_with_os_contract("- os_contract: v1\n").replace(
                 "- maturity: `stable`\n", ""
             ).replace(
-                "- observation_refs:\n  - `../../work/sessions/sample.md`\n", ""
+                "- observation_refs:\n  - `../../observations/sample.md`\n", ""
             )
             meta.write_text(text, encoding="utf-8")
 
@@ -228,7 +246,7 @@ class SkillMetaTests(unittest.TestCase):
                 "- knowledge_refs:\n"
                 f"  - `{GUARD_KNOWLEDGE_REF}`\n"
                 "- observation_refs:\n"
-                "  - `../../work/sessions/sample.md`\n",
+                "  - `../../observations/sample.md`\n",
                 encoding="utf-8",
             )
 

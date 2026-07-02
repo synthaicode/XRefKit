@@ -39,7 +39,7 @@
   - `../../knowledge/source_analysis/121_structure_analysis_determinism_tiers.md#xid-5301B897BA41`
   - `../../knowledge/source_analysis/160_structure_graph_tm_backstop.md#xid-163AD9936979`
 - observation_refs:
-  - `../../work/reports/2026-06-11_skill_improvement_note_dotnet_change_analysis.md`
-  - `../../work/sessions/2026-06-11_skill_run_dotnet_change_analysis.md`
+  - `../../observations/2026-06-11_skill_improvement_note_dotnet_change_analysis.md`
+  - `../../observations/2026-06-11_skill_run_dotnet_change_analysis.md`
 - governance_refs:
   - `../../work/reports/2026-06-11_promotion_record_dotnet_change_analysis.md`

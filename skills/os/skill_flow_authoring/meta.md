@@ -35,4 +35,4 @@
   - `../../../docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`
   - `../../../docs/core/contracts/059_skill_maturity_governance.md#xid-4E7B8D9C1A20`
 - observation_refs:
-  - `../../../work/sessions/2026-05-10_session_skill_flow_authoring_seed.md`
+  - `../../../observations/2026-05-10_session_skill_flow_authoring_seed.md`

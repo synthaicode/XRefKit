@@ -36,4 +36,4 @@
   - `../../../../docs/packs/business-intake/061_business_learning_interview_guide.md#xid-D2A41E8C7B51`
   - `../../../../docs/packs/business-intake/060_business_intake_scoping_guide.md#xid-C91F7D2A6B40`
 - observation_refs:
-  - `../../../../work/sessions/2026-05-01_session_business_learning_interview_skill_seed.md`
+  - `../../../../observations/2026-05-01_session_business_learning_interview_skill_seed.md`

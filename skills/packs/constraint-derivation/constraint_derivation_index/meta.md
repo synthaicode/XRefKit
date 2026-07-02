@@ -34,4 +34,4 @@
   - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
 - observation_refs:
-  - ../../../../work/sessions/2026-06-21_skill_run_skill_flow_authoring.md
+  - ../../../../observations/2026-06-21_skill_run_skill_flow_authoring.md

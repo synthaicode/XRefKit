@@ -33,5 +33,5 @@
 - knowledge_refs:
   - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
 - observation_refs:
-  - `../../work/sessions/2026-04-29_skill_run_marketing_slide_png.md`
-  - `../../work/sessions/2026-04-29_skill_run_closure_gate.md`
+  - `../../observations/2026-04-29_skill_run_marketing_slide_png.md`
+  - `../../observations/2026-04-29_skill_run_closure_gate.md`

@@ -36,6 +36,6 @@
   - `../../knowledge/source_analysis/120_dotnet_change_analysis_viewpoints.md#xid-2E7B5A1FD201`
   - `../../knowledge/source_analysis/130_csharp_error_policy_detection_patterns.md#xid-C0DBC37E2A13`
 - observation_refs:
-  - `../../work/sessions/2026-06-12_skill_run_skill_flow_authoring.md`
-  - `../../work/sessions/2026-06-12_skill_run_csharp_error_policy_extraction.md`
-  - `../../work/reports/2026-06-12_error_policy_report_mailkit_pooling.md`
+  - `../../observations/2026-06-12_skill_run_skill_flow_authoring.md`
+  - `../../observations/2026-06-12_skill_run_csharp_error_policy_extraction.md`
+  - `../../observations/2026-06-12_error_policy_report_mailkit_pooling.md`

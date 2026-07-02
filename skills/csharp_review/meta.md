@@ -42,4 +42,4 @@
   - `../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002`
   - `../../knowledge/csharp/110_custom_framework_analysis_criteria.md#xid-30E6A4F6F3AB`
 - observation_refs:
-  - `../../work/sessions/2026-06-23_session_csharp_review_generalized_observation.md`
+  - `../../observations/2026-06-23_session_csharp_review_generalized_observation.md`

@@ -39,7 +39,7 @@ class CliTests(unittest.TestCase):
             "- knowledge_refs:\n"
             f"  - `{GUARD_KNOWLEDGE_REF}`\n"
             "- observation_refs:\n"
-            "  - `../../work/sessions/sample.md`\n"
+            "  - `../../observations/sample.md`\n"
         )
 
     def _write_valid_skill(self, root: Path) -> Path:

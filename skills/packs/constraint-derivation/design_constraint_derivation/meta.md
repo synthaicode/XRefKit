@@ -35,4 +35,4 @@
   - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
   - `../../../../knowledge/packs/constraint-derivation/120_design_constraint_derivation_catalog.md#xid-2D14F88A6C01`
 - observation_refs:
-  - ../../../../work/sessions/2026-06-21_skill_run_skill_flow_authoring.md
+  - ../../../../observations/2026-06-21_skill_run_skill_flow_authoring.md

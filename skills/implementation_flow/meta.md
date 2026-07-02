@@ -68,7 +68,7 @@
   - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`
   - `../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
 - observation_refs:
-  - `../../work/sessions/2026-06-12_skill_run_implementation_flow.md`
-  - `../../work/sessions/2026-06-12_skill_run_implementation_flow_2.md`
-  - `../../work/sessions/2026-06-12_skill_run_implementation_flow_3.md`
-  - `../../work/sessions/2026-06-12_implementation_flow_improvement_proposal.md`
+  - `../../observations/2026-06-12_skill_run_implementation_flow.md`
+  - `../../observations/2026-06-12_skill_run_implementation_flow_2.md`
+  - `../../observations/2026-06-12_skill_run_implementation_flow_3.md`
+  - `../../observations/2026-06-12_implementation_flow_improvement_proposal.md`

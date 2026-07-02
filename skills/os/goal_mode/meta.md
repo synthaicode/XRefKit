@@ -37,4 +37,4 @@
   - `../../../docs/guides/069_codex_goal_mode_usage_guide.md#xid-3E7B4C11A8D2`
   - `../../../docs/designs/070_codex_goal_mode_auto_resume_design.md#xid-6F4D2A18C9E7`
 - observation_refs:
-  - `../../../work/sessions/2026-05-24_session_goal_mode_skill_seed.md`
+  - `../../../observations/2026-05-24_session_goal_mode_skill_seed.md`

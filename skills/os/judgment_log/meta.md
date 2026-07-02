@@ -36,5 +36,5 @@
   - `../../../knowledge/organization/120_metrics_definition.md#xid-7A2F4C8D1201`
   - `../../../knowledge/organization/121_judgment_log_schema.md#xid-7B4C2D91E621`
 - observation_refs:
-  - `../../../work/judgments/2026-06-23_csharp_review_bad_mail_sender_handoff_judgment.md`
-  - `../../../work/judgments/2026-06-12_judgment_csharp_error_policy_extraction_authoring.md`
+  - `../../../observations/2026-06-23_csharp_review_bad_mail_sender_handoff_judgment.md`
+  - `../../../observations/2026-06-12_judgment_csharp_error_policy_extraction_authoring.md`

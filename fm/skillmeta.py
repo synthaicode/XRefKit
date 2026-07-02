@@ -301,10 +301,16 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
     if require_observation_refs:
         if not observation_refs:
             errors.append("trial-or-higher skills must include at least one observation_refs entry")
+        for ref in observation_refs:
+            if isinstance(ref, str) and re.search(r"(^|/)work/", ref.replace("\\", "/")):
+                errors.append(
+                    f"observation ref points into work/ (local-only): {ref} "
+                    "(move the record to observations/ — tracked governance evidence)"
+                )
         for ref in _untracked_observation_refs(meta_path, observation_refs):
             errors.append(
                 f"observation ref is not git-tracked and cannot resolve in a clone: {ref} "
-                "(commit the referenced record; referencing promotes it to tracked governance evidence)"
+                "(move the record to observations/ and commit it)"
             )
         if capability_layering not in VALID_CAPABILITY_LAYERING_POLICIES:
             errors.append("missing or invalid capability_layering")

@@ -35,4 +35,4 @@
   - `../../../../knowledge/packs/business-intake/110_business_intake_scoping_rules.md#xid-7B3E5D1A6102`
   - `../../../../docs/packs/business-intake/060_business_intake_scoping_guide.md#xid-C91F7D2A6B40`
 - observation_refs:
-  - `../../../../work/sessions/2026-05-01_session_business_intake_scoping_skill_seed.md`
+  - `../../../../observations/2026-05-01_session_business_intake_scoping_skill_seed.md`

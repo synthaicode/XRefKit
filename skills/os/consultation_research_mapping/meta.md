@@ -35,4 +35,4 @@
   - `../../../knowledge/organization/140_llm_review_knowledge_usage_rules.md#xid-7A2F4C8D1401`
   - `../../../knowledge/organization/121_judgment_log_schema.md#xid-7B4C2D91E621`
 - observation_refs:
-  - `../../../work/sessions/2026-06-28_session_consultation_research_mapping_seed.md`
+  - `../../../observations/2026-06-28_session_consultation_research_mapping_seed.md`

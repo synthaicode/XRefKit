@@ -78,24 +78,19 @@ Required to pass `trial` check:
 
 ```md
 - observation_refs:
-  - `../../work/sessions/<session>.md`
+  - `../../observations/<record>.md`
 ```
 
-`observation_refs` may point to:
+Every `observation_refs` target lives in `observations/` — the tracked
+home for governance evidence (run logs, judgments, review reports, seed
+sessions). `work/*` is local-only operational history (`.gitignore`);
+when a `work/` record becomes the maturity basis of a Skill, **move it to
+`observations/`** (keep the date-prefixed filename) and reference it
+there. A reference that cannot resolve in a fresh clone is not evidence:
+`fm skill check` rejects observation refs that point into `work/` or at
+untracked files, at trial or higher.
 
-- `work/sessions/...`
-- `work/judgments/...`
-- review outputs
-- retrospective or promotion reports
-
-The point is to keep the refinement basis explicit.
-
-Every `observation_refs` target must be **git-tracked**. `work/*` is
-local-only by default (`.gitignore`), so an observation ref into `work/`
-promotes that specific record to tracked governance evidence: commit it
-(`git add -f` for ignored paths) when adding the reference. A reference
-that cannot resolve in a fresh clone is not evidence; `fm skill check`
-rejects untracked targets at trial or higher.
+The point is to keep the refinement basis explicit and durable.
 
 ### Draft-To-Trial Bootstrap
 
@@ -106,8 +101,9 @@ run cannot yet reference its own run log. The bootstrap sequence is:
 1. Author the Skill as `draft`.
 2. Promote to `trial` by adding the provisional runtime fields above and an
    initial `observation_refs` entry pointing at the authoring basis — the
-   `work/sessions/` record of the session (for example the
-   `skill_flow_authoring` run) that created or materially shaped the Skill.
+   record of the session (for example the `skill_flow_authoring` run) that
+   created or materially shaped the Skill, moved from `work/` into
+   `observations/`.
 3. After the first real runs, add or replace `observation_refs` with actual
    usage records so the refinement basis reflects observed use, not only
    authoring intent.
@@ -219,7 +215,7 @@ runtime fields themselves must be explicit before the Skill is load-ready.
 - role_responsibilities:
   - executor: <what the executor produces or changes>
 - observation_refs:
-  - `../../work/sessions/<session>.md`
+  - `../../observations/<record>.md`
 ```
 
 `local_default` relaxes the executor side only. Runtime check behavior, quality
@@ -237,16 +233,7 @@ by Skill-local `role_responsibilities`.
 - tuning: <direct specialization for this Skill>
 - role_responsibilities:
   - executor: <what the executor produces or changes>
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: <explicit operational constraints>
 - capability_refs:
   - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
@@ -254,7 +241,7 @@ by Skill-local `role_responsibilities`.
 - knowledge_refs:
   - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
 - observation_refs:
-  - `../../work/sessions/<session>.md`
+  - `../../observations/<record>.md`
 ```
 
 ## Improvement Note Template
