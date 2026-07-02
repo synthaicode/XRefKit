@@ -17,16 +17,7 @@
 - tuning: review article claims for factual separation, source support, names, numbers, links, and channel-sensitive wording risks
 - role_responsibilities:
   - executor: a draft exists and the article needs evidence-backed checking before release or before further polishing
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: review concrete article claims rather than generic writing advice; keep missing support explicit as `unknown`; do not silently rewrite the draft inside the review; write the review result to `work/editorial_ops/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
   - startup: confirm the draft and evidence set exist and identify the highest-risk claims

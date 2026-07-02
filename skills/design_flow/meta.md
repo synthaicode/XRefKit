@@ -8,6 +8,7 @@
 - use_when: user needs implementation-ready design after planning outputs are approved
 - input: approved requirements, work plan, source modification policy, data change policy, planning basis source list
 - output: approved design, target paths, source modification design, data change design, design basis policy reference, and referenced constraint-derivation output paths when derivation was required
+- maturity: `draft`
 - execution_mode: `local_default`
 - guard_policy: `required`
 - capability_layering: `required`
@@ -15,16 +16,7 @@
 - tuning: execute design business activity through reusable solution-design capability
 - role_responsibilities:
   - executor: user needs implementation-ready design after planning outputs are approved
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: preserve unresolved design assumptions explicitly; do not redefine business scope; express the change method clearly enough for pre-code review; when structural design artifacts still imply unresolved behavior, route through the constraint-derivation pack before freezing implementation-facing design
 - lifecycle:
   - startup: confirm planning outputs and source modification policy exist; if the input still includes unresolved structural design behavior, require constraint derivation before design closure

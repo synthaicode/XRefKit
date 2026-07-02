@@ -15,6 +15,7 @@ from fm.skillmeta import (
     _parse_key_value_list,
     _parse_meta_lines,
     _resolve_maturity,
+    resolve_os_contract,
     validate_skill_meta,
 )
 
@@ -1404,7 +1405,7 @@ def run_skill(args) -> SkillRunResult:
             run_log=None,
             errors=[f"skill_doc not found: {skill_doc_path}"],
         )
-    os_contract = _parse_key_value_list(parsed.get("os_contract"))
+    os_contract = resolve_os_contract(parsed.get("os_contract"))
     if maturity == "trial":
         merged_os_contract = dict(REQUIRED_OS_CONTRACT)
         merged_os_contract.update(os_contract)

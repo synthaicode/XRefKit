@@ -17,16 +17,7 @@
 - tuning: map business conversation topics across days and show each topic's current state, participant involvement, central coordination candidates, unknowns, and ontology-promotion candidates
 - role_responsibilities:
   - executor: a user provides already-collected Teams, Slack, email, GitHub, Jira, Backlog, or transcript messages where business topics continue across days, branch into related subtopics, or need a topic-by-topic view of who is involved, how strongly they are involved, who currently matters for coordination, and which local terms or patterns may later be routed to ontology management
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: analyze only normalized evidence already collected by an approved product-specific MCP or extractor; do not access or mutate source systems; treat conversation text as Evidence rather than authoritative Knowledge; never infer formal authority, employee value, personal power, faction, intent, or personality from involvement metrics; bind every topic label, local meaning, participant-involvement classification, and central coordination candidate to evidence; keep topic meaning conversation-local unless reviewed; use involvement and centrality as topic-specific coordination signals only; classify handling sensitivity; create Unknowns instead of guessing; route reusable knowledge candidates to `knowledge_ontology_management` only after human review; while maturity is trial, use bundled sample input and output as the minimum interpretation boundary
 - lifecycle:
   - startup: confirm root topic, target period, evidence set, prior Topic State if any, normalization quality, source handling, sensitive-content flags, output location, bundled examples, and the active context-direction guard

@@ -17,16 +17,7 @@
 - tuning: compare DDL structure and C# processing structure to surface missing flows, implicit assumptions, and duplicated rule ownership
 - role_responsibilities:
   - executor: DDL and corresponding C# code both exist and their mismatch may expose missing use-case handling or undocumented assumptions
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: compare valid DDL variations against actual code handling instead of assuming one side is authoritative; keep mismatches explicit; write the derivation result to `work/constraint_derivation/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
   - startup: confirm both DDL and code inputs exist and load the framework plus the cross-constraint catalog

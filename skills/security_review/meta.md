@@ -8,6 +8,7 @@
 - use_when: user needs focused security validation
 - input: target code, design evidence
 - output: security review result, risk findings, unresolved list
+- maturity: `draft`
 - execution_mode: `subagent_preferred`
 - guard_policy: `required`
 - capability_layering: `required`
@@ -15,16 +16,7 @@
 - tuning: review C# code and evidence for security risks
 - role_responsibilities:
   - executor: user needs focused security validation
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: every judgment needs evidence; unresolved evidence gaps stay explicit
 - lifecycle:
   - startup: confirm target and security-relevant evidence exist

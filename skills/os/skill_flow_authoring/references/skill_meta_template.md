@@ -21,16 +21,7 @@ Use this when creating a new Skill in XRefKit.
 - tuning: <direct specialization of the capability for this Skill>
 - role_responsibilities:
   - executor: <what the executor produces or changes>
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: <operational constraints and escalation boundary>
 - constraints: <include what must not stay implicit for later AI reuse>
 - lifecycle:

@@ -17,16 +17,7 @@
 - tuning: learn a business task from a human through goal-first interview and convert partial fragments into a structured business hypothesis
 - role_responsibilities:
   - executor: a user wants to teach the AI about a business task conversationally, but can better explain the intended goal than the full process, or only knows fragments, tacit operational knowledge, bottlenecks, or partial handoffs
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: do not demand a complete process description before helping; do not skip the goal and jump directly to local tasks; do not mix human facts and AI inference; do not ask broad dump-everything questions when a smaller question can reduce ambiguity; keep unresolved items explicit
 - lifecycle:
   - startup: confirm the visible seed, prefer goal or expected result when available, and load interview rules and template

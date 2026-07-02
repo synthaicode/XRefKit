@@ -44,16 +44,7 @@
 - tuning: execute manufacturing business activities through reusable scoped realization and unit-level verification capabilities
 - role_responsibilities:
   - executor: user asks to implement changes based on an approved design or explicitly bounded instructions
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: do not change design policy; keep unresolved items explicit; implement only traced and approved differences by default; when coding would require guessing unresolved structural behavior from design artifacts, route through the constraint-derivation pack before implementation; handle concrete in-scope quality feedback when no tradeoff exists among active findings
 - lifecycle:
   - startup: confirm approved scope, reviewed test package, target files, and coding rules exist; stop if the task still depends on unresolved structural behavior that should be derived before coding

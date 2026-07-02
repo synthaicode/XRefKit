@@ -8,6 +8,7 @@
 - use_when: user needs estimate options, supplier checks, or assumption clarification before requirements
 - input: request, change target list, supplier definitions, optional budget definition
 - output: supplier check results, cost patterns, solution options, assumption list, ambiguity classification
+- maturity: `draft`
 - execution_mode: `local_default`
 - guard_policy: `required`
 - capability_layering: `required`
@@ -15,16 +16,7 @@
 - tuning: execute estimation business activities through reusable comparison, projection, option-structuring, and ambiguity-classification capabilities
 - role_responsibilities:
   - executor: user needs estimate options, supplier checks, or assumption clarification before requirements
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: do not approve supplier adoption, budget, or final direction
 - lifecycle:
   - startup: confirm request, change targets, supplier definitions, and budget evidence as needed

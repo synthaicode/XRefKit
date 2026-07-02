@@ -17,16 +17,7 @@
 - tuning: review a draft from the target reader perspective to surface confusion, drop-off points, context gaps, and pacing issues
 - role_responsibilities:
   - executor: a draft exists and the team needs reader-side feedback before release or before final restructuring
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: review from the declared reader perspective rather than generic style taste; evaluate omission and pacing against the declared reader capability assumption; keep missing audience evidence explicit; do not convert reader feedback into factual approval; write the review result to `work/editorial_ops/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
   - startup: confirm the draft, intake record, target reader definition, and reader capability assumption exist

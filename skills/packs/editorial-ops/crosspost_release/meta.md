@@ -17,16 +17,7 @@
 - tuning: prepare a reviewed article for per-channel publication with explicit adaptation notes, release blockers, and final human sign-off boundary
 - role_responsibilities:
   - executor: intake, drafting, and both reviews are complete enough that a release package or crosspost plan is needed
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: do not treat release packaging as publication approval; do not erase unresolved blockers during channel adaptation; preserve a human final sign-off boundary; write the release result to `work/editorial_ops/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
   - startup: confirm the latest draft and both review outputs exist and identify the target channels

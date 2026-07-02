@@ -16,16 +16,7 @@
 - tuning: analyze a Flow / Skill from an older XRefKit state and generate a current trial-first migration scaffold
 - role_responsibilities:
   - executor: a user has a Flow / Skill created on an older XRefKit state and wants to migrate it into the current repository structure without hand-mapping everything from scratch
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: do not overwrite current canonical assets blindly; default migrated targets to trial; keep mixed procedure/facts and missing runtime fields explicit; do not claim flows are machine-readable unless a real control structure exists
 - lifecycle:
   - startup: confirm source artifact location and load migration rules

@@ -17,16 +17,7 @@
 - tuning: derive requirement confirmation gates from external APIs, webhooks, files, and messaging integration structure
 - role_responsibilities:
   - executor: external integration specs may leave failure, timing, retry, or idempotency behavior to implicit AI completion
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: derive from integration structure and failure modes, not nominal success cases; keep retry, timeout, idempotency, and ordering gaps explicit; write the derivation result to `work/constraint_derivation/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
   - startup: confirm the input contains external integration structure and load the shared framework plus the integration catalog

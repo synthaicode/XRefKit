@@ -17,16 +17,7 @@
 - tuning: scope an article task into topic, audience, evidence basis, quality target, and publication boundary before drafting
 - role_responsibilities:
   - executor: article work starts from fragments, loose notes, or vague publication intent and the execution target is not yet stable enough for drafting
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: do not start from writing style before topic and evidence basis are visible; do not treat audience label alone as enough reader definition when capability assumptions matter; keep facts and framing hypotheses separate; preserve missing source support as `unknown`; write the intake record to `work/editorial_ops/` with a date-prefixed filename unless another path is specified
 - lifecycle:
   - startup: confirm the article seed, current source set, audience hints, reader capability assumption, and desired channels

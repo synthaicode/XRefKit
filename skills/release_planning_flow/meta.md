@@ -8,6 +8,7 @@
 - use_when: user needs release-planning work after manufacturing and testing
 - input: manufacturing outputs, requirements, design materials, optional performance data
 - output: release plan draft, release procedure draft, release confirmation procedure draft, rollback procedure draft, monitoring specification, event-response procedure draft, operational readiness result
+- maturity: `draft`
 - execution_mode: `local_default`
 - guard_policy: `required`
 - capability_layering: `required`
@@ -15,16 +16,7 @@
 - tuning: execute release-planning business activities through reusable release-material, release-procedure, release-confirmation, signal-specification, response-structuring, and readiness-evaluation capabilities
 - role_responsibilities:
   - executor: user needs release-planning work after manufacturing and testing
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: do not approve release timing or final go or no-go
 - lifecycle:
   - startup: confirm manufacturing outputs and release-planning evidence exist

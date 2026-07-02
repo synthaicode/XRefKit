@@ -17,16 +17,7 @@
 - tuning: map a consultation topic to prior research, known reusable patterns, deterministic extraction work, and the remaining non-deterministic judgment space
 - role_responsibilities:
   - executor: a user brings a consultation, design question, strategy question, or vague technical/business topic and wants to avoid reinventing the wheel by first identifying prior art, established approaches, reusable methods, and which parts should be handled deterministically versus left to LLM or human judgment
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: do not treat model memory as prior research; verify drift-prone prior art with current sources; separate source-backed facts from interpretation; do not convert ambiguous human objectives into deterministic work without explicit boundary evidence; do not claim novelty, consensus, or best practice without source support; preserve missing source coverage as `unknown`
 - lifecycle:
   - startup: confirm the consultation topic, advice target, freshness need, source boundary, and whether the output is transient or should be written under `work/`

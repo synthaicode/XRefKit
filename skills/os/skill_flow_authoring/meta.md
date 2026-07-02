@@ -16,16 +16,7 @@
 - tuning: create or update repository-native Skill / Flow assets in XRefKit with correct split, publication boundary, runtime envelope, forgetting countermeasures, and validation
 - role_responsibilities:
   - executor: a user wants to create a new Skill, a new Flow, or both in this repository, especially when the work must be reusable, publicly published under the correct `skills/` family path, aligned with `flows/` as machine-readable workflow control, and forced to carry anti-forgetting structure for later AI reuse
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: default new Skill creation to `skills_private/` unless the user explicitly requests public release; do not claim a Flow exists unless a real machine-readable YAML control structure is created under `flows/`; keep behavioral procedure in `skills/` and factual/domain content in `knowledge/`; do not promote beyond the maturity justified by observed evidence; do not treat authoring as complete unless anti-forgetting structure is explicit in the created Skill / Flow; run `xref` and deterministic validation before closure
 - lifecycle:
   - startup: confirm whether the request is for a Skill, a Flow, or both; confirm proposed ids and public/private publication intent; load authoring, maturity, operating-contract, and flow-structure rules

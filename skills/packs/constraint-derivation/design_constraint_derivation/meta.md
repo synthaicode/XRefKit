@@ -17,16 +17,7 @@
 - tuning: derive requirement confirmation gates from data-structure, database, relationship, and operation design
 - role_responsibilities:
   - executor: DDL, schema, ER, or CRUD-oriented design structures may hide unresolved behavior that AI would otherwise complete implicitly
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: keep derivation mechanical and structure-driven; do not invent missing business behavior; separate design-time decisions from requirement confirmations; expand combinations only when structural axes are present; write the derivation result to `work/constraint_derivation/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
   - startup: confirm the input contains data or operation structure and load the shared framework plus the design catalog

@@ -17,16 +17,7 @@
 - tuning: review C# code with a manual focus on non-Roslyn-detectable risks
 - role_responsibilities:
   - executor: user asks for C# review beyond Roslyn/compiler diagnostics, including async hangs, synchronization risks, or fake-clock wait behavior that Roslyn does not catch
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: exclude Roslyn-detectable issues; do not hard-fail unknown attribute values by whitelist; do not expand into security review or design-assumption derivation — route those findings to security_review or the constraint-derivation pack through the handoff list
 - lifecycle:
   - startup: confirm target path and review scope, then load the review spec

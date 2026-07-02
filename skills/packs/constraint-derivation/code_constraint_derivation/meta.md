@@ -17,16 +17,7 @@
 - tuning: derive hidden assumptions and selected business constraints from generated or reviewed C# code
 - role_responsibilities:
   - executor: AI-generated or manually reviewed C# code may embed asymmetric branches, implicit preconditions, or hidden business thresholds that need human confirmation
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: derive only from explicit code choices rather than generic runtime possibilities; keep language-level exception noise out; write the derivation result to `work/constraint_derivation/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
   - startup: confirm code input exists and load the framework plus the code-constraint catalog

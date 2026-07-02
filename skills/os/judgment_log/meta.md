@@ -8,6 +8,7 @@
 - use_when: a task produces a non-trivial judgment that should be inspectable or reusable later, especially when confidence is mixed or alternatives exist
 - input: work type, target, decision, evidence, confidence, optional alternatives, optional open questions, optional output path
 - output: judgment log file and normalized judgment summary
+- maturity: `trial`
 - execution_mode: `local_default`
 - guard_policy: `required`
 - capability_layering: `required`
@@ -15,16 +16,7 @@
 - tuning: write a judgment log that records decision, evidence, inference boundary, confidence, and next verification step
 - role_responsibilities:
   - executor: a task produces a non-trivial judgment that should be inspectable or reusable later, especially when confidence is mixed or alternatives exist
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: separate facts from inference; do not present inferred-only judgments as normal completion; preserve alternatives and open questions
 - lifecycle:
   - startup: confirm judgment target and evidence, then load the schema
@@ -43,3 +35,6 @@
   - `../../../docs/core/contracts/015_shared_memory_operations.md#xid-4A423E72D2ED`
   - `../../../knowledge/organization/120_metrics_definition.md#xid-7A2F4C8D1201`
   - `../../../knowledge/organization/121_judgment_log_schema.md#xid-7B4C2D91E621`
+- observation_refs:
+  - `../../../work/judgments/2026-06-23_csharp_review_bad_mail_sender_handoff_judgment.md`
+  - `../../../work/judgments/2026-06-12_judgment_csharp_error_policy_extraction_authoring.md`

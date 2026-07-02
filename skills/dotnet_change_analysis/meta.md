@@ -17,16 +17,7 @@
 - tuning: analyze .NET application structure and generate a Markdown change-analysis note for later design or implementation work
 - role_responsibilities:
   - executor: user needs repository-based .NET structure analysis, impact investigation, or a Markdown change-analysis note before changing code, especially brownfield code where responsibility separation is not documented and must be read from the code
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: do not decide implementation policy by default; record unknowns explicitly; confirm custom-attribute activation instead of stopping at inventory; record structure and change impact only — defect-level findings hand off to csharp_review and vulnerability assessment hands off to security_review
 - lifecycle:
   - startup: confirm target path, change objective, scope, and required viewpoints

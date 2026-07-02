@@ -8,6 +8,7 @@
 - use_when: user needs planning after requirements are approved
 - input: approved requirements, change target list, current source structure findings, domain knowledge references
 - output: work plan, source modification policy, data change policy, data correction tool policy, test policy, test tool policy, release policy, planning basis source list
+- maturity: `draft`
 - execution_mode: `local_default`
 - guard_policy: `required`
 - capability_layering: `required`
@@ -15,16 +16,7 @@
 - tuning: execute planning business activity through reusable work-and-policy planning capability grounded in domain knowledge and current-source findings
 - role_responsibilities:
   - executor: user needs planning after requirements are approved
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: draft only; do not finalize priority or resource allocation; keep requirement-to-target difference tracing explicit for downstream design and review
 - lifecycle:
   - startup: confirm approved requirements, current source findings, and domain knowledge references exist

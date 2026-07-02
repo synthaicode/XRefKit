@@ -16,16 +16,7 @@
 - tuning: curate new or materially revised domain knowledge through concept identity, duplication, split, replacement, and typed-relationship assessment before canonical publication
 - role_responsibilities:
   - executor: a user or workflow will add a new canonical fragment under `knowledge/`, promote source material into domain knowledge, or materially revise the meaning, scope, applicability, or relationships of existing domain knowledge; do not use for typo-only, formatting-only, or mechanical XID-link maintenance
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: ontology assessment does not replace source verification or human domain authority; canonical mutation requires an authorized `apply` request, while absent authority requires `proposal_only`; use only the controlled relationship vocabulary; do not invent relationships to make the graph appear complete; keep procedure in the Skill, canonical facts in `knowledge/`, original evidence in `sources/`, and operational or judgment history in `work/`
 - lifecycle:
   - startup: confirm the proposed knowledge scope, publication mode, source class, and whether the change is semantic rather than mechanical; load the ontology, source, document-update, and context-direction rules

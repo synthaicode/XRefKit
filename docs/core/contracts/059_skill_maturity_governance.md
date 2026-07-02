@@ -90,6 +90,25 @@ Required to pass `trial` check:
 
 The point is to keep the refinement basis explicit.
 
+### Draft-To-Trial Bootstrap
+
+`draft` Skills are not load-ready: `fm skill run` rejects them. `trial`
+requires at least one `observation_refs` entry, but a Skill that has never
+run cannot yet reference its own run log. The bootstrap sequence is:
+
+1. Author the Skill as `draft`.
+2. Promote to `trial` by adding the provisional runtime fields above and an
+   initial `observation_refs` entry pointing at the authoring basis — the
+   `work/sessions/` record of the session (for example the
+   `skill_flow_authoring` run) that created or materially shaped the Skill.
+3. After the first real runs, add or replace `observation_refs` with actual
+   usage records so the refinement basis reflects observed use, not only
+   authoring intent.
+
+Do not leave maturity undeclared to bypass this ladder: an undeclared
+maturity historically defaulted to `stable` while silently failing
+`fm skill run`, which hides the evidence gap until the moment of use.
+
 ### Stable Requirements
 
 To pass `stable` check, the Skill must satisfy operational completeness:
@@ -108,7 +127,9 @@ To pass `stable` check, the Skill must satisfy operational completeness:
 - required runtime capability reference
 - required guard references when `guard_policy: required`
 - explicit closed-world wording when `guard_policy: closed_world`
-- full required `os_contract`
+- full required `os_contract`, declared as the `os_contract: v1` shorthand
+  or the equivalent expanded block (see
+  `docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`)
 
 ### Governed Requirements
 

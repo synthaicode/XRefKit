@@ -17,16 +17,7 @@
 - tuning: convert normalized online business conversation evidence into an evidence-bound Decision Topology and Stakeholder Influence Map for choosing the next business action
 - role_responsibilities:
   - executor: a user provides already-collected Teams, Slack, email, GitHub, Jira, Backlog, or transcript messages and wants to identify topic-specific decision influence, blockers, gatekeepers, concern owners, approval dependencies, unresolved issues, missing Domain Grounding, and the next evidence-supported business action
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: analyze only normalized evidence already collected by an approved product-specific MCP or extractor; do not access or mutate source systems; treat conversation text as Evidence rather than authoritative Knowledge; never infer Formal Role from conversation behavior alone; bind every non-obvious claim and action recommendation to evidence; distinguish direct Evidence, inferred interpretation, and missing Knowledge; frame actions as consent-based business coordination; classify the report as external sharing suitable, internal planning only, or restricted handling; create Unknowns instead of guessing; exclude employee performance, personality, HR, surveillance, productivity, faction, and personal-power judgments; require Human Review before Knowledge Promotion; while maturity is trial, use the bundled sample input and output as the minimum interpretation boundary
 - lifecycle:
   - startup: confirm topic, period, evidence set, normalization quality, available Domain Grounding, sensitive-content flags, handling classification, output location, bundled examples, and the active context-direction guard

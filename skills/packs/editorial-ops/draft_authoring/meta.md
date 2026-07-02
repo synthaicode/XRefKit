@@ -17,16 +17,7 @@
 - tuning: produce an article draft from explicit intake framing and source basis without hiding unsupported claims
 - role_responsibilities:
   - executor: intake has already defined the article boundary and a first draft or revision draft is needed
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: do not invent missing facts to smooth the narrative; keep unsupported wording visible for later review; preserve channel-neutral source meaning before channel-specific adaptation; write the draft to `work/editorial_ops/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
   - startup: confirm intake exists and the source basis is sufficient to start drafting

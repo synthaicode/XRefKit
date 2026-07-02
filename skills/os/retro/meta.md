@@ -8,6 +8,7 @@
 - use_when: a task or work session is ending and the agent should determine whether stable rules, knowledge, or procedures must be promoted out of `work/`
 - input: current task goal, related `work/sessions/` or `work/retrospectives/` files, changed files, optional conversation history, optional target canonical paths
 - output: promotion candidate list, target location per candidate, reasons, evidence references, already-promoted checks, stay-in-work decisions, optional draft update plan
+- maturity: `draft`
 - execution_mode: `local_default`
 - guard_policy: `required`
 - capability_layering: `required`
@@ -15,16 +16,7 @@
 - tuning: review session logs and current work artifacts, then propose promotion candidates from `work/` into canonical repository assets
 - role_responsibilities:
   - executor: a task or work session is ending and the agent should determine whether stable rules, knowledge, or procedures must be promoted out of `work/
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: do not treat `work/` as canonical; do not promote unstable notes; do not duplicate existing canonical content without checking first
 - lifecycle:
   - startup: confirm the relevant session logs, changed files, and canonical search scope

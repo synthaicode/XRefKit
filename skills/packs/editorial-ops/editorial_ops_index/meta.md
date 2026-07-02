@@ -17,16 +17,7 @@
 - tuning: route editorial requests to the correct editorial-ops Skills and keep review and release stages explicit
 - role_responsibilities:
   - executor: a user asks to turn notes, sources, or a draft into a managed article workflow instead of one-shot prompting
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: do not skip intake when audience, sources, or channel targets are still unclear; do not treat draft generation as implicit approval; keep shared routing rules in knowledge instead of duplicating them across pack Skills; write the routing note to `work/editorial_ops/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
   - startup: confirm whether the request starts from idea fragments, an existing draft, or a release-ready article and identify the target channels

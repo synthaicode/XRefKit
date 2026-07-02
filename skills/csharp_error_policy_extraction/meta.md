@@ -17,16 +17,7 @@
 - tuning: extract the existing de-facto error policy from C# source as an inventory, a category-by-disposition matrix, detected contradictions, and explicit coverage limits
 - role_responsibilities:
   - executor: user needs the implemented error policy of a C# codebase made explicit before changing error handling, unifying conventions, or arbitrating inconsistent failure behavior — a deep-dive of the error-handling-contract viewpoint of `dotnet_change_analysis`, not a defect review
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: extraction only — record implemented behavior, never decide what the policy should be; do not fix code; never claim exhaustive coverage of omission policies; every non-trivial conclusion carries an evidence path; defect-level findings (async hangs, race conditions) hand off to csharp_review and vulnerability findings hand off to security_review; the coverage-limits section is mandatory in every report
 - lifecycle:
   - startup: confirm target path, scope, output path, and whether a prior change-analysis note exists as input

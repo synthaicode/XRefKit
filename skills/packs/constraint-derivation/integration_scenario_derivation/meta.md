@@ -17,16 +17,7 @@
 - tuning: derive integration-only failure and compensation scenarios from DDL, processing order, and external system boundaries
 - role_responsibilities:
   - executor: DDL, code, and external-boundary specs together may hide partial-failure, retry, or compensation scenarios that unit-level reasoning misses
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: focus on boundary-crossing state progression rather than isolated method correctness; keep compensation and retry questions explicit; write the derivation result to `work/constraint_derivation/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
   - startup: confirm DDL, code, and boundary inputs exist and load the framework plus the integration-scenario catalog

@@ -55,6 +55,103 @@ class SkillMetaTests(unittest.TestCase):
             self.assertTrue(result.ok)
             self.assertEqual([], result.errors)
 
+    def _meta_with_os_contract(self, os_contract_lines: str) -> str:
+        return (
+            "# Skill Meta: sample\n\n"
+            "- skill_id: `sample_skill`\n"
+            "- summary: sample summary\n"
+            "- use_when: sample use\n"
+            "- input: sample input\n"
+            "- output: sample output\n"
+            "- maturity: `stable`\n"
+            "- execution_mode: `subagent_preferred`\n"
+            "- guard_policy: `required`\n"
+            "- capability_layering: `required`\n"
+            "- workflow_protocol: `required`\n"
+            "- tuning: sample specialization\n"
+            "- role_responsibilities:\n"
+            "  - executor: sample execution responsibility\n"
+            f"{os_contract_lines}"
+            "- constraints: keep observed boundary explicit\n"
+            "- skill_doc: `./SKILL.md`\n"
+            "- capability_refs:\n"
+            f"  - `{SKILL_RUNTIME_CAPABILITY_REF}`\n"
+            f"  - `{GUARD_CAPABILITY_REF}`\n"
+            "- knowledge_refs:\n"
+            f"  - `{GUARD_KNOWLEDGE_REF}`\n"
+            "- observation_refs:\n"
+            "  - `../../work/sessions/sample.md`\n"
+        )
+
+    def test_validate_skill_meta_accepts_os_contract_shorthand(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                self._meta_with_os_contract("- os_contract: v1\n"),
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertTrue(result.ok)
+            self.assertEqual([], result.errors)
+
+    def test_validate_skill_meta_accepts_backticked_os_contract_shorthand(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                self._meta_with_os_contract("- os_contract: `v1`\n"),
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertTrue(result.ok)
+            self.assertEqual([], result.errors)
+
+    def test_validate_skill_meta_warns_on_undeclared_maturity(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            text = self._meta_with_os_contract("- os_contract: v1\n").replace(
+                "- maturity: `stable`\n", ""
+            ).replace(
+                "- observation_refs:\n  - `../../work/sessions/sample.md`\n", ""
+            )
+            meta.write_text(text, encoding="utf-8")
+
+            result = validate_skill_meta(meta)
+
+            self.assertTrue(result.ok)
+            self.assertTrue(
+                any("maturity is not declared" in w for w in result.warnings)
+            )
+
+    def test_validate_skill_meta_no_warning_with_explicit_maturity(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                self._meta_with_os_contract("- os_contract: v1\n"),
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertEqual([], result.warnings)
+
+    def test_validate_skill_meta_rejects_unknown_os_contract_shorthand(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                self._meta_with_os_contract("- os_contract: v99\n"),
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertFalse(result.ok)
+            self.assertIn("unknown os_contract shorthand: v99", result.errors)
+            self.assertIn("os_contract.version must be 1", result.errors)
+
     def test_validate_skill_meta_rejects_missing_os_contract(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             meta = Path(tmp) / "meta.md"

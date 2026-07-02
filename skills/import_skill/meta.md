@@ -8,6 +8,7 @@
 - use_when: external skill needs to be made runnable in this repo
 - input: source URL or ZIP path, optional target skill id
 - output: normalized `skills/<skill_id>/SKILL.md` and index registration
+- maturity: `draft`
 - execution_mode: `local_default`
 - guard_policy: `required`
 - capability_layering: `required`
@@ -15,16 +16,7 @@
 - tuning: import external skill content into this repository split model
 - role_responsibilities:
   - executor: external skill needs to be made runnable in this repo
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: keep domain facts out of skill body; use `knowledge/...#xid-...`; run policy inspection before import; compose the context-direction guard by default unless the imported skill explicitly qualifies for the closed-world exception
 - tags: `import`, `normalization`, `xref`
 - skill_doc: `./SKILL.md`

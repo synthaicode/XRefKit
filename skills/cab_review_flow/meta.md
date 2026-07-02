@@ -8,6 +8,7 @@
 - use_when: user needs CAB-style evaluation before release confirmation
 - input: release plan materials, manufacturing outputs, requirement and design evidence, value and constraint definitions
 - output: quality-gate result, operational readiness result, value-gate result, unresolved list
+- maturity: `draft`
 - execution_mode: `subagent_preferred`
 - guard_policy: `required`
 - capability_layering: `required`
@@ -15,16 +16,7 @@
 - tuning: execute CAB business activities through reusable quality, operational-readiness, and value-alignment evaluation capabilities
 - role_responsibilities:
   - executor: user needs CAB-style evaluation before release confirmation
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: evaluate only; do not make final release decision
 - lifecycle:
   - startup: confirm CAB evidence exists

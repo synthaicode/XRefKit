@@ -8,6 +8,7 @@
 - use_when: user needs requirement drafting after investigation and estimation
 - input: confirmed assumptions, change target list, test viewpoints, request, optional performance constraints
 - output: requirement draft, performance requirement definition, load-test draft plan, unresolved list
+- maturity: `draft`
 - execution_mode: `local_default`
 - guard_policy: `required`
 - capability_layering: `required`
@@ -15,16 +16,7 @@
 - tuning: execute requirements business activities through reusable requirement and performance-constraint structuring capabilities
 - role_responsibilities:
   - executor: user needs requirement drafting after investigation and estimation
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: draft only; do not approve final requirements; preserve change reason, change requirement, and change specification as explicit difference artifacts
 - lifecycle:
   - startup: confirm confirmed assumptions and requirement inputs exist

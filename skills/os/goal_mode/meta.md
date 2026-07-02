@@ -16,16 +16,7 @@
 - tuning: preserve task state, wait for Codex usage recovery, and resume the same goal after the next 5-hour or weekly reset
 - role_responsibilities:
   - executor: a user wants Codex work to continue toward the same goal even when usage remaining can reach `0%`, and the repository must preserve a restart-ready continuation packet instead of silently stopping
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: do not invent quota-reset times; do not claim background wake-up or automatic resume unless a real hook or queue mechanism exists; do not lose unresolved items or next-step ownership during the wait; do not resume after a long wait without checking for drift in scope, branch state, or upstream instructions
 - lifecycle:
   - startup: confirm the current goal, active boundary, quota-state evidence, and whether the run is still executable now or already needs wait preparation

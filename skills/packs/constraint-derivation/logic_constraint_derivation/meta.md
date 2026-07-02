@@ -17,16 +17,7 @@
 - tuning: derive requirement confirmation gates from branching, calculations, state transitions, and approval logic
 - role_responsibilities:
   - executor: business-logic specs may leave boundary, exception, or transition behavior to implicit AI completion
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: derive all structurally implied branches and boundaries; do not infer unspecified else-paths; keep state-transition and calculation edge cases explicit; write the derivation result to `work/constraint_derivation/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
   - startup: confirm the input contains business logic structure and load the shared framework plus the logic catalog

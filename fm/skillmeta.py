@@ -37,6 +37,17 @@ REQUIRED_OS_CONTRACT = {
     "closure_gate": "required",
     "handoff_policy": "explicit",
 }
+# `os_contract: v1` is the compact declaration of the version-1 operating
+# contract above. Both the shorthand and the expanded inline block are valid
+# meta forms; run logs always materialize the expanded block.
+OS_CONTRACT_SHORTHANDS = {"v1": REQUIRED_OS_CONTRACT}
+
+
+def resolve_os_contract(value: object) -> dict[str, str]:
+    if isinstance(value, str):
+        shorthand = OS_CONTRACT_SHORTHANDS.get(value.strip().strip("`"))
+        return dict(shorthand) if shorthand else {}
+    return _parse_key_value_list(value)
 
 
 @dataclass
@@ -53,6 +64,7 @@ class SkillMetaResult:
     execution_mode: str | None
     ok: bool
     errors: list[str]
+    warnings: list[str]
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -68,6 +80,7 @@ class SkillMetaResult:
             "execution_mode": self.execution_mode,
             "ok": self.ok,
             "errors": self.errors,
+            "warnings": self.warnings,
         }
 
 
@@ -198,7 +211,8 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
     observation_refs = parsed.get("observation_refs", [])
     governance_refs = parsed.get("governance_refs", [])
     skill_doc = parsed.get("skill_doc")
-    os_contract = _parse_key_value_list(parsed.get("os_contract"))
+    raw_os_contract = parsed.get("os_contract")
+    os_contract = resolve_os_contract(raw_os_contract)
 
     if not isinstance(capability_refs, list):
         capability_refs = []
@@ -210,6 +224,13 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
         governance_refs = []
 
     errors: list[str] = []
+    warnings: list[str] = []
+
+    if is_legacy_meta:
+        warnings.append(
+            "maturity is not declared; legacy default 'stable' applies. "
+            "Declare maturity explicitly (see 059_skill_maturity_governance)."
+        )
 
     if check_level not in VALID_CHECK_LEVELS:
         errors.append(f"invalid check level: {check_level}")
@@ -274,6 +295,11 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
         if not constraints.strip():
             errors.append("missing constraints")
         _check_review_mode(summary, tags, skill_id, execution_mode, errors)
+        if (
+            isinstance(raw_os_contract, str)
+            and raw_os_contract.strip().strip("`") not in OS_CONTRACT_SHORTHANDS
+        ):
+            errors.append(f"unknown os_contract shorthand: {raw_os_contract}")
         for key, expected_value in REQUIRED_OS_CONTRACT.items():
             actual_value = os_contract.get(key)
             if actual_value != expected_value:
@@ -296,6 +322,7 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
         execution_mode=str(execution_mode) if execution_mode else None,
         ok=not errors,
         errors=errors,
+        warnings=warnings,
     )
 
 
@@ -766,5 +793,7 @@ def cmd_skill(args) -> int:
                 print(f"  guard_policy: {result.guard_policy}")
             for error in result.errors:
                 print(f"  error: {error}")
+            for warning in result.warnings:
+                print(f"  warning: {warning}")
 
     return 1 if failed else 0

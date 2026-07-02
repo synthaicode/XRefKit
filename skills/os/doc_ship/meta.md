@@ -8,6 +8,7 @@
 - use_when: `retro` or an equivalent review has identified stable promotion candidates and the user wants those candidates reflected in `docs/`, `knowledge/`, `skills/`, or `agent/`
 - input: approved promotion report, related `work/` records, target canonical files or target classes, optional user wording constraints
 - output: updated canonical files, `work/` pointer updates, unresolved or skipped candidate list, xref validation result
+- maturity: `draft`
 - execution_mode: `local_default`
 - guard_policy: `required`
 - capability_layering: `required`
@@ -15,16 +16,7 @@
 - tuning: apply approved promotion candidates from `work/` into canonical repository assets and leave traceable moved-to pointers
 - role_responsibilities:
   - executor: retro` or an equivalent review has identified stable promotion candidates and the user wants those candidates reflected in `docs/`, `knowledge/`, `skills/`, or `agent/
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: do not ship unstable notes; do not duplicate existing canonical content; do not mix procedure and domain fact into the wrong destination
 - lifecycle:
   - startup: confirm approved candidates, evidence records, and canonical targets

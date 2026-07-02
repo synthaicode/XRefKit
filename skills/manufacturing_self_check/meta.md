@@ -8,6 +8,7 @@
 - use_when: implementation and unit testing are complete and manufacturing needs an internal alignment check
 - input: implemented code, approved design, unit test results, coding rules
 - output: self-check result, design-alignment findings, unresolved list
+- maturity: `draft`
 - execution_mode: `subagent_preferred`
 - guard_policy: `required`
 - capability_layering: `required`
@@ -15,16 +16,7 @@
 - tuning: execute manufacturing self-check business activity through reusable design-alignment self-evaluation capability
 - role_responsibilities:
   - executor: implementation and unit testing are complete and manufacturing needs an internal alignment check
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: internal manufacturing check only; does not replace quality-group review
 - lifecycle:
   - startup: confirm implemented code, design evidence, and unit-test evidence exist

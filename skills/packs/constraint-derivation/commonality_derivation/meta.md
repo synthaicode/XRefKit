@@ -17,16 +17,7 @@
 - tuning: derive cross-cutting commonality candidates from completed primary constraint-derivation outputs
 - role_responsibilities:
   - executor: multiple primary derivation outputs exist and the user needs a second pass for shared implementation candidates or scope-boundary checks
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: run only after primary derivation outputs exist; aggregate patterns without deciding the final abstraction; keep commonality candidates separate from scope-boundary concerns; write the result to `work/constraint_derivation/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
   - startup: confirm primary derivation lists are complete enough for a secondary pass and load the shared framework plus the commonality signals

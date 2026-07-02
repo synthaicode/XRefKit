@@ -8,6 +8,7 @@
 - use_when: user needs impact investigation before estimation or design
 - input: request, optional service candidates, optional service catalog path, optional repository or document paths
 - output: in-scope service list, out-of-scope service list with reasons, change viewpoints, test viewpoints, change target list, uncertainty list
+- maturity: `draft`
 - execution_mode: `local_default`
 - guard_policy: `required`
 - capability_layering: `required`
@@ -15,16 +16,7 @@
 - tuning: execute the investigation workflow from service catalog analysis through change-target summary using reusable investigation capabilities
 - role_responsibilities:
   - executor: user needs impact investigation before estimation or design
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: do not decide design or implementation policy; record unknowns explicitly; preserve requested difference and impacted-target discovery explicitly
 - lifecycle:
   - startup: confirm request, service catalog, analysis targets, and coverage checklist exist

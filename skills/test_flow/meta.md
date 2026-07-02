@@ -8,6 +8,7 @@
 - use_when: user needs a reviewed test package from planning outputs, requirements, and design evidence
 - input: approved requirements, work plan, test policy, approved design, planning basis source list
 - output: test plan, test design, requirement traceability reference, integration regression test design, manufacturing test review result
+- maturity: `draft`
 - execution_mode: `subagent_preferred`
 - model_tier: `standard`
 - guard_policy: `required`
@@ -16,16 +17,7 @@
 - tuning: execute test-planning, test-item structuring, integration/regression test design, and manufacturing-side test-method review
 - role_responsibilities:
   - executor: user needs a reviewed test package from planning outputs, requirements, and design evidence
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: do not redefine requirement intent, business scope, or final release judgment
 - lifecycle:
   - startup: confirm requirements, planning outputs, and design evidence exist

@@ -54,6 +54,18 @@ artifacts.
 
 ## Required Meta Block
 
+The canonical compact declaration is the version shorthand:
+
+```md
+- os_contract: v1
+```
+
+`v1` resolves to the expanded version-1 block below. The expanded inline
+form remains valid and means exactly the same contract; an unknown
+shorthand value is a validation error. `fm skill run` always materializes
+the expanded block into the run log, so runtime records stay explicit
+regardless of which meta form is used.
+
 ```md
 - os_contract:
   - version: `1`

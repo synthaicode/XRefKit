@@ -5,9 +5,10 @@
 
 - skill_id: `qa_gate_review`
 - summary: execute evidence-based QA across specification, performance, security, and license domains
-- use_when: user asks for QA review against design, performance, security, or license expectations
+- use_when: user asks for QA review against design, performance, security, or license expectations, including a focused single-domain review scoped to one quality capability (attribute, performance, or license)
 - input: target code paths, design evidence, coding rules, optional performance evidence, optional dependency provenance
 - output: per-domain review results, diff-consistency result, findings with evidence, uncertainty list
+- maturity: `stable`
 - execution_mode: `subagent_required`
 - guard_policy: `required`
 - capability_layering: `required`
@@ -15,16 +16,7 @@
 - tuning: execute evidence-based QA across specification, performance, security, and license domains
 - role_responsibilities:
   - executor: user asks for QA review against design, performance, security, or license expectations
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: every judgment needs evidence; unresolved evidence gaps stay explicit; review the intended difference, not the whole implementation by default
 - lifecycle:
   - startup: confirm domain evidence exists for specification, performance, security, and license review

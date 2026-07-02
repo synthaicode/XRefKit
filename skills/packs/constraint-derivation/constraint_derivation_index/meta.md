@@ -17,16 +17,7 @@
 - tuning: route design or implementation artifacts to the correct bidirectional constraint-derivation Skills and sequence the secondary commonality pass
 - role_responsibilities:
   - executor: design specifications or implementation artifacts need derivation of missing confirmations, hidden assumptions, or boundary scenarios without implicit AI completion
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- os_contract: v1
 - constraints: do not infer requirement decisions from design prose or code alone; route to all applicable primary Skills before the secondary commonality pass; keep shared rules in knowledge instead of duplicating them across pack Skills; write the routing result to `work/constraint_derivation/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
   - startup: confirm the input is design-oriented, implementation-oriented, or mixed and collect the artifact types that must be inspected
