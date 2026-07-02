@@ -109,6 +109,56 @@ class SkillMetaTests(unittest.TestCase):
             self.assertTrue(result.ok)
             self.assertEqual([], result.errors)
 
+    def test_validate_skill_meta_rejects_untracked_observation_ref(self) -> None:
+        import subprocess
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            subprocess.run(["git", "init", "-q", str(root)], check=True, capture_output=True)
+            meta_dir = root / "skills" / "sample"
+            meta_dir.mkdir(parents=True)
+            record = root / "work" / "sessions" / "obs.md"
+            record.parent.mkdir(parents=True)
+            record.write_text("observation\n", encoding="utf-8")
+            meta = meta_dir / "meta.md"
+            meta.write_text(
+                self._meta_with_os_contract("- os_contract: v1\n").replace(
+                    "  - `../../work/sessions/sample.md`\n",
+                    "  - `../../work/sessions/obs.md`\n",
+                ),
+                encoding="utf-8",
+            )
+
+            from fm.skillmeta import _TRACKED_CACHE
+
+            _TRACKED_CACHE.clear()
+            result = validate_skill_meta(meta)
+            self.assertFalse(result.ok)
+            self.assertTrue(
+                any("not git-tracked" in e for e in result.errors), result.errors
+            )
+
+            subprocess.run(
+                ["git", "-C", str(root), "add", "-f", "work/sessions/obs.md"],
+                check=True,
+                capture_output=True,
+            )
+            _TRACKED_CACHE.clear()
+            result = validate_skill_meta(meta)
+            self.assertTrue(result.ok, result.errors)
+
+    def test_validate_skill_meta_skips_tracked_check_outside_git(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                self._meta_with_os_contract("- os_contract: v1\n"),
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertTrue(result.ok, result.errors)
+
     def test_validate_skill_meta_warns_on_undeclared_maturity(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             meta = Path(tmp) / "meta.md"

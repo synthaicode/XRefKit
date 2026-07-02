@@ -90,6 +90,13 @@ Required to pass `trial` check:
 
 The point is to keep the refinement basis explicit.
 
+Every `observation_refs` target must be **git-tracked**. `work/*` is
+local-only by default (`.gitignore`), so an observation ref into `work/`
+promotes that specific record to tracked governance evidence: commit it
+(`git add -f` for ignored paths) when adding the reference. A reference
+that cannot resolve in a fresh clone is not evidence; `fm skill check`
+rejects untracked targets at trial or higher.
+
 ### Draft-To-Trial Bootstrap
 
 `draft` Skills are not load-ready: `fm skill run` rejects them. `trial`

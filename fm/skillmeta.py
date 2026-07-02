@@ -141,6 +141,61 @@ def _protocol_owned_role_responsibilities(value: object) -> list[str]:
     return sorted(PROTOCOL_OWNED_ROLE_RESPONSIBILITIES.intersection(parsed))
 
 
+_TRACKED_CACHE: dict[str, set[str] | None] = {}
+
+
+def _git_tracked_files(start: Path) -> tuple[Path, set[str]] | None:
+    """Return (repo_root, tracked paths) for the repo containing `start`.
+
+    Returns None when `start` is not inside a git work tree (temp dirs,
+    MCP-materialized checkouts without .git), in which case tracked-ness
+    cannot and should not be enforced.
+    """
+    start = start.resolve()
+    root = None
+    for parent in [start, *start.parents]:
+        if (parent / ".git").exists():
+            root = parent
+            break
+    if root is None:
+        return None
+    key = str(root)
+    if key not in _TRACKED_CACHE:
+        try:
+            out = subprocess.run(
+                ["git", "-C", str(root), "ls-files"],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout
+            _TRACKED_CACHE[key] = set(out.splitlines())
+        except Exception:
+            _TRACKED_CACHE[key] = None
+    tracked = _TRACKED_CACHE[key]
+    return None if tracked is None else (root, tracked)
+
+
+def _untracked_observation_refs(meta_path: Path, refs: list) -> list[str]:
+    """Observation refs whose target is not git-tracked (unresolvable in a clone)."""
+    located = _git_tracked_files(meta_path.parent)
+    if located is None:
+        return []
+    root, tracked = located
+    bad: list[str] = []
+    for ref in refs:
+        if not isinstance(ref, str) or not ref.strip():
+            continue
+        target = (meta_path.parent / ref.split("#")[0]).resolve()
+        try:
+            rel = target.relative_to(root).as_posix()
+        except ValueError:
+            bad.append(ref)
+            continue
+        if rel not in tracked:
+            bad.append(ref)
+    return bad
+
+
 def _has_required_ref(refs: list, required_suffix: str) -> bool:
     return any(
         isinstance(ref, str) and ref.replace("\\", "/").endswith(required_suffix)
@@ -246,6 +301,11 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
     if require_observation_refs:
         if not observation_refs:
             errors.append("trial-or-higher skills must include at least one observation_refs entry")
+        for ref in _untracked_observation_refs(meta_path, observation_refs):
+            errors.append(
+                f"observation ref is not git-tracked and cannot resolve in a clone: {ref} "
+                "(commit the referenced record; referencing promotes it to tracked governance evidence)"
+            )
         if capability_layering not in VALID_CAPABILITY_LAYERING_POLICIES:
             errors.append("missing or invalid capability_layering")
         if workflow_protocol not in VALID_WORKFLOW_PROTOCOL_POLICIES:
