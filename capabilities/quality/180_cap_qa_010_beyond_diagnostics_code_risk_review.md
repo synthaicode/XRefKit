@@ -48,6 +48,17 @@
 - error handling and exception path integrity
 - support lifecycle status of frameworks and dependencies
 - time and culture correctness
+- state and determinism boundary correctness, including hidden mutable-state
+  sharing, side-effect leakage, and non-idempotent transitions across async,
+  retry, replay, or agent coordination paths
+- uncertainty and escalation path integrity, including parse, classification,
+  prediction, threshold, and model-output uncertainty that must not silently
+  become a normal value
+- contract and schema resilience for external context, message, serialized, or
+  model-output boundaries where unknown fields, type changes, enum expansion,
+  or version drift must fail safely or become explicit unknowns
+- traceability and context propagation across async execution, background
+  work, queues, callbacks, and agent handoffs
 - attribute or configuration preconditions not enforced by diagnostics
 
 ## Required Domain Knowledge

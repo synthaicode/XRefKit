@@ -131,6 +131,79 @@ For C#, also check at least the following:
 - format strings and decimal separators that change meaning under a
   non-default culture
 
+## State and Determinism Boundary Checks
+
+Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+for language-neutral state and determinism boundary review.
+
+For C#, also check at least the following:
+
+- mutable state in `static`, singleton, cached, `ThreadLocal<T>`,
+  `AsyncLocal<T>`, scoped-service, or background-worker storage that can leak
+  across unrelated requests, jobs, tests, tenants, or agents
+- state machines whose transition order is not explicit enough for retry,
+  replay, compensation, or deterministic test execution
+- helper methods that look like pure validation, classification, parsing, or
+  mapping but mutate shared state, emit messages, write storage, or update
+  process-global context
+- non-idempotent transition methods called from retry, replay, duplicate
+  message, or parallel-worker paths without visible guards
+
+## Uncertainty and Escalation Path Checks
+
+Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+for language-neutral uncertainty and escalation path review.
+
+For C#, also check at least the following:
+
+- `TryParse`, `TryGet`, classifier, matcher, rules-engine, and model-output
+  branches whose failure or low-confidence path silently returns a normal
+  default
+- nullable, optional, default enum, empty-string, empty-collection, or
+  fallback-object paths that hide an unknown result instead of surfacing
+  `needs_confirmation`, controlled rejection, or handoff
+- LLM or external-decision outputs represented as plain DTOs without an
+  explicit confidence, status, or unsupported-value disposition when the
+  downstream decision requires it
+- exception-to-default paths around parsing, classification, model-output
+  handling, or schema conversion
+
+## Contract and Schema Resilience Checks
+
+Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+for language-neutral contract and schema resilience review.
+
+For C#, also check at least the following:
+
+- `System.Text.Json`, Newtonsoft.Json, MessagePack, protobuf, or custom
+  serializer settings for unknown members, missing members, enum values,
+  nullability, polymorphism, and versioned DTOs
+- deserialization exceptions that crash work outside a controlled boundary
+  instead of producing reject, quarantine, retry, `unknown`, or handoff
+  outcomes
+- lenient deserialization that ignores fields required for routing,
+  authorization, idempotency, audit, billing, or compliance
+- mapping layers that lose original payload, schema version, source identity,
+  or unsupported-field evidence needed for diagnostics
+
+## Traceability and Context Propagation Checks
+
+Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+for language-neutral traceability and context propagation review.
+
+For C#, also check at least the following:
+
+- `Activity.Current`, logging scopes, correlation ids, `AsyncLocal<T>`,
+  `CancellationToken`, tenant/user/source identity, and attempt metadata across
+  async calls, background tasks, timers, queue handlers, and fire-and-forget
+  work
+- detached `Task.Run`, event handlers, hosted services, channels, and callback
+  paths that lose source context or failure attribution
+- propagation that leaks sensitive context across unrelated requests, workers,
+  agents, tests, or tenants
+- structured logging and telemetry that cannot connect source read, state
+  transition, external call, retry, failure, and final disposition
+
 ## Support Lifecycle Checks
 
 Check at least the following:
