@@ -86,5 +86,9 @@ Output is candidate-only; disposition and per-case approval stay downstream
   standard pass (ADR 0001).
 - **Restore before Roslyn.** `structure_graph` and the analyzer pipeline need symbols
   resolved; unrestored targets yield silently empty framework facts.
+- **Build after a source-level copy.** `structure_graph/bin/` is gitignored, so a
+  fresh clone or file copy has no binary; build it per
+  [078_structure_graph_build_guide](../docs/guides/078_structure_graph_build_guide.md#xid-8B3E5D0A94C7)
+  before using the semantic-inventory tools.
 - **Candidate, not verdict.** Every analysis tool here proposes; inclusion, severity,
   and any change are decided downstream by a human/LLM with per-case approval.

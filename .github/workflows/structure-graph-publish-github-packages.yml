@@ -1,0 +1,71 @@
+name: Publish XRefKit.StructureGraph Tool (GitHub Packages)
+
+on:
+  push:
+    tags:
+      - 'structure-graph-v*.*.*-rc.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag name to publish (e.g., structure-graph-v1.0.0-rc.1)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  pack-and-publish-structure-graph:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Compute tool package version from tag
+        id: tool_ver
+        shell: bash
+        run: |
+          TAG_INPUT="${{ inputs.tag }}"
+          if [ -n "$TAG_INPUT" ]; then
+            REF="$TAG_INPUT"
+          else
+            REF="${GITHUB_REF_NAME}"
+          fi
+          VERSION="${REF#structure-graph-v}"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Tool Version=$VERSION"
+
+      - name: Restore structure_graph project
+        run: dotnet restore tools/structure_graph/StructureGraph.csproj
+
+      - name: Pack tool
+        run: dotnet pack tools/structure_graph/StructureGraph.csproj -c Release -o ./artifacts/structure-graph -p:PackageVersion=${{ steps.tool_ver.outputs.version }}
+
+      - name: "Smoke: installed tool prints usage"
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet tool install --tool-path ./_tool --add-source ./artifacts/structure-graph XRefKit.StructureGraph --version "${VERSION}"
+          # No-arg invocation prints usage to stderr and exits 2 by design.
+          OUTPUT=$(./_tool/dotnet-xrefkit-graph 2>&1 || true)
+          echo "$OUTPUT" | head -n 3
+          echo "$OUTPUT" | grep -q "usage: StructureGraph"
+
+      - name: Publish tool to GitHub Packages
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          dotnet nuget push "./artifacts/structure-graph/XRefKit.StructureGraph.*.nupkg" \
+            --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+            --api-key "$NUGET_AUTH_TOKEN" \
+            --skip-duplicate

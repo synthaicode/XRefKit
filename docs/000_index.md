@@ -89,6 +89,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Early XRefKit migration design](designs/072_early_xrefkit_migration_design.md#xid-19BC00401A1A)
 - [Deterministic flow control kernel design](designs/073_deterministic_flow_control_kernel_design.md#xid-4C7E9A2B1D63)
 - [Deterministic legacy Skill merge design](designs/076_deterministic_legacy_skill_merge_design.md#xid-8D5C74573895)
+- [Structure graph build guide (binary setup after a source-level copy)](guides/078_structure_graph_build_guide.md#xid-8B3E5D0A94C7)
 - [AI Organization Explainer Video Team operating model](operating-models/057_ai_organization_explainer_video_team_operating_model.md#xid-2E8F4A1C9B73)
 - [AI Organization Explainer Video Team usage guide](guides/051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842)
 
