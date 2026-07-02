@@ -74,5 +74,4 @@ flowchart TD
 
 - [planning_flow](../../skills/planning_flow/SKILL.md#xid-486C9EEE8A9D)
 - [design_flow](../../skills/design_flow/SKILL.md#xid-3D7A91B54210)
-- [management_table_control](../../skills/management_table_control/SKILL.md#xid-D6DDBAC513BF)
 

@@ -51,4 +51,3 @@ flowchart TD
 - [design_flow](../../skills/design_flow/SKILL.md#xid-3D7A91B54210)
 - [constraint_derivation_index](../../skills/packs/constraint-derivation/constraint_derivation_index/SKILL.md#xid-A103B5C7D901)
 - [test_flow](../../skills/test_flow/SKILL.md#xid-62F9F44D7711)
-- [management_table_control](../../skills/management_table_control/SKILL.md#xid-D6DDBAC513BF)

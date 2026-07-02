@@ -96,7 +96,7 @@ When this repository is organized with PMBOK thinking:
 
 - `Flow` corresponds to lifecycle control such as initiating, planning, executing, monitoring and controlling, and closing.
 - `Capability` corresponds to reusable professional abilities such as estimation, analysis, design, review, change assessment, and release preparation.
-- `Skill` corresponds to executable work units such as `planning_flow`, `design_flow`, `cab_review_flow`, or `management_table_control`.
+- `Skill` corresponds to executable work units such as `planning_flow`, `design_flow`, or `cab_review_flow`.
 - `Knowledge` corresponds to the evidence basis used during execution such as project rules, quality criteria, operational constraints, and domain facts.
 
 ## Example

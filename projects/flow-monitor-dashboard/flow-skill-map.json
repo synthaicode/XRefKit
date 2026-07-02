@@ -1,48 +1,38 @@
 {
   "investigation_workflow": [
     "investigation_flow",
-    "dotnet_change_analysis",
-    "management_table_control"
+    "dotnet_change_analysis"
   ],
   "estimation_workflow": [
-    "estimation_flow",
-    "management_table_control"
+    "estimation_flow"
   ],
   "requirements_workflow": [
-    "requirements_flow",
-    "management_table_control"
+    "requirements_flow"
   ],
   "planning_workflow": [
     "planning_flow",
-    "design_flow",
-    "management_table_control"
+    "design_flow"
   ],
   "design_workflow": [
     "design_flow",
-    "test_flow",
-    "management_table_control"
+    "test_flow"
   ],
   "test_workflow": [
     "test_flow",
     "implementation_flow",
-    "qa_gate_review",
-    "management_table_control"
+    "qa_gate_review"
   ],
   "manufacturing_workflow": [
     "implementation_flow",
     "csharp_review",
     "manufacturing_self_check",
-    "qa_gate_review",
-    "management_table_control"
+    "qa_gate_review"
   ],
   "release_planning_workflow": [
-    "release_planning_flow",
-    "management_table_control"
+    "release_planning_flow"
   ],
   "cab_workflow": [
     "cab_review_flow"
   ],
-  "closure_workflow": [
-    "management_table_control"
-  ]
+  "closure_workflow": []
 }

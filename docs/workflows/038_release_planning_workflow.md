@@ -68,7 +68,6 @@ flowchart TD
 ## Related Skills
 
 - [release_planning_flow](../../skills/release_planning_flow/SKILL.md#xid-D216FD3C726C)
-- [management_table_control](../../skills/management_table_control/SKILL.md#xid-D6DDBAC513BF)
 
 ## Required Knowledge
 

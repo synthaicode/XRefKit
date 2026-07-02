@@ -85,4 +85,3 @@ flowchart TD
 ## Related Skills
 
 - [investigation_flow](../../skills/investigation_flow/SKILL.md#xid-9C0115875B0C)
-- [management_table_control](../../skills/management_table_control/SKILL.md#xid-D6DDBAC513BF)

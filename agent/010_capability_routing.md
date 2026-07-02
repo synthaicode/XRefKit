@@ -182,4 +182,3 @@ If the task produces `unknown`, `out_of_scope`, or closure-state questions, load
 Then use the control path defined by:
 
 - [Closure workflow](../docs/workflows/034_closure_workflow.md#xid-8B31F02A4003)
-- `skills/management_table_control/SKILL.md`

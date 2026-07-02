@@ -90,4 +90,3 @@ flowchart TD
 - [test_flow](../../skills/test_flow/SKILL.md#xid-62F9F44D7711)
 - [implementation_flow](../../skills/implementation_flow/SKILL.md#xid-0ACF69A599D3)
 - [qa_gate_review](../../skills/qa_gate_review/SKILL.md#xid-09B250B1A8FB)
-- [management_table_control](../../skills/management_table_control/SKILL.md#xid-D6DDBAC513BF)

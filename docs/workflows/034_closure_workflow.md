@@ -74,5 +74,4 @@ flowchart TD
 ## Related
 
 - [System quality feedback loop](../quality/043_system_quality_feedback_loop.md#xid-8B31F02A4012)
-- [management_table_control](../../skills/management_table_control/SKILL.md#xid-D6DDBAC513BF)
 

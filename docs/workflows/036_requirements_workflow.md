@@ -51,5 +51,4 @@ flowchart TD
 ## Related Skills
 
 - [requirements_flow](../../skills/requirements_flow/SKILL.md#xid-2B70BBF7B7BB)
-- [management_table_control](../../skills/management_table_control/SKILL.md#xid-D6DDBAC513BF)
 

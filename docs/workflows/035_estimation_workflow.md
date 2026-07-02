@@ -57,5 +57,4 @@ flowchart TD
 ## Related Skills
 
 - [estimation_flow](../../skills/estimation_flow/SKILL.md#xid-FB65EC653F0F)
-- [management_table_control](../../skills/management_table_control/SKILL.md#xid-D6DDBAC513BF)
 

@@ -91,4 +91,7 @@ flowchart TD
 
 - [business_learning_interview](../../../skills/packs/business-intake/business_learning_interview/SKILL.md#xid-4D8E1A7C5B92)
 - [business_intake_scoping](../../../skills/packs/business-intake/business_intake_scoping/SKILL.md#xid-6F2A9C41E8B3)
-- [context_direction_guard](../../../skills/os/context_direction_guard/SKILL.md#xid-4D8C7F1A9E22)
+
+The context direction guard is base control applied inside every Skill run
+via `CAP-MGT-004` and the guard knowledge rules above; it is not a separate
+routable Skill.

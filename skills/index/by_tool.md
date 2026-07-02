@@ -3,73 +3,32 @@
 
 # Skills by Tool
 
-- xref:
-  - `import_skill` -> `../import_skill/meta.md`
-  - `knowledge_ontology_management` -> `../os/knowledge_ontology_management/meta.md`
-  - `xlsx_spec_traceability` -> `../xlsx_spec_traceability/meta.md`
-  - `pptx_spec_traceability` -> `../pptx_spec_traceability/meta.md`
-- .NET:
-  - `csharp_review` -> `../csharp_review/meta.md`
-  - `dotnet_change_analysis` -> `../dotnet_change_analysis/meta.md`
-  - `csharp_error_policy_extraction` -> `../csharp_error_policy_extraction/meta.md`
-  - `code_constraint_derivation` -> `../packs/constraint-derivation/code_constraint_derivation/meta.md`
-  - `cross_constraint_derivation` -> `../packs/constraint-derivation/cross_constraint_derivation/meta.md`
-  - `integration_scenario_derivation` -> `../packs/constraint-derivation/integration_scenario_derivation/meta.md`
-- external-config:
-  - `external_definition_change_analysis` -> `../external_definition_change_analysis/meta.md`
-- repository:
-  - `doc_ship` -> `../os/doc_ship/meta.md`
-  - `retro` -> `../os/retro/meta.md`
-  - `knowledge_ontology_management` -> `../os/knowledge_ontology_management/meta.md`
-  - `consultation_research_mapping` -> `../os/consultation_research_mapping/meta.md`
-  - `judgment_log` -> `../os/judgment_log/meta.md`
-  - `skill_flow_authoring` -> `../os/skill_flow_authoring/meta.md`
-  - `goal_mode` -> `../os/goal_mode/meta.md`
-  - `pptx_spec_traceability` -> `../pptx_spec_traceability/meta.md`
-  - `xlsx_spec_traceability` -> `../xlsx_spec_traceability/meta.md`
-  - `investigation_flow` -> `../investigation_flow/meta.md`
-  - `estimation_flow` -> `../estimation_flow/meta.md`
-  - `requirements_flow` -> `../requirements_flow/meta.md`
-  - `planning_flow` -> `../planning_flow/meta.md`
-  - `design_flow` -> `../design_flow/meta.md`
-  - `test_flow` -> `../test_flow/meta.md`
-  - `implementation_flow` -> `../implementation_flow/meta.md`
-  - `manufacturing_self_check` -> `../manufacturing_self_check/meta.md`
-  - `qa_gate_review` -> `../qa_gate_review/meta.md`
-  - `attribute_review` -> `../attribute_review/meta.md`
-  - `performance_review` -> `../performance_review/meta.md`
-  - `security_review` -> `../security_review/meta.md`
-  - `license_review` -> `../license_review/meta.md`
-  - `release_planning_flow` -> `../release_planning_flow/meta.md`
-  - `cab_review_flow` -> `../cab_review_flow/meta.md`
-  - `management_table_control` -> `../management_table_control/meta.md`
-  - `context_direction_guard` -> `../os/context_direction_guard/meta.md`
-  - `or_team_operations` -> `../or_team_operations/meta.md`
-  - `editorial_ops_index` -> `../packs/editorial-ops/editorial_ops_index/meta.md`
-  - `editorial_intake` -> `../packs/editorial-ops/editorial_intake/meta.md`
-  - `draft_authoring` -> `../packs/editorial-ops/draft_authoring/meta.md`
-  - `fact_review` -> `../packs/editorial-ops/fact_review/meta.md`
-  - `reader_experience_review` -> `../packs/editorial-ops/reader_experience_review/meta.md`
-  - `crosspost_release` -> `../packs/editorial-ops/crosspost_release/meta.md`
-- normalized-conversation:
-  - `conversation_topic_branch_mapping` -> `../packs/business-intake/conversation_topic_branch_mapping/meta.md`
-  - `decision_topology_analysis` -> `../packs/business-intake/decision_topology_analysis/meta.md`
-- specification:
-  - `constraint_derivation_index` -> `../packs/constraint-derivation/constraint_derivation_index/meta.md`
-  - `design_constraint_derivation` -> `../packs/constraint-derivation/design_constraint_derivation/meta.md`
-  - `ui_constraint_derivation` -> `../packs/constraint-derivation/ui_constraint_derivation/meta.md`
-  - `logic_constraint_derivation` -> `../packs/constraint-derivation/logic_constraint_derivation/meta.md`
-  - `integration_constraint_derivation` -> `../packs/constraint-derivation/integration_constraint_derivation/meta.md`
-  - `async_constraint_derivation` -> `../packs/constraint-derivation/async_constraint_derivation/meta.md`
-  - `auth_constraint_derivation` -> `../packs/constraint-derivation/auth_constraint_derivation/meta.md`
-  - `commonality_derivation` -> `../packs/constraint-derivation/commonality_derivation/meta.md`
-  - `code_constraint_derivation` -> `../packs/constraint-derivation/code_constraint_derivation/meta.md`
-  - `cross_constraint_derivation` -> `../packs/constraint-derivation/cross_constraint_derivation/meta.md`
-  - `integration_scenario_derivation` -> `../packs/constraint-derivation/integration_scenario_derivation/meta.md`
-- password-manager:
-  - `password_management` -> `../password_management/meta.md`
-- html-css-png:
-  - `marketing_slide_png` -> `../marketing_slide_png/meta.md`
-  - `marketing-explainer-video` -> `../marketing-explainer-video/meta.md`
-- video-tts:
-  - `marketing-explainer-video` -> `../marketing-explainer-video/meta.md`
+Categories list skill ids only. Resolve summaries and `meta.md` /
+`SKILL.md` paths from the canonical catalog
+[skills/_index.md](../_index.md#xid-8D91F66DDBB7).
+
+- xref: `import_skill`, `knowledge_ontology_management`,
+  `xlsx_spec_traceability`, `pptx_spec_traceability`
+- .NET: `csharp_review`, `dotnet_change_analysis`,
+  `csharp_error_policy_extraction`, `code_constraint_derivation`,
+  `cross_constraint_derivation`, `integration_scenario_derivation`
+- repository: `doc_ship`, `retro`, `knowledge_ontology_management`,
+  `consultation_research_mapping`, `judgment_log`, `skill_flow_authoring`,
+  `goal_mode`, `pptx_spec_traceability`, `xlsx_spec_traceability`,
+  `investigation_flow`, `estimation_flow`, `requirements_flow`,
+  `planning_flow`, `design_flow`, `test_flow`, `implementation_flow`,
+  `manufacturing_self_check`, `qa_gate_review`, `security_review`,
+  `release_planning_flow`, `cab_review_flow`,
+  `editorial_ops_index`,
+  `editorial_intake`, `draft_authoring`, `fact_review`,
+  `reader_experience_review`, `crosspost_release`
+- normalized-conversation: `conversation_topic_branch_mapping`,
+  `decision_topology_analysis`
+- specification: `constraint_derivation_index`,
+  `design_constraint_derivation`, `ui_constraint_derivation`,
+  `logic_constraint_derivation`, `integration_constraint_derivation`,
+  `async_constraint_derivation`, `auth_constraint_derivation`,
+  `commonality_derivation`, `code_constraint_derivation`,
+  `cross_constraint_derivation`, `integration_scenario_derivation`
+- html-css-png: `marketing_slide_png`, `marketing-explainer-video`
+- video-tts: `marketing-explainer-video`

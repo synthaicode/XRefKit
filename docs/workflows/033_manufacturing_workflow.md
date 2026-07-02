@@ -100,4 +100,3 @@ flowchart TD
 - [constraint_derivation_index](../../skills/packs/constraint-derivation/constraint_derivation_index/SKILL.md#xid-A103B5C7D901)
 - [manufacturing_self_check](../../skills/manufacturing_self_check/SKILL.md#xid-5D4E91B0D110)
 - [qa_gate_review](../../skills/qa_gate_review/SKILL.md#xid-09B250B1A8FB)
-- [management_table_control](../../skills/management_table_control/SKILL.md#xid-D6DDBAC513BF)
