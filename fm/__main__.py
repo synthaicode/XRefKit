@@ -250,7 +250,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "--label",
         action="append",
         default=[],
-        help="Node outcome label, consumed per step entered (repeatable, ordered)",
+        help=(
+            "Node outcome label, consumed per step entered (repeatable, ordered). "
+            "Use log:<run-log-path> to bridge a closed skill run's closure gate "
+            "into the label deterministically"
+        ),
     )
     p_flow_run.add_argument(
         "--answer",
@@ -260,6 +264,51 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_flow_run.add_argument("--max-steps", type=int, default=100, help="Loop guard (default: 100)")
     p_flow_run.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
+
+    p_flow_label = flow_sub.add_parser(
+        "label",
+        help="Derive the deterministic flow label from a closed skill run log (closure done -> Go, escalated -> uncertainty)",
+    )
+    p_flow_label.add_argument("--root", default=".", help="Project root (default: .)")
+    p_flow_label.add_argument("--log", required=True, help="Relative path to the skill run log")
+    p_flow_label.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
+
+    p_flow_start = flow_sub.add_parser(
+        "start",
+        help="Start a resumable flow: validate, persist the entry position to a state file",
+    )
+    p_flow_start.add_argument("--root", default=".", help="Project root (default: .)")
+    p_flow_start.add_argument("--flow", required=True, help="Relative path to the flow file")
+    p_flow_start.add_argument(
+        "--state",
+        default=None,
+        help=f"State file path (default: {'work/flows'}/<flow_id>.state.json)",
+    )
+    p_flow_start.add_argument("--force", action="store_true", help="Overwrite an existing state file")
+    p_flow_start.add_argument("--max-steps", type=int, default=100, help="Loop guard (default: 100)")
+    p_flow_start.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
+
+    p_flow_next = flow_sub.add_parser(
+        "next",
+        help="Report what a resumable flow needs now (current step, suspend question, or outcome)",
+    )
+    p_flow_next.add_argument("--root", default=".", help="Project root (default: .)")
+    p_flow_next.add_argument("--state", required=True, help="State file path")
+    p_flow_next.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
+
+    p_flow_advance = flow_sub.add_parser(
+        "advance",
+        help="Advance a resumable flow by one transition (--label <label|log:run-log> or --answer)",
+    )
+    p_flow_advance.add_argument("--root", default=".", help="Project root (default: .)")
+    p_flow_advance.add_argument("--state", required=True, help="State file path")
+    p_flow_advance.add_argument(
+        "--label",
+        default=None,
+        help="Node outcome label, or log:<run-log-path> to bridge a closed skill run",
+    )
+    p_flow_advance.add_argument("--answer", default=None, help="Human answer for a suspended flow")
+    p_flow_advance.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
 
     skill = subparsers.add_parser("skill", help="Validate skill metadata before loading")
     skill_sub = skill.add_subparsers(dest="skill_cmd", required=True)
@@ -507,6 +556,26 @@ def main(argv: list[str] | None = None) -> int:
             from fm.flowengine import cmd_flow_run
 
             return cmd_flow_run(args)
+
+        if args.flow_cmd == "label":
+            from fm.flowbridge import cmd_flow_label
+
+            return cmd_flow_label(args)
+
+        if args.flow_cmd == "start":
+            from fm.flowstate import cmd_flow_start
+
+            return cmd_flow_start(args)
+
+        if args.flow_cmd == "next":
+            from fm.flowstate import cmd_flow_next
+
+            return cmd_flow_next(args)
+
+        if args.flow_cmd == "advance":
+            from fm.flowstate import cmd_flow_advance
+
+            return cmd_flow_advance(args)
 
         from fm.flowdoctor import cmd_flow_doctor
 

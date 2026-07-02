@@ -86,6 +86,7 @@ steps:
     facets: [test_designer_persona, test_plan_policy]
     permission: { edit: false }
     capability: CAP-DSN-004
+    skill: test_flow
     acceptance:
       - { review: independent_quality_review }
     on:
@@ -104,6 +105,7 @@ steps:
     facets: [test_designer_persona, test_item_policy]
     permission: { edit: false }
     capability: CAP-DSN-002
+    skill: test_flow
     acceptance:
       - { review: independent_quality_review }
     on:
@@ -122,6 +124,7 @@ steps:
     facets: [test_designer_persona, integration_test_policy]
     permission: { edit: false }
     capability: CAP-DSN-003
+    skill: test_flow
     acceptance:
       - { review: independent_quality_review }
     on:
@@ -141,6 +144,7 @@ steps:
     facets: [manufacturing_reviewer_persona, method_suitability_policy]
     permission: { edit: false }
     capability: CAP-MFG-003
+    skill: test_flow
     on:
       Go: handoff_reviewed_test_package
       Hold:

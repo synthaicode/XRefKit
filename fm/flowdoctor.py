@@ -54,6 +54,11 @@ def _load_flow(path: Path) -> object:
 
 _CAP_ID_RE = re.compile(r"CAP-[A-Z]+-\d+")
 _CAP_CACHE: dict[str, set[str]] = {}
+# Capability reference paths embed the capability id in the filename
+# (`140_cap_qa_006_...md` -> CAP-QA-006), so the binding check stays a pure
+# function of file names without resolving relative paths.
+_CAP_FILENAME_RE = re.compile(r"_cap_([a-z]+)_(\d+)_")
+_SKILL_BINDING_CACHE: dict[str, dict[str, dict]] = {}
 
 
 def _capability_ids(root: Path) -> set[str]:
@@ -68,6 +73,37 @@ def _capability_ids(root: Path) -> set[str]:
             ids |= set(_CAP_ID_RE.findall(p.read_text(encoding="utf-8", errors="ignore")))
     _CAP_CACHE[key] = ids
     return ids
+
+
+def _skill_bindings(root: Path) -> dict[str, dict]:
+    """Map skill_id -> {meta, capability_ids} from skills/**/meta.md."""
+    key = str(root)
+    if key in _SKILL_BINDING_CACHE:
+        return _SKILL_BINDING_CACHE[key]
+    bindings: dict[str, dict] = {}
+    skills_dir = root / "skills"
+    if skills_dir.exists():
+        from fm.skillmeta import _parse_meta_lines
+
+        for meta in skills_dir.rglob("meta.md"):
+            parsed = _parse_meta_lines(meta.read_text(encoding="utf-8", errors="ignore"))
+            skill_id = parsed.get("skill_id")
+            if not isinstance(skill_id, str) or not skill_id:
+                continue
+            refs = parsed.get("capability_refs")
+            cap_ids: set[str] = set()
+            for ref in refs if isinstance(refs, list) else []:
+                if not isinstance(ref, str):
+                    continue
+                m = _CAP_FILENAME_RE.search(ref.replace("\\", "/"))
+                if m:
+                    cap_ids.add(f"CAP-{m.group(1).upper()}-{m.group(2)}")
+            bindings[skill_id] = {
+                "meta": meta.relative_to(root).as_posix(),
+                "capability_ids": cap_ids,
+            }
+    _SKILL_BINDING_CACHE[key] = bindings
+    return bindings
 
 
 FLOWS_DIR = "flows"
@@ -230,6 +266,30 @@ def validate_flow(path: Path) -> FlowDoctorResult:
                     f"{where}: capability '{c}' does not resolve to a declared capability "
                     "in capabilities/ (G3)"
                 )
+
+        # G4 — a declared skill binding must exist and own the step's capability.
+        bound_skill = sdef.get("skill")
+        if bound_skill is not None:
+            if not isinstance(bound_skill, str) or not bound_skill.strip():
+                errors.append(f"{where}: 'skill' must be a skill id string (G4)")
+            elif not has_cap:
+                errors.append(
+                    f"{where}: 'skill' binding requires a 'capability' declaration (G4)"
+                )
+            else:
+                binding = _skill_bindings(_project_root_for_flow(path)).get(bound_skill)
+                if binding is None:
+                    errors.append(
+                        f"{where}: bound skill '{bound_skill}' does not resolve to a "
+                        "skills/**/meta.md (G4)"
+                    )
+                else:
+                    for c in caprefs:
+                        if c not in binding["capability_ids"]:
+                            errors.append(
+                                f"{where}: bound skill '{bound_skill}' does not declare "
+                                f"capability '{c}' in its capability_refs (G4)"
+                            )
 
         # P1 / P2 — declaration completeness (warnings).
         if "facets" not in sdef:

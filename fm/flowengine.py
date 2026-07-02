@@ -19,6 +19,7 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from fm.flowbridge import resolve_label_arg
 from fm.flowdoctor import (
     FALLBACK_LABEL,
     TERMINALS,
@@ -58,6 +59,158 @@ def _mode(sdef: dict) -> str:
     return "route"  # ① pure routing / human edge
 
 
+# --- single-transition core -------------------------------------------------
+#
+# Both drivers share these pure functions: `run_flow` (one-shot, scripted
+# labels/answers) and the resumable state driver in fm/flowstate.py. A
+# position is a plain JSON-serializable dict:
+#
+#   {"kind": "step", "step": <name>}
+#   {"kind": "suspended", "suspend": {...}}   awaiting a human answer
+#   {"kind": "done", "outcome": COMPLETE|ABORT, "reason": <str>}
+#
+# `apply_label` / `apply_answer` return (new_position, events, error). On
+# error the position is unusable for further progress and the caller decides
+# whether to abort (run_flow) or leave persisted state unchanged (flowstate).
+
+
+def enter_event(steps_map: dict, step: str) -> tuple[dict | None, str | None]:
+    sdef = steps_map.get(step)
+    if not isinstance(sdef, dict):
+        return None, f"step '{step}' is not defined"
+    return {
+        "event": "enter",
+        "step": step,
+        "mode": _mode(sdef),
+        "facets": sdef.get("facets", []),
+        "permission": sdef.get("permission", {}),
+    }, None
+
+
+def initial_position(flow_data: dict) -> tuple[dict | None, str | None]:
+    steps_map = flow_data.get("steps") or {}
+    entry = flow_data.get("entry")
+    if entry not in steps_map:
+        return None, f"entry '{entry}' is not a known step"
+    return {"kind": "step", "step": entry}, None
+
+
+def apply_label(flow_data: dict, position: dict, label: str) -> tuple[dict, list[dict], str | None]:
+    """Consume one node label at a step position.
+
+    Suspension events (`suspend` / `global_handback`) are emitted when the
+    answer is applied, not here, so one-shot and resumable traces agree.
+    """
+    steps_map = flow_data.get("steps") or {}
+    global_handback = flow_data.get("global_handback") or {}
+    current = position.get("step")
+    sdef = steps_map.get(current)
+    if not isinstance(sdef, dict):
+        return position, [], f"step '{current}' is not defined"
+
+    # Cross-cutting uncertainty (or any flow-level handback) may fire from any
+    # step. It is matched by label name, not declared per step.
+    if label in global_handback:
+        hb = global_handback[label]
+        suspend = {
+            "source": "global_handback",
+            "name": label,
+            "to": hb.get("to"),
+            "ask": hb.get("ask"),
+            "resume": hb.get("resume"),
+            "step": current,
+        }
+        return {"kind": "suspended", "suspend": suspend}, [], None
+
+    on = sdef.get("on") or {}
+    fallback = label not in on
+    target = on.get(label, on.get(FALLBACK_LABEL))
+    events = [{"event": "emit", "step": current, "label": label, "fallback": fallback}]
+    if target is None:
+        return position, events, f"step '{current}' has no edge for '{label}' and no fallback"
+
+    if _is_terminal(target):
+        events.append({"event": "terminate", "outcome": target, "reason": "transition"})
+        return {"kind": "done", "outcome": target, "reason": "transition"}, events, None
+
+    if _is_human_edge(target):
+        kind, inner = _human_edge_inner(target)
+        suspend = {
+            "source": "edge",
+            "kind": kind,
+            "to": inner.get("to"),
+            "ask": inner.get("ask"),
+            "resume": inner.get("resume"),
+            "step": current,
+        }
+        return {"kind": "suspended", "suspend": suspend}, events, None
+
+    if target not in steps_map:
+        return position, events, f"target '{target}' from step '{current}' is not a known step"
+    entered, err = enter_event(steps_map, target)
+    if err:
+        return position, events, err
+    events.append(entered)
+    return {"kind": "step", "step": target}, events, None
+
+
+def apply_answer(flow_data: dict, position: dict, answer: str) -> tuple[dict, list[dict], str | None]:
+    """Resolve a suspended position with a human answer."""
+    steps_map = flow_data.get("steps") or {}
+    suspend = position.get("suspend") or {}
+    resume = suspend.get("resume")
+    target = resume.get(answer) if isinstance(resume, dict) else resume
+
+    if suspend.get("source") == "global_handback":
+        events = [
+            {
+                "event": "global_handback",
+                "name": suspend.get("name"),
+                "to": suspend.get("to"),
+                "ask": suspend.get("ask"),
+                "answer": answer,
+                "resume": target,
+            }
+        ]
+        if _is_terminal(target):
+            events.append({"event": "terminate", "outcome": target, "reason": "global_handback"})
+            return {"kind": "done", "outcome": target, "reason": "global_handback"}, events, None
+        if target not in steps_map:
+            events.append({"event": "terminate", "outcome": "ABORT", "reason": "invalid_global_resume"})
+            return {"kind": "done", "outcome": "ABORT", "reason": "invalid_global_resume"}, events, None
+        entered, err = enter_event(steps_map, target)
+        if err:
+            return position, events, err
+        events.append(entered)
+        return {"kind": "step", "step": target}, events, None
+
+    events = [
+        {
+            "event": "suspend",
+            "kind": suspend.get("kind"),
+            "step": suspend.get("step"),
+            "to": suspend.get("to"),
+            "ask": suspend.get("ask"),
+            "answer": answer,
+            "resume": target,
+        }
+    ]
+    if target is None:
+        events.append({"event": "terminate", "outcome": "ABORT", "reason": "invalid_resume_answer"})
+        return {"kind": "done", "outcome": "ABORT", "reason": "invalid_resume_answer"}, events, None
+    if _is_terminal(target):
+        events.append({"event": "terminate", "outcome": target, "reason": "resume"})
+        return {"kind": "done", "outcome": target, "reason": "resume"}, events, None
+    if target not in steps_map:
+        events.append({"event": "terminate", "outcome": "ABORT", "reason": "invalid_resume_target"})
+        return {"kind": "done", "outcome": "ABORT", "reason": "invalid_resume_target"}, events, None
+    entered, err = enter_event(steps_map, target)
+    if err:
+        return position, events, err
+    events.append(entered)
+    return {"kind": "step", "step": target}, events, None
+
+
 def run_flow(flow_data: dict, *, labels, answers, max_steps: int = 100) -> EngineResult:
     """Drive a (validated) deterministic flow with scripted node outcomes.
 
@@ -67,7 +220,6 @@ def run_flow(flow_data: dict, *, labels, answers, max_steps: int = 100) -> Engin
     """
     trace: list[dict] = []
     steps_map = flow_data.get("steps") or {}
-    global_handback = flow_data.get("global_handback") or {}
     flow_id = flow_data.get("flow_id")
     flow_id_s = str(flow_id) if flow_id else None
     label_q = list(labels)
@@ -78,101 +230,48 @@ def run_flow(flow_data: dict, *, labels, answers, max_steps: int = 100) -> Engin
         trace.append({"event": "error", "message": msg})
         return EngineResult(flow_id_s, None, False, executed, trace, msg)
 
-    def terminate(outcome: str, reason: str) -> EngineResult:
-        trace.append({"event": "terminate", "outcome": outcome, "reason": reason})
-        return EngineResult(flow_id_s, outcome, True, executed, trace)
-
-    current = flow_data.get("entry")
-    if current not in steps_map:
-        return fail(f"entry '{current}' is not a known step")
+    position, err = initial_position(flow_data)
+    if err:
+        return fail(err)
 
     while True:
-        if executed >= max_steps:
-            return fail(f"max_steps ({max_steps}) exceeded")
-        sdef = steps_map.get(current)
-        if not isinstance(sdef, dict):
-            return fail(f"step '{current}' is not defined")
-        executed += 1
-        trace.append(
-            {
-                "event": "enter",
-                "step": current,
-                "mode": _mode(sdef),
-                "facets": sdef.get("facets", []),
-                "permission": sdef.get("permission", {}),
-            }
-        )
+        if position["kind"] == "done":
+            return EngineResult(flow_id_s, position["outcome"], True, executed, trace)
 
-        if not label_q:
-            return fail(f"no node label available for step '{current}'")
-        label = label_q.pop(0)
-
-        # Cross-cutting uncertainty (or any flow-level handback) may fire from any
-        # step. It is matched by label name, not declared per step.
-        if label in global_handback:
-            hb = global_handback[label]
-            if not answer_q:
-                return fail(f"no human answer for global_handback '{label}'")
-            answer = answer_q.pop(0)
-            resume = hb.get("resume")
-            target = resume.get(answer) if isinstance(resume, dict) else resume
-            trace.append(
-                {
-                    "event": "global_handback",
-                    "name": label,
-                    "to": hb.get("to"),
-                    "ask": hb.get("ask"),
-                    "answer": answer,
-                    "resume": target,
-                }
-            )
-            if _is_terminal(target):
-                return terminate(target, "global_handback")
-            if target not in steps_map:
-                return terminate("ABORT", "invalid_global_resume")
-            current = target
+        if position["kind"] == "step":
+            if executed >= max_steps:
+                return fail(f"max_steps ({max_steps}) exceeded")
+            entered, err = enter_event(steps_map, position["step"])
+            if err:
+                return fail(err)
+            executed += 1
+            trace.append(entered)
+            if not label_q:
+                return fail(f"no node label available for step '{position['step']}'")
+            label = label_q.pop(0)
+            position, events, err = apply_label(flow_data, position, label)
+            trace.extend(events)
+            if err:
+                return fail(err)
+            # Entering the next step is traced by this loop, not by the core,
+            # so the max_steps guard stays in one place.
+            if trace and trace[-1].get("event") == "enter":
+                trace.pop()
             continue
 
-        on = sdef.get("on") or {}
-        fallback = label not in on
-        target = on.get(label, on.get(FALLBACK_LABEL))
-        trace.append({"event": "emit", "step": current, "label": label, "fallback": fallback})
-        if target is None:
-            return fail(f"step '{current}' has no edge for '{label}' and no fallback")
-
-        if _is_terminal(target):
-            return terminate(target, "transition")
-
-        if _is_human_edge(target):
-            kind, inner = _human_edge_inner(target)
-            if not answer_q:
-                return fail(f"no human answer for {kind} at step '{current}'")
-            answer = answer_q.pop(0)
-            resume = inner.get("resume")
-            rt = resume.get(answer) if isinstance(resume, dict) else resume
-            trace.append(
-                {
-                    "event": "suspend",
-                    "kind": kind,
-                    "step": current,
-                    "to": inner.get("to"),
-                    "ask": inner.get("ask"),
-                    "answer": answer,
-                    "resume": rt,
-                }
-            )
-            if rt is None:
-                return terminate("ABORT", "invalid_resume_answer")
-            if _is_terminal(rt):
-                return terminate(rt, "resume")
-            if rt not in steps_map:
-                return terminate("ABORT", "invalid_resume_target")
-            current = rt
-            continue
-
-        if target not in steps_map:
-            return fail(f"target '{target}' from step '{current}' is not a known step")
-        current = target
+        # suspended
+        suspend = position.get("suspend") or {}
+        if not answer_q:
+            if suspend.get("source") == "global_handback":
+                return fail(f"no human answer for global_handback '{suspend.get('name')}'")
+            return fail(f"no human answer for {suspend.get('kind')} at step '{suspend.get('step')}'")
+        answer = answer_q.pop(0)
+        position, events, err = apply_answer(flow_data, position, answer)
+        trace.extend(events)
+        if err:
+            return fail(err)
+        if trace and trace[-1].get("event") == "enter":
+            trace.pop()
 
 
 def _render_trace(result: EngineResult) -> list[str]:
@@ -210,10 +309,24 @@ def cmd_flow_run(args) -> int:
             print(f"  error: {e}")
         return 1
 
+    # Labels may be literal (`Go`) or bridged from a closed skill run log
+    # (`log:<run-log-path>`); a run that has not passed the close gate must
+    # not drive a transition, so a refused bridge refuses the whole run.
+    labels: list[str] = []
+    for raw in args.label or []:
+        label, bridge = resolve_label_arg(raw, root)
+        if label is None:
+            print(f"label '{raw}' could not be bridged; refusing to run")
+            print(f"  error: {bridge.error}")
+            return 1
+        if bridge is not None:
+            print(f"bridged {bridge.run_log}: closure={bridge.closure} -> label={label}")
+        labels.append(label)
+
     data = _load_flow(path)
     result = run_flow(
         data,
-        labels=args.label or [],
+        labels=labels,
         answers=args.answer or [],
         max_steps=args.max_steps,
     )
