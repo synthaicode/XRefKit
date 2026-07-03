@@ -165,7 +165,11 @@ Existing tools remain valid:
 The first MCP-side implementation should add zone awareness behind these tools
 before introducing new public tools.
 
-Optional follow-up tools may be added when client behavior needs them:
+Optional follow-up tools may be added when client behavior needs them. The
+first implementation keeps zone inspection internal and exposes compact zone
+state through `get_startup_context.repository_zones`; a separate
+`get_repository_zones` public tool is deferred until a client workflow needs the
+full interpreted model.
 
 - `get_repository_zones`: return the interpreted `ownership.yaml`.
 - `list_packs`: return pack ids, owners, locality, and root paths.
@@ -238,13 +242,17 @@ MCP-side validation should cover:
 
 Each phase should keep existing MCP tools backward compatible.
 
-## Open Decisions
+## Decisions
 
-1. Whether `get_repository_zones` is needed as a public tool or whether zone
-   metadata inside existing catalog responses is sufficient.
-2. Whether local pack shadowing should be enabled by default or require an
-   explicit server flag.
-3. The exact conflict response schema for duplicate XIDs and duplicate Skill
-   identifiers.
-4. Whether `packs/local/*` should be included in `catalog_version` for all local
-   clients or only when local packs are enabled.
+1. `get_repository_zones` is not public in the first implementation. Existing
+   startup/catalog responses carry enough zone metadata for current clients.
+2. Local pack discovery is enabled by default when `ownership.yaml` declares
+   `packs/local/` with `catalog: true`.
+3. Duplicate XID resolution fails closed with:
+   `{ok:false, error:"xid_conflict", xid, message,
+   matches:[{path, content_hash, zone_metadata}]}`.
+4. Duplicate Skill IDs are reported in `list_skills[].zone_metadata` with
+   `identity_conflict`, `conflict_key`, and `conflict_paths`; body materializing
+   calls fail closed until the conflict is resolved.
+5. `packs/local/*` catalog content is included in `catalog_version` for the
+   local repository instance when local packs are catalog-enabled.

@@ -12,6 +12,14 @@ from fm.xref import XrefConfig
 
 OWNERSHIP = """\
 zones:
+  - id: local-packs
+    owner: local
+    paths:
+      - packs/local/
+    catalog: true
+    distribution: false
+    base_sync: false
+    shadowing: true
   - id: shared-packs
     owner: pack
     paths:
@@ -100,6 +108,38 @@ class FmMultiRootTests(unittest.TestCase):
             manifests = [path.relative_to(root).as_posix() for path in _discover_manifests(root)]
 
             self.assertEqual(["packs/business/pack.md"], manifests)
+
+    def test_skill_index_generation_includes_local_pack_by_default(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write(root / "ownership.yaml", OWNERSHIP)
+            _write(
+                root / "skills" / "_index.md",
+                "# Skills Index\n\nHand-written routing.\n\n## Skills (compact)\n\nold\n",
+            )
+            _write(
+                root / "packs" / "local" / "acme" / "skills" / "local_skill" / "meta.md",
+                "# Skill Meta: Local\n\n"
+                "- skill_id: `local_skill`\n"
+                "- summary: local pack skill\n"
+                "- skill_doc: `./SKILL.md`\n"
+                "- maturity: `draft`\n",
+            )
+            _write(
+                root / "packs" / "local" / "acme" / "skills" / "local_skill" / "SKILL.md",
+                "# Local Skill\n",
+            )
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                rc = main(["skill", "index", "--root", str(root)])
+
+            output = stdout.getvalue()
+            self.assertEqual(0, rc)
+            self.assertIn("Hand-written routing.", output)
+            self.assertIn("`local_skill`", output)
+            self.assertIn("packs/local/acme/skills/local_skill/meta.md", output)
+            self.assertIn("catalog-visible locally but not distributable", output)
 
 
 if __name__ == "__main__":

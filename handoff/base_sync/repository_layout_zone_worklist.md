@@ -147,7 +147,7 @@ python -m fm xref fix
 
 ## Open Items
 
-- Decide whether `packs/local/*` appears in local fm catalogs by default or only
-  under an explicit local-pack flag.
-- Decide whether generated `skills/_index.md` belongs in the same branch or a
-  later phase.
+- Decided: `packs/local/*` appears in local fm catalogs by default when
+  `ownership.yaml` marks the local-pack zone as `catalog: true`.
+- Decided: generated `skills/_index.md` belongs in this branch. The generated
+  compact Skill list is produced by `python -m fm skill index --write`.

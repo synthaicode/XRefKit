@@ -337,6 +337,14 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_list.add_argument("--root", default=".", help="Project root (default: .)")
     p_skill_list.add_argument("--json", action="store_true", help="Emit JSON")
 
+    p_skill_index = skill_sub.add_parser(
+        "index",
+        help="Generate skills/_index.md from catalog-visible skill metadata",
+    )
+    p_skill_index.add_argument("--root", default=".", help="Project root (default: .)")
+    p_skill_index.add_argument("--write", action="store_true", help="Write skills/_index.md instead of printing")
+    p_skill_index.add_argument("--json", action="store_true", help="Emit JSON")
+
     p_skill_merge_plan = skill_sub.add_parser(
         "merge-plan",
         help="Create a deterministic report for importing an older Skill asset",
@@ -500,6 +508,10 @@ def main(argv: list[str] | None = None) -> int:
             from fm.skillmeta import cmd_skill_list
 
             return cmd_skill_list(args)
+        if args.skill_cmd == "index":
+            from fm.skillmeta import cmd_skill_index
+
+            return cmd_skill_index(args)
         if args.skill_cmd == "merge-plan":
             from fm.skillmeta import cmd_skill_merge_plan
 
