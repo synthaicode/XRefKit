@@ -75,8 +75,6 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 
 ## Operating Models, Guides, And Designs
 
-- [OR Team operating model](operating-models/048_or_team_operating_model.md#xid-1D7A8E2C5F10)
-- [OR Team usage guide](guides/049_or_team_usage_guide.md#xid-4E2F91A6B8C1)
 - [Codex MCP job inbox design](designs/050_codex_mcp_job_inbox_design.md#xid-77BCEAA247E3)
 - [AI agent OS reorganization design](designs/063_ai_agent_os_reorganization_design.md#xid-22CAE81A6D3E)
 - [OS utility and business skill classification design](designs/064_os_utility_and_business_skill_classification_design.md#xid-ECF29DC3E268)
@@ -93,8 +91,9 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Structure graph build guide (binary setup after a source-level copy)](guides/078_structure_graph_build_guide.md#xid-8B3E5D0A94C7)
 - [Repository layout zones design (ownership-explicit, pack-centric)](designs/080_repository_layout_zones_design.md#xid-5C1F8A2D7E43)
 - [Repository layout MCP catalog design](designs/081_repository_layout_mcp_catalog_design.md#xid-C8B7A1E940D2)
-- [AI Organization Explainer Video Team operating model](operating-models/057_ai_organization_explainer_video_team_operating_model.md#xid-2E8F4A1C9B73)
-- [AI Organization Explainer Video Team usage guide](guides/051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842)
+- [Client authoring and unified supply design](designs/082_client_authoring_and_unified_supply_design.md)
+- [Skill-centric architecture consolidation](designs/083_skill_centric_architecture_consolidation.md)
+- [Skill-centric MCP catalog design](designs/084_skill_centric_mcp_catalog_design.md)
 
 ## Common links
 

@@ -132,7 +132,6 @@ For the target full-auto design, see [Codex goal mode auto resume design](../des
 
 ## Related
 
-- [OR Team usage guide](049_or_team_usage_guide.md#xid-4E2F91A6B8C1)
 - [Codex MCP job inbox design](../designs/050_codex_mcp_job_inbox_design.md#xid-77BCEAA247E3)
 - [Codex goal mode auto resume design](../designs/070_codex_goal_mode_auto_resume_design.md#xid-6F4D2A18C9E7)
 - [Skill operating contract](../core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61)

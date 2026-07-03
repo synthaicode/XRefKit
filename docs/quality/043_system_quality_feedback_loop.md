@@ -195,4 +195,3 @@ A structural issue should move to `closed` in the canonical register only when:
 
 - [Group, quality, and feedback boundaries](../reference/021_group_quality_and_feedback_boundaries.md#xid-8E5D31A4C672)
 - [Work record types](../reference/019_work_record_types.md#xid-4F8C21B7D4A2)
-- [OR Team operating model](../operating-models/048_or_team_operating_model.md#xid-1D7A8E2C5F10)

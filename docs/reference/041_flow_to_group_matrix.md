@@ -51,4 +51,3 @@ For those, see [Group definitions](040_group_definitions.md#xid-8B31F02A4009), [
 - Normal work moves feed-forward across workflows.
 - Structural quality degradation moves backward through the [System quality feedback loop](../quality/043_system_quality_feedback_loop.md#xid-8B31F02A4012).
 - That loop is triggered mainly from CAB rejection patterns and closure leak patterns.
-- Cross-group operating-state optimization is defined in the [OR Team operating model](../operating-models/048_or_team_operating_model.md#xid-1D7A8E2C5F10).

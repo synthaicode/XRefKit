@@ -33,8 +33,11 @@ forces make this a problem now:
    branches and their sync automation.
 5. **Invisible escape hatches.** `skills_private/` and
    `knowledge_private/` are gitignored, so locally important content is
-   invisible to governance, history, and distribution — the local-pack
-   model supersedes them.
+   invisible to the governance model and to the MCP catalog — the
+   local-pack model supersedes them by giving local content a single
+   declared namespace (zone metadata, XID identity, MCP cataloging) even
+   while it stays git-untracked. See
+   [Client authoring and unified supply design](082_client_authoring_and_unified_supply_design.md).
 
 ## Non-Goals
 
@@ -123,7 +126,11 @@ content by XID / skill_id with `forked_from` provenance).
 ### 5. Deprecations and hygiene
 
 - `skills_private/`, `knowledge_private/`, `sources_private/` are
-  deprecated in favor of `packs/local/` (visible, versioned, governed).
+  deprecated in favor of `packs/local/` — a single git-untracked namespace
+  that is catalog-visible to the local MCP server and governed by
+  `ownership.yaml` (zone metadata, XID identity). Locality guarantee and
+  the `.gitignore` decision are settled in
+  [Client authoring and unified supply design](082_client_authoring_and_unified_supply_design.md).
 - `skills/_index.md` becomes generated (`fm` subcommand, multi-root
   aware), removing the last hand-maintained catalog.
 - Stray working files at the repository root (for example

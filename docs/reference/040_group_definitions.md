@@ -421,6 +421,3 @@ the XRefKit AI organization model in an understandable marketing video.
 - [Capability layering](031_capability_layering.md#xid-8D50A972BA9F)
 - [Closure workflow](../workflows/034_closure_workflow.md#xid-8B31F02A4003)
 - [CAB workflow](../workflows/039_cab_workflow.md#xid-8B31F02A4008)
-- [OR Team operating model](../operating-models/048_or_team_operating_model.md#xid-1D7A8E2C5F10)
-- [AI Organization Explainer Video Team operating model](../operating-models/057_ai_organization_explainer_video_team_operating_model.md#xid-2E8F4A1C9B73)
-- [AI Organization Explainer Video Team usage guide](../guides/051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842)
