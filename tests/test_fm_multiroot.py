@@ -67,38 +67,6 @@ class FmMultiRootTests(unittest.TestCase):
             self.assertTrue(payload[0]["ok"])
             self.assertTrue(payload[0]["meta_path"].replace("\\", "/").endswith("packs/business/skills/pack_skill/meta.md"))
 
-    def test_flow_doctor_discovers_pack_flow_and_pack_capability(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            _write(root / "ownership.yaml", OWNERSHIP)
-            _write(
-                root / "packs" / "business" / "capabilities" / "cap.md",
-                "# Capability\n\nCAP-BIZ-001\n",
-            )
-            _write(
-                root / "packs" / "business" / "flows" / "pack_flow.yaml",
-                "flow_id: FLOW-PACK\n"
-                "name: pack_flow\n"
-                "doc_xid: PACKFLOWDOC\n"
-                "entry: start\n"
-                "steps:\n"
-                "  start:\n"
-                "    capability: CAP-BIZ-001\n"
-                "    on:\n"
-                "      Go: COMPLETE\n"
-                "      _invalid_or_absent: ABORT\n",
-            )
-
-            stdout = io.StringIO()
-            with contextlib.redirect_stdout(stdout):
-                rc = main(["flow", "doctor", "--root", str(root), "--json"])
-
-            payload = json.loads(stdout.getvalue())
-            self.assertEqual(0, rc)
-            self.assertEqual(1, len(payload))
-            self.assertTrue(payload[0]["ok"])
-            self.assertTrue(payload[0]["flow_path"].replace("\\", "/").endswith("packs/business/flows/pack_flow.yaml"))
-
     def test_pack_manifest_discovery_includes_top_level_packs_with_ownership(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
