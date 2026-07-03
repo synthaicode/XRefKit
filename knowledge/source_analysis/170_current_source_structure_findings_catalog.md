@@ -45,9 +45,9 @@ before design closure.
 
 ## Current Entries
 
-| Finding | Target identity | Analysis kind | Current status | Coverage summary | Unresolved verification |
-| --- | --- | --- | --- | --- | --- |
-| [Maverick.NET Friendbook XML-command structure findings](171_maverick_net_friendbook_structure_findings.md#xid-B4F8D2A91C03) | Maverick.NET 1.0 Friendbook sample | `dotnet_structure`, `custom_framework_xml_routing` | Current for the 2026-07-03 source snapshot | Structure pivots, route/usecase traces, implicit runtime bindings, and prohibited changes are recorded. | Build/runtime execution, browser verification, security assessment, and C# defect review remain out of scope. |
+| Finding XID | Title | Target identity | Analysis kind | Current status | Coverage summary | Unresolved verification |
+| --- | --- | --- | --- | --- | --- | --- |
+| `B4F8D2A91C03` | Maverick.NET Friendbook XML-command structure findings | Maverick.NET 1.0 Friendbook sample | `dotnet_structure`, `custom_framework_xml_routing` | Current for the 2026-07-03 source snapshot | Structure pivots, route/usecase traces, implicit runtime bindings, and prohibited changes are recorded. | Build/runtime execution, browser verification, security assessment, and C# defect review remain out of scope. |
 
 ## Knowledge Relations
 
@@ -57,6 +57,6 @@ before design closure.
 ## Sources
 
 - source_type: repository_knowledge
-- source_path: 171_maverick_net_friendbook_structure_findings.md
+- source_xid: B4F8D2A91C03
 - source_locator: section=Status,Structure Pivots,Route / Usecase Trace Coverage,Implicit Runtime Bindings,Prohibited Change Rules
 - extracted_at: 2026-07-03

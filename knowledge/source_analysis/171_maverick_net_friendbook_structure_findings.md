@@ -3,6 +3,12 @@
 
 # Maverick.NET Friendbook XML-command Structure Findings
 
+This finding records the current structure of the Maverick.NET 1.0 Friendbook
+sample as an XML-command-routed .NET Framework-era application. It is used as a
+current source-structure finding for Skill evaluation and design-time routing
+where XML command maps, controller class strings, view/result tokens, and
+request field names are runtime binding authorities.
+
 ## Status
 
 | Field | Value |
@@ -73,7 +79,6 @@
 
 ## Knowledge Relations
 
-- part_of: [Current Source Structure Findings Catalog](170_current_source_structure_findings_catalog.md#xid-A9E742B1C6D0)
 - depends_on: [Dotnet change analysis viewpoints](120_dotnet_change_analysis_viewpoints.md#xid-2E7B5A1FD201)
 
 ## Sources

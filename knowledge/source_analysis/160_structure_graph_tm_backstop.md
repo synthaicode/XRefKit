@@ -190,13 +190,12 @@ lists and filters it on demand.
 > for the grep-weak semantic inventories (attribute values, DI lifetimes, etc.). The
 > paragraph below describes the original (now non-default) entry point.
 
-The originally proposed entry point was to back the **Where** output of
-[dotnet_change_analysis](../../skills/dotnet_change_analysis/SKILL.md#xid-D94E3B3A7C11)
-— its impacted boundary list — with graph traversal candidate generation instead
-of LLM-inferred structure. The LLM is not the primary candidate generator; it
-explains candidates, records exclusion reasons, proposes additional traversal
-seeds (including dynamic edges per principle 6), and connects the curated cut to
-the change design.
+The originally proposed entry point was to back the **Where** output of the
+`dotnet_change_analysis` Skill — its impacted boundary list — with graph
+traversal candidate generation instead of LLM-inferred structure. The LLM is
+not the primary candidate generator; it explains candidates, records exclusion
+reasons, proposes additional traversal seeds (including dynamic edges per
+principle 6), and connects the curated cut to the change design.
 
 ### Output into the Where section
 
