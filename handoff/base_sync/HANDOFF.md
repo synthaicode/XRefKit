@@ -16,8 +16,18 @@
 | `xrefkit_sync_worklist.py` | 差分調査ツール(stdlib のみ、読み取り専用) |
 | `base-history-manifest.json` | 基盤ブランチ `codex/sync-main-without-mp4-action` の全履歴(XID→ハッシュ) |
 | `export_base_manifest.py` | 参考: マニフェストの生成元(基盤側で実行するもの。ここでは使わない) |
+| `../../ownership.yaml` | パス所有権と同期対象 zone の宣言 |
 
 必要環境: Python 3.11+。git は不要。
+
+## Zone 前提
+
+この同期は `ownership.yaml` の `base_sync: true` zone だけを通常の吸収対象にする。
+
+- `packs/local/` はローカル専用 zone。基盤同期の作業項目として扱わない
+- `packs/<pack>/` は shared pack zone。基盤側で追加・移動された内容は XID ベースで追跡する
+- `site/`, `human-docs/`, `work/`, `observations/` は通常の基盤吸収対象ではない
+- `handoff/` は delivery zone。同期手順とツール自体を配布するため、基盤同期対象に含める
 
 追加で必要な入力:
 - **ローカルコピー**のパス(このリポジトリを基に改変してきたフォルダ)
@@ -51,7 +61,7 @@ python xrefkit_sync_worklist.py `
 | `unchanged` / `converged` / `converged_addition` / `mutually_deleted` | 何もしない。`resolved` にする |
 | `base_only_advanced` | ローカルは触っていない文書。`--base-tree` の該当ファイル(`head_path`)をローカルの該当パスへ上書きコピー |
 | `base_new` | 基盤の新規文書。`--base-tree` からローカルの同じ相対パスへコピー |
-| `moved_in_base` | 内容同一・基盤側で移動。ローカルのファイルを `head_path` の位置へ移動(参照はXIDベースなので壊れない) |
+| `moved_in_base` | 内容同一・基盤側で移動。ローカルのファイルを `head_path` の位置へ移動(参照はXIDベースなので壊れない)。shared pack への移動もこの分類で扱う |
 | `base_deleted_local_unchanged` | ローカルでも削除 |
 
 ### 2-2. 判断を伴うもの(あなたの裁量で処理し、理由を記録する)

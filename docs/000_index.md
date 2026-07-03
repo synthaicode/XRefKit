@@ -91,6 +91,8 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Deterministic flow control kernel design](designs/073_deterministic_flow_control_kernel_design.md#xid-4C7E9A2B1D63)
 - [Deterministic legacy Skill merge design](designs/076_deterministic_legacy_skill_merge_design.md#xid-8D5C74573895)
 - [Structure graph build guide (binary setup after a source-level copy)](guides/078_structure_graph_build_guide.md#xid-8B3E5D0A94C7)
+- [Repository layout zones design (ownership-explicit, pack-centric)](designs/080_repository_layout_zones_design.md#xid-5C1F8A2D7E43)
+- [Repository layout MCP catalog design](designs/081_repository_layout_mcp_catalog_design.md#xid-C8B7A1E940D2)
 - [AI Organization Explainer Video Team operating model](operating-models/057_ai_organization_explainer_video_team_operating_model.md#xid-2E8F4A1C9B73)
 - [AI Organization Explainer Video Team usage guide](guides/051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842)
 

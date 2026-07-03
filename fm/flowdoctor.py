@@ -19,6 +19,8 @@ from pathlib import Path
 
 import yaml
 
+from fm.ownership import content_files, load_optional_ownership
+
 
 # The flow field is literally named `on`. Under YAML 1.1 (PyYAML's default),
 # bare `on` / `off` / `yes` / `no` parse as booleans, so `on:` would silently
@@ -67,10 +69,9 @@ def _capability_ids(root: Path) -> set[str]:
     if key in _CAP_CACHE:
         return _CAP_CACHE[key]
     ids: set[str] = set()
-    capdir = root / "capabilities"
-    if capdir.exists():
-        for p in capdir.rglob("*.md"):
-            ids |= set(_CAP_ID_RE.findall(p.read_text(encoding="utf-8", errors="ignore")))
+    ownership = load_optional_ownership(root)
+    for p in content_files(root, "capabilities", "*.md", ownership=ownership):
+        ids |= set(_CAP_ID_RE.findall(p.read_text(encoding="utf-8", errors="ignore")))
     _CAP_CACHE[key] = ids
     return ids
 
@@ -81,27 +82,26 @@ def _skill_bindings(root: Path) -> dict[str, dict]:
     if key in _SKILL_BINDING_CACHE:
         return _SKILL_BINDING_CACHE[key]
     bindings: dict[str, dict] = {}
-    skills_dir = root / "skills"
-    if skills_dir.exists():
-        from fm.skillmeta import _parse_meta_lines
+    ownership = load_optional_ownership(root)
+    from fm.skillmeta import _parse_meta_lines
 
-        for meta in skills_dir.rglob("meta.md"):
-            parsed = _parse_meta_lines(meta.read_text(encoding="utf-8", errors="ignore"))
-            skill_id = parsed.get("skill_id")
-            if not isinstance(skill_id, str) or not skill_id:
+    for meta in content_files(root, "skills", "meta.md", ownership=ownership):
+        parsed = _parse_meta_lines(meta.read_text(encoding="utf-8", errors="ignore"))
+        skill_id = parsed.get("skill_id")
+        if not isinstance(skill_id, str) or not skill_id:
+            continue
+        refs = parsed.get("capability_refs")
+        cap_ids: set[str] = set()
+        for ref in refs if isinstance(refs, list) else []:
+            if not isinstance(ref, str):
                 continue
-            refs = parsed.get("capability_refs")
-            cap_ids: set[str] = set()
-            for ref in refs if isinstance(refs, list) else []:
-                if not isinstance(ref, str):
-                    continue
-                m = _CAP_FILENAME_RE.search(ref.replace("\\", "/"))
-                if m:
-                    cap_ids.add(f"CAP-{m.group(1).upper()}-{m.group(2)}")
-            bindings[skill_id] = {
-                "meta": meta.relative_to(root).as_posix(),
-                "capability_ids": cap_ids,
-            }
+            m = _CAP_FILENAME_RE.search(ref.replace("\\", "/"))
+            if m:
+                cap_ids.add(f"CAP-{m.group(1).upper()}-{m.group(2)}")
+        bindings[skill_id] = {
+            "meta": meta.relative_to(root).as_posix(),
+            "capability_ids": cap_ids,
+        }
     _SKILL_BINDING_CACHE[key] = bindings
     return bindings
 
@@ -444,10 +444,11 @@ def validate_flow(path: Path) -> FlowDoctorResult:
 
 
 def _discover_flows(root: Path) -> list[Path]:
-    base = root / FLOWS_DIR
-    if not base.exists():
-        return []
-    return sorted(base.rglob("*.yaml")) + sorted(base.rglob("*.yml"))
+    ownership = load_optional_ownership(root)
+    return [
+        *content_files(root, FLOWS_DIR, "*.yaml", ownership=ownership),
+        *content_files(root, FLOWS_DIR, "*.yml", ownership=ownership),
+    ]
 
 
 def cmd_flow_doctor(args) -> int:

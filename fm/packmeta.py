@@ -4,6 +4,7 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from fm.ownership import load_optional_ownership
 from fm.skillmeta import (
     REQUIRED_OS_CONTRACT,
     VALID_MATURITY_LEVELS,
@@ -18,6 +19,7 @@ from fm.skillmeta import (
 # and the OS-core contract boundary machine-checkable.
 PACK_MANIFEST_NAME = "pack.md"
 PACKS_DIR = "skills/packs"
+TOP_LEVEL_PACKS_DIR = "packs"
 
 # Owned assets must not live inside an OS-core scope: that would mean a business
 # pack is redefining the operating layer rather than depending on it.
@@ -198,10 +200,19 @@ def cmd_pack_list(args) -> int:
 
 
 def _discover_manifests(root: Path) -> list[Path]:
-    base = root / PACKS_DIR
-    if not base.exists():
-        return []
-    return sorted(base.glob(f"*/{PACK_MANIFEST_NAME}"))
+    manifests: list[Path] = []
+    legacy_base = root / PACKS_DIR
+    if legacy_base.exists():
+        manifests.extend(sorted(legacy_base.glob(f"*/{PACK_MANIFEST_NAME}")))
+    ownership = load_optional_ownership(root)
+    top_base = root / TOP_LEVEL_PACKS_DIR
+    if ownership is not None and top_base.exists():
+        manifests.extend(
+            path
+            for path in sorted(top_base.glob(f"*/{PACK_MANIFEST_NAME}"))
+            if ownership.catalog_enabled(path.relative_to(root).as_posix())
+        )
+    return sorted(set(manifests))
 
 
 def _physical_skill_dirs(root: Path, pack_dir: Path) -> list[str]:

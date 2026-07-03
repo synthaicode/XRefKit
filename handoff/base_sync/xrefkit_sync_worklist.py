@@ -30,7 +30,14 @@ import difflib
 import hashlib
 import json
 import re
+import sys
 from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from fm.ownership import Ownership, load_ownership, validate_ownership
 
 TEXT_EXTENSIONS = {
     ".md", ".py", ".yaml", ".yml", ".json", ".cs", ".csproj",
@@ -130,17 +137,23 @@ class State:
         return index
 
 
-def _excluded(path: str) -> bool:
+def _excluded(path: str, ownership: Ownership | None = None) -> bool:
     # Same exclusion set as the local scan, so manifest-side states and the
     # local state describe the same universe (otherwise every locally
     # excluded directory shows up as a false local_deleted).
-    return any(part in DEFAULT_EXCLUDED_DIRS for part in Path(path).parts[:-1])
+    if any(part in DEFAULT_EXCLUDED_DIRS for part in Path(path).parts[:-1]):
+        return True
+    return False if ownership is None else not ownership.base_sync_enabled(path)
 
 
-def state_from_files(files: dict[str, str], blobs: dict[str, dict]) -> State:
+def state_from_files(
+    files: dict[str, str],
+    blobs: dict[str, dict],
+    ownership: Ownership | None = None,
+) -> State:
     state = State()
     for path, blob in files.items():
-        if _excluded(path):
+        if _excluded(path, ownership):
             continue
         info = blobs[blob]
         if info["kind"] == "doc":
@@ -168,7 +181,7 @@ def replay_commits(manifest: dict) -> list[tuple[str, str, dict[str, str]]]:
     return snapshots
 
 
-def scan_local(root: Path) -> tuple[State, list[dict]]:
+def scan_local(root: Path, ownership: Ownership | None = None) -> tuple[State, list[dict]]:
     state = State()
     problems: list[dict] = []
     seen_xids: dict[str, str] = {}
@@ -179,6 +192,8 @@ def scan_local(root: Path) -> tuple[State, list[dict]]:
         if any(part in DEFAULT_EXCLUDED_DIRS for part in relative_parts[:-1]):
             continue
         rel = path.relative_to(root).as_posix()
+        if ownership is not None and not ownership.base_sync_enabled(rel):
+            continue
         text = path.read_bytes().decode("utf-8", errors="replace")
         if path.suffix.lower() == ".md":
             xid = first_xid(text)
@@ -210,12 +225,13 @@ def date_copy_point(
     local: State,
     snapshots: list[tuple[str, str, dict[str, str]]],
     blobs: dict[str, dict],
+    ownership: Ownership | None = None,
 ) -> tuple[int, dict]:
     best_index = len(snapshots) - 1
     best_score = -1
     scores = []
     for index, (_sha, _date, files) in enumerate(snapshots):
-        state = state_from_files(files, blobs)
+        state = state_from_files(files, blobs, ownership)
         score = sum(
             1
             for key, doc in local.docs.items()
@@ -491,13 +507,19 @@ def main() -> int:
     base_tree = Path(args.base_tree).resolve() if args.base_tree else None
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
+    ownership = load_ownership(local_root)
+    ownership_errors = validate_ownership(local_root, ownership) if ownership else []
+    if ownership_errors:
+        for error in ownership_errors:
+            print(f"ownership error: {error}", file=sys.stderr)
+        return 2
 
     blobs = manifest["blobs"]
     snapshots = replay_commits(manifest)
-    local_state, problems = scan_local(local_root)
-    copy_index, dating = date_copy_point(local_state, snapshots, blobs)
-    copy_state = state_from_files(snapshots[copy_index][2], blobs)
-    head_state = state_from_files(snapshots[-1][2], blobs)
+    local_state, problems = scan_local(local_root, ownership)
+    copy_index, dating = date_copy_point(local_state, snapshots, blobs, ownership)
+    copy_state = state_from_files(snapshots[copy_index][2], blobs, ownership)
+    head_state = state_from_files(snapshots[-1][2], blobs, ownership)
 
     items = problems + classify_docs(local_state, copy_state, head_state)
     items += classify_plain(local_state, copy_state, head_state)
@@ -512,6 +534,10 @@ def main() -> int:
         "manifest_head": manifest["head"],
         "copy_point": dating,
         "local_root": str(local_root),
+        "ownership": {
+            "enabled": ownership is not None,
+            "zones": ownership.to_dict()["zones"] if ownership else [],
+        },
         "read_only_notice": (
             "This worklist was produced without modifying the local "
             "repository. Absorption is performed per item by the AI "

@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
+from fm.ownership import content_files, load_optional_ownership
+
 
 # Canonical repo-relative suffixes. Skill metas reference these with a
 # relative prefix whose depth varies by location (skills/<id>/, skills/os/<id>/,
@@ -492,7 +494,8 @@ def _reference_issues(source: Path, files: list[Path]) -> list[dict[str, str]]:
 
 def _current_skill_candidates(root: Path, source_skill_id: str | None, source_xids: list[str]) -> list[dict[str, object]]:
     candidates: list[dict[str, object]] = []
-    for meta_path in sorted((root / "skills").rglob("meta.md")):
+    ownership = load_optional_ownership(root)
+    for meta_path in content_files(root, "skills", "meta.md", ownership=ownership):
         parsed = _parse_meta_lines(_read_text_or_empty(meta_path))
         skill_id = parsed.get("skill_id")
         skill_dir = meta_path.parent
@@ -669,25 +672,36 @@ def _collect_boundary_entries(root: Path) -> list[SkillListEntry]:
     index_text = index_path.read_text(encoding="utf-8") if index_path.exists() else ""
 
     entries: list[SkillListEntry] = []
-    for scope_name, boundary in (("skills", "public"), ("skills_private", "private")):
-        base = root / scope_name
-        if not base.exists():
-            continue
+    ownership = load_optional_ownership(root)
+    for meta_path in content_files(root, "skills", "meta.md", ownership=ownership):
+        parsed = _parse_meta_lines(meta_path.read_text(encoding="utf-8"))
+        skill_id = parsed.get("skill_id")
+        maturity, _ = _resolve_maturity(parsed)
+        rel_dir = meta_path.parent.relative_to(root).as_posix()
+        indexed = f"{rel_dir}/meta.md" in index_text or f"{rel_dir}/SKILL.md" in index_text
+        entries.append(
+            SkillListEntry(
+                skill_id=str(skill_id) if skill_id else None,
+                boundary="public",
+                path=rel_dir,
+                maturity=maturity,
+                indexed=indexed,
+            )
+        )
+    base = root / "skills_private"
+    if base.exists():
         for meta_path in sorted(base.rglob("meta.md")):
             parsed = _parse_meta_lines(meta_path.read_text(encoding="utf-8"))
             skill_id = parsed.get("skill_id")
             maturity, _ = _resolve_maturity(parsed)
             rel_dir = meta_path.parent.relative_to(root).as_posix()
-            indexed: bool | None = None
-            if boundary == "public":
-                indexed = f"{rel_dir}/meta.md" in index_text or f"{rel_dir}/SKILL.md" in index_text
             entries.append(
                 SkillListEntry(
                     skill_id=str(skill_id) if skill_id else None,
-                    boundary=boundary,
+                    boundary="private",
                     path=rel_dir,
                     maturity=maturity,
-                    indexed=indexed,
+                    indexed=None,
                 )
             )
     return entries
@@ -819,15 +833,12 @@ def cmd_skill_merge_plan(args) -> int:
 
 
 def _iter_meta_files(root: Path, scope: str) -> Iterable[Path]:
-    scopes = ["skills"]
+    ownership = load_optional_ownership(root)
+    yield from content_files(root, "skills", "meta.md", ownership=ownership)
     if scope == "all":
-        scopes.append("skills_private")
-
-    for scope_name in scopes:
-        base = root / scope_name
-        if not base.exists():
-            continue
-        yield from sorted(base.rglob("meta.md"))
+        base = root / "skills_private"
+        if base.exists():
+            yield from sorted(base.rglob("meta.md"))
 
 
 def cmd_skill(args) -> int:

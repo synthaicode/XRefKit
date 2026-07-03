@@ -22,8 +22,15 @@ import hashlib
 import json
 import re
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from fm.ownership import Ownership, load_ownership, validate_ownership
 
 TEXT_EXTENSIONS = {
     ".md", ".py", ".yaml", ".yml", ".json", ".cs", ".csproj",
@@ -97,12 +104,14 @@ def describe_blob(repo: Path, blob: str, path: str) -> dict:
     }
 
 
-def list_tree(repo: Path, commit: str) -> dict[str, str]:
+def list_tree(repo: Path, commit: str, ownership: Ownership | None = None) -> dict[str, str]:
     files: dict[str, str] = {}
     for line in git(repo, "ls-tree", "-r", commit).splitlines():
         meta, path = line.split("\t", 1)
         _mode, kind, blob = meta.split()
         if kind != "blob":
+            continue
+        if ownership is not None and not ownership.base_sync_enabled(path):
             continue
         suffix = Path(path).suffix.lower() or Path(path).name
         if suffix in TEXT_EXTENSIONS or Path(path).name in TEXT_EXTENSIONS:
@@ -117,6 +126,12 @@ def main() -> int:
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
     repo = Path(args.repo).resolve()
+    ownership = load_ownership(repo)
+    ownership_errors = validate_ownership(repo, ownership) if ownership else []
+    if ownership_errors:
+        for error in ownership_errors:
+            print(f"ownership error: {error}", file=sys.stderr)
+        return 2
 
     log = git(repo, "log", "--reverse", "--format=%H %cI", args.branch)
     commits = [line.split(" ", 1) for line in log.splitlines() if line.strip()]
@@ -125,7 +140,7 @@ def main() -> int:
     commit_entries: list[dict] = []
     previous: dict[str, str] = {}
     for sha, date in commits:
-        current = list_tree(repo, sha)
+        current = list_tree(repo, sha, ownership)
         changed = {
             path: blob for path, blob in current.items()
             if previous.get(path) != blob
@@ -145,6 +160,10 @@ def main() -> int:
         "generated_at": datetime.now(tz=timezone.utc).isoformat(timespec="seconds"),
         "head": commits[-1][0] if commits else None,
         "commit_count": len(commits),
+        "ownership": {
+            "enabled": ownership is not None,
+            "zones": ownership.to_dict()["zones"] if ownership else [],
+        },
         "hash_convention": (
             "sha256 of CRLF-normalized text; .md additionally has markdown "
             "xid-link targets reduced to #xid-... before hashing "

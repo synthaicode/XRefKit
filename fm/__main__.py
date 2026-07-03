@@ -19,7 +19,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "--include",
             nargs="*",
             default=None,
-            help="Top-level folders to include (default: docs agent knowledge capabilities skills)",
+            help="Top-level folders to include (default: docs agent knowledge capabilities skills packs)",
         )
         p.add_argument(
             "--exclude",
@@ -214,7 +214,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_pack_lint.add_argument(
         "--manifest",
         default=None,
-        help="Relative path to a single pack.md to validate (default: all skills/packs/*/pack.md)",
+        help="Relative path to a single pack.md to validate (default: all skills/packs/*/pack.md and packs/*/pack.md)",
     )
     p_pack_lint.add_argument("--json", action="store_true", help="Emit JSON")
 
@@ -236,7 +236,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_flow_doctor.add_argument(
         "--flow",
         default=None,
-        help="Relative path to a single flow file (default: all flows/**/*.yaml)",
+        help="Relative path to a single flow file (default: all flows/**/*.yaml and pack flow roots)",
     )
     p_flow_doctor.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
 
