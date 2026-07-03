@@ -25,8 +25,6 @@
   - closure: return the derivation table, grouped confirmation items, and any transition matrices requiring approval
 - tags: `design`, `logic`, `requirements-derivation`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
 - knowledge_refs:
   - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
   - `../../../../knowledge/packs/constraint-derivation/140_logic_constraint_derivation_catalog.md#xid-4E5B8923C912`

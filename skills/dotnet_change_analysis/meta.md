@@ -25,9 +25,6 @@
   - closure: return the Markdown note, impacted boundaries, and unresolved items with reasons
 - tags: `dotnet`, `csharp`, `analysis`, `investigation`, `markdown`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../capabilities/quality/190_cap_qa_011_roslyn_analyzer_acceptance.md#xid-94C1B7B9920A`
 - knowledge_refs:
   - `../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001`
   - `../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002`

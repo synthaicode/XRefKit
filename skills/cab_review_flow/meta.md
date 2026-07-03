@@ -24,9 +24,4 @@
   - closure: finalize states and hand off the three gate results to the decision layer
 - tags: `cab`, `review`, `release`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../capabilities/quality/120_cap_qa_003_release_plan_suitability_review.md#xid-93E53EF38700`
-  - `../../capabilities/operations/130_cap_ops_004_operational_readiness_gate.md#xid-83140C9538B3`
-  - `../../capabilities/business/100_cap_biz_001_value_constraint_fit_evaluation.md#xid-837CDB1183C9`
 - knowledge_refs:

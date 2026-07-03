@@ -25,8 +25,6 @@
   - closure: return the review path, top friction points, and the author revision handoff
 - tags: `editorial`, `review`, `reader`, `ux`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
 - knowledge_refs:
   - `../../../../knowledge/packs/editorial-ops/110_editorial_operations_framework.md#xid-F9E58E2BAD21`
   - `../../../../knowledge/packs/editorial-ops/120_reader_capability_model.md#xid-125B6C5E3630`

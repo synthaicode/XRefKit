@@ -379,8 +379,9 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
         # constraint text.
         if guard_policy == "closed_world" and "closed-world" not in constraints:
             errors.append("closed_world policy requires explicit closed-world constraint text")
-        if not _has_required_ref(capability_refs, SKILL_RUNTIME_CAPABILITY_REF):
-            errors.append("required skill runtime envelope capability ref is missing")
+        # capability_refs are no longer required per Skill: the runtime envelope
+        # is enforced by workflow_protocol / os_contract (the protocol), not a
+        # capability-file reference (design 083 D2 — capabilities/ dissolves).
         if not constraints.strip():
             errors.append("missing constraints")
         _check_review_mode(summary, tags, skill_id, execution_mode, errors)

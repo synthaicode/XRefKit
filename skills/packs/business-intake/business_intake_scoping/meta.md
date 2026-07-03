@@ -25,8 +25,6 @@
   - closure: return the scoped output, open questions, recommended next confirmation points, and the smallest next information needed
 - tags: `operations`, `intake`, `scoping`, `business`, `planning`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
 - knowledge_refs:
   - `../../../../knowledge/packs/business-intake/110_business_intake_scoping_rules.md#xid-7B3E5D1A6102`
   - `../../../../docs/packs/business-intake/060_business_intake_scoping_guide.md#xid-C91F7D2A6B40`

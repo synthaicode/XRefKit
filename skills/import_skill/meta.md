@@ -18,6 +18,4 @@
 - constraints: keep domain facts out of skill body; use `knowledge/...#xid-...`; run policy inspection before import; compose the context-direction guard by default unless the imported skill explicitly qualifies for the closed-world exception
 - tags: `import`, `normalization`, `xref`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
 - knowledge_refs:

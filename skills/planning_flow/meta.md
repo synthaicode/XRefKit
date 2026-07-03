@@ -24,9 +24,6 @@
   - closure: finalize states and hand off planning outputs, planning basis source list, and change-design basis notes with unresolved items
 - tags: `planning`, `execution`, `policy`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../capabilities/planning/100_cap_pln_001_task_decomposition_plan_draft.md#xid-F5193313AB79`
 - knowledge_refs:
   - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`
   - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`

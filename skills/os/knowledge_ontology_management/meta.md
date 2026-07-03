@@ -24,8 +24,6 @@
   - closure: return changed or proposed paths, concept decision, relationships accepted or intentionally omitted, source and judgment evidence, validation results, unresolved items, and handoff owner
 - tags: `operations`, `knowledge`, `ontology`, `xref`, `curation`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
 - knowledge_refs:
   - `../../../knowledge/organization/200_domain_knowledge_ontology_rules.md#xid-5803607419B9`
   - `../../../docs/reference/020_sources.md#xid-2FAD591BF725`

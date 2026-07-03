@@ -24,8 +24,6 @@
   - closure: return the canonical finding XID or proposal path, catalog update status, source evidence, validation commands, unresolved verification, and the next handoff owner
 - tags: `operations`, `knowledge`, `source-analysis`, `registration`, `xref`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
 - knowledge_refs:
   - `../../../knowledge/organization/200_domain_knowledge_ontology_rules.md#xid-5803607419B9`
   - `../../../docs/reference/020_sources.md#xid-2FAD591BF725`

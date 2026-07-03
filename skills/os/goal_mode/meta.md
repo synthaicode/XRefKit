@@ -24,8 +24,6 @@
   - closure: close only after the goal is completed or the continuation packet and handoff state are explicit enough for the next recovery window
 - tags: `operations`, `continuation`, `quota`, `codex`, `control`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
 - knowledge_refs:
   - `../../../docs/designs/050_codex_mcp_job_inbox_design.md#xid-77BCEAA247E3`
   - `../../../docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`

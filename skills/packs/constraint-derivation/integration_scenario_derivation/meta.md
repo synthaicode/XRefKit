@@ -25,8 +25,6 @@
   - closure: return the written derivation path, compensation-design items, and remaining gaps
 - tags: `review`, `integration`, `requirements-derivation`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
 - knowledge_refs:
   - `../../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA`
   - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`

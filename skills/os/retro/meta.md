@@ -24,8 +24,6 @@
   - closure: produce a promotion report and, when approved, prepare the canonical update set and `work/` pointer update
 - tags: `retrospective`, `promotion`, `knowledge-ops`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
 - knowledge_refs:
   - `../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA`
   - `../../../docs/core/contracts/015_shared_memory_operations.md#xid-4A423E72D2ED`

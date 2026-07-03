@@ -24,8 +24,6 @@
   - closure: run xref maintenance, summarize applied and skipped items, and preserve traceability
 - tags: `documentation`, `promotion`, `knowledge-ops`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
 - knowledge_refs:
   - `../../../docs/guides/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B`
   - `../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA`

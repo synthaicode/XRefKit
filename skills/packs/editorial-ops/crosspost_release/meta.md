@@ -25,7 +25,5 @@
   - closure: return the release path, unresolved blockers, and the final human sign-off handoff
 - tags: `editorial`, `release`, `crosspost`, `publishing`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
 - knowledge_refs:
 - `../../../../knowledge/packs/editorial-ops/110_editorial_operations_framework.md#xid-F9E58E2BAD21`

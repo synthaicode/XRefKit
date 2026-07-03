@@ -24,9 +24,6 @@
   - closure: confirm assets exist, markdown references are correct, and rerender commands are preserved
 - tags: `marketing`, `presentation`, `slides`, `diagram`, `png`, `css`, `html`, `marp`, `infographic`, `repository-snapshot`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../capabilities/marketing/110_cap_mkt_002_repository_infographic_snapshot.md#xid-C8D4A92F61E0`
 - knowledge_refs:
 - observation_refs:
   - `../../observations/2026-04-29_skill_run_marketing_slide_png.md`

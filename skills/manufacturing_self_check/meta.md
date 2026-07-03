@@ -24,9 +24,6 @@
   - closure: finalize states and hand off results to quality review
 - tags: `manufacturing`, `self-check`, `quality`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../capabilities/manufacturing/120_cap_mfg_004_manufacturing_self_check.md#xid-6F5A9C1B4401`
 - knowledge_refs:
   - `../../knowledge/quality/100_csharp_quality_review_criteria.md#xid-8C4D2A7E5101`
   - `../../knowledge/organization/120_metrics_definition.md#xid-7A2F4C8D1201`

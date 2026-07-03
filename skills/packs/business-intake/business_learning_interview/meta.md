@@ -25,8 +25,6 @@
   - closure: return the interview-cycle output and the recommended next question or transition to scoping
 - tags: `operations`, `learning`, `interview`, `business`, `intake`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
 - knowledge_refs:
   - `../../../../knowledge/packs/business-intake/120_business_learning_interview_rules.md#xid-7B3E5D1A6103`
   - `../../../../docs/packs/business-intake/061_business_learning_interview_guide.md#xid-D2A41E8C7B51`

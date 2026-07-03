@@ -24,8 +24,5 @@
   - closure: finalize review results and preserve unresolved items
 - tags: `qa`, `security`, `csharp`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../capabilities/quality/150_cap_qa_007_security_review.md#xid-5A1C2F0E5507`
 - knowledge_refs:
   - `../../knowledge/quality/100_csharp_quality_review_criteria.md#xid-8C4D2A7E5101`

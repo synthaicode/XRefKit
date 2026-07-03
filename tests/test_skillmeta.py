@@ -163,6 +163,38 @@ class SkillMetaTests(unittest.TestCase):
             self.assertTrue(result.ok, result.errors)
             self.assertEqual([], result.errors)
 
+    def test_validate_skill_meta_accepts_stable_without_capability_refs(self) -> None:
+        # Skill-centric consolidation (083 D2): capabilities/ dissolves, so
+        # capability_refs (including the runtime-envelope ref) are no longer
+        # required; the protocol / os_contract enforces the envelope.
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                "# Skill Meta: sample\n\n"
+                "- skill_id: `sample_skill`\n"
+                "- summary: sample summary\n"
+                "- use_when: sample use\n"
+                "- input: sample input\n"
+                "- output: sample output\n"
+                "- maturity: `stable`\n"
+                "- execution_mode: `subagent_preferred`\n"
+                "- capability_layering: `required`\n"
+                "- workflow_protocol: `required`\n"
+                "- tuning: sample specialization\n"
+                "- responsibility: quality check\n"
+                f"{self._os_contract_block()}"
+                "- constraints: keep observed boundary explicit\n"
+                "- skill_doc: `./SKILL.md`\n"
+                "- observation_refs:\n"
+                "  - `../../observations/sample.md`\n",
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual([], result.errors)
+
     def _meta_with_os_contract(self, os_contract_lines: str) -> str:
         return (
             "# Skill Meta: sample\n\n"
