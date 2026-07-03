@@ -173,6 +173,10 @@ Current family paths:
   - summary: create or update repository-native Skill / Flow assets in XRefKit with correct split, publication boundary, runtime envelope, forgetting countermeasures, and validation
   - meta: `skills/os/skill_flow_authoring/meta.md`
   - skill_doc: `skills/os/skill_flow_authoring/SKILL.md`
+- `source_structure_findings_registration`:
+  - summary: register an existing source-structure analysis Markdown file as current canonical source-structure findings knowledge
+  - meta: `skills/os/source_structure_findings_registration/meta.md`
+  - skill_doc: `skills/os/source_structure_findings_registration/SKILL.md`
 - `business_intake_scoping`:
   - summary: discover and scope one business task into a boundary-visible responsibility unit even when the user only knows partial materials or structure
   - meta: `skills/packs/business-intake/business_intake_scoping/meta.md`

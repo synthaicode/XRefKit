@@ -43,6 +43,10 @@ Use the canonical viewpoints in `knowledge/source_analysis/120_dotnet_change_ana
 - impacted boundary list split into review boundary and must-change boundary
 - (only when Semantic-Inventory Mode is used) the specific deterministic inventory
   generated for a grep-weak question, recorded as evidence
+- structure pivot inventory for non-standard or custom-framework runtime wiring
+- route/usecase trace matrix for representative runtime paths
+- implicit runtime binding inventory for non-compiler-enforced bindings
+- domain-knowledge candidate metadata sufficient for later Skill-side selection
 - scoped target list
 - uncertainty list
 - check results by viewpoint
@@ -58,6 +62,8 @@ Use the canonical viewpoints in `knowledge/source_analysis/120_dotnet_change_ana
 - Confirm the target path exists.
 - Confirm the change request or analysis objective exists.
 - Confirm the review scope is defined when filters are supplied.
+- When invoked from `design_flow`, confirm which implementation target lacks
+  current source structure findings and treat that target as the analysis scope.
 - Load the dotnet change-analysis viewpoints.
 - Record `unknown` when project or runtime boundaries cannot be established cleanly.
 
@@ -117,10 +123,13 @@ Use the canonical viewpoints in `knowledge/source_analysis/120_dotnet_change_ana
   restore the target only if a pack inventory is needed.
 - Prepare viewpoint buckets for:
   - structure and responsibility split
+  - structure pivots
   - entry points and dependency direction
   - DI registration and lifetimes
   - pipeline structure and order
+  - route/usecase trace matrix
   - convention-based discovery
+  - implicit runtime binding
   - configuration boundary
   - build-configuration-dependent behavior
   - API, database, and external integration boundary
@@ -196,6 +205,14 @@ curate against the change objective, and record what the pack cannot establish a
   - extract implicit responsibility conventions and record whether they are
     documented or implicit
 - Trace the current execution entry points and main dependency directions.
+- Identify structure pivots before treating any framework-shaped assumption as true:
+  - runtime authorities such as XML command maps, config sections, route tables,
+    custom registries, attributes, generated files, database metadata, naming
+    conventions, and external framework source
+  - the behavior each pivot controls and the code or artifact it activates
+  - documented versus implicit status
+  - pivot-sensitive tokens that can break silently on rename, move, field-name
+    drift, assembly-name drift, missing registration, or order change
 - Record DI registrations and lifetimes:
   - registration sites and chosen lifetimes (singleton, scoped, transient)
   - captive-dependency risks where a longer-lived service consumes a
@@ -215,10 +232,29 @@ curate against the change objective, and record what the pack cannot establish a
     well-known framework ordering semantics for custom or wrapped pipelines
     without local evidence — mark such assumptions `unknown`
   - record which order-dependent behavior the intended change could disturb
+- Record route/usecase traces for representative runtime paths:
+  - entry identity: URL, command, message, schedule, screen action, or callback
+  - structural authority: route file, XML command, attribute, registry,
+    database metadata, convention, or generated mapping
+  - binding mechanism: direct call, reflection, string type name, DI, factory,
+    convention, request field, model key, or payload field
+  - executable owner, result selector, output boundary, model/input binding,
+    state boundary, persistence boundary, evidence, and unresolved checks
+  - when a route list exists without the cross-file binding path, treat the
+    trace as incomplete
 - Record convention-based discovery by extracting the local wiring rules:
   - where naming, placement, or assembly scanning decides runtime wiring
   - the matched pattern, scan location, and included assemblies or namespaces
   - which renames or moves would silently break discovery (no compiler error)
+- Record implicit runtime bindings as first-class structure facts:
+  - XML/config string bindings, reflection type names, assembly-qualified class
+    names, controller return strings, view/ref names, request/form field names,
+    serialization names, model keys, command names, redirect targets, and
+    custom registry keys
+  - producer, consumer, token, binding mechanism, evidence, and silent breakage
+    mode for each binding
+  - do not rely on C# references alone when the runtime binding crosses XML,
+    config, ASPX, generated files, database metadata, or framework source
 - Record configuration sources, option bindings, environment-dependent
   behavior, and feature-toggle conventions.
 - Record build-configuration-dependent behavior:
@@ -275,6 +311,32 @@ curate against the change objective, and record what the pack cannot establish a
     produce prohibitions against casually removing them, with deviation
     routed to a human
 - Generate the Markdown note by using the template structure from `references/change_analysis_template.md` or an equivalent structure.
+- Include a domain-knowledge candidate section when the analysis reveals a
+  reusable service topology or package/framework behavior. Record only the
+  metadata later Skills need for selection and use: framework family, routing
+  authority, entry/controller/view/model/state/persistence binding modes,
+  change-sensitive tokens, prohibited-change rules, and unresolved verification.
+  Do not add redundant `applies_to`; Skill-side selection owns applicability.
+  Do not require path when a stable XID/document identity can resolve content.
+- The Skill does not publish canonical knowledge directly. When the finding is
+  needed as a design basis, hand the domain-knowledge candidate to
+  `knowledge_ontology_management` so it can create or refresh a current entry in
+  the source-structure findings catalog.
+- Keep output roles non-overlapping:
+  - `structure pivots` records investigation starting points and the behavior
+    each pivot controls
+  - `route/usecase trace matrix` records representative cross-file runtime paths
+  - `implicit runtime binding` records non-compiler-enforced tokens and their
+    producer/consumer relationship
+  - `prohibited changes` records only actionable silent-break rules derived
+    from extracted local rules
+  - `impacted targets` records change-objective-specific review and must-change
+    boundaries, not a restatement of all structure-sensitive tokens
+  - `domain-knowledge candidate` records compact Skill-selection metadata only
+- Do not add a separate change-impact checklist when the same tokens are already
+  covered by implicit runtime bindings and prohibited changes.
+- Do not present domain-knowledge candidate data twice; use the table form only,
+  with at most a short boundary sentence before it.
 
 ## Monitoring and Control
 
@@ -313,6 +375,8 @@ Closure is allowed only when all of the following hold:
 
 - every viewpoint bucket has a recorded state (`done`, `unknown`, or
   `not_applicable`)
+- structure pivots, route/usecase traces, and implicit runtime bindings are
+  recorded when present, or explicitly marked `not_applicable`
 - the change placement basis is recorded for the change objective
 - the prohibited-changes list is recorded and every entry carries its basis,
   breakage mode, and evidence (an explicitly empty list with reason is valid)
@@ -328,6 +392,11 @@ Closure is allowed only when all of the following hold:
 - Hand the change-analysis note to the requester and to the next phase —
   typically `planning_flow` (which takes current source structure findings as
   input) or design work.
+- When invoked because `design_flow` lacked source analysis for an implementation
+  target, hand back the output path as source evidence and the
+  domain-knowledge candidate for `knowledge_ontology_management`; design closure
+  should use the published canonical finding XID as the source analysis basis
+  reference.
 - Instruct the receiving phase explicitly: the modification must follow the
   extracted local rules and the change placement basis; any deviation must be
   recorded with its justification, not applied silently.

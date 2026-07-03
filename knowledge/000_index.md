@@ -94,6 +94,8 @@ Skills should reference these pages by XID and load only what is needed.
 - [C# naming-convention extraction (brownfield)](source_analysis/140_csharp_naming_convention_extraction.md#xid-B4F7E1A2C903)
 - [Roslyn analyzer quality-check applicability](source_analysis/150_roslyn_analyzer_quality_check_applicability.md#xid-A1B243BF7D5D)
 - [Structure graph as TM coverage backstop](source_analysis/160_structure_graph_tm_backstop.md#xid-163AD9936979)
+- [Current source structure findings catalog](source_analysis/170_current_source_structure_findings_catalog.md#xid-A9E742B1C6D0)
+- [Maverick.NET Friendbook XML-command structure findings](source_analysis/171_maverick_net_friendbook_structure_findings.md#xid-B4F8D2A91C03)
 
 ## Private knowledge
 

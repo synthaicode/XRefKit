@@ -8,6 +8,7 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
 [skills/_index.md](../_index.md#xid-8D91F66DDBB7).
 
 - operations: `doc_ship`, `retro`, `knowledge_ontology_management`,
+  `source_structure_findings_registration`,
   `consultation_research_mapping`, `judgment_log`, `import_skill`,
   `skill_flow_authoring`, `legacy_flow_skill_migration`, `goal_mode`,
   `release_planning_flow`, `cab_review_flow`,

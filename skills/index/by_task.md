@@ -33,6 +33,7 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
 - implement: `implementation_flow`, `marketing-explainer-video`
 - release: `crosspost_release`
 - control: `doc_ship`, `retro`, `knowledge_ontology_management`,
+  `source_structure_findings_registration`,
   `consultation_research_mapping`, `judgment_log`,
   `goal_mode`, `fact_review`,
   `reader_experience_review`

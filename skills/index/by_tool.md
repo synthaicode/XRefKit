@@ -8,6 +8,7 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
 [skills/_index.md](../_index.md#xid-8D91F66DDBB7).
 
 - xref: `import_skill`, `knowledge_ontology_management`,
+  `source_structure_findings_registration`,
   `xlsx_spec_traceability`, `pptx_spec_traceability`
 - .NET: `csharp_review`, `dotnet_change_analysis`,
   `csharp_error_policy_extraction`, `code_constraint_derivation`,
