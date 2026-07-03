@@ -19,7 +19,7 @@ When the XRefKit MCP server is configured, load this file through
 - Treat `knowledge/` as shared domain knowledge; skills load only needed fragments on demand
 - Treat `capabilities/` as reusable work-unit definitions, not as evidence
 - Default new skill creation to private (`skills_private/`); publish to `skills/` only when the user explicitly requests public release
-- New skills MUST include the context-direction security guard by default unless they explicitly declare closed-world execution with no newly loaded external context
+- The context-direction security guard is delivered at init (startup contract pack / base control) and applies ambiently to every Skill that loads external input; new skills do not compose or declare it
 - New skills MUST include the Skill operating contract (`os_contract`) so worklist, execution role, check role, logging, unknown/risk handling, closure, and handoff are load-gated
 - Skill execution MUST start with `python -m fm skill run --meta <path-to-meta.md> --task "<task>"`; do not open or execute `SKILL.md` until this command succeeds and returns a run log
 - Skill-backed work MUST add concrete task items with `python -m fm skill workitem --log <run-log> --item <id> --status <status> --role <assigned-role>` before closure
