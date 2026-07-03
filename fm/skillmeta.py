@@ -143,6 +143,17 @@ def _protocol_owned_role_responsibilities(value: object) -> list[str]:
     return sorted(PROTOCOL_OWNED_ROLE_RESPONSIBILITIES.intersection(parsed))
 
 
+def _has_responsibility(parsed: dict[str, object]) -> bool:
+    # Skill-centric consolidation (design 083 D1/D3): the triad's
+    # `responsibility` is the Skill's business use, replacing the legacy
+    # `role_responsibilities.executor` value (which was always a responsibility,
+    # not a role). Superset during migration: either form satisfies the check.
+    responsibility = parsed.get("responsibility")
+    if isinstance(responsibility, str) and responsibility.strip():
+        return True
+    return _has_skill_role_responsibilities(parsed.get("role_responsibilities"))
+
+
 _TRACKED_CACHE: dict[str, set[str] | None] = {}
 
 
@@ -320,8 +331,11 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
             errors.append("missing or invalid workflow_protocol")
         if not isinstance(tuning, str) or not tuning.strip():
             errors.append("missing tuning")
-        if not _has_skill_role_responsibilities(parsed.get("role_responsibilities")):
-            errors.append("missing role_responsibilities.executor")
+        if not _has_responsibility(parsed):
+            errors.append(
+                "missing responsibility (declare `responsibility:`; the legacy "
+                "role_responsibilities.executor value is still accepted)"
+            )
         protocol_roles = _protocol_owned_role_responsibilities(parsed.get("role_responsibilities"))
         if protocol_roles:
             errors.append(
@@ -349,8 +363,11 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
             errors.append("missing or invalid workflow_protocol")
         if not isinstance(tuning, str) or not tuning.strip():
             errors.append("missing tuning")
-        if not _has_skill_role_responsibilities(parsed.get("role_responsibilities")):
-            errors.append("missing role_responsibilities.executor")
+        if not _has_responsibility(parsed):
+            errors.append(
+                "missing responsibility (declare `responsibility:`; the legacy "
+                "role_responsibilities.executor value is still accepted)"
+            )
         if guard_policy == "required":
             if not _has_required_ref(capability_refs, GUARD_CAPABILITY_REF):
                 errors.append("required guard capability ref is missing")

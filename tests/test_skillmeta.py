@@ -55,6 +55,79 @@ class SkillMetaTests(unittest.TestCase):
             self.assertTrue(result.ok)
             self.assertEqual([], result.errors)
 
+    def test_validate_skill_meta_accepts_responsibility_field_without_role(self) -> None:
+        # Skill-centric consolidation (083 D1/D3): `responsibility` replaces
+        # role_responsibilities.executor. A stable meta with the new field and
+        # no role_responsibilities must validate.
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                "# Skill Meta: sample\n\n"
+                "- skill_id: `sample_skill`\n"
+                "- summary: sample summary\n"
+                "- use_when: sample use\n"
+                "- input: sample input\n"
+                "- output: sample output\n"
+                "- maturity: `stable`\n"
+                "- execution_mode: `subagent_preferred`\n"
+                "- guard_policy: `required`\n"
+                "- capability_layering: `required`\n"
+                "- workflow_protocol: `required`\n"
+                "- tuning: sample specialization\n"
+                "- responsibility: quality check\n"
+                f"{self._os_contract_block()}"
+                "- constraints: keep observed boundary explicit\n"
+                "- skill_doc: `./SKILL.md`\n"
+                "- capability_refs:\n"
+                f"  - `{SKILL_RUNTIME_CAPABILITY_REF}`\n"
+                f"  - `{GUARD_CAPABILITY_REF}`\n"
+                "- knowledge_refs:\n"
+                f"  - `{GUARD_KNOWLEDGE_REF}`\n"
+                "- observation_refs:\n"
+                "  - `../../observations/sample.md`\n",
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual([], result.errors)
+
+    def test_validate_skill_meta_rejects_missing_responsibility(self) -> None:
+        # Neither `responsibility` nor role_responsibilities.executor declared.
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                "# Skill Meta: sample\n\n"
+                "- skill_id: `sample_skill`\n"
+                "- summary: sample summary\n"
+                "- use_when: sample use\n"
+                "- input: sample input\n"
+                "- output: sample output\n"
+                "- maturity: `stable`\n"
+                "- execution_mode: `subagent_preferred`\n"
+                "- guard_policy: `required`\n"
+                "- capability_layering: `required`\n"
+                "- workflow_protocol: `required`\n"
+                "- tuning: sample specialization\n"
+                f"{self._os_contract_block()}"
+                "- constraints: keep observed boundary explicit\n"
+                "- skill_doc: `./SKILL.md`\n"
+                "- capability_refs:\n"
+                f"  - `{SKILL_RUNTIME_CAPABILITY_REF}`\n"
+                f"  - `{GUARD_CAPABILITY_REF}`\n"
+                "- knowledge_refs:\n"
+                f"  - `{GUARD_KNOWLEDGE_REF}`\n"
+                "- observation_refs:\n"
+                "  - `../../observations/sample.md`\n",
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(any("missing responsibility" in error for error in result.errors))
+
     def _meta_with_os_contract(self, os_contract_lines: str) -> str:
         return (
             "# Skill Meta: sample\n\n"
