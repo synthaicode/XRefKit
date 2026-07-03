@@ -10,12 +10,10 @@
 - output: release plan draft, release procedure draft, release confirmation procedure draft, rollback procedure draft, monitoring specification, event-response procedure draft, operational readiness result
 - maturity: `draft`
 - execution_mode: `local_default`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: execute release-planning business activities through reusable release-material, release-procedure, release-confirmation, signal-specification, response-structuring, and readiness-evaluation capabilities
-- role_responsibilities:
-  - executor: user needs release-planning work after manufacturing and testing
+- responsibility: user needs release-planning work after manufacturing and testing
 - os_contract: v1
 - constraints: do not approve release timing or final go or no-go
 - lifecycle:
@@ -28,10 +26,8 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
   - `../../capabilities/operations/100_cap_ops_001_release_plan_draft_creation.md#xid-9715BACE7EB8`
   - `../../capabilities/operations/110_cap_ops_002_monitoring_design.md#xid-316B0FB4493C`
   - `../../capabilities/operations/120_cap_ops_003_event_response_procedure_draft.md#xid-6DA033B45D93`
   - `../../capabilities/operations/130_cap_ops_004_operational_readiness_gate.md#xid-83140C9538B3`
 - knowledge_refs:
-  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`

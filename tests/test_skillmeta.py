@@ -128,6 +128,41 @@ class SkillMetaTests(unittest.TestCase):
             self.assertFalse(result.ok)
             self.assertTrue(any("missing responsibility" in error for error in result.errors))
 
+    def test_validate_skill_meta_accepts_ambient_guard_without_guard_authoring(self) -> None:
+        # Skill-centric consolidation (083 / 082 D4): the context-direction guard
+        # is ambient (startup pack + per-response control_reminder). A stable
+        # meta with no guard_policy and no guard capability/knowledge refs must
+        # validate.
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                "# Skill Meta: sample\n\n"
+                "- skill_id: `sample_skill`\n"
+                "- summary: sample summary\n"
+                "- use_when: sample use\n"
+                "- input: sample input\n"
+                "- output: sample output\n"
+                "- maturity: `stable`\n"
+                "- execution_mode: `subagent_preferred`\n"
+                "- capability_layering: `required`\n"
+                "- workflow_protocol: `required`\n"
+                "- tuning: sample specialization\n"
+                "- responsibility: quality check\n"
+                f"{self._os_contract_block()}"
+                "- constraints: keep observed boundary explicit\n"
+                "- skill_doc: `./SKILL.md`\n"
+                "- capability_refs:\n"
+                f"  - `{SKILL_RUNTIME_CAPABILITY_REF}`\n"
+                "- observation_refs:\n"
+                "  - `../../observations/sample.md`\n",
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual([], result.errors)
+
     def _meta_with_os_contract(self, os_contract_lines: str) -> str:
         return (
             "# Skill Meta: sample\n\n"

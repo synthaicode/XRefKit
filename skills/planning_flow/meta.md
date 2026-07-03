@@ -10,12 +10,10 @@
 - output: work plan, source modification policy, data change policy, data correction tool policy, test policy, test tool policy, release policy, planning basis source list
 - maturity: `draft`
 - execution_mode: `local_default`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: execute planning business activity through reusable work-and-policy planning capability grounded in domain knowledge and current-source findings
-- role_responsibilities:
-  - executor: user needs planning after requirements are approved
+- responsibility: user needs planning after requirements are approved
 - os_contract: v1
 - constraints: draft only; do not finalize priority or resource allocation; keep requirement-to-target difference tracing explicit for downstream design and review
 - lifecycle:
@@ -28,10 +26,8 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
   - `../../capabilities/planning/100_cap_pln_001_task_decomposition_plan_draft.md#xid-F5193313AB79`
 - knowledge_refs:
-  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`
   - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`
   - `../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001`

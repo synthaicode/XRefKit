@@ -11,12 +11,10 @@
 - maturity: `trial`
 - execution_mode: `local_default`
 - model_tier: `standard`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: derive requirement confirmation gates from external APIs, webhooks, files, and messaging integration structure
-- role_responsibilities:
-  - executor: external integration specs may leave failure, timing, retry, or idempotency behavior to implicit AI completion
+- responsibility: external integration specs may leave failure, timing, retry, or idempotency behavior to implicit AI completion
 - os_contract: v1
 - constraints: derive from integration structure and failure modes, not nominal success cases; keep retry, timeout, idempotency, and ordering gaps explicit; write the derivation result to `work/constraint_derivation/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
@@ -29,9 +27,7 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
-  - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
   - `../../../../knowledge/packs/constraint-derivation/150_integration_constraint_derivation_catalog.md#xid-6F0D7C1A2E44`
 - observation_refs:

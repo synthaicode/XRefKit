@@ -11,12 +11,10 @@
 - maturity: `trial`
 - model_tier: `standard`
 - execution_mode: `subagent_preferred`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: map a consultation topic to prior research, known reusable patterns, deterministic extraction work, and the remaining non-deterministic judgment space
-- role_responsibilities:
-  - executor: a user brings a consultation, design question, strategy question, or vague technical/business topic and wants to avoid reinventing the wheel by first identifying prior art, established approaches, reusable methods, and which parts should be handled deterministically versus left to LLM or human judgment
+- responsibility: a user brings a consultation, design question, strategy question, or vague technical/business topic and wants to avoid reinventing the wheel by first identifying prior art, established approaches, reusable methods, and which parts should be handled deterministically versus left to LLM or human judgment
 - os_contract: v1
 - constraints: do not treat model memory as prior research; verify drift-prone prior art with current sources; separate source-backed facts from interpretation; do not convert ambiguous human objectives into deterministic work without explicit boundary evidence; do not claim novelty, consensus, or best practice without source support; preserve missing source coverage as `unknown`
 - lifecycle:
@@ -29,9 +27,7 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
-  - `../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../knowledge/organization/140_llm_review_knowledge_usage_rules.md#xid-7A2F4C8D1401`
   - `../../../knowledge/organization/121_judgment_log_schema.md#xid-7B4C2D91E621`
 - observation_refs:

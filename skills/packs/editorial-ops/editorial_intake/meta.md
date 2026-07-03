@@ -11,12 +11,10 @@
 - maturity: `draft`
 - execution_mode: `local_default`
 - model_tier: `light`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: scope an article task into topic, audience, evidence basis, quality target, and publication boundary before drafting
-- role_responsibilities:
-  - executor: article work starts from fragments, loose notes, or vague publication intent and the execution target is not yet stable enough for drafting
+- responsibility: article work starts from fragments, loose notes, or vague publication intent and the execution target is not yet stable enough for drafting
 - os_contract: v1
 - constraints: do not start from writing style before topic and evidence basis are visible; do not treat audience label alone as enough reader definition when capability assumptions matter; keep facts and framing hypotheses separate; preserve missing source support as `unknown`; write the intake record to `work/editorial_ops/` with a date-prefixed filename unless another path is specified
 - lifecycle:
@@ -29,8 +27,6 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
-  - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../../knowledge/packs/editorial-ops/110_editorial_operations_framework.md#xid-F9E58E2BAD21`
   - `../../../../knowledge/packs/editorial-ops/120_reader_capability_model.md#xid-125B6C5E3630`

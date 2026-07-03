@@ -355,8 +355,13 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
     if effective_check_level in {"stable", "governed"}:
         if execution_mode not in VALID_EXECUTION_MODES:
             errors.append("missing or invalid execution_mode")
-        if guard_policy not in VALID_GUARD_POLICIES:
-            errors.append("missing or invalid guard_policy")
+        # Skill-centric consolidation (design 083 / 082 D4): the context-direction
+        # guard is ambient (startup contract pack + per-response
+        # control_reminder), not composed per Skill. guard_policy is no longer a
+        # required per-Skill field; validate it only when a legacy meta still
+        # declares it.
+        if guard_policy is not None and guard_policy not in VALID_GUARD_POLICIES:
+            errors.append("invalid guard_policy")
         if capability_layering not in VALID_CAPABILITY_LAYERING_POLICIES:
             errors.append("missing or invalid capability_layering")
         if workflow_protocol not in VALID_WORKFLOW_PROTOCOL_POLICIES:
@@ -368,12 +373,11 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
                 "missing responsibility (declare `responsibility:`; the legacy "
                 "role_responsibilities.executor value is still accepted)"
             )
-        if guard_policy == "required":
-            if not _has_required_ref(capability_refs, GUARD_CAPABILITY_REF):
-                errors.append("required guard capability ref is missing")
-            if not _has_required_ref(knowledge_refs, GUARD_KNOWLEDGE_REF):
-                errors.append("required guard knowledge ref is missing")
-        elif guard_policy == "closed_world" and "closed-world" not in constraints:
+        # Guard capability/knowledge refs are no longer required per Skill; the
+        # guard is ambient. A legacy meta may still carry them (harmless). The
+        # closed_world escape hatch, when explicitly declared, still needs its
+        # constraint text.
+        if guard_policy == "closed_world" and "closed-world" not in constraints:
             errors.append("closed_world policy requires explicit closed-world constraint text")
         if not _has_required_ref(capability_refs, SKILL_RUNTIME_CAPABILITY_REF):
             errors.append("required skill runtime envelope capability ref is missing")

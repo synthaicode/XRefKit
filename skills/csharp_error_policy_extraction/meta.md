@@ -11,12 +11,10 @@
 - maturity: `trial`
 - execution_mode: `local_default`
 - model_tier: `standard`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: extract the existing de-facto error policy from C# source as an inventory, a category-by-disposition matrix, detected contradictions, and explicit coverage limits
-- role_responsibilities:
-  - executor: user needs the implemented error policy of a C# codebase made explicit before changing error handling, unifying conventions, or arbitrating inconsistent failure behavior — a deep-dive of the error-handling-contract viewpoint of `dotnet_change_analysis`, not a defect review
+- responsibility: user needs the implemented error policy of a C# codebase made explicit before changing error handling, unifying conventions, or arbitrating inconsistent failure behavior — a deep-dive of the error-handling-contract viewpoint of `dotnet_change_analysis`, not a defect review
 - os_contract: v1
 - constraints: extraction only — record implemented behavior, never decide what the policy should be; do not fix code; never claim exhaustive coverage of omission policies; every non-trivial conclusion carries an evidence path; defect-level findings (async hangs, race conditions) hand off to csharp_review and vulnerability findings hand off to security_review; the coverage-limits section is mandatory in every report
 - lifecycle:
@@ -29,9 +27,7 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
-  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001`
   - `../../knowledge/source_analysis/120_dotnet_change_analysis_viewpoints.md#xid-2E7B5A1FD201`
   - `../../knowledge/source_analysis/130_csharp_error_policy_detection_patterns.md#xid-C0DBC37E2A13`

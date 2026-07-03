@@ -11,12 +11,10 @@
 - maturity: `draft`
 - execution_mode: `local_default`
 - model_tier: `light`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: route editorial requests to the correct editorial-ops Skills and keep review and release stages explicit
-- role_responsibilities:
-  - executor: a user asks to turn notes, sources, or a draft into a managed article workflow instead of one-shot prompting
+- responsibility: a user asks to turn notes, sources, or a draft into a managed article workflow instead of one-shot prompting
 - os_contract: v1
 - constraints: do not skip intake when audience, sources, or channel targets are still unclear; do not treat draft generation as implicit approval; keep shared routing rules in knowledge instead of duplicating them across pack Skills; write the routing note to `work/editorial_ops/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
@@ -29,7 +27,5 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
-  - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
 - `../../../../knowledge/packs/editorial-ops/110_editorial_operations_framework.md#xid-F9E58E2BAD21`

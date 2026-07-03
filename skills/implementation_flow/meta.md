@@ -38,12 +38,11 @@
 - output: code changes, unit test results, unit test execution basis reference, implementation basis design reference, referenced constraint-derivation output paths when used, quality-feedback response when applicable, uncertainty list, out-of-scope list
 - maturity: `trial`
 - execution_mode: `local_default`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
-- tuning: execute manufacturing business activities through reusable scoped realization and unit-level verification capabilities
-- role_responsibilities:
-  - executor: user asks to implement changes based on an approved design or explicitly bounded instructions
+- capability: `software_development`
+- tuning: `C#`
+- responsibility: implementation
 - os_contract: v1
 - constraints: do not change design policy; keep unresolved items explicit; implement only traced and approved differences by default; when coding would require guessing unresolved structural behavior from design artifacts, route through the constraint-derivation pack before implementation; handle concrete in-scope quality feedback when no tradeoff exists among active findings
 - lifecycle:
@@ -57,11 +56,9 @@
 - capability_refs:
   - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
   - `../../capabilities/management/150_cap_mgt_006_independent_run_verification.md#xid-E37644FAA6F2`
-  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
   - `../../capabilities/manufacturing/100_cap_mfg_001_implementation.md#xid-1A12C5C61269`
   - `../../capabilities/manufacturing/110_cap_mfg_002_unit_test_execution.md#xid-55CC9027ACAD`
 - knowledge_refs:
-  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../knowledge/organization/151_temporary_traceability_comment_rule.md#xid-22E4C7AC7063`
   - `../../knowledge/organization/190_quality_feedback_return_rules.md#xid-7A2F4C8D1901`
   - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`

@@ -10,12 +10,10 @@
 - output: approved design, target paths, source modification design, data change design, source analysis basis reference, design basis policy reference, and referenced constraint-derivation output paths when derivation was required
 - maturity: `draft`
 - execution_mode: `local_default`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: execute design business activity through reusable solution-design capability
-- role_responsibilities:
-  - executor: user needs implementation-ready design after planning outputs are approved
+- responsibility: user needs implementation-ready design after planning outputs are approved
 - os_contract: v1
 - constraints: preserve unresolved design assumptions explicitly; do not redefine business scope; express the change method clearly enough for pre-code review; when a source target lacks current source structure findings in canonical knowledge, create them with `dotnet_change_analysis` and publish them through `knowledge_ontology_management` before freezing implementation-facing design; when structural design artifacts still imply unresolved behavior, route through the constraint-derivation pack before freezing implementation-facing design
 - lifecycle:
@@ -28,10 +26,8 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
   - `../../capabilities/design/100_cap_dsn_001_solution_design_structuring.md#xid-6C1A2D9F4501`
 - knowledge_refs:
-  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`
   - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`
   - `../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`

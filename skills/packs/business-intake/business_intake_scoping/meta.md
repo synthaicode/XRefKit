@@ -11,12 +11,10 @@
 - maturity: `trial`
 - execution_mode: `local_default`
 - model_tier: `standard`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: discover and scope one business task into a boundary-visible responsibility unit even when the user only knows partial materials or structure
-- role_responsibilities:
-  - executor: a user wants to import business work into this repository, but only knows fragments such as a task name, one owner, one artifact, one trouble point, or a partial handoff and needs the AI to build the first usable scope
+- responsibility: a user wants to import business work into this repository, but only knows fragments such as a task name, one owner, one artifact, one trouble point, or a partial handoff and needs the AI to build the first usable scope
 - os_contract: v1
 - constraints: do not require a complete business map before helping; do not jump to detailed implementation steps before business and responsibility levels are explicit; do not hide missing business rules; mark unresolved ownership, rule interpretation, or handoff conditions as unresolved; partial scoping is valid when clearly labeled
 - lifecycle:
@@ -29,9 +27,7 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
-  - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../../knowledge/packs/business-intake/110_business_intake_scoping_rules.md#xid-7B3E5D1A6102`
   - `../../../../docs/packs/business-intake/060_business_intake_scoping_guide.md#xid-C91F7D2A6B40`
 - observation_refs:

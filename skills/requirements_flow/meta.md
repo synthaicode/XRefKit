@@ -10,12 +10,10 @@
 - output: requirement draft, performance requirement definition, load-test draft plan, unresolved list
 - maturity: `draft`
 - execution_mode: `local_default`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: execute requirements business activities through reusable requirement and performance-constraint structuring capabilities
-- role_responsibilities:
-  - executor: user needs requirement drafting after investigation and estimation
+- responsibility: user needs requirement drafting after investigation and estimation
 - os_contract: v1
 - constraints: draft only; do not approve final requirements; preserve change reason, change requirement, and change specification as explicit difference artifacts
 - lifecycle:
@@ -28,10 +26,8 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
   - `../../capabilities/requirements/100_cap_req_001_requirement_draft_creation.md#xid-BC408337F2A2`
   - `../../capabilities/requirements/110_cap_req_002_performance_requirement_definition.md#xid-D67FAD650F8C`
 - knowledge_refs:
-  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`
   - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`

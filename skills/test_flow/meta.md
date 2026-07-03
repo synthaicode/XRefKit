@@ -11,12 +11,10 @@
 - maturity: `draft`
 - execution_mode: `subagent_preferred`
 - model_tier: `standard`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: execute test-planning, test-item structuring, integration/regression test design, and manufacturing-side test-method review
-- role_responsibilities:
-  - executor: user needs a reviewed test package from planning outputs, requirements, and design evidence
+- responsibility: user needs a reviewed test package from planning outputs, requirements, and design evidence
 - os_contract: v1
 - constraints: do not redefine requirement intent, business scope, or final release judgment
 - lifecycle:
@@ -29,11 +27,9 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
   - `../../capabilities/design/130_cap_dsn_004_test_plan_structuring.md#xid-6C1A2D9F4504`
   - `../../capabilities/design/110_cap_dsn_002_test_design_structuring.md#xid-6C1A2D9F4502`
   - `../../capabilities/design/120_cap_dsn_003_integration_regression_test_design_structuring.md#xid-6C1A2D9F4503`
   - `../../capabilities/manufacturing/130_cap_mfg_003_test_method_review.md#xid-55CC9027ACAE`
 - knowledge_refs:
-  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../knowledge/quality/110_test_design_criteria.md#xid-8C4D2A7E5102`

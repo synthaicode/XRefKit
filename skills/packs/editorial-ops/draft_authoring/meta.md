@@ -11,12 +11,10 @@
 - maturity: `draft`
 - execution_mode: `local_default`
 - model_tier: `heavy`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: produce an article draft from explicit intake framing and source basis without hiding unsupported claims
-- role_responsibilities:
-  - executor: intake has already defined the article boundary and a first draft or revision draft is needed
+- responsibility: intake has already defined the article boundary and a first draft or revision draft is needed
 - os_contract: v1
 - constraints: do not invent missing facts to smooth the narrative; keep unsupported wording visible for later review; preserve channel-neutral source meaning before channel-specific adaptation; write the draft to `work/editorial_ops/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
@@ -29,7 +27,5 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
-  - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
 - `../../../../knowledge/packs/editorial-ops/110_editorial_operations_framework.md#xid-F9E58E2BAD21`

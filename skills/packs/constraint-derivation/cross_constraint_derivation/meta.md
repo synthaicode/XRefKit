@@ -11,12 +11,10 @@
 - maturity: `trial`
 - execution_mode: `local_default`
 - model_tier: `heavy`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: compare DDL structure and C# processing structure to surface missing flows, implicit assumptions, and duplicated rule ownership
-- role_responsibilities:
-  - executor: DDL and corresponding C# code both exist and their mismatch may expose missing use-case handling or undocumented assumptions
+- responsibility: DDL and corresponding C# code both exist and their mismatch may expose missing use-case handling or undocumented assumptions
 - os_contract: v1
 - constraints: compare valid DDL variations against actual code handling instead of assuming one side is authoritative; keep mismatches explicit; write the derivation result to `work/constraint_derivation/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
@@ -29,9 +27,7 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
-  - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA`
   - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
   - `../../../../knowledge/packs/constraint-derivation/200_cross_constraint_derivation_catalog.md#xid-B2E5F9DA4C82`

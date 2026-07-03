@@ -11,12 +11,10 @@
 - maturity: `draft`
 - execution_mode: `subagent_preferred`
 - model_tier: `standard`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: review article claims for factual separation, source support, names, numbers, links, and channel-sensitive wording risks
-- role_responsibilities:
-  - executor: a draft exists and the article needs evidence-backed checking before release or before further polishing
+- responsibility: a draft exists and the article needs evidence-backed checking before release or before further polishing
 - os_contract: v1
 - constraints: review concrete article claims rather than generic writing advice; keep missing support explicit as `unknown`; do not silently rewrite the draft inside the review; write the review result to `work/editorial_ops/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
@@ -29,7 +27,5 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
-  - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
 - `../../../../knowledge/packs/editorial-ops/110_editorial_operations_framework.md#xid-F9E58E2BAD21`

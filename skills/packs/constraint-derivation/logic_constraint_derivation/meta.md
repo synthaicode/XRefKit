@@ -11,12 +11,10 @@
 - maturity: `trial`
 - execution_mode: `local_default`
 - model_tier: `standard`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: derive requirement confirmation gates from branching, calculations, state transitions, and approval logic
-- role_responsibilities:
-  - executor: business-logic specs may leave boundary, exception, or transition behavior to implicit AI completion
+- responsibility: business-logic specs may leave boundary, exception, or transition behavior to implicit AI completion
 - os_contract: v1
 - constraints: derive all structurally implied branches and boundaries; do not infer unspecified else-paths; keep state-transition and calculation edge cases explicit; write the derivation result to `work/constraint_derivation/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
@@ -29,9 +27,7 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
-  - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
   - `../../../../knowledge/packs/constraint-derivation/140_logic_constraint_derivation_catalog.md#xid-4E5B8923C912`
 - observation_refs:

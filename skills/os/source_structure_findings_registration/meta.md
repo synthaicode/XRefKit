@@ -10,12 +10,10 @@
 - output: a proposed or applied canonical source-structure finding fragment, an updated current source structure findings catalog entry when authorized, source and evidence linkage, unresolved verification list, and handoff to `design_flow` or `knowledge_ontology_management`
 - maturity: `trial`
 - execution_mode: `local_default`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: register existing source-analysis Markdown into canonical source-structure knowledge without re-running structure analysis
-- role_responsibilities:
-  - executor: read an existing analysis Markdown artifact, extract the reusable current-source finding metadata, and prepare or apply the corresponding canonical knowledge registration
+- responsibility: read an existing analysis Markdown artifact, extract the reusable current-source finding metadata, and prepare or apply the corresponding canonical knowledge registration
 - os_contract: v1
 - constraints: do not re-run source structure analysis when the provided Markdown already contains the required findings; do not invent missing structure facts from model memory; do not preserve stale catalog entries as history; canonical mutation requires authorized `apply`; when authority is absent, create a proposal and hand it to `knowledge_ontology_management`; keep only current facts in `knowledge/` and keep unresolved verification explicit
 - lifecycle:
@@ -28,9 +26,7 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
-  - `../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../knowledge/organization/200_domain_knowledge_ontology_rules.md#xid-5803607419B9`
   - `../../../docs/reference/020_sources.md#xid-2FAD591BF725`
   - `../../../docs/policies/074_document_update_policy.md#xid-B1D42A6F90C3`

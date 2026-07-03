@@ -11,12 +11,10 @@
 - maturity: `trial`
 - execution_mode: `local_default`
 - model_tier: `light`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: route design or implementation artifacts to the correct bidirectional constraint-derivation Skills and sequence the secondary commonality pass
-- role_responsibilities:
-  - executor: design specifications or implementation artifacts need derivation of missing confirmations, hidden assumptions, or boundary scenarios without implicit AI completion
+- responsibility: design specifications or implementation artifacts need derivation of missing confirmations, hidden assumptions, or boundary scenarios without implicit AI completion
 - os_contract: v1
 - constraints: do not infer requirement decisions from design prose or code alone; route to all applicable primary Skills before the secondary commonality pass; keep shared rules in knowledge instead of duplicating them across pack Skills; write the routing result to `work/constraint_derivation/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
@@ -29,9 +27,7 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
-  - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
 - observation_refs:
   - ../../../../observations/2026-06-21_skill_run_skill_flow_authoring.md

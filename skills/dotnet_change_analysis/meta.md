@@ -11,12 +11,10 @@
 - maturity: `stable`
 - execution_mode: `subagent_preferred`
 - model_tier: `standard`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: analyze .NET application structure and generate a Markdown change-analysis note for later design or implementation work
-- role_responsibilities:
-  - executor: user needs repository-based .NET structure analysis, impact investigation, or a Markdown change-analysis note before changing code, especially brownfield code where responsibility separation is not documented and must be read from the code
+- responsibility: user needs repository-based .NET structure analysis, impact investigation, or a Markdown change-analysis note before changing code, especially brownfield code where responsibility separation is not documented and must be read from the code
 - os_contract: v1
 - constraints: do not decide implementation policy by default; record unknowns explicitly; confirm custom-attribute activation instead of stopping at inventory; record structure and change impact only — defect-level findings hand off to csharp_review and vulnerability assessment hands off to security_review
 - lifecycle:
@@ -29,10 +27,8 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
   - `../../capabilities/quality/190_cap_qa_011_roslyn_analyzer_acceptance.md#xid-94C1B7B9920A`
 - knowledge_refs:
-  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001`
   - `../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002`
   - `../../knowledge/source_analysis/120_dotnet_change_analysis_viewpoints.md#xid-2E7B5A1FD201`

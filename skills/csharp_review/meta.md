@@ -11,12 +11,11 @@
 - maturity: `stable`
 - execution_mode: `subagent_preferred`
 - model_tier: `standard`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
-- tuning: review C# code with a manual focus on non-Roslyn-detectable risks
-- role_responsibilities:
-  - executor: user asks for C# review beyond Roslyn/compiler diagnostics, including async hangs, synchronization risks, or fake-clock wait behavior that Roslyn does not catch
+- capability: `software_development`
+- tuning: `C#`
+- responsibility: quality check
 - os_contract: v1
 - constraints: exclude Roslyn-detectable issues; do not hard-fail unknown attribute values by whitelist; do not expand into security review or design-assumption derivation — route those findings to security_review or the constraint-derivation pack through the handoff list
 - lifecycle:
@@ -32,9 +31,7 @@
   - `../../capabilities/quality/190_cap_qa_011_roslyn_analyzer_acceptance.md#xid-94C1B7B9920A`
   - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
   - `../../capabilities/management/150_cap_mgt_006_independent_run_verification.md#xid-E37644FAA6F2`
-  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
-  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4F6F3AA`
   - `../../knowledge/organization/190_quality_feedback_return_rules.md#xid-7A2F4C8D1901`
   - `../../knowledge/csharp/120_csharp_test_synchronization_patterns.md#xid-4314A1A73CAF`

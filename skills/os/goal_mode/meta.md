@@ -10,12 +10,10 @@
 - output: continuation packet for the current goal, explicit wait condition, resume checklist, updated artifacts or handoff pointers, and unresolved items that still block safe continuation
 - maturity: `trial`
 - execution_mode: `local_default`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: preserve task state, wait for Codex usage recovery, and resume the same goal after the next 5-hour or weekly reset
-- role_responsibilities:
-  - executor: a user wants Codex work to continue toward the same goal even when usage remaining can reach `0%`, and the repository must preserve a restart-ready continuation packet instead of silently stopping
+- responsibility: a user wants Codex work to continue toward the same goal even when usage remaining can reach `0%`, and the repository must preserve a restart-ready continuation packet instead of silently stopping
 - os_contract: v1
 - constraints: do not invent quota-reset times; do not claim background wake-up or automatic resume unless a real hook or queue mechanism exists; do not lose unresolved items or next-step ownership during the wait; do not resume after a long wait without checking for drift in scope, branch state, or upstream instructions
 - lifecycle:
@@ -28,9 +26,7 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
-  - `../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../docs/designs/050_codex_mcp_job_inbox_design.md#xid-77BCEAA247E3`
   - `../../../docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`
   - `../../../docs/guides/069_codex_goal_mode_usage_guide.md#xid-3E7B4C11A8D2`

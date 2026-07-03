@@ -11,12 +11,10 @@
 - maturity: `trial`
 - execution_mode: `local_default`
 - model_tier: `heavy`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: derive integration-only failure and compensation scenarios from DDL, processing order, and external system boundaries
-- role_responsibilities:
-  - executor: DDL, code, and external-boundary specs together may hide partial-failure, retry, or compensation scenarios that unit-level reasoning misses
+- responsibility: DDL, code, and external-boundary specs together may hide partial-failure, retry, or compensation scenarios that unit-level reasoning misses
 - os_contract: v1
 - constraints: focus on boundary-crossing state progression rather than isolated method correctness; keep compensation and retry questions explicit; write the derivation result to `work/constraint_derivation/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
@@ -29,9 +27,7 @@
 - skill_doc: `./SKILL.md`
 - capability_refs:
   - `../../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
-  - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
   - `../../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA`
   - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
   - `../../../../knowledge/packs/constraint-derivation/210_integration_scenario_derivation_catalog.md#xid-C3F60AEB5D93`
