@@ -33,10 +33,17 @@ Dashboard は実行そのものではなく、AI の動作を人間が確認し�
 - 次に中央で Dashboard がどの記録を横断観測するかを見る
 - 最後に右側で、人間がそれをどう確認するかを見る
 
+## 動かし方
+
+Dashboard は利用者のローカル環境で起動する想定です。
+起動、停止、JSON確認、ポート変更、ローカルXIDの扱いは
+[Skill Run Observation Dashboard usage](../../docs/guides/086_skill_run_observation_dashboard_usage.md) を参照してください。
+
 ## 非対象（誤解防止）
 
 - Dashboard が AI や Skill を実行するものではない
 - Flow の進行状態を表示するものではない
+- MCP や外部公開Webサーバーを前提にした画面ではない
 - Dashboard が正本知識を持つ層ではない
 - 監査だけのための表示ではない
 - ログ保管庫そのものではない
