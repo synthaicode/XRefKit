@@ -77,7 +77,6 @@ Output is candidate-only; disposition and per-case approval stay downstream
 | `run_quality_gate.py` | the repository's own gate: unittest, `fm xref/skill/pack` checks, log audit, baselines, node project checks |
 | `audit_skill_runtime_logs.py` | audit skill runtime logs (`fm.skillrun`) |
 | `check_project_quality_baseline.py` | node projects under `projects/` baseline check |
-| `check_feedback_register.py` | validate `docs/quality/044_system_quality_feedback_register.md` format |
 | `migrate_legacy_flow_skill.py` | migrate a legacy flow into the Flow/Capability/Skill model |
 
 ## Binding rules

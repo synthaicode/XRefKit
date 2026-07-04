@@ -36,8 +36,6 @@ The exact internal commands may vary by project, but the baseline intent is:
 
 - `projects/slides-app/`
   - `check`: lint + typecheck + build
-- `projects/flow-monitor-dashboard/`
-  - `check`: JavaScript syntax check + JSON parse validation
 
 ## Enforcement
 
