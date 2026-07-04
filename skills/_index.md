@@ -102,7 +102,7 @@ Current family paths:
   - meta: `skills/csharp_error_policy_extraction/meta.md`
   - skill_doc: `skills/csharp_error_policy_extraction/SKILL.md`
 - `csharp_review`:
-  - summary: review C# code with a manual focus on non-Roslyn-detectable risks
+  - summary: review C# code for language-dependent defects and system-level implementation risks beyond Roslyn diagnostics
   - meta: `skills/csharp_review/meta.md`
   - skill_doc: `skills/csharp_review/SKILL.md`
 - `db_current_state_analysis`:
@@ -138,7 +138,7 @@ Current family paths:
   - meta: `skills/investigation_flow/meta.md`
   - skill_doc: `skills/investigation_flow/SKILL.md`
 - `manufacturing_self_check`:
-  - summary: execute manufacturing self-check business activity through reusable design-alignment self-evaluation capability
+  - summary: execute manufacturing self-check for code and DB manufacturing outputs through reusable design-alignment self-evaluation capability
   - meta: `skills/manufacturing_self_check/meta.md`
   - skill_doc: `skills/manufacturing_self_check/SKILL.md`
 - `marketing-explainer-video`:
@@ -278,7 +278,7 @@ Current family paths:
   - meta: `skills/pptx_spec_traceability/meta.md`
   - skill_doc: `skills/pptx_spec_traceability/SKILL.md`
 - `qa_gate_review`:
-  - summary: execute evidence-based QA across specification, performance, security, and license domains
+  - summary: execute evidence-based QA with XDDP trace-continuity, domain review, and system-impact checks
   - meta: `skills/qa_gate_review/meta.md`
   - skill_doc: `skills/qa_gate_review/SKILL.md`
 - `release_planning_flow`:

@@ -4,22 +4,22 @@
 # Skill Meta: qa_gate_review
 
 - skill_id: `qa_gate_review`
-- summary: execute evidence-based QA across specification, performance, security, and license domains
-- use_when: user asks for QA review against design, performance, security, or license expectations, including a focused single-domain review scoped to one quality capability (attribute, performance, or license)
-- input: target code paths, design evidence, coding rules, optional performance evidence, optional dependency provenance
-- output: per-domain review results, diff-consistency result, findings with evidence, uncertainty list
+- summary: execute evidence-based QA with XDDP trace-continuity, domain review, and system-impact checks
+- use_when: user asks for QA review against XDDP traceability, design, performance, security, or license expectations, including a focused single-domain review scoped to one quality capability (attribute, performance, security, or license)
+- input: target code paths, DB manufacturing artifacts when in scope, design evidence, coding rules, optional performance evidence, optional dependency provenance
+- output: XDDP trace-continuity result, per-domain review results, diff-consistency and system-impact result, findings with evidence, uncertainty list
 - maturity: `stable`
 - execution_mode: `subagent_required`
 - capability_layering: `required`
 - workflow_protocol: `required`
-- tuning: execute evidence-based QA across specification, performance, security, and license domains
+- tuning: execute XDDP trace-continuity, domain QA, and system-impact review
 - responsibility: user asks for QA review against design, performance, security, or license expectations
 - os_contract: v1
-- constraints: every judgment needs evidence; unresolved evidence gaps stay explicit; review the intended difference, not the whole implementation by default
+- constraints: every judgment needs evidence; unresolved evidence gaps stay explicit; review that XDDP trace links remain connected; include DB manufacturing results when database, persistence, migration, SQL, data correction, or stored-procedure work is in scope; review the intended difference and graph/structure-backed system-impact candidates, not the whole implementation by default; do not force multi-domain or multi-artifact review through one model context when it risks context overflow — split by domain, target, or evidence family and run subagents with explicit merge rules
 - lifecycle:
-  - startup: confirm domain evidence exists for specification, performance, security, and license review
-  - planning: define review domains, delta-bounded targets, management rows, and subagent split when scope-separated parallel review is safe
-  - execution: run `CAP-QA-001`, `CAP-QA-006`, `CAP-QA-007`, and `CAP-QA-008`, with `CAP-QA-005` when attribute analysis is required, while checking delta appropriateness against traced intent, semantic structure evidence, and graph-backed impact candidates when available
+  - startup: confirm XDDP trace basis, DB manufacturing artifacts when in scope, and domain evidence exist for specification, performance, security, and license review
+  - planning: define trace-continuity checks, review domains, delta-bounded targets including DB manufacturing outputs, system-impact candidates, management rows, and subagent split by review domain, artifact family, or target boundary before loading broad evidence
+  - execution: run `CAP-QA-001`, `CAP-QA-006`, `CAP-QA-007`, and `CAP-QA-008`, with `CAP-QA-005` when attribute analysis is required, while checking that XDDP Why / What / Where / How, TM rows, intended diff, semantic structure evidence, and graph-backed impact candidates remain connected
   - monitoring_and_control: downgrade unsupported conclusions or unclear delta coverage to `unknown`
   - closure: finalize states, return per-domain findings with evidence, and hand off target-scope cleanup when code review completion is declared
 - tags: `qa`, `review`, `quality`
