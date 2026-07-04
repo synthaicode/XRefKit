@@ -26,11 +26,12 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Startup xref routing policy (shared for vendor startup files)](core/contracts/011_startup_xref_routing.md#xid-6C0B62D6366A)
 - [Initialization sequence reference](core/contracts/077_initialization_sequence.md#xid-A264E296AC71)
 - [Single-link startup architecture](designs/012_single_link_startup_architecture.md#xid-AB27F6C19DF5)
+- [XRefKit startup contract (repository-native startup target)](core/contracts/080_xrefkit_startup_contract.md#xid-C3A1F78D9B22)
 - [Base control and xref routing layers](core/models/017_base_and_xref_layering.md#xid-5A1C8E4D2F90)
 - [Working area policy (for in-progress notes)](policies/014_working_area_policy.md#xid-111D282CA0EA)
 - [Shared memory operations (AI-authored logs)](core/contracts/015_shared_memory_operations.md#xid-4A423E72D2ED)
 - [Uncertainty protocol ("I don't know" policy)](core/contracts/016_uncertainty_protocol.md#xid-8A666C1FD121)
-- [Startup contract pack (canonical compressed startup contract for MCP)](core/contracts/079_startup_contract_pack.md#xid-D4E8A1C63B57)
+- [Startup contract pack (MCP compressed startup body)](core/contracts/079_startup_contract_pack.md#xid-D4E8A1C63B57)
 - [Work record types](reference/019_work_record_types.md#xid-4F8C21B7D4A2)
 - [Document update policy](policies/074_document_update_policy.md#xid-B1D42A6F90C3)
 

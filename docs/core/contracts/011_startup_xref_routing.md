@@ -3,14 +3,20 @@
 
 # Startup Xref Routing Policy
 
-This page defines the shared startup policy for vendor-specific startup files
-(Copilot, Claude, Devin/AGENTS, Cursor, ChatGPT, etc.).
+This page defines the shared xref routing policy for startup behavior across
+vendor-specific startup files (Copilot, Claude, Devin/AGENTS, Cursor, ChatGPT,
+etc.).
 
-This page is the operational entry rule for startup files.
+For the XRefKit repository-native startup target, use
+`docs/core/contracts/080_xrefkit_startup_contract.md#xid-C3A1F78D9B22`.
+
 For the concrete sequence reference, use
 `docs/core/contracts/077_initialization_sequence.md#xid-A264E296AC71`.
 
 ## Startup Sequence
+
+XRefKit repository-native startup target is defined by
+`docs/core/contracts/080_xrefkit_startup_contract.md#xid-C3A1F78D9B22`.
 
 Startup order is defined by
 `docs/core/contracts/077_initialization_sequence.md#xid-A264E296AC71`.

@@ -8,7 +8,9 @@ different AI vendors (Copilot, Claude, Devin/AGENTS, Cursor, ChatGPT, etc.).
 
 This page explains the startup-file structure only.
 It does not restate the startup operating rules or the base/XRefKit layer boundary.
-For those, see [Startup xref routing policy](../core/contracts/011_startup_xref_routing.md#xid-6C0B62D6366A) and [Base control and xref routing layers](../core/models/017_base_and_xref_layering.md#xid-5A1C8E4D2F90).
+For those, see [XRefKit startup contract](../core/contracts/080_xrefkit_startup_contract.md#xid-C3A1F78D9B22),
+[Startup xref routing policy](../core/contracts/011_startup_xref_routing.md#xid-6C0B62D6366A),
+and [Base control and xref routing layers](../core/models/017_base_and_xref_layering.md#xid-5A1C8E4D2F90).
 
 ## Problem
 
@@ -18,11 +20,12 @@ drift risk increase.
 
 ## Design
 
-Use a **single shared policy link** as the startup entry point.
-Vendor-specific startup files stay minimal and only point to the shared policy.
+Use a **single XRefKit startup contract link** as the startup entry point.
+Vendor-specific startup files stay minimal and only point to the repository
+startup contract.
 
-- Shared startup policy:
-  - [Startup xref routing policy](../core/contracts/011_startup_xref_routing.md#xid-6C0B62D6366A)
+- Repository startup target:
+  - [XRefKit startup contract](../core/contracts/080_xrefkit_startup_contract.md#xid-C3A1F78D9B22)
 - Canonical detail pages:
   - [Docs Index](../000_index.md#xid-56DD6EB68343)
   - [Agent Entry](../../agent/000_agent_entry.md#xid-0B5C58B5E5B2)
@@ -30,8 +33,8 @@ Vendor-specific startup files stay minimal and only point to the shared policy.
 ## Startup Shape
 
 1. Vendor startup file is loaded by the tool.
-2. The file points to one shared policy page.
-3. The shared policy routes knowledge access through `xref`.
+2. The file points to one XRefKit startup contract page.
+3. The startup contract routes knowledge access through `xref`.
 4. Skills pull only required domain fragments from `knowledge/`.
 
 This keeps startup files thin while preserving consistent behavior.

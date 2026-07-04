@@ -3,9 +3,13 @@
 
 # Startup Contract Pack v1
 
-This page is the canonical compressed startup contract that XRefKit MCP
-distributes as `startup_contract_pack.body`. It is a hand-authored
-derivation of the six source documents listed under "Based On".
+This page is the MCP-specific compressed startup contract that XRefKit MCP
+distributes as `startup_contract_pack.body`. It is a hand-authored derivation
+of the six source documents listed under "Based On".
+
+This page is not the repository-native startup target for XRefKit itself. For
+XRefKit startup without assuming MCP, use
+`docs/core/contracts/080_xrefkit_startup_contract.md#xid-C3A1F78D9B22`.
 
 Maintenance rule: when any source document changes, update this page and
 its "Based On" hashes in the same commit. Generate the current hash lines
@@ -20,7 +24,7 @@ as stale to every client when they diverge.
 - pack_version: 1
 - 0B5C58B5E5B2: `9e344cd72d76da091f4d9d04f1439975ed7eaf8fcb2558a8784c23b4f055d1a8`
 - 5A1C8E4D2F90: `7419271f829b1e16fd41030d8d6ed4c1f193cc40506cac58f0a496ec518d87f2`
-- 6C0B62D6366A: `3843072e7bdc6a27a435975432cde850ab53a08bc9033011999e22dd71db800c`
+- 6C0B62D6366A: `90c9448b6744b0f0c0870da09ab770927d1230b395ed20525f31d57c3679b65b`
 - 8A666C1FD121: `34f8d7b18462e5320a54c4a259090bfe118fc23b666c4866714bc5adbd7d4e94`
 - A7F3C92D4E11: `5732f45b041b60ec643ae4ff2c94dcc2e15376cb77f12b39dc2dafbf3614a0a4`
 - 4A423E72D2ED: `7e34f23b0e407a35d53bdcb59efcce1bb2f127dbd008d2f5a82bc5c79021e49c`

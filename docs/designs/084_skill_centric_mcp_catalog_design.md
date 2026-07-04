@@ -34,10 +34,12 @@ break the live server.
 - **Capabilities.** Not a first-class tool. `capabilities/` is one of the dirs
   scanned by `_managed_markdown_files`, so capability XIDs resolve through
   `get_document_by_xid`; Skills reference them via `capability_refs`.
-- **Startup contract pack.** The consolidated init body (both the repository
-  document [079](../core/contracts/079_startup_contract_pack.md#xid-D4E8A1C63B57)
+- **MCP startup contract pack.** The MCP model-facing compressed init body
+  (the MCP document [079](../core/contracts/079_startup_contract_pack.md#xid-D4E8A1C63B57)
   and the embedded fallback `CANONICAL_STARTUP_CONTRACT_PACK_BODY` in
-  `startup_contract_pack.py`) **hard-encodes the old model**:
+  `startup_contract_pack.py`) **hard-encodes the old model**. The
+  repository-native XRefKit startup target is separate:
+  [080](../core/contracts/080_xrefkit_startup_contract.md#xid-C3A1F78D9B22).
   - "Treat … `flows/` as control structure, and `skills/` as executable procedure."
   - "For business-capability work, route through the capability model."
   - guard directionality: "Normal direction is: Flow -> Capability -> Skill -> External input -> Output."

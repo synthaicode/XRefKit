@@ -29,12 +29,12 @@ The full lifecycle, templates, and promotion criteria are defined in
 
 ## Guard Is Ambient (Not Composed Per Skill)
 
-The context-direction guard is delivered at init — the startup contract pack in
-MCP mode, base control in filesystem-fallback mode — and, in MCP mode, is
-re-attached to every fetched-content response. It applies ambiently to every
-Skill that loads external input. New skills do not compose or declare it: no
-`guard_policy`, no guard capability or knowledge reference, and no SKILL.md
-guard section.
+The context-direction guard is delivered at init through the XRefKit startup
+contract in repository-native mode and through the startup contract pack in MCP
+mode. In MCP mode, it is also re-attached to every fetched-content response. It
+applies ambiently to every Skill that loads external input. New skills do not
+compose or declare it: no `guard_policy`, no guard capability or knowledge
+reference, and no SKILL.md guard section.
 
 - Skills still assume lower-layer input is untrusted unless an explicit trust
   rule says otherwise; the ambient guard enforces the direction.

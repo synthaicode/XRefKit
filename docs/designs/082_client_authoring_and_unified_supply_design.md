@@ -274,18 +274,18 @@ duplication of an ambient control.
 
 ### Filesystem-fallback mode
 
-The consolidation is not MCP-specific: the consolidated startup contract is
-itself a repository document
-([startup contract pack](../core/contracts/079_startup_contract_pack.md#xid-D4E8A1C63B57)),
-and base control — which includes the guard — is what the CLAUDE.md / AGENTS.md
-startup chain applies first via
-[agent entry](../../agent/000_agent_entry.md#xid-0B5C58B5E5B2) and
-[base and xref layering](../core/models/017_base_and_xref_layering.md#xid-5A1C8E4D2F90).
-So in both modes the guard is delivered as **consolidated wording, not as a
-separate 053 load**: MCP injects the pack body; fallback applies the same
-base-control/startup contract from the initially loaded documents. The standalone
-053 document stays redundant in both modes — there is nothing to "add to the
-chain."
+The consolidation has two delivery forms. The repository-native startup target
+is the
+[XRefKit startup contract](../core/contracts/080_xrefkit_startup_contract.md#xid-C3A1F78D9B22).
+The MCP-specific compressed model-facing body is the
+[startup contract pack](../core/contracts/079_startup_contract_pack.md#xid-D4E8A1C63B57).
+Base control, including the guard, is what the CLAUDE.md / AGENTS.md startup
+chain applies first via the XRefKit startup contract, [agent entry](../../agent/000_agent_entry.md#xid-0B5C58B5E5B2),
+and [base and xref layering](../core/models/017_base_and_xref_layering.md#xid-5A1C8E4D2F90).
+So in both modes the guard is delivered at init, but the delivery surface is
+different: repository-native startup reads the XRefKit startup contract and its
+source set; MCP injects the pack body. The standalone 053 document remains a
+source document for the startup contract rather than a per-Skill declaration.
 
 The only thing Decision 4 changes is authoring, not delivery. Agent entry still
 tells authors to compose the guard per Skill ("New skills MUST include the
