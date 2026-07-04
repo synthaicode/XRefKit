@@ -104,9 +104,32 @@ existing intake Skills are each narrower than requirement 8:
   registers a specific artifact kind — a source-structure analysis Markdown —
   into the source-findings catalog, not arbitrary domain knowledge.
 
-The gap is a general path that takes knowledge already written on the client
-(outside XRefKit, without an XID) and adopts it into `packs/local/*/knowledge/`
-with an assigned XID and normalized ontology.
+The gap is a general path for knowledge already written on the client outside
+XRefKit.
+
+There are two cases:
+
+- If the local rule or knowledge has no XID, adopt it into
+  `packs/local/<system>/knowledge/`, assign an XID, and normalize it into the
+  domain-knowledge ontology.
+- If the knowledge already has an XID, do not import or mirror it into this
+  repository. Configure the MCP server with an external domain-knowledge root
+  that contains that knowledge, then make the XID resolvable through the MCP
+  catalog. Physical placement stays outside this repository; the client-facing
+  contract remains XID selection plus `get_document_by_xid`.
+
+For already-XID-bearing knowledge, the placement rule is:
+
+- Base/shared reusable knowledge belongs in the appropriate base or shared pack
+  catalog root (`knowledge/`, `packs/<pack>/knowledge/`, or another
+  catalog-eligible shared root).
+- Local-only client knowledge stays in its existing local source of truth and is
+  connected by MCP server configuration as an external domain-knowledge root.
+  Do not create a repository-local mirror as the normal fallback; that makes the
+  XRefKit checkout carry client knowledge and breaks portability across
+  repository updates or different client machines.
+- The client never depends on that physical placement. It sees only the XID,
+  metadata, content hash/version, and `get_document_by_xid` body.
 
 ### Proposed `adopt_knowledge` Skill (not implemented)
 
@@ -126,8 +149,12 @@ Behavior:
    fragment that the input would shadow/fork.
 3. Normalize into the domain-knowledge ontology shape; separate durable facts
    from procedure (procedure belongs in a Skill, not knowledge).
-4. Place normalized fragments under `packs/local/<system>/knowledge/` and assign
-   XIDs with `python -m fm xref init`.
+4. For XID-less input, place normalized fragments under
+   `packs/local/<system>/knowledge/` and assign XIDs with
+   `python -m fm xref init`.
+   For input that already carries an XID, preserve the XID and connect the
+   source through an MCP-configured external domain-knowledge root. Do not force
+   a new local fragment, new XID, or repository-local mirror.
 5. When the input restates a base fact rather than adding a local one, record a
    `forked_from` provenance relation instead of a silent duplicate so MCP
    classifies it as a fork, not a conflict.
@@ -185,23 +212,32 @@ knowledge_slots:
 ```
 
 - Resolution reuses the existing catalog primitives:
-  `search_knowledge_catalog` / `build_knowledge_context(query)` already rank
-  candidates over the merged base+local roots. The Skill runtime resolves each
-  slot at the planning phase and records the resolved XIDs and `content_hash` in
-  the run log, so a run is auditable and replayable even though the selection
-  itself was judgment.
+  `search_knowledge_catalog` / `build_knowledge_context(query)` rank candidates
+  over the unified MCP supply: repository knowledge plus MCP-configured external
+  domain-knowledge roots. The Skill runtime resolves each slot at the planning
+  phase and records the resolved XIDs and `content_hash` in the run log, so a
+  run is auditable and replayable even though the selection itself was judgment.
 - A `required` slot that resolves to zero candidates in the current catalog is a
   planning-phase blocker, not a silent empty load.
 
 ### Why this completes requirement 6
 
-Slots resolve against the **base+local unified catalog**. A fact placed in
-`packs/local/<system>/knowledge/` therefore satisfies a base Skill's slot with
-no edit to the Skill. This closes the gap left open otherwise: local knowledge
-would be catalog-visible (Decision 1) yet unusable by kernel Skills if those
-Skills bound fixed base XIDs. Dynamic selection is what lets local knowledge
-actually feed base Skills — and it minimizes forked Skill surface, the stated
-goal of the local-first fork model.
+Slots resolve against the **unified MCP knowledge supply**. A newly adopted
+XID-less local fact placed in `packs/local/<system>/knowledge/` can satisfy a
+base Skill's slot with no edit to the Skill. A pre-existing fact that already has
+an XID satisfies the same slot when the MCP server exposes its external
+domain-knowledge root alongside repository knowledge and resolves that XID
+through `get_document_by_xid`. This closes the gap left open otherwise: local
+knowledge could exist but remain unusable by kernel Skills if those Skills bound
+fixed base XIDs. Dynamic selection is what lets local knowledge actually feed
+base Skills — and it minimizes forked Skill surface, the stated goal of the
+local-first fork model.
+
+Before a consuming Skill runs, the available repository and external domain
+knowledge should be listed and summarized through
+`domain_knowledge_catalog_preparation` or an equivalent MCP preparation step.
+That preparation produces the metadata-only catalog that later Skills use for
+XID selection; full bodies remain lazy behind `get_document_by_xid`.
 
 ### Guard implication
 
@@ -320,9 +356,10 @@ The client sees a single, unified supply surface. Provenance is metadata, not a
 separate channel:
 
 ```text
-one catalog from MCP  =  kernel roots (base)          skills/**, knowledge/**, flows/**, capabilities/**
-                       + shared pack roots (base/pack) packs/*/**
-                       + local pack roots (local)      packs/local/*/**   [filesystem-served, git-untracked]
+one catalog from MCP  =  kernel roots (base)             skills/**, knowledge/**, flows/**, capabilities/**
+                       + shared pack roots (base/pack)   packs/*/**
+                       + local pack roots (local)        packs/local/*/**   [for XID-less adopted local content]
+                       + external domain knowledge roots [MCP-configured, outside this repository]
 
 each entry carries zone_metadata: { zone, owner, pack_id, local_only, distribution, forked_from? }
 ```

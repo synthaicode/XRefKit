@@ -226,6 +226,10 @@ def _load_domain_knowledge_catalog(path_value: str | None) -> tuple[list[dict[st
                 "summary": str(raw_entry.get("summary") or "").strip(),
                 "domain": str(raw_entry.get("domain") or "").strip(),
                 "tags": raw_entry.get("tags") if isinstance(raw_entry.get("tags"), list) else [],
+                "content_hash": str(raw_entry.get("content_hash") or "").strip(),
+                "version": str(raw_entry.get("version") or "").strip(),
+                "last_verified": str(raw_entry.get("last_verified") or "").strip(),
+                "validity_conditions": str(raw_entry.get("validity_conditions") or "").strip(),
             }
         )
     return entries, errors
@@ -348,8 +352,12 @@ def _render_log(
                 [
                     f"- xid: `{entry.get('xid')}`",
                     f"  kind: `{entry.get('kind')}`",
+                    f"  domain: `{entry.get('domain') or '-'}`",
                     f"  title: `{entry.get('title')}`",
                     f"  summary: {entry.get('summary') or '-'}",
+                    f"  content_hash: `{entry.get('content_hash') or entry.get('version') or 'unknown'}`",
+                    f"  last_verified: `{entry.get('last_verified') or 'unknown'}`",
+                    f"  validity_conditions: {entry.get('validity_conditions') or 'unknown'}",
                 ]
             )
             for entry in available_domain_entries

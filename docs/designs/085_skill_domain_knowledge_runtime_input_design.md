@@ -127,6 +127,14 @@ Expected tool responsibilities:
 - `get_skill_requirements`
   - return fixed `judgment_refs`
   - return `knowledge_inputs`
+- `domain_knowledge_catalog_preparation` Skill / equivalent MCP preparation step
+  - prepare the available domain-knowledge catalog before the consuming Skill
+    runs
+  - combine repository knowledge and MCP-configured external domain-knowledge
+    roots into one XID-addressable metadata supply
+  - provide XID, kind, domain, title, summary, tags, content hash/version,
+    freshness, and validity conditions when available
+  - report conflicts, invalid entries, and required input gaps before execution
 - `list_domain_knowledge`
   - return available domain knowledge metadata
   - include XID, title, kind, domain, tags, summary, and hash/version metadata
@@ -226,6 +234,19 @@ metadata list -> choose XID -> get_document_by_xid(XID)
 If two catalogs contain the same XID, MCP should treat that as a conflict path.
 Normal responses do not need to expose catalog origin. Origin/source metadata is
 only needed for conflict diagnosis, debugging, or administrative reconciliation.
+
+`packs/local/<system>/knowledge/` is the adoption destination for local rules or
+knowledge that do not yet have XIDs. Knowledge that already has an XID must not
+be imported or mirrored into this repository as the normal connection method.
+The MCP server should instead accept a configured external domain-knowledge root
+and publish those XID-bearing documents through the same metadata list and
+`get_document_by_xid` resolution path as repository knowledge.
+
+When a client asks for domain knowledge through MCP, the MCP response may bundle
+repository knowledge and configured external domain knowledge into one
+XID-addressable supply. The client still sees only metadata, selected XIDs,
+content hash/version, and `get_document_by_xid` results; it must not depend on
+the external root path.
 
 ## Non-MCP Validation Path
 

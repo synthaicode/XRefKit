@@ -9,6 +9,7 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
 
 - operations: `doc_ship`, `retro`, `knowledge_ontology_management`,
   `source_structure_findings_registration`,
+  `domain_knowledge_catalog_preparation`,
   `consultation_research_mapping`, `judgment_log`, `import_skill`,
   `skill_flow_authoring`, `legacy_flow_skill_migration`, `goal_mode`,
   `release_planning_flow`, `cab_review_flow`,

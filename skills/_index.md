@@ -157,6 +157,10 @@ Current family paths:
   - summary: apply approved promotion candidates from `work/` into canonical repository assets and leave traceable moved-to pointers
   - meta: `skills/os/doc_ship/meta.md`
   - skill_doc: `skills/os/doc_ship/SKILL.md`
+- `domain_knowledge_catalog_preparation`:
+  - summary: prepare an XID-addressable domain-knowledge catalog from repository knowledge and MCP-configured external domain-knowledge roots before Skill execution
+  - meta: `skills/os/domain_knowledge_catalog_preparation/meta.md`
+  - skill_doc: `skills/os/domain_knowledge_catalog_preparation/SKILL.md`
 - `goal_mode`:
   - summary: preserve task state, wait for Codex usage recovery, and resume the same goal after the next 5-hour or weekly reset
   - meta: `skills/os/goal_mode/meta.md`

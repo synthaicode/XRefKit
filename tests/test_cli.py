@@ -932,6 +932,9 @@ class CliTests(unittest.TestCase):
                                 "title": "Target service structure",
                                 "summary": "Non-standard runtime composition and module boundaries",
                                 "tags": ["structure", "custom-framework"],
+                                "content_hash": "sha256-service-map",
+                                "last_verified": "2026-07-04",
+                                "validity_conditions": "Reuse until module boundaries change",
                             },
                             {
                                 "xid": "LOCAL-DB-SCHEMA-001",
@@ -975,10 +978,17 @@ class CliTests(unittest.TestCase):
                 ["LOCAL-SERVICE-MAP-001", "LOCAL-DB-SCHEMA-001"],
                 payload["domain_knowledge"]["selected"]["target_service_structure"],
             )
+            self.assertEqual(
+                "sha256-service-map",
+                payload["domain_knowledge"]["available"][0]["content_hash"],
+            )
             text = out.read_text(encoding="utf-8")
             self.assertIn("## Domain Knowledge Inputs", text)
             self.assertIn("- rule: available and selected brownfield domain knowledge is recorded by XID only", text)
             self.assertIn("- xid: `LOCAL-SERVICE-MAP-001`", text)
+            self.assertIn("content_hash: `sha256-service-map`", text)
+            self.assertIn("last_verified: `2026-07-04`", text)
+            self.assertIn("validity_conditions: Reuse until module boundaries change", text)
             self.assertIn("- target_service_structure:", text)
             self.assertIn("  - `LOCAL-DB-SCHEMA-001`", text)
             self.assertNotIn(str(catalog), text)
