@@ -24,4 +24,4 @@
   - closure: finalize states and hand off the three gate results to the decision layer
 - tags: `cab`, `review`, `release`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
+- knowledge_slots:

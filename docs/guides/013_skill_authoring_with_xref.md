@@ -66,17 +66,21 @@ Keep the authoring split simple:
 
 - `capability_layering` and `workflow_protocol` bind the run to repository
   runtime controls.
-- `capability`, `tuning`, and `role_responsibilities.executor` describe this
-  concrete Skill's base ability, specialization, and responsibility.
+- `capability`, `tuning`, and `responsibility` describe this concrete Skill's
+  base ability, specialization, and business use (the legacy
+  `role_responsibilities.executor` value is still accepted as the responsibility).
 - `role_responsibilities` must not define `checker`, `quality_reviewer`, or
   `handoff_owner`; those roles are protocol-owned.
-- `capability_refs` names the controlling capability definitions; it is not
-  evidence and does not define tuning or responsibility.
-- `knowledge_refs` names common method-support knowledge or the routing index
-  used to select tuning-specific knowledge. Do not hard-code C# knowledge in a
-  Skill that is meant to be reusable for Python, and do not hard-code C# + SQL
-  knowledge in a Skill that is meant to be reusable beyond that composite
-  tuning.
+- `capability` names the base reusable ability, `tuning` its specialization,
+  and `responsibility` the business use; together they are the Skill's meta
+  identity and routing vocabulary, not evidence.
+- `knowledge_slots` declare the knowledge the Skill needs: each slot either
+  binds a fixed XID (`bind=`) or resolves dynamically at runtime against the
+  base+local catalog by intent (`query=...; domain=...`). Do not hard-code C#
+  knowledge in a Skill meant to be reusable for Python, and do not hard-code
+  C# + SQL knowledge in a Skill meant to be reusable beyond that composite
+  tuning — use a `query` slot so the right per-tuning knowledge is selected at
+  runtime.
 
 The canonical capability / tuning / responsibility definitions are in
 `docs/reference/031_capability_layering.md#xid-8D50A972BA9F`.
@@ -85,11 +89,10 @@ Keep Skill bodies reusable: put the judgment or execution method in
 `SKILL.md`, and put language-specific rules, framework behavior, API facts,
 and long criteria lists in XID-backed `knowledge/`. If a Skill must be copied
 only because the domain rules differ, the domain rules belong in `knowledge/`
-instead. If fixed `knowledge_refs` point at one language's criteria, treat the
-Skill as language-specific. If fixed `knowledge_refs` point at a language
-combination such as C# + SQL, treat the Skill as composite-tuning-specific or
-introduce a tuning-aware knowledge selector that can resolve common,
-per-tuning, and cross-tuning knowledge separately.
+instead. If a `bind` slot points at one language's criteria, treat the Skill as
+language-specific. If bind slots point at a language combination such as
+C# + SQL, treat the Skill as composite-tuning-specific — or use `query` slots so
+the runtime resolves common, per-tuning, and cross-tuning knowledge separately.
 
 ## Subagent Prompt Efficiency Rule
 

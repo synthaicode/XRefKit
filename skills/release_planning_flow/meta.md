@@ -24,4 +24,4 @@
   - closure: finalize states and hand off release materials to CAB
 - tags: `operations`, `release`, `planning`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
+- knowledge_slots:

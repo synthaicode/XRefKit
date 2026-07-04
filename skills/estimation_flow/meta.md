@@ -24,4 +24,4 @@
   - closure: finalize states and hand off unresolved assumptions
 - tags: `estimation`, `planning`, `supplier`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
+- knowledge_slots:

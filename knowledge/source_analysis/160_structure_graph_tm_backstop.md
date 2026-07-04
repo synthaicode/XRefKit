@@ -288,7 +288,7 @@ The value adopted here is **not** any specific `@graph-*` annotation notation or
 a Product Graph implementation. In-source semantic annotation is rejected for
 this repository: structural relations are mechanically derivable (so marking them
 is redundant), code-to-knowledge links are already covered by rule maps, skill
-`knowledge_refs`, and on-demand LLM judgment, and brownfield code cannot carry
+`knowledge_slots`, and on-demand LLM judgment, and brownfield code cannot carry
 new annotations at all.
 
 The value adopted is using a deterministic structure graph as the **TM coverage

@@ -31,9 +31,9 @@ Use this when creating a new Skill in XRefKit.
   - closure: <closure rule>
 - tags: `<tag1>`, `<tag2>`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `<common-method-knowledge-or-tuning-aware-routing-index>#xid-...`
-  - `<optional-cross-tuning-routing-index-for-composite-tuning>#xid-...`
+- knowledge_slots:
+  - name=<slot>; query=<intent phrase>; domain=<domain>; min=1; required
+  - name=<slot>; bind=<xid-of-always-needed-domain-knowledge>
 - observation_refs:
   - `<relative-path-to-work>/sessions/<session>.md`
 ```
@@ -51,5 +51,5 @@ Notes:
   checker is the workflow protocol, advanced deterministically with
   `fm skill verify`.
 - If later AI runs would need to remember something critical, encode it as
-  `input`, `output`, `constraints`, `knowledge_refs`, `observation_refs`, or
+  `input`, `output`, `constraints`, `knowledge_slots`, `observation_refs`, or
   handoff/closure wording instead of leaving it unstated.

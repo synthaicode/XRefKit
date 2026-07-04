@@ -18,4 +18,4 @@
 - constraints: keep domain facts out of skill body; use `knowledge/...#xid-...`; run policy inspection before import; compose the context-direction guard by default unless the imported skill explicitly qualifies for the closed-world exception
 - tags: `import`, `normalization`, `xref`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
+- knowledge_slots:

@@ -24,7 +24,7 @@
   - closure: confirm assets exist, markdown references are correct, and rerender commands are preserved
 - tags: `marketing`, `presentation`, `slides`, `diagram`, `png`, `css`, `html`, `marp`, `infographic`, `repository-snapshot`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
+- knowledge_slots:
 - observation_refs:
   - `../../observations/2026-04-29_skill_run_marketing_slide_png.md`
   - `../../observations/2026-04-29_skill_run_closure_gate.md`

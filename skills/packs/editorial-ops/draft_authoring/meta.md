@@ -25,5 +25,5 @@
   - closure: return the draft path, major unresolved questions, and the review handoff
 - tags: `editorial`, `writing`, `drafting`, `authoring`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-- `../../../../knowledge/packs/editorial-ops/110_editorial_operations_framework.md#xid-F9E58E2BAD21`
+- knowledge_slots:
+  - name=editorial_framework; bind=F9E58E2BAD21
