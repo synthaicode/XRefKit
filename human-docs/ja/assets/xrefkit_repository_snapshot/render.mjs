@@ -17,7 +17,7 @@ const html = `<!doctype html>
       <div>
         <h1>AI による作業を制御可能にする運用基盤。</h1>
         <p class="subtitle">現在のリポジトリ像: Skillを用いる作業では、開始時に実行ログを作成し、作業項目と証跡を残す。実行とチェックを分離し、自動ゲートを通過したものだけを完了とする。</p>
-        <div class="snapshot">Repository snapshot: 2026-04-29</div>
+        <div class="snapshot">Repository snapshot: 2026-07-04</div>
       </div>
       <div class="brand">XRefKit</div>
     </header>
