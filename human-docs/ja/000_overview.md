@@ -37,7 +37,7 @@
 
 - AI の運用規約
 - リポジトリ固有の知識ルーティング
-- Workflow / Capability / Skill の作業構造
+- Skill と Knowledge の作業構造（汎用 protocol と semantic routing で制御）
 - 出典付き知識断片の安定参照
 
 ## AI が行う XID 運用（重要）
@@ -51,8 +51,6 @@
 ## リポジトリ構成（最小）
 
 - `docs/`: 人間向けドキュメント（背景、設計、運用、索引）
-- `flows/`: 機械可読なワークフロー定義
-- `capabilities/`: 再利用可能な能力定義
 - `knowledge/`: 共有ドメイン知識の断片
 - `agent/`: agent 向け入口・運用契約（L0を短く固定）
 - `fm/`: CLI 実装（`python -m fm ...`）
