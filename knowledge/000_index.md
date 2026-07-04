@@ -22,6 +22,11 @@ Skills should reference these pages by XID and load only what is needed.
 - [C# test synchronization patterns](csharp/120_csharp_test_synchronization_patterns.md#xid-4314A1A73CAF)
 - [C# custom attribute design principles](csharp/130_csharp_custom_attribute_design_principles.md#xid-D9C3F0A7E412)
 
+### Database
+
+- [Database design viewpoints](database/100_database_design_viewpoints.md#xid-E7D4A11B8C06)
+- [Database current-state analysis viewpoints](database/110_database_current_state_analysis_viewpoints.md#xid-F9B3C6A70412)
+
 ### Investigation
 
 - [Investigation coverage checklist](investigation/100_investigation_coverage_checklist.md#xid-91E2A7C56101)
@@ -96,6 +101,7 @@ Skills should reference these pages by XID and load only what is needed.
 - [Structure graph as TM coverage backstop](source_analysis/160_structure_graph_tm_backstop.md#xid-163AD9936979)
 - [Current source structure findings catalog](source_analysis/170_current_source_structure_findings_catalog.md#xid-A9E742B1C6D0)
 - [Maverick.NET Friendbook XML-command structure findings](source_analysis/171_maverick_net_friendbook_structure_findings.md#xid-B4F8D2A91C03)
+- [Modular Monolith with DDD API structure findings](source_analysis/172_modular_monolith_ddd_api_structure_findings.md#xid-D8F2A6C91B74)
 
 ## Private knowledge
 

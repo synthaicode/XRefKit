@@ -9,6 +9,7 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
 
 - operations: `doc_ship`, `retro`, `knowledge_ontology_management`,
   `source_structure_findings_registration`,
+  `domain_knowledge_catalog_preparation`,
   `consultation_research_mapping`, `judgment_log`, `import_skill`,
   `skill_flow_authoring`, `legacy_flow_skill_migration`, `goal_mode`,
   `release_planning_flow`, `cab_review_flow`,
@@ -18,7 +19,8 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
   `crosspost_release`
 - engineering: `csharp_review`, `dotnet_change_analysis`,
   `csharp_error_policy_extraction`,
-  `implementation_flow`, `design_flow`, `test_flow`,
+  `implementation_flow`, `design_flow`, `db_current_state_analysis`,
+  `db_design`, `test_flow`, `test_tool_catalog_preparation`,
   `manufacturing_self_check`, `qa_gate_review`, `security_review`,
   `constraint_derivation_index`, `design_constraint_derivation`,
   `ui_constraint_derivation`, `logic_constraint_derivation`,

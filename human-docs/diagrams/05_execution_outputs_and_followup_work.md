@@ -1,7 +1,6 @@
 # Business Packを実行すると、何が出力されるのか
 
 ![Business Packを実行すると、何が出力されるのか](05_execution_outputs_and_followup_work.png)
-> 注記: 下の図画像は skill-centric 統合前の旧モデル（Flow / Capability）を描いています。本文は新モデルに更新済みで、画像は再描画待ちです。
 
 ## 一文要約
 
@@ -42,6 +41,6 @@ Business Pack 実行時の結果は、最終回答だけではありません。
 
 ## 関連図
 
-- [06 実行結果はDashboardで観測される](06_os_and_flow_monitor_dashboard.md)
+- [06 Skill Run Observation Dashboard](06_skill_run_observation_dashboard.md)
 - [07 Dashboardから改善につなげる](07_dashboard_observation_and_improvement.md)
 - [01 XRefKitは、AIに業務を依頼するための基盤](01_xrefkit_as_ai_agent_os.md)

@@ -33,6 +33,7 @@ class SkillRunResult:
     concerns: list[dict[str, str]] | None = None
     closure_checks: dict[str, str] | None = None
     handoff_sources: list[dict[str, str]] | None = None
+    domain_knowledge: dict[str, object] | None = None
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -47,6 +48,7 @@ class SkillRunResult:
             "concerns": self.concerns or [],
             "closure_checks": self.closure_checks or {},
             "handoff_sources": self.handoff_sources or [],
+            "domain_knowledge": self.domain_knowledge or {},
         }
 
 
@@ -84,6 +86,7 @@ PHASE_REQUIRED_ROLES = {
     "quality": "quality_reviewer",
     "handoff": "handoff_owner",
 }
+CLIENT_HIDDEN_DOMAIN_CATALOG_KEYS = {"path", "file", "content_path", "local_path", "source_path"}
 
 
 WORKLIST_ROWS = [
@@ -132,6 +135,157 @@ def _read_task(args) -> tuple[str | None, list[str]]:
     return None, ["missing --task or --task-file"]
 
 
+def _parse_semicolon_fields(value: str) -> dict[str, str]:
+    fields: dict[str, str] = {}
+    for raw_field in value.split(";"):
+        field = raw_field.strip()
+        if not field:
+            continue
+        if "=" in field:
+            key, raw_value = field.split("=", 1)
+            fields[key.strip()] = raw_value.strip().strip("`")
+        else:
+            fields[field] = "true"
+    if "name" in fields and "slot" not in fields:
+        fields["slot"] = fields["name"]
+    return fields
+
+
+def _parse_bool(value: object) -> bool:
+    if isinstance(value, bool):
+        return value
+    return str(value or "").strip().lower() in {"1", "true", "yes", "required"}
+
+
+def _parse_knowledge_input_requirements(parsed: dict[str, object]) -> list[dict[str, object]]:
+    value = parsed.get("knowledge_inputs")
+    if not isinstance(value, list):
+        return []
+    requirements: list[dict[str, object]] = []
+    for item in value:
+        if isinstance(item, str):
+            fields = _parse_semicolon_fields(item)
+            name = fields.get("slot") or fields.get("name")
+            if not name:
+                continue
+            requirements.append(
+                {
+                    "name": name,
+                    "required": _parse_bool(fields.get("required")),
+                    "accepts": [
+                        part.strip()
+                        for part in str(fields.get("accepts") or "").split(",")
+                        if part.strip()
+                    ],
+                    "purpose": fields.get("purpose") or "",
+                }
+            )
+    return requirements
+
+
+def _load_domain_knowledge_catalog(path_value: str | None) -> tuple[list[dict[str, object]], list[str]]:
+    if not path_value:
+        return [], []
+    path = Path(path_value)
+    if not path.exists():
+        return [], [f"domain knowledge catalog not found: {path}"]
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        return [], [f"domain knowledge catalog is not valid JSON: {exc}"]
+    raw_entries = payload.get("entries") if isinstance(payload, dict) else payload
+    if not isinstance(raw_entries, list):
+        return [], ["domain knowledge catalog must be a JSON object with entries[] or a JSON array"]
+
+    entries: list[dict[str, object]] = []
+    errors: list[str] = []
+    seen: set[str] = set()
+    for index, raw_entry in enumerate(raw_entries, start=1):
+        if not isinstance(raw_entry, dict):
+            errors.append(f"domain knowledge entry {index} must be an object")
+            continue
+        xid = str(raw_entry.get("xid") or "").strip()
+        if not xid:
+            errors.append(f"domain knowledge entry {index} is missing xid")
+            continue
+        if xid in seen:
+            errors.append(f"duplicate domain knowledge xid in catalog: {xid}")
+            continue
+        hidden_keys = sorted(CLIENT_HIDDEN_DOMAIN_CATALOG_KEYS.intersection(raw_entry))
+        if hidden_keys:
+            errors.append(
+                f"domain knowledge entry {xid} exposes local-path-like keys: {', '.join(hidden_keys)}"
+            )
+            continue
+        seen.add(xid)
+        entries.append(
+            {
+                "xid": xid,
+                "kind": str(raw_entry.get("kind") or "").strip() or "unspecified",
+                "title": str(raw_entry.get("title") or "").strip() or xid,
+                "summary": str(raw_entry.get("summary") or "").strip(),
+                "domain": str(raw_entry.get("domain") or "").strip(),
+                "tags": raw_entry.get("tags") if isinstance(raw_entry.get("tags"), list) else [],
+                "content_hash": str(raw_entry.get("content_hash") or "").strip(),
+                "version": str(raw_entry.get("version") or "").strip(),
+                "last_verified": str(raw_entry.get("last_verified") or "").strip(),
+                "validity_conditions": str(raw_entry.get("validity_conditions") or "").strip(),
+            }
+        )
+    return entries, errors
+
+
+def _parse_selected_knowledge_inputs(values: list[str]) -> tuple[dict[str, list[str]], list[str]]:
+    selected: dict[str, list[str]] = {}
+    errors: list[str] = []
+    for value in values:
+        if "=" not in value:
+            errors.append(f"knowledge input must be name=XID[,XID]: {value}")
+            continue
+        name, raw_xids = value.split("=", 1)
+        name = name.strip()
+        xids = [part.strip() for part in raw_xids.split(",") if part.strip()]
+        if not name:
+            errors.append(f"knowledge input name is empty: {value}")
+            continue
+        if not xids:
+            errors.append(f"knowledge input has no XIDs: {value}")
+            continue
+        selected.setdefault(name, []).extend(xids)
+    return selected, errors
+
+
+def _prepare_domain_knowledge_context(
+    *,
+    parsed_meta: dict[str, object],
+    catalog_path: str | None,
+    selected_values: list[str],
+) -> tuple[dict[str, object], list[str]]:
+    entries, catalog_errors = _load_domain_knowledge_catalog(catalog_path)
+    selected, selected_errors = _parse_selected_knowledge_inputs(selected_values)
+    errors = catalog_errors + selected_errors
+    if selected_values and not catalog_path:
+        errors.append("--knowledge-input requires --domain-knowledge-catalog")
+
+    available_xids = {str(entry["xid"]) for entry in entries}
+    for input_name, xids in selected.items():
+        for xid in xids:
+            if xid not in available_xids:
+                errors.append(f"knowledge input {input_name} references XID not in catalog: {xid}")
+
+    requirements = _parse_knowledge_input_requirements(parsed_meta)
+    for requirement in requirements:
+        name = str(requirement["name"])
+        if requirement.get("required") and not selected.get(name):
+            errors.append(f"required knowledge input is not selected: {name}")
+
+    return {
+        "available": entries,
+        "selected": selected,
+        "requirements": requirements,
+    }, errors
+
+
 def _default_log_path(root: Path, skill_id: str) -> Path:
     base = root / "work" / "sessions"
     filename = f"{date.today().isoformat()}_skill_run_{_safe_slug(skill_id)}.md"
@@ -159,6 +313,7 @@ def _render_log(
     guard_policy: str,
     capability_layering: str,
     workflow_protocol: str,
+    capability: str,
     tuning: str,
     role_responsibilities: dict[str, str],
     capability_refs: list[str],
@@ -167,6 +322,7 @@ def _render_log(
     os_contract: dict[str, str],
     handoff_sources: list[dict[str, str]],
     model_tier: str | None,
+    domain_knowledge: dict[str, object],
 ) -> str:
     tier_label = model_tier or "unset"
     quality_policy = "required" if model_tier in QUALITY_REQUIRED_TIERS else "optional"
@@ -189,6 +345,51 @@ def _render_log(
         f"- source_log: `{source['source_log']}` skill_id=`{source['skill_id']}` closure=`{source['closure']}` handoff=`{source['handoff']}`"
         for source in handoff_sources
     ) or "- none"
+    available_domain_entries = domain_knowledge.get("available", [])
+    if isinstance(available_domain_entries, list) and available_domain_entries:
+        available_domain_lines = "\n".join(
+            "\n".join(
+                [
+                    f"- xid: `{entry.get('xid')}`",
+                    f"  kind: `{entry.get('kind')}`",
+                    f"  domain: `{entry.get('domain') or '-'}`",
+                    f"  title: `{entry.get('title')}`",
+                    f"  summary: {entry.get('summary') or '-'}",
+                    f"  content_hash: `{entry.get('content_hash') or entry.get('version') or 'unknown'}`",
+                    f"  last_verified: `{entry.get('last_verified') or 'unknown'}`",
+                    f"  validity_conditions: {entry.get('validity_conditions') or 'unknown'}",
+                ]
+            )
+            for entry in available_domain_entries
+            if isinstance(entry, dict)
+        )
+    else:
+        available_domain_lines = "- none supplied"
+    selected_domain_inputs = domain_knowledge.get("selected", {})
+    if isinstance(selected_domain_inputs, dict) and selected_domain_inputs:
+        selected_domain_lines = "\n".join(
+            "\n".join([f"- {name}:"] + [f"  - `{xid}`" for xid in xids])
+            for name, xids in selected_domain_inputs.items()
+            if isinstance(xids, list)
+        )
+    else:
+        selected_domain_lines = "- none selected"
+    domain_requirements = domain_knowledge.get("requirements", [])
+    if isinstance(domain_requirements, list) and domain_requirements:
+        requirement_lines = "\n".join(
+            "\n".join(
+                [
+                    f"- name: `{requirement.get('name')}`",
+                    f"  required: `{str(requirement.get('required')).lower()}`",
+                    f"  accepts: `{', '.join(requirement.get('accepts') or []) if isinstance(requirement.get('accepts'), list) else '-'}`",
+                    f"  purpose: `{requirement.get('purpose') or '-'}`",
+                ]
+            )
+            for requirement in domain_requirements
+            if isinstance(requirement, dict)
+        )
+    else:
+        requirement_lines = "- none declared"
     return f"""# Skill Run Log
 
 - date: `{date.today().isoformat()}`
@@ -208,6 +409,7 @@ def _render_log(
 - guard_policy: `{guard_policy}`
 - capability_layering: `{capability_layering}`
 - workflow_protocol: `{workflow_protocol}`
+- capability: `{capability}`
 - tuning: `{tuning}`
 - execution_mode: `{execution_mode}`
 - model_tier: `{tier_label}`
@@ -237,8 +439,9 @@ def _render_log(
 ## Capability Layering
 
 - capability_layering: `{capability_layering}`
+- capability: `{capability}`
 - tuning: `{tuning}`
-- rule: execute the Skill inside the declared capability boundary; capability definitions are control definitions, not evidence
+- rule: execute the Skill inside the declared capability / tuning / responsibility boundary; capability definitions are control definitions, not evidence
 - capability_refs:
 {capability_ref_lines}
 
@@ -246,6 +449,25 @@ def _render_log(
 
 - rule: when work starts from a prior handoff, the receiving startup must name the handoff source log and verify that its closure gate already passed
 {handoff_source_lines}
+
+## Domain Knowledge Inputs
+
+- rule: available and selected brownfield domain knowledge is recorded by XID only; load full bodies through XID resolution, not local paths
+- requirements:
+{requirement_lines}
+
+### Available Domain Knowledge
+
+{available_domain_lines}
+
+### Selected Knowledge Inputs
+
+{selected_domain_lines}
+
+### Used Knowledge Refs
+
+- rule: record actually consulted domain knowledge XIDs as runtime artifacts or evidence before handoff
+- none recorded yet
 
 ## Worklist
 
@@ -1319,6 +1541,20 @@ def run_skill(args) -> SkillRunResult:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"meta not found: {meta_path}"])
 
     parsed = _parse_meta_lines(meta_path.read_text(encoding="utf-8"))
+    domain_knowledge, domain_knowledge_errors = _prepare_domain_knowledge_context(
+        parsed_meta=parsed,
+        catalog_path=getattr(args, "domain_knowledge_catalog", None),
+        selected_values=getattr(args, "knowledge_input", []),
+    )
+    if domain_knowledge_errors:
+        return SkillRunResult(
+            ok=False,
+            skill_id=str(parsed.get("skill_id")) if parsed.get("skill_id") else None,
+            skill_doc=None,
+            run_log=None,
+            errors=domain_knowledge_errors,
+            domain_knowledge=domain_knowledge,
+        )
     maturity, _ = _resolve_maturity(parsed)
     maturity = maturity or "stable"
 
@@ -1393,6 +1629,7 @@ def run_skill(args) -> SkillRunResult:
         )
     raw_capability_refs = parsed.get("capability_refs", [])
     capability_refs = [str(ref) for ref in raw_capability_refs] if isinstance(raw_capability_refs, list) else []
+    capability = str(parsed.get("capability") or "not declared")
     tuning = str(parsed.get("tuning") or "not declared")
     role_responsibilities = _parse_key_value_list(parsed.get("role_responsibilities"))
     raw_skill_doc = str(parsed.get("skill_doc"))
@@ -1440,6 +1677,7 @@ def run_skill(args) -> SkillRunResult:
         guard_policy=guard_policy,
         capability_layering=capability_layering,
         workflow_protocol=workflow_protocol,
+        capability=capability,
         tuning=tuning,
         role_responsibilities=role_responsibilities,
         capability_refs=capability_refs,
@@ -1448,6 +1686,7 @@ def run_skill(args) -> SkillRunResult:
         os_contract=os_contract,
         handoff_sources=validated_handoff_sources,
         model_tier=model_tier,
+        domain_knowledge=domain_knowledge,
     )
     out_path.write_text(log, encoding="utf-8")
 
@@ -1459,6 +1698,7 @@ def run_skill(args) -> SkillRunResult:
         errors=[],
         assigned_roles=assigned_roles,
         handoff_sources=validated_handoff_sources,
+        domain_knowledge=domain_knowledge,
     )
 
 

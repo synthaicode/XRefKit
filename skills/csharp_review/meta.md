@@ -4,10 +4,10 @@
 # Skill Meta: csharp_review
 
 - skill_id: `csharp_review`
-- summary: review C# code with a manual focus on non-Roslyn-detectable risks
-- use_when: user asks for C# review beyond Roslyn/compiler diagnostics, including async hangs, synchronization risks, or fake-clock wait behavior that Roslyn does not catch
+- summary: review C# code for language-dependent defects and system-level implementation risks beyond Roslyn diagnostics
+- use_when: user asks for C# code review beyond Roslyn/compiler diagnostics, including language-dependent issues, async hangs, synchronization risks, fake-clock wait behavior, or implementation patterns that can break system-level behavior
 - input: target path, optional scope filters, optional output mode
-- output: check item matrix with pass/fail/escalated/not-applicable statuses, evidence-based findings for attribute misuse, resource efficiency, operational resilience, synchronization, required business input integrity, lifecycle support, error handling, time/culture correctness, state/determinism boundaries, uncertainty/escalation paths, contract/schema resilience, and traceability/context propagation, implementation-return feedback items when applicable, plus a handoff list for out-of-scope findings
+- output: check item matrix with pass/fail/escalated/not-applicable statuses, evidence-based findings for language-dependent issues and system-level implementation risks across attribute misuse, resource efficiency, operational resilience, synchronization, required business input integrity, lifecycle support, error handling, time/culture correctness, state/determinism boundaries, uncertainty/escalation paths, contract/schema resilience, and traceability/context propagation, implementation-return feedback items when applicable, plus a handoff list for XDDP trace gaps, security findings, or design/business assumptions outside this Skill
 - maturity: `stable`
 - execution_mode: `subagent_preferred`
 - model_tier: `standard`
@@ -17,10 +17,10 @@
 - tuning: `C#`
 - responsibility: quality check
 - os_contract: v1
-- constraints: exclude Roslyn-detectable issues; do not hard-fail unknown attribute values by whitelist; do not expand into security review or design-assumption derivation — route those findings to security_review or the constraint-derivation pack through the handoff list
+- constraints: exclude Roslyn-detectable issues; do not hard-fail unknown attribute values by whitelist; do not replace XDDP trace-continuity review; do not expand into security review or design-assumption derivation — route those findings to qa_gate_review, security_review, or the constraint-derivation pack through the handoff list; when the review spans enough categories, projects, files, or evidence to risk context overflow, split execution into subagents by scope or category instead of running all checks in one context
 - lifecycle:
   - startup: confirm target path and review scope, then load the review spec
-  - planning: define review scope, output mode, category buckets, custom-framework analysis targets, and subagent split when scope-separated parallel review is safe
+  - planning: define review scope, output mode, category buckets, custom-framework analysis targets, and subagent split when scope-separated review is safe or context overflow is likely
   - execution: establish Roslyn baseline and execute category-specific checks with local-evidence-first handling for custom frameworks
   - monitoring_and_control: exclude diagnostics-covered issues and downgrade unclear findings to `needs_confirmation`
   - closure: return findings, category summaries, and explicit review conditions

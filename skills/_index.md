@@ -102,9 +102,17 @@ Current family paths:
   - meta: `skills/csharp_error_policy_extraction/meta.md`
   - skill_doc: `skills/csharp_error_policy_extraction/SKILL.md`
 - `csharp_review`:
-  - summary: review C# code with a manual focus on non-Roslyn-detectable risks
+  - summary: review C# code for language-dependent defects and system-level implementation risks beyond Roslyn diagnostics
   - meta: `skills/csharp_review/meta.md`
   - skill_doc: `skills/csharp_review/SKILL.md`
+- `db_current_state_analysis`:
+  - summary: analyze current brownfield database and persistence structure from repository evidence before DB design
+  - meta: `skills/db_current_state_analysis/meta.md`
+  - skill_doc: `skills/db_current_state_analysis/SKILL.md`
+- `db_design`:
+  - summary: produce implementation-ready brownfield database design artifacts from approved planning inputs and current source-structure findings
+  - meta: `skills/db_design/meta.md`
+  - skill_doc: `skills/db_design/SKILL.md`
 - `design_flow`:
   - summary: execute design business activity through reusable solution-design capability
   - meta: `skills/design_flow/meta.md`
@@ -149,6 +157,10 @@ Current family paths:
   - summary: apply approved promotion candidates from `work/` into canonical repository assets and leave traceable moved-to pointers
   - meta: `skills/os/doc_ship/meta.md`
   - skill_doc: `skills/os/doc_ship/SKILL.md`
+- `domain_knowledge_catalog_preparation`:
+  - summary: prepare an XID-addressable domain-knowledge catalog from repository knowledge and MCP-configured external domain-knowledge roots before Skill execution
+  - meta: `skills/os/domain_knowledge_catalog_preparation/meta.md`
+  - skill_doc: `skills/os/domain_knowledge_catalog_preparation/SKILL.md`
 - `goal_mode`:
   - summary: preserve task state, wait for Codex usage recovery, and resume the same goal after the next 5-hour or weekly reset
   - meta: `skills/os/goal_mode/meta.md`
@@ -270,7 +282,7 @@ Current family paths:
   - meta: `skills/pptx_spec_traceability/meta.md`
   - skill_doc: `skills/pptx_spec_traceability/SKILL.md`
 - `qa_gate_review`:
-  - summary: execute evidence-based QA across specification, performance, security, and license domains
+  - summary: execute evidence-based QA with XDDP trace-continuity, domain review, and system-impact checks
   - meta: `skills/qa_gate_review/meta.md`
   - skill_doc: `skills/qa_gate_review/SKILL.md`
 - `release_planning_flow`:
@@ -285,10 +297,18 @@ Current family paths:
   - summary: review C# code and evidence for security risks
   - meta: `skills/security_review/meta.md`
   - skill_doc: `skills/security_review/SKILL.md`
+- `source_structure_overview`:
+  - summary: produce a reusable whole-system source-structure overview for a target repository or service before proposition-specific change analysis
+  - meta: `skills/source_structure_overview/meta.md`
+  - skill_doc: `skills/source_structure_overview/SKILL.md`
 - `test_flow`:
   - summary: execute test-planning, test-item structuring, integration/regression test design, and manufacturing-side test-method review
   - meta: `skills/test_flow/meta.md`
   - skill_doc: `skills/test_flow/SKILL.md`
+- `test_tool_catalog_preparation`:
+  - summary: prepare a domain/environment test-tool catalog as reusable domain knowledge for test planning and test design
+  - meta: `skills/test_tool_catalog_preparation/meta.md`
+  - skill_doc: `skills/test_tool_catalog_preparation/SKILL.md`
 - `xlsx_spec_traceability`:
   - summary: extract spreadsheet specifications into Markdown, assign traceability IDs, connect embedded images to nearby specification text, and write the IDs back into the workbook
   - meta: `skills/xlsx_spec_traceability/meta.md`

@@ -89,6 +89,13 @@ capabilities = capabilities/** + packs/*/capabilities/** + packs/local/*/capabil
 The `packs/local/*` roots are catalog-visible for the local repository instance
 that serves them. They are not base-distributable.
 
+XID-bearing client domain knowledge that already exists outside this repository
+is not placed under `packs/local/*` as the normal connection method. The MCP
+server should support configured external domain-knowledge roots and merge those
+roots into the knowledge catalog response alongside repository knowledge. This
+keeps XRefKit repository updates portable: the checkout stays base-managed, and
+client domain knowledge is supplied by MCP configuration.
+
 Generated, operational, and delivery zones are not content-catalog roots unless a
 specific MCP tool is designed for that purpose.
 
@@ -192,7 +199,8 @@ required and whether each file is base-distributable or local-only.
 
 ## XID Resolution
 
-`get_document_by_xid` must resolve XIDs across all catalog-eligible roots.
+`get_document_by_xid` must resolve XIDs across all catalog-eligible repository
+roots and MCP-configured external domain-knowledge roots.
 
 If exactly one document has the XID, return it normally.
 
@@ -256,3 +264,6 @@ Each phase should keep existing MCP tools backward compatible.
    calls fail closed until the conflict is resolved.
 5. `packs/local/*` catalog content is included in `catalog_version` for the
    local repository instance when local packs are catalog-enabled.
+6. MCP-configured external domain-knowledge roots are included in the knowledge
+   catalog version/hash used for domain-knowledge responses, without making
+   those roots part of the XRefKit repository.

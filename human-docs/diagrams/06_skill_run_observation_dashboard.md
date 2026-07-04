@@ -1,17 +1,17 @@
-# DashboardでAIの実行記録を確認する
+# Skill Run Observation Dashboard
 
-![DashboardでAIの実行記録を確認する](06_os_and_flow_monitor_dashboard.png)
-> 注記: 下の図画像は skill-centric 統合前の旧モデル（Flow / Capability）を描いています。本文は新モデルに更新済みで、画像は再描画待ちです。
+![Skill Run Observation Dashboard](06_skill_run_observation_dashboard.png)
 
 ## 一文要約
 
-The execution records emitted during Business Pack execution are checked by humans through the Dashboard layer.
+The execution records emitted by Skill runs are checked by humans through the Dashboard layer.
 
 ## この図で伝えたい主張
 
-Business Pack 実行時に出力された成果物、実行ログ、unknown、judgment、handoff 情報、evidence のうち、確認対象になる実行記録は Dashboard 側に集まります。
+現行モデルでは Flow を監視しません。
+Dashboard が見る対象は、Skill 実行から出る成果物、実行ログ、unknown、judgment、handoff 情報、evidence、quality gate 結果です。
 Dashboard は実行そのものではなく、AI の動作を人間が確認し、問題箇所や改善点を見つける monitor-side layer です。
-図の目的は、実行結果、Operational Memory、Dashboard、人間の関係を分離して示すことです。
+図の目的は、Skill 実行結果、Operational Memory、Dashboard、人間の関係を分離して示すことです。
 
 ## 用語の固定定義
 
@@ -29,13 +29,21 @@ Dashboard は実行そのものではなく、AI の動作を人間が確認し�
 
 ## 読み方
 
-- まず左側で実行結果として何が出るかを見る
-- 次に中央で Dashboard がどの記録を受け取るかを見る
+- まず左側で Skill 実行結果として何が出るかを見る
+- 次に中央で Dashboard がどの記録を横断観測するかを見る
 - 最後に右側で、人間がそれをどう確認するかを見る
+
+## 動かし方
+
+Dashboard は利用者のローカル環境で起動する想定です。
+起動、停止、JSON確認、ポート変更、ローカルXIDの扱いは
+[Skill Run Observation Dashboard usage](../../docs/guides/086_skill_run_observation_dashboard_usage.md) を参照してください。
 
 ## 非対象（誤解防止）
 
-- Dashboard が AI を実行するものではない
+- Dashboard が AI や Skill を実行するものではない
+- Flow の進行状態を表示するものではない
+- MCP や外部公開Webサーバーを前提にした画面ではない
 - Dashboard が正本知識を持つ層ではない
 - 監査だけのための表示ではない
 - ログ保管庫そのものではない
@@ -46,4 +54,4 @@ Dashboard は実行そのものではなく、AI の動作を人間が確認し�
 - [07 Dashboardから改善につなげる](07_dashboard_observation_and_improvement.md)
 - [01 XRefKitは、AIに業務を依頼するための基盤](01_xrefkit_as_ai_agent_os.md)
 
-Business Pack 実行時に出力された記録が、どのように Dashboard 側へ渡るかを詳細化した図です。
+Skill 実行時に出力された記録が、どのように Dashboard 側へ渡るかを詳細化した図です。

@@ -134,8 +134,9 @@ To pass `stable` check, the Skill must satisfy operational completeness:
   or the equivalent expanded block (see
   `docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`)
 
-The context-direction guard is ambient — supplied by the startup contract pack
-and the per-response control reminder — so it is no longer a required per-Skill
+The context-direction guard is ambient: supplied by the XRefKit startup
+contract in repository-native mode, and by the startup contract pack plus the
+per-response control reminder in MCP mode. It is no longer a required per-Skill
 field. A legacy meta may still carry `guard_policy` and guard references
 harmlessly (design 083 / 082 D4).
 

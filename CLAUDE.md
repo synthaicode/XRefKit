@@ -1,5 +1,5 @@
 # CLAUDE Startup (XRefKit)
 
-**As your first action**, read the shared startup policy below:
+**As your first action**, read the XRefKit startup contract below:
 
-- `docs/core/contracts/011_startup_xref_routing.md#xid-6C0B62D6366A`
+- `docs/core/contracts/080_xrefkit_startup_contract.md#xid-C3A1F78D9B22`

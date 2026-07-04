@@ -153,7 +153,8 @@ It does **not** mean the AI invents IDs. It means the AI (or CI) uses `fm` comma
 ## Tool integrations (examples)
 
 Keep vendor startup files minimal (`xref` route + central links), and centralize detailed policy in `docs/` + `agent/`.
-Shared startup policy: [Startup xref routing policy](core/contracts/011_startup_xref_routing.md#xid-6C0B62D6366A)
+XRefKit startup target: [XRefKit startup contract](core/contracts/080_xrefkit_startup_contract.md#xid-C3A1F78D9B22)
+Shared xref routing policy: [Startup xref routing policy](core/contracts/011_startup_xref_routing.md#xid-6C0B62D6366A)
 
 - GitHub Copilot: `.github/copilot-instructions.md`
 - Claude Code: `CLAUDE.md`

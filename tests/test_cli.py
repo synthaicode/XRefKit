@@ -910,6 +910,127 @@ class CliTests(unittest.TestCase):
             text = out.read_text(encoding="utf-8")
             self.assertIn("- [x] OUT-001 kind=`output` status=`done` role=`sample_skill:executor` target=`docs/output.md` item=`WI-001`: created output document", text)
 
+    def test_main_skill_run_records_xid_only_domain_knowledge_inputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            meta = root / "skills" / "sample" / "meta.md"
+            self._write_valid_skill(root)
+            meta.write_text(
+                meta.read_text(encoding="utf-8")
+                + "- knowledge_inputs:\n"
+                + "  - name=target_service_structure; accepts=service-map,database-schema; required; purpose=design-context\n",
+                encoding="utf-8",
+            )
+            catalog = root / "domain_catalog.json"
+            catalog.write_text(
+                json.dumps(
+                    {
+                        "entries": [
+                            {
+                                "xid": "LOCAL-SERVICE-MAP-001",
+                                "kind": "service-map",
+                                "title": "Target service structure",
+                                "summary": "Non-standard runtime composition and module boundaries",
+                                "tags": ["structure", "custom-framework"],
+                                "content_hash": "sha256-service-map",
+                                "last_verified": "2026-07-04",
+                                "validity_conditions": "Reuse until module boundaries change",
+                            },
+                            {
+                                "xid": "LOCAL-DB-SCHEMA-001",
+                                "kind": "database-schema",
+                                "title": "Database schema overview",
+                                "summary": "Tables and state columns",
+                            },
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            out = root / "work" / "sessions" / "run.md"
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        "skill",
+                        "run",
+                        "--root",
+                        str(root),
+                        "--meta",
+                        "skills/sample/meta.md",
+                        "--task",
+                        "Design a non-standard brownfield service",
+                        "--domain-knowledge-catalog",
+                        str(catalog),
+                        "--knowledge-input",
+                        "target_service_structure=LOCAL-SERVICE-MAP-001,LOCAL-DB-SCHEMA-001",
+                        "--out",
+                        str(out),
+                        "--json",
+                    ]
+                )
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(0, exit_code)
+            self.assertTrue(payload["ok"])
+            self.assertEqual(
+                ["LOCAL-SERVICE-MAP-001", "LOCAL-DB-SCHEMA-001"],
+                payload["domain_knowledge"]["selected"]["target_service_structure"],
+            )
+            self.assertEqual(
+                "sha256-service-map",
+                payload["domain_knowledge"]["available"][0]["content_hash"],
+            )
+            text = out.read_text(encoding="utf-8")
+            self.assertIn("## Domain Knowledge Inputs", text)
+            self.assertIn("- rule: available and selected brownfield domain knowledge is recorded by XID only", text)
+            self.assertIn("- xid: `LOCAL-SERVICE-MAP-001`", text)
+            self.assertIn("content_hash: `sha256-service-map`", text)
+            self.assertIn("last_verified: `2026-07-04`", text)
+            self.assertIn("validity_conditions: Reuse until module boundaries change", text)
+            self.assertIn("- target_service_structure:", text)
+            self.assertIn("  - `LOCAL-DB-SCHEMA-001`", text)
+            self.assertNotIn(str(catalog), text)
+
+    def test_main_skill_run_rejects_selected_domain_xid_not_in_catalog(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_valid_skill(root)
+            catalog = root / "domain_catalog.json"
+            catalog.write_text(
+                json.dumps({"entries": [{"xid": "LOCAL-SERVICE-MAP-001", "kind": "service-map"}]}),
+                encoding="utf-8",
+            )
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        "skill",
+                        "run",
+                        "--root",
+                        str(root),
+                        "--meta",
+                        "skills/sample/meta.md",
+                        "--task",
+                        "Design a non-standard brownfield service",
+                        "--domain-knowledge-catalog",
+                        str(catalog),
+                        "--knowledge-input",
+                        "target_service_structure=LOCAL-MISSING-001",
+                        "--json",
+                    ]
+                )
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(1, exit_code)
+            self.assertFalse(payload["ok"])
+            self.assertIn(
+                "knowledge input target_service_structure references XID not in catalog: LOCAL-MISSING-001",
+                payload["errors"],
+            )
+
     def test_main_skill_close_rejects_missing_runtime_artifacts(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

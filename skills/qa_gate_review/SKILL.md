@@ -5,7 +5,14 @@
 
 ## Purpose
 
-Execute the four QA review domains `specification / performance / security / license` and produce an evidence-based review result.
+Execute QA review for three purposes:
+
+1. Confirm XDDP trace-continuity is not broken: Why / What / Where / How,
+   TM rows, implementation targets, and evidence must remain connected.
+2. Execute domain review across `specification / performance / security /
+   license` and produce evidence-based results.
+3. Detect system-level impact problems that are visible from the intended diff,
+   semantic structure evidence, and graph-backed impact candidates.
 
 ## Required Capability Definitions (XID)
 
@@ -16,6 +23,9 @@ Execute the four QA review domains `specification / performance / security / lic
 ## Inputs
 
 - implemented code or diff
+- DB manufacturing artifacts when in scope: DDL, migration files, generated SQL,
+  checked-in SQL scripts, stored procedures, ORM/persistence mappings, seed
+  data, data correction/backfill scripts, deployment scripts, or DB test output
 - design evidence
 - coding rules
 - optional performance requirements or measurements
@@ -24,8 +34,12 @@ Execute the four QA review domains `specification / performance / security / lic
 ## Outputs
 
 - domain review results for specification, performance, security, and license
+- XDDP trace-continuity result covering requirement difference, TM rows, Where,
+  How, implementation targets, and evidence links
 - diff-consistency result across XDDP framing, semantic structure evidence, and
   graph-backed impact candidates when available
+- system-impact result for graph/structure-backed candidates that are included,
+  excluded, downgraded to unknown, or handed off
 - finding list with evidence
 - uncertainty list
 - a gate verdict block (see Gate Verdict Output)
@@ -66,6 +80,8 @@ required_followup: <next owner or specialist Skill, or none>
 ## Startup
 
 - Confirm implemented code exists.
+- Confirm DB manufacturing artifacts exist when database, persistence,
+  migration, SQL, data correction, or stored-procedure work is in scope.
 - Confirm design evidence exists.
 - Confirm coding rules are available.
 - Confirm performance evidence when performance review is in scope.
@@ -75,7 +91,34 @@ required_followup: <next owner or specialist Skill, or none>
 ## Planning
 
 - Define the review scope and target files.
+- Include DB manufacturing artifacts in the review scope when the change touches
+  database objects, persistence mappings, SQL behavior, migrations, stored
+  procedures, seed data, correction scripts, or deployment-time DB operations.
+- Before loading broad evidence, decide the subagent split. Because QA review
+  spans XDDP trace continuity, language/code evidence, DB manufacturing
+  artifacts, security, performance, license, semantic structure, and graph
+  candidates, do not run the whole review in one context when the evidence set
+  is broad enough to risk context overflow.
+- Split review work by explicit boundaries such as:
+  - XDDP trace-continuity / TM review
+  - C# or language-dependent implementation review
+  - DB manufacturing artifact review
+  - performance review
+  - security review
+  - license/provenance review
+  - graph/structure-backed system-impact review
+- Assign each subagent a bounded evidence packet, required output schema, and
+  handoff/unknown rules. Keep one coordinator context for scope, merge,
+  conflict resolution, and final verdict.
 - Define the intended change difference before reading the implementation in detail.
+- Define the XDDP trace-continuity frame:
+  - Why: reason for change
+  - What: requirement difference or changed external expectation
+  - Where: target objects, TM rows, impacted locations, and excluded candidates
+  - How: implementation method and verification path
+- For DB manufacturing results, map each produced artifact to the DB design
+  item, current database state basis, migration/correction action, and
+  validation handoff that authorized it.
 - Define the diff-consistency framing:
   - XDDP frame: change reason, requirement, declared Where, and intended How.
   - semantic structure evidence: existing responsibility split, boundary,
@@ -86,12 +129,19 @@ required_followup: <next owner or specialist Skill, or none>
     included candidates, excluded candidates with reasons, convergence or
     coupling candidates, and dynamic-channel handoff points when available.
 - Narrow the review target to the appropriateness of the stated difference rather than re-reviewing the whole implementation surface.
+- Define system-impact candidates from structure evidence and graph traversal.
+  Classify each candidate as included, intentionally excluded with evidence,
+  unknown, or handed off.
 - Define the review domains:
   - specification
   - performance
   - security
   - license
-- If review targets can be separated into disjoint scopes and parallel execution does not create consistency or handoff risk, split the work by scope and execute those scopes through subagents.
+- If review targets can be separated into disjoint scopes and parallel execution
+  does not create consistency or handoff risk, split the work by scope and
+  execute those scopes through subagents. When context overflow is likely,
+  subagent split is required even if execution is sequential rather than
+  parallel.
 - Prepare management rows for each domain, review targets, findings, and unresolved evidence gaps.
 
 ## Execution
@@ -101,6 +151,20 @@ required_followup: <next owner or specialist Skill, or none>
   - the change requirement specification
   - the traced impact targets
   - the intended change method when available
+- Review DB manufacturing results as implementation outputs, not as design
+  substitutes. Check DDL, migrations, SQL scripts, stored procedures,
+  ORM/persistence mappings, seed data, correction/backfill scripts, and DB test
+  evidence against the approved DB design package and current-state basis.
+- Check XDDP trace-continuity:
+  - every implementation target must trace back to a Why / What / Where / How
+    relation, TM row, or approved scope decision
+  - every declared Where item must be implemented, explicitly excluded with
+    evidence, or recorded as unknown/handoff
+  - every How decision that changes design, behavior, data, operations, or
+    test scope must have an evidence link or reviewer decision
+  - every DB manufacturing artifact must trace to a requirement difference,
+    DB design item, migration/correction action, or explicit approved scope
+    decision
 - Check diff consistency in three layers:
   - XDDP: the diff must have a declared change frame and must not mix unrelated
     Why / What / Where / How decisions into one unbounded change.
@@ -115,6 +179,22 @@ required_followup: <next owner or specialist Skill, or none>
 - Execute `CAP-QA-007` for security review.
 - Execute `CAP-QA-008` for license compliance check.
 - Execute `CAP-QA-005` when attribute semantics need specification-focused deep review.
+- When DB manufacturing artifacts are in scope, check database-specific review
+  points before closure:
+  - generated or hand-written DDL matches the approved logical/physical DB
+    design and does not introduce untraced tables, columns, constraints,
+    indexes, procedures, functions, triggers, schemas, or seed data
+  - migrations and deployment scripts follow the approved order, transaction,
+    isolation, error-handling, rollback/reconciliation, and compatibility plan
+  - SQL and stored procedures follow the current database local rules for
+    naming, stored procedure granularity, return/result convention, transaction
+    boundary, isolation level, SQL writing style, and error-handling style
+  - ORM mappings, DbContext/DbSet changes, repositories, raw SQL callers, jobs,
+    reports, imports, and correction tools remain consistent with the DB-unit
+    SQL export/current-state basis or record an explicit source-vs-DB unknown
+  - data correction/backfill scripts preserve idempotency, auditability,
+    reconciliation, failure handling, and operational safety expected by the
+    approved design
 - Confirm that the reviewed code or diff matches the intended change scope and does not silently expand beyond the traced targets without explanation.
 - Treat unexplained graph candidates outside the declared scope as
   missing-impact candidates, not as confirmed defects.
@@ -131,6 +211,9 @@ required_followup: <next owner or specialist Skill, or none>
   graph-backed impact handling, or marks unavailable evidence explicitly.
 - Downgrade unsupported conclusions to `unknown`.
 - Downgrade review coverage to `unknown` when the intended difference is not clear enough to bound the review target.
+- Downgrade review coverage to `unknown` when a required review domain or
+  artifact family was skipped because it could not fit the current context and
+  no subagent result exists.
 - Downgrade to `needs-review` when graph-backed impact candidates or dynamic
   relation channels remain unexplained and could affect the declared scope.
 - Preserve explicit evidence gaps.
@@ -147,5 +230,7 @@ required_followup: <next owner or specialist Skill, or none>
 - Every judgment must cite evidence.
 - Do not treat unsupported assumptions as facts.
 - Do not decide design or implementation policy.
-- Use subagents only when scope boundaries stay explicit and parallel execution is safe.
+- Use subagents when scope boundaries stay explicit. Parallel execution is
+  allowed only when safe; sequential subagents are still required when the
+  review would otherwise exceed context or hide coverage gaps.
 - Do not expand review into full-codebase inspection when the intended delta can be reviewed more narrowly and correctly.

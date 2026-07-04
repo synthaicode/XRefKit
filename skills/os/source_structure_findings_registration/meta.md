@@ -5,7 +5,7 @@
 
 - skill_id: `source_structure_findings_registration`
 - summary: register an existing source-structure analysis Markdown file as current canonical source-structure findings knowledge
-- use_when: a user or workflow already has a source-structure analysis Markdown artifact, such as a `dotnet_change_analysis` report, and wants it read, normalized, and registered or refreshed in the current source structure findings catalog instead of running source analysis again
+- use_when: a user or workflow already has a source-structure analysis Markdown artifact, such as a `source_structure_overview` baseline report or a `dotnet_change_analysis` report, and wants it read, normalized, and registered or refreshed in the current source structure findings catalog instead of running source analysis again
 - input: existing analysis Markdown path or XID, target identity, source scope, analysis kind, source basis, publication mode (`proposal_only` or authorized `apply`), and optional target catalog entry or finding XID
 - output: a proposed or applied canonical source-structure finding fragment, an updated current source structure findings catalog entry when authorized, source and evidence linkage, unresolved verification list, and handoff to `design_flow` or `knowledge_ontology_management`
 - maturity: `trial`
@@ -19,7 +19,7 @@
 - lifecycle:
   - startup: confirm the analysis Markdown exists or the XID resolves, classify the source class, confirm publication mode, load the current source structure findings catalog and ontology/source rules, and stop on upward context influence
   - planning: search for existing catalog entries by target identity, source scope, aliases, and finding XID; decide create, refresh, split, reject_duplicate, or proposal_only handoff; identify missing required metadata before editing
-  - execution: read the Markdown once for structure pivots, route/usecase traces, implicit runtime bindings, prohibited changes, selection metadata, source basis, and unresolved verification; normalize those fields into a canonical finding fragment or proposal; update the catalog only when apply is authorized
+  - execution: read the Markdown once for target summary, runtime units, subsystem map, startup/composition flow, structure pivots, route/usecase traces, implicit runtime bindings, prohibited changes, selection metadata, source basis, and unresolved verification; normalize those fields into a canonical finding fragment or proposal; update the catalog only when apply is authorized
   - monitoring_and_control: downgrade unsupported or missing fields to unresolved verification; stop if the Markdown conflicts with existing current knowledge or tries to redefine workflow/Skill authority
   - closure: return the canonical finding XID or proposal path, catalog update status, source evidence, validation commands, unresolved verification, and the next handoff owner
 - tags: `operations`, `knowledge`, `source-analysis`, `registration`, `xref`

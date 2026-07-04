@@ -5,7 +5,17 @@
 
 ## Purpose
 
-Review C# code for issues that are not already detectable by Roslyn diagnostics.
+Review C# code for two code-review purposes:
+
+1. Detect language-dependent issues that are not already covered by Roslyn
+   diagnostics.
+2. Detect system-level implementation risks visible from code structure,
+   execution paths, state, resource use, contracts, and context propagation.
+
+XDDP trace-continuity review is a separate review purpose owned by
+`qa_gate_review`; this Skill must record suspected trace gaps as handoff items
+instead of silently absorbing them into C# findings.
+
 Check the following domains:
 
 - attribute value misuse (rule-based, not fixed whitelist)
@@ -69,6 +79,8 @@ Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4
   - contract and schema resilience
   - traceability and context propagation
 - handoff list for out-of-scope findings (security, design assumptions)
+- XDDP trace-continuity handoff items when evidence suggests that Why / What /
+  Where / How, TM rows, or implementation targets are disconnected
 - implementation-return feedback items for implementation-local findings
 - a gate verdict block (see Gate Verdict Output)
 
@@ -120,6 +132,9 @@ required_followup: <next owner or specialist Skill, or none>
 - When the scope is split across projects or directories, create the category
   work items per scope unit so subagent decomposition keeps explicit
   boundaries.
+- When the review spans many categories, projects, files, or evidence families,
+  decide the subagent split before loading broad evidence. Do not keep adding
+  evidence to one context until categories become implicit or coverage is lost.
 - Use the runtime work-item protocol from the Skill Operating Contract.
 
 ## Execution Role
@@ -128,6 +143,9 @@ required_followup: <next owner or specialist Skill, or none>
   phase and never closes the run.
 - Scope-disjoint category passes may run as parallel subagents when no
   cross-scope reasoning is required.
+- If context overflow is likely, use subagents even when the work must run
+  sequentially. The coordinator keeps the review scope, category matrix,
+  duplicate-finding merge, conflicts, and final gate verdict.
 
 ## Check Role
 
@@ -166,6 +184,11 @@ required_followup: <next owner or specialist Skill, or none>
   - project
   - directory or file subset
 - If the review scope can be split into disjoint paths or projects without cross-scope consistency risk, decompose by scope and execute those scopes through subagents.
+- If the active category set is broad enough that a single context would hide
+  evidence or exceed model context, decompose by review category or artifact
+  family. Typical splits are resource/operational resilience, synchronization,
+  error/time/culture, state/determinism, contract/schema, traceability/context
+  propagation, and custom-framework analysis.
 - Define the output mode:
   - `findings-only`
   - `findings-with-fixes`
@@ -182,6 +205,9 @@ required_followup: <next owner or specialist Skill, or none>
   - uncertainty and escalation path
   - contract and schema resilience
   - traceability and context propagation
+- Decide whether XDDP trace-continuity review is in scope. If it is in scope,
+  route or pair the run with `qa_gate_review`; otherwise record any trace-gap
+  signal as a handoff item, not as a completed XDDP judgment.
 - If a custom framework is present, identify:
   - framework lifecycle
   - extension points
@@ -308,6 +334,9 @@ required_followup: <next owner or specialist Skill, or none>
 
 - Check that diagnostics-covered issues are excluded from this skill's findings.
 - Downgrade unclear or unverifiable results to `needs_confirmation`.
+- Downgrade a category to `needs_confirmation` when the required evidence was
+  not reviewed because it did not fit the current context and no subagent result
+  exists.
 - Separate:
   - unresolved attribute origin
   - unresolved precondition verification
@@ -356,6 +385,11 @@ Closure is allowed only when all of the following hold:
   certificate validation, and similar) are handed off to
   `skills/security_review/meta.md` — record them on the handoff list, do not
   deep-dive them here.
+- XDDP trace-continuity findings (missing Why / What / Where / How links,
+  disconnected TM rows, untraced implementation targets, or diff scope that no
+  longer matches the declared change) are handed off to
+  `skills/qa_gate_review/meta.md` unless the current task explicitly invoked
+  that review in parallel.
 - Findings that expose unstated design assumptions or DDL/code mismatches are
   handed off to `skills/packs/constraint-derivation/code_constraint_derivation/meta.md`
   or `cross_constraint_derivation` as appropriate.
@@ -373,7 +407,9 @@ Closure is allowed only when all of the following hold:
 - Do not assert third-party API surface facts (member existence, signatures,
   implemented interfaces) in remediations without verifying them against the
   referenced package version; unverified API claims stay `needs_confirmation`.
-- Use subagents only when scope boundaries stay explicit and cross-scope reasoning is not required.
+- Use subagents when scope boundaries stay explicit. Parallel execution is only
+  allowed when cross-scope reasoning is not required; sequential subagents are
+  required when a single context would exceed context or hide category coverage.
 - Do not silently drop out-of-scope discoveries and do not expand into
   security or design-derivation work; route them through the handoff list.
 
