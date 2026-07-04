@@ -9,14 +9,9 @@ Execute the four QA review domains `specification / performance / security / lic
 
 ## Required Capability Definitions (XID)
 
-- [CAP-QA-001 Specification Conformance Review](../../capabilities/quality/100_cap_qa_001_code_review.md#xid-7E9CCEBEDA2D)
-- [CAP-QA-006 Performance Risk Review](../../capabilities/quality/140_cap_qa_006_performance_risk_review.md#xid-5A1C2F0E5506)
-- [CAP-QA-007 Security Review](../../capabilities/quality/150_cap_qa_007_security_review.md#xid-5A1C2F0E5507)
-- [CAP-QA-008 License Compliance Check](../../capabilities/quality/160_cap_qa_008_license_compliance_check.md#xid-5A1C2F0E5508)
 
 ## Optional Specialized Capability Definitions (XID)
 
-- [CAP-QA-005 Attribute Usage Review](../../capabilities/quality/130_cap_qa_005_attribute_usage_review.md#xid-5A1C2F0E5505)
 
 ## Inputs
 

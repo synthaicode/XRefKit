@@ -9,8 +9,6 @@ Execute the manufacturing sequence `CAP-MFG-001 -> CAP-MFG-002` and prepare outp
 
 ## Required Capability Definitions (XID)
 
-- [CAP-MFG-001 Scoped Code Realization](../../capabilities/manufacturing/100_cap_mfg_001_implementation.md#xid-1A12C5C61269)
-- [CAP-MFG-002 Unit-Level Verification](../../capabilities/manufacturing/110_cap_mfg_002_unit_test_execution.md#xid-55CC9027ACAD)
 
 ## Inputs
 

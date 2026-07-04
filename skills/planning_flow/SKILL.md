@@ -9,7 +9,6 @@ Execute `CAP-PLN-001` and prepare work planning outputs from approved requiremen
 
 ## Required Capability Definitions (XID)
 
-- [CAP-PLN-001 Work and Policy Planning Structuring](../../capabilities/planning/100_cap_pln_001_task_decomposition_plan_draft.md#xid-F5193313AB79)
 
 ## Inputs
 

@@ -11,7 +11,6 @@ Review current session evidence and determine what should remain in `work/` vers
 
 - [Working area policy](../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA)
 - [Shared memory operations](../../../docs/core/contracts/015_shared_memory_operations.md#xid-4A423E72D2ED)
-- [System quality feedback register](../../../docs/quality/044_system_quality_feedback_register.md#xid-8B31F02A4013)
 
 ## Inputs
 

@@ -42,8 +42,9 @@ is not part of the mandatory startup read path.
 - When a task uses a Skill, start it through the runtime envelope defined in
   `docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`
   before opening or executing `SKILL.md`.
-- When a task follows the business-capability model, route via
-  `agent/010_capability_routing.md#xid-1F93A7C24010`.
+- Route to the target Skill by semantic routing from user intent and the Skill
+  catalog (capability/tuning/responsibility triad); there is no separate
+  capability-routing model.
 - When a task or skill needs domain knowledge, route via:
   - `python -m fm xref search "<query>"`
   - `python -m fm xref show <XID>`

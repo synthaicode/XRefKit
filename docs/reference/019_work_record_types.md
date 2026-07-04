@@ -79,5 +79,3 @@ Use a canonical register page in `docs/` when the goal is to preserve:
 
 - [Shared memory operations](../core/contracts/015_shared_memory_operations.md#xid-4A423E72D2ED)
 - [Judgment log usage](../guides/055_judgment_log_usage.md#xid-9D64B2F18E44)
-- [System quality feedback loop](../quality/043_system_quality_feedback_loop.md#xid-8B31F02A4012)
-- [System quality feedback register](../quality/044_system_quality_feedback_register.md#xid-8B31F02A4013)

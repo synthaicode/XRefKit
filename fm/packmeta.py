@@ -28,8 +28,10 @@ OS_CORE_SKILL_PREFIX = "skills/os/"
 # Flat owns_* / uses_* keys keep the manifest readable AND parseable by the same
 # bullet-list reader as meta.md (which flattens nested lists), so no bespoke
 # manifest parser is needed.
-OWNS_KEYS = ("owns_skills", "owns_knowledge", "owns_flows")
-USES_KEYS = ("uses_skills", "uses_knowledge", "uses_capabilities")
+# Skill-centric consolidation (083): flows/ and capabilities/ are removed, so
+# owns_flows / uses_capabilities are no longer manifest keys.
+OWNS_KEYS = ("owns_skills", "owns_knowledge")
+USES_KEYS = ("uses_skills", "uses_knowledge")
 REQUIRED_TEXT_FIELDS = ("pack_id", "summary", "entry")
 
 
@@ -115,7 +117,7 @@ def validate_pack_manifest(manifest_path: Path, *, root: Path) -> PackManifestRe
         )
 
     if not any(owns.values()):
-        errors.append("pack owns no assets (declare at least one owns_skills/owns_knowledge/owns_flows)")
+        errors.append("pack owns no assets (declare at least one owns_skills/owns_knowledge)")
 
     # Owned-asset existence + boundary checks.
     for skill_ref in owns["owns_skills"]:
@@ -126,13 +128,13 @@ def validate_pack_manifest(manifest_path: Path, *, root: Path) -> PackManifestRe
         if norm.startswith(OS_CORE_SKILL_PREFIX):
             errors.append(f"owned skill lives in OS core (boundary violation): {skill_ref}")
 
-    for asset_ref in owns["owns_knowledge"] + owns["owns_flows"]:
+    for asset_ref in owns["owns_knowledge"]:
         target = (root / _strip_fragment(asset_ref).replace("\\", "/")).resolve()
         if not target.exists():
             errors.append(f"owned asset path does not resolve: {asset_ref}")
 
     # Used references only need to resolve; they may live anywhere (incl. OS core).
-    for use_ref in uses["uses_skills"] + uses["uses_knowledge"] + uses["uses_capabilities"]:
+    for use_ref in uses["uses_skills"] + uses["uses_knowledge"]:
         target = (root / _strip_fragment(use_ref).replace("\\", "/")).resolve()
         if not target.exists():
             warnings.append(f"used reference does not resolve: {use_ref}")

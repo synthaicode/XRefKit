@@ -57,7 +57,6 @@ The intent that should route to `goal_mode` is:
 This keeps the user-facing routing story aligned with:
 
 - [Startup xref routing policy](../core/contracts/011_startup_xref_routing.md#xid-6C0B62D6366A)
-- [Capability Routing for Agents](../../agent/010_capability_routing.md#xid-1F93A7C24010)
 
 ## Problem Statement
 

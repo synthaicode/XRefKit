@@ -9,11 +9,6 @@ Execute `CAP-OPS-001 -> CAP-OPS-002 -> CAP-OPS-003 -> CAP-OPS-004 -> CAP-OPS-005
 
 ## Required Capability Definitions (XID)
 
-- [CAP-OPS-001 Release Material Structuring](../../capabilities/operations/100_cap_ops_001_release_plan_draft_creation.md#xid-9715BACE7EB8)
-- [CAP-OPS-002 Operational Signal Specification](../../capabilities/operations/110_cap_ops_002_monitoring_design.md#xid-316B0FB4493C)
-- [CAP-OPS-003 Event Response Structuring](../../capabilities/operations/120_cap_ops_003_event_response_procedure_draft.md#xid-6DA033B45D93)
-- [CAP-OPS-004 Operational Readiness Evaluation](../../capabilities/operations/130_cap_ops_004_operational_readiness_gate.md#xid-83140C9538B3)
-- [CAP-OPS-005 Release Verification](../../capabilities/operations/140_cap_ops_005_release_verification.md#xid-83140C9538B4)
 
 ## Inputs
 

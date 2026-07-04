@@ -231,13 +231,9 @@ by Skill-local `role_responsibilities`.
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: <direct specialization for this Skill>
-- role_responsibilities:
-  - executor: <what the executor produces or changes>
+- responsibility: <the Skill's business use, e.g. implementation or quality check>
 - os_contract: v1
 - constraints: <explicit operational constraints>
-- capability_refs:
-  - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - knowledge_refs:
   - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
 - observation_refs:

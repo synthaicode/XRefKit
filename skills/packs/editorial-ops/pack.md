@@ -25,9 +25,6 @@ For the Business Pack concept see
 - owns_knowledge:
   - `knowledge/packs/editorial-ops/110_editorial_operations_framework.md#xid-F9E58E2BAD21`
   - `knowledge/packs/editorial-ops/120_reader_capability_model.md#xid-125B6C5E3630`
-- uses_capabilities:
-  - `capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - uses_knowledge:
   - `knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
 - inputs: topic fragments or article seeds, source links or evidence set, optional existing draft, target publication channels and timeline

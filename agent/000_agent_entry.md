@@ -55,9 +55,8 @@ When the XRefKit MCP server is configured, load this file through
 8. Use the returned assigned roles; mark runtime progress with `python -m fm skill phase --log <run-log> --phase <phase> --status <status> --role <assigned-role>`; advance the check phase with `python -m fm skill verify --log <run-log>` (deterministic), never from the producer context
 9. Before completion, run `python -m fm skill close --log <run-log>` and keep failed closure checks explicit
 10. If the task needs a document outside the selected route, use `docs/000_index.md#xid-56DD6EB68343` as a lookup index, not as a bulk read target
-11. If the task maps to the business-capability model, follow `agent/010_capability_routing.md#xid-1F93A7C24010`
-12. Find candidate XIDs: `python -m fm xref search "<query>"`
-13. Read only what you need: `python -m fm xref show <XID>`
+11. Find candidate XIDs: `python -m fm xref search "<query>"`
+12. Read only what you need: `python -m fm xref show <XID>`
 
 If the user asks for available skills, answer from `skills/_index.md` first.
 

@@ -9,10 +9,6 @@ Execute the sequence `CAP-SUP-001 -> CAP-SUP-002 -> CAP-EST-001 -> CAP-EST-002` 
 
 ## Required Capability Definitions (XID)
 
-- [CAP-SUP-001 External Service Condition Comparison](../../capabilities/supply/100_cap_sup_001_supplier_four_condition_check.md#xid-2DC9A90A6508)
-- [CAP-SUP-002 Cost Pattern Projection](../../capabilities/supply/110_cap_sup_002_cost_estimation.md#xid-754A17D69C7C)
-- [CAP-EST-001 Solution Option Structuring](../../capabilities/estimation/100_cap_est_001_solution_option_generation.md#xid-BDB6B54A3571)
-- [CAP-EST-002 Assumption Ambiguity Classification](../../capabilities/estimation/110_cap_est_002_assumption_ambiguity_classification.md#xid-B362EA06B9C2)
 
 ## Inputs
 

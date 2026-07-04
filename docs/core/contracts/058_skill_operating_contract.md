@@ -37,9 +37,11 @@ usage-time setting that makes the runtime envelope carry the selected Skill's
 capability-layer declaration. `workflow_protocol` binds the Skill run to the
 repository runtime protocol for work items, artifacts, role separation,
 deterministic checking, closure, and handoff. Because current Skills are not
-fully generalized Capability templates, `meta.md` also declares direct
-`tuning` and Skill-specific `role_responsibilities.executor` for the Skill's
-concrete use. The `capability_refs` list remains a list of control-definition
+fully generalized Capability templates, `meta.md` may declare the concrete
+capability / tuning / responsibility triplet directly: `capability` names the
+base reusable ability, `tuning` names its specialization, and Skill-specific
+`role_responsibilities.executor` names the responsibility exercised by the
+Skill. The `capability_refs` list remains a list of control-definition
 references, not the tuning or responsibility definition and not evidence.
 
 `role_responsibilities` is Skill-specific and must contain `executor`. Common
@@ -400,8 +402,7 @@ verification and is advanced deterministically by `fm skill verify`, not by a
 model, whatever the executor tier; domain-level quality review belongs to
 review-oriented Skills, not to the check phase. `model_tier` is a cost-control
 knob for the executor side only — it never relaxes deterministic check
-verification, role separation, or any closure condition. Dispatch rules live
-in `agent/010_capability_routing.md#xid-1F93A7C24010`.
+verification, role separation, or any closure condition.
 
 This boundary is concrete about artifacts: progression closure verifies that
 output and evidence artifacts are *recorded, linked, and status-complete* in

@@ -9,7 +9,6 @@ Execute `CAP-DSN-001` and prepare implementation-ready solution-design artifacts
 
 ## Required Capability Definitions (XID)
 
-- [CAP-DSN-001 Solution Design Structuring](../../capabilities/design/100_cap_dsn_001_solution_design_structuring.md#xid-6C1A2D9F4501)
 
 ## Inputs
 

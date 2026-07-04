@@ -10,16 +10,12 @@ engine, while leaving only the business work at each node probabilistic.
 
 It is not a usage guide. For the flow/skill model itself see
 [Flow Capability Skill Knowledge model](../core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8).
-For the per-page flow schema see
-[Workflow page schema](../workflows/018_workflow_page_schema.md#xid-6D2E4A9C0B71).
 
 Related:
 
 - [Base control and xref routing layers](../core/models/017_base_and_xref_layering.md#xid-5A1C8E4D2F90)
 - [Uncertainty protocol](../core/contracts/016_uncertainty_protocol.md#xid-8A666C1FD121)
 - [Early XRefKit migration design](072_early_xrefkit_migration_design.md#xid-19BC00401A1A) — early flows mix runtime control with business steps
-- [Manufacturing workflow](../workflows/033_manufacturing_workflow.md#xid-8B31F02A4002) — worked example below
-- [CAB workflow](../workflows/039_cab_workflow.md#xid-8B31F02A4008) — approval-gate-heavy flow
 - [Metrics definition](../../knowledge/organization/120_metrics_definition.md#xid-7A2F4C8D1201) — token-cost metric this design serves
 
 ## Origin
@@ -136,8 +132,7 @@ The residual non-deterministic surface of the whole system therefore equals the
 **amount of context consolidation** — i.e. capability invocations. Raising
 certainty reduces to one engineering move: shrink what each capability must
 consolidate and push everything around it (tools, verification) into
-deterministic ③. This also sharpens **Capability Routing**
-([Capability routing](../../agent/010_capability_routing.md#xid-1F93A7C24010)): it
+deterministic ③. This also sharpens **capability selection**: it
 routes to a *consolidation responsibility*, resolved before execution; once
 resolved, the surrounding tools and verification run deterministically.
 
@@ -572,8 +567,7 @@ capability.
   (`fm/flowstate.py`) with per-step `skill:` binding and the G4 doctor
   check; see **Cooperative Driver** above.
 - **Schema update** — fold the above (including the optional per-step
-  `skill:` binding) into
-  [Workflow page schema](../workflows/018_workflow_page_schema.md#xid-6D2E4A9C0B71) once one
+  `skill:` binding) into the workflow page schema once one
   flow is migrated end-to-end as a reference.
 - **Pilot flow** — migrate one flow first to confirm the control graph provably
   closes (every edge lands on terminal / human / existing step). A light-tier

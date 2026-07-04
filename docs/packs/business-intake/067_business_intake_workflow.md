@@ -44,8 +44,6 @@ flowchart TD
   - currently executed directly by [business_intake_scoping](../../../skills/packs/business-intake/business_intake_scoping/SKILL.md#xid-6F2A9C41E8B3)
   - no dedicated business-intake capability page has been extracted yet
 - Shared OS-core runtime control:
-  - supported by [CAP-MGT-005 Skill Runtime Envelope](../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5)
-  - supported by [CAP-MGT-004 Context Direction Guard](../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11)
 
 ## Sequence
 

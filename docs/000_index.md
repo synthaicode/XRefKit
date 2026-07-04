@@ -47,31 +47,13 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 
 ## Cross-Cutting Schemas And Boundaries
 
-- [Workflow page schema](workflows/018_workflow_page_schema.md#xid-6D2E4A9C0B71)
-- [Group, quality, and feedback boundaries](reference/021_group_quality_and_feedback_boundaries.md#xid-8E5D31A4C672)
 - [Operating models, usage guides, and design pages](reference/022_operating_models_guides_and_designs.md#xid-9C4E2A71D583)
 - [Page naming conventions](reference/023_page_naming_conventions.md#xid-7B2D4E6A1C90)
 
 ## Workflow And Organization Model
 
 - [Capability layering](reference/031_capability_layering.md#xid-8D50A972BA9F)
-- [Application workflow](workflows/045_application_workflow.md#xid-8B31F02A4014)
 - [Business intake workflow](packs/business-intake/067_business_intake_workflow.md#xid-7F2C8DA14E66)
-- [Investigation workflow](workflows/032_investigation_workflow.md#xid-8B31F02A4001)
-- [Manufacturing workflow](workflows/033_manufacturing_workflow.md#xid-8B31F02A4002)
-- [Closure workflow](workflows/034_closure_workflow.md#xid-8B31F02A4003)
-- [Estimation workflow](workflows/035_estimation_workflow.md#xid-8B31F02A4004)
-- [Requirements workflow](workflows/036_requirements_workflow.md#xid-8B31F02A4005)
-- [Planning workflow](workflows/037_planning_workflow.md#xid-8B31F02A4006)
-- [Design workflow](workflows/046_design_workflow.md#xid-8B31F02A4015)
-- [Test workflow](workflows/047_test_workflow.md#xid-8B31F02A4016)
-- [Release planning workflow](workflows/038_release_planning_workflow.md#xid-8B31F02A4007)
-- [CAB workflow](workflows/039_cab_workflow.md#xid-8B31F02A4008)
-- [Group definitions](reference/040_group_definitions.md#xid-8B31F02A4009)
-- [Flow-to-group matrix](reference/041_flow_to_group_matrix.md#xid-8B31F02A4010)
-- [Flow quality assurance mechanism](quality/042_flow_quality_assurance_mechanism.md#xid-8B31F02A4011)
-- [System quality feedback loop](quality/043_system_quality_feedback_loop.md#xid-8B31F02A4012)
-- [System quality feedback register](quality/044_system_quality_feedback_register.md#xid-8B31F02A4013)
 
 ## Operating Models, Guides, And Designs
 
@@ -98,6 +80,4 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 ## Common links
 
 - Agent entry: [Agent Entry](../agent/000_agent_entry.md#xid-0B5C58B5E5B2)
-- Agent routing: [Capability Routing for Agents](../agent/010_capability_routing.md#xid-1F93A7C24010)
 - Domain knowledge entry: [Knowledge Index](../knowledge/000_index.md#xid-23059118FBB9)
-- Capability entry: [Capabilities Index](../capabilities/000_index.md#xid-C14253A74C4F)

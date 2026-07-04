@@ -142,9 +142,8 @@ required_followup: <next owner or specialist Skill, or none>
 - This skill is `model_tier: standard`, so the quality gate is mandatory at
   closure. The quality reviewer advances the quality phase under the
   `csharp_review:quality_reviewer` role, separate from the executor.
-- At planning, declare the
-  [CAP-QA-011 Roslyn Analyzer Acceptance](../../capabilities/quality/190_cap_qa_011_roslyn_analyzer_acceptance.md#xid-94C1B7B9920A)
-  check as a `check`-kind artifact. It is content-conditional: run
+- At planning, declare the Roslyn analyzer acceptance check as a `check`-kind
+  artifact. It is content-conditional: run
   `python tools/cs_scope_probe.py --target <review-target> --json`; if C# is in
   scope, run the analyzer pipeline and disposition its candidates, otherwise
   mark the check `na`. Analyzer hits are candidates, not auto-fail findings.

@@ -27,4 +27,3 @@
 - knowledge_refs:
   - `../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA`
   - `../../../docs/core/contracts/015_shared_memory_operations.md#xid-4A423E72D2ED`
-  - `../../../docs/quality/044_system_quality_feedback_register.md#xid-8B31F02A4013`

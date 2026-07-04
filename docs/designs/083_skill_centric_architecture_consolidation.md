@@ -174,7 +174,6 @@ Their three additions — ownership/authority boundary, handoff topology, and
 self-check ownership — are already carried by capability (now Skill identity),
 the protocol roles (executor / deterministic checker), and Flow control (now the
 protocol). The overlay is redundant.
-See [Group definitions](../reference/040_group_definitions.md#xid-8B31F02A4009).
 The team operating models and usage guides were already removed; the remaining
 group references (`040`, `041`, `021`, and the group-keyed quality feedback in
 `042`–`044`) are the remaining rework/removal surface.

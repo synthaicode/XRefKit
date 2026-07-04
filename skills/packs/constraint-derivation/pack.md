@@ -39,9 +39,6 @@ For the Business Pack concept see
   - `knowledge/packs/constraint-derivation/190_code_constraint_derivation_catalog.md#xid-A1D4E8C93B71`
   - `knowledge/packs/constraint-derivation/200_cross_constraint_derivation_catalog.md#xid-B2E5F9DA4C82`
   - `knowledge/packs/constraint-derivation/210_integration_scenario_derivation_catalog.md#xid-C3F60AEB5D93`
-- uses_capabilities:
-  - `capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
 - uses_knowledge:
   - `knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
 - inputs: design specifications/diagrams, generated or reviewed C# code, DDL, UI/workflow/API/auth/integration artifacts, optional earlier derivation outputs

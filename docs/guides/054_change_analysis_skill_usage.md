@@ -94,4 +94,3 @@ The generated Markdown note is expected to include:
 ## Related
 
 - [Skill authoring with xref](013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B)
-- [Investigation workflow](../workflows/032_investigation_workflow.md#xid-8B31F02A4001)

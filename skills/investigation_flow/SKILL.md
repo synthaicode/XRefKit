@@ -9,9 +9,6 @@ Execute the investigation sequence `CAP-INV-001 -> CAP-INV-002 -> CAP-INV-003` a
 
 ## Required Capability Definitions (XID)
 
-- [CAP-INV-001 Scope Classification](../../capabilities/investigation/100_cap_inv_001_service_catalog_analysis.md#xid-867B78FF702F)
-- [CAP-INV-002 Change Impact Enumeration](../../capabilities/investigation/110_cap_inv_002_source_dependency_analysis.md#xid-E994FCDA8CD1)
-- [CAP-INV-003 Structured Investigation Summary](../../capabilities/investigation/120_cap_inv_003_change_target_summary.md#xid-6AB17163C9BF)
 
 ## Required Knowledge (XID)
 

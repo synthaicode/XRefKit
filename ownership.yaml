@@ -34,10 +34,8 @@ zones:
     paths:
       - agent/
       - docs/
-      - flows/
       - skills/
       - knowledge/
-      - capabilities/
     catalog: true
     distribution: true
     base_sync: true
