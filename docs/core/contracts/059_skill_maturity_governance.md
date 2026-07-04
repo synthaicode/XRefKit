@@ -57,8 +57,8 @@ far that clarification has actually progressed.
 - maturity: `draft`
 ```
 
-`execution_mode`, `guard_policy`, `constraints`, `capability_refs`,
-`knowledge_refs`, `tags`, and `os_contract` may still be absent or provisional.
+`execution_mode`, `guard_policy`, `constraints`, `knowledge_slots`,
+`tags`, and `os_contract` may still be absent or provisional.
 
 ### Trial Additions
 
@@ -119,20 +119,25 @@ To pass `stable` check, the Skill must satisfy operational completeness:
 - `draft` minimum fields
 - `observation_refs`
 - valid `execution_mode`
-- valid `guard_policy`
 - `capability_layering: required`
 - `workflow_protocol: required`
+- explicit `capability`
 - explicit `tuning`
-- Skill-specific `role_responsibilities.executor`
+- explicit `responsibility` (the legacy `role_responsibilities.executor` value
+  is still accepted)
 - no protocol-owned roles (`checker`, `quality_reviewer`, `handoff_owner`) in
   `role_responsibilities`
 - `constraints`
-- required runtime capability reference
-- required guard references when `guard_policy: required`
-- explicit closed-world wording when `guard_policy: closed_world`
+- explicit closed-world wording when a legacy meta declares
+  `guard_policy: closed_world`
 - full required `os_contract`, declared as the `os_contract: v1` shorthand
   or the equivalent expanded block (see
   `docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`)
+
+The context-direction guard is ambient — supplied by the startup contract pack
+and the per-response control reminder — so it is no longer a required per-Skill
+field. A legacy meta may still carry `guard_policy` and guard references
+harmlessly (design 083 / 082 D4).
 
 ### Governed Requirements
 
@@ -181,9 +186,8 @@ runtime fields themselves must be explicit before the Skill is load-ready.
 2. Add a first `SKILL.md` procedure and promote to `trial`.
 3. Run the Skill and record session/judgment/review evidence.
 4. Add or refine `use_when`, `input`, `output`, `constraints`,
-   `execution_mode`, `guard_policy`, `capability_layering`,
-   `workflow_protocol`, `tuning`, `role_responsibilities.executor`,
-   `capability_refs`, and `knowledge_refs`.
+   `execution_mode`, `capability_layering`, `workflow_protocol`,
+   `capability`, `tuning`, `responsibility`, and `knowledge_slots`.
 5. Link the observed evidence through `observation_refs`.
 6. Promote to `stable` after the operating contract is explicit.
 7. Add governance and audit basis through `governance_refs`.
@@ -208,12 +212,11 @@ runtime fields themselves must be explicit before the Skill is load-ready.
 ```md
 - maturity: `trial`
 - execution_mode: `local_default`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
+- capability: <base reusable ability, e.g. software_development>
 - tuning: <direct specialization for this Skill>
-- role_responsibilities:
-  - executor: <what the executor produces or changes>
+- responsibility: <the Skill's business use, e.g. implementation or quality check>
 - observation_refs:
   - `../../observations/<record>.md`
 ```
@@ -227,15 +230,16 @@ by Skill-local `role_responsibilities`.
 ```md
 - maturity: `stable`
 - execution_mode: `subagent_preferred`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
+- capability: <base reusable ability, e.g. software_development>
 - tuning: <direct specialization for this Skill>
 - responsibility: <the Skill's business use, e.g. implementation or quality check>
 - os_contract: v1
 - constraints: <explicit operational constraints>
-- knowledge_refs:
-  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
+- knowledge_slots:
+  - name=<slot>; query=<intent phrase>; domain=<domain>; min=1; required
+  - name=<slot>; bind=<XID of domain knowledge this Skill always needs>
 - observation_refs:
   - `../../observations/<record>.md`
 ```
@@ -258,10 +262,9 @@ Use a small Markdown note or session entry when refining a Skill:
   - `input`
   - `output`
   - `constraints`
-  - `guard_policy`
   - `execution_mode`
-  - `capability_refs`
-  - `knowledge_refs`
+  - `capability`
+  - `knowledge_slots`
 - summary: <what was unclear or missing>
 - change_needed: <what should be updated>
 - promotion_effect: <does this support trial/stable/governed promotion?>

@@ -67,7 +67,7 @@ Do not load these during initialization by default:
 
 - `docs/000_index.md` as a bulk context file
 - every `Related` link in a document
-- every `capability_refs` or `knowledge_refs` entry before route selection
+- every `knowledge_slots` binding or `capability` reference before route selection
 - workflow pages that are not selected by the current task
 - Skill procedure bodies before `fm skill run` has created the runtime envelope
 
