@@ -25,6 +25,6 @@
   - closure: return the intake path, highest-priority open questions, and the drafting handoff
 - tags: `editorial`, `intake`, `writing`, `planning`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../../../knowledge/packs/editorial-ops/110_editorial_operations_framework.md#xid-F9E58E2BAD21`
-  - `../../../../knowledge/packs/editorial-ops/120_reader_capability_model.md#xid-125B6C5E3630`
+- knowledge_slots:
+  - name=editorial_operations_framework; bind=F9E58E2BAD21
+  - name=reader_capability_model; bind=125B6C5E3630

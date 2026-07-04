@@ -24,11 +24,11 @@
   - closure: return path, status, and remaining open questions
 - tags: `logging`, `judgment`, `traceability`, `work`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA`
-  - `../../../docs/core/contracts/015_shared_memory_operations.md#xid-4A423E72D2ED`
-  - `../../../knowledge/organization/120_metrics_definition.md#xid-7A2F4C8D1201`
-  - `../../../knowledge/organization/121_judgment_log_schema.md#xid-7B4C2D91E621`
+- knowledge_slots:
+  - name=working_area_policy; bind=111D282CA0EA
+  - name=shared_memory_operations; bind=4A423E72D2ED
+  - name=metrics_definition; bind=7A2F4C8D1201
+  - name=judgment_log_schema; bind=7B4C2D91E621
 - observation_refs:
   - `../../../observations/2026-06-23_csharp_review_bad_mail_sender_handoff_judgment.md`
   - `../../../observations/2026-06-12_judgment_csharp_error_policy_extraction_authoring.md`

@@ -24,5 +24,5 @@
   - closure: finalize Markdown outputs, verify deck write-back, and preserve source pointers
 - tags: `pptx`, `powerpoint`, `presentation`, `specification`, `traceability`, `image`, `import`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../docs/reference/020_sources.md#xid-2FAD591BF725`
+- knowledge_slots:
+  - name=sources; bind=2FAD591BF725

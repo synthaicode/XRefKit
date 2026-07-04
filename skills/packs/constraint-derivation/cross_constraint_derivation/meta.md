@@ -25,9 +25,9 @@
   - closure: return the written derivation path, highest-priority mismatches, and remaining gaps
 - tags: `review`, `cross-check`, `.NET`, `requirements-derivation`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA`
-  - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
-  - `../../../../knowledge/packs/constraint-derivation/200_cross_constraint_derivation_catalog.md#xid-B2E5F9DA4C82`
+- knowledge_slots:
+  - name=working_area_policy; bind=111D282CA0EA
+  - name=constraint_derivation_framework; bind=81A6C4E2B190
+  - name=cross_constraint_derivation_catalog; bind=B2E5F9DA4C82
 - observation_refs:
   - ../../../../observations/2026-06-21_skill_run_skill_flow_authoring.md

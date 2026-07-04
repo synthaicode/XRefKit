@@ -24,7 +24,7 @@
   - closure: run xref maintenance, summarize applied and skipped items, and preserve traceability
 - tags: `documentation`, `promotion`, `knowledge-ops`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../../docs/guides/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B`
-  - `../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA`
-  - `../../../docs/core/contracts/015_shared_memory_operations.md#xid-4A423E72D2ED`
+- knowledge_slots:
+  - name=skill_authoring_with_xref; bind=3DB05A0F5F5B
+  - name=working_area_policy; bind=111D282CA0EA
+  - name=shared_memory_operations; bind=4A423E72D2ED

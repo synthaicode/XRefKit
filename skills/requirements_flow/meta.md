@@ -24,6 +24,6 @@
   - closure: finalize states and hand off unresolved requirement items with traceable difference statements
 - tags: `requirements`, `planning`, `analysis`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`
-  - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`
+- knowledge_slots:
+  - name=xddp_basics; bind=7A2F4C8D1701
+  - name=xddp_supporting_methods; bind=7A2F4C8D1711

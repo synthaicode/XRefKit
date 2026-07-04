@@ -25,12 +25,12 @@
   - closure: return the Markdown note, impacted boundaries, and unresolved items with reasons
 - tags: `dotnet`, `csharp`, `analysis`, `investigation`, `markdown`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001`
-  - `../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002`
-  - `../../knowledge/source_analysis/120_dotnet_change_analysis_viewpoints.md#xid-2E7B5A1FD201`
-  - `../../knowledge/source_analysis/121_structure_analysis_determinism_tiers.md#xid-5301B897BA41`
-  - `../../knowledge/source_analysis/160_structure_graph_tm_backstop.md#xid-163AD9936979`
+- knowledge_slots:
+  - name=common_source_analysis_criteria; bind=5F21C8A41001
+  - name=custom_framework_common_criteria; bind=5F21C8A41002
+  - name=dotnet_change_analysis_viewpoints; bind=2E7B5A1FD201
+  - name=structure_analysis_determinism_tiers; bind=5301B897BA41
+  - name=structure_graph_tm_backstop; bind=163AD9936979
 - observation_refs:
   - `../../observations/2026-06-11_skill_improvement_note_dotnet_change_analysis.md`
   - `../../observations/2026-06-11_skill_run_dotnet_change_analysis.md`

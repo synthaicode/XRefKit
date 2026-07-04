@@ -25,8 +25,8 @@
   - closure: return the derivation table, grouped confirmation items, and blocking restart or schedule gaps
 - tags: `design`, `async`, `requirements-derivation`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
-  - `../../../../knowledge/packs/constraint-derivation/160_async_constraint_derivation_catalog.md#xid-72ECA94D1B35`
+- knowledge_slots:
+  - name=constraint_derivation_framework; bind=81A6C4E2B190
+  - name=async_constraint_derivation_catalog; bind=72ECA94D1B35
 - observation_refs:
   - ../../../../observations/2026-06-21_skill_run_skill_flow_authoring.md

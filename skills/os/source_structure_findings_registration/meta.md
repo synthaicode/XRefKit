@@ -24,10 +24,10 @@
   - closure: return the canonical finding XID or proposal path, catalog update status, source evidence, validation commands, unresolved verification, and the next handoff owner
 - tags: `operations`, `knowledge`, `source-analysis`, `registration`, `xref`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../../knowledge/organization/200_domain_knowledge_ontology_rules.md#xid-5803607419B9`
-  - `../../../docs/reference/020_sources.md#xid-2FAD591BF725`
-  - `../../../docs/policies/074_document_update_policy.md#xid-B1D42A6F90C3`
-  - `../../../knowledge/source_analysis/170_current_source_structure_findings_catalog.md#xid-A9E742B1C6D0`
+- knowledge_slots:
+  - name=domain_knowledge_ontology_rules; bind=5803607419B9
+  - name=sources; bind=2FAD591BF725
+  - name=document_update_policy; bind=B1D42A6F90C3
+  - name=current_source_structure_findings_catalog; bind=A9E742B1C6D0
 - observation_refs:
   - `../../../observations/2026-06-28_skill_run_knowledge_ontology_management.md`

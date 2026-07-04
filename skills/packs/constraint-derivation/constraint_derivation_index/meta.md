@@ -25,7 +25,7 @@
   - closure: return the selected Skill set, routing basis, unresolved gaps, and the next execution handoff
 - tags: `design`, `review`, `routing`, `requirements-derivation`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
+- knowledge_slots:
+  - name=constraint_derivation_framework; bind=81A6C4E2B190
 - observation_refs:
   - ../../../../observations/2026-06-21_skill_run_skill_flow_authoring.md

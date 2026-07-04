@@ -25,10 +25,10 @@
   - closure: return the error-policy report, the de-facto policy candidates, the contradiction list, unresolved unknowns with reasons, and the handoff list
 - tags: `dotnet`, `csharp`, `analysis`, `error-handling`, `policy-extraction`, `markdown`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001`
-  - `../../knowledge/source_analysis/120_dotnet_change_analysis_viewpoints.md#xid-2E7B5A1FD201`
-  - `../../knowledge/source_analysis/130_csharp_error_policy_detection_patterns.md#xid-C0DBC37E2A13`
+- knowledge_slots:
+  - name=common_source_analysis_criteria; bind=5F21C8A41001
+  - name=dotnet_change_analysis_viewpoints; bind=2E7B5A1FD201
+  - name=csharp_error_policy_detection_patterns; bind=C0DBC37E2A13
 - observation_refs:
   - `../../observations/2026-06-12_skill_run_skill_flow_authoring.md`
   - `../../observations/2026-06-12_skill_run_csharp_error_policy_extraction.md`

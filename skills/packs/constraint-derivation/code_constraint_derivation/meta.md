@@ -25,9 +25,9 @@
   - closure: return the written derivation path, high-priority confirmation items, and remaining gaps
 - tags: `review`, `code`, `.NET`, `requirements-derivation`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../../../docs/policies/014_working_area_policy.md#xid-111D282CA0EA`
-  - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
-  - `../../../../knowledge/packs/constraint-derivation/190_code_constraint_derivation_catalog.md#xid-A1D4E8C93B71`
+- knowledge_slots:
+  - name=working_area_policy; bind=111D282CA0EA
+  - name=constraint_derivation_framework; bind=81A6C4E2B190
+  - name=code_constraint_derivation_catalog; bind=A1D4E8C93B71
 - observation_refs:
   - ../../../../observations/2026-06-21_skill_run_skill_flow_authoring.md

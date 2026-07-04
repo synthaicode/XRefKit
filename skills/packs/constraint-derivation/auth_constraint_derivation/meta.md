@@ -25,8 +25,8 @@
   - closure: return the derivation table, grouped confirmation items, and blocking session or permission gaps
 - tags: `design`, `security`, `requirements-derivation`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
-  - `../../../../knowledge/packs/constraint-derivation/170_auth_constraint_derivation_catalog.md#xid-8B14D9E70326`
+- knowledge_slots:
+  - name=constraint_derivation_framework; bind=81A6C4E2B190
+  - name=auth_constraint_derivation_catalog; bind=8B14D9E70326
 - observation_refs:
   - ../../../../observations/2026-06-21_skill_run_skill_flow_authoring.md

@@ -24,5 +24,5 @@
   - closure: finalize review results and preserve unresolved items
 - tags: `qa`, `security`, `csharp`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../knowledge/quality/100_csharp_quality_review_criteria.md#xid-8C4D2A7E5101`
+- knowledge_slots:
+  - name=csharp_quality_review_criteria; bind=8C4D2A7E5101

@@ -53,12 +53,12 @@
   - closure: finalize states and hand off results and implementation basis design reference to QA review
 - tags: `implementation`, `manufacturing`, `engineering`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../knowledge/organization/151_temporary_traceability_comment_rule.md#xid-22E4C7AC7063`
-  - `../../knowledge/organization/190_quality_feedback_return_rules.md#xid-7A2F4C8D1901`
-  - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`
-  - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`
-  - `../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
+- knowledge_slots:
+  - name=temporary_traceability_comment_rule; bind=22E4C7AC7063
+  - name=quality_feedback_return_rules; bind=7A2F4C8D1901
+  - name=xddp_basics; bind=7A2F4C8D1701
+  - name=xddp_supporting_methods; bind=7A2F4C8D1711
+  - name=constraint_derivation_framework; bind=81A6C4E2B190
 - observation_refs:
   - `../../observations/2026-06-12_skill_run_implementation_flow.md`
   - `../../observations/2026-06-12_skill_run_implementation_flow_2.md`

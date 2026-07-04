@@ -24,8 +24,8 @@
   - closure: finalize states and hand off the approved design package and design basis policy reference with unresolved items
 - tags: `design`, `execution`, `implementation-preparation`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`
-  - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`
-  - `../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
-  - `../../knowledge/source_analysis/170_current_source_structure_findings_catalog.md#xid-A9E742B1C6D0`
+- knowledge_slots:
+  - name=xddp_basics; bind=7A2F4C8D1701
+  - name=xddp_supporting_methods; bind=7A2F4C8D1711
+  - name=constraint_derivation_framework; bind=81A6C4E2B190
+  - name=current_source_structure_findings_catalog; bind=A9E742B1C6D0

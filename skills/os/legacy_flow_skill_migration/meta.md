@@ -24,8 +24,8 @@
   - closure: return report paths, scaffold paths, and the smallest next migration step
 - tags: `operations`, `migration`, `legacy`, `flow`, `skill`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../../knowledge/operations/130_legacy_flow_skill_migration_rules.md#xid-7B3E5D1A6104`
-  - `../../../docs/guides/062_legacy_flow_skill_migration_guide.md#xid-E3B7D5A18C62`
+- knowledge_slots:
+  - name=legacy_flow_skill_migration_rules; bind=7B3E5D1A6104
+  - name=legacy_flow_skill_migration_guide; bind=E3B7D5A18C62
 - observation_refs:
   - `../../../observations/2026-05-02_session_legacy_flow_skill_migration_seed.md`

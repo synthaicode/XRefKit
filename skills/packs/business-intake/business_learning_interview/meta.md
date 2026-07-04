@@ -25,9 +25,9 @@
   - closure: return the interview-cycle output and the recommended next question or transition to scoping
 - tags: `operations`, `learning`, `interview`, `business`, `intake`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../../../knowledge/packs/business-intake/120_business_learning_interview_rules.md#xid-7B3E5D1A6103`
-  - `../../../../docs/packs/business-intake/061_business_learning_interview_guide.md#xid-D2A41E8C7B51`
-  - `../../../../docs/packs/business-intake/060_business_intake_scoping_guide.md#xid-C91F7D2A6B40`
+- knowledge_slots:
+  - name=business_learning_interview_rules; bind=7B3E5D1A6103
+  - name=business_learning_interview_guide; bind=D2A41E8C7B51
+  - name=business_intake_scoping_guide; bind=C91F7D2A6B40
 - observation_refs:
   - `../../../../observations/2026-05-01_session_business_learning_interview_skill_seed.md`

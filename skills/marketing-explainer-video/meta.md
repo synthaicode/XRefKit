@@ -24,7 +24,7 @@
   - closure: provide final paths, duration, voice credits, and commit only the intended video package when asked
 - tags: `marketing`, `video`, `explainer`, `tts`, `voicevox`, `azure-speech`, `slides`, `readme`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../knowledge/operations/150_marketing_video_tts_engine_guidance.md#xid-9C41D7B2A5E1`
+- knowledge_slots:
+  - name=marketing_video_tts_engine_guidance; bind=9C41D7B2A5E1
 - observation_refs:
   - `../../observations/2026-04-30_feedback_marketing-video-production-gaps.md`

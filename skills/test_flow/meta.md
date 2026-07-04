@@ -25,5 +25,5 @@
   - closure: finalize states and hand off the reviewed test package
 - tags: `test`, `design`, `manufacturing`, `traceability`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../knowledge/quality/110_test_design_criteria.md#xid-8C4D2A7E5102`
+- knowledge_slots:
+  - name=test_design_criteria; bind=8C4D2A7E5102

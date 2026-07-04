@@ -25,8 +25,8 @@
   - closure: return the scoped output, open questions, recommended next confirmation points, and the smallest next information needed
 - tags: `operations`, `intake`, `scoping`, `business`, `planning`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../../../knowledge/packs/business-intake/110_business_intake_scoping_rules.md#xid-7B3E5D1A6102`
-  - `../../../../docs/packs/business-intake/060_business_intake_scoping_guide.md#xid-C91F7D2A6B40`
+- knowledge_slots:
+  - name=business_intake_scoping_rules; bind=7B3E5D1A6102
+  - name=business_intake_scoping_guide; bind=C91F7D2A6B40
 - observation_refs:
   - `../../../../observations/2026-05-01_session_business_intake_scoping_skill_seed.md`

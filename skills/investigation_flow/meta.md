@@ -24,7 +24,7 @@
   - closure: finalize states and hand off unresolved or out-of-scope items with impacted-target notes
 - tags: `investigation`, `scope`, `planning`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`
-  - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`
-  - `../../knowledge/investigation/100_investigation_coverage_checklist.md#xid-91E2A7C56101`
+- knowledge_slots:
+  - name=xddp_basics; bind=7A2F4C8D1701
+  - name=xddp_supporting_methods; bind=7A2F4C8D1711
+  - name=investigation_coverage_checklist; bind=91E2A7C56101

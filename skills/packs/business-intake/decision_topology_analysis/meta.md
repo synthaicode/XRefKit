@@ -25,8 +25,8 @@
   - closure: return the report, Quality Gate result, unresolved Unknowns, Human Review items, Knowledge Promotion candidates, and the next business-action handoff
 - tags: `business`, `intake`, `conversation-analysis`, `decision-topology`, `stakeholder`, `evidence`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../../../docs/core/contracts/016_uncertainty_protocol.md#xid-8A666C1FD121`
+- knowledge_slots:
+  - name=uncertainty_protocol; bind=8A666C1FD121
 - observation_refs:
   - `../../../../observations/2026-06-27_skill_run_skill_flow_authoring.md`
   - `../../../../observations/2026-06-27_skill_run_skill_flow_authoring_2.md`

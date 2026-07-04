@@ -25,8 +25,8 @@
   - closure: return the candidate table, boundary-check table, and the next human decisions required
 - tags: `design`, `cross-cutting`, `requirements-derivation`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
-  - `../../../../knowledge/packs/constraint-derivation/180_commonality_derivation_signals.md#xid-9C27AE51D648`
+- knowledge_slots:
+  - name=constraint_derivation_framework; bind=81A6C4E2B190
+  - name=commonality_derivation_signals; bind=9C27AE51D648
 - observation_refs:
   - ../../../../observations/2026-06-21_skill_run_skill_flow_authoring.md

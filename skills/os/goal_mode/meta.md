@@ -24,10 +24,10 @@
   - closure: close only after the goal is completed or the continuation packet and handoff state are explicit enough for the next recovery window
 - tags: `operations`, `continuation`, `quota`, `codex`, `control`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../../docs/designs/050_codex_mcp_job_inbox_design.md#xid-77BCEAA247E3`
-  - `../../../docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`
-  - `../../../docs/guides/069_codex_goal_mode_usage_guide.md#xid-3E7B4C11A8D2`
-  - `../../../docs/designs/070_codex_goal_mode_auto_resume_design.md#xid-6F4D2A18C9E7`
+- knowledge_slots:
+  - name=codex_mcp_job_inbox_design; bind=77BCEAA247E3
+  - name=skill_operating_contract; bind=B7A2C94F0E61
+  - name=codex_goal_mode_usage_guide; bind=3E7B4C11A8D2
+  - name=codex_goal_mode_auto_resume_design; bind=6F4D2A18C9E7
 - observation_refs:
   - `../../../observations/2026-05-24_session_goal_mode_skill_seed.md`

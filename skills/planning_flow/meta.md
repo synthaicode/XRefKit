@@ -24,10 +24,10 @@
   - closure: finalize states and hand off planning outputs, planning basis source list, and change-design basis notes with unresolved items
 - tags: `planning`, `execution`, `policy`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`
-  - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`
-  - `../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001`
-  - `../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002`
-  - `../../knowledge/csharp/110_custom_framework_analysis_criteria.md#xid-30E6A4F6F3AB`
-  - `../../knowledge/operations/100_ipa_release_activity_catalog.md#xid-7B3E5D1A6101`
+- knowledge_slots:
+  - name=xddp_basics; bind=7A2F4C8D1701
+  - name=xddp_supporting_methods; bind=7A2F4C8D1711
+  - name=common_source_analysis_criteria; bind=5F21C8A41001
+  - name=custom_framework_common_criteria; bind=5F21C8A41002
+  - name=custom_framework_analysis_criteria; bind=30E6A4F6F3AB
+  - name=ipa_release_activity_catalog; bind=7B3E5D1A6101

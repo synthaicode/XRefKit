@@ -24,13 +24,13 @@
   - closure: finalize states, return per-domain findings with evidence, and hand off target-scope cleanup when code review completion is declared
 - tags: `qa`, `review`, `quality`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../knowledge/organization/151_temporary_traceability_comment_rule.md#xid-22E4C7AC7063`
-  - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`
-  - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`
-  - `../../knowledge/organization/180_agent_diff_review_gate_design.md#xid-7A2F4C8D1801`
-  - `../../knowledge/source_analysis/120_dotnet_change_analysis_viewpoints.md#xid-2E7B5A1FD201`
-  - `../../knowledge/source_analysis/160_structure_graph_tm_backstop.md#xid-163AD9936979`
+- knowledge_slots:
+  - name=temporary_traceability_comment_rule; bind=22E4C7AC7063
+  - name=xddp_basics; bind=7A2F4C8D1701
+  - name=xddp_supporting_methods; bind=7A2F4C8D1711
+  - name=agent_diff_review_gate_design; bind=7A2F4C8D1801
+  - name=dotnet_change_analysis_viewpoints; bind=2E7B5A1FD201
+  - name=structure_graph_tm_backstop; bind=163AD9936979
 - observation_refs:
   - `../../observations/2026-06-18_skill_run_skill_flow_authoring.md`
 

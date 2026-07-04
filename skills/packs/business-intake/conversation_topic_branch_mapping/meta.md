@@ -25,8 +25,8 @@
   - closure: return the map, unresolved Unknowns, Human Review items, topic-specific next actions, knowledge-promotion candidates, and next routing to decision topology analysis, business intake, or knowledge ontology management
 - tags: `business`, `intake`, `conversation-analysis`, `topic-branch`, `participant-map`, `evidence`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../../../docs/core/contracts/016_uncertainty_protocol.md#xid-8A666C1FD121`
+- knowledge_slots:
+  - name=uncertainty_protocol; bind=8A666C1FD121
 - observation_refs:
   - `../../../../observations/2026-06-28_session_conversation_topic_branch_mapping_seed.md`
   - `../../../../observations/2026-06-28_session_conversation_topic_involvement_public_skill_update.md`

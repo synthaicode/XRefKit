@@ -24,10 +24,10 @@
   - closure: return changed or proposed paths, concept decision, relationships accepted or intentionally omitted, source and judgment evidence, validation results, unresolved items, and handoff owner
 - tags: `operations`, `knowledge`, `ontology`, `xref`, `curation`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../../knowledge/organization/200_domain_knowledge_ontology_rules.md#xid-5803607419B9`
-  - `../../../docs/reference/020_sources.md#xid-2FAD591BF725`
-  - `../../../docs/policies/074_document_update_policy.md#xid-B1D42A6F90C3`
+- knowledge_slots:
+  - name=domain_knowledge_ontology_rules; bind=5803607419B9
+  - name=sources; bind=2FAD591BF725
+  - name=document_update_policy; bind=B1D42A6F90C3
 - observation_refs:
   - `../../../observations/2026-06-28_session_knowledge_ontology_management_seed.md`
   - `../../../observations/2026-06-28_skill_run_knowledge_ontology_management.md`

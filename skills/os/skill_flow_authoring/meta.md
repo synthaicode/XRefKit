@@ -24,9 +24,9 @@
   - closure: return created paths, publication boundary, declared maturity, anti-forgetting elements added, validation results, and the smallest next step for remaining gaps
 - tags: `operations`, `authoring`, `skill`, `flow`, `repository`, `xref`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../../docs/guides/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B`
-  - `../../../docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`
-  - `../../../docs/core/contracts/059_skill_maturity_governance.md#xid-4E7B8D9C1A20`
+- knowledge_slots:
+  - name=skill_authoring_with_xref; bind=3DB05A0F5F5B
+  - name=skill_operating_contract; bind=B7A2C94F0E61
+  - name=skill_maturity_governance; bind=4E7B8D9C1A20
 - observation_refs:
   - `../../../observations/2026-05-10_session_skill_flow_authoring_seed.md`

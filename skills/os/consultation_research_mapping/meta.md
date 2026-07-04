@@ -25,8 +25,8 @@
   - closure: return the research map, cited evidence, deterministic follow-up candidates, non-deterministic judgment/human-review items, unresolved unknowns, and next routing recommendation
 - tags: `operations`, `consultation`, `research`, `triage`, `judgment`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../../knowledge/organization/140_llm_review_knowledge_usage_rules.md#xid-7A2F4C8D1401`
-  - `../../../knowledge/organization/121_judgment_log_schema.md#xid-7B4C2D91E621`
+- knowledge_slots:
+  - name=llm_review_knowledge_usage_rules; bind=7A2F4C8D1401
+  - name=judgment_log_schema; bind=7B4C2D91E621
 - observation_refs:
   - `../../../observations/2026-06-28_session_consultation_research_mapping_seed.md`
