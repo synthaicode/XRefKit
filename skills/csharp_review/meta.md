@@ -26,12 +26,12 @@
   - closure: return findings, category summaries, and explicit review conditions
 - tags: `csharp`, `review`, `dotnet`, `quality`
 - skill_doc: `./SKILL.md`
-- knowledge_refs:
-  - `../../knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4F6F3AA`
-  - `../../knowledge/organization/190_quality_feedback_return_rules.md#xid-7A2F4C8D1901`
-  - `../../knowledge/csharp/120_csharp_test_synchronization_patterns.md#xid-4314A1A73CAF`
-  - `../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001`
-  - `../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002`
-  - `../../knowledge/csharp/110_custom_framework_analysis_criteria.md#xid-30E6A4F6F3AB`
+- knowledge_slots:
+  - name=review_spec; query=C# review spec beyond diagnostics; domain=csharp; min=1; required
+  - name=test_sync; query=C# test synchronization patterns; domain=csharp
+  - name=source_criteria; query=common source analysis criteria; domain=source_analysis
+  - name=custom_framework_common; query=custom framework common criteria; domain=source_analysis
+  - name=custom_framework; query=custom framework analysis criteria; domain=csharp
+  - name=feedback_rules; bind=7A2F4C8D1901
 - observation_refs:
   - `../../observations/2026-06-23_session_csharp_review_generalized_observation.md`

@@ -3,6 +3,16 @@
 
 # Deterministic Flow Control Kernel Design
 
+> **Status (superseded in part).** The flow-*definition* execution this page
+> designs (flow YAML, the `fm flow` engine, per-flow transition graphs) was
+> removed by the
+> [skill-centric architecture consolidation](083_skill_centric_architecture_consolidation.md#xid-9DF3B80F9CBE).
+> The surviving idea is the **generic per-Skill deterministic control** — moving
+> transition selection, checks, and closure out of model judgment — now carried
+> by the workflow protocol (`fm skill run` / `verify` / `close`), not by flow
+> definitions. Read this page for that control principle; the flow-definition
+> specifics no longer apply.
+
 This page is a **design document** for making the *control* part of a flow
 deterministic — that is, moving transition selection, context assembly,
 termination, and human hand-back out of model judgment and into a deterministic
