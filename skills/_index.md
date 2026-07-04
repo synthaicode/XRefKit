@@ -293,6 +293,10 @@ Current family paths:
   - summary: review C# code and evidence for security risks
   - meta: `skills/security_review/meta.md`
   - skill_doc: `skills/security_review/SKILL.md`
+- `source_structure_overview`:
+  - summary: produce a reusable whole-system source-structure overview for a target repository or service before proposition-specific change analysis
+  - meta: `skills/source_structure_overview/meta.md`
+  - skill_doc: `skills/source_structure_overview/SKILL.md`
 - `test_flow`:
   - summary: execute test-planning, test-item structuring, integration/regression test design, and manufacturing-side test-method review
   - meta: `skills/test_flow/meta.md`

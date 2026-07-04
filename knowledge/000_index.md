@@ -101,6 +101,7 @@ Skills should reference these pages by XID and load only what is needed.
 - [Structure graph as TM coverage backstop](source_analysis/160_structure_graph_tm_backstop.md#xid-163AD9936979)
 - [Current source structure findings catalog](source_analysis/170_current_source_structure_findings_catalog.md#xid-A9E742B1C6D0)
 - [Maverick.NET Friendbook XML-command structure findings](source_analysis/171_maverick_net_friendbook_structure_findings.md#xid-B4F8D2A91C03)
+- [Modular Monolith with DDD API structure findings](source_analysis/172_modular_monolith_ddd_api_structure_findings.md#xid-D8F2A6C91B74)
 
 ## Private knowledge
 

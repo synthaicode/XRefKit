@@ -11,7 +11,8 @@ canonical source-structure findings knowledge.
 Use this Skill when the analysis has already been performed and the remaining
 work is publication, normalization, catalog registration, or proposal handoff.
 Do not run this Skill to analyze source code from scratch; use the analysis
-Skill such as `dotnet_change_analysis` first.
+Skill such as `source_structure_overview` for baseline current structure or
+`dotnet_change_analysis` for proposition-specific structure and impact first.
 
 ## Required Knowledge (XID)
 
@@ -75,6 +76,9 @@ python -m fm xref search "<aliases> <framework or service name> <analysis kind>"
 ## Execution
 
 - Read the analysis Markdown for these sections or equivalents:
+  - whole-system or target-scope structure summary
+  - runtime units and subsystem responsibilities
+  - startup/composition flow
   - structure pivots
   - route/usecase trace matrix
   - implicit runtime bindings
@@ -95,6 +99,8 @@ python -m fm xref search "<aliases> <framework or service name> <analysis kind>"
   - current status
   - last verified date
   - producer Skill
+  - runtime units and major subsystem map
+  - startup/composition flow
   - structure pivots
   - route/usecase trace coverage
   - implicit runtime bindings

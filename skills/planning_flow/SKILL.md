@@ -38,18 +38,39 @@ Execute `CAP-PLN-001` and prepare work planning outputs from approved requiremen
 - release policy
 - planning basis source list
 - change-design basis notes
+- created or refreshed current-source-structure finding XIDs when target
+  structure was missing at planning start
 
 ## Startup
 
 - Confirm approved requirements exist.
 - Confirm change targets are available.
-- Confirm current source findings and domain knowledge references are available.
+- Confirm current source findings and domain knowledge references are available
+  for every source-modification target.
+- If a target lacks current source structure findings, do not proceed by
+  guessing the structure. Create or refresh the latest structure information
+  with `source_structure_overview`, then register it as canonical domain
+  knowledge through `source_structure_findings_registration` before using it as
+  a planning basis.
 - Record `unknown` if planning inputs are missing.
 
 ## Planning
 
 - Define planning scope and downstream design-policy targets.
 - Identify which domain knowledge and current-source findings govern the target scope.
+- Decide whether current source structure information is missing or stale for
+  any target:
+  - no current source structure finding exists for the target in the canonical
+    knowledge catalog
+  - the finding predates the relevant source shape
+  - the finding does not cover the target's structure pivots, runtime flows,
+    state/persistence boundaries, extension/convention mechanisms, or known
+    variation points needed for planning
+  - the source modification policy would otherwise rely on an unverified
+    structure assumption
+- When current structure information is missing, create a management row for
+  the source-structure creation and registration handoff before source
+  modification policy drafting.
 - Build a traceability view from requirement differences to impacted modules, files, documents, or operational assets.
 - Separate common impact and project-specific impact when the same asset serves multiple change areas.
 - Map the business activity to its supporting capability:
@@ -60,6 +81,11 @@ Execute `CAP-PLN-001` and prepare work planning outputs from approved requiremen
 
 - Perform work planning and policy drafting by executing `CAP-PLN-001`.
 - Use the requirement difference as the planning anchor, not only the final desired state.
+- Before drafting source modification policy for a source target, verify that a
+  current-source-structure finding XID exists in canonical domain knowledge.
+- When missing or stale, run `source_structure_overview` for that target and
+  route the output through `source_structure_findings_registration` with
+  authorized publication before using the finding as planning basis.
 - Record which requirement difference maps to which target file, function, module, document, registration, or operational artifact.
 - Build policy outputs so they can serve as pre-code change-design guidance rather than only as broad planning notes.
 - Build source modification policy from the current source structure by default.
@@ -76,12 +102,20 @@ Execute `CAP-PLN-001` and prepare work planning outputs from approved requiremen
 - Check that all required planning outputs have a recorded result.
 - Downgrade weakly supported planning assumptions to `unknown`.
 - Downgrade source-structure claims to `unknown` if no current-source finding supports them.
+- Stop planning closure when a source-modification target lacks a current
+  canonical source-structure finding and is not explicitly out of scope.
 - Downgrade impact mappings to `unknown` when the requirement-to-target relation cannot be traced clearly enough for downstream design or review.
 - Preserve unresolved policy, dependency, or assignment questions.
 
 ## Closure
 
 - Confirm all rows are finalized as `done`, `unknown`, or `out_of_scope`.
+- Confirm every source-modification target has a current source-structure
+  finding XID in canonical domain knowledge or an explicit `out_of_scope`
+  reason.
+- Confirm any source-structure findings created during planning were registered
+  through `source_structure_findings_registration` before they are used as
+  planning basis.
 - Hand off the planning outputs, planning basis source list, and unresolved planning items to design work.
 - Escalate out-of-scope planning questions when reassignment is required.
 
@@ -90,4 +124,6 @@ Execute `CAP-PLN-001` and prepare work planning outputs from approved requiremen
 - Do not finalize resource allocation.
 - Do not finalize business priority.
 - Do not invent a target structure without checking the current codebase first.
+- Do not use a local work report as the planning source-structure basis until
+  it has been registered as canonical domain knowledge.
 - Do not let planning outputs hide which concrete difference they are meant to realize.
