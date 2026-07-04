@@ -32,6 +32,12 @@ Execute `CAP-DSN-004 -> CAP-DSN-002 -> CAP-DSN-003 -> CAP-MFG-003` and prepare a
 - test plan
 - test plan basis policy reference
 - selected test tool basis reference
+- test execution preparation plan for test data, environment setup, initial
+  state, cleanup/reset, and evidence-capture readiness
+- local-domain test execution helper script plan for simplifying repeatable test
+  setup, execution, reset, and evidence capture
+- local-domain test tool creation plan for scope that has no suitable existing
+  tool
 - test design
 - test design basis policy reference
 - test-item requirement traceability reference
@@ -76,9 +82,32 @@ Execute `CAP-DSN-004 -> CAP-DSN-002 -> CAP-DSN-003 -> CAP-MFG-003` and prepare a
   out-of-scope test questions.
 - Use the test tool policy and selected domain/environment test tool knowledge
   to decide which existing tool can cover each test scope row.
-- When no suitable tool exists, record the tool gap, creation/verification
-  requirement, owner handoff, and whether affected test items remain `unknown`
-  or `out_of_scope` until the tool is available.
+- Define pre-execution preparation for every executable test scope row. Include
+  test data, environment setup, initial state, dependency/service availability,
+  access/credential needs, cleanup/reset method, and evidence-capture readiness.
+- Treat preparation items as testware: test data, environment items, helper
+  scripts, setup/clear-up procedures, files, databases, stubs, drivers,
+  simulators, service virtualizations, and evidence capture must be planned when
+  they are needed for execution.
+- Define execution configuration explicitly when behavior or coverage differs by
+  browser, OS, runtime, database, deployment version, tenant, feature flag,
+  external service condition, or other environment variable.
+- Define local-domain helper scripts when repeatable setup, test data creation,
+  tool invocation, reset/cleanup, or evidence capture would otherwise require
+  fragile manual steps. The plan must record script purpose, target environment,
+  input parameters, generated or mutated data, selected tool invocation,
+  cleanup/reset behavior, evidence output, verification method, owner, and local
+  placement.
+- When no suitable tool exists, include a test tool creation plan in the test
+  plan. The plan must record the uncovered test scope, required tool purpose,
+  target environment, required input data, expected evidence output,
+  verification method for the new tool, creation owner, dependency/handoff,
+  local-domain placement/ownership, availability condition, and whether affected
+  test items remain `unknown` or `out_of_scope` until the tool is available.
+- Treat the newly created test tool as a local-domain artifact for the target
+  system, project, tenant, or organization. Do not assume it belongs in shared
+  XRefKit knowledge or reusable base tooling unless a separate adoption or
+  publication decision explicitly promotes it.
 
 ## Execution
 
@@ -94,6 +123,21 @@ Execute `CAP-DSN-004 -> CAP-DSN-002 -> CAP-DSN-003 -> CAP-MFG-003` and prepare a
 - Include tool setup, input data, execution environment, result capture, and
   evidence retention method when they are required by the selected tool
   knowledge or test tool policy.
+- Write the test execution preparation plan as part of the test plan and trace
+  each preparation row to the affected XDDP row, design item, verification
+  point, test item, selected tool, and target environment.
+- Include data availability and acquisition method for automated tests. If
+  required data cannot be acquired on demand, record the blocked tests, impact,
+  and data-preparation handoff.
+- Write the helper script plan as part of the test plan and trace each script to
+  the preparation rows, test items, selected tools, XDDP rows, and evidence it
+  simplifies.
+- For rows without a suitable existing tool, write the test tool creation plan
+  as a first-class part of the test plan and trace it to the affected XDDP row,
+  design item, verification point, and test items.
+- Record the planned tool's local-domain boundary, storage/publication target,
+  and whether it will later be cataloged as local domain knowledge for MCP/XID
+  access.
 
 ## Monitoring and Control
 
@@ -103,9 +147,26 @@ Execute `CAP-DSN-004 -> CAP-DSN-002 -> CAP-DSN-003 -> CAP-MFG-003` and prepare a
   `out_of_scope` reason.
 - Check that each tool-dependent test item has a selected tool basis or an
   explicit unresolved tool gap.
+- Check that each unresolved tool gap has a corresponding test tool creation
+  plan row unless the gap is explicitly `out_of_scope`.
 - Check that selected tools match the target domain, environment, test level,
   required data setup, automation/manual split, and evidence-retention needs.
+- Check that each test tool creation plan row includes creation, verification,
+  owner, local-domain boundary, handoff, and availability conditions.
+- Check that each executable test item has preparation coverage for test data,
+  environment setup, initial state, cleanup/reset, and evidence capture, or an
+  explicit `unknown`/`out_of_scope` reason.
+- Check that configuration-dependent tests are represented with explicit
+  configuration rows rather than implicit environment assumptions.
+- Check that automated tests are not blocked by missing on-demand test data, or
+  record the data gap and handoff explicitly.
+- Check that repeated or fragile test execution steps have a helper script plan,
+  or an explicit reason why scripting is not needed.
+- Check that each helper script plan row includes inputs, side effects,
+  idempotency or reset behavior, evidence outputs, verification method, owner,
+  and local-domain placement.
 - Downgrade weakly supported test assumptions to `unknown`.
+- Downgrade weakly supported preparation assumptions to `unknown`.
 - Downgrade weakly supported tool assumptions to `unknown`.
 - Preserve unsupported test methods explicitly for redesign or escalation.
 
@@ -116,6 +177,15 @@ Execute `CAP-DSN-004 -> CAP-DSN-002 -> CAP-DSN-003 -> CAP-MFG-003` and prepare a
   XDDP traceability rows and design-to-test input package.
 - Confirm the reviewed test package records selected test tool knowledge XIDs,
   environment conditions, unresolved tool gaps, and tool-creation handoffs.
+- Confirm the reviewed test package includes test execution preparation rows
+  before handoff to test execution or quality verification.
+- Confirm the reviewed test package includes local-domain helper script rows for
+  repeatable setup, execution, cleanup/reset, or evidence capture where they are
+  needed.
+- Confirm the reviewed test package includes a test tool creation plan for every
+  in-scope test need that lacks a suitable existing tool.
+- Confirm newly planned test tools are marked as local-domain artifacts unless a
+  separate publication/adoption decision is recorded.
 - Hand off the reviewed test package to manufacturing and quality verification work.
 - Escalate out-of-scope test questions when reassignment is required.
 - Escalate unresolved test tool gaps when test execution cannot proceed with the
@@ -129,5 +199,12 @@ Execute `CAP-DSN-004 -> CAP-DSN-002 -> CAP-DSN-003 -> CAP-MFG-003` and prepare a
 - Do not redefine business scope.
 - Manufacturing review confirms method suitability only.
 - Do not invent domain-specific or environment-specific test tool behavior.
+- Do not hand off executable test items without explicit pre-execution
+  preparation or an unresolved-state reason.
+- Do not rely on manual repeated test setup or execution when a local-domain
+  helper script is needed to make the run reproducible.
 - Do not embed target-service test tool catalogs in this Skill; select them as
   runtime domain knowledge by XID.
+- Do not treat test tools created for a target as shared XRefKit assets by
+  default; they are local-domain artifacts until explicitly adopted or
+  published.
