@@ -39,7 +39,7 @@ class CliTests(unittest.TestCase):
             "- knowledge_refs:\n"
             f"  - `{GUARD_KNOWLEDGE_REF}`\n"
             "- observation_refs:\n"
-            "  - `../../work/sessions/sample.md`\n"
+            "  - `../../observations/sample.md`\n"
         )
 
     def _write_valid_skill(self, root: Path) -> Path:
@@ -540,7 +540,9 @@ class CliTests(unittest.TestCase):
             self.assertIn("missing or invalid capability_layering", payload["errors"])
             self.assertIn("missing or invalid workflow_protocol", payload["errors"])
             self.assertIn("missing tuning", payload["errors"])
-            self.assertIn("missing role_responsibilities.executor", payload["errors"])
+            self.assertTrue(
+                any("missing responsibility" in error for error in payload["errors"])
+            )
 
     def test_main_skill_phase_updates_runtime_log(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

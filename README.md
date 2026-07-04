@@ -49,10 +49,10 @@ Using AI for real work creates recurring operating problems:
 
 XRefKit makes AI work explicit by separating:
 
-- Flows: business progression, boundary, handoff, and control points
-- Capabilities: reusable work-unit abilities that define what must be done
-- Skills: executable work units that define how one or more capabilities are carried out
+- Skills: executable work units, each identified by a capability/tuning/responsibility triad and carrying its execution and check contract
 - Knowledge: source-backed domain facts and local rules loaded only when needed
+- Workflow protocol: the generic, deterministic per-Skill control (phases, verification, closure) that wraps every Skill run
+- Semantic routing: selecting the right Skill for a goal from user intent and the Skill catalog
 - Evidence: logs, judgments, concerns, and quality checks
 - XIDs: stable references that survive file movement and restructuring so AI can load targeted context without treating the whole repository as one prompt
 
@@ -65,7 +65,7 @@ and handoff records from collapsing into one opaque instruction block.
 
 1. Original materials are kept in `sources/`.
 2. AI-readable knowledge is maintained in `knowledge/`.
-3. Work is defined through `flows/`, `capabilities/`, and `skills/`.
+3. Work is defined in `skills/` (executable procedure with a capability/tuning/responsibility identity) and `knowledge/`.
 4. Agents are routed semantically to the right Skill and load only the relevant context.
 5. Evidence and quality gates make incomplete or unsupported work visible.
 
@@ -107,8 +107,6 @@ The agent can read the operating contract and explain the repository structure i
 ## Repository Map
 
 - `docs/`: human-facing docs and policy
-- `flows/`: workflow control structures
-- `capabilities/`: reusable capability definitions
 - `knowledge/`: source-backed knowledge fragments
 - `sources/`: original materials for verification
 - `skills/`: Skill definitions and routing index

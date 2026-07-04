@@ -40,7 +40,7 @@ class XrefConfig:
         return Path(self.root).resolve()
 
     def resolved_include(self) -> list[str]:
-        return self.include if self.include is not None else ["docs", "agent", "knowledge", "capabilities", "skills"]
+        return self.include if self.include is not None else ["docs", "agent", "knowledge", "capabilities", "skills", "packs"]
 
     def resolved_exclude(self) -> set[str]:
         # NOTE: `ja/` is a translation/archive area and is intentionally excluded

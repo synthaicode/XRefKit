@@ -21,7 +21,6 @@ Related:
 
 - [Business Pack model](../../core/models/071_business_pack_model.md#xid-40511A8A06CD)
 - [AI Agent OS Reorganization Design](../../designs/063_ai_agent_os_reorganization_design.md#xid-22CAE81A6D3E)
-- [Capability Routing for Agents](../../../agent/010_capability_routing.md#xid-1F93A7C24010)
 - [Business intake workflow](067_business_intake_workflow.md#xid-7F2C8DA14E66)
 - [Business learning interview guide](061_business_learning_interview_guide.md#xid-D2A41E8C7B51)
 - [Business intake scoping guide](060_business_intake_scoping_guide.md#xid-C91F7D2A6B40)
@@ -54,6 +53,8 @@ It does not include:
 
 - `skills/packs/business-intake/business_learning_interview/`
 - `skills/packs/business-intake/business_intake_scoping/`
+- `skills/packs/business-intake/conversation_topic_branch_mapping/`
+- `skills/packs/business-intake/decision_topology_analysis/`
 
 ### Pack Guides
 
@@ -61,9 +62,12 @@ It does not include:
 - [Business learning interview guide](061_business_learning_interview_guide.md#xid-D2A41E8C7B51)
 - [Business intake scoping guide](060_business_intake_scoping_guide.md#xid-C91F7D2A6B40)
 
-### Pack Flows
+### Pack Progression
 
-- `flows/packs/business-intake/business_intake_workflow.yaml`
+There is no pack-owned flow file. Progression across the intake Skills comes
+from each Skill's workflow protocol and from semantic routing; the intended
+sequence is described in
+[Business intake workflow](067_business_intake_workflow.md#xid-7F2C8DA14E66).
 
 ### Pack Knowledge
 
@@ -71,10 +75,13 @@ It does not include:
 - `knowledge/packs/business-intake/110_business_intake_scoping_rules.md`
 - `knowledge/organization/160_context_direction_guard_rules.md`
 
-### Pack Capability References
+### Pack Control Dependencies
 
-- `capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md`
-- `capabilities/management/130_cap_mgt_004_context_direction_guard.md`
+The pack depends on OS-core controls, not on pack-owned capability files:
+
+- the Skill runtime envelope (workflow protocol / `os_contract`)
+- the ambient context-direction guard (startup contract pack + per-response
+  control reminder)
 
 ## Dependency Split
 
@@ -109,7 +116,7 @@ The pack must depend on these controls but must not redefine them.
 
 ```mermaid
 flowchart LR
-    U["User fragment<br/>goal / artifact / bottleneck / handoff"] --> R["OS core routing<br/>startup policy + capability routing"]
+    U["User fragment<br/>goal / artifact / bottleneck / handoff"] --> R["OS core routing<br/>startup policy + semantic routing"]
     R --> L["business_learning_interview<br/>learn business from fragments"]
     L --> K1["knowledge/packs/business-intake/120_business_learning_interview_rules"]
     L --> C1["runtime envelope + context guard"]

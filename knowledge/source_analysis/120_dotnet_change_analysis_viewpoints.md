@@ -16,9 +16,12 @@ conventions), see [CSharp naming-convention extraction](140_csharp_naming_conven
 | De-facto responsibility split | which responsibilities each layer or component actually carries, derived from behavior evidence rather than names or folders, including name-behavior mismatches and duplicated rule ownership |
 | Entry points | where execution starts for web requests, background jobs, workers, scheduled tasks, functions, or message consumers |
 | Dependency direction | how application, domain, infrastructure, shared libraries, and framework code depend on one another |
+| Structure pivots | which local artifacts act as structural authorities for runtime behavior, such as route maps, XML configuration, database metadata, attributes, naming conventions, or custom registries, and what investigation starts from each pivot |
 | DI registration and lifetimes | where services are registered, with which lifetimes, and where captive-dependency, hosted-service, or container-bypass risks exist |
 | Pipeline structure and order | which execution pipelines exist in this codebase, where their stage order is established, which local rule governs that order, and which behavior the order controls |
+| Route/usecase trace matrix | for each representative runtime path, the complete trace across entry, structural authority, binding mechanism, executable code, result selection, presentation/transport, state, and persistence boundaries |
 | Convention-based discovery | where naming, placement, or assembly scanning determines runtime wiring, which local convention governs it, and which renames or moves would silently break it |
+| Implicit runtime binding | string, XML, config, reflection, request-field, view-model, or other non-compiler-enforced bindings that can silently break on rename, move, or signature drift |
 | Security boundary placement | where authentication and authorization are structurally enforced and which entry paths are unprotected (placement only; vulnerability assessment belongs to security review) |
 | Configuration boundary | where settings are loaded, bound, overridden, and consumed across environment-specific behavior, including feature toggles and the local rules for environment-dependent switching |
 | Build-configuration-dependent behavior | where conditional compilation, multi-targeting, or MSBuild conditions create behavior variants that a single compilation pass cannot see |
@@ -138,6 +141,70 @@ recipes.
 - Confirm which order-dependent behavior the intended change could disturb,
   and whether the extracted local rule would make that disturbance visible.
 
+## Structure Pivot Rule
+
+For non-standard, custom-framework, or legacy applications, first identify
+the local artifacts that decide runtime structure. Treat each confirmed
+pivot as an investigation starting point.
+
+- Confirm the pivot kind: code, XML, configuration, database metadata,
+  attribute, naming convention, folder placement, custom registry, generated
+  file, or external framework source.
+- Confirm the behavior controlled by the pivot: entry routing, controller or
+  handler binding, view/result selection, serialization, persistence,
+  authorization, pipeline ordering, or state lifetime.
+- Trace outward from the pivot to the concrete code and runtime artifact it
+  activates. Do not stop at the pivot inventory.
+- Record whether the pivot is documented or implicit.
+- Record the silent breakage mode for each pivot-sensitive token: rename,
+  move, class/assembly change, missing registration, field-name drift, or
+  order change.
+- Mark the pivot `unknown` when the consuming mechanism cannot be confirmed
+  from local or available framework evidence.
+
+## Route / Usecase Trace Matrix Rule
+
+For web, API, message, batch, workflow, or screen-oriented systems, record
+representative runtime paths as traces, not only as isolated viewpoint notes.
+
+Each trace should include the columns that apply locally:
+
+- entry identity: URL, command, message type, schedule, job name, CLI command,
+  screen action, or external callback
+- structural authority: route file, XML command, attribute, registry,
+  database table, convention, or generated mapping
+- binding mechanism: direct call, reflection, string class name, DI,
+  factory, convention, request field, or model key
+- executable owner: controller, handler, service, job, workflow step, or
+  script
+- result selector: return string, status code, exception type, event type,
+  view name, redirect target, or next-step key
+- output boundary: view, response DTO, redirect, queue message, file,
+  database mutation, or external call
+- model/input binding: form names, request keys, serialization names,
+  view-model key, route values, or command payload fields
+- state and persistence boundary: session, singleton, cache, transaction,
+  database, file, or external service
+- evidence and unresolved checks
+
+Use enough traces to prove the local rule. A route list without the cross-file
+binding path is incomplete.
+
+## Implicit Runtime Binding Rule
+
+Extract non-compiler-enforced bindings as first-class structure facts.
+
+- Include XML/config string bindings, reflection type names, assembly-qualified
+  class names, controller return strings, view/ref names, request/form field
+  names, serialization names, model keys, command names, redirect targets,
+  and custom registry keys.
+- For each binding, record producer, consumer, token, binding mechanism,
+  evidence, and the change that would silently break it.
+- Do not rely on C# references alone when a runtime binding crosses XML,
+  config, ASPX, generated files, database metadata, or framework source.
+- Convert binding-sensitive tokens into prohibited-change candidates when
+  they can break silently.
+
 ## Convention-Based Discovery Rule
 
 Runtime wiring decided by reflection, scanning, or conventions is invisible
@@ -250,3 +317,25 @@ default.
 The note must also carry the prohibited-changes list derived from the
 extracted rules (see Prohibited Changes Derivation Rule): each entry with its
 basis, silent breakage mode, evidence, classification, and safe alternative.
+
+When a structure pivot or implicit runtime binding exists, the note must also
+carry:
+
+- structure pivot inventory
+- route/usecase trace matrix for representative runtime paths
+- implicit runtime binding inventory
+- domain-knowledge candidate metadata sufficient for later Skill-side
+  selection, without embedding redundant `applies_to` or path fields when a
+  stable document identity can resolve the content
+
+Avoid duplicating the same fact in multiple output shapes. Use:
+
+- structure pivots for investigation starting points
+- route/usecase traces for cross-file runtime paths
+- implicit runtime bindings for non-compiler-enforced tokens
+- prohibited changes for actionable silent-break rules
+- domain-knowledge candidate for compact Skill-selection metadata
+
+Do not add a separate change-impact checklist when the same tokens are already
+covered by implicit runtime bindings and prohibited changes. Do not present the
+domain-knowledge candidate as both prose bullets and a table.

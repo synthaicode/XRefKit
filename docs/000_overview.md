@@ -16,7 +16,7 @@ work base:
 
 - explicit AI operating rules
 - repository-specific knowledge routing
-- reusable workflow, capability, and skill structure
+- reusable Skill and Knowledge structure
 - stable references across evolving knowledge assets
 
 For the explicit reorganization direction, see
@@ -86,7 +86,7 @@ The operating model has four levels:
    *executes business work*; it does not host detachable "apps".
 2. **Business (業務)**: a work domain (for example, C# code review). A business
    is a **bundle of tasks** and requires domain knowledge to carry out. It is
-   expressed as a Business Pack (Flow / Capability / Skill / Knowledge).
+   expressed as a Business Pack (Skills + Knowledge).
 3. **Task (作業)**: a single work unit, done efficiently with a fit-for-purpose
    tool. A task reaches the domain knowledge it needs through **XID**.
 4. **Tools (`tools/`)**: task-specialized determinism — a shared deterministic

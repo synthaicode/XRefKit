@@ -11,22 +11,11 @@
 - maturity: `trial`
 - execution_mode: `local_default`
 - model_tier: `heavy`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: learn a business task from a human through goal-first interview and convert partial fragments into a structured business hypothesis
-- role_responsibilities:
-  - executor: a user wants to teach the AI about a business task conversationally, but can better explain the intended goal than the full process, or only knows fragments, tacit operational knowledge, bottlenecks, or partial handoffs
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- responsibility: a user wants to teach the AI about a business task conversationally, but can better explain the intended goal than the full process, or only knows fragments, tacit operational knowledge, bottlenecks, or partial handoffs
+- os_contract: v1
 - constraints: do not demand a complete process description before helping; do not skip the goal and jump directly to local tasks; do not mix human facts and AI inference; do not ask broad dump-everything questions when a smaller question can reduce ambiguity; keep unresolved items explicit
 - lifecycle:
   - startup: confirm the visible seed, prefer goal or expected result when available, and load interview rules and template
@@ -36,13 +25,9 @@
   - closure: return the interview-cycle output and the recommended next question or transition to scoping
 - tags: `operations`, `learning`, `interview`, `business`, `intake`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
-- knowledge_refs:
-  - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
-  - `../../../../knowledge/packs/business-intake/120_business_learning_interview_rules.md#xid-7B3E5D1A6103`
-  - `../../../../docs/packs/business-intake/061_business_learning_interview_guide.md#xid-D2A41E8C7B51`
-  - `../../../../docs/packs/business-intake/060_business_intake_scoping_guide.md#xid-C91F7D2A6B40`
+- knowledge_slots:
+  - name=business_learning_interview_rules; bind=7B3E5D1A6103
+  - name=business_learning_interview_guide; bind=D2A41E8C7B51
+  - name=business_intake_scoping_guide; bind=C91F7D2A6B40
 - observation_refs:
-  - `../../../../work/sessions/2026-05-01_session_business_learning_interview_skill_seed.md`
+  - `../../../../observations/2026-05-01_session_business_learning_interview_skill_seed.md`

@@ -4,7 +4,7 @@
 
 - AI の運用規約
 - 知識の読み方と境界
-- Workflow / Capability / Skill の作業構造
+- Skill と Knowledge の作業構造（汎用 protocol と semantic routing で制御）
 - 原本に裏づけられた知識断片
 - XID による安定参照
 
@@ -46,10 +46,6 @@
   - AI が参照する知識断片
 - `skills/`
   - 具体的な実行手順
-- `capabilities/`
-  - 再利用可能な能力定義
-- `flows/`
-  - 仕事の進み方と境界
 - `agent/`
   - AI の入口契約
 - `docs/`

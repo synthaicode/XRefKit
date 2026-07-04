@@ -3,6 +3,16 @@
 
 # Deterministic Flow Control Kernel Design
 
+> **Status (superseded in part).** The flow-*definition* execution this page
+> designs (flow YAML, the `fm flow` engine, per-flow transition graphs) was
+> removed by the
+> [skill-centric architecture consolidation](083_skill_centric_architecture_consolidation.md#xid-9DF3B80F9CBE).
+> The surviving idea is the **generic per-Skill deterministic control** — moving
+> transition selection, checks, and closure out of model judgment — now carried
+> by the workflow protocol (`fm skill run` / `verify` / `close`), not by flow
+> definitions. Read this page for that control principle; the flow-definition
+> specifics no longer apply.
+
 This page is a **design document** for making the *control* part of a flow
 deterministic — that is, moving transition selection, context assembly,
 termination, and human hand-back out of model judgment and into a deterministic
@@ -10,16 +20,12 @@ engine, while leaving only the business work at each node probabilistic.
 
 It is not a usage guide. For the flow/skill model itself see
 [Flow Capability Skill Knowledge model](../core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8).
-For the per-page flow schema see
-[Workflow page schema](../workflows/018_workflow_page_schema.md#xid-6D2E4A9C0B71).
 
 Related:
 
 - [Base control and xref routing layers](../core/models/017_base_and_xref_layering.md#xid-5A1C8E4D2F90)
 - [Uncertainty protocol](../core/contracts/016_uncertainty_protocol.md#xid-8A666C1FD121)
 - [Early XRefKit migration design](072_early_xrefkit_migration_design.md#xid-19BC00401A1A) — early flows mix runtime control with business steps
-- [Manufacturing workflow](../workflows/033_manufacturing_workflow.md#xid-8B31F02A4002) — worked example below
-- [CAB workflow](../workflows/039_cab_workflow.md#xid-8B31F02A4008) — approval-gate-heavy flow
 - [Metrics definition](../../knowledge/organization/120_metrics_definition.md#xid-7A2F4C8D1201) — token-cost metric this design serves
 
 ## Origin
@@ -136,8 +142,7 @@ The residual non-deterministic surface of the whole system therefore equals the
 **amount of context consolidation** — i.e. capability invocations. Raising
 certainty reduces to one engineering move: shrink what each capability must
 consolidate and push everything around it (tools, verification) into
-deterministic ③. This also sharpens **Capability Routing**
-([Capability routing](../../agent/010_capability_routing.md#xid-1F93A7C24010)): it
+deterministic ③. This also sharpens **capability selection**: it
 routes to a *consolidation responsibility*, resolved before execution; once
 resolved, the surrounding tools and verification run deterministically.
 
@@ -307,6 +312,59 @@ derives the transition from that result, per mode:
 In every mode the node carries `evidence` (the `evidence`-kind artifact plus the
 run-log reference). The node never names its successor; routing, termination, and
 resume belong to the engine.
+
+### Implemented Bridge (fm flow label)
+
+The Skill-run side of this contract is implemented in `fm/flowbridge.py`. The
+bridge reads the `closure` phase event that only `fm skill close` writes
+(`role=closure_gate`) and maps it to the node label:
+
+- closure `done` -> `Go`
+- closure `escalated` -> `uncertainty` (routes to the flow's declared human
+  edge / `global_handback`)
+- log not closed, or not an fm run log -> no label; the bridge refuses.
+  A run that has not passed the close gate must not drive a transition.
+
+Usage:
+
+- `python -m fm flow label --log <run-log>` derives the label standalone.
+- `python -m fm flow run --flow <flow> --label log:<run-log>` bridges inline;
+  a refused bridge refuses the whole engine run.
+
+Rework loops stay inside the run (a failed quality gate blocks `close`, the
+executor reworks, then closes), so a closed run only ever emits `Go` or
+`uncertainty`; step-local `Recycle` edges remain for ② capability judgments
+whose exit enum declares them.
+
+### Cooperative Driver (fm flow start / next / advance)
+
+`fm flow run` is one-shot: every label and answer is scripted up front. The
+cooperative driver persists the engine position so a harness can interleave
+the probabilistic work while every control decision stays deterministic:
+
+```
+fm flow start   --flow flows/<f>.yaml [--state <path>]
+fm flow next    --state <path>     # current step, capability, bound skill,
+                                   # facets, permission, exit labels — or the
+                                   # suspend question, or the outcome
+(harness: fm skill run --meta <skill_meta from next> -> executor subagent
+ -> fm skill verify -> fm skill close)
+fm flow advance --state <path> --label log:<run-log>   # bridge + transition
+fm flow advance --state <path> --answer <answer>       # resolve a suspend
+```
+
+The engine core is shared with `fm flow run` (single-transition functions in
+`fm/flowengine.py`), so one-shot and resumable execution cannot drift. The
+state file records the flow's content hash; if the flow file changes after
+`start`, every later command refuses to act on the stale state.
+
+The dispatch side is resolved by declaration, not inference: a ② step may
+declare `skill: <skill_id>` next to its `capability:`. `flow doctor` enforces
+(G4) that the bound skill exists and declares that capability in its
+`capability_refs`, and `fm flow next` returns the bound skill's `meta.md`
+path so the harness can issue `fm skill run` directly. The business work
+inside the step remains the harness's responsibility by design — fm stays a
+deterministic driver and never becomes an agent runner.
 
 ## Transition Representation
 
@@ -510,14 +568,16 @@ capability.
 
 ## Open Questions / Next Steps
 
-- **Engine prototype** — a minimal `fm` driver that reads `on:` / `handback` /
-  `gate` / `global_handback`, loads per-step facets, and enforces the
-  `_invalid_or_absent` fallback.
-- **`flow doctor`** — implement the static checks enumerated in
-  **flow doctor Check Items** above (graph closure, determinism closure,
-  human-edge contract, capability localization, per-step declaration).
-- **Schema update** — fold the above into
-  [Workflow page schema](../workflows/018_workflow_page_schema.md#xid-6D2E4A9C0B71) once one
+- **Engine prototype** — done: `fm flow run` (`fm/flowengine.py`).
+- **`flow doctor`** — done: `fm flow doctor` (`fm/flowdoctor.py`).
+- **Protocol-to-flow bridge** — done: `fm flow label` and the
+  `--label log:<run-log>` form (`fm/flowbridge.py`); see
+  **Implemented Bridge (fm flow label)** above.
+- **Cooperative driver** — done: `fm flow start/next/advance`
+  (`fm/flowstate.py`) with per-step `skill:` binding and the G4 doctor
+  check; see **Cooperative Driver** above.
+- **Schema update** — fold the above (including the optional per-step
+  `skill:` binding) into the workflow page schema once one
   flow is migrated end-to-end as a reference.
 - **Pilot flow** — migrate one flow first to confirm the control graph provably
   closes (every edge lands on terminal / human / existing step). A light-tier

@@ -10,22 +10,11 @@
 - output: an ontology assessment recorded in the Skill run, a proposal or authorized canonical knowledge change, accepted typed XID relationships when justified, source and judgment linkage, validation evidence, and an explicit publication or handoff decision
 - maturity: `trial`
 - execution_mode: `local_default`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: curate new or materially revised domain knowledge through concept identity, duplication, split, replacement, and typed-relationship assessment before canonical publication
-- role_responsibilities:
-  - executor: a user or workflow will add a new canonical fragment under `knowledge/`, promote source material into domain knowledge, or materially revise the meaning, scope, applicability, or relationships of existing domain knowledge; do not use for typo-only, formatting-only, or mechanical XID-link maintenance
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- responsibility: a user or workflow will add a new canonical fragment under `knowledge/`, promote source material into domain knowledge, or materially revise the meaning, scope, applicability, or relationships of existing domain knowledge; do not use for typo-only, formatting-only, or mechanical XID-link maintenance
+- os_contract: v1
 - constraints: ontology assessment does not replace source verification or human domain authority; canonical mutation requires an authorized `apply` request, while absent authority requires `proposal_only`; use only the controlled relationship vocabulary; do not invent relationships to make the graph appear complete; keep procedure in the Skill, canonical facts in `knowledge/`, original evidence in `sources/`, and operational or judgment history in `work/`
 - lifecycle:
   - startup: confirm the proposed knowledge scope, publication mode, source class, and whether the change is semantic rather than mechanical; load the ontology, source, document-update, and context-direction rules
@@ -35,15 +24,11 @@
   - closure: return changed or proposed paths, concept decision, relationships accepted or intentionally omitted, source and judgment evidence, validation results, unresolved items, and handoff owner
 - tags: `operations`, `knowledge`, `ontology`, `xref`, `curation`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
-- knowledge_refs:
-  - `../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
-  - `../../../knowledge/organization/200_domain_knowledge_ontology_rules.md#xid-5803607419B9`
-  - `../../../docs/reference/020_sources.md#xid-2FAD591BF725`
-  - `../../../docs/policies/074_document_update_policy.md#xid-B1D42A6F90C3`
+- knowledge_slots:
+  - name=domain_knowledge_ontology_rules; bind=5803607419B9
+  - name=sources; bind=2FAD591BF725
+  - name=document_update_policy; bind=B1D42A6F90C3
 - observation_refs:
-  - `../../../work/sessions/2026-06-28_session_knowledge_ontology_management_seed.md`
-  - `../../../work/sessions/2026-06-28_skill_run_knowledge_ontology_management.md`
-  - `../../../work/sessions/2026-06-28_skill_run_knowledge_ontology_management_2.md`
+  - `../../../observations/2026-06-28_session_knowledge_ontology_management_seed.md`
+  - `../../../observations/2026-06-28_skill_run_knowledge_ontology_management.md`
+  - `../../../observations/2026-06-28_skill_run_knowledge_ontology_management_2.md`

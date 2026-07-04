@@ -1,0 +1,68 @@
+# Repository path ownership and distribution zones.
+#
+# This file is intentionally kept to a small YAML subset so repository tools can
+# parse it without external dependencies.
+zones:
+  - id: local-packs
+    owner: local
+    paths:
+      - packs/local/
+    catalog: true
+    distribution: false
+    base_sync: false
+    shadowing: true
+  - id: shared-packs
+    owner: pack
+    paths:
+      - packs/*/
+    catalog: true
+    distribution: true
+    base_sync: true
+    shadowing: true
+  - id: kernel-code
+    owner: base
+    paths:
+      - fm/
+      - tools/
+      - tests/
+    catalog: false
+    distribution: true
+    base_sync: true
+    shadowing: false
+  - id: kernel-content
+    owner: base
+    paths:
+      - agent/
+      - docs/
+      - skills/
+      - knowledge/
+    catalog: true
+    distribution: true
+    base_sync: true
+    shadowing: false
+  - id: records
+    owner: operational
+    paths:
+      - work/
+      - observations/
+    catalog: false
+    distribution: false
+    base_sync: false
+    shadowing: false
+  - id: derived
+    owner: generated
+    paths:
+      - site/
+      - human-docs/
+    catalog: false
+    distribution: false
+    base_sync: false
+    shadowing: false
+  - id: delivery
+    owner: base
+    paths:
+      - handoff/
+    catalog: false
+    distribution: true
+    base_sync: true
+    shadowing: false

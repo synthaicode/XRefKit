@@ -16,6 +16,10 @@ Check the following domains:
 - support lifecycle expiration risks
 - error handling and exception path integrity
 - time and culture correctness
+- state and determinism boundary correctness
+- uncertainty and escalation path integrity
+- contract and schema resilience
+- traceability and context propagation
 
 This includes async wait paths in tests or production code where a fake clock,
 virtual clock, or polling delay can block forever because the waited state
@@ -60,6 +64,10 @@ Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4
   - support lifecycle
   - error handling
   - time and culture
+  - state and determinism boundary
+  - uncertainty and escalation path
+  - contract and schema resilience
+  - traceability and context propagation
 - handoff list for out-of-scope findings (security, design assumptions)
 - implementation-return feedback items for implementation-local findings
 - a gate verdict block (see Gate Verdict Output)
@@ -134,9 +142,8 @@ required_followup: <next owner or specialist Skill, or none>
 - This skill is `model_tier: standard`, so the quality gate is mandatory at
   closure. The quality reviewer advances the quality phase under the
   `csharp_review:quality_reviewer` role, separate from the executor.
-- At planning, declare the
-  [CAP-QA-011 Roslyn Analyzer Acceptance](../../capabilities/quality/190_cap_qa_011_roslyn_analyzer_acceptance.md#xid-94C1B7B9920A)
-  check as a `check`-kind artifact. It is content-conditional: run
+- At planning, declare the Roslyn analyzer acceptance check as a `check`-kind
+  artifact. It is content-conditional: run
   `python tools/cs_scope_probe.py --target <review-target> --json`; if C# is in
   scope, run the analyzer pipeline and disposition its candidates, otherwise
   mark the check `na`. Analyzer hits are candidates, not auto-fail findings.
@@ -171,6 +178,10 @@ required_followup: <next owner or specialist Skill, or none>
   - support lifecycle
   - error handling
   - time and culture
+  - state and determinism boundary
+  - uncertainty and escalation path
+  - contract and schema resilience
+  - traceability and context propagation
 - If a custom framework is present, identify:
   - framework lifecycle
   - extension points
@@ -235,6 +246,39 @@ required_followup: <next owner or specialist Skill, or none>
   - `DateTime.Now` / `DateTime.UtcNow` mixing and `DateTimeKind` inconsistency
   - culture-sensitive `ToString` / `Parse` in protocol, persistence, or
     interchange contexts where invariant culture is required
+- Execute state and determinism boundary checks:
+  - apply language-neutral state and determinism boundary review from
+    [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+  - mutable state in `static`, singleton, cached, `ThreadLocal<T>`,
+    `AsyncLocal<T>`, scoped-service, or background-worker storage that can
+    leak across unrelated work
+  - state transitions and helper methods whose side effects are hidden from
+    retry, replay, compensation, or deterministic test execution
+- Execute uncertainty and escalation path checks:
+  - apply language-neutral uncertainty and escalation path review from
+    [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+  - `TryParse`, `TryGet`, classifier, matcher, rules-engine, model-output,
+    nullable, optional, default enum, or catch-and-default paths that convert
+    uncertain outcomes into normal values
+  - low-confidence, malformed, unsupported, or ambiguous outputs that should
+    become `needs_confirmation`, controlled rejection, escalation, or handoff
+- Execute contract and schema resilience checks:
+  - apply language-neutral contract and schema resilience review from
+    [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+  - serializer and DTO boundaries for unknown members, missing members, enum
+    expansion, nullability, polymorphism, versioning, and controlled parse
+    failure
+  - lenient mapping that drops fields required for routing, authorization,
+    idempotency, audit, billing, or compliance
+- Execute traceability and context propagation checks:
+  - apply language-neutral traceability and context propagation review from
+    [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+  - `Activity.Current`, logging scopes, correlation ids, `AsyncLocal<T>`,
+    `CancellationToken`, tenant/user/source identity, and attempt metadata
+    across async calls, background tasks, queues, timers, callbacks, and agent
+    handoffs
+  - detached work or propagation leaks that break failure attribution or leak
+    sensitive context across unrelated work
 - When a custom framework is present:
   - verify framework lifecycle from local evidence
   - verify framework extension points from base code and existing usage examples

@@ -9,10 +9,6 @@ Execute `CAP-DSN-004 -> CAP-DSN-002 -> CAP-DSN-003 -> CAP-MFG-003` and prepare a
 
 ## Required Capability Definitions (XID)
 
-- [CAP-DSN-004 Test Plan Structuring](../../capabilities/design/130_cap_dsn_004_test_plan_structuring.md#xid-6C1A2D9F4504)
-- [CAP-DSN-002 Test Design Structuring](../../capabilities/design/110_cap_dsn_002_test_design_structuring.md#xid-6C1A2D9F4502)
-- [CAP-DSN-003 Integration and Regression Test Design Structuring](../../capabilities/design/120_cap_dsn_003_integration_regression_test_design_structuring.md#xid-6C1A2D9F4503)
-- [CAP-MFG-003 Test Method Review](../../capabilities/manufacturing/130_cap_mfg_003_test_method_review.md#xid-55CC9027ACAE)
 
 ## Required Knowledge (XID)
 

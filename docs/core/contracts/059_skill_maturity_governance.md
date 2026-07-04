@@ -57,8 +57,8 @@ far that clarification has actually progressed.
 - maturity: `draft`
 ```
 
-`execution_mode`, `guard_policy`, `constraints`, `capability_refs`,
-`knowledge_refs`, `tags`, and `os_contract` may still be absent or provisional.
+`execution_mode`, `guard_policy`, `constraints`, `knowledge_slots`,
+`tags`, and `os_contract` may still be absent or provisional.
 
 ### Trial Additions
 
@@ -78,17 +78,39 @@ Required to pass `trial` check:
 
 ```md
 - observation_refs:
-  - `../../work/sessions/<session>.md`
+  - `../../observations/<record>.md`
 ```
 
-`observation_refs` may point to:
+Every `observation_refs` target lives in `observations/` — the tracked
+home for governance evidence (run logs, judgments, review reports, seed
+sessions). `work/*` is local-only operational history (`.gitignore`);
+when a `work/` record becomes the maturity basis of a Skill, **move it to
+`observations/`** (keep the date-prefixed filename) and reference it
+there. A reference that cannot resolve in a fresh clone is not evidence:
+`fm skill check` rejects observation refs that point into `work/` or at
+untracked files, at trial or higher.
 
-- `work/sessions/...`
-- `work/judgments/...`
-- review outputs
-- retrospective or promotion reports
+The point is to keep the refinement basis explicit and durable.
 
-The point is to keep the refinement basis explicit.
+### Draft-To-Trial Bootstrap
+
+`draft` Skills are not load-ready: `fm skill run` rejects them. `trial`
+requires at least one `observation_refs` entry, but a Skill that has never
+run cannot yet reference its own run log. The bootstrap sequence is:
+
+1. Author the Skill as `draft`.
+2. Promote to `trial` by adding the provisional runtime fields above and an
+   initial `observation_refs` entry pointing at the authoring basis — the
+   record of the session (for example the `skill_flow_authoring` run) that
+   created or materially shaped the Skill, moved from `work/` into
+   `observations/`.
+3. After the first real runs, add or replace `observation_refs` with actual
+   usage records so the refinement basis reflects observed use, not only
+   authoring intent.
+
+Do not leave maturity undeclared to bypass this ladder: an undeclared
+maturity historically defaulted to `stable` while silently failing
+`fm skill run`, which hides the evidence gap until the moment of use.
 
 ### Stable Requirements
 
@@ -97,18 +119,25 @@ To pass `stable` check, the Skill must satisfy operational completeness:
 - `draft` minimum fields
 - `observation_refs`
 - valid `execution_mode`
-- valid `guard_policy`
 - `capability_layering: required`
 - `workflow_protocol: required`
+- explicit `capability`
 - explicit `tuning`
-- Skill-specific `role_responsibilities.executor`
+- explicit `responsibility` (the legacy `role_responsibilities.executor` value
+  is still accepted)
 - no protocol-owned roles (`checker`, `quality_reviewer`, `handoff_owner`) in
   `role_responsibilities`
 - `constraints`
-- required runtime capability reference
-- required guard references when `guard_policy: required`
-- explicit closed-world wording when `guard_policy: closed_world`
-- full required `os_contract`
+- explicit closed-world wording when a legacy meta declares
+  `guard_policy: closed_world`
+- full required `os_contract`, declared as the `os_contract: v1` shorthand
+  or the equivalent expanded block (see
+  `docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`)
+
+The context-direction guard is ambient — supplied by the startup contract pack
+and the per-response control reminder — so it is no longer a required per-Skill
+field. A legacy meta may still carry `guard_policy` and guard references
+harmlessly (design 083 / 082 D4).
 
 ### Governed Requirements
 
@@ -157,9 +186,8 @@ runtime fields themselves must be explicit before the Skill is load-ready.
 2. Add a first `SKILL.md` procedure and promote to `trial`.
 3. Run the Skill and record session/judgment/review evidence.
 4. Add or refine `use_when`, `input`, `output`, `constraints`,
-   `execution_mode`, `guard_policy`, `capability_layering`,
-   `workflow_protocol`, `tuning`, `role_responsibilities.executor`,
-   `capability_refs`, and `knowledge_refs`.
+   `execution_mode`, `capability_layering`, `workflow_protocol`,
+   `capability`, `tuning`, `responsibility`, and `knowledge_slots`.
 5. Link the observed evidence through `observation_refs`.
 6. Promote to `stable` after the operating contract is explicit.
 7. Add governance and audit basis through `governance_refs`.
@@ -184,14 +212,13 @@ runtime fields themselves must be explicit before the Skill is load-ready.
 ```md
 - maturity: `trial`
 - execution_mode: `local_default`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
+- capability: <base reusable ability, e.g. software_development>
 - tuning: <direct specialization for this Skill>
-- role_responsibilities:
-  - executor: <what the executor produces or changes>
+- responsibility: <the Skill's business use, e.g. implementation or quality check>
 - observation_refs:
-  - `../../work/sessions/<session>.md`
+  - `../../observations/<record>.md`
 ```
 
 `local_default` relaxes the executor side only. Runtime check behavior, quality
@@ -203,30 +230,18 @@ by Skill-local `role_responsibilities`.
 ```md
 - maturity: `stable`
 - execution_mode: `subagent_preferred`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
+- capability: <base reusable ability, e.g. software_development>
 - tuning: <direct specialization for this Skill>
-- role_responsibilities:
-  - executor: <what the executor produces or changes>
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- responsibility: <the Skill's business use, e.g. implementation or quality check>
+- os_contract: v1
 - constraints: <explicit operational constraints>
-- capability_refs:
-  - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
-- knowledge_refs:
-  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
+- knowledge_slots:
+  - name=<slot>; query=<intent phrase>; domain=<domain>; min=1; required
+  - name=<slot>; bind=<XID of domain knowledge this Skill always needs>
 - observation_refs:
-  - `../../work/sessions/<session>.md`
+  - `../../observations/<record>.md`
 ```
 
 ## Improvement Note Template
@@ -247,10 +262,9 @@ Use a small Markdown note or session entry when refining a Skill:
   - `input`
   - `output`
   - `constraints`
-  - `guard_policy`
   - `execution_mode`
-  - `capability_refs`
-  - `knowledge_refs`
+  - `capability`
+  - `knowledge_slots`
 - summary: <what was unclear or missing>
 - change_needed: <what should be updated>
 - promotion_effect: <does this support trial/stable/governed promotion?>

@@ -15,8 +15,8 @@ every run. Running it uniformly wastes build time on non-C# work and creates a
 false sense of coverage. The decision has two layers (applicability model C):
 
 1. **Skill declares it can apply.** A skill that may produce or change C#
-   references [CAP-QA-011 Roslyn Analyzer Acceptance](../../capabilities/quality/190_cap_qa_011_roslyn_analyzer_acceptance.md#xid-94C1B7B9920A)
-   in its `capability_refs`. A skill that never touches C# does not.
+   declares the Roslyn analyzer acceptance check. A skill that never touches C#
+   does not.
 2. **Per-run content probe decides it does apply.** Within a declaring skill,
    `tools/cs_scope_probe.py` scans the run's target or changed set and reports
    `cs_in_scope`. The check applies only when the probe is positive.

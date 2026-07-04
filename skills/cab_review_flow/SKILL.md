@@ -9,9 +9,6 @@ Execute CAB-facing evaluation using `CAP-QA-003`, `CAP-OPS-004`, and `CAP-BIZ-00
 
 ## Required Capability Definitions (XID)
 
-- [CAP-QA-003 Release Plan Suitability Review](../../capabilities/quality/120_cap_qa_003_release_plan_suitability_review.md#xid-93E53EF38700)
-- [CAP-OPS-004 Operational Readiness Evaluation](../../capabilities/operations/130_cap_ops_004_operational_readiness_gate.md#xid-83140C9538B3)
-- [CAP-BIZ-001 Value-Constraint Alignment Evaluation](../../capabilities/business/100_cap_biz_001_value_constraint_fit_evaluation.md#xid-837CDB1183C9)
 
 ## Inputs
 

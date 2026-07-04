@@ -77,7 +77,6 @@ Output is candidate-only; disposition and per-case approval stay downstream
 | `run_quality_gate.py` | the repository's own gate: unittest, `fm xref/skill/pack` checks, log audit, baselines, node project checks |
 | `audit_skill_runtime_logs.py` | audit skill runtime logs (`fm.skillrun`) |
 | `check_project_quality_baseline.py` | node projects under `projects/` baseline check |
-| `check_feedback_register.py` | validate `docs/quality/044_system_quality_feedback_register.md` format |
 | `migrate_legacy_flow_skill.py` | migrate a legacy flow into the Flow/Capability/Skill model |
 
 ## Binding rules
@@ -86,5 +85,9 @@ Output is candidate-only; disposition and per-case approval stay downstream
   standard pass (ADR 0001).
 - **Restore before Roslyn.** `structure_graph` and the analyzer pipeline need symbols
   resolved; unrestored targets yield silently empty framework facts.
+- **Build after a source-level copy.** `structure_graph/bin/` is gitignored, so a
+  fresh clone or file copy has no binary; build it per
+  [078_structure_graph_build_guide](../docs/guides/078_structure_graph_build_guide.md#xid-8B3E5D0A94C7)
+  before using the semantic-inventory tools.
 - **Candidate, not verdict.** Every analysis tool here proposes; inclusion, severity,
   and any change are decided downstream by a human/LLM with per-case approval.

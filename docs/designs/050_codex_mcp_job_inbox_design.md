@@ -17,9 +17,6 @@ The design goal is to let the dashboard publish work requests as explicit jobs, 
 Related:
 
 - [Workflow](../guides/010_workflow.md#xid-7D1E1C0279F1)
-- [Manufacturing workflow](../workflows/033_manufacturing_workflow.md#xid-8B31F02A4002)
-- [Flow quality assurance mechanism](../quality/042_flow_quality_assurance_mechanism.md#xid-8B31F02A4011)
-- [OR Team operating model](../operating-models/048_or_team_operating_model.md#xid-1D7A8E2C5F10)
 - [Operating models, usage guides, and design pages](../reference/022_operating_models_guides_and_designs.md#xid-9C4E2A71D583)
 
 ## Problem Statement

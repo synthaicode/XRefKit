@@ -157,4 +157,4 @@ After the first pass:
 
 - [Importing existing documents (human view)](../../guides/003_import_for_humans.md#xid-0CF07930F2FA)
 - [End-to-end flow (human view)](../../guides/004_overall_flow_for_humans.md#xid-E01E6695A30A)
-- [Flow Capability Skill Knowledge model](../../core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
+- [Skill and Knowledge Operating Model](../../core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)

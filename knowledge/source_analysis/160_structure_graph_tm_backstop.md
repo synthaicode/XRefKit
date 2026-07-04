@@ -190,13 +190,12 @@ lists and filters it on demand.
 > for the grep-weak semantic inventories (attribute values, DI lifetimes, etc.). The
 > paragraph below describes the original (now non-default) entry point.
 
-The originally proposed entry point was to back the **Where** output of
-[dotnet_change_analysis](../../skills/dotnet_change_analysis/SKILL.md#xid-D94E3B3A7C11)
-— its impacted boundary list — with graph traversal candidate generation instead
-of LLM-inferred structure. The LLM is not the primary candidate generator; it
-explains candidates, records exclusion reasons, proposes additional traversal
-seeds (including dynamic edges per principle 6), and connects the curated cut to
-the change design.
+The originally proposed entry point was to back the **Where** output of the
+`dotnet_change_analysis` Skill — its impacted boundary list — with graph
+traversal candidate generation instead of LLM-inferred structure. The LLM is
+not the primary candidate generator; it explains candidates, records exclusion
+reasons, proposes additional traversal seeds (including dynamic edges per
+principle 6), and connects the curated cut to the change design.
 
 ### Output into the Where section
 
@@ -289,7 +288,7 @@ The value adopted here is **not** any specific `@graph-*` annotation notation or
 a Product Graph implementation. In-source semantic annotation is rejected for
 this repository: structural relations are mechanically derivable (so marking them
 is redundant), code-to-knowledge links are already covered by rule maps, skill
-`knowledge_refs`, and on-demand LLM judgment, and brownfield code cannot carry
+`knowledge_slots`, and on-demand LLM judgment, and brownfield code cannot carry
 new annotations at all.
 
 The value adopted is using a deterministic structure graph as the **TM coverage

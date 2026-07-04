@@ -13,10 +13,8 @@ usage guides.
 
 Related:
 
-- [Investigation workflow](../workflows/032_investigation_workflow.md#xid-8B31F02A4001)
 - [Flow Capability Skill Knowledge model](../core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
 - [Change analysis skill usage](../guides/054_change_analysis_skill_usage.md#xid-C5A8F13D7E21)
-- [CAP-INV-002 Change Impact Enumeration](../../capabilities/investigation/110_cap_inv_002_source_dependency_analysis.md#xid-E994FCDA8CD1)
 
 ## Core Point
 
@@ -41,8 +39,8 @@ It is a layered composition:
 | Layer | What it owns | Reuse level | Example in software development | What changes by domain |
 |------|------|------|------|------|
 | `Pack` | why this investigation is being done, where it hands off, what later work consumes it | medium | `investigation pack` before requirements / planning / design | handoff target, owner group, required artifacts, escalation meaning |
-| `Capability` | reusable ability to enumerate impacts and preserve unknowns | high | [CAP-INV-002 Change Impact Enumeration](../../capabilities/investigation/110_cap_inv_002_source_dependency_analysis.md#xid-E994FCDA8CD1) | almost none; the core ability stays stable |
-| `Skill` | how to run the investigation against a concrete technical surface | medium | `dotnet_change_analysis`, `external_definition_change_analysis` | repository scan strategy, viewpoint buckets, target artifact kinds |
+| `Capability` | reusable ability to enumerate impacts and preserve unknowns | high | CAP-INV-002 Change Impact Enumeration | almost none; the core ability stays stable |
+| `Skill` | how to run the investigation against a concrete technical surface | medium | `dotnet_change_analysis` | repository scan strategy, viewpoint buckets, target artifact kinds |
 | `Knowledge` | what counts as relevant evidence, dependency, boundary, or activation condition | low to medium | `.NET` structure viewpoints, XML/config-driven activation viewpoints, domain rules | strongly domain-dependent |
 
 ## What Is Actually Reusable
@@ -96,7 +94,7 @@ What changes here:
 |------|------|
 | `Pack` | investigation work before deciding how to modify XML or configuration-controlled business behavior |
 | `Capability` | enumerate definition file, activation rule, consuming code, transition, validation, scheduler, and downstream impact |
-| `Skill` | [external_definition_change_analysis](../../skills/external_definition_change_analysis/SKILL.md#xid-8C1F3DA2B6E4) |
+| `Skill` | `dotnet_change_analysis` applying the external-definition viewpoints (no separate skill) |
 | `Knowledge` | [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001), [Custom framework common criteria](../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002), [External-definition change analysis viewpoints](../../knowledge/source_analysis/130_external_definition_change_analysis_viewpoints.md#xid-4D91A26BE301) |
 
 What changes here:

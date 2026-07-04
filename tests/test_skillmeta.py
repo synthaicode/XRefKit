@@ -46,7 +46,7 @@ class SkillMetaTests(unittest.TestCase):
                 "- knowledge_refs:\n"
                 f"  - `{GUARD_KNOWLEDGE_REF}`\n"
                 "- observation_refs:\n"
-                "  - `../../work/sessions/sample.md`\n",
+                "  - `../../observations/sample.md`\n",
                 encoding="utf-8",
             )
 
@@ -54,6 +54,311 @@ class SkillMetaTests(unittest.TestCase):
 
             self.assertTrue(result.ok)
             self.assertEqual([], result.errors)
+
+    def test_validate_skill_meta_accepts_responsibility_field_without_role(self) -> None:
+        # Skill-centric consolidation (083 D1/D3): `responsibility` replaces
+        # role_responsibilities.executor. A stable meta with the new field and
+        # no role_responsibilities must validate.
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                "# Skill Meta: sample\n\n"
+                "- skill_id: `sample_skill`\n"
+                "- summary: sample summary\n"
+                "- use_when: sample use\n"
+                "- input: sample input\n"
+                "- output: sample output\n"
+                "- maturity: `stable`\n"
+                "- execution_mode: `subagent_preferred`\n"
+                "- guard_policy: `required`\n"
+                "- capability_layering: `required`\n"
+                "- workflow_protocol: `required`\n"
+                "- tuning: sample specialization\n"
+                "- responsibility: quality check\n"
+                f"{self._os_contract_block()}"
+                "- constraints: keep observed boundary explicit\n"
+                "- skill_doc: `./SKILL.md`\n"
+                "- capability_refs:\n"
+                f"  - `{SKILL_RUNTIME_CAPABILITY_REF}`\n"
+                f"  - `{GUARD_CAPABILITY_REF}`\n"
+                "- knowledge_refs:\n"
+                f"  - `{GUARD_KNOWLEDGE_REF}`\n"
+                "- observation_refs:\n"
+                "  - `../../observations/sample.md`\n",
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual([], result.errors)
+
+    def test_validate_skill_meta_rejects_missing_responsibility(self) -> None:
+        # Neither `responsibility` nor role_responsibilities.executor declared.
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                "# Skill Meta: sample\n\n"
+                "- skill_id: `sample_skill`\n"
+                "- summary: sample summary\n"
+                "- use_when: sample use\n"
+                "- input: sample input\n"
+                "- output: sample output\n"
+                "- maturity: `stable`\n"
+                "- execution_mode: `subagent_preferred`\n"
+                "- guard_policy: `required`\n"
+                "- capability_layering: `required`\n"
+                "- workflow_protocol: `required`\n"
+                "- tuning: sample specialization\n"
+                f"{self._os_contract_block()}"
+                "- constraints: keep observed boundary explicit\n"
+                "- skill_doc: `./SKILL.md`\n"
+                "- capability_refs:\n"
+                f"  - `{SKILL_RUNTIME_CAPABILITY_REF}`\n"
+                f"  - `{GUARD_CAPABILITY_REF}`\n"
+                "- knowledge_refs:\n"
+                f"  - `{GUARD_KNOWLEDGE_REF}`\n"
+                "- observation_refs:\n"
+                "  - `../../observations/sample.md`\n",
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(any("missing responsibility" in error for error in result.errors))
+
+    def test_validate_skill_meta_accepts_ambient_guard_without_guard_authoring(self) -> None:
+        # Skill-centric consolidation (083 / 082 D4): the context-direction guard
+        # is ambient (startup pack + per-response control_reminder). A stable
+        # meta with no guard_policy and no guard capability/knowledge refs must
+        # validate.
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                "# Skill Meta: sample\n\n"
+                "- skill_id: `sample_skill`\n"
+                "- summary: sample summary\n"
+                "- use_when: sample use\n"
+                "- input: sample input\n"
+                "- output: sample output\n"
+                "- maturity: `stable`\n"
+                "- execution_mode: `subagent_preferred`\n"
+                "- capability_layering: `required`\n"
+                "- workflow_protocol: `required`\n"
+                "- tuning: sample specialization\n"
+                "- responsibility: quality check\n"
+                f"{self._os_contract_block()}"
+                "- constraints: keep observed boundary explicit\n"
+                "- skill_doc: `./SKILL.md`\n"
+                "- capability_refs:\n"
+                f"  - `{SKILL_RUNTIME_CAPABILITY_REF}`\n"
+                "- observation_refs:\n"
+                "  - `../../observations/sample.md`\n",
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual([], result.errors)
+
+    def test_validate_skill_meta_accepts_stable_without_capability_refs(self) -> None:
+        # Skill-centric consolidation (083 D2): capabilities/ dissolves, so
+        # capability_refs (including the runtime-envelope ref) are no longer
+        # required; the protocol / os_contract enforces the envelope.
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                "# Skill Meta: sample\n\n"
+                "- skill_id: `sample_skill`\n"
+                "- summary: sample summary\n"
+                "- use_when: sample use\n"
+                "- input: sample input\n"
+                "- output: sample output\n"
+                "- maturity: `stable`\n"
+                "- execution_mode: `subagent_preferred`\n"
+                "- capability_layering: `required`\n"
+                "- workflow_protocol: `required`\n"
+                "- tuning: sample specialization\n"
+                "- responsibility: quality check\n"
+                f"{self._os_contract_block()}"
+                "- constraints: keep observed boundary explicit\n"
+                "- skill_doc: `./SKILL.md`\n"
+                "- observation_refs:\n"
+                "  - `../../observations/sample.md`\n",
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual([], result.errors)
+
+    def _meta_with_os_contract(self, os_contract_lines: str) -> str:
+        return (
+            "# Skill Meta: sample\n\n"
+            "- skill_id: `sample_skill`\n"
+            "- summary: sample summary\n"
+            "- use_when: sample use\n"
+            "- input: sample input\n"
+            "- output: sample output\n"
+            "- maturity: `stable`\n"
+            "- execution_mode: `subagent_preferred`\n"
+            "- guard_policy: `required`\n"
+            "- capability_layering: `required`\n"
+            "- workflow_protocol: `required`\n"
+            "- tuning: sample specialization\n"
+            "- role_responsibilities:\n"
+            "  - executor: sample execution responsibility\n"
+            f"{os_contract_lines}"
+            "- constraints: keep observed boundary explicit\n"
+            "- skill_doc: `./SKILL.md`\n"
+            "- capability_refs:\n"
+            f"  - `{SKILL_RUNTIME_CAPABILITY_REF}`\n"
+            f"  - `{GUARD_CAPABILITY_REF}`\n"
+            "- knowledge_refs:\n"
+            f"  - `{GUARD_KNOWLEDGE_REF}`\n"
+            "- observation_refs:\n"
+            "  - `../../observations/sample.md`\n"
+        )
+
+    def test_validate_skill_meta_accepts_os_contract_shorthand(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                self._meta_with_os_contract("- os_contract: v1\n"),
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertTrue(result.ok)
+            self.assertEqual([], result.errors)
+
+    def test_validate_skill_meta_accepts_backticked_os_contract_shorthand(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                self._meta_with_os_contract("- os_contract: `v1`\n"),
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertTrue(result.ok)
+            self.assertEqual([], result.errors)
+
+    def test_validate_skill_meta_rejects_work_observation_ref(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                self._meta_with_os_contract("- os_contract: v1\n").replace(
+                    "  - `../../observations/sample.md`\n",
+                    "  - `../../work/sessions/sample.md`\n",
+                ),
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(
+                any("points into work/" in e for e in result.errors), result.errors
+            )
+
+    def test_validate_skill_meta_rejects_untracked_observation_ref(self) -> None:
+        import subprocess
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            subprocess.run(["git", "init", "-q", str(root)], check=True, capture_output=True)
+            meta_dir = root / "skills" / "sample"
+            meta_dir.mkdir(parents=True)
+            record = root / "observations" / "obs.md"
+            record.parent.mkdir(parents=True)
+            record.write_text("observation\n", encoding="utf-8")
+            meta = meta_dir / "meta.md"
+            meta.write_text(
+                self._meta_with_os_contract("- os_contract: v1\n").replace(
+                    "  - `../../observations/sample.md`\n",
+                    "  - `../../observations/obs.md`\n",
+                ),
+                encoding="utf-8",
+            )
+
+            from fm.skillmeta import _TRACKED_CACHE
+
+            _TRACKED_CACHE.clear()
+            result = validate_skill_meta(meta)
+            self.assertFalse(result.ok)
+            self.assertTrue(
+                any("not git-tracked" in e for e in result.errors), result.errors
+            )
+
+            subprocess.run(
+                ["git", "-C", str(root), "add", "observations/obs.md"],
+                check=True,
+                capture_output=True,
+            )
+            _TRACKED_CACHE.clear()
+            result = validate_skill_meta(meta)
+            self.assertTrue(result.ok, result.errors)
+
+    def test_validate_skill_meta_skips_tracked_check_outside_git(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                self._meta_with_os_contract("- os_contract: v1\n"),
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertTrue(result.ok, result.errors)
+
+    def test_validate_skill_meta_warns_on_undeclared_maturity(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            text = self._meta_with_os_contract("- os_contract: v1\n").replace(
+                "- maturity: `stable`\n", ""
+            ).replace(
+                "- observation_refs:\n  - `../../observations/sample.md`\n", ""
+            )
+            meta.write_text(text, encoding="utf-8")
+
+            result = validate_skill_meta(meta)
+
+            self.assertTrue(result.ok)
+            self.assertTrue(
+                any("maturity is not declared" in w for w in result.warnings)
+            )
+
+    def test_validate_skill_meta_no_warning_with_explicit_maturity(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                self._meta_with_os_contract("- os_contract: v1\n"),
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertEqual([], result.warnings)
+
+    def test_validate_skill_meta_rejects_unknown_os_contract_shorthand(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            meta = Path(tmp) / "meta.md"
+            meta.write_text(
+                self._meta_with_os_contract("- os_contract: v99\n"),
+                encoding="utf-8",
+            )
+
+            result = validate_skill_meta(meta)
+
+            self.assertFalse(result.ok)
+            self.assertIn("unknown os_contract shorthand: v99", result.errors)
+            self.assertIn("os_contract.version must be 1", result.errors)
 
     def test_validate_skill_meta_rejects_missing_os_contract(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -81,7 +386,7 @@ class SkillMetaTests(unittest.TestCase):
                 "- knowledge_refs:\n"
                 f"  - `{GUARD_KNOWLEDGE_REF}`\n"
                 "- observation_refs:\n"
-                "  - `../../work/sessions/sample.md`\n",
+                "  - `../../observations/sample.md`\n",
                 encoding="utf-8",
             )
 

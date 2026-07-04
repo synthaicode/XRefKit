@@ -19,6 +19,10 @@ This page defines language-neutral viewpoints for analyzing an existing codebase
 | Security boundary | where authentication, authorization, secret handling, and sensitive-data controls apply |
 | Performance-sensitive paths | where expensive or high-frequency execution occurs |
 | Operational hazard paths | where source-visible execution can amplify load, partially commit across boundaries, lose work ownership, hide failures, or expand blast radius |
+| State and determinism boundary | where mutable state, state transitions, side effects, and deterministic replay assumptions are owned |
+| Uncertainty and escalation path | where uncertain classification, parsing, prediction, threshold, or confidence outcomes become explicit unknowns or escalation handoffs |
+| Contract and schema resilience | where external, model, message, or serialized formats are accepted, rejected, versioned, or treated as unknown |
+| Traceability and context propagation | where trace ids, causality, source context, and structured execution metadata cross async, job, message, or agent boundaries |
 | Test boundary | how unit, integration, regression, and edge-case tests are organized |
 | Application/framework boundary | what belongs to reusable framework mechanisms versus application-specific code |
 
@@ -372,6 +376,102 @@ Check at least the following:
 Classify as `needs_confirmation` when the execution environment's timezone,
 culture, collation, or calendar configuration cannot be established from local
 evidence.
+
+## State And Determinism Boundary Review
+
+Check whether state transitions are deterministic enough for the system's
+execution model, especially across asynchronous paths, background jobs,
+message handlers, and agent-to-agent coordination.
+
+Check at least the following:
+
+- mutable state is scoped to a clear owner, request, job, session, actor, or
+  transaction boundary
+- state transitions are represented explicitly enough to replay, audit, retry,
+  or compensate the work when required
+- pure decision logic is separated from side effects where the surrounding
+  workflow relies on deterministic judgment
+- thread-local, async-local, process-global, singleton, cache, or static state
+  does not leak decisions, credentials, user context, or partial progress
+  across unrelated work
+- retries, replays, duplicate messages, restarts, or parallel workers cannot
+  apply non-idempotent state transitions silently
+- hidden side effects are not buried inside helpers that appear to be pure
+  classification, parsing, validation, or mapping functions
+
+Findings must name the state owner, the transition, and the path where
+non-determinism, state leakage, or hidden side effects can change the outcome.
+
+## Uncertainty And Escalation Path Review
+
+Check whether uncertain outcomes are explicit and routed instead of being
+converted into normal values.
+
+Check at least the following:
+
+- classification confidence, parse confidence, prediction thresholds, matcher
+  scores, and ambiguous branches have an explicit below-threshold disposition
+- unsupported or malformed input does not become a syntactically valid default
+  that continues through the normal path
+- LLM, ML, heuristic, parser, or rules-engine outputs have a clear
+  `unknown`, `needs_confirmation`, rejection, retry, or escalation branch
+- fallback branches preserve enough evidence for later disposition instead of
+  erasing the original uncertain input
+- escalation triggers are source-visible and testable, not only described in
+  comments or external process notes
+- partial results do not get persisted or emitted as authoritative when their
+  uncertainty affects downstream decisions
+
+Escalate severity when uncertainty can affect billing, authorization,
+compliance, safety, external communication, irreversible writes, or workflow
+closure.
+
+## Contract And Schema Resilience Review
+
+Check whether external and serialized contracts fail safely when the producer,
+consumer, model, or message format changes.
+
+Check at least the following:
+
+- unknown fields, missing fields, type changes, enum expansion, nullability
+  changes, version changes, and polymorphic variants have an intentional
+  handling policy
+- strict parsing failures are caught at the boundary and become controlled
+  rejection, quarantine, retry, unknown, or escalation outcomes
+- lenient parsing does not silently drop fields that are required for
+  authorization, routing, billing, audit, idempotency, or compliance
+- schema/version metadata is preserved where later processing needs it
+- contract adapters distinguish producer evolution from malformed or
+  untrusted input
+- deserialization and mapping boundaries preserve source evidence for
+  diagnostics and replay when policy permits
+
+Findings must identify the boundary, expected contract behavior, observed
+fallback or failure behavior, and the downstream decision affected by it.
+
+## Traceability And Context Propagation Review
+
+Check whether execution context survives the boundaries that matter for
+diagnosis, audit, replay, and cross-agent or cross-service handoff.
+
+Check at least the following:
+
+- trace id, correlation id, causality, tenant/user/source identity, request or
+  job id, attempt count, and origin metadata propagate through async calls,
+  background tasks, queues, timers, callbacks, and agent handoffs where needed
+- structured logging context is attached at the boundary where failures can
+  occur, not reconstructed from ambiguous display values later
+- fire-and-forget work, detached tasks, event handlers, and scheduled work do
+  not lose the context needed to attribute failures
+- fan-out and retry paths preserve parent-child relationships and attempt
+  metadata
+- context propagation does not leak sensitive context to unrelated work or
+  broader scopes than intended
+- source identity remains stable enough to deduplicate, replay, compensate, or
+  audit work after archival, acknowledgement, deletion, or state transition
+
+Findings must name the broken propagation boundary and the operational,
+audit, or handoff consequence of the missing context.
 
 ## Planning Rule
 

@@ -136,10 +136,11 @@ carry explicit continuity structure.
    - force explicit `input`, `output`, lifecycle, observation, and closure
      structure so later AI runs do not rely on implicit memory
 3. For a public Skill:
-   - register it in `skills/_index.md`
-   - update `skills/index/by_task.md`
-   - update `skills/index/by_domain.md`
-   - update `skills/index/by_tool.md`
+   - register it in `skills/_index.md` (the only place holding summary and
+     meta/SKILL paths)
+   - add its skill id to the matching categories in `skills/index/by_task.md`,
+     `skills/index/by_domain.md`, and `skills/index/by_tool.md` (id only; the
+     views carry no paths or summaries)
    - place it in the correct family path instead of the old flat root
 4. For a Flow:
    - create `flows/<flow_id>.yaml`

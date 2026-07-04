@@ -36,8 +36,6 @@ The exact internal commands may vary by project, but the baseline intent is:
 
 - `projects/slides-app/`
   - `check`: lint + typecheck + build
-- `projects/flow-monitor-dashboard/`
-  - `check`: JavaScript syntax check + JSON parse validation
 
 ## Enforcement
 
@@ -53,6 +51,3 @@ This metadata check complements, but does not replace, each project's own `npm r
 
 ## Related
 
-- [Flow Quality Assurance Mechanism](../quality/042_flow_quality_assurance_mechanism.md#xid-8B31F02A4011)
-- [System Quality Feedback Loop](../quality/043_system_quality_feedback_loop.md#xid-8B31F02A4012)
-- [System Quality Feedback Register](../quality/044_system_quality_feedback_register.md#xid-8B31F02A4013)

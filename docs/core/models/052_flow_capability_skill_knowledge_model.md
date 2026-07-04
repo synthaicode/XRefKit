@@ -1,122 +1,153 @@
 <!-- xid: 91C4B7E2D5A8 -->
 <a id="xid-91C4B7E2D5A8"></a>
 
-# Flow Capability Skill Knowledge Model
+# Skill and Knowledge Operating Model
 
-This page consolidates the repository's layering model into one practical view for developers.
+This page is the repository's operating model after the skill-centric
+consolidation. It supersedes the earlier four-layer model
+(Flow → Capability → Skill → Knowledge) as defined in
+[Skill-centric architecture consolidation](../../designs/083_skill_centric_architecture_consolidation.md#xid-9DF3B80F9CBE).
 
-It restates the relation among workflow, capability, skill, and knowledge so implementation and documentation decisions stay consistent across the repository.
+## Model
 
-## Core Distinction
+Two content layers, wrapped by one generic protocol, orchestrated by semantic
+routing:
 
-- `Flow` defines business progression, boundary, handoff, and control points.
-- `Capability` defines reusable work-unit ability.
-- `Skill` defines executable procedure.
-- `Knowledge` defines evidence, facts, and local rules.
+- **Skill** — executable procedure (method), plus its meta identity
+  (`capability` / `tuning` / `responsibility`) and declared needs
+  (`knowledge_slots`, `preconditions`). Lives in `skills/`.
+- **Knowledge** — evidence, facts, domain and local rules. Resolved dynamically
+  from a Skill's slots against the base+local unified catalog. Lives in
+  `knowledge/`.
+- **Workflow protocol / kernel** — the generic, business-independent per-Skill
+  control (phases, `verify`, `close`) that carries determinism. The same for all
+  work; not a per-business definition. See
+  [Deterministic flow control kernel design](../../designs/073_deterministic_flow_control_kernel_design.md#xid-4C7E9A2B1D63).
+- **Semantic routing** — selects the Skill for a goal by matching intent and
+  current state against the Skill meta triad, filtered by declared
+  preconditions.
 
-## Four-Layer Table
+## What Each Layer Holds
 
-| Layer | What it represents | Main location | Typical contents | What it should not contain | Main relation |
-|------|------|------|------|------|------|
-| Flow | business progression, sequence, boundary, handoff, escalation | `docs/`, `flows/` | phases, inputs, outputs, gates, branch conditions, ownership, handoff rules | detailed execution procedure, raw evidence, large factual blocks | provides the control frame in which skills are executed |
-| Capability | reusable professional ability or work-unit definition | `capabilities/` | required actions, judgment points, reusable task definitions, tuned ability definitions | project-specific evidence, full business-stage sequencing, large local rules | defines what a skill must accomplish |
-| Skill | executable procedure for a concrete work unit | `skills/` | procedure, I/O contract, guardrails, execution steps, references to required XIDs | copied domain facts, broad governance, whole lifecycle control | executes one or more capabilities inside a flow |
-| Knowledge | evidence, facts, domain rules, local rules | `knowledge/` | domain knowledge, quality criteria, operational rules, glossary, evidence basis | execution procedure, workflow orchestration, capability control definition | supplies the basis a skill reads when making or supporting judgments |
+| Layer | Holds | Does not hold |
+|------|------|------|
+| Skill | procedure, judgment method, I/O contract, guardrails, the meta triad, declared knowledge slots and preconditions | copied domain facts, language-specific rule catalogs, static knowledge/capability XID lists, whole-business sequencing |
+| Knowledge | domain knowledge, quality criteria, operational and local rules, glossary, evidence basis | execution procedure, orchestration, control definitions |
 
-## Reading Order
+## Removed Layers
 
-The repository routing order is:
+The four-layer model's other layers are removed; their content relocates:
 
-1. identify the business stage or user intent
-2. identify the relevant flow
-3. identify the required capabilities inside that flow
-4. identify the skill that executes those capabilities
-5. load only the required knowledge fragments
-6. execute and hand off results back to the flow
+- **Flow definitions** (`flows/`, `docs/workflows/`) — removed. Determinism is
+  the protocol's, and business structure is not pre-templated. Cross-Skill
+  sequencing becomes precondition/dataflow-driven: a Skill declares its
+  preconditions, and routing runs it only when current state satisfies them.
+- **Capability definition files** (`capabilities/`) — dissolved. Capability
+  survives as the Skill meta triad element and the routing vocabulary; the
+  triad definitions live in
+  [Capability layering](../../reference/031_capability_layering.md#xid-8D50A972BA9F).
+- **Group overlay** — removed. Ownership, handoff, and self-check are carried by
+  the protocol roles (executor / deterministic checker) and the generic control,
+  not an organizational chart.
 
-## Practical Interpretation
+## Routing And Execution Order
 
-- `Flow` answers: when does this happen, under whose boundary, and what is handed off next?
-- `Capability` answers: what professional ability is required here?
-- `Skill` answers: how is that work executed in practice?
-- `Knowledge` answers: what evidence or local rule supports the work?
+1. identify the goal or user intent
+2. route to the Skill by matching intent and current state against the meta
+   triad (`capability` / `tuning` / `responsibility`) and `applies_when`
+3. confirm the Skill's `preconditions` are satisfied by current state
+4. run the Skill inside the workflow protocol envelope
+5. resolve the Skill's `knowledge_slots` against the base+local catalog and load
+   only the needed fragments
+6. hand off; the next Skill is selected the same way from the new state
+
+## Determinism Boundary
+
+- **Deterministic**: the workflow protocol per-Skill gate (`verify`, `close`).
+- **Non-deterministic**: routing (selection), Skill-internal judgment, and
+  knowledge selection.
+
+Non-deterministic steps run between deterministic protocol boundaries; they are
+gated, not made deterministic themselves. Removing Flow, the Capability files,
+and the Group overlay does not touch this boundary — those layers were not where
+determinism lived.
 
 ## Skill Runtime Envelope
 
-A Skill is not only a procedure document. A loadable Skill must also carry the
+A Skill is not only a procedure document. A loadable Skill also carries the
 repository operating envelope defined in
-`docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`.
+[Skill operating contract](../contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61).
 
-New Skills do not need to start at that fully mature state. In this repository,
-Skills are managed as maturity-based assets: `draft` -> `trial` -> `stable` ->
-`governed`.
+New Skills do not need to start fully mature. Skills are managed as maturity
+assets: `draft` → `trial` → `stable` → `governed`. At `stable` and `governed`
+the envelope makes each Skill declare worklist policy, logging policy,
+judgment-log policy, unknown and risk handling, closure gate, and handoff
+policy. Execution/check separation is realized by the deterministic `verify`
+gate, not by a per-Skill role field. Lifecycle and promotion rules are in
+[Skill maturity governance](../contracts/059_skill_maturity_governance.md#xid-4E7B8D9C1A20).
 
-At `stable` and `governed`, that envelope makes each Skill declare:
+## Reusable Skill Boundary
 
-- worklist policy
-- execution role
-- check role
-- logging policy
-- judgment-log policy
-- unknown and risk handling
-- closure gate
-- handoff policy
+A reusable Skill owns the method, not the domain corpus.
 
-This keeps the repository closer to an operating foundation: Skills are loaded
-with execution/check separation, records, closure, and handoff expectations
-already attached.
+The Skill may define:
 
-Lifecycle and promotion rules are defined in
-`docs/core/contracts/059_skill_maturity_governance.md#xid-4E7B8D9C1A20`.
+- the judgment procedure
+- required inputs and outputs
+- the review or execution categories to produce
+- how to record evidence, unknowns, risks, handoff, and closure
+- which knowledge it needs, declared as `knowledge_slots`
+
+The Skill must not own:
+
+- language-specific rules, API facts, framework behavior, or coding criteria
+- domain-specific examples that would block reuse for another tuning
+- long checklists whose contents are evidence or local rules rather than
+  procedure
+
+The reuse that is real lives in shared `knowledge/` fragments selected by slots,
+not in one Skill parameterized at runtime: because `tuning` and `responsibility`
+are structural (they shape method and viewpoints), a differently-tuned Skill is
+a different Skill that reuses common knowledge, not the same Skill with a runtime
+flag. For a composite tuning, the resolved knowledge set is layered: common
+capability knowledge, per-tuning knowledge (such as C# and SQL), and
+cross-tuning boundary knowledge (such as transaction, mapping, migration, and
+concurrency rules).
 
 ## Design Rules
 
-- Put lifecycle progression and business-stage control in `Flow`.
-- Put reusable work-unit definitions in `Capability`.
-- Put execution steps and guardrails in `Skill`.
+- Put the execution or judgment method and guardrails in `Skill`.
 - Put evidence, domain facts, and local rules in `Knowledge`.
-- Do not copy large factual content into `Skill`; reference XID-backed knowledge instead.
-- Do not use `Capability` pages as evidence; they are control definitions.
-- Do not let `Flow` become a large procedure manual; keep it at orchestration level.
+- Declare knowledge needs as `knowledge_slots` resolved at runtime; do not copy
+  facts into `SKILL.md` or pin static knowledge/capability XID lists.
+- Identify a Skill by its `capability` / `tuning` / `responsibility` triad; do
+  not add a role field (executor is implicit; the checker is the deterministic
+  protocol).
+- Keep determinism in the protocol, not in Skill internals or in selection.
 
 ## Relationship Diagram
 
 ```mermaid
 flowchart LR
-    F["Flow<br/>progression / boundary / handoff"] --> C["Capability<br/>required reusable ability"]
-    C --> S["Skill<br/>executable procedure"]
-    S --> K["Knowledge<br/>evidence / facts / local rules"]
-    S --> O["Output<br/>artifacts / records / judgment results"]
-    O --> N["Next Flow Step<br/>or cross-group handoff"]
+    I["Intent + State"] -->|semantic routing| S["Skill<br/>method + triad + declared needs"]
+    P["Workflow protocol<br/>per-Skill deterministic gate"] -. wraps .-> S
+    S --> K["Knowledge<br/>slots resolved from base+local"]
+    S --> O["Output<br/>artifacts / records / judgment"]
+    O -->|new state| I
 ```
-
-## PMBOK Interpretation
-
-When this repository is organized with PMBOK thinking:
-
-- `Flow` corresponds to lifecycle control such as initiating, planning, executing, monitoring and controlling, and closing.
-- `Capability` corresponds to reusable professional abilities such as estimation, analysis, design, review, change assessment, and release preparation.
-- `Skill` corresponds to executable work units such as `planning_flow`, `design_flow`, `cab_review_flow`, or `management_table_control`.
-- `Knowledge` corresponds to the evidence basis used during execution such as project rules, quality criteria, operational constraints, and domain facts.
-
-## Example
-
-For implementation work:
-
-- workflow: implementation and review flow in `docs/`
-- capability: reusable implementation capability in `capabilities/manufacturing/`
-- knowledge: coding rules, framework rules, and local constraints in `knowledge/`
-- skill: `skills/implementation_flow/`
-
-This means the implementation skill should not own the whole business workflow, and it should not embed large coding-rule text directly. It should execute implementation procedure while loading required evidence from canonical knowledge fragments.
 
 ## Audit View
 
-The four-layer model becomes operationally traceable when paired with execution records:
+The model stays traceable when paired with execution records:
 
 - `sources/` holds original evidence
 - `knowledge/` holds normalized operational evidence
-- `skills/` perform the work
+- `skills/` perform the work under the protocol
 - `work/` records what was executed, why, and with which basis
 
-This separation supports replay, review, and audit without requiring one long prompt to hold the entire operating model.
+## Migration Status
+
+The four-layer artifacts (`flows/`, `capabilities/`, and the group documents)
+may still be physically present during the migration tracked by
+[083](../../designs/083_skill_centric_architecture_consolidation.md#xid-9DF3B80F9CBE).
+This page describes the target authoritative model.

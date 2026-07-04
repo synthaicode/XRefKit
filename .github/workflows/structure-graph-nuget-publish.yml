@@ -1,0 +1,80 @@
+name: Publish XRefKit.StructureGraph Tool (nuget.org)
+
+on:
+  push:
+    tags:
+      - 'structure-graph-v*.*.*'
+
+permissions:
+  contents: read
+
+jobs:
+  pack-and-publish-structure-graph:
+    # Avoid running for RC-like tags; those are handled by the GitHub Packages workflow
+    if: ${{ !contains(github.ref, '-rc') }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Compute tool version from tag
+        id: tool_ver
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#structure-graph-v}"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Tool Version=$VERSION"
+
+      - name: Verify package major matches emitted schema version
+        shell: bash
+        run: |
+          set -euo pipefail
+          SCHEMA=$(sed -n 's#.*xrefkit\.structure_graph/v\([0-9][0-9]*\).*#\1#p' tools/structure_graph/Program.cs | head -n 1)
+          MAJOR="${VERSION%%.*}"
+          if [ -z "$SCHEMA" ]; then
+            echo "[FAIL] Could not find schema literal xrefkit.structure_graph/v<N> in Program.cs" >&2
+            exit 2
+          fi
+          # Pre-1.0 packages (major 0) are allowed to emit schema v1; from 1.0
+          # on, the package major must track the schema major so consumers can
+          # pin compatibility by version alone.
+          if [ "$MAJOR" != "0" ] && [ "$MAJOR" != "$SCHEMA" ]; then
+            echo "[FAIL] Version/schema rule violated: package major=$MAJOR but emitted schema=v$SCHEMA" >&2
+            echo "Tag structure-graph-v${VERSION} must have major $SCHEMA, or the schema literal must be bumped first." >&2
+            exit 3
+          fi
+          echo "[OK] package major=$MAJOR is consistent with schema v$SCHEMA"
+
+      - name: Restore structure_graph project
+        run: dotnet restore tools/structure_graph/StructureGraph.csproj
+
+      - name: Pack tool
+        run: dotnet pack tools/structure_graph/StructureGraph.csproj -c Release -o ./artifacts/structure-graph -p:PackageVersion=${{ steps.tool_ver.outputs.version }}
+
+      - name: "Smoke: installed tool prints usage"
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet tool install --tool-path ./_tool --add-source ./artifacts/structure-graph XRefKit.StructureGraph --version "${VERSION}"
+          # No-arg invocation prints usage to stderr and exits 2 by design.
+          OUTPUT=$(./_tool/dotnet-xrefkit-graph 2>&1 || true)
+          echo "$OUTPUT" | head -n 3
+          echo "$OUTPUT" | grep -q "usage: StructureGraph"
+
+      - name: Publish tool to nuget.org
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          dotnet nuget push "./artifacts/structure-graph/XRefKit.StructureGraph.*.nupkg" \
+            --api-key "$NUGET_API_KEY" \
+            --source "https://api.nuget.org/v3/index.json" \
+            --skip-duplicate

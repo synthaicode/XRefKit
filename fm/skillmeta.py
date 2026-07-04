@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
+from fm.ownership import content_files, load_optional_ownership
+
 
 # Canonical repo-relative suffixes. Skill metas reference these with a
 # relative prefix whose depth varies by location (skills/<id>/, skills/os/<id>/,
@@ -37,6 +39,17 @@ REQUIRED_OS_CONTRACT = {
     "closure_gate": "required",
     "handoff_policy": "explicit",
 }
+# `os_contract: v1` is the compact declaration of the version-1 operating
+# contract above. Both the shorthand and the expanded inline block are valid
+# meta forms; run logs always materialize the expanded block.
+OS_CONTRACT_SHORTHANDS = {"v1": REQUIRED_OS_CONTRACT}
+
+
+def resolve_os_contract(value: object) -> dict[str, str]:
+    if isinstance(value, str):
+        shorthand = OS_CONTRACT_SHORTHANDS.get(value.strip().strip("`"))
+        return dict(shorthand) if shorthand else {}
+    return _parse_key_value_list(value)
 
 
 @dataclass
@@ -53,6 +66,7 @@ class SkillMetaResult:
     execution_mode: str | None
     ok: bool
     errors: list[str]
+    warnings: list[str]
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -68,6 +82,7 @@ class SkillMetaResult:
             "execution_mode": self.execution_mode,
             "ok": self.ok,
             "errors": self.errors,
+            "warnings": self.warnings,
         }
 
 
@@ -126,6 +141,72 @@ def _has_skill_role_responsibilities(value: object) -> bool:
 def _protocol_owned_role_responsibilities(value: object) -> list[str]:
     parsed = _parse_key_value_list(value)
     return sorted(PROTOCOL_OWNED_ROLE_RESPONSIBILITIES.intersection(parsed))
+
+
+def _has_responsibility(parsed: dict[str, object]) -> bool:
+    # Skill-centric consolidation (design 083 D1/D3): the triad's
+    # `responsibility` is the Skill's business use, replacing the legacy
+    # `role_responsibilities.executor` value (which was always a responsibility,
+    # not a role). Superset during migration: either form satisfies the check.
+    responsibility = parsed.get("responsibility")
+    if isinstance(responsibility, str) and responsibility.strip():
+        return True
+    return _has_skill_role_responsibilities(parsed.get("role_responsibilities"))
+
+
+_TRACKED_CACHE: dict[str, set[str] | None] = {}
+
+
+def _git_tracked_files(start: Path) -> tuple[Path, set[str]] | None:
+    """Return (repo_root, tracked paths) for the repo containing `start`.
+
+    Returns None when `start` is not inside a git work tree (temp dirs,
+    MCP-materialized checkouts without .git), in which case tracked-ness
+    cannot and should not be enforced.
+    """
+    start = start.resolve()
+    root = None
+    for parent in [start, *start.parents]:
+        if (parent / ".git").exists():
+            root = parent
+            break
+    if root is None:
+        return None
+    key = str(root)
+    if key not in _TRACKED_CACHE:
+        try:
+            out = subprocess.run(
+                ["git", "-C", str(root), "ls-files"],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout
+            _TRACKED_CACHE[key] = set(out.splitlines())
+        except Exception:
+            _TRACKED_CACHE[key] = None
+    tracked = _TRACKED_CACHE[key]
+    return None if tracked is None else (root, tracked)
+
+
+def _untracked_observation_refs(meta_path: Path, refs: list) -> list[str]:
+    """Observation refs whose target is not git-tracked (unresolvable in a clone)."""
+    located = _git_tracked_files(meta_path.parent)
+    if located is None:
+        return []
+    root, tracked = located
+    bad: list[str] = []
+    for ref in refs:
+        if not isinstance(ref, str) or not ref.strip():
+            continue
+        target = (meta_path.parent / ref.split("#")[0]).resolve()
+        try:
+            rel = target.relative_to(root).as_posix()
+        except ValueError:
+            bad.append(ref)
+            continue
+        if rel not in tracked:
+            bad.append(ref)
+    return bad
 
 
 def _has_required_ref(refs: list, required_suffix: str) -> bool:
@@ -198,7 +279,8 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
     observation_refs = parsed.get("observation_refs", [])
     governance_refs = parsed.get("governance_refs", [])
     skill_doc = parsed.get("skill_doc")
-    os_contract = _parse_key_value_list(parsed.get("os_contract"))
+    raw_os_contract = parsed.get("os_contract")
+    os_contract = resolve_os_contract(raw_os_contract)
 
     if not isinstance(capability_refs, list):
         capability_refs = []
@@ -210,6 +292,13 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
         governance_refs = []
 
     errors: list[str] = []
+    warnings: list[str] = []
+
+    if is_legacy_meta:
+        warnings.append(
+            "maturity is not declared; legacy default 'stable' applies. "
+            "Declare maturity explicitly (see 059_skill_maturity_governance)."
+        )
 
     if check_level not in VALID_CHECK_LEVELS:
         errors.append(f"invalid check level: {check_level}")
@@ -225,14 +314,28 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
     if require_observation_refs:
         if not observation_refs:
             errors.append("trial-or-higher skills must include at least one observation_refs entry")
+        for ref in observation_refs:
+            if isinstance(ref, str) and re.search(r"(^|/)work/", ref.replace("\\", "/")):
+                errors.append(
+                    f"observation ref points into work/ (local-only): {ref} "
+                    "(move the record to observations/ — tracked governance evidence)"
+                )
+        for ref in _untracked_observation_refs(meta_path, observation_refs):
+            errors.append(
+                f"observation ref is not git-tracked and cannot resolve in a clone: {ref} "
+                "(move the record to observations/ and commit it)"
+            )
         if capability_layering not in VALID_CAPABILITY_LAYERING_POLICIES:
             errors.append("missing or invalid capability_layering")
         if workflow_protocol not in VALID_WORKFLOW_PROTOCOL_POLICIES:
             errors.append("missing or invalid workflow_protocol")
         if not isinstance(tuning, str) or not tuning.strip():
             errors.append("missing tuning")
-        if not _has_skill_role_responsibilities(parsed.get("role_responsibilities")):
-            errors.append("missing role_responsibilities.executor")
+        if not _has_responsibility(parsed):
+            errors.append(
+                "missing responsibility (declare `responsibility:`; the legacy "
+                "role_responsibilities.executor value is still accepted)"
+            )
         protocol_roles = _protocol_owned_role_responsibilities(parsed.get("role_responsibilities"))
         if protocol_roles:
             errors.append(
@@ -252,28 +355,41 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
     if effective_check_level in {"stable", "governed"}:
         if execution_mode not in VALID_EXECUTION_MODES:
             errors.append("missing or invalid execution_mode")
-        if guard_policy not in VALID_GUARD_POLICIES:
-            errors.append("missing or invalid guard_policy")
+        # Skill-centric consolidation (design 083 / 082 D4): the context-direction
+        # guard is ambient (startup contract pack + per-response
+        # control_reminder), not composed per Skill. guard_policy is no longer a
+        # required per-Skill field; validate it only when a legacy meta still
+        # declares it.
+        if guard_policy is not None and guard_policy not in VALID_GUARD_POLICIES:
+            errors.append("invalid guard_policy")
         if capability_layering not in VALID_CAPABILITY_LAYERING_POLICIES:
             errors.append("missing or invalid capability_layering")
         if workflow_protocol not in VALID_WORKFLOW_PROTOCOL_POLICIES:
             errors.append("missing or invalid workflow_protocol")
         if not isinstance(tuning, str) or not tuning.strip():
             errors.append("missing tuning")
-        if not _has_skill_role_responsibilities(parsed.get("role_responsibilities")):
-            errors.append("missing role_responsibilities.executor")
-        if guard_policy == "required":
-            if not _has_required_ref(capability_refs, GUARD_CAPABILITY_REF):
-                errors.append("required guard capability ref is missing")
-            if not _has_required_ref(knowledge_refs, GUARD_KNOWLEDGE_REF):
-                errors.append("required guard knowledge ref is missing")
-        elif guard_policy == "closed_world" and "closed-world" not in constraints:
+        if not _has_responsibility(parsed):
+            errors.append(
+                "missing responsibility (declare `responsibility:`; the legacy "
+                "role_responsibilities.executor value is still accepted)"
+            )
+        # Guard capability/knowledge refs are no longer required per Skill; the
+        # guard is ambient. A legacy meta may still carry them (harmless). The
+        # closed_world escape hatch, when explicitly declared, still needs its
+        # constraint text.
+        if guard_policy == "closed_world" and "closed-world" not in constraints:
             errors.append("closed_world policy requires explicit closed-world constraint text")
-        if not _has_required_ref(capability_refs, SKILL_RUNTIME_CAPABILITY_REF):
-            errors.append("required skill runtime envelope capability ref is missing")
+        # capability_refs are no longer required per Skill: the runtime envelope
+        # is enforced by workflow_protocol / os_contract (the protocol), not a
+        # capability-file reference (design 083 D2 — capabilities/ dissolves).
         if not constraints.strip():
             errors.append("missing constraints")
         _check_review_mode(summary, tags, skill_id, execution_mode, errors)
+        if (
+            isinstance(raw_os_contract, str)
+            and raw_os_contract.strip().strip("`") not in OS_CONTRACT_SHORTHANDS
+        ):
+            errors.append(f"unknown os_contract shorthand: {raw_os_contract}")
         for key, expected_value in REQUIRED_OS_CONTRACT.items():
             actual_value = os_contract.get(key)
             if actual_value != expected_value:
@@ -296,6 +412,7 @@ def validate_skill_meta(meta_path: Path, *, check_level: str = "auto") -> SkillM
         execution_mode=str(execution_mode) if execution_mode else None,
         ok=not errors,
         errors=errors,
+        warnings=warnings,
     )
 
 
@@ -399,7 +516,8 @@ def _reference_issues(source: Path, files: list[Path]) -> list[dict[str, str]]:
 
 def _current_skill_candidates(root: Path, source_skill_id: str | None, source_xids: list[str]) -> list[dict[str, object]]:
     candidates: list[dict[str, object]] = []
-    for meta_path in sorted((root / "skills").rglob("meta.md")):
+    ownership = load_optional_ownership(root)
+    for meta_path in content_files(root, "skills", "meta.md", ownership=ownership):
         parsed = _parse_meta_lines(_read_text_or_empty(meta_path))
         skill_id = parsed.get("skill_id")
         skill_dir = meta_path.parent
@@ -571,33 +689,165 @@ class SkillListEntry:
         }
 
 
+@dataclass
+class SkillIndexEntry:
+    skill_id: str
+    summary: str
+    meta_path: str
+    skill_doc: str
+
+
 def _collect_boundary_entries(root: Path) -> list[SkillListEntry]:
     index_path = root / "skills" / "_index.md"
     index_text = index_path.read_text(encoding="utf-8") if index_path.exists() else ""
 
     entries: list[SkillListEntry] = []
-    for scope_name, boundary in (("skills", "public"), ("skills_private", "private")):
-        base = root / scope_name
-        if not base.exists():
-            continue
+    ownership = load_optional_ownership(root)
+    for meta_path in content_files(root, "skills", "meta.md", ownership=ownership):
+        parsed = _parse_meta_lines(meta_path.read_text(encoding="utf-8"))
+        skill_id = parsed.get("skill_id")
+        maturity, _ = _resolve_maturity(parsed)
+        rel_dir = meta_path.parent.relative_to(root).as_posix()
+        indexed = f"{rel_dir}/meta.md" in index_text or f"{rel_dir}/SKILL.md" in index_text
+        entries.append(
+            SkillListEntry(
+                skill_id=str(skill_id) if skill_id else None,
+                boundary="public",
+                path=rel_dir,
+                maturity=maturity,
+                indexed=indexed,
+            )
+        )
+    base = root / "skills_private"
+    if base.exists():
         for meta_path in sorted(base.rglob("meta.md")):
             parsed = _parse_meta_lines(meta_path.read_text(encoding="utf-8"))
             skill_id = parsed.get("skill_id")
             maturity, _ = _resolve_maturity(parsed)
             rel_dir = meta_path.parent.relative_to(root).as_posix()
-            indexed: bool | None = None
-            if boundary == "public":
-                indexed = f"{rel_dir}/meta.md" in index_text or f"{rel_dir}/SKILL.md" in index_text
             entries.append(
                 SkillListEntry(
                     skill_id=str(skill_id) if skill_id else None,
-                    boundary=boundary,
+                    boundary="private",
                     path=rel_dir,
                     maturity=maturity,
-                    indexed=indexed,
+                    indexed=None,
                 )
             )
     return entries
+
+
+def _skill_doc_path(root: Path, meta_path: Path, parsed: dict[str, object]) -> str:
+    value = parsed.get("skill_doc")
+    if isinstance(value, str) and value.strip():
+        candidate = (meta_path.parent / value.strip().strip("`")).resolve()
+    else:
+        candidate = meta_path.parent / "SKILL.md"
+    try:
+        return candidate.relative_to(root).as_posix()
+    except ValueError:
+        return candidate.as_posix()
+
+
+def _collect_public_skill_index_entries(root: Path) -> list[SkillIndexEntry]:
+    entries: list[SkillIndexEntry] = []
+    ownership = load_optional_ownership(root)
+    for meta_path in content_files(root, "skills", "meta.md", ownership=ownership):
+        parsed = _parse_meta_lines(meta_path.read_text(encoding="utf-8"))
+        skill_id = parsed.get("skill_id")
+        if not isinstance(skill_id, str) or not skill_id.strip():
+            continue
+        summary = parsed.get("summary")
+        rel_meta = meta_path.relative_to(root).as_posix()
+        entries.append(
+            SkillIndexEntry(
+                skill_id=skill_id.strip(),
+                summary=str(summary).strip() if isinstance(summary, str) and summary.strip() else "(summary missing)",
+                meta_path=rel_meta,
+                skill_doc=_skill_doc_path(root, meta_path, parsed),
+            )
+        )
+    return sorted(entries, key=lambda entry: (entry.meta_path, entry.skill_id))
+
+
+def build_generated_skill_index(root: Path) -> str:
+    index_path = root / "skills" / "_index.md"
+    if index_path.exists():
+        text = index_path.read_text(encoding="utf-8")
+        prefix = text.split("## Skills (compact)", 1)[0].rstrip()
+    else:
+        prefix = """<!-- xid: 8D91F66DDBB7 -->
+<a id="xid-8D91F66DDBB7"></a>
+
+# Skills Index
+
+This page is the routing entry for skills.
+It is intentionally compact for context efficiency.
+When asked "what skills are available?", answer from this file."""
+
+    lines = [
+        prefix,
+        "",
+        "## Skills (compact)",
+        "",
+        "Generated by `python -m fm skill index --write` from catalog-visible `meta.md` files.",
+        "",
+        "Current family paths:",
+        "",
+        "- `skills/os/` for OS utility Skills",
+        "- `skills/packs/<pack>/` for legacy Business Pack paths during transition",
+        "- `packs/<pack>/skills/` for shared pack Skills",
+        "- `packs/local/<system>/skills/` for local-instance Skills; these are catalog-visible locally but not distributable",
+        "- existing top-level `skills/<skill_id>/` paths remain valid for Skills that have not yet moved",
+        "",
+    ]
+    for entry in _collect_public_skill_index_entries(root):
+        lines.extend(
+            [
+                f"- `{entry.skill_id}`:",
+                f"  - summary: {entry.summary}",
+                f"  - meta: `{entry.meta_path}`",
+                f"  - skill_doc: `{entry.skill_doc}`",
+            ]
+        )
+
+    lines.extend(
+        [
+            "",
+            "## Notes",
+            "",
+            "- Keep this file lightweight; detailed fields belong in `meta.md`.",
+            "- Keep behavior/procedure in `SKILL.md`.",
+            "- Keep factual domain content in `knowledge/`.",
+            "- For the AI Agent OS reorganization view of `skills/`, see:",
+            "  - [OS utility and business skill classification design](../docs/designs/064_os_utility_and_business_skill_classification_design.md#xid-ECF29DC3E268)",
+            "  - [Business intake pack dependency design](../docs/packs/business-intake/065_business_intake_pack_dependency_design.md#xid-D334C1964342)",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def cmd_skill_index(args) -> int:
+    root = Path(args.root).resolve()
+    rendered = build_generated_skill_index(root)
+    out_path = root / "skills" / "_index.md"
+    if args.write:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        current = out_path.read_text(encoding="utf-8") if out_path.exists() else None
+        if current != rendered:
+            out_path.write_text(rendered, encoding="utf-8", newline="\n")
+        if args.json:
+            print(json.dumps({"path": out_path.relative_to(root).as_posix(), "changed": current != rendered}, indent=2))
+        else:
+            print(f"wrote: {out_path.relative_to(root).as_posix()}")
+        return 0
+    if args.json:
+        entries = [entry.__dict__ for entry in _collect_public_skill_index_entries(root)]
+        print(json.dumps({"path": "skills/_index.md", "entries": entries}, ensure_ascii=False, indent=2))
+    else:
+        print(rendered)
+    return 0
 
 
 def _git_tracked_private_files(root: Path) -> list[str] | None:
@@ -726,15 +976,12 @@ def cmd_skill_merge_plan(args) -> int:
 
 
 def _iter_meta_files(root: Path, scope: str) -> Iterable[Path]:
-    scopes = ["skills"]
+    ownership = load_optional_ownership(root)
+    yield from content_files(root, "skills", "meta.md", ownership=ownership)
     if scope == "all":
-        scopes.append("skills_private")
-
-    for scope_name in scopes:
-        base = root / scope_name
-        if not base.exists():
-            continue
-        yield from sorted(base.rglob("meta.md"))
+        base = root / "skills_private"
+        if base.exists():
+            yield from sorted(base.rglob("meta.md"))
 
 
 def cmd_skill(args) -> int:
@@ -766,5 +1013,7 @@ def cmd_skill(args) -> int:
                 print(f"  guard_policy: {result.guard_policy}")
             for error in result.errors:
                 print(f"  error: {error}")
+            for warning in result.warnings:
+                print(f"  warning: {warning}")
 
     return 1 if failed else 0

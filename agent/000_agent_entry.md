@@ -19,7 +19,7 @@ When the XRefKit MCP server is configured, load this file through
 - Treat `knowledge/` as shared domain knowledge; skills load only needed fragments on demand
 - Treat `capabilities/` as reusable work-unit definitions, not as evidence
 - Default new skill creation to private (`skills_private/`); publish to `skills/` only when the user explicitly requests public release
-- New skills MUST include the context-direction security guard by default unless they explicitly declare closed-world execution with no newly loaded external context
+- The context-direction security guard is delivered at init (startup contract pack / base control) and applies ambiently to every Skill that loads external input; new skills do not compose or declare it
 - New skills MUST include the Skill operating contract (`os_contract`) so worklist, execution role, check role, logging, unknown/risk handling, closure, and handoff are load-gated
 - Skill execution MUST start with `python -m fm skill run --meta <path-to-meta.md> --task "<task>"`; do not open or execute `SKILL.md` until this command succeeds and returns a run log
 - Skill-backed work MUST add concrete task items with `python -m fm skill workitem --log <run-log> --item <id> --status <status> --role <assigned-role>` before closure
@@ -55,9 +55,8 @@ When the XRefKit MCP server is configured, load this file through
 8. Use the returned assigned roles; mark runtime progress with `python -m fm skill phase --log <run-log> --phase <phase> --status <status> --role <assigned-role>`; advance the check phase with `python -m fm skill verify --log <run-log>` (deterministic), never from the producer context
 9. Before completion, run `python -m fm skill close --log <run-log>` and keep failed closure checks explicit
 10. If the task needs a document outside the selected route, use `docs/000_index.md#xid-56DD6EB68343` as a lookup index, not as a bulk read target
-11. If the task maps to the business-capability model, follow `agent/010_capability_routing.md#xid-1F93A7C24010`
-12. Find candidate XIDs: `python -m fm xref search "<query>"`
-13. Read only what you need: `python -m fm xref show <XID>`
+11. Find candidate XIDs: `python -m fm xref search "<query>"`
+12. Read only what you need: `python -m fm xref show <XID>`
 
 If the user asks for available skills, answer from `skills/_index.md` first.
 

@@ -23,7 +23,6 @@ Related:
 - [Business Pack model](../core/models/071_business_pack_model.md#xid-40511A8A06CD)
 - [AI Agent OS Reorganization Design](063_ai_agent_os_reorganization_design.md#xid-22CAE81A6D3E)
 - [Skills Index](../../skills/_index.md#xid-8D91F66DDBB7)
-- [Capability Routing for Agents](../../agent/010_capability_routing.md#xid-1F93A7C24010)
 
 ## Classification Rule
 
@@ -62,11 +61,8 @@ not the OS core themselves.
 | `doc_ship` | OS utility | promotes approved `work/` outputs into canonical assets |
 | `retro` | OS utility | reviews operational memory and proposes promotion |
 | `judgment_log` | OS utility | preserves non-trivial judgment as operating memory |
-| `management_table_control` | OS utility | controls out-of-scope and closure-state handling |
-| `context_direction_guard` | OS utility | protects higher-layer control from lower-layer context |
 | `skill_flow_authoring` | OS utility | authors repo-native Skill / Flow assets |
 | `legacy_flow_skill_migration` | OS utility | migrates older Flow / Skill assets into the current model |
-| `password_management` | business or domain pack | executes a concrete security hygiene domain task |
 | `business_learning_interview` | business or domain pack | learns a business task from partial human fragments |
 | `business_intake_scoping` | business or domain pack | scopes one business responsibility unit |
 | `investigation_flow` | business or domain pack | executes investigation-stage business work |
@@ -79,14 +75,12 @@ not the OS core themselves.
 | `qa_gate_review` | business or domain pack | performs QA gate review |
 | `release_planning_flow` | business or domain pack | prepares release and operational readiness outputs |
 | `cab_review_flow` | business or domain pack | performs CAB-style review work |
-| `or_team_operations` | business or domain pack | runs the OR Team operating loop |
 | `marketing_slide_png` | business or domain pack | produces marketing-group visual outputs |
 | `marketing-explainer-video` | business or domain pack | produces narrated explainer outputs |
 | `xlsx_spec_traceability` | business or domain pack | performs spreadsheet-driven specification conversion work |
 | `pptx_spec_traceability` | business or domain pack | performs deck-driven specification conversion work |
 | `csharp_review` | business or domain pack | performs language-specific review work |
 | `dotnet_change_analysis` | business or domain pack | performs .NET change analysis |
-| `external_definition_change_analysis` | business or domain pack | performs external-definition-driven change analysis |
 
 ## Operating Meaning
 

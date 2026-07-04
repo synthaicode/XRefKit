@@ -9,7 +9,6 @@ Execute `CAP-QA-007` and review C# code and evidence for security risks.
 
 ## Required Capability Definitions (XID)
 
-- [CAP-QA-007 Security Review](../../capabilities/quality/150_cap_qa_007_security_review.md#xid-5A1C2F0E5507)
 
 ## Required Knowledge (XID)
 

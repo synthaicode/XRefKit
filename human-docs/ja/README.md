@@ -97,8 +97,6 @@ python -m fm ctx pack --seed 7C6C2B46A9D1 --depth 1 --out .xref\\pack.md
 ## リポジトリ構成
 
 - `docs/`: 人間向けの運用ドキュメントとポリシー
-- `flows/`: 機械可読なワークフロー定義
-- `capabilities/`: 再利用可能な能力定義
 - `knowledge/`: 共有ドメイン知識の断片
 - `sources/`: 人間検証用の原本
 - `skills/`: スキル定義とルーティング索引（`skills/_index.md`）

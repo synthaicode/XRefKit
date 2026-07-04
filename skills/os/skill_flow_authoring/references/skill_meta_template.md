@@ -15,22 +15,12 @@ Use this when creating a new Skill in XRefKit.
 - output: <expected outputs>
 - maturity: `draft|trial`
 - execution_mode: `local_default|subagent_preferred|subagent_required`
-- guard_policy: `required|closed_world`
 - capability_layering: `required`
 - workflow_protocol: `required`
-- tuning: <direct specialization of the capability for this Skill>
-- role_responsibilities:
-  - executor: <what the executor produces or changes>
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- capability: <reusable base ability>
+- tuning: <direct specialization of the capability for this Skill, e.g. C# or C# + SQL>
+- responsibility: <Skill-specific business use, e.g. implementation or quality check>
+- os_contract: v1
 - constraints: <operational constraints and escalation boundary>
 - constraints: <include what must not stay implicit for later AI reuse>
 - lifecycle:
@@ -41,11 +31,9 @@ Use this when creating a new Skill in XRefKit.
   - closure: <closure rule>
 - tags: `<tag1>`, `<tag2>`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `<relative-path-to-capabilities>/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `<relative-path-to-capabilities>/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
-- knowledge_refs:
-  - `<relative-path-to-knowledge>/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
+- knowledge_slots:
+  - name=<slot>; query=<intent phrase>; domain=<domain>; min=1; required
+  - name=<slot>; bind=<xid-of-always-needed-domain-knowledge>
 - observation_refs:
   - `<relative-path-to-work>/sessions/<session>.md`
 ```
@@ -58,11 +46,10 @@ Notes:
   release.
 - Replace the relative-path placeholders to match the actual family path such
   as `skills/os/<skill_id>/` or `skills/packs/<pack>/<skill_id>/`.
-- Common runtime roles are not Skill-specific role responsibilities:
-  `checker` is assigned by the workflow protocol and advanced
-  deterministically with `fm skill verify`; `quality_reviewer` and
-  `handoff_owner` use the common protocol responsibility and must not be
-  defined under `role_responsibilities`.
+- `responsibility` is the Skill's business use (implementation, quality check,
+  design, ...). There is no role field: every Skill is the executor, and the
+  checker is the workflow protocol, advanced deterministically with
+  `fm skill verify`.
 - If later AI runs would need to remember something critical, encode it as
-  `input`, `output`, `constraints`, `knowledge_refs`, `observation_refs`, or
+  `input`, `output`, `constraints`, `knowledge_slots`, `observation_refs`, or
   handoff/closure wording instead of leaving it unstated.

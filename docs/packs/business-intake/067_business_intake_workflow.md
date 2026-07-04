@@ -21,7 +21,7 @@ unit without requiring the human to provide the full business map in advance.
 | Main handoff artifacts | interview-cycle summary, current business hypothesis, scoped business unit, unresolved intake items, next confirmation point |
 | Escalation path | unresolved business interpretation stays explicit; boundary or ownership ambiguity is preserved for later human confirmation |
 
-## Flow Diagram
+## Workflow Diagram
 
 ```mermaid
 flowchart TD
@@ -35,17 +35,14 @@ flowchart TD
     F --> H[Preserve unresolved items]
 ```
 
-## Business Activities and Supporting Capabilities
+## Business Activities and Skills
 
 - Business learning from fragments:
-  - currently executed directly by [business_learning_interview](../../../skills/packs/business-intake/business_learning_interview/SKILL.md#xid-4D8E1A7C5B92)
-  - no dedicated business-intake capability page has been extracted yet
+  - executed by [business_learning_interview](../../../skills/packs/business-intake/business_learning_interview/SKILL.md#xid-4D8E1A7C5B92)
 - Scope-ready responsibility shaping:
-  - currently executed directly by [business_intake_scoping](../../../skills/packs/business-intake/business_intake_scoping/SKILL.md#xid-6F2A9C41E8B3)
-  - no dedicated business-intake capability page has been extracted yet
-- Shared OS-core runtime control:
-  - supported by [CAP-MGT-005 Skill Runtime Envelope](../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5)
-  - supported by [CAP-MGT-004 Context Direction Guard](../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11)
+  - executed by [business_intake_scoping](../../../skills/packs/business-intake/business_intake_scoping/SKILL.md#xid-6F2A9C41E8B3)
+- Shared OS-core runtime control provides the runtime envelope, guard, and
+  closure that both Skills depend on.
 
 ## Sequence
 
@@ -91,4 +88,7 @@ flowchart TD
 
 - [business_learning_interview](../../../skills/packs/business-intake/business_learning_interview/SKILL.md#xid-4D8E1A7C5B92)
 - [business_intake_scoping](../../../skills/packs/business-intake/business_intake_scoping/SKILL.md#xid-6F2A9C41E8B3)
-- [context_direction_guard](../../../skills/os/context_direction_guard/SKILL.md#xid-4D8C7F1A9E22)
+
+The context direction guard is base control applied inside every Skill run
+via `CAP-MGT-004` and the guard knowledge rules above; it is not a separate
+routable Skill.

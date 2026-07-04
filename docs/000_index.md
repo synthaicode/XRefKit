@@ -30,6 +30,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Working area policy (for in-progress notes)](policies/014_working_area_policy.md#xid-111D282CA0EA)
 - [Shared memory operations (AI-authored logs)](core/contracts/015_shared_memory_operations.md#xid-4A423E72D2ED)
 - [Uncertainty protocol ("I don't know" policy)](core/contracts/016_uncertainty_protocol.md#xid-8A666C1FD121)
+- [Startup contract pack (canonical compressed startup contract for MCP)](core/contracts/079_startup_contract_pack.md#xid-D4E8A1C63B57)
 - [Work record types](reference/019_work_record_types.md#xid-4F8C21B7D4A2)
 - [Document update policy](policies/074_document_update_policy.md#xid-B1D42A6F90C3)
 
@@ -46,36 +47,16 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 
 ## Cross-Cutting Schemas And Boundaries
 
-- [Workflow page schema](workflows/018_workflow_page_schema.md#xid-6D2E4A9C0B71)
-- [Group, quality, and feedback boundaries](reference/021_group_quality_and_feedback_boundaries.md#xid-8E5D31A4C672)
 - [Operating models, usage guides, and design pages](reference/022_operating_models_guides_and_designs.md#xid-9C4E2A71D583)
 - [Page naming conventions](reference/023_page_naming_conventions.md#xid-7B2D4E6A1C90)
 
 ## Workflow And Organization Model
 
 - [Capability layering](reference/031_capability_layering.md#xid-8D50A972BA9F)
-- [Application workflow](workflows/045_application_workflow.md#xid-8B31F02A4014)
 - [Business intake workflow](packs/business-intake/067_business_intake_workflow.md#xid-7F2C8DA14E66)
-- [Investigation workflow](workflows/032_investigation_workflow.md#xid-8B31F02A4001)
-- [Manufacturing workflow](workflows/033_manufacturing_workflow.md#xid-8B31F02A4002)
-- [Closure workflow](workflows/034_closure_workflow.md#xid-8B31F02A4003)
-- [Estimation workflow](workflows/035_estimation_workflow.md#xid-8B31F02A4004)
-- [Requirements workflow](workflows/036_requirements_workflow.md#xid-8B31F02A4005)
-- [Planning workflow](workflows/037_planning_workflow.md#xid-8B31F02A4006)
-- [Design workflow](workflows/046_design_workflow.md#xid-8B31F02A4015)
-- [Test workflow](workflows/047_test_workflow.md#xid-8B31F02A4016)
-- [Release planning workflow](workflows/038_release_planning_workflow.md#xid-8B31F02A4007)
-- [CAB workflow](workflows/039_cab_workflow.md#xid-8B31F02A4008)
-- [Group definitions](reference/040_group_definitions.md#xid-8B31F02A4009)
-- [Flow-to-group matrix](reference/041_flow_to_group_matrix.md#xid-8B31F02A4010)
-- [Flow quality assurance mechanism](quality/042_flow_quality_assurance_mechanism.md#xid-8B31F02A4011)
-- [System quality feedback loop](quality/043_system_quality_feedback_loop.md#xid-8B31F02A4012)
-- [System quality feedback register](quality/044_system_quality_feedback_register.md#xid-8B31F02A4013)
 
 ## Operating Models, Guides, And Designs
 
-- [OR Team operating model](operating-models/048_or_team_operating_model.md#xid-1D7A8E2C5F10)
-- [OR Team usage guide](guides/049_or_team_usage_guide.md#xid-4E2F91A6B8C1)
 - [Codex MCP job inbox design](designs/050_codex_mcp_job_inbox_design.md#xid-77BCEAA247E3)
 - [AI agent OS reorganization design](designs/063_ai_agent_os_reorganization_design.md#xid-22CAE81A6D3E)
 - [OS utility and business skill classification design](designs/064_os_utility_and_business_skill_classification_design.md#xid-ECF29DC3E268)
@@ -89,12 +70,14 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Early XRefKit migration design](designs/072_early_xrefkit_migration_design.md#xid-19BC00401A1A)
 - [Deterministic flow control kernel design](designs/073_deterministic_flow_control_kernel_design.md#xid-4C7E9A2B1D63)
 - [Deterministic legacy Skill merge design](designs/076_deterministic_legacy_skill_merge_design.md#xid-8D5C74573895)
-- [AI Organization Explainer Video Team operating model](operating-models/057_ai_organization_explainer_video_team_operating_model.md#xid-2E8F4A1C9B73)
-- [AI Organization Explainer Video Team usage guide](guides/051_parapara_video_creation_team_usage_guide.md#xid-5A7C31D9E842)
+- [Structure graph build guide (binary setup after a source-level copy)](guides/078_structure_graph_build_guide.md#xid-8B3E5D0A94C7)
+- [Repository layout zones design (ownership-explicit, pack-centric)](designs/080_repository_layout_zones_design.md#xid-5C1F8A2D7E43)
+- [Repository layout MCP catalog design](designs/081_repository_layout_mcp_catalog_design.md#xid-C8B7A1E940D2)
+- [Client authoring and unified supply design](designs/082_client_authoring_and_unified_supply_design.md)
+- [Skill-centric architecture consolidation](designs/083_skill_centric_architecture_consolidation.md)
+- [Skill-centric MCP catalog design](designs/084_skill_centric_mcp_catalog_design.md)
 
 ## Common links
 
 - Agent entry: [Agent Entry](../agent/000_agent_entry.md#xid-0B5C58B5E5B2)
-- Agent routing: [Capability Routing for Agents](../agent/010_capability_routing.md#xid-1F93A7C24010)
 - Domain knowledge entry: [Knowledge Index](../knowledge/000_index.md#xid-23059118FBB9)
-- Capability entry: [Capabilities Index](../capabilities/000_index.md#xid-C14253A74C4F)

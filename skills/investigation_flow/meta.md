@@ -8,23 +8,13 @@
 - use_when: user needs impact investigation before estimation or design
 - input: request, optional service candidates, optional service catalog path, optional repository or document paths
 - output: in-scope service list, out-of-scope service list with reasons, change viewpoints, test viewpoints, change target list, uncertainty list
+- maturity: `draft`
 - execution_mode: `local_default`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: execute the investigation workflow from service catalog analysis through change-target summary using reusable investigation capabilities
-- role_responsibilities:
-  - executor: user needs impact investigation before estimation or design
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- responsibility: user needs impact investigation before estimation or design
+- os_contract: v1
 - constraints: do not decide design or implementation policy; record unknowns explicitly; preserve requested difference and impacted-target discovery explicitly
 - lifecycle:
   - startup: confirm request, service catalog, analysis targets, and coverage checklist exist
@@ -34,14 +24,7 @@
   - closure: finalize states and hand off unresolved or out-of-scope items with impacted-target notes
 - tags: `investigation`, `scope`, `planning`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
-  - `../../capabilities/investigation/100_cap_inv_001_service_catalog_analysis.md#xid-867B78FF702F`
-  - `../../capabilities/investigation/110_cap_inv_002_source_dependency_analysis.md#xid-E994FCDA8CD1`
-  - `../../capabilities/investigation/120_cap_inv_003_change_target_summary.md#xid-6AB17163C9BF`
-- knowledge_refs:
-  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
-  - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`
-  - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`
-  - `../../knowledge/investigation/100_investigation_coverage_checklist.md#xid-91E2A7C56101`
+- knowledge_slots:
+  - name=xddp_basics; bind=7A2F4C8D1701
+  - name=xddp_supporting_methods; bind=7A2F4C8D1711
+  - name=investigation_coverage_checklist; bind=91E2A7C56101

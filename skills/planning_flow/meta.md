@@ -8,23 +8,13 @@
 - use_when: user needs planning after requirements are approved
 - input: approved requirements, change target list, current source structure findings, domain knowledge references
 - output: work plan, source modification policy, data change policy, data correction tool policy, test policy, test tool policy, release policy, planning basis source list
+- maturity: `draft`
 - execution_mode: `local_default`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: execute planning business activity through reusable work-and-policy planning capability grounded in domain knowledge and current-source findings
-- role_responsibilities:
-  - executor: user needs planning after requirements are approved
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- responsibility: user needs planning after requirements are approved
+- os_contract: v1
 - constraints: draft only; do not finalize priority or resource allocation; keep requirement-to-target difference tracing explicit for downstream design and review
 - lifecycle:
   - startup: confirm approved requirements, current source findings, and domain knowledge references exist
@@ -34,15 +24,10 @@
   - closure: finalize states and hand off planning outputs, planning basis source list, and change-design basis notes with unresolved items
 - tags: `planning`, `execution`, `policy`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
-  - `../../capabilities/planning/100_cap_pln_001_task_decomposition_plan_draft.md#xid-F5193313AB79`
-- knowledge_refs:
-  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
-  - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`
-  - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`
-  - `../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001`
-  - `../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002`
-  - `../../knowledge/csharp/110_custom_framework_analysis_criteria.md#xid-30E6A4F6F3AB`
-  - `../../knowledge/operations/100_ipa_release_activity_catalog.md#xid-7B3E5D1A6101`
+- knowledge_slots:
+  - name=xddp_basics; bind=7A2F4C8D1701
+  - name=xddp_supporting_methods; bind=7A2F4C8D1711
+  - name=common_source_analysis_criteria; bind=5F21C8A41001
+  - name=custom_framework_common_criteria; bind=5F21C8A41002
+  - name=custom_framework_analysis_criteria; bind=30E6A4F6F3AB
+  - name=ipa_release_activity_catalog; bind=7B3E5D1A6101

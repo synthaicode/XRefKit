@@ -36,23 +36,37 @@ Every load-ready Skill must also declare `capability_layering: required` and
 usage-time setting that makes the runtime envelope carry the selected Skill's
 capability-layer declaration. `workflow_protocol` binds the Skill run to the
 repository runtime protocol for work items, artifacts, role separation,
-deterministic checking, closure, and handoff. Because current Skills are not
-fully generalized Capability templates, `meta.md` also declares direct
-`tuning` and Skill-specific `role_responsibilities.executor` for the Skill's
-concrete use. The `capability_refs` list remains a list of control-definition
-references, not the tuning or responsibility definition and not evidence.
+deterministic checking, closure, and handoff. The Skill's identity is its
+`capability` / `tuning` / `responsibility` triplet, declared directly in
+`meta.md`: `capability` names the base reusable ability, `tuning` names its
+specialization, and `responsibility` names the business use the Skill is
+accountable for. These are the Skill's meta identity and routing vocabulary,
+not runtime-assigned values and not evidence.
 
-`role_responsibilities` is Skill-specific and must contain `executor`. Common
-runtime roles are owned by the workflow protocol: `checker` performs the
-deterministic run-record check through `fm skill verify`; `quality_reviewer`
-owns output-content acceptance when the quality gate is required; and
-`handoff_owner` advances explicit handoff. `trial`, `stable`, and `governed`
-Skill metadata must not define `checker`, `quality_reviewer`, or
-`handoff_owner` under `role_responsibilities`; Skill-specific acceptance or
+The Skill declares its business use through the `responsibility` field. Common
+runtime roles are owned by the workflow protocol, not by the Skill: `executor`
+advances execution; `checker` performs the deterministic run-record check
+through `fm skill verify`; `quality_reviewer` owns output-content acceptance
+when the quality gate is required; and `handoff_owner` advances explicit
+handoff. `trial`, `stable`, and `governed` Skill metadata must not define these
+protocol-owned roles under `role_responsibilities`; Skill-specific acceptance or
 handoff deltas belong in `lifecycle`, `constraints`, `closure`, or check
-artifacts.
+artifacts. (The legacy `role_responsibilities.executor` value is still accepted
+as the responsibility, but new Skills declare `responsibility` directly.)
 
 ## Required Meta Block
+
+The canonical compact declaration is the version shorthand:
+
+```md
+- os_contract: v1
+```
+
+`v1` resolves to the expanded version-1 block below. The expanded inline
+form remains valid and means exactly the same contract; an unknown
+shorthand value is a validation error. `fm skill run` always materializes
+the expanded block into the run log, so runtime records stay explicit
+regardless of which meta form is used.
 
 ```md
 - os_contract:
@@ -137,8 +151,8 @@ the referenced `SKILL.md` file exists, then writes a session log containing:
 - assigned runtime roles for executor, checker, quality reviewer, and handoff owner
 - the task
 - the declared OS contract
-- the declared capability layering setting, workflow protocol setting, direct
-  tuning, Skill-specific role responsibilities, and capability references
+- the declared capability layering setting, workflow protocol setting, and the
+  capability / tuning / responsibility identity
 - a required worklist
 - a concrete work-item section for task-specific items
 - a runtime artifact section for outputs, evidence, checks, judgments, sources, and handoff links
@@ -175,7 +189,7 @@ shows `Closure Gate` as `done` or `escalated` and `Handoff` as `done` or
 
 The `checker` role is assigned at runtime, but its responsibility is protocol
 owned: deterministic workflow-progression verification by `fm skill verify`.
-Do not repeat this responsibility in each Skill's `role_responsibilities`.
+Do not repeat this responsibility in each Skill's meta.
 
 The assigned roles are returned in JSON and written to the `Runtime Role
 Assignment` section. The execution, check, and quality roles must each differ
@@ -388,8 +402,7 @@ verification and is advanced deterministically by `fm skill verify`, not by a
 model, whatever the executor tier; domain-level quality review belongs to
 review-oriented Skills, not to the check phase. `model_tier` is a cost-control
 knob for the executor side only — it never relaxes deterministic check
-verification, role separation, or any closure condition. Dispatch rules live
-in `agent/010_capability_routing.md#xid-1F93A7C24010`.
+verification, role separation, or any closure condition.
 
 This boundary is concrete about artifacts: progression closure verifies that
 output and evidence artifacts are *recorded, linked, and status-complete* in

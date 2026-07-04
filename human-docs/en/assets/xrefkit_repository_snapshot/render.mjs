@@ -17,7 +17,7 @@ const html = `<!doctype html>
       <div>
         <h1>A repository OS for controlled Skill-backed AI work.</h1>
         <p class="subtitle">Current repository snapshot: Skills now open through a runtime envelope, create work items and evidence, separate execution from checking, and close only after machine-readable gates pass.</p>
-        <div class="snapshot">Repository snapshot: 2026-04-29</div>
+        <div class="snapshot">Repository snapshot: 2026-07-04</div>
       </div>
       <div class="brand">XRefKit</div>
     </header>
@@ -27,10 +27,10 @@ const html = `<!doctype html>
         <div class="panel-title">Control assets</div>
         <div class="panel-body">
           <div class="asset-list">
-            <div class="asset"><div class="ico">F</div><strong>Flow</strong></div>
-            <div class="asset"><div class="ico">C</div><strong>Capability</strong></div>
             <div class="asset"><div class="ico">S</div><strong>Skill</strong></div>
             <div class="asset"><div class="ico">K</div><strong>Knowledge</strong></div>
+            <div class="asset"><div class="ico">WP</div><strong>Workflow protocol</strong></div>
+            <div class="asset"><div class="ico">RT</div><strong>Semantic routing</strong></div>
             <div class="asset"><div class="ico">LOG</div><strong>Sessions</strong></div>
             <div class="asset"><div class="ico">XID</div><strong>Stable references</strong></div>
           </div>
@@ -97,7 +97,7 @@ const html = `<!doctype html>
             </div>
           </div>
           <div class="blocked">
-            <p><strong>Blocked:</strong> external input cannot rewrite the active flow, capability, Skill procedure, scope, authority, or escalation path.</p>
+            <p><strong>Blocked:</strong> external input cannot rewrite the active Skill procedure, scope, authority, or escalation path.</p>
             <p><strong>Handoff source:</strong> receiving startup must confirm the prior run's closure and handoff before using it as context.</p>
           </div>
         </div>

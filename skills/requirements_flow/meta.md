@@ -8,23 +8,13 @@
 - use_when: user needs requirement drafting after investigation and estimation
 - input: confirmed assumptions, change target list, test viewpoints, request, optional performance constraints
 - output: requirement draft, performance requirement definition, load-test draft plan, unresolved list
+- maturity: `draft`
 - execution_mode: `local_default`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: execute requirements business activities through reusable requirement and performance-constraint structuring capabilities
-- role_responsibilities:
-  - executor: user needs requirement drafting after investigation and estimation
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- responsibility: user needs requirement drafting after investigation and estimation
+- os_contract: v1
 - constraints: draft only; do not approve final requirements; preserve change reason, change requirement, and change specification as explicit difference artifacts
 - lifecycle:
   - startup: confirm confirmed assumptions and requirement inputs exist
@@ -34,12 +24,6 @@
   - closure: finalize states and hand off unresolved requirement items with traceable difference statements
 - tags: `requirements`, `planning`, `analysis`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
-  - `../../capabilities/requirements/100_cap_req_001_requirement_draft_creation.md#xid-BC408337F2A2`
-  - `../../capabilities/requirements/110_cap_req_002_performance_requirement_definition.md#xid-D67FAD650F8C`
-- knowledge_refs:
-  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
-  - `../../knowledge/organization/170_xddp_basics.md#xid-7A2F4C8D1701`
-  - `../../knowledge/organization/171_xddp_supporting_methods.md#xid-7A2F4C8D1711`
+- knowledge_slots:
+  - name=xddp_basics; bind=7A2F4C8D1701
+  - name=xddp_supporting_methods; bind=7A2F4C8D1711

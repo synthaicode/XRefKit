@@ -47,6 +47,16 @@ transitive impact). Inventory output is a candidate fact, not a verdict.
 | request, batch, and event entry points are identified |  |  |  |  |
 | main call chain is identified |  |  |  |  |
 
+## Structure Pivots
+
+Record local artifacts that decide runtime structure. For non-standard or
+custom-framework systems, this section is required. Do not list every binding
+token here; put non-compiler-enforced tokens in `Implicit Runtime Binding`.
+
+| Pivot | Kind | Behavior Controlled | Activated Code / Artifact | Source | State | Evidence | Silent Breakage Mode |
+|------|------|------|------|------|------|------|------|
+|  |  |  |  | documented / implicit |  |  |  |
+
 ## DI Registration And Lifetimes
 
 | Check Item | State | Evidence | Change Impact | Unknown / Follow-up |
@@ -63,6 +73,17 @@ transitive impact). Inventory output is a candidate fact, not a verdict.
 | the local ordering rule and its source (explicit or implicit) are extracted |  |  |  |  |
 | order-dependent behavior risks are checked |  |  |  |  |
 
+## Route / Usecase Trace Matrix
+
+Trace representative runtime paths across structural authority, code, output,
+state, and persistence boundaries. A route list without the cross-file binding
+path is incomplete. Use this for representative paths, not as a duplicate of
+the full command or endpoint inventory.
+
+| Trace | Entry Identity | Structural Authority | Binding Mechanism | Executable Owner | Result Selector | Output Boundary | Model/Input Binding | State Boundary | Persistence Boundary | Evidence | Unknown / Follow-up |
+|------|------|------|------|------|------|------|------|------|------|------|------|
+|  |  |  |  |  |  |  |  |  |  |  |  |
+
 ## Convention-Based Discovery
 
 | Check Item | State | Evidence | Change Impact | Unknown / Follow-up |
@@ -70,6 +91,18 @@ transitive impact). Inventory output is a candidate fact, not a verdict.
 | convention-based wiring points (scanning, naming, placement) are identified |  |  |  |  |
 | the matching convention and scan scope are extracted |  |  |  |  |
 | rename-and-move sensitivity is recorded |  |  |  |  |
+
+## Implicit Runtime Binding
+
+Record non-compiler-enforced bindings such as XML/config strings, reflection
+type names, controller return strings, view/ref names, request/form fields,
+serialization names, model keys, command names, redirect targets, and custom
+registry keys. Do not repeat the same item as a generic change checklist; promote
+only actionable silent-break rules into `Prohibited Changes`.
+
+| Binding | Producer | Consumer | Token | Mechanism | State | Evidence | Silent Breakage Mode | Safe Alternative |
+|------|------|------|------|------|------|------|------|------|
+|  |  |  |  |  |  |  |  |  |
 
 ## Configuration Boundary
 
@@ -162,17 +195,42 @@ transitive impact). Inventory output is a candidate fact, not a verdict.
 ## Prohibited Changes
 
 Derived from extracted local rules only — silent breakage with no compiler or
-analyzer diagnostic. Compiler-caught mistakes do not belong here.
+analyzer diagnostic. Compiler-caught mistakes do not belong here. This section
+replaces any separate change-impact checklist for structure-sensitive tokens.
 
 | Prohibited Change | Class | Basis (extracted rule) | Silent Breakage Mode | Evidence | Safe Alternative / Deviation Condition |
 |------|------|------|------|------|------|
 |  |  |  |  |  |  |
 
+## Domain Knowledge Candidate
+
+Include only if the analysis reveals reusable current structure knowledge that
+later Skills can select and use. Do not add redundant `applies_to`; Skill-side
+selection owns applicability. Do not require path when stable document identity
+can resolve the content. Use the table only; do not duplicate the same metadata
+as prose bullets.
+
+| Field | Value |
+|------|------|
+| framework_family |  |
+| routing_authority |  |
+| entry_binding |  |
+| controller_binding |  |
+| view_binding |  |
+| model_binding |  |
+| state_boundary |  |
+| persistence_boundary |  |
+| change_sensitive_tokens |  |
+| prohibited_change_rules |  |
+| unresolved_verification |  |
+
 ## Impacted Targets
 
 Found grep-first (full reference surface), then classified by impact pattern.
 Separate the two boundaries: every referencing file is in the review boundary; only
-the sites the change actually breaks are must-change.
+the sites the change actually breaks are must-change. Use this section for the
+specific change objective, not to restate the structure pivot or implicit binding
+inventories.
 
 ### Must-change boundary (sites the change breaks)
 

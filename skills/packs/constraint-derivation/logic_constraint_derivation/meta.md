@@ -11,22 +11,11 @@
 - maturity: `trial`
 - execution_mode: `local_default`
 - model_tier: `standard`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
 - tuning: derive requirement confirmation gates from branching, calculations, state transitions, and approval logic
-- role_responsibilities:
-  - executor: business-logic specs may leave boundary, exception, or transition behavior to implicit AI completion
-- os_contract:
-  - version: `1`
-  - worklist_policy: `required`
-  - execution_role: `required`
-  - check_role: `required`
-  - logging_policy: `session_required`
-  - judgment_log_policy: `required_when_non_trivial`
-  - unknown_risk_policy: `explicit`
-  - closure_gate: `required`
-  - handoff_policy: `explicit`
+- responsibility: business-logic specs may leave boundary, exception, or transition behavior to implicit AI completion
+- os_contract: v1
 - constraints: derive all structurally implied branches and boundaries; do not infer unspecified else-paths; keep state-transition and calculation edge cases explicit; write the derivation result to `work/constraint_derivation/` with a date-prefixed filename unless the user explicitly supplies another output path
 - lifecycle:
   - startup: confirm the input contains business logic structure and load the shared framework plus the logic catalog
@@ -36,12 +25,8 @@
   - closure: return the derivation table, grouped confirmation items, and any transition matrices requiring approval
 - tags: `design`, `logic`, `requirements-derivation`
 - skill_doc: `./SKILL.md`
-- capability_refs:
-  - `../../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5`
-  - `../../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
-- knowledge_refs:
-  - `../../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
-  - `../../../../knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md#xid-81A6C4E2B190`
-  - `../../../../knowledge/packs/constraint-derivation/140_logic_constraint_derivation_catalog.md#xid-4E5B8923C912`
+- knowledge_slots:
+  - name=constraint_derivation_framework; bind=81A6C4E2B190
+  - name=logic_constraint_derivation_catalog; bind=4E5B8923C912
 - observation_refs:
-  - ../../../../work/sessions/2026-06-21_skill_run_skill_flow_authoring.md
+  - ../../../../observations/2026-06-21_skill_run_skill_flow_authoring.md

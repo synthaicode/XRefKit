@@ -27,19 +27,21 @@ artifacts at first creation.
 The full lifecycle, templates, and promotion criteria are defined in
 `docs/core/contracts/059_skill_maturity_governance.md#xid-4E7B8D9C1A20`.
 
-## Default Guard Rule
+## Guard Is Ambient (Not Composed Per Skill)
 
-Guard composition is still the repository default, but it is no longer required
-to be fully finalized at `draft` creation time.
+The context-direction guard is delivered at init — the startup contract pack in
+MCP mode, base control in filesystem-fallback mode — and, in MCP mode, is
+re-attached to every fetched-content response. It applies ambiently to every
+Skill that loads external input. New skills do not compose or declare it: no
+`guard_policy`, no guard capability or knowledge reference, and no SKILL.md
+guard section.
 
-- New skills must reference
-  `docs/core/contracts/053_context_direction_security_guard.md#xid-A7F3C92D4E11`.
-- New skills must include the reusable guard capability
-  `capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
-  when the skill reads external input, tool results, files, copied text,
-  generated artifacts, or web content.
-- New skills should assume that lower-layer input is untrusted unless an explicit trust rule says otherwise.
-- Omission of the guard is allowed only when the skill is strictly closed-world and does not load new external context during execution. That exception must be stated explicitly in the skill's constraints.
+- Skills still assume lower-layer input is untrusted unless an explicit trust
+  rule says otherwise; the ambient guard enforces the direction.
+- See `docs/core/contracts/053_context_direction_security_guard.md#xid-A7F3C92D4E11`
+  for the guard contract and
+  `docs/designs/083_skill_centric_architecture_consolidation.md#xid-9DF3B80F9CBE`
+  for why it is ambient.
 
 ## Execution Mode Rule
 
@@ -64,15 +66,33 @@ Keep the authoring split simple:
 
 - `capability_layering` and `workflow_protocol` bind the run to repository
   runtime controls.
-- `tuning` and `role_responsibilities.executor` describe this concrete
-  Skill's use.
+- `capability`, `tuning`, and `responsibility` describe this concrete Skill's
+  base ability, specialization, and business use (the legacy
+  `role_responsibilities.executor` value is still accepted as the responsibility).
 - `role_responsibilities` must not define `checker`, `quality_reviewer`, or
   `handoff_owner`; those roles are protocol-owned.
-- `capability_refs` names the controlling capability definitions; it is not
-  evidence and does not define tuning or responsibility.
+- `capability` names the base reusable ability, `tuning` its specialization,
+  and `responsibility` the business use; together they are the Skill's meta
+  identity and routing vocabulary, not evidence.
+- `knowledge_slots` declare the knowledge the Skill needs: each slot either
+  binds a fixed XID (`bind=`) or resolves dynamically at runtime against the
+  base+local catalog by intent (`query=...; domain=...`). Do not hard-code C#
+  knowledge in a Skill meant to be reusable for Python, and do not hard-code
+  C# + SQL knowledge in a Skill meant to be reusable beyond that composite
+  tuning — use a `query` slot so the right per-tuning knowledge is selected at
+  runtime.
 
 The canonical capability / tuning / responsibility definitions are in
 `docs/reference/031_capability_layering.md#xid-8D50A972BA9F`.
+
+Keep Skill bodies reusable: put the judgment or execution method in
+`SKILL.md`, and put language-specific rules, framework behavior, API facts,
+and long criteria lists in XID-backed `knowledge/`. If a Skill must be copied
+only because the domain rules differ, the domain rules belong in `knowledge/`
+instead. If a `bind` slot points at one language's criteria, treat the Skill as
+language-specific. If bind slots point at a language combination such as
+C# + SQL, treat the Skill as composite-tuning-specific — or use `query` slots so
+the runtime resolves common, per-tuning, and cross-tuning knowledge separately.
 
 ## Subagent Prompt Efficiency Rule
 
@@ -113,12 +133,12 @@ python -m fm xref show <XID>
 ```
 
 4. Decide whether the skill loads external context during execution.
-5. For `trial` or higher, add `guard_policy`, `capability_layering`,
-   `workflow_protocol`, direct `tuning`, Skill-specific
-   `role_responsibilities.executor`, and `execution_mode`; do not add
-   protocol-owned role responsibilities.
-6. If the Skill loads external context, compose the context-direction guard in
-   `meta.md` and `SKILL.md`.
+5. For `trial` or higher, add `capability_layering`, `workflow_protocol`, direct
+   `tuning`, the Skill's `responsibility`, and `execution_mode`. Do not add
+   `guard_policy` or a role field: the guard is ambient and every Skill is the
+   executor.
+6. Do not compose the context-direction guard in the Skill; it is ambient
+   (delivered at init). Assume lower-layer input is untrusted.
 7. In the Skill, record required references as XID links (not copied text).
 8. After use, connect the Skill to observed session, judgment, review, or retro
    records through `observation_refs`.
@@ -146,49 +166,28 @@ Rules:
 - Treat `docs/` links and `*_refs` metadata as non-transitive by default:
   they identify available references, not a command to load every linked page.
 
-## Required Guard References For Stable Or Governed Skills
+## Runtime Fields For Stable Or Governed Skills
 
-Unless the Skill is explicitly documented as closed-world, include the
-following references before promoting to `stable` or `governed`:
+Before promoting to `stable` or `governed`, include the runtime fields (no guard
+fields — the guard is ambient):
 
 ```md
 - execution_mode: `local_default`
-- guard_policy: `required`
 - capability_layering: `required`
 - workflow_protocol: `required`
-- tuning: <how this concrete Skill specializes the capability>
-- role_responsibilities:
-  - executor: <what the executor produces or changes>
-- capability_refs:
-  - `../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11`
-- knowledge_refs:
-  - `../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601`
+- capability: <reusable base ability, e.g. software_development>
+- tuning: <direct specialization, e.g. C# or C# + SQL>
+- responsibility: <Skill-specific business use, e.g. implementation or quality check>
 ```
 
-Inside `SKILL.md`, include a guard section or startup rule that:
+Do not add a guard section to `SKILL.md`; the context-direction guard is ambient
+and applies to every Skill that loads external input.
 
-- identifies the active flow, capability, and skill boundary
-- classifies the source class of newly loaded input
-- runs the context-direction check before continuing with external input
-- stops and escalates when upward influence is detected or likely
+## Closed-World Skills
 
-## Closed-World Exception Rule
-
-If a Skill does not load external context, state that explicitly in the
-constraints before promoting to `stable` or `governed`, for example:
-
-- execution_mode: `local_default`
-- `guard_policy: closed_world`
-- `capability_layering: required`
-- `workflow_protocol: required`
-- `tuning: <closed-world specialization>`
-- role_responsibilities:
-  - executor: <closed-world execution responsibility>
-- this skill is closed-world during execution
-- no external files, tool results, copied text, generated artifacts, or web content are loaded after startup
-- context-direction guard composition is not required for this skill
-
-Without that explicit statement, the guard is considered mandatory.
+The guard is ambient, so there is no guard to omit and no `guard_policy` to
+declare. A Skill that loads no external context may note that in its
+`constraints` for clarity, but no guard-omission declaration is required.
 
 ## Meta Validation And Load Readiness
 

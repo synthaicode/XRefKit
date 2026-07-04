@@ -10,6 +10,26 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
+  <PropertyGroup Label="dotnet tool packaging">
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>dotnet-xrefkit-graph</ToolCommandName>
+    <PackageId>XRefKit.StructureGraph</PackageId>
+    <!-- CI overrides PackageVersion from the structure-graph-v* tag; this
+         default marks local builds as non-releasable. -->
+    <Version>0.0.0-dev</Version>
+    <Description>Deterministic C# structure-graph extractor (Roslyn). Emits a DocID-keyed relation graph plus attribute / DI / invocation / declaration inventories (schema xrefkit.structure_graph/v1) consumed by the XRefKit analysis tools.</Description>
+    <Authors>synthaicode</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/synthaicode/XRefKit</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/synthaicode/XRefKit</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>roslyn;csharp;structure-analysis;dotnet-tool;xrefkit</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Locator" Version="1.9.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" />

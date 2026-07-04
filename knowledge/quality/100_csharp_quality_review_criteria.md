@@ -29,6 +29,10 @@ Check the following items.
 | Attribute value correctness | attribute values are appropriate for the intended behavior |
 | Attribute usage correctness | attributes are applied in the correct location and usage pattern |
 | Dead code | no unused or abandoned logic is silently introduced |
+| State and determinism boundary | mutable state, side effects, and state transitions do not leak across async, retry, replay, job, or agent boundaries |
+| Uncertainty and escalation path | uncertain parsing, classification, prediction, threshold, or model-output results are routed to explicit unknown, rejection, escalation, or handoff paths |
+| Contract and schema resilience | external, serialized, message, and model-output contract changes fail safely or become explicit unknowns instead of silently corrupting downstream decisions |
+| Traceability and context propagation | trace ids, source context, causality, and structured execution metadata propagate across async, background, queue, callback, and agent boundaries |
 | Unknowns | evidence gaps are recorded explicitly instead of guessed |
 
 ## Performance

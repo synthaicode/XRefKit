@@ -57,4 +57,3 @@ Prefer updating page titles and index labels first.
 
 - [Docs Index (Entry)](../000_index.md#xid-56DD6EB68343)
 - [Operating models, usage guides, and design pages](022_operating_models_guides_and_designs.md#xid-9C4E2A71D583)
-- [Workflow page schema](../workflows/018_workflow_page_schema.md#xid-6D2E4A9C0B71)

@@ -18,14 +18,18 @@ Related:
 ## Definition
 
 A Business Pack is **not merely a collection of Skills**. It is a unit that
-bundles **Flow / Skill / Knowledge / Handoff** so that one "job" can be handed
-to the AI as a whole.
+bundles **Skills, Knowledge, and explicit handoff points** so that one "job"
+can be handed to the AI as a whole.
 
 In that bundle:
 
 - the work itself is carried by Skills,
 - and the judgment and knowledge that connect those pieces of work are carried
-  by Flow, Knowledge, and Handoff.
+  by Knowledge and explicit handoff.
+
+Progression across the work — the order and boundaries that a Flow layer used
+to define — is now carried by each Skill's generic workflow protocol and by
+semantic routing, not by a pack-owned flow definition.
 
 So a Business Pack contains both the work and the connecting judgment and
 knowledge required to perform a job.
@@ -34,20 +38,23 @@ knowledge required to perform a job.
 
 | Element | Role in the pack |
 |------|------|
-| Flow | how the job advances: order, boundary, handoff sequence |
 | Skill | a concrete unit of work the AI executes |
 | Knowledge | the judgment basis loaded as business rules and viewpoints |
 | Handoff | the point where one result is passed to the next Skill or to a human |
+
+Progression (order, boundary, handoff sequence) is not a pack-owned element:
+it comes from each Skill's workflow protocol and from semantic routing.
 
 ## Layer Correspondence
 
 - A **job** (business) maps to one Business Pack.
 - A piece of **work** maps to one Skill.
-- The **order, judgment, and knowledge** that connect the work map to Flow,
-  Knowledge, and Handoff.
+- The **judgment and knowledge** that connect the work map to Knowledge and
+  explicit Handoff; the **order** comes from the workflow protocol and semantic
+  routing.
 
-Skills are the working parts; Flow, Knowledge, and Handoff are what make a set
-of Skills cohere into a single job rather than scattered actions.
+Skills are the working parts; Knowledge and Handoff are what make a set of
+Skills cohere into a single job rather than scattered actions.
 
 ## Purpose
 
@@ -60,7 +67,7 @@ of Skills cohere into a single job rather than scattered actions.
 
 ## Boundary With The OS Core
 
-- The pack owns: job-specific Skills, judgment Knowledge, Flow, handoff points,
+- The pack owns: job-specific Skills, judgment Knowledge, handoff points,
   and pack-specific quality viewpoints.
 - The OS core owns: runtime control, guard, routing, closure, and audit.
 - The pack depends on the OS core but must not redefine it. See
@@ -71,8 +78,8 @@ of Skills cohere into a single job rather than scattered actions.
 The canonical, machine-checkable definition of a pack is its manifest at
 `skills/packs/<pack>/pack.md`. The manifest declares:
 
-- `owns_*`: the assets this pack owns exclusively (its work Skills, Knowledge,
-  Flow),
+- `owns_*`: the assets this pack owns exclusively (its work Skills and
+  Knowledge),
 - `uses_*`: shared references that may live anywhere, including the OS core,
 - `depends_on.os_contract_version`: the OS-core contract the pack depends on.
 

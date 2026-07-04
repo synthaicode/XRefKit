@@ -24,10 +24,8 @@ def _run_fm_stage() -> None:
     _run([sys.executable, "-m", "fm", "xref", "check"], cwd=REPO_ROOT)
     _run([sys.executable, "-m", "fm", "skill", "check", "--scope", "all"], cwd=REPO_ROOT)
     _run([sys.executable, "-m", "fm", "pack", "lint"], cwd=REPO_ROOT)
-    _run([sys.executable, "-m", "fm", "flow", "doctor"], cwd=REPO_ROOT)
     _run([sys.executable, "tools/audit_skill_runtime_logs.py", "--tracked-only"], cwd=REPO_ROOT)
     _run([sys.executable, "tools/check_project_quality_baseline.py"], cwd=REPO_ROOT)
-    _run([sys.executable, "tools/check_feedback_register.py"], cwd=REPO_ROOT)
 
 
 def _run_node_stage(project_dir: Path, *, install: bool) -> None:
@@ -44,7 +42,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run repository quality-gate stages")
     parser.add_argument(
         "stage",
-        choices=["fm", "slides-app", "flow-monitor-dashboard", "all"],
+        choices=["fm", "slides-app", "all"],
         help="Quality-gate stage to run",
     )
     parser.add_argument(
@@ -59,9 +57,6 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.stage in {"slides-app", "all"}:
         _run_node_stage(REPO_ROOT / "projects" / "slides-app", install=args.install_node_deps)
-
-    if args.stage in {"flow-monitor-dashboard", "all"}:
-        _run_node_stage(REPO_ROOT / "projects" / "flow-monitor-dashboard", install=args.install_node_deps)
 
     return 0
 

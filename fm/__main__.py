@@ -19,7 +19,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "--include",
             nargs="*",
             default=None,
-            help="Top-level folders to include (default: docs agent knowledge capabilities skills)",
+            help="Top-level folders to include (default: docs agent knowledge capabilities skills packs)",
         )
         p.add_argument(
             "--exclude",
@@ -214,7 +214,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_pack_lint.add_argument(
         "--manifest",
         default=None,
-        help="Relative path to a single pack.md to validate (default: all skills/packs/*/pack.md)",
+        help="Relative path to a single pack.md to validate (default: all skills/packs/*/pack.md and packs/*/pack.md)",
     )
     p_pack_lint.add_argument("--json", action="store_true", help="Emit JSON")
 
@@ -224,42 +224,6 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_pack_list.add_argument("--root", default=".", help="Project root (default: .)")
     p_pack_list.add_argument("--json", action="store_true", help="Emit JSON")
-
-    flow = subparsers.add_parser("flow", help="Validate deterministic-control flow definitions")
-    flow_sub = flow.add_subparsers(dest="flow_cmd", required=True)
-
-    p_flow_doctor = flow_sub.add_parser(
-        "doctor",
-        help="Statically validate flow definitions against the deterministic-control schema",
-    )
-    p_flow_doctor.add_argument("--root", default=".", help="Project root (default: .)")
-    p_flow_doctor.add_argument(
-        "--flow",
-        default=None,
-        help="Relative path to a single flow file (default: all flows/**/*.yaml)",
-    )
-    p_flow_doctor.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
-
-    p_flow_run = flow_sub.add_parser(
-        "run",
-        help="Drive a deterministic flow with scripted node labels and human answers",
-    )
-    p_flow_run.add_argument("--root", default=".", help="Project root (default: .)")
-    p_flow_run.add_argument("--flow", required=True, help="Relative path to the flow file to run")
-    p_flow_run.add_argument(
-        "--label",
-        action="append",
-        default=[],
-        help="Node outcome label, consumed per step entered (repeatable, ordered)",
-    )
-    p_flow_run.add_argument(
-        "--answer",
-        action="append",
-        default=[],
-        help="Human answer, consumed per gate/handback suspend (repeatable, ordered)",
-    )
-    p_flow_run.add_argument("--max-steps", type=int, default=100, help="Loop guard (default: 100)")
-    p_flow_run.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
 
     skill = subparsers.add_parser("skill", help="Validate skill metadata before loading")
     skill_sub = skill.add_subparsers(dest="skill_cmd", required=True)
@@ -287,6 +251,14 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_skill_list.add_argument("--root", default=".", help="Project root (default: .)")
     p_skill_list.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_skill_index = skill_sub.add_parser(
+        "index",
+        help="Generate skills/_index.md from catalog-visible skill metadata",
+    )
+    p_skill_index.add_argument("--root", default=".", help="Project root (default: .)")
+    p_skill_index.add_argument("--write", action="store_true", help="Write skills/_index.md instead of printing")
+    p_skill_index.add_argument("--json", action="store_true", help="Emit JSON")
 
     p_skill_merge_plan = skill_sub.add_parser(
         "merge-plan",
@@ -451,6 +423,10 @@ def main(argv: list[str] | None = None) -> int:
             from fm.skillmeta import cmd_skill_list
 
             return cmd_skill_list(args)
+        if args.skill_cmd == "index":
+            from fm.skillmeta import cmd_skill_index
+
+            return cmd_skill_index(args)
         if args.skill_cmd == "merge-plan":
             from fm.skillmeta import cmd_skill_merge_plan
 
@@ -501,16 +477,6 @@ def main(argv: list[str] | None = None) -> int:
         from fm.packmeta import cmd_pack_lint
 
         return cmd_pack_lint(args)
-
-    if args.command == "flow":
-        if args.flow_cmd == "run":
-            from fm.flowengine import cmd_flow_run
-
-            return cmd_flow_run(args)
-
-        from fm.flowdoctor import cmd_flow_doctor
-
-        return cmd_flow_doctor(args)
 
     if args.command == "gate":
         from fm.gate import cmd_gate

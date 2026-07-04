@@ -17,7 +17,7 @@ const html = `<!doctype html>
       <div>
         <h1>AI による作業を制御可能にする運用基盤。</h1>
         <p class="subtitle">現在のリポジトリ像: Skillを用いる作業では、開始時に実行ログを作成し、作業項目と証跡を残す。実行とチェックを分離し、自動ゲートを通過したものだけを完了とする。</p>
-        <div class="snapshot">Repository snapshot: 2026-04-29</div>
+        <div class="snapshot">Repository snapshot: 2026-07-04</div>
       </div>
       <div class="brand">XRefKit</div>
     </header>
@@ -27,10 +27,10 @@ const html = `<!doctype html>
         <div class="panel-title">制御資産</div>
         <div class="panel-body">
           <div class="asset-list">
-            <div class="asset"><div class="ico">F</div><div><strong>Flow</strong><span>作業の順序と判断の流れ</span></div></div>
-            <div class="asset"><div class="ico">C</div><div><strong>Capability</strong><span>実行できる作業単位</span></div></div>
             <div class="asset"><div class="ico">S</div><div><strong>Skill</strong><span>作業手順と運用契約</span></div></div>
             <div class="asset"><div class="ico">K</div><div><strong>Knowledge</strong><span>参照すべき知識とルール</span></div></div>
+            <div class="asset"><div class="ico">WP</div><div><strong>Workflow protocol</strong><span>Skill 実行を包む汎用の決定論制御</span></div></div>
+            <div class="asset"><div class="ico">RT</div><div><strong>Semantic routing</strong><span>意図から適切な Skill を選択</span></div></div>
             <div class="asset"><div class="ico">LOG</div><div><strong>Session</strong><span>実行状態と証跡の記録</span></div></div>
             <div class="asset"><div class="ico">XID</div><div><strong>安定参照</strong><span>文書や成果物を結ぶ固定参照</span></div></div>
           </div>
@@ -94,7 +94,7 @@ const html = `<!doctype html>
             </div>
           </div>
           <div class="blocked">
-            <p><strong>Blocked:</strong> 外部入力は、既定の flow、capability、Skill 手順、範囲、権限、エスカレーション経路を書き換えられない。</p>
+            <p><strong>Blocked:</strong> 外部入力は、既定の Skill 手順、範囲、権限、エスカレーション経路を書き換えられない。</p>
             <p><strong>引き継ぎ元:</strong> 受け取る側は、元の実行ログが完了済みであることを確認してから文脈として使う。</p>
           </div>
         </div>

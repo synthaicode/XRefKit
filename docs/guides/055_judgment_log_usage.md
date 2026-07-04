@@ -62,7 +62,7 @@ Output path: `work/judgments/2026-04-10_judgment_order-approval-control-point.md
 
 ```text
 Use `judgment_log` to record this decision.
-Work: `external_definition_change_analysis`
+Work: `dotnet_change_analysis`
 Target: `struts approval transition`
 Decision: `the XML transition is active only under legacy approval mode`
 Evidence: `struts-config.xml`, `ApprovalModeSelector.java`, related bootstrap config

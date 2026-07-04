@@ -4,6 +4,7 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from fm.ownership import load_optional_ownership
 from fm.skillmeta import (
     REQUIRED_OS_CONTRACT,
     VALID_MATURITY_LEVELS,
@@ -18,6 +19,7 @@ from fm.skillmeta import (
 # and the OS-core contract boundary machine-checkable.
 PACK_MANIFEST_NAME = "pack.md"
 PACKS_DIR = "skills/packs"
+TOP_LEVEL_PACKS_DIR = "packs"
 
 # Owned assets must not live inside an OS-core scope: that would mean a business
 # pack is redefining the operating layer rather than depending on it.
@@ -26,8 +28,10 @@ OS_CORE_SKILL_PREFIX = "skills/os/"
 # Flat owns_* / uses_* keys keep the manifest readable AND parseable by the same
 # bullet-list reader as meta.md (which flattens nested lists), so no bespoke
 # manifest parser is needed.
-OWNS_KEYS = ("owns_skills", "owns_knowledge", "owns_flows")
-USES_KEYS = ("uses_skills", "uses_knowledge", "uses_capabilities")
+# Skill-centric consolidation (083): flows/ and capabilities/ are removed, so
+# owns_flows / uses_capabilities are no longer manifest keys.
+OWNS_KEYS = ("owns_skills", "owns_knowledge")
+USES_KEYS = ("uses_skills", "uses_knowledge")
 REQUIRED_TEXT_FIELDS = ("pack_id", "summary", "entry")
 
 
@@ -113,7 +117,7 @@ def validate_pack_manifest(manifest_path: Path, *, root: Path) -> PackManifestRe
         )
 
     if not any(owns.values()):
-        errors.append("pack owns no assets (declare at least one owns_skills/owns_knowledge/owns_flows)")
+        errors.append("pack owns no assets (declare at least one owns_skills/owns_knowledge)")
 
     # Owned-asset existence + boundary checks.
     for skill_ref in owns["owns_skills"]:
@@ -124,13 +128,13 @@ def validate_pack_manifest(manifest_path: Path, *, root: Path) -> PackManifestRe
         if norm.startswith(OS_CORE_SKILL_PREFIX):
             errors.append(f"owned skill lives in OS core (boundary violation): {skill_ref}")
 
-    for asset_ref in owns["owns_knowledge"] + owns["owns_flows"]:
+    for asset_ref in owns["owns_knowledge"]:
         target = (root / _strip_fragment(asset_ref).replace("\\", "/")).resolve()
         if not target.exists():
             errors.append(f"owned asset path does not resolve: {asset_ref}")
 
     # Used references only need to resolve; they may live anywhere (incl. OS core).
-    for use_ref in uses["uses_skills"] + uses["uses_knowledge"] + uses["uses_capabilities"]:
+    for use_ref in uses["uses_skills"] + uses["uses_knowledge"]:
         target = (root / _strip_fragment(use_ref).replace("\\", "/")).resolve()
         if not target.exists():
             warnings.append(f"used reference does not resolve: {use_ref}")
@@ -198,10 +202,19 @@ def cmd_pack_list(args) -> int:
 
 
 def _discover_manifests(root: Path) -> list[Path]:
-    base = root / PACKS_DIR
-    if not base.exists():
-        return []
-    return sorted(base.glob(f"*/{PACK_MANIFEST_NAME}"))
+    manifests: list[Path] = []
+    legacy_base = root / PACKS_DIR
+    if legacy_base.exists():
+        manifests.extend(sorted(legacy_base.glob(f"*/{PACK_MANIFEST_NAME}")))
+    ownership = load_optional_ownership(root)
+    top_base = root / TOP_LEVEL_PACKS_DIR
+    if ownership is not None and top_base.exists():
+        manifests.extend(
+            path
+            for path in sorted(top_base.glob(f"*/{PACK_MANIFEST_NAME}"))
+            if ownership.catalog_enabled(path.relative_to(root).as_posix())
+        )
+    return sorted(set(manifests))
 
 
 def _physical_skill_dirs(root: Path, pack_dir: Path) -> list[str]:

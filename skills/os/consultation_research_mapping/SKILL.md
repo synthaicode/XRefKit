@@ -14,8 +14,6 @@ itself; it makes the evidence boundary and next routing explicit.
 
 ## Required Capability Definitions (XID)
 
-- [CAP-MGT-005 Skill Runtime Envelope](../../../capabilities/management/140_cap_mgt_005_skill_runtime_envelope.md#xid-4E6D8C2A19B5)
-- [CAP-MGT-004 Context Direction Guard](../../../capabilities/management/130_cap_mgt_004_context_direction_guard.md#xid-2F6A3D8C7B11)
 
 ## Required Knowledge (XID)
 
