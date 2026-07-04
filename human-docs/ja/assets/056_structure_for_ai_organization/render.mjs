@@ -30,13 +30,13 @@ const renderers = {
       </div>
       <div class="summary-band">
         <strong>ここでは、AI の構造を支える具体要素を見ていく</strong>
-        <span>Skill、ドメイン知識、Flow、Group の4つで整理する。</span>
+        <span>Skill、ドメイン知識、Workflow protocol、Semantic routing の4つで整理する。</span>
       </div>
     </div>`,
   "01_title": () => `
     <div class="canvas">
       <h1 class="title">AI にこの構造をどう持たせるか</h1>
-      <p class="subtitle">Skill、ドメイン知識、Flow、Group で具体化する</p>
+      <p class="subtitle">Skill、ドメイン知識、Workflow protocol、Semantic routing で具体化する</p>
       <div class="summary-band" style="margin-top:92px;">
         <strong>AI に必要なのは、単なる機能追加ではない</strong>
         <span>責務、判断、知識、牽制が働くように、構造を具体要素へ落とす必要がある。</span>
@@ -49,8 +49,8 @@ const renderers = {
       <div class="grid-4" style="margin-top:104px; gap:16px;">
         <div class="card soft-blue"><h3>Skill</h3><p>何をさせるかを定義した能力</p></div>
         <div class="card soft-blue"><h3>ドメイン知識</h3><p>判断に必要な前提とルール</p></div>
-        <div class="card soft-blue"><h3>Flow</h3><p>判断と実行の順序</p></div>
-        <div class="card soft-blue"><h3>Group</h3><p>責務分離と牽制の単位</p></div>
+        <div class="card soft-blue"><h3>Workflow protocol</h3><p>実行と確認の順序・完了ゲート</p></div>
+        <div class="card soft-blue"><h3>Semantic routing</h3><p>依頼から適切な Skill を選ぶ</p></div>
       </div>
       <div class="summary-band">
         <strong>4つは並列ではなく、構造を持たせるための分担になる</strong>
@@ -100,8 +100,8 @@ const renderers = {
     </div>`,
   "05_flow": () => `
     <div class="canvas">
-      <h1 class="title">Flow とは何か</h1>
-      <p class="subtitle">判断と実行を、どの順で進めるかを固定する</p>
+      <h1 class="title">Workflow protocol とは何か</h1>
+      <p class="subtitle">判断と実行を、どの順で進め、確認を分離し、完了ゲートを通すか（旧モデルの Flow に相当）</p>
       <div class="h-flow" style="margin-top:190px; justify-content:center;">
         <div class="step soft-blue">前提を読む</div>
         <div class="chev">›</div>
@@ -112,21 +112,21 @@ const renderers = {
         <div class="step soft-blue">確認する</div>
       </div>
       <div class="summary-band" style="margin-top:110px;">
-        <strong>Flow は、判断と実行の順序を再利用可能にする</strong>
+        <strong>Workflow protocol は、実行と確認の分離と完了ゲートを含めて順序を再利用可能にする</strong>
         <span>個人依存の進め方を、運用として持てる形にする。</span>
       </div>
     </div>`,
   "06_group": () => `
     <div class="canvas">
-      <h1 class="title">Group とは何か</h1>
-      <p class="subtitle">責務分離と牽制を成り立たせる単位として持つ</p>
+      <h1 class="title">牽制はどこが担うか</h1>
+      <p class="subtitle">責務分離と牽制は、専用の Group ではなく Workflow protocol と起動時ガードが担う（旧モデルの Group に相当）</p>
       <div class="grid-3" style="margin-top:104px;">
         <div class="card soft-blue"><h3>責務を分ける</h3><p>誰が何を担うかを明確にする</p></div>
         <div class="card soft-blue"><h3>判断を分ける</h3><p>見る観点を分離する</p></div>
         <div class="card soft-blue"><h3>牽制を効かせる</h3><p>別の責務から見直せるようにする</p></div>
       </div>
       <div class="summary-band">
-        <strong>Group があることで、責務分離と牽制を運用に乗せやすくなる</strong>
+        <strong>専用の Group がなくても、Workflow protocol の実行/確認分離と完了ゲート、起動時ガードで牽制を運用に乗せられる</strong>
         <span>ここで初めて、AI を組織として扱えるようになる。</span>
       </div>
     </div>`,
@@ -136,10 +136,10 @@ const renderers = {
       <p class="subtitle">責務、判断、知識、牽制の関係に対応している</p>
       <div style="margin-top:74px;">
         <div class="grid-4" style="gap:14px;">
-          <div class="card soft-blue"><h3>責務</h3><p>Group</p></div>
-          <div class="card soft-blue"><h3>判断</h3><p>Skill / Flow</p></div>
+          <div class="card soft-blue"><h3>責務</h3><p>Skill (responsibility)</p></div>
+          <div class="card soft-blue"><h3>判断</h3><p>Skill / Workflow protocol</p></div>
           <div class="card soft-blue"><h3>知識</h3><p>ドメイン知識</p></div>
-          <div class="card soft-blue"><h3>牽制</h3><p>Group / Flow</p></div>
+          <div class="card soft-blue"><h3>牽制</h3><p>Workflow protocol / ガード</p></div>
         </div>
         <div class="big-arrow">↓</div>
         <div style="display:flex; justify-content:center;">
@@ -155,7 +155,7 @@ const renderers = {
   "08_conclusion": () => `
     <div class="canvas">
       <h1 class="title">結論</h1>
-      <p class="subtitle">Skill、ドメイン知識、Flow、Group を組み合わせて、AI に構造を持たせる</p>
+      <p class="subtitle">Skill、ドメイン知識、Workflow protocol、Semantic routing を組み合わせて、AI に構造を持たせる</p>
       <div class="compare" style="margin-top:88px;">
         <div class="panel">
           <span class="badge" style="font-size:20px; background:#eef2f6; color:#6b7a8c;">ばらばらに持つ</span>
