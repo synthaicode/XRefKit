@@ -21,7 +21,7 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
 - estimate: `estimation_flow`
 - define-requirements: `requirements_flow`
 - plan: `planning_flow`, `release_planning_flow`, `business_intake_scoping`
-- design: `design_flow`, `db_current_state_analysis`, `db_design`, `test_flow`, `marketing_slide_png`,
+- design: `design_flow`, `db_current_state_analysis`, `db_design`, `test_flow`, `test_tool_catalog_preparation`, `marketing_slide_png`,
   `marketing-explainer-video`, `skill_flow_authoring`,
   `constraint_derivation_index`, `design_constraint_derivation`,
   `ui_constraint_derivation`, `logic_constraint_derivation`,

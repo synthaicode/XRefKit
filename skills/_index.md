@@ -138,7 +138,7 @@ Current family paths:
   - meta: `skills/investigation_flow/meta.md`
   - skill_doc: `skills/investigation_flow/SKILL.md`
 - `manufacturing_self_check`:
-  - summary: execute manufacturing self-check for code and DB manufacturing outputs through reusable design-alignment self-evaluation capability
+  - summary: execute manufacturing self-check business activity through reusable design-alignment self-evaluation capability
   - meta: `skills/manufacturing_self_check/meta.md`
   - skill_doc: `skills/manufacturing_self_check/SKILL.md`
 - `marketing-explainer-video`:
@@ -305,6 +305,10 @@ Current family paths:
   - summary: execute test-planning, test-item structuring, integration/regression test design, and manufacturing-side test-method review
   - meta: `skills/test_flow/meta.md`
   - skill_doc: `skills/test_flow/SKILL.md`
+- `test_tool_catalog_preparation`:
+  - summary: prepare a domain/environment test-tool catalog as reusable domain knowledge for test planning and test design
+  - meta: `skills/test_tool_catalog_preparation/meta.md`
+  - skill_doc: `skills/test_tool_catalog_preparation/SKILL.md`
 - `xlsx_spec_traceability`:
   - summary: extract spreadsheet specifications into Markdown, assign traceability IDs, connect embedded images to nearby specification text, and write the IDs back into the workbook
   - meta: `skills/xlsx_spec_traceability/meta.md`

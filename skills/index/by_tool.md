@@ -18,7 +18,7 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
   `goal_mode`, `pptx_spec_traceability`, `xlsx_spec_traceability`,
   `investigation_flow`, `estimation_flow`, `requirements_flow`,
   `planning_flow`, `design_flow`, `db_current_state_analysis`,
-  `db_design`, `test_flow`, `implementation_flow`,
+  `db_design`, `test_flow`, `test_tool_catalog_preparation`, `implementation_flow`,
   `manufacturing_self_check`, `qa_gate_review`, `security_review`,
   `release_planning_flow`, `cab_review_flow`,
   `editorial_ops_index`,
