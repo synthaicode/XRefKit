@@ -21,7 +21,7 @@ unit without requiring the human to provide the full business map in advance.
 | Main handoff artifacts | interview-cycle summary, current business hypothesis, scoped business unit, unresolved intake items, next confirmation point |
 | Escalation path | unresolved business interpretation stays explicit; boundary or ownership ambiguity is preserved for later human confirmation |
 
-## Flow Diagram
+## Workflow Diagram
 
 ```mermaid
 flowchart TD
@@ -35,15 +35,14 @@ flowchart TD
     F --> H[Preserve unresolved items]
 ```
 
-## Business Activities and Supporting Capabilities
+## Business Activities and Skills
 
 - Business learning from fragments:
-  - currently executed directly by [business_learning_interview](../../../skills/packs/business-intake/business_learning_interview/SKILL.md#xid-4D8E1A7C5B92)
-  - no dedicated business-intake capability page has been extracted yet
+  - executed by [business_learning_interview](../../../skills/packs/business-intake/business_learning_interview/SKILL.md#xid-4D8E1A7C5B92)
 - Scope-ready responsibility shaping:
-  - currently executed directly by [business_intake_scoping](../../../skills/packs/business-intake/business_intake_scoping/SKILL.md#xid-6F2A9C41E8B3)
-  - no dedicated business-intake capability page has been extracted yet
-- Shared OS-core runtime control:
+  - executed by [business_intake_scoping](../../../skills/packs/business-intake/business_intake_scoping/SKILL.md#xid-6F2A9C41E8B3)
+- Shared OS-core runtime control provides the runtime envelope, guard, and
+  closure that both Skills depend on.
 
 ## Sequence
 

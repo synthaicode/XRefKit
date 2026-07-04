@@ -58,6 +58,8 @@ membership and boundary.
 
 - `skills/packs/business-intake/business_learning_interview/`
 - `skills/packs/business-intake/business_intake_scoping/`
+- `skills/packs/business-intake/conversation_topic_branch_mapping/`
+- `skills/packs/business-intake/decision_topology_analysis/`
 
 ### Knowledge
 
@@ -70,16 +72,9 @@ membership and boundary.
 - [Business learning interview guide](061_business_learning_interview_guide.md#xid-D2A41E8C7B51)
 - [Business intake scoping guide](060_business_intake_scoping_guide.md#xid-C91F7D2A6B40)
 
-### Flows
-
-- `flows/packs/business-intake/business_intake_workflow.yaml`
-
 ## Shared OS-Core Dependencies
 
-The pack depends on shared OS-core capabilities and must not redefine them.
-
-### Shared Capabilities
-
+The pack depends on shared OS-core controls and must not redefine them.
 
 ### Shared Knowledge
 
@@ -103,7 +98,6 @@ path for:
 
 - Skills
 - pack-owned Knowledge
-- machine-readable Flow
 - human-facing pack entry and dependency design
 
 ## Boundary Rule

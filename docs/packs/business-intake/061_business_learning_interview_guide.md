@@ -128,4 +128,4 @@ can identify the owner or resolve the interpretation boundary.
 ## Related
 
 - [Business intake scoping guide](060_business_intake_scoping_guide.md#xid-C91F7D2A6B40)
-- [Flow Capability Skill Knowledge model](../../core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
+- [Skill and Knowledge Operating Model](../../core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
