@@ -1,7 +1,6 @@
 # Dashboardから改善につなげる
 
 ![Dashboardから改善につなげる](07_dashboard_observation_and_improvement.png)
-> 注記: 下の図画像は skill-centric 統合前の旧モデル（Flow / Capability）を描いています。本文は新モデルに更新済みで、画像は再描画待ちです。
 
 ## 一文要約
 

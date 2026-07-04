@@ -1,7 +1,6 @@
 # XRefKitは、AIに業務を依頼するための基盤
 
 ![XRefKitは、AIに業務を依頼するための基盤](01_xrefkit_as_ai_agent_os.png)
-> 注記: 下の図画像は skill-centric 統合前の旧モデル（Flow / Capability）を描いています。本文は新モデルに更新済みで、画像は再描画待ちです。
 
 ## 一文要約
 
@@ -47,4 +46,4 @@ XRefKit はそれに対して、リスト化、実行とレビュー、unknown �
 - [02 Business Pack Explained](02_business_pack_explained.md)
 - [08 Human Direction AI Modification Loop](08_human_direction_ai_modification_loop.md)
 - [09 Business Pack Reuse](09_business_pack_reuse.md)
-- [06 OS and Flow Monitor Dashboard](06_os_and_flow_monitor_dashboard.md)
+- [06 DashboardでAIの実行記録を確認する](06_os_and_flow_monitor_dashboard.md)

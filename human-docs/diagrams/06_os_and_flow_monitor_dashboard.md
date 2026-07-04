@@ -1,7 +1,6 @@
 # DashboardでAIの実行記録を確認する
 
 ![DashboardでAIの実行記録を確認する](06_os_and_flow_monitor_dashboard.png)
-> 注記: 下の図画像は skill-centric 統合前の旧モデル（Flow / Capability）を描いています。本文は新モデルに更新済みで、画像は再描画待ちです。
 
 ## 一文要約
 
