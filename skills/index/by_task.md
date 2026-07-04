@@ -13,7 +13,7 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
   `qa_gate_review`, `security_review`, `cab_review_flow`,
   `code_constraint_derivation`, `cross_constraint_derivation`,
   `integration_scenario_derivation`
-- investigate: `dotnet_change_analysis`, `csharp_error_policy_extraction`,
+- investigate: `dotnet_change_analysis`, `db_current_state_analysis`, `csharp_error_policy_extraction`,
   `investigation_flow`,
   `consultation_research_mapping`, `business_learning_interview`,
   `conversation_topic_branch_mapping`, `decision_topology_analysis`,
@@ -21,7 +21,7 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
 - estimate: `estimation_flow`
 - define-requirements: `requirements_flow`
 - plan: `planning_flow`, `release_planning_flow`, `business_intake_scoping`
-- design: `design_flow`, `test_flow`, `marketing_slide_png`,
+- design: `design_flow`, `db_current_state_analysis`, `db_design`, `test_flow`, `marketing_slide_png`,
   `marketing-explainer-video`, `skill_flow_authoring`,
   `constraint_derivation_index`, `design_constraint_derivation`,
   `ui_constraint_derivation`, `logic_constraint_derivation`,

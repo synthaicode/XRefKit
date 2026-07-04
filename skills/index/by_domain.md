@@ -18,7 +18,8 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
   `crosspost_release`
 - engineering: `csharp_review`, `dotnet_change_analysis`,
   `csharp_error_policy_extraction`,
-  `implementation_flow`, `design_flow`, `test_flow`,
+  `implementation_flow`, `design_flow`, `db_current_state_analysis`,
+  `db_design`, `test_flow`,
   `manufacturing_self_check`, `qa_gate_review`, `security_review`,
   `constraint_derivation_index`, `design_constraint_derivation`,
   `ui_constraint_derivation`, `logic_constraint_derivation`,

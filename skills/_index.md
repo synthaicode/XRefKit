@@ -105,6 +105,14 @@ Current family paths:
   - summary: review C# code with a manual focus on non-Roslyn-detectable risks
   - meta: `skills/csharp_review/meta.md`
   - skill_doc: `skills/csharp_review/SKILL.md`
+- `db_current_state_analysis`:
+  - summary: analyze current brownfield database and persistence structure from repository evidence before DB design
+  - meta: `skills/db_current_state_analysis/meta.md`
+  - skill_doc: `skills/db_current_state_analysis/SKILL.md`
+- `db_design`:
+  - summary: produce implementation-ready brownfield database design artifacts from approved planning inputs and current source-structure findings
+  - meta: `skills/db_design/meta.md`
+  - skill_doc: `skills/db_design/SKILL.md`
 - `design_flow`:
   - summary: execute design business activity through reusable solution-design capability
   - meta: `skills/design_flow/meta.md`

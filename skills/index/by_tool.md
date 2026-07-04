@@ -10,14 +10,15 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
 - xref: `import_skill`, `knowledge_ontology_management`,
   `source_structure_findings_registration`,
   `xlsx_spec_traceability`, `pptx_spec_traceability`
-- .NET: `csharp_review`, `dotnet_change_analysis`,
+- .NET: `csharp_review`, `dotnet_change_analysis`, `db_current_state_analysis`,
   `csharp_error_policy_extraction`, `code_constraint_derivation`,
   `cross_constraint_derivation`, `integration_scenario_derivation`
 - repository: `doc_ship`, `retro`, `knowledge_ontology_management`,
   `consultation_research_mapping`, `judgment_log`, `skill_flow_authoring`,
   `goal_mode`, `pptx_spec_traceability`, `xlsx_spec_traceability`,
   `investigation_flow`, `estimation_flow`, `requirements_flow`,
-  `planning_flow`, `design_flow`, `test_flow`, `implementation_flow`,
+  `planning_flow`, `design_flow`, `db_current_state_analysis`,
+  `db_design`, `test_flow`, `implementation_flow`,
   `manufacturing_self_check`, `qa_gate_review`, `security_review`,
   `release_planning_flow`, `cab_review_flow`,
   `editorial_ops_index`,
@@ -25,7 +26,7 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
   `reader_experience_review`, `crosspost_release`
 - normalized-conversation: `conversation_topic_branch_mapping`,
   `decision_topology_analysis`
-- specification: `constraint_derivation_index`,
+- specification: `db_current_state_analysis`, `db_design`, `constraint_derivation_index`,
   `design_constraint_derivation`, `ui_constraint_derivation`,
   `logic_constraint_derivation`, `integration_constraint_derivation`,
   `async_constraint_derivation`, `auth_constraint_derivation`,
