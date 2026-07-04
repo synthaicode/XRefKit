@@ -162,9 +162,9 @@ def render() -> None:
         "実行結果は最終回答では終わらず、次状態と改善材料になる。",
     )
     save(
-        "06_os_and_flow_monitor_dashboard.png",
-        "DashboardでAIの実行記録を確認する",
-        "Dashboardは実行層ではなく、実行記録を人間が観測するmonitor-side layer。",
+        "06_skill_run_observation_dashboard.png",
+        "Skill Run Observation Dashboard",
+        "Flowではなく、Skill実行記録を人間が観測するダッシュボード。",
         [
             ("実行記録", ["artifact", "log", "unknown", "judgment", "evidence", "handoff"], BLUE),
             ("Operational Memory", ["何を実行したか", "どの根拠を使ったか", "どこで止まったか"], GREEN),

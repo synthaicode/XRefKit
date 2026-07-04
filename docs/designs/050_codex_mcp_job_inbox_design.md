@@ -8,7 +8,8 @@ It is not the OR Team operating model and not a day-to-day usage guide.
 
 ## Purpose
 
-This page defines a realistic integration design between the Flow monitoring dashboard and Codex.
+This page defines a realistic integration design between the Skill run
+observation dashboard and Codex.
 
 The design goal is not to inject text into a specific IDE chat box.
 
@@ -23,11 +24,11 @@ Related:
 
 The current dashboard can present:
 
-- which project and flow ran
-- which steps were passed
-- which paths were traversed
-- whether decisions were recorded
-- whether checklists were used
+- which project and Skill ran
+- which runtime envelope and checks were used
+- which source paths or evidence references were used
+- whether outputs, unknowns, judgments, evidence, and handoff were recorded
+- whether `verify`, `close`, and applicable quality gates passed
 
 However, the current dashboard cannot directly cause Codex to start work in a robust way.
 
@@ -54,38 +55,38 @@ This keeps monitoring, execution request, and execution result as separate but c
 In scope:
 
 - adding a job model to the dashboard backend
-- exposing project, flow, and job state through MCP
+- exposing project, Skill run, evidence, and job state through MCP
 - defining how Codex checks for pending work
 - defining claim, completion, and failure state transitions
-- preserving traceability between monitoring evidence and execution jobs
+- preserving traceability between Skill-run evidence and execution jobs
 
 Out of scope:
 
 - typing text into a private IDE chat input
 - relying on undocumented VS Code UI behavior
-- replacing the existing flow-monitoring screens
+- replacing the existing observation screens
 - full approval workflow automation across all human decision layers
 
 ## Architecture
 
 The target architecture is:
 
-1. Flow Monitor UI
-2. Flow Monitor backend
+1. Skill Run Observation UI
+2. Skill Run Observation backend
 3. MCP server surface
 4. Codex client
-5. Existing project workspace and flow artifacts under `projects/`
+5. Existing project workspace and Skill-run artifacts
 
 The interaction is:
 
-1. a human selects a project and flow in the dashboard
+1. a human selects a project, Skill run, or unresolved observation in the dashboard
 2. the dashboard creates a structured job
 3. the MCP server exposes that job as pending work
 4. Codex reads the pending job
 5. Codex claims the job before execution
 6. Codex performs the requested work
 7. Codex completes or fails the job with a result summary
-8. the dashboard shows the updated job state together with the flow evidence
+8. the dashboard shows the updated job state together with the Skill-run evidence
 
 ## Core Design Principle
 
@@ -106,7 +107,7 @@ Each job must contain at least the following fields:
 
 - `job_id`
 - `project`
-- `flow_name`
+- `skill_id`
 - `job_type`
 - `status`
 - `title`
@@ -116,9 +117,11 @@ Each job must contain at least the following fields:
 - `priority`
 - `source_run_key`
 - `source_paths`
-- `source_steps`
-- `source_decisions`
-- `source_checklists`
+- `source_outputs`
+- `source_unknowns`
+- `source_judgments`
+- `source_handoffs`
+- `source_quality_gates`
 - `claim_owner`
 - `claimed_at`
 - `completed_at`
@@ -147,7 +150,7 @@ The first version should support a small fixed set:
 5. `reobserve`
 6. `summarize`
 
-These types are enough to map dashboard findings to the existing flow model.
+These types are enough to map dashboard findings to Skill-run observations.
 
 ## Job State Model
 
@@ -174,8 +177,8 @@ The first MCP surface should expose tools such as:
 
 1. `list_projects`
 2. `get_project_summary`
-3. `get_flow_state`
-4. `get_flow_definition`
+3. `get_skill_run_state`
+4. `get_skill_metadata`
 5. `list_pending_jobs`
 6. `get_job`
 7. `claim_job`
@@ -187,8 +190,8 @@ The first MCP surface should expose tools such as:
 
 Read-oriented resources may also be exposed for:
 
-- flow definitions
-- recent run history
+- Skill catalog and metadata
+- recent Skill-run history
 - monitoring evidence by project
 - active job queue
 
@@ -197,8 +200,8 @@ Read-oriented resources may also be exposed for:
 The dashboard must remain responsible for:
 
 - presenting monitoring evidence
-- creating jobs from observed flow state
-- linking jobs to source runs and source evidence
+- creating jobs from observed Skill-run state
+- linking jobs to Skill runs and source evidence
 - presenting job queue status
 - presenting completion and failure summaries
 
@@ -245,14 +248,14 @@ This creates a controlled inbox-processing workflow without relying on hidden ID
 
 ## Traceability Model
 
-Every job must be traceable back to the monitoring evidence that caused it.
+Every job must be traceable back to the Skill-run evidence that caused it.
 
 Minimum trace chain:
 
 1. project
-2. flow
-3. run
-4. observed step/path/decision/checklist evidence
+2. Skill
+3. Skill run
+4. observed output/unknown/judgment/evidence/handoff/quality-gate evidence
 5. created job
 6. claim owner
 7. execution result
@@ -261,7 +264,7 @@ Minimum trace chain:
 This allows the dashboard to answer:
 
 - why this job exists
-- which flow evidence triggered it
+- which Skill-run evidence triggered it
 - who claimed it
 - whether it completed
 - what changed after execution
@@ -321,7 +324,7 @@ The first implementation should assume local trusted use, but the design should 
 
 Phase 1:
 
-- add job storage to `flow-monitor-dashboard`
+- add job storage to the Skill-run observation dashboard
 - expose basic MCP tools
 - allow Codex to list, claim, complete, and fail jobs
 - show job queue in the dashboard
@@ -330,7 +333,7 @@ Phase 2:
 
 - add approval state
 - add owner boundary and group linkage
-- add richer trace links to steps, paths, decisions, and checklists
+- add richer trace links to outputs, unknowns, judgments, evidence, handoffs, and quality gates
 - add job timeout and reclaim policy
 
 Phase 3:
@@ -354,4 +357,4 @@ The MCP job inbox design provides:
 - traceability
 - boundary visibility
 
-That is the level needed for brownfield flow monitoring and controlled AI execution.
+That is the level needed for brownfield Skill-run observation and controlled AI execution.

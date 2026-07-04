@@ -10,7 +10,7 @@
 - 基礎概念から入りたい: [03 Skill / Knowledge / Handoff と進行制御](03_flow_skill_knowledge_handoff.md)
 - Skill 分割の具体例を見たい: [04 Code Review as Split Checks](04_code_review_as_split_checks.md)
 - 実行すると何が出力されるかを知りたい: [05 AIを実行すると、何が出力されるのか](05_execution_outputs_and_followup_work.md)
-- 実行ログと Dashboard の関係を知りたい: [06 DashboardでAIの実行記録を確認する](06_os_and_flow_monitor_dashboard.md)
+- 実行ログと Dashboard の関係を知りたい: [06 Skill Run Observation Dashboard](06_skill_run_observation_dashboard.md)
 - Business Pack の再利用と単一 Skill/Knowledge との違いを知りたい: [09 Business Packはどう再利用するか](09_business_pack_reuse.md)
 
 ## 疑問ごとの入口
@@ -23,7 +23,7 @@
 - Skill 分割の具体例を見たい: [04](04_code_review_as_split_checks.md)
 - コード作成時に AI をどう制御するか: [04](04_code_review_as_split_checks.md)
 - 実行すると何が出力されるか: [05](05_execution_outputs_and_followup_work.md)
-- Dashboard で何を見てどう改善につなげるか: [06](06_os_and_flow_monitor_dashboard.md), [07](07_dashboard_observation_and_improvement.md), [08](08_human_direction_ai_modification_loop.md)
+- Dashboard で何を見てどう改善につなげるか: [06](06_skill_run_observation_dashboard.md), [07](07_dashboard_observation_and_improvement.md), [08](08_human_direction_ai_modification_loop.md)
 
 ## 推奨読順
 
@@ -33,7 +33,7 @@
 4. [04 Code Review as Split Checks](04_code_review_as_split_checks.md)
 `03` と `04` は `02` の詳細説明
 5. [05 AIを実行すると、何が出力されるのか](05_execution_outputs_and_followup_work.md)
-6. [06 DashboardでAIの実行記録を確認する](06_os_and_flow_monitor_dashboard.md)
+6. [06 Skill Run Observation Dashboard](06_skill_run_observation_dashboard.md)
 `06` は `05` の詳細説明
 7. [07 Dashboardから改善につなげる](07_dashboard_observation_and_improvement.md)
 8. [08 人間が方向を決め、AIが修正する](08_human_direction_ai_modification_loop.md)

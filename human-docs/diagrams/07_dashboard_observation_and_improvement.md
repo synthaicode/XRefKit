@@ -41,5 +41,5 @@ The Dashboard observations are used to improve Skills, Knowledge, Guards, and Qu
 
 ## 関連図
 
-- [06 実行結果はDashboardで観測される](06_os_and_flow_monitor_dashboard.md)
+- [06 Skill Run Observation Dashboard](06_skill_run_observation_dashboard.md)
 - [04 Code Review as Split Checks](04_code_review_as_split_checks.md)

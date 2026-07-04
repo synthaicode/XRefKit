@@ -225,6 +225,31 @@ def _build_parser() -> argparse.ArgumentParser:
     p_pack_list.add_argument("--root", default=".", help="Project root (default: .)")
     p_pack_list.add_argument("--json", action="store_true", help="Emit JSON")
 
+    dashboard = subparsers.add_parser(
+        "dashboard",
+        help="Observe Skill run logs through a local Python dashboard",
+    )
+    dashboard_sub = dashboard.add_subparsers(dest="dashboard_cmd", required=True)
+
+    p_dashboard_serve = dashboard_sub.add_parser("serve", help="Serve the Skill Run Observation Dashboard")
+    p_dashboard_serve.add_argument("--root", default=".", help="Project root (default: .)")
+    p_dashboard_serve.add_argument(
+        "--sessions-dir",
+        default=None,
+        help="Session log directory; defaults to <root>/work/sessions",
+    )
+    p_dashboard_serve.add_argument("--host", default="127.0.0.1", help="Bind host (default: 127.0.0.1)")
+    p_dashboard_serve.add_argument("--port", type=int, default=8765, help="Bind port (default: 8765)")
+    p_dashboard_serve.add_argument("--open-browser", action="store_true", help="Open the dashboard in a browser")
+
+    p_dashboard_data = dashboard_sub.add_parser("data", help="Emit dashboard data as JSON")
+    p_dashboard_data.add_argument("--root", default=".", help="Project root (default: .)")
+    p_dashboard_data.add_argument(
+        "--sessions-dir",
+        default=None,
+        help="Session log directory; defaults to <root>/work/sessions",
+    )
+
     skill = subparsers.add_parser("skill", help="Validate skill metadata before loading")
     skill_sub = skill.add_subparsers(dest="skill_cmd", required=True)
 
@@ -488,6 +513,11 @@ def main(argv: list[str] | None = None) -> int:
         from fm.packmeta import cmd_pack_lint
 
         return cmd_pack_lint(args)
+
+    if args.command == "dashboard":
+        from fm.dashboard import cmd_dashboard
+
+        return cmd_dashboard(args)
 
     if args.command == "gate":
         from fm.gate import cmd_gate
