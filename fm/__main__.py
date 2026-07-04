@@ -277,6 +277,17 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_run.add_argument("--task-file", default=None, help="Read task text from a UTF-8 file")
     p_skill_run.add_argument("--out", default=None, help="Write run log to this path")
     p_skill_run.add_argument(
+        "--domain-knowledge-catalog",
+        default=None,
+        help="JSON fixture/catalog of available domain knowledge metadata for this run",
+    )
+    p_skill_run.add_argument(
+        "--knowledge-input",
+        action="append",
+        default=[],
+        help="Selected domain knowledge input as name=XID[,XID]; may be repeated",
+    )
+    p_skill_run.add_argument(
         "--handoff-source-log",
         action="append",
         default=[],

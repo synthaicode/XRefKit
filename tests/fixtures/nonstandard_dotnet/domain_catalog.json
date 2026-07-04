@@ -1,0 +1,20 @@
+{
+  "entries": [
+    {
+      "xid": "LOCAL-NONSTD-SERVICE-MAP-001",
+      "kind": "service-map",
+      "title": "Non-standard order service structure",
+      "summary": "Custom runtime composition, attribute-dispatched handlers, and local transaction boundary.",
+      "domain": "sample-brownfield-dotnet",
+      "tags": ["structure", "custom-framework", "dotnet"]
+    },
+    {
+      "xid": "LOCAL-NONSTD-ERROR-POLICY-001",
+      "kind": "source-structure-finding",
+      "title": "Non-standard order service error policy",
+      "summary": "DomainResult-based failures, custom RetryableFailure attribute, and exception translation outside ASP.NET conventions.",
+      "domain": "sample-brownfield-dotnet",
+      "tags": ["error-policy", "custom-exception", "dotnet"]
+    }
+  ]
+}
