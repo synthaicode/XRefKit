@@ -37,9 +37,7 @@ Typical contents:
 - XID as the primary key
 - `xref search/show/rewrite/check/fix`
 - `knowledge/` as shared domain fragments
-- `skills/` as behavior and procedure
-- `capabilities/` as reusable work-unit definitions
-- `flows/` as workflow control structure
+- `skills/` as executable procedure carrying the capability/tuning/responsibility identity
 
 These rules are about how XRefKit routes knowledge and keeps references durable.
 
@@ -81,4 +79,4 @@ If these layers are ever separated into different repositories, the extraction b
   - XID model
   - `fm xref` commands
   - repository structure and routing
-  - skill / capability / flow / knowledge organization
+  - skill / knowledge organization
