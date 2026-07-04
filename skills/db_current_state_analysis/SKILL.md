@@ -58,6 +58,9 @@ future schema, implement migrations, or decide missing requirements.
 
 - Start through `fm skill run`.
 - Confirm the target path and source scope boundary.
+- Tell the user when this run will inspect local SQL, DDL, ORM, migration,
+  configuration, or persistence source files because no current DB analysis XID
+  is available or the selected one is stale.
 - Confirm the DB-unit SQL export file or file set for each database in scope.
   If no DB-unit SQL export exists, record it as `missing` and decide whether the
   analysis can continue from secondary evidence or must stop as `unknown`.

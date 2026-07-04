@@ -6,8 +6,8 @@
 - skill_id: `test_flow`
 - summary: execute test-planning, test-item structuring, integration/regression test design, and manufacturing-side test-method review
 - use_when: user needs a reviewed test package from planning outputs, requirements, and design evidence
-- input: approved requirements, work plan, test policy, approved design, planning basis source list
-- output: test plan, test design, requirement traceability reference, integration regression test design, manufacturing test review result
+- input: approved requirements, work plan, test policy, approved design, design-to-test input package, XDDP traceability matrix or rows from the approved design package, planning basis source list
+- output: test plan, test design, requirement and design traceability reference, integration regression test design, manufacturing test review result
 - maturity: `draft`
 - execution_mode: `subagent_preferred`
 - model_tier: `standard`
@@ -16,13 +16,13 @@
 - tuning: execute test-planning, test-item structuring, integration/regression test design, and manufacturing-side test-method review
 - responsibility: user needs a reviewed test package from planning outputs, requirements, and design evidence
 - os_contract: v1
-- constraints: do not redefine requirement intent, business scope, or final release judgment
+- constraints: do not redefine requirement intent, business scope, design intent, or final release judgment; derive test scope from the approved design's design-to-test input package and XDDP traceability rows rather than broad design prose
 - lifecycle:
-  - startup: confirm requirements, planning outputs, and design evidence exist
-  - planning: define test scope and management rows
-  - execution: perform `CAP-DSN-004 -> CAP-DSN-002 -> CAP-DSN-003 -> CAP-MFG-003`
-  - monitoring_and_control: downgrade unsupported test assumptions to `unknown`
-  - closure: finalize states and hand off the reviewed test package
+  - startup: confirm requirements, planning outputs, approved design, design-to-test input package, and XDDP traceability rows exist
+  - planning: define test scope and management rows from the design-to-test input package
+  - execution: perform `CAP-DSN-004 -> CAP-DSN-002 -> CAP-DSN-003 -> CAP-MFG-003` and record requirement/design traceability for each test item
+  - monitoring_and_control: downgrade unsupported test assumptions or uncovered design-to-test rows to `unknown`
+  - closure: finalize states and hand off the reviewed test package with requirement/design traceability
 - tags: `test`, `design`, `manufacturing`, `traceability`
 - skill_doc: `./SKILL.md`
 - knowledge_slots:

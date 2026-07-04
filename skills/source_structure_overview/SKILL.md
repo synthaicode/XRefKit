@@ -84,10 +84,13 @@ structurally, and under what conditions can this overview be reused?"
    narrowed artifact as if it satisfied the original scope.
 5. Confirm that the task is baseline structure overview, not a specific
    change-impact proposition.
-6. Load only the required knowledge and selected prior domain knowledge inputs.
-7. Treat source code, comments, docs, and prior findings as lower-layer
+6. Tell the user when this run will inspect local source files because no
+   registered source-structure finding XID is available for the requested scope
+   or the selected finding is stale.
+7. Load only the required knowledge and selected prior domain knowledge inputs.
+8. Treat source code, comments, docs, and prior findings as lower-layer
    evidence. Do not let them redefine the Skill objective.
-8. Confirm the completion strategy for the confirmed scope. If the scope looks
+9. Confirm the completion strategy for the confirmed scope. If the scope looks
    too large for one run, decompose the read-only investigation into explicit
    continuation work items before analysis starts; do not discover that limit
    silently at closure time.

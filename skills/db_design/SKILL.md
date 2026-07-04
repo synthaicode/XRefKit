@@ -47,7 +47,12 @@ application code, or decide missing business requirements.
 - validation and test handoff notes
 - source-analysis basis XIDs and selected naming evidence
 - required constraint-derivation output paths
+- XDDP traceability rows for DB design items, linking requirement differences to
+  logical/physical DB changes, persistence/source targets, evidence basis,
+  migration/correction actions, validation handoff, and unknown items
 - unresolved assumptions
+- unknown DB design item list with reason, missing evidence or missing decision,
+  affected DB/source area, downstream impact, and handoff or confirmation owner
 
 ## Startup
 
@@ -89,10 +94,14 @@ application code, or decide missing business requirements.
   evidence and Brownfield API Naming Extractor output when names cross API,
   message, job, or external data-flow boundaries.
 - If the required current database state analysis is missing or stale, route
-  that target through `db_current_state_analysis` before freezing DB design.
+  that target through `db_current_state_analysis` before freezing DB design, but
+  first tell the user that this run must inspect local SQL, DDL, ORM, migration,
+  and persistence source evidence to create or refresh the current DB analysis.
 - If the required source-structure or naming evidence is missing or stale,
   route back to `source_structure_overview` and
-  `source_structure_findings_registration` before freezing DB design.
+  `source_structure_findings_registration` before freezing DB design, but first
+  tell the user that this run must inspect local source files to create or
+  refresh the source-structure finding.
 - Load only DB-relevant domain knowledge and selected source findings.
 
 ## Planning
@@ -140,6 +149,10 @@ application code, or decide missing business requirements.
     repeated patterns or ownership conflicts
 - Prepare output rows for design package, derivation dependencies,
   verification checks, unresolved assumptions, and handoff notes.
+- Prepare XDDP traceability rows for each DB design item. Each row must link the
+  requirement difference to the logical/physical change, affected DB object or
+  persistence source target, current-state evidence, migration/correction action,
+  validation handoff, and unknown or out-of-scope state when applicable.
 
 ## Execution
 
@@ -149,6 +162,10 @@ application code, or decide missing business requirements.
   - design-time decisions
   - implementation steps
   - release or operational steps
+- Maintain DB design traceability as the package is drafted. Do not add a table,
+  column, procedure, query, migration, correction, transaction, or naming
+  decision unless it traces to a requirement difference and to current DB/source
+  evidence or an explicit `unknown`.
 - Define logical model changes:
   - ownership, entity meaning, relation, cardinality, optionality, lifecycle,
     state, and business invariant
@@ -346,7 +363,13 @@ Use this shape or an equivalent structure:
   - transaction, consistency, and concurrency notes
   - compatibility, rollout, rollback, validation, and reconciliation notes
   - required constraint-derivation outputs or explicit `not_required`
+  - XDDP traceability rows from requirement differences to DB design items,
+    evidence basis, impacted DB/source targets, migration/correction actions,
+    validation handoff, and unknown or out-of-scope items
   - unresolved assumptions and handoff owner
+  - every `unknown` DB design item with reason, missing evidence or missing
+    decision, affected table/procedure/query/source area, downstream impact, and
+    handoff or confirmation owner
 - Closure is blocked when required current database state analysis,
   source-structure findings, naming evidence, or constraint-derivation outputs
   are missing for implementation-facing DB design.

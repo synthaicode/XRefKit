@@ -48,10 +48,11 @@ Execute `CAP-PLN-001` and prepare work planning outputs from approved requiremen
 - Confirm current source findings and domain knowledge references are available
   for every source-modification target.
 - If a target lacks current source structure findings, do not proceed by
-  guessing the structure. Create or refresh the latest structure information
-  with `source_structure_overview`, then register it as canonical domain
-  knowledge through `source_structure_findings_registration` before using it as
-  a planning basis.
+  guessing the structure. Tell the user that this run must inspect local source
+  files to create or refresh current structure information, then run
+  `source_structure_overview` for that local source scope. Register the result
+  as canonical domain knowledge through `source_structure_findings_registration`
+  before using it as a planning basis.
 - Record `unknown` if planning inputs are missing.
 
 ## Planning
@@ -84,8 +85,9 @@ Execute `CAP-PLN-001` and prepare work planning outputs from approved requiremen
 - Before drafting source modification policy for a source target, verify that a
   current-source-structure finding XID exists in canonical domain knowledge.
 - When missing or stale, run `source_structure_overview` for that target and
-  route the output through `source_structure_findings_registration` with
-  authorized publication before using the finding as planning basis.
+  first state to the user that local source inspection is required for the
+  current run. Route the output through `source_structure_findings_registration`
+  with authorized publication before using the finding as planning basis.
 - Record which requirement difference maps to which target file, function, module, document, registration, or operational artifact.
 - Build policy outputs so they can serve as pre-code change-design guidance rather than only as broad planning notes.
 - Build source modification policy from the current source structure by default.
