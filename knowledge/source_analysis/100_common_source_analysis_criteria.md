@@ -340,6 +340,34 @@ Report at least:
 - whether the default value is explicitly configured or invented by code
 - controlled disposition that should replace the missing-input path
 
+### Required Input Result Facts
+
+Do not reduce this category to only "business input is present/absent" or
+"library scope". The reviewer must preserve the detector facts needed to make
+the decision basis visible.
+
+Preserve this shape for report composition:
+
+| input / candidate | decision gated | source | missing or invalid behavior | default provenance | disposition | status |
+|---|---|---|---|---|---|---|
+
+- `input / candidate`: the reviewed value, or an explicit absence row when no
+  business input candidate exists in the reviewed scope.
+- `decision gated`: the business decision or `none` when no business decision
+  is gated in the scope.
+- `source`: API, DB, config, cache, file, message, external API, or `none`.
+- `missing or invalid behavior`: reject, throw, retry, dead-letter,
+  quarantine, explicit handoff, default substitution, catch-and-default,
+  skipped branch, or `not_applicable`.
+- `default provenance`: explicitly configured, derived from source, invented
+  by code, none, or unknown.
+- `disposition`: pass, fail, needs_confirmation, or not_applicable with the
+  absence or decision reason.
+- `status`: the category status contribution for that row.
+
+For `not_applicable`, state the absence basis. For `pass`, name the controlled
+behavior found by the detector.
+
 ## Error Handling And Exception Path Review
 
 Check at least the following:

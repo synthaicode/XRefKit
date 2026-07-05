@@ -14,28 +14,58 @@ This fragment defines the canonical review scope for manual C# checks.
   findings belong to the constraint-derivation pack. Record them for handoff
   instead of deep-diving them under this spec.
 
-## Attribute Value Misuse Rule
+## Category Evaluation Rule
+
+Evaluate each review category by its own rule, not by whether it explains the
+user's headline review purpose. A synchronization-focused run still evaluates
+attribute activation, lifecycle, error handling, and other active categories by
+their own axes.
+
+Use `not_applicable` only when the reviewed scope has no construct belonging to
+that category's review axis. If constructs exist and no violation is found,
+mark the category `pass`. If constructs exist but required evidence is
+insufficient, mark it `needs_confirmation`.
+
+## Attribute Activation Preconditions Rule
+
+This category checks whether each reviewed attribute can actually function in
+the current project. It is not a string-value preference check.
 
 Apply this sequence per attribute usage under review:
 
 1. Determine attribute origin (library/package/framework).
-2. Determine functional preconditions required by that attribute.
-3. Verify those preconditions in the current project.
-4. Report when preconditions are not satisfied.
+2. Determine the runtime or build-time mechanism that consumes the attribute.
+3. Determine functional preconditions required for the attribute to take
+   effect, such as middleware, endpoint routing, model binding, validation,
+   serialization, authorization policy/role/claim mapping, source generation,
+   reflection scanning, DI registration, or custom framework bootstrap.
+4. Verify those preconditions in the current project.
+5. Report when the attribute is present but its consuming mechanism or required
+   preconditions are absent, contradictory, or unverified.
 
 ### Classification
 
 - `origin_unresolved`: attribute source cannot be resolved.
-- `precondition_unmet`: source resolved but required precondition is not met.
+- `consumer_unresolved`: attribute source is resolved but the mechanism that
+  consumes the attribute cannot be identified in local evidence.
+- `precondition_unmet`: source and consumer are resolved but a required
+  precondition is not met.
 - `needs_confirmation`: static evidence is insufficient to decide.
 
 ### Policy
 
 - Do not rely on fixed whitelists of attribute values.
-- Treat unknown/new values as `needs_confirmation` unless there is concrete proof of violation.
-- Findings must include concrete evidence:
+- Treat unknown/new values as evidence that the consuming mechanism and
+  preconditions must be checked; do not report a finding merely because a value
+  is unfamiliar.
+- Attribute values matter only through the preconditions of the consuming
+  mechanism. For example, a role, policy, route name, header name, JSON name, or
+  custom key is reviewed by asking whether the configured runtime can consume
+  that value as intended.
+- Findings must include evidence:
   - attribute location
-  - expected precondition
+  - attribute origin and consuming mechanism
+  - required precondition
   - missing or contradictory project evidence
 
 ## Resource Efficiency Checks
@@ -95,6 +125,13 @@ collection/string, default enum, null, `??` fallback, `TryGet` fallback, and
 catch-and-default behavior. For tax and pricing code, distinguish a configured
 zero value from absent configuration; missing tax/rate inputs must stop
 charge/payment until disposition is explicit.
+
+When emitting detector facts for this category, preserve the report-ready
+fields defined in
+[Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001):
+input/candidate, decision gated, source, missing/invalid behavior, default
+provenance, disposition, and status. The human-facing report shape is owned by
+`review_report_composition`.
 
 ## Error Handling and Exception Path Checks
 

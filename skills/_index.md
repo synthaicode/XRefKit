@@ -293,6 +293,10 @@ Current family paths:
   - summary: execute requirements business activities through reusable requirement and performance-constraint structuring capabilities
   - meta: `skills/requirements_flow/meta.md`
   - skill_doc: `skills/requirements_flow/SKILL.md`
+- `review_report_composition`:
+  - summary: compose review Skill outputs into decision-readable reports without changing the detector's technical judgment
+  - meta: `skills/review_report_composition/meta.md`
+  - skill_doc: `skills/review_report_composition/SKILL.md`
 - `security_review`:
   - summary: review C# code and evidence for security risks
   - meta: `skills/security_review/meta.md`

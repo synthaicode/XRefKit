@@ -18,7 +18,7 @@ instead of silently absorbing them into C# findings.
 
 Check the following domains:
 
-- attribute value misuse (rule-based, not fixed whitelist)
+- attribute activation/precondition mismatch (rule-based, not fixed whitelist)
 - resource usage efficiency
 - operational resilience and shared-resource failure scenarios
 - synchronization and concurrency correctness
@@ -63,10 +63,15 @@ Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4
 
 - check item matrix with each reviewed category and deterministic baseline
   marked `pass`, `fail`, `pass-after-fix`, `escalated`, or `not_applicable`
+- category statuses must be assigned by each category's own review axis, not by
+  whether the category explains the user's headline review purpose
 - findings list with severity (`critical`, `major`, `minor`, `needs_confirmation`)
 - for each finding: evidence path, violated condition, and remediation
+- report composition for human review is owned by
+  `review_report_composition`; this Skill must preserve detector facts needed
+  for that handoff instead of embedding report-writing rules
 - summary by category:
-  - attribute value misuse
+  - attribute activation/precondition mismatch
   - resource efficiency
   - operational resilience
   - synchronization
@@ -165,9 +170,11 @@ required_followup: <next owner or specialist Skill, or none>
   `python tools/cs_scope_probe.py --target <review-target> --json`; if C# is in
   scope, run the analyzer pipeline and disposition its candidates, otherwise
   mark the check `na`. Analyzer hits are candidates, not auto-fail findings.
-- Additional acceptance criteria (for example: every reported category has a
-  result, refuted remediations are removed) are declared as further `check`
-  artifacts.
+- Additional acceptance criteria, including category coverage and remediation
+  validity, are declared as further `check` artifacts.
+- When a human-facing report is produced from this Skill's findings, route the
+  expression check through `review_report_composition` or record why only raw
+  detector output was requested.
 
 ## Logging
 
@@ -192,8 +199,11 @@ required_followup: <next owner or specialist Skill, or none>
 - Define the output mode:
   - `findings-only`
   - `findings-with-fixes`
+- Treat the user's headline purpose as emphasis for evidence gathering, not as
+  a filter that disables other active categories. Active categories remain
+  evaluated by their own applicability and evidence requirements.
 - Prepare review targets and category buckets for:
-  - attribute value misuse
+  - attribute activation/precondition mismatch
   - resource efficiency
   - operational resilience
   - synchronization
@@ -219,11 +229,14 @@ required_followup: <next owner or specialist Skill, or none>
 - Establish Roslyn baseline:
   - run build or analyzers and collect diagnostics
   - mark diagnostics-covered concerns as out of scope for this skill
-- Execute attribute misuse checks for each relevant attribute:
+- Execute attribute activation/precondition checks for each relevant attribute:
   - resolve library or source of attribute
+  - identify the runtime/build-time consumer that makes the attribute take
+    effect
   - identify required preconditions for the attribute to function
   - verify those preconditions in the project
-  - if preconditions are not satisfied, report a finding
+  - if the consumer or preconditions are absent, contradictory, or unverified,
+    report a finding or `needs_confirmation`
 - Execute resource efficiency checks:
   - apply language-neutral resource efficiency review from
     [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
@@ -257,6 +270,12 @@ required_followup: <next owner or specialist Skill, or none>
     collections/strings, default enums, null, `??` fallback, `TryGet`
     fallback, and catch-and-default
   - distinguish explicitly configured values from invented code defaults
+  - preserve report-ready detector facts for each candidate: input/candidate,
+    decision gated, source, missing or invalid behavior, default provenance,
+    disposition, and status
+  - when no business input candidate exists, preserve the absence basis so
+    `review_report_composition` can express the category without a bare
+    summary such as "library scope"
 - Execute support lifecycle checks:
   - target framework support status
   - package or runtime dependencies with expired or near-expired support
@@ -317,12 +336,26 @@ required_followup: <next owner or specialist Skill, or none>
     that exact version), not against general knowledge of the library
   - if the claim cannot be verified, state the remediation conditionally and
     mark the finding `needs_confirmation` with the unverified API fact named
-- Report findings with concrete evidence and remediation.
+- Report findings with evidence and remediation.
 - Emit a check item matrix before the findings list. The matrix must include
   each active review category, deterministic baseline checks, pending
   validation boundaries, status, evidence, and notes. Categories with no
   finding must still be present as `pass` or `not_applicable`; do not make
   clean categories invisible.
+- Assign category status by the category's own applicability and result:
+  - `pass` when the category has applicable evidence in scope and no violation
+    is found.
+  - `fail` when the category's own rule is violated.
+  - `needs_confirmation` when applicable evidence exists but is insufficient to
+    decide.
+  - `not_applicable` only when the reviewed scope has no construct that belongs
+    to that category's review axis.
+- Do not use `not_applicable` because the category is unrelated to the user's
+  headline purpose, the final findings are in another category, or the category
+  did not explain the primary defect.
+- Hand the matrix and findings to `review_report_composition` when the result
+  must be expressed as a human-facing report or when wording quality is under
+  dispute.
 - For findings that are implementation-local under
   [Quality feedback return rules](../../knowledge/organization/190_quality_feedback_return_rules.md#xid-7A2F4C8D1901),
   mark the required follow-up as a return to `implementation_flow`.
@@ -333,12 +366,16 @@ required_followup: <next owner or specialist Skill, or none>
 ## Monitoring and Control
 
 - Check that diagnostics-covered issues are excluded from this skill's findings.
+- Check that every category status is justified by that category's own review
+  axis. A category is not `not_applicable` merely because it is unrelated to the
+  user's requested emphasis or to the final root cause.
 - Downgrade unclear or unverifiable results to `needs_confirmation`.
 - Downgrade a category to `needs_confirmation` when the required evidence was
   not reviewed because it did not fit the current context and no subagent result
   exists.
 - Separate:
   - unresolved attribute origin
+  - unresolved attribute consumer
   - unresolved precondition verification
   - proven misuse
 - Preserve missing evidence explicitly in each affected finding.
@@ -400,8 +437,10 @@ Closure is allowed only when all of the following hold:
 
 - Exclude issues that Roslyn diagnostics already detect.
 - Do not use fixed attribute value whitelists as a hard gate.
-- For unknown/new attribute values, use `needs_confirmation` unless a hard violation is proven.
-- Separate `unresolved attribute origin` from `precondition not satisfied`.
+- For unknown/new attribute values, check the attribute's consuming mechanism
+  and activation preconditions instead of failing the value by whitelist.
+- Separate `unresolved attribute origin`, `unresolved attribute consumer`, and
+  `precondition not satisfied`.
 - Include evidence in every finding (file path, config node, project setting, or package reference).
 - Do not assume public-framework behavior for an application-specific framework without local evidence.
 - Do not assert third-party API surface facts (member existence, signatures,
