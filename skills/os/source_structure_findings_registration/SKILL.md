@@ -116,8 +116,8 @@ python -m fm xref search "<aliases> <framework or service name> <analysis kind>"
   `knowledge/`.
 - In authorized `apply`, create or refresh the canonical finding under
   `knowledge/source_analysis/`, update
-  `knowledge/source_analysis/170_current_source_structure_findings_catalog.md`,
-  and update `knowledge/000_index.md` when a public fragment is created,
+  `knowledge/source_analysis/170_current_source_structure_findings_catalog.md#xid-A9E742B1C6D0`,
+  and update `knowledge/000_index.md#xid-23059118FBB9` when a public fragment is created,
   renamed, superseded, or removed.
 
 ## Monitoring and Control

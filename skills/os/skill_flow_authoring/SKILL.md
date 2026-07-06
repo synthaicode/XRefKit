@@ -28,7 +28,7 @@ reconstructing everything from scratch.
 
 - [Skill meta template](./references/skill_meta_template.md)
 - [Skill body template](./references/skill_body_template.md)
-- [Flow YAML template](./references/flow_yaml_template.yaml)
+- [Flow YAML template](./references/flow_yaml_template.yaml#xid-87F138864C3F)
 - [Flow doc template](./references/flow_doc_template.md)
 - [Authoring checklist](./references/authoring_checklist.md)
 

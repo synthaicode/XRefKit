@@ -1,3 +1,5 @@
+# xid: 39959ED2E7EC
+
 """Where impacted-boundary traversal over the structure graph (the XDDP Where step).
 
 Given a seed derived from the change objective, traverse the relation graph to

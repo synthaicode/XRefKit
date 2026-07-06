@@ -1,3 +1,6 @@
+<!-- xid: 5ACA25908C18 -->
+<a id="xid-5ACA25908C18"></a>
+
 # XRefKit.StructureGraph
 
 Deterministic C# structure-graph extractor built on Roslyn

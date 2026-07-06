@@ -53,7 +53,7 @@ and does not perform vulnerability assessment (that is `security_review`).
 ## Anti-Forgetting Structure
 
 - Detection patterns, taxonomies, and record schemas live in
-  `knowledge/source_analysis/130_csharp_error_policy_detection_patterns.md`,
+  `knowledge/source_analysis/130_csharp_error_policy_detection_patterns.md#xid-C0DBC37E2A13`,
   not in this body; later runs reload them by XID.
 - The report records the search patterns used, so a later run can re-verify
   or extend coverage instead of re-deriving the scan.

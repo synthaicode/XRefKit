@@ -1,3 +1,5 @@
+# xid: 13E32D7ED058
+
 """Coupling report over a structure graph (no seed).
 
 Consumes the graph emitted by tools/structure_graph (schema

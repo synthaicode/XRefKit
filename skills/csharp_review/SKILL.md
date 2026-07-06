@@ -51,7 +51,7 @@ Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4
 - [csharp_review drift-detection eval](./references/eval/eval_drift_detection.md):
   run it after changes to this skill's assets and before maturity promotion.
   It is a regression alarm, not an optimization target; never load
-  `references/eval/eval_manifest_heldout.yaml` during skill authoring.
+  `references/eval/eval_manifest_heldout.yaml#xid-DE766335B3F0` during skill authoring.
 
 ## Inputs
 
@@ -167,7 +167,7 @@ required_followup: <next owner or specialist Skill, or none>
   `csharp_review:quality_reviewer` role, separate from the executor.
 - At planning, declare the Roslyn analyzer acceptance check as a `check`-kind
   artifact. It is content-conditional: run
-  `python tools/cs_scope_probe.py --target <review-target> --json`; if C# is in
+  `python tools/cs_scope_probe.py#xid-60ABA6411E7B --target <review-target> --json`; if C# is in
   scope, run the analyzer pipeline and disposition its candidates, otherwise
   mark the check `na`. Analyzer hits are candidates, not auto-fail findings.
 - Additional acceptance criteria, including category coverage and remediation

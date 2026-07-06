@@ -179,12 +179,12 @@ the question needs, not the whole pack. See
 
 | Grep-weak question | Pack tool |
 |------|------|
-| custom attribute values (constant-folded ctor/named args) | `tools/structure_graph --attributes` + `tools/attribute_inventory_report.py` |
-| DI lifetime graph / captive-dependency | `tools/structure_graph --di` + `tools/di_registration_report.py --graph` |
-| async methods lacking CancellationToken | `tools/structure_graph --decl` + `tools/declaration_facts_report.py --category async --missing-ct` |
+| custom attribute values (constant-folded ctor/named args) | `tools/structure_graph --attributes` + `tools/attribute_inventory_report.py#xid-86FEF434AF94` |
+| DI lifetime graph / captive-dependency | `tools/structure_graph --di` + `tools/di_registration_report.py#xid-66D9070B4548 --graph` |
+| async methods lacking CancellationToken | `tools/structure_graph --decl` + `tools/declaration_facts_report.py#xid-4F003AE89B45 --category async --missing-ct` |
 | IDisposable / IAsyncDisposable ownership | `implements` edges in `graph.json` + the CA2000 / CA2213 analyzer pipeline |
-| reflection / convention-based binding sites | `tools/structure_graph --invocations` + `tools/invocation_facts_report.py --category discovery` |
-| transitive impact with no textual reference | `tools/where_seed_traversal.py --seed <s>` (the one impact case grep cannot follow) |
+| reflection / convention-based binding sites | `tools/structure_graph --invocations` + `tools/invocation_facts_report.py#xid-7577F6A5C6AC --category discovery` |
+| transitive impact with no textual reference | `tools/where_seed_traversal.py#xid-39959ED2E7EC --seed <s>` (the one impact case grep cannot follow) |
 
 These are candidate facts, not verdicts: confirm activation / consuming mechanism,
 curate against the change objective, and record what the pack cannot establish as

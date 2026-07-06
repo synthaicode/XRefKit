@@ -99,7 +99,7 @@ python -m fm xref search "<relationship terms and neighboring concepts>"
    - keep only the current authoritative state in the fragment
    - preserve its XID for wording or scope refinement that retains identity
    - use a new XID plus `xref deprecate` for semantic replacement
-   - update `knowledge/000_index.md` when a public fragment is created, moved,
+   - update `knowledge/000_index.md#xid-23059118FBB9` when a public fragment is created, moved,
      superseded, or removed
 5. Add a `## Knowledge Relations` section only for justified relationships.
    Use the controlled vocabulary and XID-backed Markdown targets. Do not add a

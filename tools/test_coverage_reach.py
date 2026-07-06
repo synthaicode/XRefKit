@@ -1,3 +1,5 @@
+# xid: CAD4CA8E817C
+
 """Deterministic test-coverage reachability over the structure graph.
 
 Mechanism F of the structure-analysis determinism tiers (see

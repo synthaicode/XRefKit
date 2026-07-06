@@ -59,28 +59,28 @@ class XrefTests(unittest.TestCase):
             target = root / "docs" / "core" / "target.md"
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(
-                "<!-- xid: TARGET123456 -->\n"
-                '<a id="xid-TARGET123456"></a>\n\n'
+                "<!-- xid: ABCDEF123456 -->\n"
+                '<a id="xid-ABCDEF123456"></a>\n\n'
                 "# Target\n",
                 encoding="utf-8",
             )
             meta = root / "skills" / "sample" / "meta.md"
             meta.parent.mkdir(parents=True, exist_ok=True)
             meta.write_text(
-                "<!-- xid: META123456789 -->\n"
-                '<a id="xid-META123456789"></a>\n\n'
+                "<!-- xid: 123456ABCDEF -->\n"
+                '<a id="xid-123456ABCDEF"></a>\n\n'
                 "# Meta\n\n"
                 "- knowledge_refs:\n"
-                "  - `../../docs/old.md#xid-TARGET123456`\n",
+                "  - `../../docs/old.md#xid-ABCDEF123456`\n",
                 encoding="utf-8",
             )
             manifest = root / "skills" / "packs" / "sample" / "pack.md"
             manifest.parent.mkdir(parents=True, exist_ok=True)
             manifest.write_text(
-                "<!-- xid: PACK123456789 -->\n"
-                '<a id="xid-PACK123456789"></a>\n\n'
+                "<!-- xid: FEDCBA654321 -->\n"
+                '<a id="xid-FEDCBA654321"></a>\n\n'
                 "# Pack\n\n"
-                "- entry: `docs/old.md#xid-TARGET123456`\n",
+                "- entry: `docs/old.md#xid-ABCDEF123456`\n",
                 encoding="utf-8",
             )
 
@@ -94,11 +94,11 @@ class XrefTests(unittest.TestCase):
                 sorted(self._normalized_paths(result["changed_files"])),
             )
             self.assertIn(
-                "`../../docs/core/target.md#xid-TARGET123456`",
+                "`../../docs/core/target.md#xid-ABCDEF123456`",
                 meta.read_text(encoding="utf-8"),
             )
             self.assertIn(
-                "`docs/core/target.md#xid-TARGET123456`",
+                "`docs/core/target.md#xid-ABCDEF123456`",
                 manifest.read_text(encoding="utf-8"),
             )
 
@@ -108,19 +108,19 @@ class XrefTests(unittest.TestCase):
             target = root / "docs" / "core" / "target.md"
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(
-                "<!-- xid: TARGET123456 -->\n"
-                '<a id="xid-TARGET123456"></a>\n\n'
+                "<!-- xid: ABCDEF123456 -->\n"
+                '<a id="xid-ABCDEF123456"></a>\n\n'
                 "# Target\n",
                 encoding="utf-8",
             )
             meta = root / "skills" / "sample" / "meta.md"
             meta.parent.mkdir(parents=True, exist_ok=True)
             meta.write_text(
-                "<!-- xid: META123456789 -->\n"
-                '<a id="xid-META123456789"></a>\n\n'
+                "<!-- xid: 123456ABCDEF -->\n"
+                '<a id="xid-123456ABCDEF"></a>\n\n'
                 "# Meta\n\n"
                 "- knowledge_refs:\n"
-                "  - `../../docs/old.md#xid-TARGET123456`\n",
+                "  - `../../docs/old.md#xid-ABCDEF123456`\n",
                 encoding="utf-8",
             )
 
@@ -141,18 +141,18 @@ class XrefTests(unittest.TestCase):
             target = root / "docs" / "core" / "target.md"
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(
-                "<!-- xid: TARGET123456 -->\n"
-                '<a id="xid-TARGET123456"></a>\n\n'
+                "<!-- xid: ABCDEF123456 -->\n"
+                '<a id="xid-ABCDEF123456"></a>\n\n'
                 "# Target\n",
                 encoding="utf-8",
             )
             source = root / "docs" / "guide.md"
             source.write_text(
-                "<!-- xid: GUIDE1234567 -->\n"
-                '<a id="xid-GUIDE1234567"></a>\n\n'
+                "<!-- xid: 111111AAAAAA -->\n"
+                '<a id="xid-111111AAAAAA"></a>\n\n'
                 "# Guide\n\n"
                 "```md\n"
-                "- `../old.md#xid-TARGET123456`\n"
+                "- `../old.md#xid-ABCDEF123456`\n"
                 "```\n",
                 encoding="utf-8",
             )
@@ -161,7 +161,7 @@ class XrefTests(unittest.TestCase):
 
             self.assertEqual([], result["changed_files"])
             self.assertIn(
-                "`../old.md#xid-TARGET123456`",
+                "`../old.md#xid-ABCDEF123456`",
                 source.read_text(encoding="utf-8"),
             )
 
@@ -175,18 +175,18 @@ class XrefTests(unittest.TestCase):
             duplicate_b = docs / "b.md"
             broken = docs / "broken.md"
             duplicate_a.write_text(
-                "<!-- xid: DUPL11111111 -->\n<a id=\"xid-DUPL11111111\"></a>\n\n# A\n",
+                "<!-- xid: AAAA11111111 -->\n<a id=\"xid-AAAA11111111\"></a>\n\n# A\n",
                 encoding="utf-8",
             )
             duplicate_b.write_text(
-                "<!-- xid: DUPL11111111 -->\n<a id=\"xid-DUPL11111111\"></a>\n\n# B\n",
+                "<!-- xid: AAAA11111111 -->\n<a id=\"xid-AAAA11111111\"></a>\n\n# B\n",
                 encoding="utf-8",
             )
             broken.write_text(
-                "<!-- xid: GOOD22222222 -->\n"
-                '<a id="xid-GOOD22222222"></a>\n\n'
+                "<!-- xid: BBBB22222222 -->\n"
+                '<a id="xid-BBBB22222222"></a>\n\n'
                 "# Broken\n\n"
-                "[Missing](missing.md#xid-NOTFOUND1234)\n",
+                "[Missing](missing.md#xid-FFFFFFFFFFFF)\n",
                 encoding="utf-8",
             )
 
@@ -215,19 +215,19 @@ class XrefTests(unittest.TestCase):
             docs.mkdir(parents=True, exist_ok=True)
 
             (docs / "target.md").write_text(
-                "<!-- xid: TARGET123456 -->\n<a id=\"xid-TARGET123456\"></a>\n\n# Target Title\n",
+                "<!-- xid: ABCDEF123456 -->\n<a id=\"xid-ABCDEF123456\"></a>\n\n# Target Title\n",
                 encoding="utf-8",
             )
             source = docs / "source.md"
             source.write_text(
-                "<!-- xid: SOURCE123456 -->\n<a id=\"xid-SOURCE123456\"></a>\n\n# Source\n\n[[TARGET123456]]\n",
+                "<!-- xid: 654321FEDCBA -->\n<a id=\"xid-654321FEDCBA\"></a>\n\n# Source\n\n[[ABCDEF123456]]\n",
                 encoding="utf-8",
             )
 
             xref_rewrite(XrefConfig(root=str(root)), dry_run=False)
 
             rewritten = source.read_text(encoding="utf-8")
-            self.assertIn("[Target Title](target.md#xid-TARGET123456)", rewritten)
+            self.assertIn("[Target Title](target.md#xid-ABCDEF123456)", rewritten)
 
     def test_xref_deprecate_records_bidirectional_relationship(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -238,18 +238,18 @@ class XrefTests(unittest.TestCase):
             old_doc = docs / "old.md"
             new_doc = docs / "new.md"
             old_doc.write_text(
-                "<!-- xid: OLD123456789 -->\n<a id=\"xid-OLD123456789\"></a>\n\n# Old\n",
+                "<!-- xid: AAAAAA111111 -->\n<a id=\"xid-AAAAAA111111\"></a>\n\n# Old\n",
                 encoding="utf-8",
             )
             new_doc.write_text(
-                "<!-- xid: NEW123456789 -->\n<a id=\"xid-NEW123456789\"></a>\n\n# New\n",
+                "<!-- xid: BBBBBB222222 -->\n<a id=\"xid-BBBBBB222222\"></a>\n\n# New\n",
                 encoding="utf-8",
             )
 
             result = xref_deprecate(
                 XrefConfig(root=str(root)),
-                old_xid="OLD123456789",
-                new_xid="NEW123456789",
+                old_xid="AAAAAA111111",
+                new_xid="BBBBBB222222",
                 note="replaced by new scope",
             )
 
@@ -257,9 +257,33 @@ class XrefTests(unittest.TestCase):
             old_text = old_doc.read_text(encoding="utf-8")
             new_text = new_doc.read_text(encoding="utf-8")
             self.assertIn("## 互換性（XID関係）", old_text)
-            self.assertIn("- superseded_by: [[NEW123456789]]", old_text)
+            self.assertIn("- superseded_by: [[BBBBBB222222]]", old_text)
             self.assertIn("- note: replaced by new scope", old_text)
-            self.assertIn("- supersedes: [[OLD123456789]]", new_text)
+            self.assertIn("- supersedes: [[AAAAAA111111]]", new_text)
+
+    def test_xref_check_accepts_source_file_xid_comment_targets(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            skill_dir = root / "skills" / "sample"
+            ref_dir = skill_dir / "references"
+            ref_dir.mkdir(parents=True, exist_ok=True)
+            (ref_dir / "template.yaml").write_text(
+                "# xid: CCCCCC333333\n\n"
+                "flow_id: sample\n",
+                encoding="utf-8",
+            )
+            (skill_dir / "SKILL.md").write_text(
+                "<!-- xid: DDDDDD444444 -->\n"
+                '<a id="xid-DDDDDD444444"></a>\n\n'
+                "# Skill\n\n"
+                "- [Template](./references/template.yaml#xid-CCCCCC333333)\n",
+                encoding="utf-8",
+            )
+
+            result = xref_check(XrefConfig(root=str(root), include=["skills"]))
+
+            self.assertEqual([], result["issues"])
+            self.assertEqual([], result["missing_xid"])
 
 
 if __name__ == "__main__":

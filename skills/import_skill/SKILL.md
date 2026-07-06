@@ -21,7 +21,7 @@ Import an external skill into this repository while preserving the split model:
 - `skills/<skill_id>/SKILL.md` (imported and normalized procedure)
 - updated `skills/_index.md` entry for `<skill_id>`
 - domain fragments in `knowledge/` when needed
-- inspection report from `skills/import_skill/scripts/inspect_imported_skill.py`
+- inspection report from `skills/import_skill/scripts/inspect_imported_skill.py#xid-A7E8C7F2A7BC`
 
 ## Procedure
 
@@ -32,9 +32,9 @@ Import an external skill into this repository while preserving the split model:
    - factual/domain statements
    - external references and assumptions
 2. Inspect extracted skill content before import:
-   - run `python skills/import_skill/scripts/inspect_imported_skill.py <extracted_skill_dir> --repo <owner/repo> --ref <ref>`
+   - run `python skills/import_skill/scripts/inspect_imported_skill.py#xid-A7E8C7F2A7BC <extracted_skill_dir> --repo <owner/repo> --ref <ref>`
    - for CI/strict mode use `--strict` and fail on any `block` or `warn`
-   - policy source: `skills/import_skill/policy/inspection_rules.yaml`
+   - policy source: `skills/import_skill/policy/inspection_rules.yaml#xid-DE9B30DAF3BF`
 3. If any `block` findings exist:
    - do not import as-is
    - remove or rewrite flagged instructions/scripts first

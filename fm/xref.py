@@ -14,6 +14,11 @@ from typing import Iterable
 
 
 XID_COMMENT_RE = re.compile(r"<!--\s*xid\s*:\s*([A-Za-z0-9_-]{1,64})\s*-->", re.IGNORECASE)
+SOURCE_XID_COMMENT_RE = re.compile(
+    r"^\s*(?://|#|--|'|/\*|<!--)\s*xid\s*:\s*([A-Za-z0-9_-]{1,64})\s*(?:\*/|-->)?\s*$",
+    re.IGNORECASE | re.MULTILINE,
+)
+CANONICAL_XID_RE = re.compile(r"^[A-F0-9]{12}$")
 XID_ANCHOR_RE = re.compile(
     r"""<a\s+[^>]*id=["']xid-([A-Za-z0-9_-]{1,64})["'][^>]*>\s*</a>""",
     re.IGNORECASE,
@@ -26,8 +31,39 @@ BARE_MANAGED_REF_RE = re.compile(
     r"#xid-(?P<xid>[A-Za-z0-9_-]{6,64})\b"
 )
 _PLACEHOLDER_XIDS = {"TBD", "TODO", "TEMP", "PLACEHOLDER"}
-_XID_INDEX_CACHE_VERSION = 1
+_XID_INDEX_CACHE_VERSION = 2
 _XID_RELATION_SECTION_TITLE = "互換性（XID関係）"
+XREF_SOURCE_SUFFIXES = {
+    ".py",
+    ".ps1",
+    ".sh",
+    ".cs",
+    ".fs",
+    ".vb",
+    ".js",
+    ".jsx",
+    ".ts",
+    ".tsx",
+    ".java",
+    ".go",
+    ".rs",
+    ".c",
+    ".cc",
+    ".cpp",
+    ".h",
+    ".hpp",
+    ".sql",
+    ".yaml",
+    ".yml",
+    ".toml",
+    ".ini",
+    ".cfg",
+    ".css",
+    ".scss",
+    ".html",
+    ".xml",
+    ".svg",
+}
 
 
 @dataclass(frozen=True)
@@ -77,7 +113,7 @@ def _collect_fingerprints(
     exclude_names: set[str],
 ) -> list[dict[str, object]]:
     fps: list[dict[str, object]] = []
-    for p in _iter_markdown_files(root, include, exclude_names):
+    for p in _iter_xref_files(root, include, exclude_names):
         try:
             st = p.stat()
         except OSError:
@@ -205,6 +241,22 @@ def _iter_markdown_files(root: Path, include: Iterable[str], exclude_names: set[
             yield p
 
 
+def _iter_xref_files(root: Path, include: Iterable[str], exclude_names: set[str]) -> Iterable[Path]:
+    for top in include:
+        base = (root / top)
+        if not base.exists():
+            continue
+        for p in base.rglob("*"):
+            if not p.is_file():
+                continue
+            suffix = p.suffix.lower()
+            if suffix not in {".md", ".mdx"} and suffix not in XREF_SOURCE_SUFFIXES:
+                continue
+            if any(part in exclude_names for part in p.parts):
+                continue
+            yield p
+
+
 def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
@@ -222,6 +274,12 @@ def _extract_xid(text: str) -> str | None:
             return None
         return xid
     m = XID_ANCHOR_RE.search(text)
+    if m:
+        xid = m.group(1).strip()
+        if xid.upper() in _PLACEHOLDER_XIDS:
+            return None
+        return xid
+    m = SOURCE_XID_COMMENT_RE.search(text)
     if m:
         xid = m.group(1).strip()
         if xid.upper() in _PLACEHOLDER_XIDS:
@@ -249,7 +307,11 @@ def _gen_xid() -> str:
     return secrets.token_hex(6).upper()
 
 def _has_any_xid_marker(text: str) -> bool:
-    return XID_COMMENT_RE.search(text) is not None or XID_ANCHOR_RE.search(text) is not None
+    return (
+        XID_COMMENT_RE.search(text) is not None
+        or XID_ANCHOR_RE.search(text) is not None
+        or SOURCE_XID_COMMENT_RE.search(text) is not None
+    )
 
 
 def _normalize_for_hash(text: str) -> str:
@@ -260,6 +322,7 @@ def _normalize_for_hash(text: str) -> str:
     out = text.replace("\r\n", "\n").replace("\r", "\n")
     out = XID_COMMENT_RE.sub("", out, count=1)
     out = XID_ANCHOR_RE.sub("", out, count=1)
+    out = SOURCE_XID_COMMENT_RE.sub("", out, count=1)
     out = re.sub(r"\n{3,}", "\n\n", out)
     return out.strip() + "\n"
 
@@ -360,18 +423,18 @@ def build_index(cfg: XrefConfig) -> tuple[dict[str, DocInfo], list[dict[str, str
 
     index: dict[str, DocInfo] = {}
     issues: list[dict[str, str]] = []
-    for path in _iter_markdown_files(root, include, exclude_names):
+    for path in _iter_xref_files(root, include, exclude_names):
         text = _read_text(path)
         xid = _extract_xid(text)
         if xid is None:
             continue
-        if len(xid) < 6:
+        if CANONICAL_XID_RE.fullmatch(xid) is None:
             issues.append(
                 {
                     "type": "invalid_xid",
                     "xid": xid,
                     "path": str(path.relative_to(root)),
-                    "reason": "xid_too_short",
+                    "reason": "expected_12_upper_hex",
                 }
             )
             continue
@@ -627,7 +690,7 @@ def xref_check(cfg: XrefConfig, *, review: bool = False) -> dict[str, object]:
             missing_xid.append(str(path.relative_to(root)))
 
     # Validate managed links (with #xid-...)
-    for path in _iter_markdown_files(root, include, exclude_names):
+    for path in _iter_xref_files(root, include, exclude_names):
         text = _read_text(path)
         for m in MANAGED_FRAGMENT_RE.finditer(text):
             xid = m.group(1)
