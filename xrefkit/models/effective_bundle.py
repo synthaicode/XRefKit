@@ -11,6 +11,7 @@ from .common import ConflictEntry, SourceTraceEntry, StrictModel, XidLoadedRef, 
 
 class LoadedTexts(StrictModel):
     core: list[XidLoadedRef] = Field(default_factory=list)
+    included: list[XidLoadedRef] = Field(default_factory=list)
     inherited: list[XidLoadedRef] = Field(default_factory=list)
     local: list[XidLoadedRef] = Field(default_factory=list)
     branch: list[XidLoadedRef] = Field(default_factory=list)
@@ -18,19 +19,26 @@ class LoadedTexts(StrictModel):
     output: list[XidLoadedRef] = Field(default_factory=list)
 
     def all_loaded(self) -> list[XidLoadedRef]:
-        return self.core + self.inherited + self.local + self.branch + self.knowledge + self.output
+        return self.core + self.included + self.inherited + self.local + self.branch + self.knowledge + self.output
 
 
 class BundleReferences(StrictModel):
+    supporting_skill_refs: list[str] = Field(default_factory=list)
     knowledge: list[str] = Field(default_factory=list)
+    templates: list[str] = Field(default_factory=list)
     schemas: list[str] = Field(default_factory=list)
     review_axes: list[str] = Field(default_factory=list)
     branches: list[str] = Field(default_factory=list)
 
-    @field_validator("knowledge", "schemas", "review_axes", "branches")
+    @field_validator("knowledge", "templates", "schemas", "review_axes", "branches")
     @classmethod
     def _validate_xids(cls, values: list[str]) -> list[str]:
         return [validate_xid(value) for value in values]
+
+    @field_validator("supporting_skill_refs")
+    @classmethod
+    def _validate_skill_refs(cls, values: list[str]) -> list[str]:
+        return [validate_non_empty(value, "supporting_skill_ref") for value in values]
 
 
 class BranchSummary(StrictModel):

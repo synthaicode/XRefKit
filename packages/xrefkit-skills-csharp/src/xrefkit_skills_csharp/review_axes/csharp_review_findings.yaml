@@ -1,0 +1,10 @@
+axis_id: csharp.review_findings
+xid: xid-axis-csharp-review-findings
+summary: Check whether C# review findings are evidence-backed and within scope.
+checks:
+  - id: finding_has_evidence
+    description: Each finding includes source evidence and violated condition.
+  - id: compiler_diagnostics_not_primary
+    description: Findings do not merely duplicate compiler or Roslyn diagnostics.
+  - id: out_of_scope_items_handoff
+    description: Security, XDDP trace, design, and report-composition concerns are handoffs.

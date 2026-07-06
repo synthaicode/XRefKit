@@ -1,0 +1,52 @@
+skill_id: dotnet.change_analysis
+xid: xid-skill-dotnet-change-analysis
+role: supporting_skill_contract
+
+entry:
+  xid: xid-entry-dotnet-change-analysis
+  path: skills/dotnet_change_analysis/entry.md
+  load_policy: required_inline
+
+required_fragments:
+  - id: structure_evidence_required
+    xid: xid-fragment-dotnet-change-analysis-structure-evidence-required
+    path: skills/dotnet_change_analysis/fragments/structure_evidence_required.md
+    load_policy: required_inline
+
+branches:
+  - id: dependency_direction
+    xid: xid-branch-dotnet-change-analysis-dependency-direction
+    path: skills/dotnet_change_analysis/branches/dependency_direction.md
+    condition:
+      any_intent:
+        - dependency direction
+        - layer boundary
+        - project reference impact
+    load_policy: on_demand
+
+required_outputs:
+  - structure_summary
+  - impact_boundaries
+  - unknowns
+  - used_xids
+  - handoffs
+
+required_knowledge:
+  - xid-knowledge-dotnet-change-analysis-viewpoints
+
+review_axes:
+  - xid-axis-csharp-evidence-coverage
+
+schemas:
+  - xid-schema-dotnet-change-analysis
+
+must_not:
+  - decide_implementation_policy
+  - emit_defect_review_findings
+  - omit_unknowns
+  - weaken_core_contract
+
+extension_policy:
+  can_be_extended_by_local_skill: true
+  local_can_weaken_required_outputs: false
+  local_can_override_must_not: false

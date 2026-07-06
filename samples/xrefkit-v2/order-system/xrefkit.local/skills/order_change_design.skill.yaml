@@ -1,0 +1,24 @@
+skill_id: project.order_change_design
+xid: xid-project-skill-order-change-design
+type: domain_skill_wrapper
+
+xrefkit:
+  extends:
+    - ref: xrefkit.skills.xddp.design::xddp.design.change_design
+      xid: xid-skill-xddp-design-change-design
+      version: ">=0.1.0 <1.0.0"
+      mode: contract_inheritance
+
+  includes:
+    - xid: xid-include-xddp-traceability-instruction
+    - xid: xid-include-xddp-traceability-instruction
+
+  injects:
+    knowledge:
+      - xid-project-order-current-spec
+
+  output:
+    template_xid: xid-template-project-order-change-design-report
+
+  required_outputs:
+    - applied_skills

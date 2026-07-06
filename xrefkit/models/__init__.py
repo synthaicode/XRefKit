@@ -10,8 +10,8 @@ from .common import (
     XidLoadedRef,
     XidRef,
 )
-from .effective_bundle import EffectiveSkillBundle
-from .local_manifest import LocalDomainSkill, LocalManifest
+from .effective_bundle import BundleReferences, EffectiveSkillBundle, LoadedTexts
+from .local_manifest import IncludeRef, LocalDomainSkill, LocalManifest
 from .package_manifest import PackageManifest
 from .run_log import RunLogAggregate, RunLogEvent
 from .server_config import XRefKitServerConfig
@@ -21,7 +21,9 @@ __all__ = [
     "ConflictEntry",
     "CoreProtocol",
     "EffectiveSkillBundle",
+    "IncludeRef",
     "LoadReason",
+    "LoadedTexts",
     "LocalDomainSkill",
     "LocalManifest",
     "PackageManifest",
@@ -34,4 +36,5 @@ __all__ = [
     "XRefKitServerConfig",
     "XidLoadedRef",
     "XidRef",
+    "BundleReferences",
 ]

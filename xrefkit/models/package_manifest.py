@@ -49,6 +49,7 @@ class ProvidedSkill(ProvidedAsset):
 
 class PackageProvides(StrictModel):
     skills: list[ProvidedSkill]
+    fragments: list[ProvidedAsset] = Field(default_factory=list)
     knowledge: list[ProvidedAsset] = Field(default_factory=list)
     review_axes: list[ProvidedAsset] = Field(default_factory=list)
     schemas: list[ProvidedAsset] = Field(default_factory=list)
@@ -63,7 +64,7 @@ class PackageProvides(StrictModel):
 
     @model_validator(mode="after")
     def _validate_asset_ids(self) -> "PackageProvides":
-        for name in ("skills", "knowledge", "review_axes", "schemas", "templates"):
+        for name in ("skills", "fragments", "knowledge", "review_axes", "schemas", "templates"):
             assets = getattr(self, name)
             ids = [asset.id for asset in assets]
             if len(ids) != len(set(ids)):
@@ -113,6 +114,7 @@ class PackageManifest(StrictModel):
     def _validate_unique_xids(self) -> "PackageManifest":
         assets = (
             self.provides.skills
+            + self.provides.fragments
             + self.provides.knowledge
             + self.provides.review_axes
             + self.provides.schemas

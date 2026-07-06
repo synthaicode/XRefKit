@@ -30,6 +30,7 @@ class CoreProtocol(str, Enum):
 
 class LoadReason(str, Enum):
     CORE_CONTRACT = "core_contract"
+    INCLUDE_FRAGMENT = "include_fragment"
     INHERITED_CONTRACT = "inherited_contract"
     SKILL_ENTRY = "skill_entry"
     REQUIRED_FRAGMENT = "required_fragment"

@@ -1,0 +1,10 @@
+axis_id: csharp.evidence_coverage
+xid: xid-axis-csharp-evidence-coverage
+summary: Check whether structure and finding claims are backed by source evidence.
+checks:
+  - id: evidence_paths_present
+    description: Claims identify source paths or loaded XIDs.
+  - id: weak_claims_downgraded
+    description: Weakly supported claims are marked unknown or needs_confirmation.
+  - id: used_xids_loaded
+    description: XIDs used as judgment basis were loaded before use.

@@ -1,0 +1,52 @@
+skill_id: csharp.error_policy_extraction
+xid: xid-skill-csharp-error-policy-extraction
+role: supporting_skill_contract
+
+entry:
+  xid: xid-entry-csharp-error-policy-extraction
+  path: skills/csharp_error_policy_extraction/entry.md
+  load_policy: required_inline
+
+required_fragments:
+  - id: coverage_limits_required
+    xid: xid-fragment-csharp-error-policy-coverage-limits-required
+    path: skills/csharp_error_policy_extraction/fragments/coverage_limits_required.md
+    load_policy: required_inline
+
+branches:
+  - id: di_startup_throw
+    xid: xid-branch-csharp-error-policy-di-startup-throw
+    path: skills/csharp_error_policy_extraction/branches/di_startup_throw.md
+    condition:
+      any_intent:
+        - dependency injection startup
+        - options validation
+        - composition root throw
+    load_policy: on_demand
+
+required_outputs:
+  - error_policy_inventory
+  - disposition_matrix
+  - contradictions
+  - coverage_limits
+  - used_xids
+
+required_knowledge:
+  - xid-knowledge-csharp-error-policy-patterns
+
+review_axes:
+  - xid-axis-csharp-error-policy-coverage
+
+schemas:
+  - xid-schema-csharp-error-policy-report
+
+must_not:
+  - decide_desired_error_policy
+  - claim_exhaustive_omission_policy_coverage
+  - omit_coverage_limits
+  - weaken_core_contract
+
+extension_policy:
+  can_be_extended_by_local_skill: true
+  local_can_weaken_required_outputs: false
+  local_can_override_must_not: false

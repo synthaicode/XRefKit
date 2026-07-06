@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "xrefkit.skills.csharp.review",
+  "type": "object",
+  "required": ["findings", "evidence", "unknowns", "used_xids", "handoffs"],
+  "properties": {
+    "findings": {"type": "array"},
+    "evidence": {"type": "array"},
+    "unknowns": {"type": "array"},
+    "used_xids": {"type": "array", "items": {"type": "string"}},
+    "handoffs": {"type": "array"}
+  }
+}

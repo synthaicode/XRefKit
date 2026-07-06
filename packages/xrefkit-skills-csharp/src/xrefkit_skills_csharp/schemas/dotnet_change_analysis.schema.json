@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "xrefkit.skills.csharp.dotnet_change_analysis",
+  "type": "object",
+  "required": ["structure_summary", "impact_boundaries", "unknowns", "used_xids", "handoffs"],
+  "properties": {
+    "structure_summary": {"type": "string"},
+    "impact_boundaries": {"type": "array"},
+    "unknowns": {"type": "array"},
+    "used_xids": {"type": "array", "items": {"type": "string"}},
+    "handoffs": {"type": "array"}
+  }
+}

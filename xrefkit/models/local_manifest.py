@@ -143,6 +143,15 @@ class UsesRef(StrictModel):
         return validate_non_empty(value, "value")
 
 
+class IncludeRef(StrictModel):
+    xid: str
+
+    @field_validator("xid")
+    @classmethod
+    def _validate_xid(cls, value: str) -> str:
+        return validate_xid(value)
+
+
 class InjectsSpec(StrictModel):
     knowledge: list[str] = Field(default_factory=list)
 
@@ -166,6 +175,7 @@ class OutputSpec(StrictModel):
 
 class LocalSkillBinding(StrictModel):
     extends: list[ExtendsRef]
+    includes: list[IncludeRef] = Field(default_factory=list)
     uses: list[UsesRef] = Field(default_factory=list)
     injects: InjectsSpec | None = None
     output: OutputSpec | None = None
