@@ -81,5 +81,11 @@ same governance contract:
 - `get_document_by_xid` resolves needed linked XIDs.
 - `get_skill` transfers selected Skill content.
 
+In MCP mode, an XID-bearing path such as `docs/...md#xid-...` is a lookup
+handle and diagnostic location, not an instruction for the client to search its
+local filesystem. The client resolves the selected body by calling
+`get_document_by_xid` with the XID. Any filesystem lookup needed to map that XID
+to content is an MCP server-side responsibility.
+
 This is the MCP mode for clients. It does not change the repository-native rule
 that XRefKit's own startup contract must be valid without MCP.

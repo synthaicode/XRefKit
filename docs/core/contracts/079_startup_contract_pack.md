@@ -43,6 +43,7 @@ Sources:
 - MCP-only governance is authoritative when configured. Do not read local XRefKit governance Markdown, local Skill files, or filesystem Markdown links to bypass MCP.
 - Apply control in this order: base control -> XRefKit routing -> task-specific workflow/Skill execution.
 - Use XIDs as primary keys. Resolve needed XID links through get_document_by_xid. Do not recursively load related links at startup.
+- In MCP mode, `path#xid-...` values are lookup handles and diagnostic locations, not client filesystem instructions. The client calls get_document_by_xid with the XID; server-side resolution maps the XID to content.
 - Keep Skill procedure, domain knowledge, and work logs separate.
 - Treat knowledge/ as shared evidence fragments and skills/ as executable procedure carrying the capability/tuning/responsibility identity.
 - Treat docs/ indexes as lookup/navigation handles, not mandatory startup body loads.
