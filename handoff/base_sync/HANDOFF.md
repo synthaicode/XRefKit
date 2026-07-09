@@ -110,7 +110,7 @@ python xrefkit_sync_worklist.py `
 - [ ] worklist の全項目が `resolved` か `escalated`
 - [ ] `escalated` 一覧(diff 参照付き)を人間向けにまとめた
 - [ ] 変更ログを1ファイル作成した: 日付_sync_absorption.md(処理件数、フォーク宣言した Skill、採番した新規XID、参照を張り替えた Skill とその理由)
-- [ ] ローカルに `python -m fm` がある場合: `python -m fm xref fix` を実行しリンク整合を確認(なければスキップし、その旨を記録)
+- [ ] ローカルに `python -m xrefkit` がある場合: `python -m xrefkit xref fix` を実行しリンク整合を確認(なければスキップし、その旨を記録)
 
 ## 背景(なぜこの方式か)
 

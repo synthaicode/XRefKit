@@ -3,7 +3,7 @@
 
 # Workflow Protocol Sequence For Humans
 
-This guide explains how XRefKit's workflow protocol, `fm skill` commands, Skill
+This guide explains how XRefKit's workflow protocol, `xrefkit skill` commands, Skill
 execution, deterministic verification, and quality review fit together.
 
 ## Short Version
@@ -14,7 +14,7 @@ business procedure and does not judge output quality.
 The AI executor interprets the selected `SKILL.md` and performs the actual
 work.
 
-`fm skill verify` is deterministic verification of the run log. It checks
+`xrefkit skill verify` is deterministic verification of the run log. It checks
 whether the workflow progression was recorded correctly. It is not a model
 reviewer and it does not inspect output quality.
 
@@ -28,11 +28,11 @@ phase.
 |---|---|
 | User | Provides the goal, constraints, and human decisions when escalation is needed. |
 | Main AI / harness / client | Routes the task, runs `fm` commands, manages the run log, and may orchestrate subagents. |
-| `fm skill run` | Opens the runtime envelope, validates Skill metadata, resolves `skill_doc`, assigns runtime roles, and creates the run log. |
+| `xrefkit skill run` | Opens the runtime envelope, validates Skill metadata, resolves `skill_doc`, assigns runtime roles, and creates the run log. |
 | Skill executor AI | Reads the returned `skill_doc` and performs the Skill procedure. |
-| `fm skill verify` | Deterministically verifies workflow-progression records and advances the check phase. |
+| `xrefkit skill verify` | Deterministically verifies workflow-progression records and advances the check phase. |
 | Quality reviewer | Accepts or blocks output quality when the quality gate is required. |
-| `fm skill close` | Applies closure checks and records whether the run can close or must remain blocked or escalated. |
+| `xrefkit skill close` | Applies closure checks and records whether the run can close or must remain blocked or escalated. |
 
 ## Full Sequence
 
@@ -44,7 +44,7 @@ phase.
    - The selected Skill is identified by meta identity and applicability.
 
 3. Main AI / harness opens the runtime envelope.
-   python -m fm skill run --meta <skill-meta> --task "<task>" --json
+   python -m xrefkit skill run --meta <skill-meta> --task "<task>" --json
 
 4. fm creates the run log.
    - validates metadata at runtime-open level
@@ -62,25 +62,25 @@ phase.
    - If model_tier is heavy or unset, execution may remain in the main context.
 
 6. Main AI / harness records concrete work items.
-   python -m fm skill workitem --log <run-log> --item WI-001 --text "<work>" --status pending --role "<skill>:executor"
+   python -m xrefkit skill workitem --log <run-log> --item WI-001 --text "<work>" --status pending --role "<skill>:executor"
 
 7. Executor completes work items and records status.
-   python -m fm skill workitem --log <run-log> --item WI-001 --status done --role "<skill>:executor"
+   python -m xrefkit skill workitem --log <run-log> --item WI-001 --status done --role "<skill>:executor"
 
 8. Main AI / harness records outputs and evidence.
-   python -m fm skill artifact --log <run-log> --artifact OUT-001 --kind output --target "<path>" --item WI-001 --status done --role "<skill>:executor"
-   python -m fm skill artifact --log <run-log> --artifact EVD-001 --kind evidence --target "<command-or-source>" --item WI-001 --status done --role "<skill>:executor"
+   python -m xrefkit skill artifact --log <run-log> --artifact OUT-001 --kind output --target "<path>" --item WI-001 --status done --role "<skill>:executor"
+   python -m xrefkit skill artifact --log <run-log> --artifact EVD-001 --kind evidence --target "<command-or-source>" --item WI-001 --status done --role "<skill>:executor"
 
 9. Main AI / harness records unknowns, risks, or judgments when they exist.
-   python -m fm skill concern --log <run-log> --concern UNK-001 --kind unknown --status resolved --role "<skill>:checker"
+   python -m xrefkit skill concern --log <run-log> --concern UNK-001 --kind unknown --status resolved --role "<skill>:checker"
 
 10. Main AI / harness advances execution with the assigned executor role.
-    python -m fm skill phase --log <run-log> --phase execution --status done --role "<skill>:executor"
+    python -m xrefkit skill phase --log <run-log> --phase execution --status done --role "<skill>:executor"
 
 11. Main AI / harness calls deterministic verification.
-    python -m fm skill verify --log <run-log>
+    python -m xrefkit skill verify --log <run-log>
 
-12. fm skill verify reads the run log and advances the check phase.
+12. xrefkit skill verify reads the run log and advances the check phase.
     - It verifies work item completion.
     - It verifies artifact recording and linkage.
     - It verifies concern resolution or escalation.
@@ -94,7 +94,7 @@ phase.
     - open concern
     - wrong role
     - incomplete phase state
-    Then `fm skill verify` is called again.
+    Then `xrefkit skill verify` is called again.
 
 14. If the quality gate is required, quality acceptance is recorded separately.
     - standard and heavy tiers require the quality gate.
@@ -103,12 +103,12 @@ phase.
     - the assigned `quality_reviewer` role advances the quality phase.
 
 15. Main AI / harness records handoff with the assigned handoff owner role.
-    python -m fm skill phase --log <run-log> --phase handoff --status done --role "<skill>:handoff_owner"
+    python -m xrefkit skill phase --log <run-log> --phase handoff --status done --role "<skill>:handoff_owner"
 
 16. Main AI / harness applies closure.
-    python -m fm skill close --log <run-log>
+    python -m xrefkit skill close --log <run-log>
 
-17. fm skill close accepts, blocks, or escalates closure.
+17. xrefkit skill close accepts, blocks, or escalates closure.
     - Closure asserts process integrity.
     - Closure does not by itself assert artifact content quality.
 ```
@@ -130,7 +130,7 @@ Skill executor context
 
 Deterministic checker context
   - is not an AI reasoning context
-  - is fm skill verify reading the run log
+  - is xrefkit skill verify reading the run log
   - cannot be argued into passing by executor context
 
 Quality reviewer context
@@ -140,10 +140,10 @@ Quality reviewer context
 
 ## When Verify Runs
 
-`fm skill verify` is not periodic. It is called at workflow milestones:
+`xrefkit skill verify` is not periodic. It is called at workflow milestones:
 
 - after concrete work items, artifacts, concerns, and phase records are present
-- before `fm skill close`
+- before `xrefkit skill close`
 - again after any blocked verification gap is repaired
 
 The AI / harness calls it explicitly because closure requires the check phase to

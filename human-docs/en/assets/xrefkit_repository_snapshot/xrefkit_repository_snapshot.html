@@ -486,29 +486,29 @@ h1 {
   <main class="canvas">
     <header class="header">
       <div>
-        <h1>A repository OS for controlled Skill-backed AI work.</h1>
-        <p class="subtitle">Current repository snapshot: Skills now open through a runtime envelope, create work items and evidence, separate execution from checking, and close only after machine-readable gates pass.</p>
-        <div class="snapshot">Repository snapshot: 2026-07-04</div>
+        <h1>One portable package for XID-directed AI work.</h1>
+        <p class="subtitle">XRefKit packages runtime contracts, Skills, tools, catalogs, and an MCP adapter while loading only the selected knowledge an AI needs.</p>
+        <div class="snapshot">Repository snapshot: 2026-07-10</div>
       </div>
       <div class="brand">XRefKit</div>
     </header>
 
     <section class="main-grid">
       <section class="panel assets">
-        <div class="panel-title">Control assets</div>
+        <div class="panel-title">Unified xrefkit package</div>
         <div class="panel-body">
           <div class="asset-list">
-            <div class="asset"><div class="ico">S</div><strong>Skill</strong></div>
-            <div class="asset"><div class="ico">K</div><strong>Knowledge</strong></div>
-            <div class="asset"><div class="ico">WP</div><strong>Workflow protocol</strong></div>
-            <div class="asset"><div class="ico">RT</div><strong>Semantic routing</strong></div>
-            <div class="asset"><div class="ico">LOG</div><strong>Sessions</strong></div>
+            <div class="asset"><div class="ico">RT</div><strong>xrefkit runtime</strong></div>
+            <div class="asset"><div class="ico">S</div><strong>xrefkit skills</strong></div>
+            <div class="asset"><div class="ico">T</div><strong>xrefkit tools</strong></div>
+            <div class="asset"><div class="ico">MCP</div><strong>xrefkit MCP adapter</strong></div>
+            <div class="asset"><div class="ico">CAT</div><strong>Target + finding catalogs</strong></div>
             <div class="asset"><div class="ico">XID</div><strong>Stable references</strong></div>
           </div>
           <div class="memory-box">
             <div class="no-memory"></div>
-            <h2>Do not rely on memory</h2>
-            <p>Startup routing loads the current policy, Skill metadata, knowledge, evidence, and handoff source before work continues.</p>
+            <h2>Load lists before bodies</h2>
+            <p>Select a target, finding, Skill, or Knowledge XID before expanding detail. Unrelated context stays outside the prompt.</p>
           </div>
         </div>
       </section>
@@ -525,12 +525,12 @@ h1 {
             <div class="num">6</div>
           </div>
           <div class="steps">
-            <div class="step"><div class="ico">RUN</div><div><h3>Load gate</h3><p><code>fm skill run</code> validates the meta file and creates the runtime log before the Skill is opened.</p></div></div>
+            <div class="step"><div class="ico">RUN</div><div><h3>Load gate</h3><p><code>xrefkit skill run</code> validates the meta file and creates the runtime log before the Skill is opened.</p></div></div>
             <div class="step"><div class="ico">WI</div><div><h3>Concrete worklist</h3><p>Task-specific work items are added and must become done or escalated before closure.</p></div></div>
             <div class="step"><div class="ico">R</div><div><h3>Role separation</h3><p>Executor, checker, and handoff owner are assigned and enforced on phase updates.</p></div></div>
             <div class="step"><div class="ico">ART</div><div><h3>Artifacts and evidence</h3><p>Output and evidence links are required; checks, sources, judgments, and handoff links stay explicit.</p></div></div>
             <div class="step"><div class="ico">C</div><div><h3>Concern register</h3><p>Unknowns, risks, and non-trivial judgments are recorded instead of hidden in prose.</p></div></div>
-            <div class="step"><div class="ico">QG</div><div><h3>Close and audit</h3><p><code>fm skill close</code> and the FM quality gate reject incomplete or non-envelope runs.</p></div></div>
+            <div class="step"><div class="ico">QG</div><div><h3>Close and audit</h3><p><code>xrefkit skill close</code> and the XRefKit quality gate reject incomplete or non-envelope runs.</p></div></div>
           </div>
           <aside class="side-rule">
             <h3>Closure is refused when</h3>
@@ -548,41 +548,41 @@ h1 {
       </section>
 
       <section class="panel guard">
-        <div class="panel-title">Startup and direction guard</div>
+        <div class="panel-title">Catalog-first context</div>
         <div class="panel-body">
           <div class="guard-stack">
             <div class="direction">
-              <div class="guard-item">Startup policy</div>
+              <div class="guard-item">Target catalog</div>
               <div class="down">v</div>
-              <div class="guard-item">Skill meta + OS contract</div>
+              <div class="guard-item">Finding list</div>
               <div class="down">v</div>
-              <div class="guard-item">Runtime envelope</div>
+              <div class="guard-item">Selected XID body</div>
               <div class="down">v</div>
-              <div class="guard-item">External task input</div>
+              <div class="guard-item">Provider resolver</div>
               <div class="down">v</div>
-              <div class="guard-item">Auditable output</div>
+              <div class="guard-item">Bounded AI context</div>
             </div>
             <div>
-              <div class="shield">OK</div>
-              <div class="guard-copy">Higher layers control lower layers</div>
+              <div class="shield">XID</div>
+              <div class="guard-copy">Repository, package, or MCP; same identity</div>
             </div>
           </div>
           <div class="blocked">
-            <p><strong>Blocked:</strong> external input cannot rewrite the active Skill procedure, scope, authority, or escalation path.</p>
-            <p><strong>Handoff source:</strong> receiving startup must confirm the prior run's closure and handoff before using it as context.</p>
+            <p><strong>Blocked:</strong> stale packs, conflicting providers, missing coverage, and MCP provider cycles fail explicitly.</p>
+            <p><strong>Expanded on demand:</strong> catalogs stay compact; only selected bodies enter the working context.</p>
           </div>
         </div>
       </section>
 
       <section class="panel human">
-        <div class="panel-title">Human boundary and maturity</div>
+        <div class="panel-title">Distribution boundary</div>
         <div class="panel-body">
           <div class="human-flow">
-            <div class="human-card"><div class="ico">DR</div><div><h3>Draft</h3><p>Hypothesis record. Not load-ready until the operating boundary is tested.</p></div></div>
-            <div class="human-card"><div class="ico">TR</div><div><h3>Trial</h3><p>Runnable with observation links; weak or ambiguous boundaries are discovered through use.</p></div></div>
-            <div class="human-card"><div class="ico">ST</div><div><h3>Stable</h3><p>Runtime envelope, guard policy, references, and handoff boundary are explicit.</p></div></div>
-            <div class="human-card"><div class="ico">GV</div><div><h3>Governed</h3><p>Stable Skill plus governance evidence and auditable responsibility linkage.</p></div></div>
-            <div class="bracket">Trade-offs return to humans</div>
+            <div class="human-card"><div class="ico">R</div><div><h3>Repository mode</h3><p>Canonical Markdown and local packs resolve directly by XID.</p></div></div>
+            <div class="human-card"><div class="ico">P</div><div><h3>Installed package</h3><p>Compiled base contracts start without repository-relative docs paths.</p></div></div>
+            <div class="human-card"><div class="ico">M</div><div><h3>MCP mode</h3><p>A thin adapter exposes the same resolver and catalog operations.</p></div></div>
+            <div class="human-card"><div class="ico">T</div><div><h3>Client-side tools</h3><p>Tool definitions cross MCP; execution remains on the trusted client.</p></div></div>
+            <div class="bracket">Executable distribution requires pinned trust</div>
             <div class="human-card"><div class="ico">H</div><div><h3>Human decisions</h3><p>Humans decide risk acceptance, scope changes, priority, and business trade-offs.</p></div></div>
             <div class="human-card"><div class="ico">A</div><div><h3>Audit trail</h3><p>Logs preserve decisions, evidence, checks, concerns, approvals, and handoffs.</p></div></div>
           </div>
@@ -599,7 +599,7 @@ h1 {
     </section>
 
     <section class="principles">
-      <div class="principle"><div class="num">1</div><div><h3>Run the envelope first.</h3><p>Skill-backed work starts with <code>fm skill run</code>, not direct procedure use.</p></div></div>
+      <div class="principle"><div class="num">1</div><div><h3>Run the envelope first.</h3><p>Skill-backed work starts with <code>xrefkit skill run</code>, not direct procedure use.</p></div></div>
       <div class="principle"><div class="num">2</div><div><h3>Work items are real.</h3><p>Generic phases are not enough to close a run.</p></div></div>
       <div class="principle"><div class="num">3</div><div><h3>Execution and checking split.</h3><p>Assigned roles enforce separate responsibility.</p></div></div>
       <div class="principle"><div class="num">4</div><div><h3>Concerns must resolve.</h3><p>Unknowns, risks, and judgments are closure inputs.</p></div></div>

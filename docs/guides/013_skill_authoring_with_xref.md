@@ -12,6 +12,176 @@ Goal: keep skill files small, and load only required domain knowledge on demand.
 - Domain knowledge files: factual content and source-backed details.
 - Connection rule: skills reference domain knowledge by XID.
 
+## Mixed Business Procedure Decomposition
+
+When source material mixes business procedure, domain rules, examples, and
+judgment criteria, do not convert it into one large Skill. First decompose the
+material into control, judgment, and knowledge units.
+
+The split exists because a Skill should carry the judgment method, while the
+domain knowledge used by that judgment varies by case, tuning, local system,
+and available evidence. If the domain corpus is copied into `SKILL.md`, most
+runs load irrelevant context and the Skill becomes harder to reuse or audit.
+
+Use this decomposition pass before writing or revising a Skill:
+
+1. Preserve the input material as source or work evidence.
+2. Mark each statement with one primary role:
+   - `procedure`: an action the AI performs or a sequence it follows
+   - `judgment`: a question, viewpoint, branch condition, acceptance criterion,
+     or decision rule the AI applies
+   - `knowledge`: a domain fact, glossary term, policy, local rule, standard,
+     quality criterion, or source-backed example
+   - `evidence`: a concrete observed case, source locator, artifact, log, or
+     sample used to justify knowledge
+   - `control`: startup, escalation, closure, handoff, or protocol behavior
+     that belongs to the repository operating contract rather than this Skill
+3. Put `procedure` and `judgment` in the Skill only when they are part of the
+   reusable method for this Skill's `capability` / `tuning` /
+   `responsibility`.
+4. Put `knowledge` in `knowledge/` when it can be selected, reused, verified, or
+   replaced independently from the Skill method.
+5. Keep raw `evidence` in `sources/` or `work/`; promote only normalized,
+   current, reusable knowledge into `knowledge/`.
+6. Keep repository-wide `control` in `agent/`, `docs/core/`, or the workflow
+   protocol. Do not restate it as Skill-local policy unless the Skill has a
+   specific delta.
+7. For each `judgment` in the Skill, declare the domain knowledge it may need as
+   a `knowledge_slots` entry. Use a fixed `bind` only when the exact governance
+   or domain fragment must not vary; otherwise use a `query` slot so the runtime
+   can select the relevant base, pack, local, or MCP-supplied knowledge.
+
+### Target Catalog And Lazy Selection
+
+Many business procedures use the same judgment method against multiple possible
+targets: services, screens, APIs, tables, document types, repositories,
+departments, stakeholders, product areas, or local rule sets. The target is
+often identified from the user's prompt or from current task artifacts, not from
+the Skill itself.
+
+Do not load every possible target into the Skill context. That creates context
+pollution: irrelevant local facts, examples, exceptions, and historical notes
+can bias the judgment even when the procedure is otherwise uniform.
+
+Use a target-selection flow:
+
+1. Extract target cues from the prompt and available task artifacts.
+2. Build a metadata-only candidate list for the relevant target class.
+   Candidate entries should carry stable identifiers such as XID, skill id,
+   service name, domain, summary, applicability boundary, content hash, and
+   source/catalog provenance.
+3. Select the minimum target set needed for the current run.
+4. Load full bodies only for selected target XIDs.
+5. Record selected XIDs and content hashes in the run log or output evidence.
+6. Leave unselected candidates as catalog metadata, not as loaded context.
+
+This keeps the Skill centered on the uniform judgment while the target-specific
+domain knowledge remains lazy and selectable. In MCP mode, this is the same
+shape as:
+
+```text
+metadata list -> choose XID -> get_document_by_xid(XID)
+```
+
+In repository-native mode, use `xref search` / `xref show` the same way:
+search produces candidates, and `show` loads only selected fragments.
+
+For XRefKit v2 Local Domain Skills that extend Pack Skills, the resolver should
+perform the first cataloging step automatically at extension-resolution time:
+registered package and local knowledge become `available_domain_knowledge`
+metadata in the effective Skill bundle, while full bodies remain unloaded until
+the run selects the needed XIDs.
+
+If target selection itself is non-trivial, make it an explicit planning
+judgment. Record why the selected candidates were sufficient, and record
+unselected-but-plausible candidates only when their exclusion affects risk,
+unknowns, or handoff.
+
+### Deferred Catalog Extraction
+
+Initial authoring may temporarily keep target-specific knowledge inside a Skill
+when the target set is still unclear, the first runnable behavior is more
+important than clean catalog shape, or there is not yet enough observation to
+name the target classes. Treat that as a temporary maturity state, not as the
+desired final structure.
+
+Use this deferred path:
+
+1. Keep the mixed material in a `draft` or early `trial` Skill only long enough
+   to observe how the judgment is used.
+2. Mark embedded target-specific sections with an explicit extraction note:
+   target class, likely catalog id, source basis, and why extraction is
+   deferred.
+3. After one or more runs reveal repeated target classes or alternative targets,
+   extract those sections into `knowledge/` or local/package knowledge roots.
+4. Assign or preserve XIDs, then let extension-time
+   `available_domain_knowledge` cataloging expose the extracted targets as
+   metadata.
+5. Replace the embedded text in the Skill with `knowledge_slots` and XID-backed
+   references.
+6. Do not promote a Skill to `stable` or `governed` while reusable
+   target-specific knowledge remains embedded in `SKILL.md`.
+
+This path is for authoring velocity and observation. It must not become a way to
+hide durable domain knowledge inside the Skill.
+
+The unit of a Skill is a stable judgment method, not the shape of the original
+document. The unit of Knowledge is a coherent reusable concept with a source
+basis and applicability boundary, not a paragraph copied from the original
+procedure.
+
+### Split Heuristics
+
+Use these checks when a statement is hard to classify:
+
+| Statement asks or says | Target |
+| --- | --- |
+| "When doing this work, ask/check/compare/classify..." | Skill judgment method |
+| "If condition A, choose path B..." | Skill judgment method, with required knowledge slot if A depends on domain rules |
+| "This system/product/domain defines A as..." | Knowledge |
+| "The rule is different for C# and Python..." | Knowledge, selected by tuning-specific slot |
+| "This task must stop/escalate/record closure when..." | Repository control unless it is a Skill-specific delta |
+| "In this past case, artifact X showed..." | Evidence in `sources/` or `work/`; promote only the reusable conclusion |
+| "Always include this long checklist..." | Usually Knowledge; Skill should name the judgment axis and load the checklist only when needed |
+
+### Output Of The Decomposition Pass
+
+Before authoring the final files, write down the split as a compact map:
+
+```md
+## Skill Boundary
+- skill_id:
+- capability / tuning / responsibility:
+- reusable judgment method:
+- inputs:
+- outputs:
+- preconditions:
+
+## Knowledge Candidates
+- slot:
+  - need:
+  - selection: bind | query
+  - target class:
+  - candidate list source:
+  - selected XIDs or new fragment proposal:
+  - unselected candidates that matter:
+  - deferred extraction note:
+  - applicability boundary:
+
+## Evidence And Source Basis
+- source/work artifact:
+- supports:
+- unresolved source gaps:
+
+## Not Skill-Local Control
+- rule:
+- canonical home: agent | docs/core | workflow protocol | knowledge
+```
+
+If the map cannot identify the reusable judgment method separately from the
+domain corpus, keep the asset as a source/work note and do not promote it to a
+Skill yet.
+
 ## Maturity-First Authoring Rule
 
 New Skills are managed as evolving operating assets, not as fully completed
@@ -58,7 +228,7 @@ Review-oriented skills should not use `local_default`.
 
 ## Capability Layering Rule
 
-For `trial` or higher Skills that can be opened with `fm skill run`, include
+For `trial` or higher Skills that can be opened with `xrefkit skill run`, include
 the runtime fields required by
 `docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`.
 
@@ -123,13 +293,13 @@ cost as `token_cost` per
 2. Find candidate knowledge fragments:
 
 ```powershell
-python -m fm xref search "<task or domain query>"
+python -m xrefkit xref search "<task or domain query>"
 ```
 
 3. Read only required fragments:
 
 ```powershell
-python -m fm xref show <XID>
+python -m xrefkit xref show <XID>
 ```
 
 4. Decide whether the skill loads external context during execution.
@@ -145,7 +315,7 @@ python -m fm xref show <XID>
 9. If knowledge changed, run consistency check:
 
 ```powershell
-python -m fm xref fix
+python -m xrefkit xref fix
 ```
 
 ## Skill Reference Format (recommended)

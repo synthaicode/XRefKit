@@ -48,7 +48,7 @@ The machine-checkable definition of this pack is its manifest:
 
 The manifest declares what the pack OWNS (exclusive) versus what it USES (shared
 references that may live anywhere, including the OS core), and pins the OS-core
-contract version it depends on. Validate it with `python -m fm pack lint`. This
+contract version it depends on. Validate it with `python -m xrefkit pack lint`. This
 page remains the human-facing entry; the manifest is the source of truth for
 membership and boundary.
 
@@ -82,14 +82,14 @@ The pack depends on shared OS-core controls and must not redefine them.
 
 ### Shared Runtime Surface
 
-- `fm skill run`
-- `fm skill workitem`
-- `fm skill artifact`
-- `fm skill concern`
-- `fm skill phase`
-- `fm skill close`
-- `fm xref search`
-- `fm xref show`
+- `xrefkit skill run`
+- `xrefkit skill workitem`
+- `xrefkit skill artifact`
+- `xrefkit skill concern`
+- `xrefkit skill phase`
+- `xrefkit skill close`
+- `xrefkit xref search`
+- `xrefkit xref show`
 
 ## Stage-3 Status
 

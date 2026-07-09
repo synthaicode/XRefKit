@@ -56,7 +56,7 @@ future schema, implement migrations, or decide missing requirements.
 
 ## Startup
 
-- Start through `fm skill run`.
+- Start through `xrefkit skill run`.
 - Confirm the target path and source scope boundary.
 - Tell the user when this run will inspect local SQL, DDL, ORM, migration,
   configuration, or persistence source files because no current DB analysis XID

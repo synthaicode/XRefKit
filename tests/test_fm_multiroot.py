@@ -5,9 +5,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from fm.__main__ import main
-from fm.packmeta import _discover_manifests
-from fm.xref import XrefConfig
+from xrefkit.__main__ import main
+from xrefkit.packmeta import _discover_manifests
+from xrefkit.xref import XrefConfig
 
 
 OWNERSHIP = """\

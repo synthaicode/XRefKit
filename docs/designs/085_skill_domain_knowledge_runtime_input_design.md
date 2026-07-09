@@ -296,11 +296,11 @@ mechanism.
 
 ### Required fm behavior
 
-`fm skill run` should gain a repository-native input path for this proof, such
+`xrefkit skill run` should gain a repository-native input path for this proof, such
 as:
 
 ```powershell
-python -m fm skill run `
+python -m xrefkit skill run `
   --meta skills/design_flow/meta.md `
   --task "Design target service changes" `
   --domain-knowledge-catalog work/fixtures/domain_knowledge_catalog.json `
@@ -314,7 +314,7 @@ The resulting run log should include:
 - no client-facing local path as the retrieval mechanism
 - a place to record used knowledge refs by XID after execution
 
-The existing `fm skill artifact` command can already record XID targets as
+The existing `xrefkit skill artifact` command can already record XID targets as
 evidence, source, judgment, or output targets. That is enough for used refs, but
 not enough for the startup-time available/selected catalog. The startup-time
 catalog needs to be part of the initial runtime envelope so the Skill cannot
@@ -324,12 +324,12 @@ silently use a different knowledge set later.
 
 The non-MCP proof should verify:
 
-1. a Skill run can be opened from `fm skill run`
+1. a Skill run can be opened from `xrefkit skill run`
 2. the run log records the available domain knowledge catalog as XID metadata
 3. the selected knowledge inputs are valid XIDs from the available catalog
 4. required `knowledge_inputs` are satisfied before execution proceeds
 5. used refs can be recorded by XID during execution
-6. `fm skill verify` can validate the run without MCP
+6. `xrefkit skill verify` can validate the run without MCP
 7. no generated client-facing section instructs the user to read a local path
    for domain knowledge content
 
@@ -358,7 +358,7 @@ places:
 - MCP currently maps `knowledge_refs` and bound `knowledge_slots` into
   `required_knowledge`.
 - `resolve_skill_knowledge` accepts both query slots and pinned `bind` XIDs.
-- `fm skill run` does not yet accept or validate an XID-only domain knowledge
+- `xrefkit skill run` does not yet accept or validate an XID-only domain knowledge
   catalog for the run envelope.
 
 Those are transitional shapes. The target model is:

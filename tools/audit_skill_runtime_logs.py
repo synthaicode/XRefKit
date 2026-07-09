@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -10,7 +11,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from fm.skillrun import (
+from xrefkit.skillrun import (
     ACCEPTED_CLOSE_STATUSES,
     QUALITY_REQUIRED_TIERS,
     _assigned_role,
@@ -87,8 +88,16 @@ def _audit_one(path: Path, root: Path) -> list[str]:
         return []
 
     errors: list[str] = []
-    if "## Skill Load Gate\n\n- status: `opened_by_fm_skill_run`" not in text:
-        errors.append("missing fm skill run load gate")
+    has_current_gate = "## Skill Load Gate\n\n- status: `opened_by_xrefkit_skill_run`" in text
+    # Historical run logs are immutable evidence. Accept the legacy marker only
+    # when the recorded run predates the unified-package cutover.
+    has_legacy_gate = "## Skill Load Gate\n\n- status: `opened_by_fm_skill_run`" in text
+    date_match = re.search(r"(?m)^- date: `([0-9]{4}-[0-9]{2}-[0-9]{2})`", text)
+    legacy_before_cutover = bool(
+        has_legacy_gate and date_match and date_match.group(1) < "2026-07-10"
+    )
+    if not has_current_gate and not legacy_before_cutover:
+        errors.append("missing xrefkit skill run load gate")
 
     closure_status = _section_status(text, "Closure Gate")
     if closure_status not in ACCEPTED_CLOSE_STATUSES:

@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from fm.skillmeta import (
+from xrefkit.skillmeta import (
     GUARD_CAPABILITY_REF,
     GUARD_KNOWLEDGE_REF,
     REQUIRED_OS_CONTRACT,
@@ -287,7 +287,7 @@ class SkillMetaTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            from fm.skillmeta import _TRACKED_CACHE
+            from xrefkit.skillmeta import _TRACKED_CACHE
 
             _TRACKED_CACHE.clear()
             result = validate_skill_meta(meta)

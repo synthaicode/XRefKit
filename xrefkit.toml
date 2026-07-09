@@ -1,0 +1,9 @@
+[instance]
+id = "xrefkit-reference"
+
+[runtime]
+command_authority = "xrefkit_authoritative"
+startup_xid = "C3A1F78D9B22"
+
+[roots]
+content = ["."]

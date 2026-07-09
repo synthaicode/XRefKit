@@ -67,8 +67,8 @@ a separate step.
 
 The following can be applied automatically in `apply-safe` mode:
 
-- add missing XID blocks to new files through `fm xref init`
-- rewrite stale XID-bearing paths through `fm xref fix`
+- add missing XID blocks to new files through `xrefkit xref init`
+- rewrite stale XID-bearing paths through `xrefkit xref fix`
 - normalize path-bearing XID references
 - add missing `trial`-level provisional metadata when the value is mechanical
 - update pack `uses_*` references when the target asset is clearly shared and
@@ -155,13 +155,13 @@ validation:
 The initial deterministic command is:
 
 ```powershell
-python -m fm skill merge-plan --source <path> --json
+python -m xrefkit skill merge-plan --source <path> --json
 ```
 
-This belongs under `fm skill` because the output is a Skill merge plan, not a
+This belongs under `xrefkit skill` because the output is a Skill merge plan, not a
 general XID operation.
 
-`fm xref` remains responsible for XID indexing and path repair.
+`xrefkit xref` remains responsible for XID indexing and path repair.
 
 `apply-safe` is intentionally not part of the initial implementation. Safe
 application can be added after the report-only planner has enough observed use
@@ -171,7 +171,7 @@ to define which transformations are truly mechanical.
 
 When the planner is used inside a Skill-backed task:
 
-1. start with `fm skill run`
+1. start with `xrefkit skill run`
 2. attach the merge report as an artifact
 3. record non-trivial classification as a `judgment`
 4. run validation

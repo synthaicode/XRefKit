@@ -23,7 +23,7 @@ human with evidence and a clear handoff condition.
 Every `stable` or `governed` Skill metadata file must declare an `os_contract`
 block.
 
-The block is enforced by `python -m fm skill check --level stable` and
+The block is enforced by `python -m xrefkit skill check --level stable` and
 `--level governed`. A Skill that does not carry the required operating contract
 is not considered `stable` or `governed`.
 
@@ -46,7 +46,7 @@ not runtime-assigned values and not evidence.
 The Skill declares its business use through the `responsibility` field. Common
 runtime roles are owned by the workflow protocol, not by the Skill: `executor`
 advances execution; `checker` performs the deterministic run-record check
-through `fm skill verify`; `quality_reviewer` owns output-content acceptance
+through `xrefkit skill verify`; `quality_reviewer` owns output-content acceptance
 when the quality gate is required; and `handoff_owner` advances explicit
 handoff. `trial`, `stable`, and `governed` Skill metadata must not define these
 protocol-owned roles under `role_responsibilities`; Skill-specific acceptance or
@@ -64,7 +64,7 @@ The canonical compact declaration is the version shorthand:
 
 `v1` resolves to the expanded version-1 block below. The expanded inline
 form remains valid and means exactly the same contract; an unknown
-shorthand value is a validation error. `fm skill run` always materializes
+shorthand value is a validation error. `xrefkit skill run` always materializes
 the expanded block into the run log, so runtime records stay explicit
 regardless of which meta form is used.
 
@@ -139,7 +139,7 @@ treated as ready for that maturity.
 Operational Skill use must start through the runtime-envelope command:
 
 ```powershell
-python -m fm skill run --meta skills/<skill>/meta.md --task "task text"
+python -m xrefkit skill run --meta skills/<skill>/meta.md --task "task text"
 ```
 
 This command is the Skill load gate for `trial`, `stable`, and `governed`
@@ -162,7 +162,7 @@ the referenced `SKILL.md` file exists, then writes a session log containing:
 - closure gate
 - handoff section
 
-Do not open or execute the Skill procedure before `fm skill run` succeeds. The
+Do not open or execute the Skill procedure before `xrefkit skill run` succeeds. The
 returned `skill_doc` is the allowed procedure file for that run, and the
 returned `run_log` is the active runtime record.
 
@@ -170,7 +170,7 @@ When work starts from a prior Skill handoff, the receiving startup must name
 the source run log explicitly:
 
 ```powershell
-python -m fm skill run --meta skills/<skill>/meta.md --task "task text" --handoff-source-log work/sessions/<source-run-log>.md
+python -m xrefkit skill run --meta skills/<skill>/meta.md --task "task text" --handoff-source-log work/sessions/<source-run-log>.md
 ```
 
 The receiving startup must not continue from that handoff unless the source run
@@ -180,7 +180,7 @@ shows `Closure Gate` as `done` or `escalated` and `Handoff` as `done` or
 `draft` Skills are managed records and are not load-ready. Promote them to
 `trial` before operational use.
 
-`fm skill run` also assigns distinct runtime roles:
+`xrefkit skill run` also assigns distinct runtime roles:
 
 - `executor`: advances the execution phase
 - `checker`: advances the check phase
@@ -188,7 +188,7 @@ shows `Closure Gate` as `done` or `escalated` and `Handoff` as `done` or
 - `handoff_owner`: advances the handoff phase
 
 The `checker` role is assigned at runtime, but its responsibility is protocol
-owned: deterministic workflow-progression verification by `fm skill verify`.
+owned: deterministic workflow-progression verification by `xrefkit skill verify`.
 Do not repeat this responsibility in each Skill's meta.
 
 The assigned roles are returned in JSON and written to the `Runtime Role
@@ -199,8 +199,8 @@ The generated log also contains a `Concrete Work Items` section. Add or update
 task-specific work items with:
 
 ```powershell
-python -m fm skill workitem --log work/sessions/<run-log>.md --item WI-001 --text "implement the concrete change" --status pending --role "<skill_id>:executor"
-python -m fm skill workitem --log work/sessions/<run-log>.md --item WI-001 --status done --role "<skill_id>:executor"
+python -m xrefkit skill workitem --log work/sessions/<run-log>.md --item WI-001 --text "implement the concrete change" --status pending --role "<skill_id>:executor"
+python -m xrefkit skill workitem --log work/sessions/<run-log>.md --item WI-001 --status done --role "<skill_id>:executor"
 ```
 
 Supported work-item statuses are the same runtime status set:
@@ -219,8 +219,8 @@ The generated log also contains a `Runtime Artifacts` section. Add or update
 structured output and evidence links with:
 
 ```powershell
-python -m fm skill artifact --log work/sessions/<run-log>.md --artifact OUT-001 --kind output --target "docs/output.md" --item WI-001 --status done --role "<skill_id>:executor"
-python -m fm skill artifact --log work/sessions/<run-log>.md --artifact EVD-001 --kind evidence --target "python tools/run_quality_gate.py fm" --item WI-001 --status done --role "<skill_id>:checker"
+python -m xrefkit skill artifact --log work/sessions/<run-log>.md --artifact OUT-001 --kind output --target "docs/output.md" --item WI-001 --status done --role "<skill_id>:executor"
+python -m xrefkit skill artifact --log work/sessions/<run-log>.md --artifact EVD-001 --kind evidence --target "python tools/run_quality_gate.py fm" --item WI-001 --status done --role "<skill_id>:checker"
 ```
 
 Supported artifact kinds:
@@ -240,9 +240,9 @@ The generated log also contains an `Unknowns And Risks` section. Add or update
 closure-relevant unknowns, risks, and judgments with:
 
 ```powershell
-python -m fm skill concern --log work/sessions/<run-log>.md --concern UNK-001 --kind unknown --status resolved --text "missing input was confirmed" --role "<skill_id>:checker"
-python -m fm skill concern --log work/sessions/<run-log>.md --concern RSK-001 --kind risk --status escalated --text "residual risk accepted by owner" --role "<skill_id>:checker"
-python -m fm skill concern --log work/sessions/<run-log>.md --concern JDG-001 --kind judgment --judgment non_trivial --status resolved --target "work/judgments/JDG-001.md" --text "non-trivial trade-off recorded" --role "<skill_id>:checker"
+python -m xrefkit skill concern --log work/sessions/<run-log>.md --concern UNK-001 --kind unknown --status resolved --text "missing input was confirmed" --role "<skill_id>:checker"
+python -m xrefkit skill concern --log work/sessions/<run-log>.md --concern RSK-001 --kind risk --status escalated --text "residual risk accepted by owner" --role "<skill_id>:checker"
+python -m xrefkit skill concern --log work/sessions/<run-log>.md --concern JDG-001 --kind judgment --judgment non_trivial --status resolved --target "work/judgments/JDG-001.md" --text "non-trivial trade-off recorded" --role "<skill_id>:checker"
 ```
 
 Supported concern kinds:
@@ -268,8 +268,8 @@ selected Skill procedure after the runtime record exists.
 After the runtime log exists, phase state can be advanced with:
 
 ```powershell
-python -m fm skill phase --log work/sessions/<run-log>.md --phase execution --status done --role "<skill_id>:executor" --note "executor completed work items"
-python -m fm skill phase --log work/sessions/<run-log>.md --phase check --status done --role "<skill_id>:checker" --note "checker verified evidence and handoff"
+python -m xrefkit skill phase --log work/sessions/<run-log>.md --phase execution --status done --role "<skill_id>:executor" --note "executor completed work items"
+python -m xrefkit skill phase --log work/sessions/<run-log>.md --phase check --status done --role "<skill_id>:checker" --note "checker verified evidence and handoff"
 ```
 
 Supported phases:
@@ -295,15 +295,15 @@ This is the first runtime state-transition layer. It updates the worklist,
 updates the matching runtime section when one exists, and appends a phase event
 record.
 
-For `execution`, `check`, and `handoff`, `fm skill phase` rejects updates unless
-the supplied `--role` matches the role assigned by `fm skill run`. This makes
+For `execution`, `check`, and `handoff`, `xrefkit skill phase` rejects updates unless
+the supplied `--role` matches the role assigned by `xrefkit skill run`. This makes
 execution/check separation a machine-checked runtime rule rather than a note in
 the log.
 
 Before treating Skill-backed work as complete, apply the closure gate:
 
 ```powershell
-python -m fm skill close --log work/sessions/<run-log>.md --note "closure accepted"
+python -m xrefkit skill close --log work/sessions/<run-log>.md --note "closure accepted"
 ```
 
 The closure command reads the run log and rejects closure unless:
@@ -311,7 +311,7 @@ The closure command reads the run log and rejects closure unless:
 - `Execution Role` is `done` or `escalated`
 - `Check Role` is `done` or `escalated`
 - `Handoff` is `done` or `escalated`
-- the log was opened by `fm skill run`
+- the log was opened by `xrefkit skill run`
 - execution, check, and handoff were advanced by their assigned runtime roles
 - at least one concrete work item exists
 - every concrete work item is `done` or `escalated`
@@ -369,14 +369,14 @@ python tools/audit_skill_runtime_logs.py --tracked-only
 ```
 
 The audit detects committed Skill run logs that were not opened by
-`fm skill run`, logs that are not closed, missing assigned-role phase evidence,
+`xrefkit skill run`, logs that are not closed, missing assigned-role phase evidence,
 missing concrete work items, missing output/evidence artifacts, and unresolved
 unknown/risk/judgment concerns. The `--tracked-only` mode is used by
 `python tools/run_quality_gate.py fm` so historical local `work/` files do not
 require migration before the CI-facing gate can enforce the contract.
 
 The check phase is workflow-progression verification, and it is advanced
-deterministically by `fm skill verify --log <run-log>` at every maturity
+deterministically by `xrefkit skill verify --log <run-log>` at every maturity
 level, including `trial`. The command re-derives the progression conditions
 (worklist completion, work-item closure, artifact recording and linkage,
 concern resolution, role separation) from the run log on disk and advances the
@@ -384,7 +384,7 @@ check phase to `done`, or to `blocked` with the failing condition named. It
 reads the recorded process only — it does not open artifact targets, judge
 content, or assess output quality.
 
-`fm skill run` assigns `checker_context: deterministic_fm_verification`
+`xrefkit skill run` assigns `checker_context: deterministic_fm_verification`
 regardless of `execution_mode`, which governs the executor side only.
 Deterministic code is context-independent by construction: it cannot be biased
 by the producer's context and cannot be argued into a pass, so it satisfies the
@@ -398,7 +398,7 @@ execution phase. `light` and `standard` skills are dispatched to the
 tier-matched executor subagents (`.claude/agents/skill-executor-light.md`,
 `.claude/agents/skill-executor-standard.md`); `heavy` and untiered skills run
 on the main-context model. The check phase is workflow-progression
-verification and is advanced deterministically by `fm skill verify`, not by a
+verification and is advanced deterministically by `xrefkit skill verify`, not by a
 model, whatever the executor tier; domain-level quality review belongs to
 review-oriented Skills, not to the check phase. `model_tier` is a cost-control
 knob for the executor side only — it never relaxes deterministic check

@@ -385,7 +385,7 @@ required_followup: <next owner or specialist Skill, or none>
 ## Unknowns And Risks
 
 - Mirror every `needs_confirmation` finding that affects closure as an
-  `unknown` concern with `python -m fm skill concern`.
+  `unknown` concern with `python -m xrefkit skill concern`.
 - Record `baseline_unavailable` as a `risk` concern when the Roslyn baseline
   could not be collected.
 - Record unresolved lifecycle status sources as `unknown` concerns with the
@@ -404,7 +404,7 @@ Closure is allowed only when all of the following hold:
 - every finding carries evidence, severity, and remediation (or
   `needs_confirmation` with the missing evidence named)
 - out-of-scope discoveries are on the handoff list, not silently dropped
-- the run log passes `python -m fm skill close`
+- the run log passes `python -m xrefkit skill close`
 
 ## Handoff
 

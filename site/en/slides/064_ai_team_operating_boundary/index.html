@@ -26,23 +26,13 @@
       border-radius: 10px;
       padding: 16px;
     }
-    .slide-frame {
-      position: relative;
+    iframe {
+      display: block;
       width: 100%;
       aspect-ratio: 16 / 9;
-      overflow: hidden;
       background: white;
-      border-radius: 6px;
-    }
-    iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      display: block;
-      width: 1600px;
-      height: 900px;
       border: 0;
-      transform-origin: top left;
+      border-radius: 6px;
     }
     .controls {
       display: flex;
@@ -81,12 +71,9 @@
 </head>
 <body>
   <main>
-    <p><a href="../../" style="color:#93c5fd;font-weight:700;text-decoration:none">← Back to English slides</a></p>
     <h1>AI Team Operating Boundary Preview</h1>
     <section class="viewer">
-      <div class="slide-frame" id="slide-frame">
-        <iframe id="slide" src="../../assets/064_ai_team_operating_boundary/01_title_q.html" title="slide preview"></iframe>
-      </div>
+      <iframe id="slide" src="../../assets/064_ai_team_operating_boundary/01_title_q.html" title="slide preview"></iframe>
       <div class="controls">
         <button class="secondary" id="prev">Prev</button>
         <button id="next">Next</button>
@@ -118,19 +105,12 @@
     let index = 0;
     let timer = null;
     const slide = document.getElementById("slide");
-    const slideFrame = document.getElementById("slide-frame");
     const narration = document.getElementById("narration");
     const counter = document.getElementById("counter");
-    function fitSlide() {
-      const baseWidth = 1600;
-      const scale = slideFrame.clientWidth / baseWidth;
-      slide.style.transform = `scale(${scale})`;
-    }
     function render() {
       slide.src = slides[index][0];
       narration.textContent = slides[index][1];
       counter.textContent = `${index + 1} / ${slides.length}`;
-      fitSlide();
     }
     document.getElementById("prev").onclick = () => {
       index = Math.max(0, index - 1);
@@ -151,7 +131,6 @@
         render();
       }, 9000);
     };
-    window.addEventListener("resize", fitSlide);
     render();
   </script>
 </body>

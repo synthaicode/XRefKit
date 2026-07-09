@@ -480,7 +480,7 @@ h1 {
         <div class="panel-title">Skill 実行基盤の流れ</div>
         <div class="panel-body pipeline">
           <div class="steps">
-            <div class="step"><div class="ico">RUN</div><div><h3>開始ゲート</h3><p><code>fm skill run</code> がメタ情報を検査し、Skill を開く前に実行ログを作る。</p></div></div>
+            <div class="step"><div class="ico">RUN</div><div><h3>開始ゲート</h3><p><code>xrefkit skill run</code> がメタ情報を検査し、Skill を開く前に実行ログを作る。</p></div></div>
             <div class="flow-down">v</div>
             <div class="step"><div class="ico">WI</div><div><h3>作業リスト</h3><p>タスク固有の作業項目を追加し、完了またはエスカレーションまで追跡する。</p></div></div>
             <div class="flow-down">v</div>
@@ -490,7 +490,7 @@ h1 {
             <div class="flow-down">v</div>
             <div class="step"><div class="ico">C</div><div><h3>不明点とリスク</h3><p>不明点、リスク、非自明な判断を本文に埋めず、完了条件として扱う。</p></div></div>
             <div class="flow-down">v</div>
-            <div class="step"><div class="ico">QG</div><div><h3>完了と監査</h3><p><code>fm skill close</code> と品質ゲートが、不完全な実行ログを拒否する。</p></div></div>
+            <div class="step"><div class="ico">QG</div><div><h3>完了と監査</h3><p><code>xrefkit skill close</code> と品質ゲートが、不完全な実行ログを拒否する。</p></div></div>
           </div>
           <aside class="side-rule">
             <h3>完了できない条件</h3>

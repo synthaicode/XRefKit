@@ -108,6 +108,13 @@ carry explicit continuity structure.
   - factual or domain content -> `knowledge/`
   - machine-readable workflow control -> `flows/`
   - human-readable workflow explanation or governance -> `docs/`
+- When the input material mixes procedure, judgment criteria, examples, and
+  domain facts, apply the mixed business procedure decomposition pass from
+  [Skill authoring with Xref](../../../docs/guides/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B)
+  before deciding the final file set.
+- If clean catalog extraction would block the first runnable `draft` or early
+  `trial` Skill, allow temporary embedded target-specific knowledge only with an
+  explicit deferred extraction note.
 - Decide the minimum managed file set.
 - Define the anti-forgetting package that the authored asset must carry:
   - what must be explicitly remembered at reload time
@@ -152,6 +159,9 @@ carry explicit continuity structure.
    its `meta.md` and `SKILL.md`.
 6. Keep factual or domain-heavy text out of `SKILL.md`; move it to
    `knowledge/` when it needs durable shared reuse.
+   - For `draft` or early `trial`, temporary embedded target-specific material
+     is allowed only when it has an extraction note naming target class, likely
+     catalog id, source basis, and deferred reason.
 7. If the authored asset would otherwise depend on unstated remembered context,
    add the missing continuity element instead of leaving it implicit:
    - move reusable facts to `knowledge/`
@@ -163,13 +173,13 @@ carry explicit continuity structure.
    `knowledge/`, `agent/`, or `capabilities/`, run:
 
 ```powershell
-python -m fm xref init --include skills docs knowledge agent capabilities
+python -m xrefkit xref init --include skills docs knowledge agent capabilities
 ```
 
 9. After edits, run:
 
 ```powershell
-python -m fm xref fix --include skills docs knowledge agent capabilities
+python -m xrefkit xref fix --include skills docs knowledge agent capabilities
 ```
 
 10. Validate the created Skill at the intended maturity level, and confirm
@@ -177,16 +187,16 @@ python -m fm xref fix --include skills docs knowledge agent capabilities
     commit or publication):
 
 ```powershell
-python -m fm skill check --meta <path-to-skill>/meta.md --level draft
-python -m fm skill check --meta <path-to-skill>/meta.md --level trial
-python -m fm skill list
+python -m xrefkit skill check --meta <path-to-skill>/meta.md --level draft
+python -m xrefkit skill check --meta <path-to-skill>/meta.md --level trial
+python -m xrefkit skill list
 ```
 
     `trial` or higher validation is a hard gate for the runtime role rule:
     `role_responsibilities.executor` must be present, and `checker`,
     `quality_reviewer`, and `handoff_owner` must not be defined there.
 
-    `fm skill list` shows every skill with its public/private boundary and
+    `xrefkit skill list` shows every skill with its public/private boundary and
     fails when a private file is git-tracked or a public asset references a
     concrete private path. A reviewed boundary-convention pointer may carry
     an inline `private-ref-ok: <reason>` suppression, same idiom as the
@@ -204,7 +214,7 @@ python -m fm skill list
 
 - Stop and escalate if the request tries to turn lower-layer input into a
   rewrite of higher-layer intent, authority, scope, or escalation path.
-- Downgrade unsupported claims such as:
+- Reject these unsupported authoring states:
   - `stable` readiness without evidence
   - public release without explicit user intent
   - Flow existence without machine-readable YAML
@@ -213,7 +223,9 @@ python -m fm skill list
   - no explicit inputs or outputs
   - no observation link for a `trial` Skill
   - no explicit handoff artifacts
-  - domain facts left buried in `SKILL.md`
+  - domain facts left buried in `SKILL.md` without a deferred extraction note
+  - reusable target-specific knowledge still embedded when promoting to
+    `stable` or `governed`
   - Flow YAML missing control rules or sequence
 - Keep missing rules explicit. If a required rule does not exist yet, state the
   gap and suggest whether it belongs in:
@@ -239,6 +251,8 @@ python -m fm skill list
 - Do not claim a Flow from prose alone; create machine-readable YAML under
   `flows/`.
 - Do not keep reusable domain facts in `SKILL.md`.
+- Do not promote a Skill to `stable` or `governed` while deferred extraction
+  notes remain unresolved.
 - Do not skip routing index updates for a public Skill.
 - Do not claim `stable` or `governed` without the corresponding machine-checked
   readiness.

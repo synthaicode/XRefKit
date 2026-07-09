@@ -49,7 +49,7 @@ relationships to existing XID-backed knowledge.
 
 ## Startup
 
-1. Start this Skill through `fm skill run` before opening or modifying canonical
+1. Start this Skill through `xrefkit skill run` before opening or modifying canonical
    knowledge.
 2. Confirm that the request adds knowledge or materially changes its meaning,
    scope, applicability, or semantic relationships.
@@ -71,11 +71,11 @@ relationships to existing XID-backed knowledge.
 2. Search before choosing a target:
 
 ```powershell
-python -m fm xref search "<primary concept aliases scope>"
-python -m fm xref search "<relationship terms and neighboring concepts>"
+python -m xrefkit xref search "<primary concept aliases scope>"
+python -m xrefkit xref search "<relationship terms and neighboring concepts>"
 ```
 
-3. Read only the plausible candidate XIDs with `python -m fm xref show <XID>`.
+3. Read only the plausible candidate XIDs with `python -m xrefkit xref show <XID>`.
 4. Create one concrete runtime work item per target fragment.
 5. Classify each candidate as:
    - `create`
@@ -107,15 +107,15 @@ python -m fm xref search "<relationship terms and neighboring concepts>"
 6. Record non-trivial concept or relationship decisions:
 
 ```powershell
-python -m fm skill concern --log <run-log> --id <id> --kind judgment --significance non_trivial --status resolved --summary "<decision>" --target <judgment-artifact>
+python -m xrefkit skill concern --log <run-log> --id <id> --kind judgment --significance non_trivial --status resolved --summary "<decision>" --target <judgment-artifact>
 ```
 
 7. Run:
 
 ```powershell
-python -m fm xref fix --include skills docs knowledge agent capabilities
+python -m xrefkit xref fix --include skills docs knowledge agent capabilities
 python skills/os/knowledge_ontology_management/scripts/validate_knowledge_relations.py
-python -m fm xref check --include skills docs knowledge agent capabilities
+python -m xrefkit xref check --include skills docs knowledge agent capabilities
 ```
 
 8. Record the canonical or proposal artifact and validation evidence in the
@@ -143,7 +143,7 @@ python -m fm xref check --include skills docs knowledge agent capabilities
   - validator and XID results
   - unresolved unknowns or risks
   - publication or handoff owner
-- Run `fm skill verify` and the runtime closure gate.
+- Run `xrefkit skill verify` and the runtime closure gate.
 
 ## Rules
 

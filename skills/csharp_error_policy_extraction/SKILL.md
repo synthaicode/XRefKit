@@ -198,7 +198,7 @@ basis).
 ## Unknowns And Risks
 
 - Mirror every `unknown` bucket state that affects closure as an `unknown`
-  concern with `python -m fm skill concern`.
+  concern with `python -m xrefkit skill concern`.
 - Record suspected defects or security gaps found during scanning as `risk`
   concerns pointing at the handoff list.
 - Unknowns must be `resolved` and risks `resolved` or `escalated` before
@@ -215,7 +215,7 @@ Closure is allowed only when all of the following hold:
 - the search-pattern set actually used is recorded in the report
 - the report exists at the declared output path
 - defect-level and security-scope discoveries are on the handoff list
-- the run log passes `python -m fm skill close`
+- the run log passes `python -m xrefkit skill close`
 
 ## Handoff
 

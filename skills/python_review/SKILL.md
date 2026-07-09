@@ -182,7 +182,7 @@ Closure is allowed only when:
 - every finding carries evidence, severity, and remediation, or a named
   `needs_confirmation` gap
 - out-of-scope discoveries are on the handoff list
-- the run log passes `python -m fm skill close`
+- the run log passes `python -m xrefkit skill close`
 
 ## Handoff
 

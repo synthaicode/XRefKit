@@ -20,7 +20,7 @@
 
 - 各ファイルは XID を持つ
 - 管理リンクは `#xid-<XID>` を含む
-- 改名/移動後は `python -m fm xref rewrite` がリンクのパス部分だけを更新する
+- 改名/移動後は `python -m xrefkit xref rewrite` がリンクのパス部分だけを更新する
 
 ## 位置づけ: xref は脇役（サブ機能）
 
@@ -30,7 +30,7 @@
 - 分離原則: Skill ファイルとドメイン知識ファイルは分けて管理する
 - 共通原則: `knowledge/` を Skill 共通のドメイン知識として扱う
 - 主役: Skill が必要な知識断片を選び、読んで、作業に反映する
-- 脇役: `fm xref` が参照解決・リンク保守・破綻検出を担保する
+- 脇役: `xrefkit xref` が参照解決・リンク保守・破綻検出を担保する
 - 目的: ツールや agent が変わっても、Skill と知識の接続を壊さない
 
 このため、現在のリポジトリは次も管理します。
@@ -44,7 +44,7 @@
 
 「AI が XID を管理する」とは、AI が値を採番することではなく、`fm` のコマンドで **XID/リンク整合性を維持する**ことです。
 
-- XID の付与/置換は `python -m fm xref init` が行う（AI は実行して結果を解釈する）
+- XID の付与/置換は `python -m xrefkit xref init` が行う（AI は実行して結果を解釈する）
 - `init` / `rewrite` / `check` を回し、`issues: 0` にする
 - 参照解決のために `.xref/xid-index.json` をキャッシュとして使える
 
@@ -53,7 +53,7 @@
 - `docs/`: 人間向けドキュメント（背景、設計、運用、索引）
 - `knowledge/`: 共有ドメイン知識の断片
 - `agent/`: agent 向け入口・運用契約（L0を短く固定）
-- `fm/`: CLI 実装（`python -m fm ...`）
+- `xrefkit/`: Python パッケージ、CLI、XID resolver、tools registry、MCP adapter
 - `sources/`: 原本（PDF/Excel/Web 等）。人間が確認できる出典
 - `skills/`: 実行用 Skill とルーティング索引
 - `.github/`: Copilot/CI など GitHub 側の制御面

@@ -49,7 +49,6 @@ Execute CAB-facing evaluation using `CAP-QA-003`, `CAP-OPS-004`, and `CAP-BIZ-00
 ## Monitoring and Control
 
 - Check that each CAB gate has a recorded result.
-- Downgrade unsupported judgments to `unknown`.
 - Preserve explicit unresolved risks.
 
 ## Closure

@@ -9,7 +9,7 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
 
 - import: `import_skill`, `xlsx_spec_traceability`, `pptx_spec_traceability`,
   `legacy_flow_skill_migration`
-- review: `csharp_review`, `manufacturing_self_check`,
+- review: `csharp_review`, `python_review`, `manufacturing_self_check`,
   `qa_gate_review`, `security_review`, `cab_review_flow`,
   `code_constraint_derivation`, `cross_constraint_derivation`,
   `integration_scenario_derivation`
@@ -30,7 +30,8 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
   `code_constraint_derivation`, `cross_constraint_derivation`,
   `integration_scenario_derivation`, `editorial_ops_index`,
   `draft_authoring`
-- implement: `implementation_flow`, `marketing-explainer-video`
+- implement: `implementation_flow`, `python_implementation_flow`,
+  `marketing-explainer-video`
 - release: `crosspost_release`
 - control: `doc_ship`, `retro`, `knowledge_ontology_management`,
   `source_structure_findings_registration`,

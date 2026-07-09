@@ -54,18 +54,18 @@ Sources:
 - Route available skills from skills/_index.md first, then narrow through indexes and selected meta.md.
 - Select a Skill semantically from user intent and catalog metadata before direct --meta execution.
 - Skill execution MUST start with:
-  python -m fm skill run --meta <path-to-meta.md> --task "<task>" --json
+  python -m xrefkit skill run --meta <path-to-meta.md> --task "<task>" --json
 - Do not open or execute SKILL.md until skill run succeeds. Preserve returned run_log and open SKILL.md only from returned skill_doc.
 - During Skill-backed work, record:
-  - work items with: python -m fm skill workitem --log <run-log> --item <id> --status <status> --role <assigned-role>
-  - outputs/evidence with: python -m fm skill artifact --log <run-log> --artifact <id> --kind <kind> --target <target> --status <status> --role <assigned-role>
-  - unknowns/risks/non-trivial judgments with: python -m fm skill concern --log <run-log> --concern <id> --kind <unknown|risk|judgment> --status <status> --role <assigned-role>
-  - phase progress with: python -m fm skill phase --log <run-log> --phase <phase> --status <status> --role <assigned-role>
+  - work items with: python -m xrefkit skill workitem --log <run-log> --item <id> --status <status> --role <assigned-role>
+  - outputs/evidence with: python -m xrefkit skill artifact --log <run-log> --artifact <id> --kind <kind> --target <target> --status <status> --role <assigned-role>
+  - unknowns/risks/non-trivial judgments with: python -m xrefkit skill concern --log <run-log> --concern <id> --kind <unknown|risk|judgment> --status <status> --role <assigned-role>
+  - phase progress with: python -m xrefkit skill phase --log <run-log> --phase <phase> --status <status> --role <assigned-role>
 - Advance the check phase deterministically with:
-  python -m fm skill verify --log <run-log>
+  python -m xrefkit skill verify --log <run-log>
   The producer/executor context must not advance its own check phase.
 - Before completion, run:
-  python -m fm skill close --log <run-log>
+  python -m xrefkit skill close --log <run-log>
   Resolve or escalate failed closure checks.
 - Unknowns must resolve before closure; risks must resolve or escalate. Do not convert unresolved unknowns into normal completion.
 
@@ -73,12 +73,12 @@ Sources:
 
 - Orchestration is semantic routing over the Skill catalog from user intent; there is no separate capability or workflow model.
 - When a Skill needs domain knowledge, search and load only the needed fragment:
-  python -m fm xref search "<query>"
-  python -m fm xref show <XID>
+  python -m xrefkit xref search "<query>"
+  python -m xrefkit xref show <XID>
 - Keep references XID-based and keep existing XID blocks unchanged.
 - After rename/move/split/merge or reference edits, run link validation/fix.
 - After edits, run:
-  python -m fm xref fix
+  python -m xrefkit xref fix
 - For structured edits such as XML, JSON, YAML, run deterministic parser validation; for XML/JSON use the structured-format checklist when applicable.
 - When adding XML entries, preserve existing semantic grouping; do not append blindly.
 - Preserve existing file format, character encoding, and encoding form unless an intentional change is required.

@@ -30,11 +30,11 @@ AI ベンダー別の起動ファイルは最小限にし、`xref` で知識を�
 python --version
 
 # 2) 一括メンテナンスを実行
-python -m fm xref fix
+python -m xrefkit xref fix
 
 # 3) 必要な知識断片を検索・表示
-python -m fm xref search "query"
-python -m fm xref show 1A2B3C4D5E6F
+python -m xrefkit xref search "query"
+python -m xrefkit xref show 1A2B3C4D5E6F
 ```
 
 `xref fix` で問題が出た場合は、まずその解消を優先してから手動リンク編集を行ってください。
@@ -55,7 +55,7 @@ python -m fm xref show 1A2B3C4D5E6F
 1. 原本を `sources/` に追加・更新する。
 2. 要点を `docs/` または `knowledge/` の Markdown 断片に反映する。
 3. 参照はパス依存ではなく XID（`#xid-...`）で張る。
-4. 編集後に `python -m fm xref fix` を実行する。
+4. 編集後に `python -m xrefkit xref fix` を実行する。
 5. `xref search/show` または `ctx pack` で必要最小限の文脈を取り込む。
 
 ## XRefKit の価値（リンク管理以外）
@@ -70,29 +70,29 @@ python -m fm xref show 1A2B3C4D5E6F
 
 ```powershell
 # XID の付与/置換（不足を埋める）
-python -m fm xref init
+python -m xrefkit xref init
 
 # #xid-... を含む「管理リンク」の相対パスを更新
-python -m fm xref rewrite
+python -m xrefkit xref rewrite
 
 # XID とリンクの検査
-python -m fm xref check
+python -m xrefkit xref check
 
 # まとめて整合（init + rewrite + check）
-python -m fm xref fix
+python -m xrefkit xref fix
 
 # 人間レビュー用ヒント（best-effort）
-python -m fm xref check --review
+python -m xrefkit xref check --review
 
 # 探して、必要な分だけ読む
-python -m fm xref search "query"
-python -m fm xref show 1A2B3C4D5E6F
+python -m xrefkit xref search "query"
+python -m xrefkit xref show 1A2B3C4D5E6F
 
 # コンテキストパック（seed + 近傍）
-python -m fm ctx pack --seed 7C6C2B46A9D1 --depth 1 --out .xref\\pack.md
+python -m xrefkit ctx pack --seed 7C6C2B46A9D1 --depth 1 --out .xref\\pack.md
 ```
 
-`python -m fm xref check` と `python -m fm xref fix` は、問題がある場合に終了コード `1` を返します（CI で失敗検知可能）。
+`python -m xrefkit xref check` と `python -m xrefkit xref fix` は、問題がある場合に終了コード `1` を返します（CI で失敗検知可能）。
 
 ## リポジトリ構成
 
@@ -102,6 +102,6 @@ python -m fm ctx pack --seed 7C6C2B46A9D1 --depth 1 --out .xref\\pack.md
 - `skills/`: スキル定義とルーティング索引（`skills/_index.md`）
 - `work/`: AI 実行ログとふりかえり（判断履歴の共有）
 - `agent/`: agent エントリと契約
-- `fm/`: CLI 実装（`xref`, `ctx`）
+- `xrefkit/`: Python パッケージ、CLI、XID resolver、tools registry、MCP adapter
 
 詳しい読み順は `human-docs/ja/000_index.md` を起点にしてください。

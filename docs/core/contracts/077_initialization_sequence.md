@@ -36,7 +36,7 @@ available.
 | 8 | `docs/core/contracts/015_shared_memory_operations.md#xid-4A423E72D2ED` | Shared memory and event-log operations. |
 | 9 | `skills/_index.md` and needed `skills/index/*` files | Skill routing catalog, only when a Skill must be routed. |
 | 10 | Selected Skill `meta.md` | Runtime metadata and operating envelope inputs. |
-| 11 | `python -m fm skill run --meta <path-to-meta.md> --task "<task>" --json` | Create the runtime envelope before opening the procedure. |
+| 11 | `python -m xrefkit skill run --meta <path-to-meta.md> --task "<task>" --json` | Create the runtime envelope before opening the procedure. |
 | 12 | Returned `skill_doc` | Open the selected `SKILL.md` only after the runtime envelope exists. |
 | 13 | Selected workflow / knowledge XIDs | Load only the fragments required by the current task. |
 
@@ -76,14 +76,14 @@ Do not load these during initialization by default:
 - every `Related` link in a document
 - every `knowledge_slots` binding or `capability` reference before route selection
 - workflow pages that are not selected by the current task
-- Skill procedure bodies before `fm skill run` has created the runtime envelope
+- Skill procedure bodies before `xrefkit skill run` has created the runtime envelope
 
 ## Link Resolution
 
 When a needed document is referenced by XID:
 
 - MCP mode: resolve it with `get_document_by_xid`.
-- Filesystem fallback: resolve it with `python -m fm xref show <XID>`.
+- Filesystem fallback: resolve it with `python -m xrefkit xref show <XID>`.
 
 In both modes, load the selected fragment only. Do not follow transitive links
 unless the next linked XID is independently needed for the current task.

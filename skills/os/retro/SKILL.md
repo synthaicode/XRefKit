@@ -92,8 +92,8 @@ Review current session evidence and determine what should remain in `work/` vers
   - status
 - If the user approves implementation:
   - update the target canonical files
-  - run `python -m fm xref init` when new managed files are added
-  - run `python -m fm xref fix`
+  - run `python -m xrefkit xref init` when new managed files are added
+  - run `python -m xrefkit xref fix`
   - keep a short pointer in the `work/` record showing the moved-to path and date
 
 ## Rules

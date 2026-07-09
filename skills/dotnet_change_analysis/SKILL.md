@@ -345,7 +345,6 @@ curate against the change objective, and record what the pack cannot establish a
   - `unknown`
   - `not_applicable`
 - Treat unrecorded viewpoints as analysis leaks.
-- Downgrade weakly supported conclusions to `unknown`.
 - Separate:
   - observed structure
   - inferred change impact
@@ -361,7 +360,7 @@ curate against the change objective, and record what the pack cannot establish a
 ## Unknowns And Risks
 
 - Mirror every `unknown` viewpoint state that affects closure as an `unknown`
-  concern with `python -m fm skill concern`.
+  concern with `python -m xrefkit skill concern`.
 - Record unresolved external dependencies (unavailable package or framework
   source) as `unknown` concerns.
 - Record discovered-but-unanalyzed risk areas (suspected defects, suspected
@@ -385,7 +384,7 @@ Closure is allowed only when all of the following hold:
 - impacted targets and unresolved items are listed with reasons
 - defect-level and security-scope discoveries are on the handoff list, not
   silently dropped
-- the run log passes `python -m fm skill close`
+- the run log passes `python -m xrefkit skill close`
 
 ## Handoff
 

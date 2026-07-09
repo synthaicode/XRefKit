@@ -77,6 +77,6 @@ If these layers are ever separated into different repositories, the extraction b
   - generic logging and escalation control
 - remain in XRefKit:
   - XID model
-  - `fm xref` commands
+  - `xrefkit xref` commands
   - repository structure and routing
   - skill / knowledge organization

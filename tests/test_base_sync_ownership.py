@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from fm.ownership import load_ownership
+from xrefkit.ownership import load_ownership
 
 
 def _load_sync_module():

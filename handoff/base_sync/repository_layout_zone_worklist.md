@@ -130,7 +130,7 @@ Progress:
 Run before closing:
 
 ```powershell
-python -m fm xref fix
+python -m xrefkit xref fix
 python -m pytest
 ```
 
@@ -142,7 +142,7 @@ Completed:
 ```powershell
 python .\handoff\base_sync\export_base_manifest.py --repo . --branch codex/sync-main-without-mp4-action --out .\handoff\base_sync\base-history-manifest.json
 python -m pytest tests/test_ownership.py tests/test_base_sync_ownership.py tests/test_fm_multiroot.py tests/test_flowdoctor.py tests/test_skillmeta.py tests/test_packmeta.py tests/test_xref.py tests/test_cli.py
-python -m fm xref fix
+python -m xrefkit xref fix
 ```
 
 ## Open Items
@@ -150,4 +150,4 @@ python -m fm xref fix
 - Decided: `packs/local/*` appears in local fm catalogs by default when
   `ownership.yaml` marks the local-pack zone as `catalog: true`.
 - Decided: generated `skills/_index.md` belongs in this branch. The generated
-  compact Skill list is produced by `python -m fm skill index --write`.
+  compact Skill list is produced by `python -m xrefkit skill index --write`.

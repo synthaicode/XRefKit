@@ -22,7 +22,7 @@ zones:
   - id: kernel-code
     owner: base
     paths:
-      - fm/
+      - xrefkit/
       - tools/
       - tests/
     catalog: false

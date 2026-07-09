@@ -121,6 +121,7 @@ def _sample_workspace(root: Path, include_xids: list[str] | None = None) -> tupl
     _write_yaml(package_manifest_path, package_manifest)
 
     _write(local_root / "knowledge" / "current_spec.md", "current spec\n")
+    _write(local_root / "knowledge" / "billing_spec.md", "billing spec\n")
     local_skill = {
         "skill_id": "project.order_change_design",
         "xid": "xid-project-skill-order-change-design",
@@ -151,7 +152,10 @@ def _sample_workspace(root: Path, include_xids: list[str] | None = None) -> tupl
         },
         "mounts": {
             "skills": [{"path": "skills/order_change_design.skill.yaml"}],
-            "knowledge": [{"id": "project.current_spec", "xid": "xid-project-current-spec", "path": "knowledge/current_spec.md"}],
+            "knowledge": [
+                {"id": "project.current_spec", "xid": "xid-project-current-spec", "path": "knowledge/current_spec.md"},
+                {"id": "project.billing_spec", "xid": "xid-project-billing-spec", "path": "knowledge/billing_spec.md"},
+            ],
         },
         "merge_policy": {},
     }
@@ -202,7 +206,7 @@ def test_registry_indexes_packages_skills_knowledge_and_xids(tmp_path: Path) -> 
     assert registry.xids.require_asset("xid-skill-xddp-design-change-design").asset_type == "skill"
     assert registry.xids.require_asset("xid-include-xddp-traceability-instruction").asset_type == "fragment"
     assert registry.xids.require_asset("xid-xddp-traceability-principles").asset_type == "knowledge"
-    assert len(registry.knowledge.list()) == 2
+    assert len(registry.knowledge.list()) == 3
 
 
 def test_resolver_builds_entry_effective_skill_bundle(tmp_path: Path) -> None:
@@ -225,6 +229,17 @@ def test_resolver_builds_entry_effective_skill_bundle(tmp_path: Path) -> None:
     assert bundle.loaded_texts.included[1].content_hash == included_trace["xid-include-xddp-unknowns-instruction"].content_hash
     assert any(conflict.code == "include_skipped_duplicate" and conflict.severity == "info" for conflict in bundle.conflicts)
     assert bundle.loaded_texts.branch == []
+    assert bundle.loaded_texts.knowledge == []
+    available = {entry.xid: entry for entry in bundle.available_domain_knowledge}
+    assert set(available) == {
+        "xid-xddp-traceability-principles",
+        "xid-project-current-spec",
+        "xid-project-billing-spec",
+    }
+    assert available["xid-project-current-spec"].selected is True
+    assert available["xid-project-current-spec"].selection_reason == "referenced_by_effective_skill"
+    assert available["xid-project-billing-spec"].selected is False
+    assert available["xid-project-billing-spec"].local_id == "project.order-system"
     assert {entry.xid for entry in bundle.loaded_texts.all_loaded()} <= {entry.xid for entry in bundle.source_trace}
 
 

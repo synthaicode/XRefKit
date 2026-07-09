@@ -2,8 +2,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from fm.ctx import ctx_pack
-from fm.xref import XrefConfig
+from xrefkit.ctx import ctx_pack
+from xrefkit.xref import XrefConfig
 
 
 class CtxPackTests(unittest.TestCase):
@@ -14,27 +14,27 @@ class CtxPackTests(unittest.TestCase):
             docs.mkdir(parents=True, exist_ok=True)
 
             (docs / "seed.md").write_text(
-                "<!-- xid: SEED12345678 -->\n"
-                '<a id="xid-SEED12345678"></a>\n\n'
+                "<!-- xid: 5EED12345678 -->\n"
+                '<a id="xid-5EED12345678"></a>\n\n'
                 "# Seed\n\n"
-                "[Child](child.md#xid-CHILD1234567)\n",
+                "[Child](child.md#xid-C11D12345678)\n",
                 encoding="utf-8",
             )
             (docs / "child.md").write_text(
-                "<!-- xid: CHILD1234567 -->\n<a id=\"xid-CHILD1234567\"></a>\n\n# Child\n",
+                "<!-- xid: C11D12345678 -->\n<a id=\"xid-C11D12345678\"></a>\n\n# Child\n",
                 encoding="utf-8",
             )
 
             result = ctx_pack(
                 XrefConfig(root=str(root)),
-                seeds=["SEED12345678"],
+                seeds=["5EED12345678"],
                 depth=1,
                 max_bytes=4000,
                 per_doc_bytes=1000,
             )
 
             packed_xids = [doc["xid"] for doc in result["docs"]]
-            self.assertEqual(["SEED12345678", "CHILD1234567"], packed_xids)
+            self.assertEqual(["5EED12345678", "C11D12345678"], packed_xids)
             self.assertIn("## Seed", result["text"])
             self.assertIn("## Child", result["text"])
 

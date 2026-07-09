@@ -65,7 +65,7 @@ After startup, route work by user intent:
 - Use `skills/_index.md` and needed `skills/index/*` files only when a Skill
   must be selected.
 - Select the Skill semantically before direct `--meta <path>` execution.
-- Create the runtime envelope with `python -m fm skill run --meta <path> --task
+- Create the runtime envelope with `python -m xrefkit skill run --meta <path> --task
   "<task>" --json` before opening or executing `SKILL.md`.
 - Load selected knowledge, workflow, and linked documents only when the active
   task or selected Skill requires them.

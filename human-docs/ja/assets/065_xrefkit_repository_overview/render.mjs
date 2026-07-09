@@ -34,13 +34,13 @@ const slides = [
   {
     name: "03_layers",
     question: "では、このリポジトリは何をどう分けているのですか。",
-    title: "`docs / skills / knowledge / work / sources` を役割別に分けています。",
+    title: "`xrefkit / skills / knowledge / tools / work / sources` を役割別に分けています。",
     copy:
       "人向け説明、実行手順、共有知識、実行記録、元資料を混ぜずに置くことで、読む相手と目的を分離します。",
     cards: [
-      ["制御層", "`docs` が方針、設計、運用契約を持ちます。"],
-      ["実行層", "`skills` が再利用できる作業単位を持ちます。"],
-      ["証拠層", "`knowledge` `sources` `work` で根拠と履歴を残します。"],
+      ["パッケージ", "`xrefkit` が runtime、XID resolver、tools registry、MCP adapter を持ちます。"],
+      ["実行と知識", "`skills` と `knowledge` を XID で選択して必要な本文だけを読みます。"],
+      ["証拠と元資料", "`sources` と `work` で根拠、判断、実行履歴を残します。"],
     ],
     takeaway: "層を分ける目的は整理整頓ではなく、<strong>AI が読むもの、従うもの、残すものを分離すること</strong>です。",
   },
@@ -49,7 +49,7 @@ const slides = [
     question: "Skill があれば、そのまま実行すればいいのではないですか。",
     title: "このリポジトリでは Skill 実行を runtime envelope で囲います。",
     copy:
-      "`fm skill run` で開始し、work item、artifact、concern、role separation を記録してから閉じます。Skill を直接読むだけでは閉じられません。",
+      "`xrefkit skill run` で開始し、work item、artifact、concern、role separation を記録してから閉じます。Skill を直接読むだけでは閉じられません。",
     cards: [
       ["開始", "meta を検証し、run log を開いてから作業を始めます。"],
       ["途中", "実行項目、成果物、証拠、未知やリスクを機械可読で残します。"],
@@ -99,13 +99,13 @@ const slides = [
   {
     name: "08_conclusion",
     question: "結局、このリポジトリの現在地を一言でいうと何ですか。",
-    title: "XRefKit は、AI 作業を読める・動かせる・監査できる形にそろえる repository OS です。",
+    title: "XRefKit は、ドメイン手順と判断を組織へ配布する portable Python package です。",
     copy:
       "知識、実行、確認、引き継ぎ、人間判断を同じ場所で分離し、AI 作業を場当たり的なプロンプト運用から、管理可能な作業へ変えます。",
     cards: [
-      ["読む", "必要な知識だけを XID と xref でたどります。"],
-      ["動かす", "Skill runtime envelope と guard で作業を囲います。"],
-      ["追う", "artifact、concern、session、handoff で証跡を残します。"],
+      ["読む", "target と finding の一覧から選び、必要な XID 本文だけを展開します。"],
+      ["動かす", "統合 package の Skill runtime と tools で作業を囲います。"],
+      ["配る", "同じ resolver を repository、installed package、MCP から利用します。"],
     ],
     takeaway: "<strong>AI が便利</strong>で終わらせず、<strong>AI 作業を運用可能にする</strong>ところまでを、このリポジトリが担います。",
   },

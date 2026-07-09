@@ -6,7 +6,7 @@ from typing import Literal
 
 from pydantic import Field, field_validator, model_validator
 
-from .common import ConflictEntry, SourceTraceEntry, StrictModel, XidLoadedRef, validate_non_empty, validate_xid
+from .common import ConflictEntry, SourceTraceEntry, SourceType, StrictModel, XidLoadedRef, validate_non_empty, validate_xid
 
 
 class LoadedTexts(StrictModel):
@@ -58,12 +58,34 @@ class BranchSummary(StrictModel):
         return validate_xid(value)
 
 
+class DomainKnowledgeCatalogEntry(StrictModel):
+    id: str
+    xid: str
+    source_type: SourceType
+    content_hash: str
+    selected: bool = False
+    package_id: str | None = None
+    local_id: str | None = None
+    selection_reason: str | None = None
+
+    @field_validator("id")
+    @classmethod
+    def _validate_id(cls, value: str) -> str:
+        return validate_non_empty(value, "id")
+
+    @field_validator("xid")
+    @classmethod
+    def _validate_xid(cls, value: str) -> str:
+        return validate_xid(value)
+
+
 class EffectiveSkillBundle(StrictModel):
     effective_skill_id: str
     resolution_mode: Literal["entry", "branch", "full"]
     base_contracts: list[str]
     loaded_texts: LoadedTexts
     references: BundleReferences = Field(default_factory=BundleReferences)
+    available_domain_knowledge: list[DomainKnowledgeCatalogEntry] = Field(default_factory=list)
     branches_available: list[BranchSummary] = Field(default_factory=list)
     required_outputs: list[str]
     load_policy_applied: str

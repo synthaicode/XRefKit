@@ -42,7 +42,7 @@ network, and data exposure rules are reviewed separately.
 From the repository root:
 
 ```powershell
-python -m fm dashboard serve --root .
+python -m xrefkit dashboard serve --root .
 ```
 
 Default URL:
@@ -54,7 +54,7 @@ http://127.0.0.1:8765/
 To open the browser automatically:
 
 ```powershell
-python -m fm dashboard serve --root . --open-browser
+python -m xrefkit dashboard serve --root . --open-browser
 ```
 
 ## Port Or Session Directory Options
@@ -62,14 +62,14 @@ python -m fm dashboard serve --root . --open-browser
 Use another port when `8765` is already in use:
 
 ```powershell
-python -m fm dashboard serve --root . --port 8766
+python -m xrefkit dashboard serve --root . --port 8766
 ```
 
 Use another session log directory when the Skill run logs are not under the
 default `work/sessions/`:
 
 ```powershell
-python -m fm dashboard serve --root . --sessions-dir path\to\sessions
+python -m xrefkit dashboard serve --root . --sessions-dir path\to\sessions
 ```
 
 ## JSON Output
@@ -78,7 +78,7 @@ Use the JSON command when the dashboard data needs to be inspected by another
 local tool or test:
 
 ```powershell
-python -m fm dashboard data --root .
+python -m xrefkit dashboard data --root .
 ```
 
 The running dashboard also exposes JSON at:

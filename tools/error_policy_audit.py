@@ -1,5 +1,5 @@
 """Unified error-policy audit: merge the custom locator and the analyzer-backed
-normalizer into one 131 candidate stream (the precursor to an `fm audit` front).
+normalizer into one 131 candidate stream (the precursor to an `xrefkit audit` front).
 
 Combines two candidate sources, both already in the 131 contract:
 

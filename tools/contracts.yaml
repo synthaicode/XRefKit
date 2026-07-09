@@ -1,0 +1,42 @@
+schema: xrefkit.tool_contracts/v1
+tools:
+  - tool_id: structure_graph_report
+    xid: A1C4E7B92001
+    path: tools/structure_graph_report.py
+    execution_location: client
+    side_effects: writes_declared_output
+  - tool_id: declaration_facts_report
+    xid: A1C4E7B92002
+    path: tools/declaration_facts_report.py
+    execution_location: client
+    side_effects: none
+  - tool_id: invocation_facts_report
+    xid: A1C4E7B92003
+    path: tools/invocation_facts_report.py
+    execution_location: client
+    side_effects: none
+  - tool_id: di_registration_report
+    xid: A1C4E7B92004
+    path: tools/di_registration_report.py
+    execution_location: client
+    side_effects: none
+  - tool_id: where_seed_traversal
+    xid: A1C4E7B92005
+    path: tools/where_seed_traversal.py
+    execution_location: client
+    side_effects: none
+  - tool_id: error_policy_audit
+    xid: A1C4E7B92006
+    path: tools/error_policy_audit.py
+    execution_location: client
+    side_effects: none
+  - tool_id: csharp_naming_profile
+    xid: A1C4E7B92007
+    path: tools/csharp_naming_profile.py
+    execution_location: client
+    side_effects: none
+  - tool_id: site_build
+    xid: A1C4E7B92008
+    path: tools/site_build.py
+    execution_location: client
+    side_effects: writes_declared_output

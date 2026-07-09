@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 
-from fm.packmeta import (
+from xrefkit.packmeta import (
     _discover_manifests,
     cmd_pack_lint,
     current_os_contract_version,

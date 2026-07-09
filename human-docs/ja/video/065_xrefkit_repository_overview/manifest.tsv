@@ -6,7 +6,7 @@ order	slide_path	narration
 03a	../../assets/065_xrefkit_repository_overview/03_layers_q.png	聞き手: では、このリポジトリは何をどう分けているのですか。
 03b	../../assets/065_xrefkit_repository_overview/03_layers.png	解説: docs、flows、capabilities、skills、knowledge、work、sources を役割別に分けています。人向け説明、機械向け制御、実行手順、共有知識、元資料、実行記録を混ぜないことで、読む相手と目的を分離しています。
 04a	../../assets/065_xrefkit_repository_overview/04_runtime_q.png	聞き手: Skill があれば、そのまま実行すればいいのではないですか。
-04b	../../assets/065_xrefkit_repository_overview/04_runtime.png	解説: このリポジトリでは Skill 実行を runtime envelope で囲います。fm skill run で始め、work item、artifact、concern、role separation を記録し、未解決があれば closure を拒否します。
+04b	../../assets/065_xrefkit_repository_overview/04_runtime.png	解説: このリポジトリでは Skill 実行を runtime envelope で囲います。xrefkit skill run で始め、work item、artifact、concern、role separation を記録し、未解決があれば closure を拒否します。
 05a	../../assets/065_xrefkit_repository_overview/05_guard_q.png	聞き手: 外部入力やコピーした文書で、方針が崩れる心配はありませんか。
 05b	../../assets/065_xrefkit_repository_overview/05_guard.png	解説: そこで context direction guard を使います。外部入力は事実や材料として使えても、上位の意図、権限、手順、範囲、エスカレーション経路までは書き換えられません。
 06a	../../assets/065_xrefkit_repository_overview/06_handoff_q.png	聞き手: 複数 AI や継続作業は、どうやって切れずにつなぐのですか。

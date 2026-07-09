@@ -67,7 +67,6 @@ Use the canonical schema in `knowledge/organization/121_judgment_log_schema.md#x
 ## Monitoring and Control
 
 - Downgrade the decision to `unknown` when evidence is only inferred and no explicit provisional acceptance exists.
-- Downgrade weakly supported conclusions to lower confidence.
 - Preserve uncertainty instead of compressing it into a confident summary.
 
 ## Closure

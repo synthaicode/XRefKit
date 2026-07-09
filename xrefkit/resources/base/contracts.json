@@ -1,0 +1,178 @@
+{
+  "schema": "xrefkit.compiled_runtime/v1",
+  "profile": "model-compact",
+  "compiler_version": 1,
+  "manifest_path": "docs\\core\\contracts\\base_runtime_manifest.yaml",
+  "manifest_hash": "9edce0a8e59b57651c97c2b90ee7ed5769bc462f15874d6ad67cc3b27dda0759",
+  "approval": {
+    "status": "accepted",
+    "owner": "repository_owner",
+    "approved_on": "2026-07-10",
+    "reference": "user-directed execution of design 087"
+  },
+  "estimator": {
+    "id": "chars_div_4",
+    "version": 1
+  },
+  "budgets": {
+    "l0_tokens": 2500,
+    "l1_tokens": 6000,
+    "selected_context_tokens": 12000
+  },
+  "sources": [
+    {
+      "xid": "0B5C58B5E5B2",
+      "path": "agent/000_agent_entry.md",
+      "source_hash": "58b129d69e1e640a5b2c3b78e06c11dc988be9807ad239601ffed94ce9efb2cb"
+    },
+    {
+      "xid": "5A1C8E4D2F90",
+      "path": "docs/core/models/017_base_and_xref_layering.md",
+      "source_hash": "c55b32c839c9409cee7993a9dec248e1d182a12615e487aeeca02d8842fe935d"
+    },
+    {
+      "xid": "6C0B62D6366A",
+      "path": "docs/core/contracts/011_startup_xref_routing.md",
+      "source_hash": "dbdfbd02b8ab78f6cecd59c5aba452db17584e5c180381ac7bff02415ac71cea"
+    },
+    {
+      "xid": "8A666C1FD121",
+      "path": "docs/core/contracts/016_uncertainty_protocol.md",
+      "source_hash": "e8da0dd50068dcaa49c70b5fd8c922bf33e9e7ff80cb4ce60c6955afca710dbc"
+    },
+    {
+      "xid": "A7F3C92D4E11",
+      "path": "docs/core/contracts/053_context_direction_security_guard.md",
+      "source_hash": "7f1ad91351820bcf60569245fcff86c36be1e41b6e1345057051cf524d911a70"
+    },
+    {
+      "xid": "4A423E72D2ED",
+      "path": "docs/core/contracts/015_shared_memory_operations.md",
+      "source_hash": "7972b9d813c57a3ea4901949236d600591ac766544ae426771e391f64312881f"
+    },
+    {
+      "xid": "B7A2C94F0E61",
+      "path": "docs/core/contracts/058_skill_operating_contract.md",
+      "source_hash": "9e95c3b10f3981c82ca6dadb21a27523a57ad64568bf87f3db73d33678993afe"
+    },
+    {
+      "xid": "C3A1F78D9B22",
+      "path": "docs/core/contracts/080_xrefkit_startup_contract.md",
+      "source_hash": "39ff87567cf9e29ffbd7d05b01568a8d9bdb9ca0d98f2b91ed9b710f52005bb8"
+    }
+  ],
+  "obligations": [
+    {
+      "id": "skill.os_contract_required",
+      "source_xid": "0B5C58B5E5B2",
+      "level": "must",
+      "statement": "New Skills include the Skill operating contract."
+    },
+    {
+      "id": "skill.run_first",
+      "source_xid": "0B5C58B5E5B2",
+      "level": "must",
+      "statement": "Start Skill execution through the runtime envelope before loading the Skill body."
+    },
+    {
+      "id": "skill.workitem_required",
+      "source_xid": "0B5C58B5E5B2",
+      "level": "must",
+      "statement": "Record concrete work items before closure."
+    },
+    {
+      "id": "skill.artifact_required",
+      "source_xid": "0B5C58B5E5B2",
+      "level": "must",
+      "statement": "Record output and evidence artifacts before closure."
+    },
+    {
+      "id": "skill.concern_required",
+      "source_xid": "0B5C58B5E5B2",
+      "level": "must",
+      "statement": "Record closure-relevant unknowns, risks, and judgments."
+    },
+    {
+      "id": "skill.verify_separate",
+      "source_xid": "0B5C58B5E5B2",
+      "level": "must",
+      "statement": "Advance check through deterministic verification, not the producer context."
+    },
+    {
+      "id": "work.log_required",
+      "source_xid": "0B5C58B5E5B2",
+      "level": "must",
+      "statement": "Write execution logs and retrospectives under work."
+    },
+    {
+      "id": "work.date_prefix",
+      "source_xid": "0B5C58B5E5B2",
+      "level": "must",
+      "statement": "Use date-prefixed work-record filenames."
+    },
+    {
+      "id": "work.session_before_complete",
+      "source_xid": "0B5C58B5E5B2",
+      "level": "must",
+      "statement": "Update a session log before completion, commit, or push."
+    },
+    {
+      "id": "work.promote_stable",
+      "source_xid": "0B5C58B5E5B2",
+      "level": "must",
+      "statement": "Promote stabilized facts and decisions to canonical locations."
+    },
+    {
+      "id": "uncertainty.explicit",
+      "source_xid": "8A666C1FD121",
+      "level": "must",
+      "statement": "Classify and expose material uncertainty, search Knowledge, and pause risky work."
+    },
+    {
+      "id": "claims.no_unsupported_fact",
+      "source_xid": "8A666C1FD121",
+      "level": "must",
+      "statement": "Do not present unsupported claims as facts; expose the evidence gap and route material uncertainty through the uncertainty protocol."
+    },
+    {
+      "id": "memory.write",
+      "source_xid": "4A423E72D2ED",
+      "level": "must",
+      "statement": "Write logs after significant discussions, decisions, or work sessions."
+    },
+    {
+      "id": "memory.session",
+      "source_xid": "4A423E72D2ED",
+      "level": "must",
+      "statement": "Ensure a work session entry exists before final response."
+    },
+    {
+      "id": "memory.before_publish",
+      "source_xid": "4A423E72D2ED",
+      "level": "must",
+      "statement": "Update logs before commit or push."
+    },
+    {
+      "id": "memory.promote",
+      "source_xid": "4A423E72D2ED",
+      "level": "must",
+      "statement": "Promote stabilized work content into canonical docs or Knowledge."
+    },
+    {
+      "id": "memory.filename",
+      "source_xid": "4A423E72D2ED",
+      "level": "must",
+      "statement": "Prefix work record filenames with the date."
+    }
+  ],
+  "conditional_loads": [
+    {
+      "xid": "B7A2C94F0E61",
+      "when": "skill_execution"
+    }
+  ],
+  "lint_candidates": [],
+  "model_body_hash": "5251a22001428241b90e7edc34867462de36f3eb048720a7e6f175f4679b3def",
+  "estimated_tokens": 418,
+  "release_ready": true
+}

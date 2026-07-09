@@ -1,5 +1,5 @@
-"""XRefKit v2 package namespace."""
+"""Portable XRefKit package namespace."""
 
 __all__ = ["__version__"]
 
-__version__ = "2.0.0-mvp"
+__version__ = "0.3.0"

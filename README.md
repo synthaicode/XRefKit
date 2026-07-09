@@ -3,7 +3,8 @@
 AI agents often stop halfway, guess missing context, or produce work that looks
 plausible but cannot be reviewed or handed off.
 
-XRefKit is a repository-based governance harness for AI-assisted development.
+XRefKit is a portable Python package and repository model for AI-assisted work
+that must reproduce domain procedures and judgments.
 
 It runs as its own control repository and helps AI agents:
 
@@ -13,9 +14,9 @@ It runs as its own control repository and helps AI agents:
 - preserve handoffs across humans, agents, and sessions
 - close work only through explicit quality gates
 
-It is not an LLM runtime, prompt collection, or generic CLI tool.
-It is an operating layer for making AI agent work reviewable, repeatable, and
-improvable.
+The package provides XID resolution, compact runtime contracts, Skill execution,
+catalog-first context loading, deterministic closure gates, client-side tools,
+and a thin MCP adapter over the same rules.
 
 ▶️ Download the 2-minute overview: [Why XRefKit exists and how it helps AI teams use domain knowledge](https://raw.githubusercontent.com/synthaicode/XRefKit/main/readme.mp4)
 
@@ -71,7 +72,23 @@ and handoff records from collapsing into one opaque instruction block.
 
 ## Quick Start
 
-XRefKit is designed to be used with an AI agent.
+Install the package and initialize an instance:
+
+```powershell
+python -m pip install -e .
+xrefkit init
+xrefkit --help
+```
+
+Start the integrated MCP server over stdio:
+
+```powershell
+xrefkit mcp serve --repo . --transport stdio
+```
+
+XRefKit is designed to be driven by an AI agent. The agent first resolves the
+startup contract XID, selects a Skill or source target from a compact catalog,
+and expands only the selected body.
 
 Here, `sources/` is the human drop point for original materials, existing Skill artifacts, rules, and examples that the AI will turn into repository-managed assets.
 
@@ -106,14 +123,24 @@ The agent can read the operating contract and explain the repository structure i
 
 ## Repository Map
 
+- `xrefkit/`: installable runtime, resolver, Skill control, tools registry, and MCP adapter
 - `docs/`: human-facing docs and policy
 - `knowledge/`: source-backed knowledge fragments
 - `sources/`: original materials for verification
 - `skills/`: Skill definitions and routing index
+- `tools/`: XID-backed client-side command implementations and packaged assets
 - `work/`: operational memory for execution logs, judgments, handoffs, retrospectives, and improvement input
 - `agent/`: agent entry and operating contract
-- `fm/`: runtime and CLI implementation
 - `human-docs/`: human-facing Japanese and English docs, materials, assets, and video packages
+- `site/`: generated publication output, source manifest, and compatibility routes
+
+## Runtime and Context Model
+
+- Base runtime obligations are authored structurally and compiled into package resources with source hashes and token budgets.
+- Repository, installed-package, and MCP providers resolve the same XID identities; conflicts and stale base packs fail explicitly.
+- Source structure is split into a target catalog and finding catalog. The AI loads lists before selected details.
+- `xrefkit catalog maintain --apply-safe` promotes only unambiguous candidate findings; conflicts remain in a review queue.
+- MCP exposes the shared resolver and catalogs. It does not own independent domain rules or execute client tools.
 
 ## Entry Points
 

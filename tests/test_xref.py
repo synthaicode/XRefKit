@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from fm.xref import XrefConfig, xref_check, xref_deprecate, xref_init, xref_rewrite
+from xrefkit.xref import XrefConfig, xref_check, xref_deprecate, xref_init, xref_rewrite
 
 
 class XrefTests(unittest.TestCase):

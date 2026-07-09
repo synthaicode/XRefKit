@@ -40,10 +40,10 @@ designed substrate:
 | 1 | Startup alignment supply unchanged | `get_startup_context` `load_order`; XID-based; startup does not expand pack catalogs (see [initialization sequence](../core/contracts/077_initialization_sequence.md#xid-A264E296AC71)) | existing |
 | 2 | Skills: base vs local, local not committed | Zones: `skills/` (kernel-content, base), `packs/*/skills/` (shared-packs), `packs/local/*/skills/` (local-packs: `distribution:false`, `base_sync:false`, `shadowing:true`) | existing + gitignore decision below |
 | 3 | Knowledge catalog from MCP | `list_knowledge_catalog`, `search_knowledge_catalog`, `build_knowledge_context` | existing |
-| 4 | Client-side Skill execution and selection | Server does not execute Skills; `list_skills` / `rank_skills_for_purpose` route, `get_skill` returns the body, the client runtime (`fm skill run` + executor subagent) executes | existing |
+| 4 | Client-side Skill execution and selection | Server does not execute Skills; `list_skills` / `rank_skills_for_purpose` route, `get_skill` returns the body, the client runtime (`xrefkit skill run` + executor subagent) executes | existing |
 | 5 | Knowledge: base vs local | `knowledge/` + `packs/*/knowledge/` (base/shared), `packs/local/*/knowledge/` (local) | existing |
 | 6 | MCP supplies both without distinction | Multi-root catalog merges kernel and pack roots into one list; per-entry `zone_metadata` (zone/owner/pack_id/local_only/distribution) records provenance without splitting the supply | existing |
-| 7 | Client-authored content carries XIDs | XID discipline; `python -m fm xref init` assigns XIDs to new knowledge/documents; Skills carry `skill_id` | existing |
+| 7 | Client-authored content carries XIDs | XID discipline; `python -m xrefkit xref init` assigns XIDs to new knowledge/documents; Skills carry `skill_id` | existing |
 | 8 | Adopt pre-existing client knowledge | Proposed `adopt_knowledge` path (below); not yet implemented | proposed |
 
 The map shows that requirements 1 and 3–7 are already satisfied by the zone and
@@ -145,20 +145,20 @@ Behavior:
    guard (the input may not redefine active flow, capability, Skill, authority,
    or escalation).
 2. Search existing knowledge for the same concept
-   (`python -m fm xref search`) to detect duplication or an existing base
+   (`python -m xrefkit xref search`) to detect duplication or an existing base
    fragment that the input would shadow/fork.
 3. Normalize into the domain-knowledge ontology shape; separate durable facts
    from procedure (procedure belongs in a Skill, not knowledge).
 4. For XID-less input, place normalized fragments under
    `packs/local/<system>/knowledge/` and assign XIDs with
-   `python -m fm xref init`.
+   `python -m xrefkit xref init`.
    For input that already carries an XID, preserve the XID and connect the
    source through an MCP-configured external domain-knowledge root. Do not force
    a new local fragment, new XID, or repository-local mirror.
 5. When the input restates a base fact rather than adding a local one, record a
    `forked_from` provenance relation instead of a silent duplicate so MCP
    classifies it as a fork, not a conflict.
-6. Validate with `python -m fm xref fix` and the knowledge-relation validator.
+6. Validate with `python -m xrefkit xref fix` and the knowledge-relation validator.
 
 Design choice to settle at implementation time: whether `adopt_knowledge` is a
 new Skill (parallel to `import_skill` on the knowledge side) or a generalization
@@ -254,7 +254,7 @@ protocol-composed, not slot-conditional.
 - MCP: a per-slot resolution response (reuse `build_knowledge_context`, or add
   `resolve_skill_knowledge(skill_id)`), returning ranked candidates plus the
   acceptance metadata (`min`, `domain`, `required`).
-- `fm skill check`: validate each `required` slot resolves to `>= min`
+- `xrefkit skill check`: validate each `required` slot resolves to `>= min`
   candidates in the current catalog, replacing static XID-link checking for the
   selected part.
 - `docs/guides/013_skill_authoring_with_xref.md`
@@ -338,7 +338,7 @@ consolidated delivery.
   state that the guard is MCP-supplied and ambient.
 - Remove `guard_policy` and guard `capability_refs`/`knowledge_refs` from Skill
   `meta.md`, and guard sections from `SKILL.md`.
-- `fm skill check`: stop requiring guard fields; the guard is no longer a
+- `xrefkit skill check`: stop requiring guard fields; the guard is no longer a
   per-Skill authored artifact.
 - Replace agent entry's per-Skill guard mandate (the "New skills MUST include
   the context-direction security guard" line) with an ambient-at-init rule. Do
@@ -386,5 +386,5 @@ each entry carries zone_metadata: { zone, owner, pack_id, local_only, distributi
 | 2 | Add `packs/local/` to `.gitignore` | no (local-only) |
 | 3 | Implement `adopt_knowledge` (or generalize the findings Skill) | no (additive) |
 | 4 | Migrate any remaining `*_private/` content into `packs/local/` | no |
-| 5 | Add `knowledge_slots` selection; resolve at run time; `fm skill check` slot validation (Decision 3) | no (superset of `knowledge_refs`) |
+| 5 | Add `knowledge_slots` selection; resolve at run time; `xrefkit skill check` slot validation (Decision 3) | no (superset of `knowledge_refs`) |
 | 6 | Remove per-Skill guard authoring; rewrite 013; settle fallback-mode reinforcement (Decision 4) | no (guard stays ambient via MCP) |

@@ -10,7 +10,7 @@ from .common import (
     XidLoadedRef,
     XidRef,
 )
-from .effective_bundle import BundleReferences, EffectiveSkillBundle, LoadedTexts
+from .effective_bundle import BundleReferences, DomainKnowledgeCatalogEntry, EffectiveSkillBundle, LoadedTexts
 from .local_manifest import IncludeRef, LocalDomainSkill, LocalManifest
 from .package_manifest import PackageManifest
 from .run_log import RunLogAggregate, RunLogEvent
@@ -21,6 +21,7 @@ __all__ = [
     "ConflictEntry",
     "CoreProtocol",
     "EffectiveSkillBundle",
+    "DomainKnowledgeCatalogEntry",
     "IncludeRef",
     "LoadReason",
     "LoadedTexts",

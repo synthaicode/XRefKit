@@ -49,7 +49,7 @@ itself; it makes the evidence boundary and next routing explicit.
 
 ## Startup
 
-- Start through `python -m fm skill run --meta skills/os/consultation_research_mapping/meta.md --task "<task>"`.
+- Start through `python -m xrefkit skill run --meta skills/os/consultation_research_mapping/meta.md --task "<task>"`.
 - Confirm the consultation topic, requested advice target, and expected output form.
 - Confirm whether current external research is required. If the topic is drift-prone, browse or use approved source tools before answering.
 - Classify every loaded source as trusted, semi-trusted, or untrusted and apply the context-direction guard.

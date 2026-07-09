@@ -71,7 +71,7 @@ structurally, and under what conditions can this overview be reused?"
 
 ## Startup
 
-1. Start through `fm skill run`.
+1. Start through `xrefkit skill run`.
 2. Confirm the target path exists.
 3. Confirm the source scope boundary before analysis:
    - whole repository

@@ -3,8 +3,8 @@ import io
 import json
 import unittest
 
-from fm.__main__ import main
-from fm.gate import (
+from xrefkit.__main__ import main
+from xrefkit.gate import (
     EVAL_BLOCKED,
     EVAL_CLEAN,
     EVAL_NEEDS_REVIEW,

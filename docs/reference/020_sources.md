@@ -83,7 +83,7 @@ Example (external web reference):
 
 ## Operational guidance for AI
 
-- Do not re-read entire originals every time. First locate and read relevant fragments via `knowledge/000_index.md` and `python -m fm xref search/show`.
+- Do not re-read entire originals every time. First locate and read relevant fragments via `knowledge/000_index.md` and `python -m xrefkit xref search/show`.
 - Only when needed, follow the source pointer to consult the exact location in `sources/` (page/sheet/URL).
 - When importing external information, explicitly watch for:
   - business rule misinterpretation

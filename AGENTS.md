@@ -19,6 +19,9 @@ If a required rule is missing, do not invent a project rule. Mark it as missing 
 
 # AGENTS Startup (XRefKit)
 
-**As your first action**, read the XRefKit startup contract below:
+**As your first action**, resolve and read the XRefKit startup contract by XID.
+Use the active repository, installed-package, or MCP resource provider; do not
+substitute a similarly named local document.
 
-- `docs/core/contracts/080_xrefkit_startup_contract.md#xid-C3A1F78D9B22`
+- startup XID: `C3A1F78D9B22`
+- repository fallback: `docs/core/contracts/080_xrefkit_startup_contract.md#xid-C3A1F78D9B22`

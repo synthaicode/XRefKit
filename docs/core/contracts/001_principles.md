@@ -49,5 +49,5 @@ If the meaning changes so much that “keeping the same XID would make it a diff
 To standardize this, use:
 
 ```powershell
-python -m fm xref deprecate <OLD_XID> <NEW_XID> --note "reason (optional)"
+python -m xrefkit xref deprecate <OLD_XID> <NEW_XID> --note "reason (optional)"
 ```

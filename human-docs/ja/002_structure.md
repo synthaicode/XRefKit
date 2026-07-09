@@ -10,7 +10,7 @@
 - `docs/`: 人間向けドキュメント（背景、設計、運用、索引）
 - `knowledge/`: 共有ドメイン知識の断片
 - `agent/`: agent 向け入口・運用契約（L0を短く固定）
-- `fm/`: CLI 実装（`python -m fm ...`）
+- `xrefkit/`: Python パッケージ、CLI、XID resolver、tools registry、MCP adapter
 - `sources/`: 原本（PDF/Excel/Web 等）。人間が確認できる出典
 - `skills/`: 実行用 Skill とルーティング索引
 - `.github/`: Copilot/CI など GitHub 側の制御面

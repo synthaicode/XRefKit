@@ -36,7 +36,7 @@ decision, 2026-06-13).
    scratch worktree. The source repository location is runner-provided and
    must not be hard-coded in this Skill asset.
 2. Run `csharp_review` against the scratch path through the normal runtime
-   (`fm skill run`), output mode `findings-only`. The eval run must NOT load
+   (`xrefkit skill run`), output mode `findings-only`. The eval run must NOT load
    this eval directory; the executor sees the fixture cold.
 3. In addition to the findings document, the executor emits a structured
    `findings.yaml`:

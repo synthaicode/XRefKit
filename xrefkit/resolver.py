@@ -8,6 +8,7 @@ from .hashing import sha256_file
 from .models import (
     BundleReferences,
     ConflictEntry,
+    DomainKnowledgeCatalogEntry,
     EffectiveSkillBundle,
     LoadReason,
     LoadedTexts,
@@ -108,6 +109,7 @@ class EffectiveSkillResolver:
             review_axes=list(dict.fromkeys(base_skill.review_axes + local_skill.xrefkit.review_axes)),
             branches=[branch.xid for branch in base_skill.branches],
         )
+        available_domain_knowledge = self._build_available_domain_knowledge(set(references.knowledge))
 
         return EffectiveSkillBundle(
             effective_skill_id=local_skill.skill_id,
@@ -115,6 +117,7 @@ class EffectiveSkillResolver:
             base_contracts=[extends.ref],
             loaded_texts=loaded_texts,
             references=references,
+            available_domain_knowledge=available_domain_knowledge,
             branches_available=[
                 {
                     "id": branch.id,
@@ -219,3 +222,21 @@ class EffectiveSkillResolver:
         if missing:
             raise ValueError(f"local skill weakened required_outputs: {sorted(missing)}")
         return merged
+
+    def _build_available_domain_knowledge(self, selected_xids: set[str]) -> list[DomainKnowledgeCatalogEntry]:
+        entries: list[DomainKnowledgeCatalogEntry] = []
+        for record in self.registry.knowledge.list():
+            selected = record.xid in selected_xids
+            entries.append(
+                DomainKnowledgeCatalogEntry(
+                    id=record.id,
+                    xid=record.xid,
+                    source_type=SourceType(record.source_type),
+                    content_hash=sha256_file(record.path),
+                    selected=selected,
+                    package_id=record.package_id,
+                    local_id=record.local_id,
+                    selection_reason="referenced_by_effective_skill" if selected else None,
+                )
+            )
+        return entries

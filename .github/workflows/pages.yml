@@ -28,10 +28,20 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build and verify site
+        run: |
+          python tools/site_build.py --output .generated-site --json
+          python tools/site_build.py --output site --check --json
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: .generated-site
 
       - name: Deploy to GitHub Pages
         id: deployment

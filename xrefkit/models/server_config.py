@@ -127,7 +127,7 @@ class IdentityConfig(StrictModel):
         return value
 
 
-class FmConfig(StrictModel):
+class RuntimeConfig(StrictModel):
     mode: str = "client_context"
     require_used_xids: bool = True
     require_unknowns: bool = True
@@ -156,5 +156,5 @@ class XRefKitServerConfig(StrictModel):
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
     mcp: McpServerConfig = Field(default_factory=McpServerConfig)
     identity: IdentityConfig | None = None
-    fm: FmConfig | None = None
+    runtime: RuntimeConfig | None = None
     execution: ExecutionConfig = Field(default_factory=ExecutionConfig)

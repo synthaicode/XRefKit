@@ -1,3 +1,6 @@
+<!-- xid: E179D62EA4F4 -->
+<a id="xid-E179D62EA4F4"></a>
+
 # XRefKit v2 MVP
 
 This document describes the implemented XRefKit v2 MVP surface.
@@ -16,6 +19,7 @@ gateway. The MVP focuses on:
 - loading repository-independent Skill Packages
 - mounting Project Local assets
 - resolving a Local Domain Skill that extends a Pack Skill
+- cataloging available domain knowledge during Skill extension resolution
 - including reusable text fragments by XID without changing inheritance
 - generating an `EffectiveSkillBundle`
 - keeping source trace and content hashes visible
@@ -299,6 +303,45 @@ python -m xrefkit show effective-skill project.order_change_design `
 `resolved-json` is not full materialization. The word `full` is reserved for
 true full materialize.
 
+## Extension-Time Domain Knowledge Catalog
+
+When a Local Domain Skill extends a Pack Skill, the resolver builds a
+metadata-only `available_domain_knowledge` catalog from registered package and
+local knowledge.
+
+The catalog is automatic at Skill extension resolution time. It exists because
+the inherited judgment method may be uniform while the concrete target can be
+one of many local or package knowledge entries. Loading every possible target
+body would pollute the Skill context.
+
+Each catalog entry contains:
+
+- knowledge id
+- XID
+- source type
+- content hash
+- package or local identity
+- whether the XID is already selected by the effective Skill references
+- selection reason when selected
+
+The catalog does not load knowledge bodies into `loaded_texts.knowledge`. Body
+loading remains a later selected-XID operation. The intended shape is:
+
+```text
+available_domain_knowledge metadata -> select XID -> load selected body
+```
+
+This mirrors the MCP-facing shape:
+
+```text
+metadata list -> choose XID -> get_document_by_xid(XID)
+```
+
+If a target-specific body was initially embedded in a draft or early-trial
+Skill, it must be extracted through maintenance before the Skill is treated as
+stable. After extraction and registration as package or local knowledge, the
+same extension-time cataloging exposes it through `available_domain_knowledge`.
+
 ## EffectiveSkillBundle
 
 `EffectiveSkillBundle` is the resolver output for the current Skill resolution.
@@ -310,6 +353,7 @@ In the MVP it contains:
 - base contracts
 - loaded text references with content hashes and load reasons
 - included reusable fragments loaded by XID
+- available domain knowledge metadata for package and local knowledge
 - referenced knowledge, templates, schemas, review axes, and branches
 - required outputs after merge
 - fragment-level source trace
@@ -352,6 +396,8 @@ YAML or Markdown run-log views are human exports, not the canonical format.
 - XIDs presented as candidates or references.
 - Body text may not be loaded.
 - Useful for navigation and possible follow-up loading.
+- `available_domain_knowledge` entries are referenced candidates until selected
+  and loaded.
 
 `loaded_xids`:
 
@@ -377,6 +423,7 @@ The following are intentionally not implemented:
 - automatic package install
 - automatic package download
 - multiple inheritance
+- automatic extraction of embedded Skill text into domain-knowledge catalog
 - advanced branch condition DSL
 - full workflow engine
 

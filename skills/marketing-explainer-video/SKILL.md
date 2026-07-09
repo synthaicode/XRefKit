@@ -105,7 +105,7 @@ Create short marketing explainer videos that are understandable to first-time vi
   - duration
   - final file path
   - audio is present when TTS is expected
-- Run repository checks such as `python -m fm xref fix` after adding Markdown or documentation links.
+- Run repository checks such as `python -m xrefkit xref fix` after adding Markdown or documentation links.
 
 ## Publication
 

@@ -77,7 +77,7 @@ In Skill metadata:
   `role_responsibilities.executor` value, which was always a responsibility, not
   a role.
 - There is **no** role field. Every Skill is the executor; the checker is the
-  deterministic protocol (`fm skill verify`), so recording a role on the Skill
+  deterministic protocol (`xrefkit skill verify`), so recording a role on the Skill
   conveys nothing.
 - `knowledge_slots` declare the knowledge the Skill needs; they are resolved at
   runtime against the base+local catalog. There are no static `knowledge_refs`

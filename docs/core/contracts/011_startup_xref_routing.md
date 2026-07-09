@@ -52,14 +52,14 @@ is not part of the mandatory startup read path.
   catalog (capability/tuning/responsibility triad); there is no separate
   capability-routing model.
 - When a task or skill needs domain knowledge, route via:
-  - `python -m fm xref search "<query>"`
-  - `python -m fm xref show <XID>`
+  - `python -m xrefkit xref search "<query>"`
+  - `python -m xrefkit xref show <XID>`
 - Keep references XID-based (`#xid-...`) and keep existing XID blocks unchanged.
 - Treat cross-references in `docs/` as navigation metadata, not as recursive
   load instructions. Do not follow transitive document links at startup or
   Skill load time unless the current task explicitly needs that target
   fragment.
-- After edits, run `python -m fm xref fix`.
+- After edits, run `python -m xrefkit xref fix`.
 
 ## Execution Environment
 

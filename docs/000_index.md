@@ -78,6 +78,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Client authoring and unified supply design](designs/082_client_authoring_and_unified_supply_design.md)
 - [Skill-centric architecture consolidation](designs/083_skill_centric_architecture_consolidation.md)
 - [Skill-centric MCP catalog design](designs/084_skill_centric_mcp_catalog_design.md)
+- [XRefKit unified package migration plan](designs/087_xrefkit_unified_package_migration_plan.md#xid-F6A2C9D14E70)
 
 ## Common links
 

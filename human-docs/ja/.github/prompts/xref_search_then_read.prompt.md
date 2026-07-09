@@ -8,13 +8,13 @@
 2. 調べたいテーマをクエリにして検索する
 
 ```powershell
-python -m fm xref search "<query>"
+python -m xrefkit xref search "<query>"
 ```
 
 3. 候補 XID を必要な分だけ表示する
 
 ```powershell
-python -m fm xref show <XID>
+python -m xrefkit xref show <XID>
 ```
 
 4. 読んだ XID を作業メモとして列挙してから、変更・実装に進む

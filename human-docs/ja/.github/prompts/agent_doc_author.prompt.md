@@ -10,14 +10,14 @@
 
 ## 手順
 
-1. `docs/000_index.md` から関連ページを辿り、必要なら `python -m fm xref search/show` で既存知識を確認する
+1. `docs/000_index.md` から関連ページを辿り、必要なら `python -m xrefkit xref search/show` で既存知識を確認する
 2. 新規ファイル `docs/<NNN>_<slug>.md` を作り、単体で意味が通るように書く（前提/目的/手順/例/例外など）
 3. 仕上げに整合性を取る
 
 ```powershell
-python -m fm xref init
-python -m fm xref rewrite
-python -m fm xref check
+python -m xrefkit xref init
+python -m xrefkit xref rewrite
+python -m xrefkit xref check
 ```
 
 4. `xref check` が `issues: 0` になることを確認して完了

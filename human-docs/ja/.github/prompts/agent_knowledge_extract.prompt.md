@@ -7,8 +7,8 @@
 - まず既存 docs を検索し、足りない差分だけを追加する
 
 ```powershell
-python -m fm xref search "<query>"
-python -m fm xref show <XID>
+python -m xrefkit xref search "<query>"
+python -m xrefkit xref show <XID>
 ```
 
 - 既存が十分なら新規ページを増やさず、参照（XIDリンク）を張って終える
@@ -26,7 +26,7 @@ python -m fm xref show <XID>
 ## 仕上げ
 
 ```powershell
-python -m fm xref init
-python -m fm xref rewrite
-python -m fm xref check
+python -m xrefkit xref init
+python -m xrefkit xref rewrite
+python -m xrefkit xref check
 ```
