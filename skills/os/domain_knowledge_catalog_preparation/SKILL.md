@@ -21,9 +21,9 @@ MCP configuration.
 
 ## Required Knowledge (XID)
 
-- [Skill domain knowledge runtime input design](../../../docs/designs/085_skill_domain_knowledge_runtime_input_design.md#xid-BC6C6D89E4E1)
-- [Client authoring and unified supply design](../../../docs/designs/082_client_authoring_and_unified_supply_design.md#xid-B0572E20DFBA)
-- [Repository layout MCP catalog design](../../../docs/designs/081_repository_layout_mcp_catalog_design.md#xid-C8B7A1E940D2)
+- [Skill and Knowledge Operating Model](../../../docs/core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
+- [XRefKit startup contract](../../../docs/core/contracts/080_xrefkit_startup_contract.md#xid-C3A1F78D9B22)
+- [Repository Structure](../../../docs/002_structure.md#xid-D0E1327DDD7F)
 - [Domain knowledge ontology rules](../../../knowledge/organization/200_domain_knowledge_ontology_rules.md#xid-5803607419B9)
 - [Context direction guard rules](../../../knowledge/organization/160_context_direction_guard_rules.md#xid-7A2F4C8D1601)
 

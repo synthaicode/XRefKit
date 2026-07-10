@@ -19,8 +19,9 @@ work base:
 - reusable Skill and Knowledge structure
 - stable references across evolving knowledge assets
 
-For the explicit reorganization direction, see
-[AI Agent OS Reorganization Design](designs/063_ai_agent_os_reorganization_design.md#xid-22CAE81A6D3E).
+For the current repository structure and operating model, see
+[Repository Structure](002_structure.md#xid-D0E1327DDD7F) and
+[Skill and Knowledge Operating Model](core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8).
 
 ## The core problem
 
@@ -132,7 +133,8 @@ mechanism.
 
 ## What it means for AI to “manage XIDs”
 
-It does **not** mean the AI invents IDs. It means the AI (or CI) uses `fm` commands to keep the system consistent.
+It does **not** mean the AI invents IDs. It means the AI (or CI) uses
+`xrefkit` commands to keep the system consistent.
 
 - `python -m xrefkit xref init` assigns/replaces XIDs (AI runs it and interprets results)
 - Run `init` / `rewrite` / `check` until `issues: 0`

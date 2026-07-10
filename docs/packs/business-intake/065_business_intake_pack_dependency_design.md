@@ -13,14 +13,13 @@ It is not a usage guide.
 This page makes the business-intake route explicit as one business pack that
 depends on the AI Agent OS core.
 
-The goal is to turn the design statement in
-[AI Agent OS Reorganization Design](../../designs/063_ai_agent_os_reorganization_design.md#xid-22CAE81A6D3E)
-into one concrete dependency map.
+The goal is to apply the current Business Pack model to one concrete dependency
+map.
 
 Related:
 
 - [Business Pack model](../../core/models/071_business_pack_model.md#xid-40511A8A06CD)
-- [AI Agent OS Reorganization Design](../../designs/063_ai_agent_os_reorganization_design.md#xid-22CAE81A6D3E)
+- [Overview](../../000_overview.md#xid-7C6C2B46A9D1)
 - [Business intake workflow](067_business_intake_workflow.md#xid-7F2C8DA14E66)
 - [Business learning interview guide](061_business_learning_interview_guide.md#xid-D2A41E8C7B51)
 - [Business intake scoping guide](060_business_intake_scoping_guide.md#xid-C91F7D2A6B40)

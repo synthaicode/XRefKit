@@ -3,10 +3,9 @@
 
 # Skill and Knowledge Operating Model
 
-This page is the repository's operating model after the skill-centric
+This page is the repository's canonical operating model after the skill-centric
 consolidation. It supersedes the earlier four-layer model
-(Flow → Capability → Skill → Knowledge) as defined in
-[Skill-centric architecture consolidation](../../designs/083_skill_centric_architecture_consolidation.md#xid-9DF3B80F9CBE).
+(Flow → Capability → Skill → Knowledge).
 
 ## Model
 
@@ -22,7 +21,9 @@ routing:
 - **Workflow protocol / kernel** — the generic, business-independent per-Skill
   control (phases, `verify`, `close`) that carries determinism. The same for all
   work; not a per-business definition. See
-  [Deterministic flow control kernel design](../../designs/073_deterministic_flow_control_kernel_design.md#xid-4C7E9A2B1D63).
+  [Skill operating contract](../contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61)
+  and
+  [Workflow protocol sequence for humans](../../guides/087_workflow_protocol_sequence_for_humans.md#xid-E8B4D2F19A63).
 - **Semantic routing** — selects the Skill for a goal by matching intent and
   current state against the Skill meta triad, filtered by declared
   preconditions.
@@ -154,7 +155,6 @@ The model stays traceable when paired with execution records:
 
 ## Migration Status
 
-The four-layer artifacts (`flows/`, `capabilities/`, and the group documents)
-may still be physically present during the migration tracked by
-[083](../../designs/083_skill_centric_architecture_consolidation.md#xid-9DF3B80F9CBE).
-This page describes the target authoritative model.
+This page describes the authoritative model. Removed four-layer artifacts such
+as `flows/`, `capabilities/`, and group overlays are not part of the current
+runtime model.

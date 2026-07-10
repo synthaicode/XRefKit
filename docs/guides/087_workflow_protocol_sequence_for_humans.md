@@ -8,8 +8,8 @@ execution, deterministic verification, and quality review fit together.
 
 ## Short Version
 
-`fm` is the deterministic runtime harness. It does not interpret a Skill's
-business procedure and does not judge output quality.
+`xrefkit skill` is the deterministic runtime harness. It does not interpret a
+Skill's business procedure and does not judge output quality.
 
 The AI executor interprets the selected `SKILL.md` and performs the actual
 work.
@@ -27,7 +27,7 @@ phase.
 | Actor | What it does |
 |---|---|
 | User | Provides the goal, constraints, and human decisions when escalation is needed. |
-| Main AI / harness / client | Routes the task, runs `fm` commands, manages the run log, and may orchestrate subagents. |
+| Main AI / harness / client | Routes the task, runs `xrefkit skill` commands, manages the run log, and may orchestrate subagents. |
 | `xrefkit skill run` | Opens the runtime envelope, validates Skill metadata, resolves `skill_doc`, assigns runtime roles, and creates the run log. |
 | Skill executor AI | Reads the returned `skill_doc` and performs the Skill procedure. |
 | `xrefkit skill verify` | Deterministically verifies workflow-progression records and advances the check phase. |
@@ -46,7 +46,7 @@ phase.
 3. Main AI / harness opens the runtime envelope.
    python -m xrefkit skill run --meta <skill-meta> --task "<task>" --json
 
-4. fm creates the run log.
+4. `xrefkit skill run` creates the run log.
    - validates metadata at runtime-open level
    - confirms the referenced SKILL.md exists
    - returns run_log and skill_doc
@@ -118,7 +118,7 @@ phase.
 ```text
 Main AI / harness context
   - routes the task
-  - runs fm commands
+  - runs `xrefkit skill` commands
   - manages the run log
   - may orchestrate executor or quality subagents
 
@@ -163,5 +163,5 @@ its own output quality.
 ## Boundary To Remember
 
 - AI interprets Skill procedures and performs non-deterministic work.
-- `fm` enforces deterministic runtime progression and closure.
+- `xrefkit skill` enforces deterministic runtime progression and closure.
 - quality review is separate from deterministic verification.

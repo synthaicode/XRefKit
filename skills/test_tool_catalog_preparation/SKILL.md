@@ -15,7 +15,7 @@ conditions. It is not a test plan, test design, or test execution result.
 ## Required Knowledge (XID)
 
 - [Test design criteria](../../knowledge/quality/110_test_design_criteria.md#xid-8C4D2A7E5102)
-- [Skill domain knowledge runtime input design](../../docs/designs/085_skill_domain_knowledge_runtime_input_design.md#xid-BC6C6D89E4E1)
+- [Skill and Knowledge Operating Model](../../docs/core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
 - [Domain knowledge ontology rules](../../knowledge/organization/200_domain_knowledge_ontology_rules.md#xid-5803607419B9)
 
 ## Inputs

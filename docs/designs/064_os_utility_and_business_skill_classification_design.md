@@ -3,8 +3,8 @@
 
 # OS Utility and Business Skill Classification Design
 
-This page is a design document for classifying current `skills/` assets during
-the AI Agent OS reorganization.
+This page is a design document for classifying current `skills/` assets under
+the current XRefKit repository model.
 It is not a usage guide.
 
 ## Purpose
@@ -21,7 +21,7 @@ procedures as if they were one flat catalog.
 Related:
 
 - [Business Pack model](../core/models/071_business_pack_model.md#xid-40511A8A06CD)
-- [AI Agent OS Reorganization Design](063_ai_agent_os_reorganization_design.md#xid-22CAE81A6D3E)
+- [Overview](../000_overview.md#xid-7C6C2B46A9D1)
 - [Skills Index](../../skills/_index.md#xid-8D91F66DDBB7)
 
 ## Classification Rule

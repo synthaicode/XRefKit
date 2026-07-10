@@ -25,8 +25,9 @@ that consumes its output fails or comes back empty without it:
 | `tools/test_coverage_reach.py`, `tools/where_seed_traversal.py` | the relation graph |
 | Skills `dotnet_change_analysis`, `qa_gate_review` | the tools above |
 
-The pure-Python tools in `tools/` and the `fm` runtime do not need this
-build (they need Python 3.11+ and, for `fm`, PyYAML).
+The pure-Python tools in `tools/` and the `xrefkit` runtime do not need this
+build. They need Python 3.11+ and the Python dependencies declared by the
+package.
 
 ## Option A: Install From NuGet (Preferred)
 

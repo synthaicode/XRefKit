@@ -25,9 +25,9 @@
 - tags: `operations`, `knowledge`, `mcp`, `catalog`, `runtime-input`
 - skill_doc: `./SKILL.md`
 - knowledge_slots:
-  - name=skill_domain_knowledge_runtime_input_design; bind=BC6C6D89E4E1
-  - name=client_authoring_and_unified_supply_design; bind=B0572E20DFBA
-  - name=repository_layout_mcp_catalog_design; bind=C8B7A1E940D2
+  - name=skill_knowledge_operating_model; bind=91C4B7E2D5A8
+  - name=xrefkit_startup_contract; bind=C3A1F78D9B22
+  - name=repository_structure; bind=D0E1327DDD7F
   - name=domain_knowledge_ontology_rules; bind=5803607419B9
   - name=context_direction_guard_rules; bind=7A2F4C8D1601
 - observation_refs:

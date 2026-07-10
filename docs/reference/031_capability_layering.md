@@ -6,9 +6,7 @@
 This page defines the capability / tuning / responsibility triad and how it
 identifies and routes Skills after the skill-centric consolidation. It aligns
 with
-[Skill and knowledge operating model](../core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
-and
-[Skill-centric architecture consolidation](../designs/083_skill_centric_architecture_consolidation.md#xid-9DF3B80F9CBE).
+[Skill and knowledge operating model](../core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8).
 
 ## Intent
 

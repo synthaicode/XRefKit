@@ -13,8 +13,8 @@ XRefKit startup without assuming MCP, use
 
 Maintenance rule: when any source document changes, update this page and
 its "Based On" hashes in the same commit. Generate the current hash lines
-with `xrefkit-mcp-catalog startup-pack-hashes --repo <this-repo>`, and
-verify with `xrefkit-mcp-catalog check-startup-pack --repo <this-repo>`
+with `python -m xrefkit.mcp.cli startup-pack-hashes --repo <this-repo>`, and
+verify with `python -m xrefkit.mcp.cli check-startup-pack --repo <this-repo>`
 (exits non-zero when stale). The MCP server compares these hashes against
 the live sources on every `get_startup_context` call and reports the pack
 as stale to every client when they diverge.
@@ -22,10 +22,10 @@ as stale to every client when they diverge.
 ## Based On
 
 - pack_version: 1
-- 0B5C58B5E5B2: `9e344cd72d76da091f4d9d04f1439975ed7eaf8fcb2558a8784c23b4f055d1a8`
-- 5A1C8E4D2F90: `7419271f829b1e16fd41030d8d6ed4c1f193cc40506cac58f0a496ec518d87f2`
-- 6C0B62D6366A: `90c9448b6744b0f0c0870da09ab770927d1230b395ed20525f31d57c3679b65b`
-- 8A666C1FD121: `34f8d7b18462e5320a54c4a259090bfe118fc23b666c4866714bc5adbd7d4e94`
+- 0B5C58B5E5B2: `7007d3199876f05bd9e855680d122945a86ce646eb30d61f17f1d18f27cf612c`
+- 5A1C8E4D2F90: `f6e9bad07a66f4e11a5e94224bdbbacc17bccf83e4306caf4c157a3d9d74a12f`
+- 6C0B62D6366A: `1de7a79f6fbfef2f7521e942abc74c9baca462d1a650deed042c3253baea5af4`
+- 8A666C1FD121: `ff3f5e3b7b83a738edb5e99195a79e664db33a514e7a8d1fe0129e6787f994a2`
 - A7F3C92D4E11: `5732f45b041b60ec643ae4ff2c94dcc2e15376cb77f12b39dc2dafbf3614a0a4`
 - 4A423E72D2ED: `7e34f23b0e407a35d53bdcb59efcce1bb2f127dbd008d2f5a82bc5c79021e49c`
 

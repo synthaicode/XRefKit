@@ -10,7 +10,7 @@ It is not a usage guide; for the human-facing migration guide see
 
 Related:
 
-- [AI agent OS reorganization design](063_ai_agent_os_reorganization_design.md#xid-22CAE81A6D3E)
+- [Overview](../000_overview.md#xid-7C6C2B46A9D1)
 - [Business Pack model](../core/models/071_business_pack_model.md#xid-40511A8A06CD)
 - [Context direction security guard](../core/contracts/053_context_direction_security_guard.md#xid-A7F3C92D4E11)
 - [Uncertainty protocol](../core/contracts/016_uncertainty_protocol.md#xid-8A666C1FD121)
