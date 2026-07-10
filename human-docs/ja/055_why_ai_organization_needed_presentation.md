@@ -1,9 +1,12 @@
-# なぜ AI を組織化する必要があるのか スライド案
+<!-- xid: D7C3A9E15B42 -->
+<a id="xid-D7C3A9E15B42"></a>
+
+# なぜ AI を組織化する必要があるのか
 
 - 想定時間: 8-12 分
-- 想定読者: AI 活用を PoC や個人利用から本番利用へ進めたい組織
-- 目的: 統制された運用を継続・共有・改善するために、なぜ AI を組織的に扱う必要があるのかを説明する
-- 構成: 前提 -> 個人運用の限界 -> 組織化の役割 -> 次資料への接続
+- 想定読者: AI 活用を個人の会話から、継続可能な業務実行へ進めたい組織
+- 目的: AI を組織化するとは人やAIを増やすことではなく、Goalから完了までを継続・検証・改善できる運用を持つことだと説明する
+- 構成: 個人利用の限界 -> 運用の構成要素 -> 実行時の役割分担 -> 継続と改善
 - 形式: 画像ベース
 
 ---
@@ -11,67 +14,73 @@
 ![はじめに](assets/055_why_ai_organization_needed/00_intro.png)
 
 発表メモ:
-前の資料では、AI を本番利用するには複数の要素を束ねた統制された運用が必要だと整理しました。ここでは、その運用を継続的に回すにはなぜ組織化が必要になるのかを見ていきます。
+AI は速く答えます。しかし、回答が出たことと、組織の仕事が完了したことは同じではありません。この資料では、AI 活用を継続可能な業務実行にするために、なぜ組織化が必要になるのかを説明します。
 
 ---
 
 ![なぜ AI を組織化する必要があるのか](assets/055_why_ai_organization_needed/01_title.png)
 
 発表メモ:
-問いはシンプルです。統制された運用が必要だとすると、それを誰が持ち、どう維持するのかが次の論点になります。
+問いは、AI をどう増やすかではありません。途中で止まっても仕事を失わず、誰が再開しても同じ運用をたどれるようにするには、何を持つ必要があるかです。
 
 ---
 
-![個人運用の限界](assets/055_why_ai_organization_needed/02_individual_limit.png)
+![個人利用だけでは仕事が残る](assets/055_why_ai_organization_needed/02_individual_limit.png)
 
 発表メモ:
-個人でうまく回っている状態は出発点にはなりますが、そのままでは継続性も共有性も弱く、担当者が変わると品質が落ちやすくなります。
+個人のプロンプト運用では、判断材料、未確認点、次の作業、受入れ条件が会話に埋もれます。担当者が変われば、同じ説明と調査を繰り返すことになります。
 
 ---
 
-![AI に渡す情報の整理](assets/055_why_ai_organization_needed/03_input_organization.png)
+![Goal が終点を持つ](assets/055_why_ai_organization_needed/03_input_organization.png)
 
 発表メモ:
-統制された運用を考えるときは、まず AI に何を渡しているかを分けて見る必要があります。ここでは、その整理が対象、手順、知識、確認・役割につながることを示します。
+最初に、何を完了とするかを Goal と受入れ条件で置きます。作業を消化したことや、AI が停止したことを完了にしないためです。
 
 ---
 
-![ばらばらの運用](assets/055_why_ai_organization_needed/04_scattered_controls.png)
+![次の責務を選ぶ](assets/055_why_ai_organization_needed/04_scattered_controls.png)
 
 発表メモ:
-対象、手順、知識、確認、役割がそれぞれ別管理になると、運用のズレや抜け漏れが起きやすくなります。統制が必要なのは、ここをバラバラのままにしないためです。
+Goal と現在状態から、semantic routing が次に必要な Skill を選びます。人が毎回、Skill 一覧から手作業で選ぶ運用にしません。
 
 ---
 
-![組織化が担うこと](assets/055_why_ai_organization_needed/05_organization_role.png)
+![Skill は責務を限定する](assets/055_why_ai_organization_needed/05_organization_role.png)
 
 発表メモ:
-組織化は人を増やす話というより、成功条件を持ち、品質の見方をそろえ、改善を継続できる単位を持つことだと捉えられます。
+Skill は担当範囲、判断方法、入出力、必要な Knowledge、handoff を定義します。AI の責務を限定することで、必要な判断に集中でき、品質の責任範囲も明確になります。
 
 ---
 
-![組織化で解けること](assets/055_why_ai_organization_needed/06_organization_value.png)
+![Knowledge は必要な分だけ読む](assets/055_why_ai_organization_needed/06_organization_value.png)
 
 発表メモ:
-組織化によって、個人依存の成功が、継続、共有、改善しやすい状態へ変わっていきます。
+Knowledge は判断材料です。カタログから必要な XID を選び、本文を段階的に読むことで、全体を毎回読み込むことによるコンテキスト汚染を防ぎます。
 
 ---
 
-![組織化とは何を持つことか](assets/055_why_ai_organization_needed/07_human_control_unit.png)
+![workflow protocol が作業漏れを検査する](assets/055_why_ai_organization_needed/07_human_control_unit.png)
 
 発表メモ:
-ここでいう組織化は、AI に限った話ではありません。まず人の組織でも、責務があり、その責務を達成するために判断と知識があることを確認しておきます。
+各 Skill Run では work item、成果物、根拠、unknown、risk、judgment、handoff をログに残します。`xrefkit skill verify` は、その作業記録に漏れがないかを決定的に検査します。
 
 ---
 
-![AI への適用](assets/055_why_ai_organization_needed/08_ai_control_unit.png)
+![検証と受入れを分ける](assets/055_why_ai_organization_needed/08_ai_control_unit.png)
 
 発表メモ:
-ここでは 07 の構図をそのまま AI に当てます。AI にも責務があり、その責務を達成するための判断・知識・牽制が必要になる、と整理できます。
+workflow の検証は、成果物の内容を承認することとは別です。必要な場合は独立した quality review と人間の受入れで品質を判断します。人間は Goal、受入れ、例外を担います。
 
 ---
 
-![AI にこの構造をどう持たせるか](assets/055_why_ai_organization_needed/09_conclusion.png)
+![組織化とは継続と改善の仕組み](assets/055_why_ai_organization_needed/09_conclusion.png)
 
 最後の一言:
-AI にも、責務ごとに判断・知識・牽制が必要になります。問題は、それを都度与えるだけでは不安定になりやすいことです。継続して持ち、揃え、改善できる単位として扱うことが、AI を組織的に扱うことにつながっていくと考えられます。
+AI を組織化するとは、人やAIを増やすことではありません。Goal、routing、責務を限定した Skill、必要な Knowledge、workflow protocol を分け、記録から再開・handoff・改善できるようにすることです。これにより、AI の速さを継続性と手戻り削減へ変えます。
+
+## 関連
+
+- [AI組織説明動画 改訂シナリオ](063_ai_organization_explainer_clear_script.md)
+- [AIの作業を途中で終わらせないための仕組み](071_ai_workflow_completion_and_skill_scope_material.md#xid-F6C3A9E12B47)
+- [XID利用状況を確認し、SkillとKnowledgeを改善する](072_xid_usage_observability_and_improvement_presentation.md#xid-E5B0D94A71C3)
