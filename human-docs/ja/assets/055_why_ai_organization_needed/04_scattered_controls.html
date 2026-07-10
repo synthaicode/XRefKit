@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8" /><style>:root {
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><style>:root {
   --bg: linear-gradient(135deg, #f7fafc 0%, #eef4fb 100%);
   --panel: #ffffff;
   --ink: #132237;
@@ -119,7 +119,4 @@ body {
   line-height: 1.55;
   color: var(--muted);
 }
-</style></head><body>
-    <div class="canvas"><h1 class="title">semantic routing が、次の責務を選ぶ</h1><p class="subtitle">Goal と現在状態から、次に必要な Skill を選択する</p>
-      <div class="grid-3" style="margin-top:98px;"><div class="card soft-blue"><h3>Goal と現在状態</h3><p>何を達成し、何が未了かを確認する</p></div><div class="card soft-blue"><h3>semantic routing</h3><p>候補の Skill から適用可能な責務を選ぶ</p></div><div class="card soft-blue"><h3>次の Skill Run</h3><p>選んだ責務を実行し、結果を Goal へ戻す</p></div></div>
-      <div class="summary-band"><strong>人が毎回一覧から手選びするのではなく、状態に応じて責務を選ぶ</strong><span>選択理由も記録し、後で見直せるようにする。</span></div></div></body></html>
+</style></head><body><div class="canvas"><h1 class="title">AIには、限定した責務を担当させる</h1><p class="subtitle">分割した作業を、判断とhandoffの境界を持つSkillとして扱う</p><div class="grid-3" style="margin-top:88px;"><div class="card soft-blue"><h3>担当範囲</h3><p>何を行い、どこまで責任を持つか</p></div><div class="card soft-blue"><h3>判断と入出力</h3><p>何を見て、何を返すか</p></div><div class="card soft-green"><h3>Knowledgeとhandoff</h3><p>何を参照し、どこで次へ渡すか</p></div></div><div class="summary-band"><strong>責務を限定することで、AIは必要な判断と成果物に集中できる。</strong></div></div></body></html>
