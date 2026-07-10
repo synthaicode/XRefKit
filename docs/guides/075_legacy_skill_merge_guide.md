@@ -135,7 +135,7 @@ Run:
 python -m xrefkit xref fix
 python -m xrefkit skill check --scope all
 python -m xrefkit pack lint
-python tools/run_quality_gate.py fm
+python tools/run_quality_gate.py xrefkit
 ```
 
 When the imported Skill belongs to a pack, also confirm the pack manifest owns or

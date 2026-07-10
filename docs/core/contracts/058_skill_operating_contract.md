@@ -220,7 +220,7 @@ structured output and evidence links with:
 
 ```powershell
 python -m xrefkit skill artifact --log work/sessions/<run-log>.md --artifact OUT-001 --kind output --target "docs/output.md" --item WI-001 --status done --role "<skill_id>:executor"
-python -m xrefkit skill artifact --log work/sessions/<run-log>.md --artifact EVD-001 --kind evidence --target "python tools/run_quality_gate.py fm" --item WI-001 --status done --role "<skill_id>:checker"
+python -m xrefkit skill artifact --log work/sessions/<run-log>.md --artifact EVD-001 --kind evidence --target "python tools/run_quality_gate.py xrefkit" --item WI-001 --status done --role "<skill_id>:checker"
 ```
 
 Supported artifact kinds:
@@ -372,7 +372,7 @@ The audit detects committed Skill run logs that were not opened by
 `xrefkit skill run`, logs that are not closed, missing assigned-role phase evidence,
 missing concrete work items, missing output/evidence artifacts, and unresolved
 unknown/risk/judgment concerns. The `--tracked-only` mode is used by
-`python tools/run_quality_gate.py fm` so historical local `work/` files do not
+`python tools/run_quality_gate.py xrefkit` so historical local `work/` files do not
 require migration before the CI-facing gate can enforce the contract.
 
 The check phase is workflow-progression verification, and it is advanced
