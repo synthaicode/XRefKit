@@ -58,7 +58,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run repository quality-gate stages")
     parser.add_argument(
         "stage",
-        choices=["xrefkit", "slides-app", "all"],
+        choices=["xrefkit", "slides-app", "skill-run-dashboard", "all"],
         help="Quality-gate stage to run",
     )
     parser.add_argument(
@@ -73,6 +73,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.stage in {"slides-app", "all"}:
         _run_node_stage(REPO_ROOT / "projects" / "slides-app", install=args.install_node_deps)
+
+    if args.stage in {"skill-run-dashboard", "all"}:
+        _run_node_stage(REPO_ROOT / "projects" / "skill-run-dashboard", install=args.install_node_deps)
 
     return 0
 

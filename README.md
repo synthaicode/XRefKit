@@ -86,6 +86,14 @@ Start the integrated MCP server over stdio:
 xrefkit mcp serve --repo . --transport stdio
 ```
 
+The server writes structured correlation events to
+`work/mcp/xid_audit.jsonl` by default. After `xrefkit skill run` returns a
+`run_id`, the client calls MCP `bind_skill_run` and executes the returned
+`client_record_command` against the local `run_log`. Subsequent MCP Knowledge
+searches and XID resolutions then share the same `run_id` as the client Skill
+Run. The client separately records actual model-context loading and judgment
+application with `xrefkit skill knowledge --action load|apply`.
+
 XRefKit is designed to be driven by an AI agent. The agent first resolves the
 startup contract XID, selects a Skill or source target from a compact catalog,
 and expands only the selected body.

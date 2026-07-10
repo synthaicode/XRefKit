@@ -1,5 +1,6 @@
 import contextlib
 import io
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -141,6 +142,165 @@ class SkillRuntimeAuditTests(unittest.TestCase):
                 )
             self.assertEqual(0, main(["skill", "close", "--log", str(out)]))
         return out
+
+    def test_skill_run_records_correlation_and_tuning_observations(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_valid_skill(root)
+            out = root / "work" / "sessions" / "run.md"
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    0,
+                    main(
+                        [
+                            "skill", "run", "--root", str(root),
+                            "--meta", "skills/sample/meta.md",
+                            "--task", "Record observations", "--out", str(out),
+                        ]
+                    ),
+                )
+            text = out.read_text(encoding="utf-8")
+            run_id = re.search(r"^- run_id: `([^`]+)`", text, re.MULTILINE).group(1)
+
+            commands = [
+                [
+                    "skill", "correlate", "--log", str(out), "--run-id", run_id,
+                    "--mcp-session-id", "mcp-session-1",
+                    "--repository-fingerprint", "repo-fingerprint-1",
+                ],
+                [
+                    "skill", "routing", "--log", str(out),
+                    "--selected-skill", "sample_skill", "--candidate", "sample_skill",
+                    "--selection-mode", "semantic", "--reason", "best matching candidate",
+                ],
+                [
+                    "skill", "knowledge", "--log", str(out), "--action", "search",
+                    "--query", "service ownership", "--status", "hit", "--xid", "ABC123456789",
+                    "--source", "mcp",
+                ],
+                [
+                    "skill", "knowledge", "--log", str(out), "--action", "load",
+                    "--xid", "ABC123456789", "--content-hash", "sha256-value", "--source", "mcp",
+                ],
+                [
+                    "skill", "artifact", "--log", str(out), "--artifact", "OUT-001",
+                    "--kind", "output", "--status", "done", "--target", "review.md",
+                    "--role", "sample_skill:executor",
+                ],
+                [
+                    "skill", "knowledge", "--log", str(out), "--action", "apply",
+                    "--xid", "ABC123456789", "--content-hash", "sha256-value",
+                    "--target", "OUT-001", "--decisive",
+                ],
+                [
+                    "skill", "feedback", "--log", str(out), "--kind", "human",
+                    "--status", "accepted", "--target", "OUT-001", "--note", "accepted by owner",
+                ],
+                [
+                    "skill", "feedback", "--log", str(out), "--kind", "outcome",
+                    "--status", "successful", "--target", "deployment-1", "--note", "no regression",
+                ],
+            ]
+            for command in commands:
+                with contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(0, main(command))
+
+            text = out.read_text(encoding="utf-8")
+            self.assertIn(f'- run_id: `{run_id}`', text)
+            self.assertIn('- mcp_session_id: `mcp-session-1`', text)
+            self.assertIn('- repository_fingerprint: `repo-fingerprint-1`', text)
+            self.assertIn('"event":"skill.routed"', text)
+            self.assertIn('"event":"knowledge.search"', text)
+            self.assertIn('"event":"knowledge.loaded"', text)
+            self.assertIn('"event":"knowledge.applied"', text)
+            self.assertIn('"event":"human.feedback"', text)
+            self.assertIn('"event":"outcome.feedback"', text)
+
+    def test_correlation_rejects_rebinding_and_routing_to_another_skill(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = self._open_run(root)
+            run_id = re.search(r"^- run_id: `([^`]+)`", out.read_text(encoding="utf-8"), re.MULTILINE).group(1)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(0, main([
+                    "skill", "correlate", "--log", str(out), "--run-id", run_id,
+                    "--mcp-session-id", "mcp-1", "--repository-fingerprint", "repo-1",
+                ]))
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                self.assertEqual(1, main([
+                    "skill", "correlate", "--log", str(out), "--run-id", run_id,
+                    "--mcp-session-id", "mcp-2", "--repository-fingerprint", "repo-1",
+                ]))
+                self.assertEqual(1, main([
+                    "skill", "routing", "--log", str(out), "--selected-skill", "other_skill",
+                    "--candidate", "other_skill", "--reason", "incorrect run reuse",
+                ]))
+            self.assertIn("already correlated", output.getvalue())
+            self.assertIn("must match the Skill Run skill_id", output.getvalue())
+
+    def test_knowledge_apply_requires_loaded_hash_and_known_target(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = self._open_run(root)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(0, main([
+                    "skill", "artifact", "--log", str(out), "--artifact", "OUT-001",
+                    "--kind", "output", "--status", "done", "--target", "review.md",
+                    "--role", "sample_skill:executor",
+                ]))
+                self.assertEqual(0, main([
+                    "skill", "knowledge", "--log", str(out), "--action", "load",
+                    "--xid", "ABC123456789", "--content-hash", "hash-1",
+                ]))
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                self.assertEqual(1, main([
+                    "skill", "knowledge", "--log", str(out), "--action", "apply",
+                    "--xid", "ABC123456789", "--content-hash", "hash-2", "--target", "OUT-001",
+                ]))
+                self.assertEqual(1, main([
+                    "skill", "knowledge", "--log", str(out), "--action", "apply",
+                    "--xid", "ABC123456789", "--content-hash", "hash-1", "--target", "OUT-404",
+                ]))
+                self.assertEqual(0, main([
+                    "skill", "knowledge", "--log", str(out), "--action", "apply",
+                    "--xid", "ABC123456789", "--content-hash", "hash-1", "--target", "OUT-001",
+                ]))
+            self.assertIn("prior knowledge.loaded", output.getvalue())
+            self.assertIn("existing artifact or concern", output.getvalue())
+
+    def test_observation_commands_return_structured_error_for_unreadable_log(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            log_path = Path(tmp) / "not-a-log"
+            log_path.mkdir()
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                self.assertEqual(1, main([
+                    "skill", "correlate", "--log", str(log_path),
+                    "--mcp-session-id", "mcp-1", "--repository-fingerprint", "repo-1",
+                ]))
+            self.assertIn("could not read skill run log", output.getvalue())
+
+    def test_skill_run_rejects_duplicate_caller_supplied_run_id(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_valid_skill(root)
+            run_id = "d4c0ca07-ec6c-48f9-b296-ec735323b088"
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(0, main([
+                    "skill", "run", "--root", str(root), "--meta", "skills/sample/meta.md",
+                    "--task", "first", "--out", str(root / "work" / "sessions" / "first.md"),
+                    "--run-id", run_id,
+                ]))
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                self.assertEqual(1, main([
+                    "skill", "run", "--root", str(root), "--meta", "skills/sample/meta.md",
+                    "--task", "second", "--out", str(root / "work" / "sessions" / "second.md"),
+                    "--run-id", run_id,
+                ]))
+            self.assertIn("run_id is already used", output.getvalue())
 
     def _open_run_through_execution(self, root: Path, *, with_artifacts: bool) -> Path:
         self._write_valid_skill(root)

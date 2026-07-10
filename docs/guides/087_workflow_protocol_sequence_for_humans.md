@@ -29,6 +29,7 @@ phase.
 | User | Provides the goal, constraints, and human decisions when escalation is needed. |
 | Main AI / harness / client | Routes the task, runs `xrefkit skill` commands, manages the run log, and may orchestrate subagents. |
 | `xrefkit skill run` | Opens the runtime envelope, validates Skill metadata, resolves `skill_doc`, assigns runtime roles, and creates the run log. |
+| MCP `bind_skill_run` | Binds the Skill Run `run_id` to the active MCP session and starts correlated server audit records. |
 | Skill executor AI | Reads the returned `skill_doc` and performs the Skill procedure. |
 | `xrefkit skill verify` | Deterministically verifies workflow-progression records and advances the check phase. |
 | Quality reviewer | Accepts or blocks output quality when the quality gate is required. |
@@ -53,6 +54,24 @@ phase.
    - assigns executor, checker, quality_reviewer, and handoff_owner roles
    - records workflow_protocol, os_contract, worklist, artifact sections,
      unknown/risk handling, quality gate, closure gate, and handoff section
+   - generates `run_id` for client/MCP correlation
+
+4a. In MCP mode, the harness binds the run before task-specific XID access.
+    - call `bind_skill_run(run_id, skill_id)`
+    - execute its returned `client_record_command` against `run_log`
+    - MCP writes search and XID-resolution events to `work/mcp/xid_audit.jsonl`
+    - the client log and server audit now share `run_id`, `mcp_session_id`, and
+      `repository_fingerprint`
+    - MCP records resolution as `xid.resolved`; the client records actual
+      context injection separately with `xrefkit skill knowledge --action load`
+
+4b. The harness records routing and non-MCP Knowledge observations when they
+    are available.
+    ```powershell
+    python -m xrefkit skill routing --log <run-log> --selected-skill <skill> --candidate <skill> --reason "<reason>"
+    python -m xrefkit skill knowledge --log <run-log> --action apply --xid <XID> --target <artifact-or-judgment>
+    python -m xrefkit skill feedback --log <run-log> --kind human --status accepted --note "<feedback>"
+    ```
 
 5. Skill executor AI opens only the returned skill_doc.
    - The executor interprets SKILL.md.

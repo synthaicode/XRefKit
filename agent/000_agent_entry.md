@@ -22,6 +22,10 @@ When the XRefKit MCP server is configured, load this file through
 - The context-direction security guard is delivered at init (startup contract pack / base control) and applies ambiently to every Skill that loads external input; new skills do not compose or declare it
 - New skills MUST include the Skill operating contract (`os_contract`) so worklist, execution role, check role, logging, unknown/risk handling, closure, and handoff are load-gated
 - Skill execution MUST start with `python -m xrefkit skill run --meta <path-to-meta.md> --task "<task>"`; do not open or execute `SKILL.md` until this command succeeds and returns a run log
+- In MCP mode, after `skill run` returns `run_id`, call `bind_skill_run` with
+  that `run_id` and `skill_id`, then execute its returned
+  `client_record_command` against the returned `run_log` before task-specific
+  XID access
 - Skill-backed work MUST add concrete task items with `python -m xrefkit skill workitem --log <run-log> --item <id> --status <status> --role <assigned-role>` before closure
 - Skill-backed work MUST record outputs and evidence with `python -m xrefkit skill artifact --log <run-log> --artifact <id> --kind <kind> --target <target> --status <status> --role <assigned-role>` before closure
 - Skill-backed work MUST record closure-relevant unknowns, risks, and non-trivial judgments with `python -m xrefkit skill concern --log <run-log> --concern <id> --kind <unknown|risk|judgment> --status <open|resolved|escalated> --role <assigned-role>` before closure when they exist
@@ -49,14 +53,16 @@ When the XRefKit MCP server is configured, load this file through
 2. Narrow candidates via `skills/index/*`, then read candidate `meta.md` files
 3. Start the selected Skill through the runtime envelope: `python -m xrefkit skill run --meta <path-to-meta.md> --task "<task>" --json`
 4. Preserve the returned `run_log`; open selected `SKILL.md` only from the returned `skill_doc`
-5. Add concrete task items with `python -m xrefkit skill workitem --log <run-log> --item <id> --text "<item>" --status pending --role <assigned-role>`
-6. Record output and evidence links with `python -m xrefkit skill artifact --log <run-log> --artifact <id> --kind <kind> --target <target> --status done --role <assigned-role>`
-7. Record closure-relevant unknowns, risks, and non-trivial judgments with `python -m xrefkit skill concern --log <run-log> --concern <id> --kind <kind> --status <status> --role <assigned-role>` when they exist
-8. Use the returned assigned roles; mark runtime progress with `python -m xrefkit skill phase --log <run-log> --phase <phase> --status <status> --role <assigned-role>`; advance the check phase with `python -m xrefkit skill verify --log <run-log>` (deterministic), never from the producer context
-9. Before completion, run `python -m xrefkit skill close --log <run-log>` and keep failed closure checks explicit
-10. If the task needs a document outside the selected route, use `docs/000_index.md#xid-56DD6EB68343` as a lookup index, not as a bulk read target
-11. Find candidate XIDs: `python -m xrefkit xref search "<query>"`
-12. Read only what you need: `python -m xrefkit xref show <XID>`
+5. In MCP mode, bind the returned `run_id` through `bind_skill_run`, then run
+   its `client_record_command` against `run_log`
+6. Add concrete task items with `python -m xrefkit skill workitem --log <run-log> --item <id> --text "<item>" --status pending --role <assigned-role>`
+7. Record output and evidence links with `python -m xrefkit skill artifact --log <run-log> --artifact <id> --kind <kind> --target <target> --status done --role <assigned-role>`
+8. Record closure-relevant unknowns, risks, and non-trivial judgments with `python -m xrefkit skill concern --log <run-log> --concern <id> --kind <kind> --status <status> --role <assigned-role>` when they exist
+9. Use the returned assigned roles; mark runtime progress with `python -m xrefkit skill phase --log <run-log> --phase <phase> --status <status> --role <assigned-role>`; advance the check phase with `python -m xrefkit skill verify --log <run-log>` (deterministic), never from the producer context
+10. Before completion, run `python -m xrefkit skill close --log <run-log>` and keep failed closure checks explicit
+11. If the task needs a document outside the selected route, use `docs/000_index.md#xid-56DD6EB68343` as a lookup index, not as a bulk read target
+12. Find candidate XIDs: `python -m xrefkit xref search "<query>"`
+13. Read only what you need: `python -m xrefkit xref show <XID>`
 
 If the user asks for available skills, answer from `skills/_index.md` first.
 

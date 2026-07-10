@@ -73,6 +73,8 @@ Sources:
 - Skill execution MUST start with:
   python -m xrefkit skill run --meta <path-to-meta.md> --task "<task>" --json
 - Do not open or execute SKILL.md until skill run succeeds. Preserve returned run_log and open SKILL.md only from returned skill_doc.
+- In MCP mode, call bind_skill_run with the returned run_id and skill_id, then execute its client_record_command against run_log before task-specific XID access. This correlates MCP audit events and the client Skill Run without returning audit bodies to the model.
+- Treat MCP `xid.resolved` as server resolution, not proof of model-context loading. Record actual loading with `xrefkit skill knowledge --action load` and judgment/artifact use with `--action apply`.
 - During Skill-backed work, record:
   - work items with: python -m xrefkit skill workitem --log <run-log> --item <id> --status <status> --role <assigned-role>
   - outputs/evidence with: python -m xrefkit skill artifact --log <run-log> --artifact <id> --kind <kind> --target <target> --status <status> --role <assigned-role>

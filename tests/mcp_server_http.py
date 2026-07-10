@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import unittest
+import json
+import multiprocessing
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -12,6 +14,19 @@ from xrefkit.mcp.server import (
     _validate_distribution_configuration,
     _validate_tls_configuration,
 )
+from xrefkit.mcp.audit import McpAuditLog, SessionRunBinding, SessionRunRegistry, _write_all
+
+
+def _append_audit_events(path: str, run_id: str) -> None:
+    audit = McpAuditLog(Path(path))
+    binding = SessionRunBinding(
+        run_id=run_id,
+        mcp_session_id="mcp-1",
+        repository_fingerprint="repo-1",
+        skill_id="sample_skill",
+    )
+    for index in range(20):
+        audit.append("xid.resolved", binding=binding, xid=f"XID-{index}")
 
 
 class StreamableHttpProbeTests(unittest.TestCase):
@@ -110,6 +125,58 @@ class TlsConfigurationTests(unittest.TestCase):
 
 
 class ServerXidQueryLogTests(unittest.TestCase):
+    def test_write_all_retries_short_writes(self) -> None:
+        writes: list[bytes] = []
+
+        def short_write(_fd: int, data: bytes) -> int:
+            writes.append(data)
+            return min(2, len(data))
+
+        _write_all(0, b"abcdef", write=short_write)
+
+        self.assertEqual([b"abcdef", b"cdef", b"ef"], writes)
+
+    def test_audit_log_is_parseable_after_concurrent_process_appends(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            path = str(Path(temp_dir) / "xid_audit.jsonl")
+            run_ids = ["d4c0ca07-ec6c-48f9-b296-ec735323b088", "cb796f8c-9d89-4a6f-906a-34ff5a891873"]
+            context = multiprocessing.get_context("spawn")
+            processes = [context.Process(target=_append_audit_events, args=(path, run_id)) for run_id in run_ids]
+            for process in processes:
+                process.start()
+            for process in processes:
+                process.join(30)
+                self.assertEqual(0, process.exitcode)
+
+            events = [json.loads(line) for line in Path(path).read_text(encoding="utf-8").splitlines()]
+            self.assertEqual(40, len(events))
+    def test_skill_run_binding_is_idempotent_and_requires_explicit_end(self) -> None:
+        class Session:
+            pass
+
+        registry = SessionRunRegistry()
+        session = Session()
+        binding = registry.bind(
+            session,
+            run_id="d4c0ca07-ec6c-48f9-b296-ec735323b088",
+            repository_fingerprint="repo-1",
+            skill_id="sample_skill",
+        )
+        self.assertIs(binding, registry.bind(
+            session,
+            run_id="d4c0ca07-ec6c-48f9-b296-ec735323b088",
+            repository_fingerprint="repo-1",
+            skill_id="sample_skill",
+        ))
+        with self.assertRaisesRegex(ValueError, "already bound"):
+            registry.bind(
+                session,
+                run_id="cb796f8c-9d89-4a6f-906a-34ff5a891873",
+                repository_fingerprint="repo-1",
+                skill_id="sample_skill",
+            )
+        self.assertEqual(binding, registry.end(session, run_id=binding.run_id))
+        self.assertIsNone(registry.current(session))
     def test_logs_xid_queries(self) -> None:
         with self.assertLogs("xrefkit.mcp.server", level="INFO") as captured:
             _log_xid_query("get_document_by_xid", "8A666C1FD121", "abc123")
@@ -117,6 +184,56 @@ class ServerXidQueryLogTests(unittest.TestCase):
         self.assertIn("tool=get_document_by_xid", captured.output[0])
         self.assertIn("xid=8A666C1FD121", captured.output[0])
         self.assertIn("known_version=abc123", captured.output[0])
+
+    def test_structured_audit_log_correlates_xid_with_bound_run(self) -> None:
+        class Session:
+            pass
+
+        with TemporaryDirectory() as temp_dir:
+            registry = SessionRunRegistry()
+            audit = McpAuditLog(Path(temp_dir) / "xid_audit.jsonl")
+            session = Session()
+            binding = registry.bind(
+                session,
+                run_id="d4c0ca07-ec6c-48f9-b296-ec735323b088",
+                repository_fingerprint="repo-1",
+                skill_id="sample_skill",
+            )
+
+            _log_xid_query(
+                "get_document_by_xid",
+                "8A666C1FD121",
+                audit_log=audit,
+                binding=binding,
+                content_hash="hash-1",
+            )
+
+            entry = json.loads(audit.path.read_text(encoding="utf-8"))
+            self.assertEqual("xid.resolved", entry["event_type"])
+            self.assertEqual(binding.run_id, entry["run_id"])
+            self.assertEqual(binding.mcp_session_id, entry["mcp_session_id"])
+            self.assertEqual("8A666C1FD121", entry["xid"])
+            self.assertEqual("hash-1", entry["content_hash"])
+
+    def test_audit_binding_fields_cannot_be_overridden(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            audit = McpAuditLog(Path(temp_dir) / "xid_audit.jsonl")
+            binding = SessionRunBinding(
+                run_id="d4c0ca07-ec6c-48f9-b296-ec735323b088",
+                mcp_session_id="mcp-1",
+                repository_fingerprint="repo-1",
+                skill_id="sample_skill",
+            )
+            event = audit.append(
+                "xid.resolved",
+                binding=binding,
+                run_id="forged-run",
+                skill_id="forged-skill",
+            )
+
+            self.assertEqual(binding.run_id, event["run_id"])
+            self.assertEqual(binding.skill_id, event["skill_id"])
+            self.assertEqual("xid.resolved", event["event_type"])
 
 
 if __name__ == "__main__":

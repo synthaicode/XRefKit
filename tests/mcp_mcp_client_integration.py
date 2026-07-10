@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 import base64
+import contextlib
 import io
+import json
 import tempfile
 import unittest
 import zipfile
+from pathlib import Path
+
+from xrefkit.__main__ import main as xrefkit_main
+from xrefkit.dashboard import build_payload
 
 
 class McpClientIntegrationTests(unittest.TestCase):
@@ -19,6 +25,23 @@ class McpClientIntegrationTests(unittest.TestCase):
         # errlog needs a real OS file handle on Windows (subprocess creation
         # calls stderr.fileno()), so a plain io.StringIO() will not work here.
         captured_stderr = tempfile.TemporaryFile(mode="w+", encoding="utf-8")
+        audit_dir = tempfile.TemporaryDirectory()
+        audit_path = Path(audit_dir.name) / "xid_audit.jsonl"
+        run_log = Path(audit_dir.name) / "run.md"
+        run_stdout = io.StringIO()
+        with contextlib.redirect_stdout(run_stdout):
+            self.assertEqual(
+                0,
+                xrefkit_main(
+                    [
+                        "skill", "run", "--root", r"C:\dev\itsm\XRefKit",
+                        "--meta", "skills/csharp_review/meta.md",
+                        "--task", "MCP correlation integration", "--out", str(run_log), "--json",
+                    ]
+                ),
+            )
+        run_payload = json.loads(run_stdout.getvalue())
+        run_id = run_payload["run_id"]
         results: dict[str, object] = {}
 
         async def scenario() -> None:
@@ -29,6 +52,8 @@ class McpClientIntegrationTests(unittest.TestCase):
                     "xrefkit.mcp.server",
                     "--repo",
                     r"C:\dev\itsm\XRefKit",
+                    "--audit-log",
+                    str(audit_path),
                 ],
                 cwd=r"C:\dev\itsm\XRefKit",
             )
@@ -118,6 +143,27 @@ class McpClientIntegrationTests(unittest.TestCase):
                     self.assertIn("startup.first_call", obligation_ids)
                     self.assertIn("tools.materialize_from_mcp", obligation_ids)
                     self.assertIn("core_runtime.fetch_immediately", obligation_ids)
+
+                    binding_result = await session.call_tool(
+                        "bind_skill_run",
+                        {"run_id": run_id, "skill_id": "csharp_review"},
+                    )
+                    self.assertFalse(binding_result.isError)
+                    binding = binding_result.structuredContent
+                    self.assertEqual(run_id, binding["run_id"])
+                    self.assertEqual("csharp_review", binding["skill_id"])
+                    self.assertEqual(
+                        identity["repository_fingerprint"],
+                        binding["repository_fingerprint"],
+                    )
+                    self.assertIn("xrefkit skill correlate", binding["client_record_command"])
+                    results["binding"] = binding
+
+                    search_result = await session.call_tool(
+                        "search_knowledge_catalog",
+                        {"query": "uncertainty protocol", "limit": 3},
+                    )
+                    self.assertFalse(search_result.isError)
 
                     core_runtime = startup["core_runtime_distribution"]
                     self.assertEqual(core_runtime["package_id"], "xrefkit")
@@ -225,6 +271,10 @@ class McpClientIntegrationTests(unittest.TestCase):
                         "XREFKIT_SKILL_SELECTION_REQUIRED",
                         rejected_manifest_result.content[0].text,
                     )
+                    mismatched_skill_result = await session.call_tool(
+                        "get_skill", {"skill_id": "python_review"}
+                    )
+                    self.assertTrue(mismatched_skill_result.isError)
 
                     skill_result = await session.call_tool(
                         "get_skill", {"skill_id": "csharp_review"}
@@ -376,6 +426,7 @@ class McpClientIntegrationTests(unittest.TestCase):
                         contracts["xref.get_document_by_xid"]["input_json_schema"]["properties"]["xid"]["type"],
                         "string",
                     )
+                    self.assertIn("xref.end_skill_run", contracts)
 
                     knowledge_context_result = await session.call_tool(
                         "build_knowledge_context",
@@ -384,6 +435,10 @@ class McpClientIntegrationTests(unittest.TestCase):
                     knowledge_context = knowledge_context_result.structuredContent
                     self.assertGreater(len(knowledge_context["entries"]), 0)
                     results["knowledge_context"] = knowledge_context
+
+                    end_result = await session.call_tool("end_skill_run", {"run_id": run_id})
+                    self.assertFalse(end_result.isError)
+                    self.assertEqual(run_id, end_result.structuredContent["run_id"])
 
         anyio.run(scenario)
 
@@ -396,6 +451,45 @@ class McpClientIntegrationTests(unittest.TestCase):
                 f"tool=build_knowledge_context xid={expanded['entry']['xid']}",
                 console_output,
             )
+        audit_events = [
+            json.loads(line)
+            for line in audit_path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        self.assertTrue(audit_events)
+        self.assertTrue(all(event["run_id"] == run_id for event in audit_events))
+        self.assertTrue(all(event["mcp_session_id"] for event in audit_events))
+        self.assertIn("run.bound", {event["event_type"] for event in audit_events})
+        self.assertIn("knowledge.search", {event["event_type"] for event in audit_events})
+        self.assertIn("xid.resolved", {event["event_type"] for event in audit_events})
+        binding = results["binding"]
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(
+                0,
+                xrefkit_main(
+                    [
+                        "skill", "correlate", "--log", str(run_log),
+                        "--run-id", run_id,
+                        "--mcp-session-id", binding["mcp_session_id"],
+                        "--repository-fingerprint", binding["repository_fingerprint"],
+                    ]
+                ),
+            )
+        dashboard = build_payload(
+            Path(r"C:\dev\itsm\XRefKit"),
+            Path(audit_dir.name),
+            audit_path,
+        )
+        correlated_run = dashboard["runs"][0]
+        self.assertEqual(run_id, correlated_run["run_id"])
+        self.assertEqual(binding["mcp_session_id"], correlated_run["mcp_session_id"])
+        self.assertEqual(
+            binding["repository_fingerprint"],
+            correlated_run["repository_fingerprint"],
+        )
+        self.assertTrue(correlated_run["mcp_events"])
+        self.assertTrue(correlated_run["queried_xids"])
+        audit_dir.cleanup()
 
 
 if __name__ == "__main__":

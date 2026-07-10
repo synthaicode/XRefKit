@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from . import __version__
+from .audit import McpAuditLog, SessionRunBinding, SessionRunRegistry
 from .catalog import XRefCatalog
 from .dist import DIST_ROUTE_PATH, ArtifactDistribution, add_dist_routes
 from xrefkit.structure_catalog import get_entry as get_structure_entry
@@ -148,6 +149,12 @@ def main(argv: list[str] | None = None) -> int:
         default=[],
         help="External XID-addressable domain knowledge root. Can be repeated.",
     )
+    parser.add_argument(
+        "--audit-log",
+        type=Path,
+        default=None,
+        help="Structured MCP audit JSONL path. Defaults to <repo>/work/mcp/xid_audit.jsonl.",
+    )
     args = parser.parse_args(argv)
     try:
         _validate_tls_configuration(
@@ -170,6 +177,8 @@ def main(argv: list[str] | None = None) -> int:
         parser.error(str(exc))
 
     catalog = XRefCatalog.build(Path(args.repo), args.domain_knowledge_root)
+    audit_log = McpAuditLog(args.audit_log or (Path(args.repo) / "work" / "mcp" / "xid_audit.jsonl"))
+    run_registry = SessionRunRegistry()
 
     # Artifact distribution runs only on the network transport: executable
     # artifacts are served as plain HTTP downloads next to the MCP endpoint
@@ -208,6 +217,33 @@ def main(argv: list[str] | None = None) -> int:
     @app.tool()
     def get_repository_identity() -> dict[str, str]:
         return catalog.get_repository_identity()
+
+    @app.tool()
+    def bind_skill_run(ctx: Context, run_id: str, skill_id: str) -> dict[str, Any]:
+        _require_startup_loaded(ctx, "bind_skill_run")
+        binding = run_registry.bind(
+            _session_of(ctx),
+            run_id=run_id,
+            repository_fingerprint=catalog.repository_fingerprint,
+            skill_id=skill_id,
+        )
+        audit_log.append("run.bound", binding=binding, tool="bind_skill_run")
+        return {
+            **binding.to_dict(),
+            "audit_enabled": True,
+            "client_record_command": (
+                "python -m xrefkit skill correlate --log <run-log> "
+                f"--run-id {binding.run_id} --mcp-session-id {binding.mcp_session_id} "
+                f"--repository-fingerprint {binding.repository_fingerprint}"
+            ),
+        }
+
+    @app.tool()
+    def end_skill_run(ctx: Context, run_id: str) -> dict[str, str]:
+        _require_startup_loaded(ctx, "end_skill_run")
+        binding = run_registry.end(_session_of(ctx), run_id=run_id)
+        audit_log.append("run.ended", binding=binding, tool="end_skill_run")
+        return binding.to_dict()
 
     @app.tool()
     def get_startup_context(
@@ -256,20 +292,47 @@ def main(argv: list[str] | None = None) -> int:
         return _with_control_reminder(get_structure_entry(source_catalog, xid))
 
     @app.tool()
-    def search_knowledge_catalog(query: str, limit: int = 10) -> list[dict[str, Any]]:
-        return catalog.search_knowledge_catalog(query, limit)
+    def search_knowledge_catalog(ctx: Context, query: str, limit: int = 10) -> list[dict[str, Any]]:
+        binding = run_registry.current(_session_of(ctx))
+        result = catalog.search_knowledge_catalog(query, limit)
+        if binding is not None:
+            audit_log.append(
+                "knowledge.search",
+                binding=binding,
+                tool="search_knowledge_catalog",
+                query=query,
+                status="hit" if result else "miss",
+                result_xids=[str(item.get("xid")) for item in result if item.get("xid")],
+            )
+        return result
 
     @app.tool()
     def get_knowledge_summary(ctx: Context, xid: str) -> dict[str, Any]:
         _require_startup_loaded(ctx, "get_knowledge_summary")
-        _log_xid_query("get_knowledge_summary", xid)
-        return _with_control_reminder(catalog.expand_knowledge(xid)["entry"])
+        binding = run_registry.current(_session_of(ctx))
+        result = catalog.expand_knowledge(xid)["entry"]
+        _log_xid_query(
+            "get_knowledge_summary",
+            xid,
+            audit_log=audit_log,
+            binding=binding,
+            content_hash=result.get("content_hash"),
+        )
+        return _with_control_reminder(result)
 
     @app.tool()
     def expand_knowledge(ctx: Context, xid: str) -> dict[str, Any]:
         _require_startup_loaded(ctx, "expand_knowledge")
-        _log_xid_query("expand_knowledge", xid)
-        return _with_control_reminder(catalog.expand_knowledge(xid))
+        binding = run_registry.current(_session_of(ctx))
+        result = catalog.expand_knowledge(xid)
+        _log_xid_query(
+            "expand_knowledge",
+            xid,
+            audit_log=audit_log,
+            binding=binding,
+            content_hash=result["entry"].get("content_hash"),
+        )
+        return _with_control_reminder(result)
 
     @app.tool()
     def get_document_by_xid(
@@ -278,15 +341,45 @@ def main(argv: list[str] | None = None) -> int:
         known_version: str | None = None,
     ) -> dict[str, Any]:
         _require_startup_loaded(ctx, "get_document_by_xid")
-        _log_xid_query("get_document_by_xid", xid, known_version)
-        return _with_control_reminder(catalog.get_document_by_xid(xid, known_version))
+        binding = run_registry.current(_session_of(ctx))
+        result = catalog.get_document_by_xid(xid, known_version)
+        _log_xid_query(
+            "get_document_by_xid",
+            xid,
+            known_version,
+            audit_log=audit_log,
+            binding=binding,
+            content_hash=result.get("content_hash"),
+            cache_status=result.get("cache_status"),
+        )
+        return _with_control_reminder(result)
 
     @app.tool()
     def build_knowledge_context(ctx: Context, query: str, limit: int = 5) -> dict[str, Any]:
         _require_startup_loaded(ctx, "build_knowledge_context")
+        binding = run_registry.current(_session_of(ctx))
         result = catalog.build_knowledge_context(query, limit)
+        if binding is not None:
+            audit_log.append(
+                "knowledge.search",
+                binding=binding,
+                tool="build_knowledge_context",
+                query=query,
+                status="hit" if result.get("entries") else "miss",
+                result_xids=[
+                    str(expanded["entry"]["xid"])
+                    for expanded in result.get("entries", [])
+                    if expanded.get("entry", {}).get("xid")
+                ],
+            )
         for expanded in result.get("entries", []):
-            _log_xid_query("build_knowledge_context", expanded["entry"]["xid"])
+            _log_xid_query(
+                "build_knowledge_context",
+                expanded["entry"]["xid"],
+                audit_log=audit_log,
+                binding=binding,
+                content_hash=expanded["entry"].get("content_hash"),
+            )
         return _with_control_reminder(result)
 
     @app.tool()
@@ -310,7 +403,19 @@ def main(argv: list[str] | None = None) -> int:
         known_document_versions: dict[str, str] | None = None,
     ) -> dict[str, Any]:
         _require_startup_loaded(ctx, "get_skill")
+        binding = run_registry.current(_session_of(ctx))
+        if binding is not None and binding.skill_id != skill_id:
+            raise ValueError(
+                f"get_skill requested {skill_id!r}, but the active Skill Run is bound to {binding.skill_id!r}"
+            )
         result = catalog.get_skill(skill_id, known_document_versions)
+        if binding is not None:
+            audit_log.append(
+                "skill.selected",
+                binding=binding,
+                tool="get_skill",
+                selected_skill=skill_id,
+            )
         _unlock_client_tools(ctx)
         return _with_control_reminder(result)
 
@@ -327,8 +432,18 @@ def main(argv: list[str] | None = None) -> int:
         return _with_control_reminder(catalog.resolve_skill_knowledge(skill_id))
 
     @app.tool()
-    def rank_skills_for_purpose(purpose: str, limit: int = 5) -> list[dict[str, Any]]:
-        return catalog.rank_skills_for_purpose(purpose, limit)
+    def rank_skills_for_purpose(ctx: Context, purpose: str, limit: int = 5) -> list[dict[str, Any]]:
+        binding = run_registry.current(_session_of(ctx))
+        result = catalog.rank_skills_for_purpose(purpose, limit)
+        if binding is not None:
+            audit_log.append(
+                "skill.ranked",
+                binding=binding,
+                tool="rank_skills_for_purpose",
+                purpose=purpose,
+                candidates=[str(item.get("skill_id")) for item in result if item.get("skill_id")],
+            )
+        return result
 
     @app.tool()
     def list_tool_contracts() -> list[dict[str, Any]]:
@@ -520,6 +635,11 @@ def _log_xid_query(
     tool_name: str,
     xid: str,
     known_version: str | None = None,
+    *,
+    audit_log: McpAuditLog | None = None,
+    binding: SessionRunBinding | None = None,
+    content_hash: object = None,
+    cache_status: object = None,
 ) -> None:
     fields: dict[str, Any] = {
         "event": "xid_query",
@@ -535,6 +655,17 @@ def _log_xid_query(
         known_version or "",
         extra={"xrefkit.mcp": fields},
     )
+    if audit_log is not None and binding is not None:
+        audit_fields: dict[str, object] = {
+            "tool": tool_name,
+            "xid": xid,
+            "content_hash": content_hash,
+        }
+        if known_version is not None:
+            audit_fields["known_version"] = known_version
+        if cache_status is not None:
+            audit_fields["cache_status"] = cache_status
+        audit_log.append("xid.resolved", binding=binding, **audit_fields)
 
 
 def _run_streamable_http(
