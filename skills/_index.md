@@ -105,10 +105,6 @@ Current family paths:
   - summary: review C# code for language-dependent defects and system-level implementation risks beyond Roslyn diagnostics
   - meta: `skills/csharp_review/meta.md`
   - skill_doc: `skills/csharp_review/SKILL.md`
-- `python_review`:
-  - summary: review Python code for language-dependent defects and system-level implementation risks beyond configured static diagnostics
-  - meta: `skills/python_review/meta.md`
-  - skill_doc: `skills/python_review/SKILL.md`
 - `db_current_state_analysis`:
   - summary: analyze current brownfield database and persistence structure from repository evidence before DB design
   - meta: `skills/db_current_state_analysis/meta.md`
@@ -281,14 +277,22 @@ Current family paths:
   - summary: execute planning business activity through reusable work-and-policy planning capability grounded in domain knowledge and current-source findings
   - meta: `skills/planning_flow/meta.md`
   - skill_doc: `skills/planning_flow/SKILL.md`
-- `python_implementation_flow`:
-  - summary: execute Python manufacturing activities through scoped realization and unit-level verification
-  - meta: `skills/python_implementation_flow/meta.md`
-  - skill_doc: `skills/python_implementation_flow/SKILL.md`
 - `pptx_spec_traceability`:
   - summary: extract presentation specifications into Markdown, assign traceability IDs, connect slide images and shapes to nearby explanatory text, and write the IDs back into the deck
   - meta: `skills/pptx_spec_traceability/meta.md`
   - skill_doc: `skills/pptx_spec_traceability/SKILL.md`
+- `presentation_flow_review`:
+  - summary: review and restructure an explanatory presentation so its claims, premises, mechanisms, and conclusion follow an explicit causal flow without unexplained concept jumps
+  - meta: `skills/presentation_flow_review/meta.md`
+  - skill_doc: `skills/presentation_flow_review/SKILL.md`
+- `python_implementation_flow`:
+  - summary: execute Python manufacturing activities through scoped realization and unit-level verification
+  - meta: `skills/python_implementation_flow/meta.md`
+  - skill_doc: `skills/python_implementation_flow/SKILL.md`
+- `python_review`:
+  - summary: review Python code for language-dependent defects and system-level implementation risks beyond configured static diagnostics
+  - meta: `skills/python_review/meta.md`
+  - skill_doc: `skills/python_review/SKILL.md`
 - `qa_gate_review`:
   - summary: execute evidence-based QA with XDDP trace-continuity, domain review, and system-impact checks
   - meta: `skills/qa_gate_review/meta.md`
