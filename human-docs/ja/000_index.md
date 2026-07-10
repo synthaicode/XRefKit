@@ -26,7 +26,7 @@
 
 ## 発表・説明用資料
 
-- [なぜ AI を組織化する必要があるのか](055_why_ai_organization_needed_presentation.md#xid-D7C3A9E15B42)
+- [AI活用を継続可能な業務実行に変える](055_why_ai_organization_needed_presentation.md#xid-D7C3A9E15B42)
 - [AI 組織説明動画 改善版シナリオ](063_ai_organization_explainer_clear_script.md)
 - [AI 組織説明動画 改善版](video/063_ai_organization_explainer_clear/README.md)
 - [業務実行基盤への業務取り込み スライド原稿](066_business_execution_foundation_slide_script.md)

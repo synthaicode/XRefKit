@@ -19,10 +19,10 @@ const renderers = {
     </div>`,
   "01_title": () => `
     <div class="canvas">
-      <h1 class="title">なぜ AI を組織化する必要があるのか</h1>
-      <p class="subtitle">人やAIを増やすことではなく、Goalから完了までを継続できる形にする</p>
+      <h1 class="title">AI活用を継続可能な業務実行に変える</h1>
+      <p class="subtitle">Goalから完了までを、継続・検証・改善できる形にする</p>
       <div class="hero-note">AI が途中で止まっても、未確認の仕事を完了扱いにしない。<br>誰が再開しても、同じ記録と境界から仕事を続けられるようにする。</div>
-      <div class="summary-band" style="margin-top:42px;"><strong>組織化とは、AI 活用を継続可能な業務実行にすること</strong><span>そのために、役割、知識、記録、受入れを分けて管理する。</span></div>
+      <div class="summary-band" style="margin-top:42px;"><strong>AI活用を継続可能な業務実行に変える</strong><span>そのために、役割、知識、記録、受入れを分けて管理する。</span></div>
     </div>`,
   "02_individual_limit": () => `
     <div class="canvas">
@@ -56,9 +56,9 @@ const renderers = {
       <div class="compare" style="margin-top:88px;"><div class="panel"><span class="badge b-blue" style="font-size:20px;">deterministic verification</span><div class="stack"><div class="box soft-blue">workflow の記録に漏れがないか</div><div class="box soft-blue">役割と progression が正しいか</div><div class="box soft-blue">成果物の内容は判定しない</div></div></div><div class="panel"><span class="badge b-green" style="font-size:20px;">quality and human acceptance</span><div class="stack"><div class="box soft-green">成果物が受入れ可能か</div><div class="box soft-green">品質レビューが必要か</div><div class="box soft-green">Goal、例外、承認を人間が担う</div></div></div></div>
       <div class="summary-band"><strong>検証を通っても、内容の受入れを自動で主張しない</strong><span>人間の意思決定とAIの実行責務を混ぜない。</span></div></div>`,
   "09_conclusion": () => `
-    <div class="canvas"><h1 class="title">組織化とは、継続と改善の仕組みを持つこと</h1><p class="subtitle">速度だけでなく、再開、handoff、検証、改善までを仕事として扱う</p>
+    <div class="canvas"><h1 class="title">継続と改善の仕組みを持つ</h1><p class="subtitle">速度だけでなく、再開、handoff、検証、改善までを仕事として扱う</p>
       <div class="grid-3" style="margin-top:96px;"><div class="card soft-blue"><h3>継続できる</h3><p>Goal とログから、途中で止まっても再開できる</p></div><div class="card soft-green"><h3>検証できる</h3><p>作業漏れと品質受入れを別々に確認できる</p></div><div class="card soft-orange"><h3>改善できる</h3><p>routing、Skill、Knowledge、XID利用を観測して直せる</p></div></div>
-      <div class="summary-band"><strong>AI の速さを、手戻り削減と継続可能な業務実行へ変える</strong><span>それが、AI を組織化する目的である。</span></div></div>`
+      <div class="summary-band"><strong>AI の速さを、手戻り削減と継続可能な業務実行へ変える</strong><span>Goal、Skill、Knowledge、workflow protocol を接続して実現する。</span></div></div>`
 };
 
 const html = (body) => `<!doctype html><html lang="ja"><head><meta charset="utf-8" /><style>${css}</style></head><body>${body.replace(/[ \t]+(?=\n)/g, "")}</body></html>`;
