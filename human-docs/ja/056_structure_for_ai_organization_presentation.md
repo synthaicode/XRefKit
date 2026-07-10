@@ -1,72 +1,53 @@
-# AI にこの構造をどう持たせるか スライド案
+<!-- xid: C8E2B4D19A65 -->
+<a id="xid-C8E2B4D19A65"></a>
 
-- 想定時間: 8-12 分
-- 想定読者: AI 組織を設計したいチーム、または AI 運用構造を説明したい関係者
-- 目的: `責務 / 判断 / 知識 / 牽制` を AI に持たせる具体要素として `Skill / ドメイン知識 / Workflow protocol / Semantic routing` を説明する
-- 構成: 問い -> 4要素 -> 対応関係 -> まとめ
-- 形式: 画像ベース
+# AI の業務実行構造をどう持たせるか
 
-> 注記: 以下のスライド画像は skill-centric 統合前の旧モデル（Flow / Group）を描いています。発表メモは新モデル（Workflow protocol / Semantic routing）に更新済みで、画像は再描画待ちです。
+- 想定読者: AI を用いた仕事を、組織で継続・再開・改善できる形に設計したい人
+- 目的: Goal、semantic routing、Skill、Knowledge、workflow protocol、品質受入れを混同せず、それぞれの役割と接続を説明する
+- 構成: 終点 -> 選択 -> 実行 -> 知識 -> 検証 -> 人間の受入れ -> 改善
 
 ---
-
 ![はじめに](assets/056_structure_for_ai_organization/00_intro.png)
 
-発表メモ:
-前の資料では、AI にも責務、判断、知識、牽制を持たせる必要があると整理しました。ここでは、その構造を具体的にどう持たせるかを見ていきます。
+AI の業務実行構造とは、AI を並べる組織図ではありません。目標から完了まで、どの責務が何をし、どの情報と記録を使うかを分ける構造です。
 
 ---
+![タイトル](assets/056_structure_for_ai_organization/01_title.png)
 
-![AI に構造を持たせるには](assets/056_structure_for_ai_organization/01_title.png)
-
-発表メモ:
-問いは、AI に必要な構造を何で実装するかです。ここでは Skill、ドメイン知識、Workflow protocol、Semantic routing という4つで整理していきます。
+必要なのは、Goal、routing、Skill、Knowledge、workflow protocol、品質受入れを一つのものとして混ぜず、相互に接続することです。
 
 ---
+![Goal](assets/056_structure_for_ai_organization/02_four_elements.png)
 
-![4つの構成要素](assets/056_structure_for_ai_organization/02_four_elements.png)
-
-発表メモ:
-4つは役割が違います。Skill は能力と責務、ドメイン知識は判断材料、Workflow protocol は進め方、Semantic routing は依頼から適切な Skill を選ぶ経路として捉えられます。牽制（実行とチェックの分離）は、専用の単位ではなく Workflow protocol と起動時の入力制御ガードが担います。
+Goal は最終状態と受入れ条件を持ちます。複数の Skill Run があっても、同じ終点へ継続して進めます。
 
 ---
+![semantic routing](assets/056_structure_for_ai_organization/03_skill.png)
 
-![Skill とは何か](assets/056_structure_for_ai_organization/03_skill.png)
-
-発表メモ:
-Skill は、AI に何をさせるかを限定し、専門能力として再利用できる形にしたものです。
+semantic routing は Goal と現在状態から、次の責務を持つ Skill を選びます。Skill の手順を実行するものではありません。
 
 ---
+![Skill](assets/056_structure_for_ai_organization/04_domain_knowledge.png)
 
-![ドメイン知識とは何か](assets/056_structure_for_ai_organization/04_domain_knowledge.png)
-
-発表メモ:
-ドメイン知識は、判断に必要な前提やルールです。AI の判断は、ここがないと安定しにくくなります。
+Skill は限定された責務、判断方法、入出力、必要な Knowledge、handoff 境界を持ちます。責務を狭くすることで、AI が判断へ集中できます。
 
 ---
+![Knowledge](assets/056_structure_for_ai_organization/05_flow.png)
 
-![Flow とは何か](assets/056_structure_for_ai_organization/05_flow.png)
-
-発表メモ:
-Workflow protocol は、判断と実行をどの順序で進め、実行とチェックを分離し、完了ゲートを通すかを決める汎用の決定論制御です（旧モデルの Flow に相当）。個人依存の手順を、再利用しやすい進め方へ変える役割を持ちます。
+Knowledge は判断材料です。カタログから対象を見つけ、必要な XID だけを解決・ロードし、どの判断に適用したかを記録します。
 
 ---
+![workflow protocol](assets/056_structure_for_ai_organization/06_group.png)
 
-![Group とは何か](assets/056_structure_for_ai_organization/06_group.png)
-
-発表メモ:
-牽制（責務分離）は、専用の Group を作らずとも、Workflow protocol の実行/チェック分離と完了ゲート、そして起動時の入力制御ガードで成り立ちます。どの Skill を動かすかは Semantic routing が選びます（旧モデルの Group に相当）。
+workflow protocol は Skill Run の work item、artifact、evidence、unknown、risk、judgment、handoff、close を記録し、作業漏れを検査可能にします。
 
 ---
+![検証と受入れ](assets/056_structure_for_ai_organization/07_mapping.png)
 
-![4つの対応関係](assets/056_structure_for_ai_organization/07_mapping.png)
-
-発表メモ:
-この4つは独立ではなく、責務、判断、知識、牽制の関係に対応しています。
+`xrefkit skill verify` は workflow の進行記録を検査します。品質の受入れは、必要な quality review と人間の承認で別に判断します。
 
 ---
-
 ![結論](assets/056_structure_for_ai_organization/08_conclusion.png)
 
-最後の一言:
-AI に構造を持たせるとは、Skill、ドメイン知識、Workflow protocol、Semantic routing を分けて置くことではありません。責務、判断、知識、牽制が機能するように、これらを組み合わせて持たせることが重要になります。
+AI の業務実行構造は、Goalを中心に、routing、責務を限定したSkill、選択的Knowledge、workflow protocol、人間の受入れを接続し、ログから改善を回す仕組みです。

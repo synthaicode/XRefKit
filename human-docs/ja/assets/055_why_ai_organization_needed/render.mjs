@@ -2,267 +2,66 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 const dir = path.resolve("human-docs/ja/assets/055_why_ai_organization_needed");
-const commonCss = await fs.readFile(path.resolve("human-docs/ja/assets/marketing_theme/common.css"), "utf8");
 const css = await fs.readFile(path.join(dir, "diagram.css"), "utf8");
+
+const threeCards = (items, tone = "soft-blue") => `
+  <div class="grid-3" style="margin-top:92px;">
+    ${items.map(([title, body]) => `<div class="card ${tone}"><h3>${title}</h3><p>${body}</p></div>`).join("\n")}
+  </div>`;
 
 const renderers = {
   "00_intro": () => `
     <div class="canvas">
       <h1 class="title">はじめに</h1>
-      <p class="subtitle">統制された運用を、誰が持ち、どう維持するのか</p>
-      <div class="compare" style="margin-top:88px;">
-        <div class="panel">
-          <span class="badge b-blue" style="font-size:22px;">前の資料で見たこと</span>
-          <div class="stack">
-            <div class="box soft-blue">対象を決める</div>
-            <div class="box soft-blue">手順を分解する</div>
-            <div class="box soft-blue">知識・確認・役割を置く</div>
-          </div>
-        </div>
-        <div class="panel">
-          <span class="badge b-orange" style="font-size:22px;">次に出る問い</span>
-          <div class="stack">
-            <div class="box soft-orange">誰が持つのか</div>
-            <div class="box soft-orange">どう維持するのか</div>
-            <div class="box soft-orange">どう改善するのか</div>
-          </div>
-        </div>
-      </div>
-      <div class="summary-band">
-        <strong>統制された運用を一度作るだけでは足りない</strong>
-        <span>継続して持ち、共有し、改善する単位が必要になる。</span>
-      </div>
+      <p class="subtitle">AI の回答を、組織の完了した仕事へ変えるには何が必要か</p>
+      ${threeCards([["AI は速く答える", "生成と調査をすばやく進められる"], ["しかし仕事は残る", "確認、根拠、次の担当、受入れが会話に埋もれる"], ["運用が必要になる", "途中で止まっても、仕事を失わずに続ける"]])}
+      <div class="summary-band"><strong>回答が出たことと、仕事が完了したことは同じではない</strong><span>継続、検証、改善できる運用を持つことが必要になる。</span></div>
     </div>`,
   "01_title": () => `
     <div class="canvas">
       <h1 class="title">なぜ AI を組織化する必要があるのか</h1>
-      <p class="subtitle">統制された運用を、継続して回すための単位が必要になる</p>
-      <div class="hero-note">
-        AI 活用では、要素を揃えることと、<br>
-        それを回し続けられることは別の課題になる。
-      </div>
-      <div class="summary-band" style="margin-top:42px;">
-        <strong>ここで問いたいのは、統制を持続できる形があるかどうか</strong>
-        <span>それが、組織化を考える理由になる。</span>
-      </div>
+      <p class="subtitle">人やAIを増やすことではなく、Goalから完了までを継続できる形にする</p>
+      <div class="hero-note">AI が途中で止まっても、未確認の仕事を完了扱いにしない。<br>誰が再開しても、同じ記録と境界から仕事を続けられるようにする。</div>
+      <div class="summary-band" style="margin-top:42px;"><strong>組織化とは、AI 活用を継続可能な業務実行にすること</strong><span>そのために、役割、知識、記録、受入れを分けて管理する。</span></div>
     </div>`,
   "02_individual_limit": () => `
     <div class="canvas">
-      <h1 class="title">個人運用のままでは広がりにくい</h1>
-      <p class="subtitle">うまくいっている人がいても、そのままでは組織成果になりにくい</p>
-      <div class="compare" style="margin-top:90px;">
-        <div class="panel">
-          <span class="badge" style="font-size:20px; background:#eef2f6; color:#6b7a8c;">個人で回っている状態</span>
-          <div class="stack">
-            <div class="box soft-gray">担当者が工夫している</div>
-            <div class="box soft-gray">判断基準が頭の中にある</div>
-            <div class="box soft-gray">改善方法も個人依存</div>
-          </div>
-        </div>
-        <div class="panel">
-          <span class="badge b-red" style="font-size:20px;">起きやすいこと</span>
-          <div class="stack">
-            <div class="box soft-red">担当者が変わると品質が落ちる</div>
-            <div class="box soft-red">他部門へ広げにくい</div>
-            <div class="box soft-red">改善が資産になりにくい</div>
-          </div>
-        </div>
-      </div>
-      <div class="summary-band">
-        <strong>個人の成功は、そのまま組織の成功にはなりにくい</strong>
-        <span>継続性と共有性を持たせるには、別の持ち方が必要になる。</span>
-      </div>
+      <h1 class="title">個人利用だけでは、仕事の状態が残らない</h1>
+      <p class="subtitle">プロンプトと会話だけでは、次の人が同じ仕事を続けにくい</p>
+      <div class="compare" style="margin-top:84px;"><div class="panel"><span class="badge" style="font-size:20px; background:#eef2f6; color:#6b7a8c;">個人の会話</span><div class="stack"><div class="box soft-gray">判断材料が会話に散る</div><div class="box soft-gray">未確認点が残る</div><div class="box soft-gray">停止時の次作業が曖昧</div></div></div><div class="panel"><span class="badge b-red" style="font-size:20px;">組織で起きる問題</span><div class="stack"><div class="box soft-red">再説明と再調査が増える</div><div class="box soft-red">作業漏れを検出しにくい</div><div class="box soft-red">担当変更で品質が揺れる</div></div></div></div>
+      <div class="summary-band"><strong>個人の成功を、組織が再現できる仕事の状態へ変える必要がある</strong><span>その出発点が Goal と記録である。</span></div>
     </div>`,
   "03_input_organization": () => `
-    <div class="canvas">
-      <h1 class="title">まず、AI に渡す情報を整理する</h1>
-      <p class="subtitle">統制された運用は、AI への入力を構造化して持つところから始まる</p>
-      <div class="grid-4" style="margin-top:92px; gap:16px;">
-        <div class="card soft-blue"><h3>対象</h3><p>何に AI を使うか</p></div>
-        <div class="card soft-blue"><h3>手順</h3><p>どの順で仕事を進めるか</p></div>
-        <div class="card soft-blue"><h3>知識</h3><p>何を前提として渡すか</p></div>
-        <div class="card soft-blue"><h3>確認・役割</h3><p>誰がどう確かめるか</p></div>
-      </div>
-      <div class="big-arrow">↓</div>
-      <div class="summary-band" style="margin-top:8px;">
-        <strong>この4つが揃ってはじめて、AI の運用を構造として扱いやすくなる</strong>
-        <span>次に見るのは、これらが別々に管理されると何が起きるかです。</span>
-      </div>
-    </div>`,
+    <div class="canvas"><h1 class="title">Goal が、作業の終点を持つ</h1><p class="subtitle">タスク消化やAIの停止ではなく、達成後の状態と受入れ条件を固定する</p>
+      ${threeCards([["Desired state", "何が実現されている状態か"], ["Acceptance conditions", "何を満たせば受け入れられるか"], ["Continuation", "複数の Skill をまたいで完了まで続ける"]])}
+      <div class="summary-band"><strong>Goal は、未完了を完了扱いにしないための基準になる</strong><span>Skill は Goal を達成する途中の限定された責務を担う。</span></div></div>`,
   "04_scattered_controls": () => `
-    <div class="canvas">
-      <h1 class="title">要素が別管理だと、運用はずれやすい</h1>
-      <p class="subtitle">対象、手順、知識、確認、役割が分かれたままだと統制しにくい</p>
-      <div class="grid-4" style="margin-top:92px; gap:16px;">
-        <div class="card soft-blue"><h3>対象</h3><p>ユースケース選定が人ごとに変わる</p></div>
-        <div class="card soft-blue"><h3>手順</h3><p>やり方が担当者ごとにずれる</p></div>
-        <div class="card soft-blue"><h3>知識</h3><p>必要な前提が散らばる</p></div>
-        <div class="card soft-blue"><h3>確認・役割</h3><p>レビュー観点が揃いにくい</p></div>
-      </div>
-      <div class="big-arrow">↓</div>
-      <div class="summary-band" style="margin-top:8px;">
-        <strong>要素を持つだけでは、統制にはならない</strong>
-        <span>ひとつの運用として束ねて持つ必要がある。</span>
-      </div>
-    </div>`,
+    <div class="canvas"><h1 class="title">semantic routing が、次の責務を選ぶ</h1><p class="subtitle">Goal と現在状態から、次に必要な Skill を選択する</p>
+      <div class="grid-3" style="margin-top:98px;"><div class="card soft-blue"><h3>Goal と現在状態</h3><p>何を達成し、何が未了かを確認する</p></div><div class="card soft-blue"><h3>semantic routing</h3><p>候補の Skill から適用可能な責務を選ぶ</p></div><div class="card soft-blue"><h3>次の Skill Run</h3><p>選んだ責務を実行し、結果を Goal へ戻す</p></div></div>
+      <div class="summary-band"><strong>人が毎回一覧から手選びするのではなく、状態に応じて責務を選ぶ</strong><span>選択理由も記録し、後で見直せるようにする。</span></div></div>`,
   "05_organization_role": () => `
-    <div class="canvas">
-      <h1 class="title">組織化が担うのは、人を増やすことではない</h1>
-      <p class="subtitle">成功条件を持ち、品質の見方をそろえ、改善を続ける単位を持つこと</p>
-      <div class="grid-3" style="margin-top:104px;">
-        <div class="card soft-blue"><h3 style="display:flex; align-items:center; gap:10px;"><span style="display:inline-block; width:22px; height:24px; border:2px solid #6e8fbd; border-radius:4px; position:relative;"><span style="position:absolute; left:4px; top:5px; width:10px; height:2px; background:#6e8fbd;"></span><span style="position:absolute; left:4px; top:11px; width:12px; height:2px; background:#6e8fbd;"></span></span>成功条件を持つ</h3><p>何をもって前進とするかを組織で共有する</p></div>
-        <div class="card soft-blue"><h3 style="display:flex; align-items:center; gap:10px;"><span style="display:inline-grid; place-items:center; width:26px; height:26px; border:2px solid #6e8fbd; border-radius:8px; color:#6e8fbd; font-size:16px; font-weight:800;">✓</span>品質の見方をそろえる</h3><p>出力をどう評価するかを揃える</p></div>
-        <div class="card soft-blue"><h3 style="display:flex; align-items:center; gap:10px;"><span style="display:inline-flex; gap:4px; align-items:flex-end;"><span style="display:block; width:8px; height:8px; background:#6e8fbd; border-radius:999px;"></span><span style="display:block; width:8px; height:15px; background:#6e8fbd; border-radius:999px;"></span><span style="display:block; width:8px; height:22px; background:#6e8fbd; border-radius:999px;"></span></span>改善を続ける</h3><p>問題が出たときに戻せる運用を持つ</p></div>
-      </div>
-      <div class="summary-band">
-        <strong>組織化とは、統制を継続できる単位を持つこと</strong>
-        <span>大きい組織図を作ること自体が目的ではない。</span>
-      </div>
-    </div>`,
+    <div class="canvas"><h1 class="title">Skill は、AI の責務を限定する</h1><p class="subtitle">一つのAIに全てを任せず、必要な判断と成果物へ集中させる</p>
+      ${threeCards([["責務と判断", "何を担当し、どの方法で判断するか"], ["入出力と Knowledge", "何を受け取り、何を返し、何を参照するか"], ["handoff 境界", "どこで次の責務や人間へ渡すか"]])}
+      <div class="summary-band"><strong>責務が限定されるほど、AI は必要な判断に集中できる</strong><span>Skill は方法を持ち、Knowledge は判断材料を持つ。</span></div></div>`,
   "06_organization_value": () => `
-    <div class="canvas">
-      <h1 class="title">組織化で変わること</h1>
-      <p class="subtitle">個人依存の成功が、継続・共有・改善できる状態へ変わっていく</p>
-      <div class="compare" style="margin-top:88px;">
-        <div class="panel">
-          <span class="badge" style="font-size:20px; background:#eef2f6; color:#6b7a8c;">組織化前</span>
-          <div class="stack">
-            <div class="box soft-gray">担当者依存</div>
-            <div class="box soft-gray">属人的な品質判断</div>
-            <div class="box soft-gray">改善が蓄積されにくい</div>
-          </div>
-        </div>
-        <div class="panel">
-          <span class="badge b-green" style="font-size:20px;">組織化後</span>
-          <div class="stack">
-            <div class="box soft-green">継続できる</div>
-            <div class="box soft-green">共有できる</div>
-            <div class="box soft-green">改善が資産になる</div>
-          </div>
-        </div>
-      </div>
-      <div class="summary-band">
-        <strong>組織化によって、AI 活用は個人技から運用資産へ変わる</strong>
-        <span>ここではじめて、本番利用を広げやすくなる。</span>
-      </div>
-    </div>`,
+    <div class="canvas"><h1 class="title">Knowledge は、必要な XID だけを読む</h1><p class="subtitle">対象一覧と詳細を分け、必要な判断材料だけを段階的に取り込む</p>
+      <div class="grid-3" style="margin-top:98px;"><div class="card soft-blue"><h3>catalog</h3><p>候補の領域と XID を一覧で見つける</p></div><div class="card soft-blue"><h3>select and resolve</h3><p>必要な XID の本文だけを取得する</p></div><div class="card soft-blue"><h3>apply</h3><p>判断・成果物との関係を記録する</p></div></div>
+      <div class="summary-band"><strong>全体を毎回読み込まないことで、コンテキスト汚染を抑える</strong><span>使用状況はログから確認し、不要・不足の Knowledge を改善する。</span></div></div>`,
   "07_human_control_unit": () => `
-    <div class="canvas">
-      <h1 class="title">組織化とは、何を持つことか</h1>
-      <p class="subtitle">まず人の組織で考えると、責務があり、その責務を達成するために判断・知識・牽制がある</p>
-      <div style="margin-top:78px;">
-        <div style="display:flex; justify-content:center;">
-          <div class="card soft-blue" style="width:1040px; padding:22px; border-width:2px;">
-            <h3 style="font-size:34px; text-align:center; color:#234e95; margin-bottom:10px;">責務</h3>
-            <p style="font-size:22px; text-align:center; color:#526985; margin-bottom:20px;">何を担い、どこまで責任を持つか</p>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px;">
-              <div class="card" style="background:rgba(255,255,255,0.82); border:1px solid #cfdcff; box-shadow:none;">
-                <h3>判断</h3>
-                <p>責務を達成するために、何を選び、どう決めるか</p>
-              </div>
-              <div class="card" style="background:rgba(255,255,255,0.82); border:1px solid #cfdcff; box-shadow:none;">
-                <h3>知識</h3>
-                <p>その判断を支える前提、経験、ルールを持つ</p>
-              </div>
-              <div class="card" style="background:rgba(255,255,255,0.82); border:1px solid #cfdcff; box-shadow:none;">
-                <h3>牽制</h3>
-                <p>別の視点から確認し、責務が適切に果たされているかを見る</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="big-arrow">↓</div>
-        <div style="display:flex; justify-content:center;">
-          <div class="card" style="width:940px; padding:22px; border:1px solid #d8e1eb; background:linear-gradient(135deg, #f7fbff 0%, #edf4ff 100%); box-shadow:0 16px 34px rgba(21,34,53,0.09);">
-            <div style="border:2px solid #9fb9e8; border-radius:24px; background:rgba(255,255,255,0.9); padding:24px 28px;">
-              <h3 style="font-size:40px; text-align:center; color:#234e95; margin:0;">人の組織は、責務を中心に判断・知識・牽制を持つことで仕事を成り立たせている</h3>
-              <p style="font-size:24px; text-align:center; color:#526985; margin-top:12px;">組織化とは、責務を果たすための判断、知識、牽制を持てる単位を持つことでもある</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="summary-band" style="margin-top:18px;">
-        <strong>ここでは、責務を中心に判断・知識・牽制が構成されることを確認したい</strong>
-        <span>次に、なぜ責務を分けるのかを見る。</span>
-      </div>
-    </div>`,
+    <div class="canvas"><h1 class="title">workflow protocol が、作業漏れを検査する</h1><p class="subtitle">各 Skill Run に、実行に必要な状態と根拠を残す</p>
+      <div class="grid-4" style="margin-top:88px; gap:16px;"><div class="card soft-blue"><h3>work item</h3><p>何を行うか</p></div><div class="card soft-blue"><h3>artifact / evidence</h3><p>何を出し、何に基づくか</p></div><div class="card soft-blue"><h3>unknown / risk</h3><p>何が未確定か</p></div><div class="card soft-blue"><h3>handoff</h3><p>次に誰が何をするか</p></div></div>
+      <div class="summary-band"><strong><code>xrefkit skill verify</code> は、記録された workflow progression を決定的に検査する</strong><span>AI の自己申告ではなく、work item、artifact、concern、役割、phase を確認する。</span></div></div>`,
   "08_ai_control_unit": () => `
-    <div class="canvas">
-      <h1 class="title">この構図を AI に当てるとどうなるか</h1>
-      <p class="subtitle">AI にも責務があり、その責務を達成するための判断・知識・牽制が必要になる</p>
-      <div style="margin-top:78px;">
-        <div style="display:flex; justify-content:center;">
-          <div class="card soft-blue" style="width:1040px; padding:22px; border-width:2px;">
-            <h3 style="font-size:34px; text-align:center; color:#234e95; margin-bottom:10px;">AI の責務</h3>
-            <p style="font-size:22px; text-align:center; color:#526985; margin-bottom:20px;">どの AI が、何を担い、どこまで責任を持つか</p>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px;">
-              <div class="card" style="background:rgba(255,255,255,0.82); border:1px solid #cfdcff; box-shadow:none;">
-                <h3>判断</h3>
-                <p>その責務を達成するために、何を見て、どう決めるか</p>
-              </div>
-              <div class="card" style="background:rgba(255,255,255,0.82); border:1px solid #cfdcff; box-shadow:none;">
-                <h3>知識</h3>
-                <p>判断に必要な文脈、ルール、前提を渡す</p>
-              </div>
-              <div class="card" style="background:rgba(255,255,255,0.82); border:1px solid #cfdcff; box-shadow:none;">
-                <h3>牽制</h3>
-                <p>別の責務や確認工程から見直せるようにする</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="big-arrow">↓</div>
-        <div style="display:flex; justify-content:center;">
-          <div class="card" style="width:1020px; padding:22px; border:1px solid #d8e1eb; background:linear-gradient(135deg, #f7fbff 0%, #edf4ff 100%); box-shadow:0 16px 34px rgba(21,34,53,0.09);">
-            <div style="border:2px solid #9fb9e8; border-radius:24px; background:rgba(255,255,255,0.9); padding:24px 28px;">
-              <h3 style="font-size:40px; text-align:center; color:#234e95; margin:0;">AI にも、責務を中心に判断・知識・牽制を持たせる必要がある</h3>
-              <p style="font-size:24px; text-align:center; color:#526985; margin-top:12px;">07 で見た人の組織の持ち方を、そのまま AI の運用単位に当てて考える</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="summary-band" style="margin-top:18px;">
-        <strong>AI でも、責務だけでは足りず、その責務を達成するための判断・知識・牽制が必要になる</strong>
-        <span>次は、この構造をどう持ち続けるかを見る。</span>
-      </div>
-    </div>`,
+    <div class="canvas"><h1 class="title">検証と品質受入れを分ける</h1><p class="subtitle">作業記録の完全性と、成果物を受け入れるかは別の判断である</p>
+      <div class="compare" style="margin-top:88px;"><div class="panel"><span class="badge b-blue" style="font-size:20px;">deterministic verification</span><div class="stack"><div class="box soft-blue">workflow の記録に漏れがないか</div><div class="box soft-blue">役割と progression が正しいか</div><div class="box soft-blue">成果物の内容は判定しない</div></div></div><div class="panel"><span class="badge b-green" style="font-size:20px;">quality and human acceptance</span><div class="stack"><div class="box soft-green">成果物が受入れ可能か</div><div class="box soft-green">品質レビューが必要か</div><div class="box soft-green">Goal、例外、承認を人間が担う</div></div></div></div>
+      <div class="summary-band"><strong>検証を通っても、内容の受入れを自動で主張しない</strong><span>人間の意思決定とAIの実行責務を混ぜない。</span></div></div>`,
   "09_conclusion": () => `
-    <div class="canvas">
-      <h1 class="title">AI にこの構造をどう持たせるか</h1>
-      <p class="subtitle">都度与えるだけでは不安定になるため、継続して持てる単位として扱う必要がある</p>
-      <div class="compare" style="margin-top:88px;">
-        <div class="panel">
-          <span class="badge" style="font-size:20px; background:#eef2f6; color:#6b7a8c;">都度与えるだけ</span>
-          <div class="stack">
-            <div class="box soft-gray">その場ごとの運用になる</div>
-            <div class="box soft-gray">判断・知識・牽制が散らばる</div>
-            <div class="box soft-gray">継続も改善もしにくい</div>
-          </div>
-        </div>
-        <div class="panel">
-          <span class="badge b-blue" style="font-size:20px;">単位として持つ</span>
-          <div class="stack">
-            <div class="box soft-blue">継続して持てる</div>
-            <div class="box soft-blue">揃えて運用できる</div>
-            <div class="box soft-blue">改善を回せる</div>
-          </div>
-        </div>
-      </div>
-      <div class="summary-band">
-        <strong>AI に必要な構造は、都度与えるだけでなく、継続して持ち、揃え、改善できる単位として扱うことが求められる</strong>
-        <span>その持ち方が、AI を組織的に扱うことにつながっていく。</span>
-      </div>
-    </div>`
+    <div class="canvas"><h1 class="title">組織化とは、継続と改善の仕組みを持つこと</h1><p class="subtitle">速度だけでなく、再開、handoff、検証、改善までを仕事として扱う</p>
+      <div class="grid-3" style="margin-top:96px;"><div class="card soft-blue"><h3>継続できる</h3><p>Goal とログから、途中で止まっても再開できる</p></div><div class="card soft-green"><h3>検証できる</h3><p>作業漏れと品質受入れを別々に確認できる</p></div><div class="card soft-orange"><h3>改善できる</h3><p>routing、Skill、Knowledge、XID利用を観測して直せる</p></div></div>
+      <div class="summary-band"><strong>AI の速さを、手戻り削減と継続可能な業務実行へ変える</strong><span>それが、AI を組織化する目的である。</span></div></div>`
 };
 
-const html = (body) => `<!doctype html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8" />
-  <style>${commonCss}\n${css}</style>
-</head>
-<body>${body}</body>
-</html>`;
+const html = (body) => `<!doctype html><html lang="ja"><head><meta charset="utf-8" /><style>${css}</style></head><body>${body.replace(/[ \t]+(?=\n)/g, "")}</body></html>`;
 
 for (const [name, render] of Object.entries(renderers)) {
   await fs.writeFile(path.join(dir, `${name}.html`), html(render()), "utf8");

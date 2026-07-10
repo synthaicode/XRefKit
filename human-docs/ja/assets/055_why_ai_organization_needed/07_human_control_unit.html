@@ -1,212 +1,4 @@
-<!doctype html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8" />
-  <style>* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  font-family: "Segoe UI", "Yu Gothic UI", sans-serif;
-  background: var(--bg);
-  color: var(--ink);
-}
-
-.canvas {
-  width: 1600px;
-  height: 900px;
-  padding: 52px;
-  position: relative;
-  overflow: hidden;
-}
-
-.title {
-  margin: 0 0 10px;
-  font-size: 56px;
-  font-weight: 800;
-  line-height: 1.08;
-}
-
-.subtitle {
-  margin: 0;
-  font-size: 24px;
-  color: var(--muted);
-}
-
-.panel {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 28px;
-  box-shadow: 0 16px 36px rgba(28, 53, 86, 0.08);
-  padding: 28px;
-}
-
-.panel h2 {
-  margin: 0 0 14px;
-  font-size: 34px;
-}
-
-.panel p {
-  margin: 0;
-  font-size: 22px;
-  line-height: 1.5;
-  color: var(--muted);
-}
-
-.compare {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 28px;
-}
-
-.stack {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.box {
-  padding: 18px 20px;
-  border-radius: 20px;
-  border: 1px solid var(--line);
-  background: #fff;
-  font-size: 27px;
-  font-weight: 700;
-  text-align: center;
-}
-
-.soft-blue { background: var(--primary-soft); border-color: #cbdcff; }
-.soft-orange { background: var(--warning-soft); border-color: #ffd5b7; }
-.soft-green { background: var(--positive-soft); border-color: #bae9d8; }
-.soft-red { background: var(--danger-soft); border-color: #f4c3c3; }
-
-.h-flow {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  flex-wrap: nowrap;
-}
-
-.step {
-  min-width: 220px;
-  padding: 18px 20px;
-  border-radius: 20px;
-  background: #fff;
-  border: 1px solid var(--line);
-  text-align: center;
-  font-size: 26px;
-  font-weight: 700;
-}
-
-.chev {
-  font-size: 44px;
-  color: var(--primary);
-  font-weight: 800;
-}
-
-.grid-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
-}
-
-.grid-4 {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
-}
-
-.card,
-.mini {
-  padding: 22px;
-  border-radius: 22px;
-  background: #fff;
-  border: 1px solid var(--line);
-}
-
-.card h3,
-.mini h3 {
-  margin: 0 0 12px;
-  font-size: 24px;
-}
-
-.card p,
-.mini p {
-  margin: 0;
-  font-size: 20px;
-  line-height: 1.45;
-  color: var(--muted);
-}
-
-.badge {
-  display: inline-block;
-  margin-bottom: 14px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.b-blue { background: var(--primary-soft); color: var(--primary); }
-.b-orange { background: var(--warning-soft); color: var(--warning); }
-.b-green { background: var(--positive-soft); color: var(--positive); }
-.b-red { background: var(--danger-soft); color: var(--danger); }
-
-.center {
-  display: grid;
-  place-items: center;
-  height: 100%;
-}
-
-.hub {
-  width: 280px;
-  height: 280px;
-  border-radius: 999px;
-  border: 3px solid #c9dafc;
-  background: var(--primary-soft);
-  display: grid;
-  place-items: center;
-  font-size: 48px;
-  font-weight: 800;
-  color: var(--primary);
-  text-align: center;
-}
-
-.orbit {
-  position: absolute;
-  width: 220px;
-  padding: 16px;
-  border-radius: 20px;
-  background: #fff;
-  border: 1px solid var(--line);
-  text-align: center;
-  font-size: 23px;
-  font-weight: 700;
-}
-
-.o-top { top: 170px; left: 690px; }
-.o-left { top: 375px; left: 240px; }
-.o-right { top: 375px; right: 240px; }
-.o-bottom { bottom: 100px; left: 690px; }
-.o-tl { top: 230px; left: 420px; }
-.o-tr { top: 230px; right: 420px; }
-
-.connector {
-  position: absolute;
-  background: #cad7ee;
-}
-
-.v1 { width: 4px; height: 100px; top: 300px; left: 798px; }
-.v2 { width: 4px; height: 112px; bottom: 220px; left: 798px; }
-.h1 { height: 4px; width: 290px; top: 486px; left: 472px; }
-.h2 { height: 4px; width: 290px; top: 486px; right: 472px; }
-
-.caption {
-  margin-top: 16px;
-  font-size: 21px;
-  color: var(--muted);
-}
-
-:root {
+<!doctype html><html lang="ja"><head><meta charset="utf-8" /><style>:root {
   --bg: linear-gradient(135deg, #f7fafc 0%, #eef4fb 100%);
   --panel: #ffffff;
   --ink: #132237;
@@ -221,6 +13,60 @@ body {
   --danger: #d44f4f;
   --danger-soft: #fcecec;
 }
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: #f7fafc;
+  font-family: "Inter", "Noto Sans JP", sans-serif;
+}
+
+.canvas {
+  width: 1600px;
+  height: 900px;
+  overflow: hidden;
+  padding: 56px 72px;
+  background: #f7fafc;
+}
+
+.title {
+  margin: 0;
+  font-size: 64px;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+.subtitle {
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 29px;
+  line-height: 1.4;
+}
+
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); }
+
+.card {
+  min-height: 270px;
+  padding: 28px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+}
+
+.card h3 { margin: 0 0 18px; font-size: 34px; line-height: 1.2; color: var(--ink); }
+.card p { margin: 0; color: var(--muted); font-size: 25px; line-height: 1.45; }
+
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+.panel { min-height: 340px; padding: 28px; border: 2px solid var(--line); border-radius: 14px; background: var(--panel); }
+.stack { display: grid; gap: 14px; margin-top: 22px; }
+.box { padding: 18px 20px; border: 1px solid var(--line); border-radius: 10px; color: var(--ink); font-size: 26px; font-weight: 700; line-height: 1.3; }
+.badge { display: inline-block; padding: 9px 14px; border-radius: 999px; font-weight: 800; }
+.b-blue { background: var(--primary-soft); color: var(--primary); }
+.b-green { background: var(--positive-soft); color: var(--positive); }
+.b-red { background: var(--danger-soft); color: var(--danger); }
 
 .soft-blue { background: var(--primary-soft); border-color: #cfdcff; }
 .soft-gray { background: #f3f6fa; border-color: #d7e0ea; }
@@ -273,46 +119,7 @@ body {
   line-height: 1.55;
   color: var(--muted);
 }
-</style>
-</head>
-<body>
-    <div class="canvas">
-      <h1 class="title">組織化とは、何を持つことか</h1>
-      <p class="subtitle">まず人の組織で考えると、責務があり、その責務を達成するために判断・知識・牽制がある</p>
-      <div style="margin-top:78px;">
-        <div style="display:flex; justify-content:center;">
-          <div class="card soft-blue" style="width:1040px; padding:22px; border-width:2px;">
-            <h3 style="font-size:34px; text-align:center; color:#234e95; margin-bottom:10px;">責務</h3>
-            <p style="font-size:22px; text-align:center; color:#526985; margin-bottom:20px;">何を担い、どこまで責任を持つか</p>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px;">
-              <div class="card" style="background:rgba(255,255,255,0.82); border:1px solid #cfdcff; box-shadow:none;">
-                <h3>判断</h3>
-                <p>責務を達成するために、何を選び、どう決めるか</p>
-              </div>
-              <div class="card" style="background:rgba(255,255,255,0.82); border:1px solid #cfdcff; box-shadow:none;">
-                <h3>知識</h3>
-                <p>その判断を支える前提、経験、ルールを持つ</p>
-              </div>
-              <div class="card" style="background:rgba(255,255,255,0.82); border:1px solid #cfdcff; box-shadow:none;">
-                <h3>牽制</h3>
-                <p>別の視点から確認し、責務が適切に果たされているかを見る</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="big-arrow">↓</div>
-        <div style="display:flex; justify-content:center;">
-          <div class="card" style="width:940px; padding:22px; border:1px solid #d8e1eb; background:linear-gradient(135deg, #f7fbff 0%, #edf4ff 100%); box-shadow:0 16px 34px rgba(21,34,53,0.09);">
-            <div style="border:2px solid #9fb9e8; border-radius:24px; background:rgba(255,255,255,0.9); padding:24px 28px;">
-              <h3 style="font-size:40px; text-align:center; color:#234e95; margin:0;">人の組織は、責務を中心に判断・知識・牽制を持つことで仕事を成り立たせている</h3>
-              <p style="font-size:24px; text-align:center; color:#526985; margin-top:12px;">組織化とは、責務を果たすための判断、知識、牽制を持てる単位を持つことでもある</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="summary-band" style="margin-top:18px;">
-        <strong>ここでは、責務を中心に判断・知識・牽制が構成されることを確認したい</strong>
-        <span>次に、なぜ責務を分けるのかを見る。</span>
-      </div>
-    </div></body>
-</html>
+</style></head><body>
+    <div class="canvas"><h1 class="title">workflow protocol が、作業漏れを検査する</h1><p class="subtitle">各 Skill Run に、実行に必要な状態と根拠を残す</p>
+      <div class="grid-4" style="margin-top:88px; gap:16px;"><div class="card soft-blue"><h3>work item</h3><p>何を行うか</p></div><div class="card soft-blue"><h3>artifact / evidence</h3><p>何を出し、何に基づくか</p></div><div class="card soft-blue"><h3>unknown / risk</h3><p>何が未確定か</p></div><div class="card soft-blue"><h3>handoff</h3><p>次に誰が何をするか</p></div></div>
+      <div class="summary-band"><strong><code>xrefkit skill verify</code> は、記録された workflow progression を決定的に検査する</strong><span>AI の自己申告ではなく、work item、artifact、concern、役割、phase を確認する。</span></div></div></body></html>
