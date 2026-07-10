@@ -32,6 +32,7 @@
 - [AIに作業を引き継ぐとは何か 説明資料](067_ai_handoff_continuity_material.md#xid-C4A9E28F71D3)
 - [AIに作業を引き継ぐとは何か スライド原稿](068_ai_handoff_continuity_slide_script.md#xid-E6B3D4A9C821)
 - [AIに作業を引き継ぐとは何か スライド](069_ai_handoff_continuity_presentation.md#xid-B8F4D19A6C32)
+- [AIの作業を途中で終わらせないための仕組み](071_ai_workflow_completion_and_skill_scope_material.md#xid-F6C3A9E12B47)
 
 ## 図の入口
 

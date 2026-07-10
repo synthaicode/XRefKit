@@ -1,10 +1,9 @@
 # AI 組織説明動画 改善版
 
-- 状態: 掛け合い版スライド・ナレーション一式、無音 mp4、VOICEVOX 2 話者音声付き mp4、Irodori-TTS 音声付き mp4
-- 目的: 初見で離脱されにくい AI Team 説明動画を作る
+- 状態: 現行モデルへ更新済みのスライド・manifest 一式。MP4 は manifest から再生成して公開する。
+- 目的: AI が途中で止まっても未完了を完了扱いにしない、継続可能な AI 作業実行を説明する
 - 動画: `ai_team_explainer_clear.mp4`
-- 音声付き動画: `ai_team_explainer_clear_voicevox.mp4`
-- Irodori 版動画: `ai_team_explainer_clear_irodori.mp4`
+- 既存の音声付き MP4 は旧ナレーションの場合がある。公開前に現行 manifest から再生成する。
 - シナリオ: `../../063_ai_organization_explainer_clear_script.md`
 - スライド画像: `../../assets/063_ai_organization_explainer_clear/`
 - プレビュー: `index.html`
@@ -16,16 +15,15 @@
 
 - 冒頭で結論を出す
 - 特定リポジトリ名を前面に出さず、一般的な導入ストーリーとして説明する
-- `プロンプト -> Skill -> ドメイン知識 -> AI Team` の順に説明する
-- 序盤で `AI Team` を作業体制として定義する
+- `Goal -> semantic routing -> Skill -> Knowledge -> workflow protocol` の関係を説明する
+- Goal の最終状態管理と、Skill Run の作業漏れ検査を分けて説明する
 - 聞き手が疑問を挟み、解説役が短く答える掛け合い形式にする
 - 質問だけを先に表示し、ナレーションに合わせて解説側を後から表示する
 - 画面上の `聞き手` / `解説` ラベルは出さず、声と表示タイミングで区別する
-- 各段階で「人間側に新しく増える負担」を先に出す
-- 中盤で説明動画制作を例に、Skill / ドメイン知識 / AI Team の境界を示す
+- 中盤で、Skill の責務境界と Knowledge の選択的な読み込みを示す
 - 終盤に Before / After を置き、導入前後の違いを比較する
-- AI Team 内の実行役とチェック役を明示する
-- AI が作業を忘れることへの対策としてチェック体制を説明する
+- `verify` が進行漏れを検査し、quality review が成果物の受入れを扱う境界を明示する
+- AI が途中で止まったときに、run log から再開または handoff できることを説明する
 - 1 枚 1 メッセージにする
 - 背景を白基調にして、装飾を減らす
 - 文字を大きくし、ポイントを番号やチェックで見せる

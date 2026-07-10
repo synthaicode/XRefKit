@@ -1,8 +1,5 @@
 <!doctype html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8" />
-  <style>:root {
+<html lang="ja"><head><meta charset="utf-8"><style>:root {
   --bg: #F8F9FA;
   --ink: #111827;
   --muted: #4b5563;
@@ -588,40 +585,16 @@ h1 {
   font-size: 24px;
   font-weight: 700;
 }
-</style>
-</head>
-<body>
+</style></head><body>
   <main class="canvas">
-    <div class="kicker">負担の移り変わり</div>
-    <h1>負担は減るが、次の負担が見える</h1>
-    
-    <section class="stage compact">
-  <div class="burden-flow">
-    <div class="burden-step">
-      <div class="burden-label">Prompt</div>
-      <h2>説明する負担</h2>
-      <p>目的、前提、制約、出力形式を、人間が毎回説明する。</p>
-      <div class="burden-arrow">Skill で減らす</div>
-    </div>
-    <div class="burden-step">
-      <div class="burden-label">Skill</div>
-      <h2>手順を選ぶ負担</h2>
-      <p>手順は固定されるが、どれを使うかは人間が選ぶ。</p>
-      <div class="burden-arrow">業務知識が必要</div>
-    </div>
-    <div class="burden-step">
-      <div class="burden-label">Knowledge</div>
-      <h2>更新・維持する負担</h2>
-      <p>業務知識と判断ルールは共有されるが、古くならないよう更新・維持が必要。</p>
-      <div class="burden-arrow">流れが必要</div>
-    </div>
-    <div class="burden-step">
-      <div class="burden-label">AI Team</div>
-      <h2>流れをつなぐ負担</h2>
-      <p>役割、確認、順番、引き渡しを固定し、人間が確認できる形にする。</p>
-      <div class="burden-arrow">管理可能な AI 作業へ</div>
-    </div>
-  </div></section>
-    <div class="summary">AI Teamは、AIを賢くする仕組みではなく、AIの仕事を人間が管理できる形にする仕組み</div>
-  </main></body>
-</html>
+    <div class="kicker">流れ</div>
+    <h1>Goal -&gt; routing -&gt; Skill Run -&gt; verify -&gt; handoff -&gt; Goal</h1>
+    <section class="stage">
+      <div class="dialogue-grid">
+        <div class="bubble question"><div class="card-label">問い</div><h2>どこで止める?</h2></div>
+        <div class="bubble answer"><div class="card-label">答え</div><p>Skill Run は work item と evidence を記録し、verify が進行漏れを検査する。不足は修復または明示的な handoff に戻る。</p></div>
+      </div>
+    </section>
+    <div class="summary">未完了を成功扱いにせず、次の AI または人が再開できる</div>
+  </main>
+</body></html>
