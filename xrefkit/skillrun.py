@@ -6,6 +6,7 @@ import os
 import re
 import tempfile
 import time
+import uuid
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
@@ -43,6 +44,7 @@ class SkillRunResult:
     closure_checks: dict[str, str] | None = None
     handoff_sources: list[dict[str, str]] | None = None
     domain_knowledge: dict[str, object] | None = None
+    run_id: str | None = None
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -58,6 +60,7 @@ class SkillRunResult:
             "closure_checks": self.closure_checks or {},
             "handoff_sources": self.handoff_sources or [],
             "domain_knowledge": self.domain_knowledge or {},
+            "run_id": self.run_id,
         }
 
 
@@ -383,6 +386,7 @@ def _default_log_path(root: Path, skill_id: str) -> Path:
 
 def _render_log(
     *,
+    run_id: str,
     skill_id: str,
     maturity: str,
     meta_path: Path,
@@ -470,6 +474,9 @@ def _render_log(
         requirement_lines = "- none declared"
     return f"""# Skill Run Log
 
+- run_id: `{run_id}`
+- mcp_session_id: `-`
+- repository_fingerprint: `-`
 - date: `{date.today().isoformat()}`
 - skill_id: `{skill_id}`
 - maturity: `{maturity}`
@@ -546,6 +553,41 @@ def _render_log(
 
 - rule: record actually consulted domain knowledge XIDs as runtime artifacts or evidence before handoff
 - none recorded yet
+
+## MCP Correlation
+
+- status: `pending`
+- rule: bind this Skill Run to one MCP session with `xrefkit skill correlate` after `bind_skill_run` returns
+
+## Skill Routing Trace
+
+- status: `partial`
+- event: {json.dumps({"event": "skill.selected", "selected_skill": skill_id, "selection_mode": "direct_meta", "candidate_source": "selected_only", "candidates": [skill_id], "reason": "selected meta supplied by caller after semantic routing"}, ensure_ascii=False, separators=(",", ":"))}
+
+## Knowledge Search Trace
+
+- status: `pending`
+- rule: record search queries, hits, misses, and fallback decisions with `xrefkit skill knowledge --action search`
+
+## Loaded Knowledge Inputs
+
+- status: `pending`
+- rule: record each XID body actually loaded into model context with `xrefkit skill knowledge --action load`
+
+## Knowledge Application Trace
+
+- status: `pending`
+- rule: link each applied XID to a judgment or artifact with `xrefkit skill knowledge --action apply`
+
+## Human Feedback
+
+- status: `pending`
+- rule: record human acceptance, correction, or rejection with `xrefkit skill feedback --kind human`
+
+## Outcome Feedback
+
+- status: `pending`
+- rule: record downstream outcome evidence with `xrefkit skill feedback --kind outcome`
 
 ## Worklist
 
@@ -648,6 +690,50 @@ def _section_body(text: str, section: str) -> tuple[str | None, int, int]:
     next_section = text.find("\n## ", start + len(marker))
     end = len(text) if next_section == -1 else next_section
     return text[start:end], start, end
+
+
+def _log_field(text: str, name: str) -> str | None:
+    match = re.search(rf"^- {re.escape(name)}: `([^`]*)`", text, re.MULTILINE)
+    if match is None:
+        return None
+    value = match.group(1).strip()
+    return None if value in {"", "-"} else value
+
+
+def _append_observation_event(text: str, *, section: str, event: dict[str, object]) -> str:
+    body, start, end = _section_body(text, section)
+    if body is None:
+        body = f"## {section}\n\n- status: `pending`\n"
+        start = len(text.rstrip()) + 2
+        end = start
+        text = text.rstrip() + "\n\n" + body
+        body, start, end = _section_body(text, section)
+        assert body is not None
+    serialized = json.dumps(event, ensure_ascii=False, separators=(",", ":"))
+    updated = re.sub(r"^- status: `[^`]+`", "- status: `recorded`", body, count=1, flags=re.MULTILINE)
+    updated = updated.rstrip() + f"\n- event: {serialized}\n"
+    return text[:start] + updated + text[end:]
+
+
+def _observation_events(text: str) -> list[dict[str, object]]:
+    events: list[dict[str, object]] = []
+    for match in re.finditer(r"^- event: (?P<event>\{.*\})$", text, re.MULTILINE):
+        try:
+            event = json.loads(match.group("event"))
+        except json.JSONDecodeError:
+            continue
+        if isinstance(event, dict) and isinstance(event.get("event"), str):
+            events.append(event)
+    return events
+
+
+def _replace_log_field(text: str, name: str, value: str) -> tuple[str, bool]:
+    pattern = re.compile(rf"^- {re.escape(name)}: `[^`]*`", re.MULTILINE)
+    return pattern.subn(f"- {name}: `{value}`", text, count=1)[0], bool(pattern.search(text))
+
+
+def _valid_log_token(value: str) -> bool:
+    return bool(re.fullmatch(r"[A-Za-z0-9._:-]{1,128}", value))
 
 
 def _log_skill_id(text: str) -> str | None:
@@ -1564,6 +1650,329 @@ def _replace_token_usage_section(text: str, new_body: str) -> str:
     return text[:start] + new_body + text[end:]
 
 
+def _validate_observation_log(log_path: Path) -> tuple[str | None, SkillRunResult | None]:
+    if not log_path.exists():
+        return None, SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"log not found: {log_path}"])
+    try:
+        text = log_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        return None, SkillRunResult(
+            ok=False,
+            skill_id=None,
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=[f"could not read skill run log: {exc}"],
+        )
+    if "## Skill Load Gate\n\n- status: `opened_by_xrefkit_skill_run`" not in text:
+        return None, SkillRunResult(
+            ok=False,
+            skill_id=None,
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=["skill run log is missing an opened Skill Load Gate"],
+        )
+    if _log_field(text, "run_id") is None:
+        return None, SkillRunResult(
+            ok=False,
+            skill_id=_log_skill_id(text),
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=["skill run log is missing run_id; create a new run or migrate the log before recording observations"],
+        )
+    return text, None
+
+
+@_locked_log_update
+def correlate_skill_run(args) -> SkillRunResult:
+    log_path = Path(args.log).resolve()
+    text, error = _validate_observation_log(log_path)
+    if error is not None:
+        return error
+    assert text is not None
+    run_id = _log_field(text, "run_id")
+    expected_run_id = str(getattr(args, "run_id", "") or "").strip()
+    if expected_run_id and expected_run_id != run_id:
+        return SkillRunResult(
+            ok=False,
+            skill_id=_log_skill_id(text),
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=[f"run_id mismatch: log={run_id} provided={expected_run_id}"],
+            run_id=run_id,
+        )
+    mcp_session_id = str(args.mcp_session_id).strip()
+    repository_fingerprint = str(args.repository_fingerprint).strip()
+    if not mcp_session_id or not repository_fingerprint:
+        return SkillRunResult(
+            ok=False,
+            skill_id=_log_skill_id(text),
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=["mcp_session_id and repository_fingerprint are required"],
+            run_id=run_id,
+        )
+    if not _valid_log_token(mcp_session_id) or not _valid_log_token(repository_fingerprint):
+        return SkillRunResult(
+            ok=False,
+            skill_id=_log_skill_id(text),
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=["mcp_session_id and repository_fingerprint must be safe identifier tokens"],
+            run_id=run_id,
+        )
+    existing_session_id = _log_field(text, "mcp_session_id")
+    existing_fingerprint = _log_field(text, "repository_fingerprint")
+    if existing_session_id is not None or existing_fingerprint is not None:
+        if (existing_session_id, existing_fingerprint) != (mcp_session_id, repository_fingerprint):
+            return SkillRunResult(
+                ok=False,
+                skill_id=_log_skill_id(text),
+                skill_doc=None,
+                run_log=str(log_path),
+                errors=["Skill Run is already correlated to a different MCP session or repository fingerprint"],
+                run_id=run_id,
+            )
+        return SkillRunResult(
+            ok=True,
+            skill_id=_log_skill_id(text),
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=[],
+            run_id=run_id,
+        )
+    text, _ = _replace_log_field(text, "mcp_session_id", mcp_session_id)
+    text, _ = _replace_log_field(text, "repository_fingerprint", repository_fingerprint)
+    text = _append_observation_event(
+        text,
+        section="MCP Correlation",
+        event={
+            "event": "mcp.bound",
+            "run_id": run_id,
+            "mcp_session_id": mcp_session_id,
+            "repository_fingerprint": repository_fingerprint,
+        },
+    )
+    _atomic_write_text(log_path, text)
+    return SkillRunResult(
+        ok=True,
+        skill_id=_log_skill_id(text),
+        skill_doc=None,
+        run_log=str(log_path),
+        errors=[],
+        run_id=run_id,
+    )
+
+
+@_locked_log_update
+def update_skill_routing(args) -> SkillRunResult:
+    log_path = Path(args.log).resolve()
+    text, error = _validate_observation_log(log_path)
+    if error is not None:
+        return error
+    assert text is not None
+    selected_skill = str(args.selected_skill).strip()
+    candidates = [str(value).strip() for value in args.candidate if str(value).strip()]
+    reason = str(args.reason).strip()
+    if not selected_skill or not candidates or not reason:
+        return SkillRunResult(
+            ok=False,
+            skill_id=_log_skill_id(text),
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=["selected_skill, at least one candidate, and reason are required"],
+            run_id=_log_field(text, "run_id"),
+        )
+    if selected_skill not in candidates:
+        return SkillRunResult(
+            ok=False,
+            skill_id=_log_skill_id(text),
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=["selected_skill must be present in candidates"],
+            run_id=_log_field(text, "run_id"),
+        )
+    if selected_skill != _log_skill_id(text):
+        return SkillRunResult(
+            ok=False,
+            skill_id=_log_skill_id(text),
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=["selected_skill must match the Skill Run skill_id; use a new run or explicit handoff for a different Skill"],
+            run_id=_log_field(text, "run_id"),
+        )
+    text = _append_observation_event(
+        text,
+        section="Skill Routing Trace",
+        event={
+            "event": "skill.routed",
+            "selected_skill": selected_skill,
+            "selection_mode": str(args.selection_mode),
+            "candidate_source": "recorded",
+            "candidates": candidates,
+            "reason": reason,
+        },
+    )
+    _atomic_write_text(log_path, text)
+    return SkillRunResult(
+        ok=True,
+        skill_id=_log_skill_id(text),
+        skill_doc=None,
+        run_log=str(log_path),
+        errors=[],
+        run_id=_log_field(text, "run_id"),
+    )
+
+
+@_locked_log_update
+def update_knowledge_observation(args) -> SkillRunResult:
+    log_path = Path(args.log).resolve()
+    text, error = _validate_observation_log(log_path)
+    if error is not None:
+        return error
+    assert text is not None
+    action = str(args.action)
+    note = str(args.note or "").strip() or None
+    source = str(args.source or "client").strip()
+    if action == "search":
+        query = str(args.query or "").strip()
+        result_xids = [str(value).strip() for value in args.xid if str(value).strip()]
+        if not query:
+            errors = ["--query is required for action=search"]
+        else:
+            errors = []
+        if args.status == "hit" and not result_xids:
+            errors.append("action=search status=hit requires at least one --xid")
+        if args.status == "miss" and result_xids:
+            errors.append("action=search status=miss must not include --xid")
+        section = "Knowledge Search Trace"
+        event: dict[str, object] = {
+            "event": "knowledge.search",
+            "query": query,
+            "status": str(args.status),
+            "result_xids": result_xids,
+            "source": source,
+        }
+    elif action == "load":
+        xids = [str(value).strip() for value in args.xid if str(value).strip()]
+        content_hash = str(args.content_hash or "").strip()
+        errors = []
+        if len(xids) != 1:
+            errors.append("action=load requires exactly one --xid")
+        if not content_hash:
+            errors.append("--content-hash is required for action=load")
+        section = "Loaded Knowledge Inputs"
+        event = {
+            "event": "knowledge.loaded",
+            "xid": xids[0] if len(xids) == 1 else "",
+            "content_hash": content_hash,
+            "source": source,
+        }
+    else:
+        xids = [str(value).strip() for value in args.xid if str(value).strip()]
+        target = str(args.target or "").strip()
+        content_hash = str(args.content_hash or "").strip()
+        errors = []
+        if len(xids) != 1:
+            errors.append("action=apply requires exactly one --xid")
+        if not target:
+            errors.append("--target is required for action=apply")
+        if not content_hash:
+            errors.append("--content-hash is required for action=apply")
+        artifacts = _parse_artifacts(text)
+        concerns = _parse_concerns(text)
+        valid_targets = {artifact["artifact_id"] for artifact in artifacts} | {
+            concern["concern_id"] for concern in concerns
+        }
+        if target and target not in valid_targets:
+            errors.append("action=apply target must identify an existing artifact or concern")
+        loaded_pairs = {
+            (str(event.get("xid")), str(event.get("content_hash")))
+            for event in _observation_events(text)
+            if event.get("event") == "knowledge.loaded"
+        }
+        if len(xids) == 1 and content_hash and (xids[0], content_hash) not in loaded_pairs:
+            errors.append("action=apply requires a prior knowledge.loaded event with the same XID and content hash")
+        section = "Knowledge Application Trace"
+        event = {
+            "event": "knowledge.applied",
+            "xid": xids[0] if len(xids) == 1 else "",
+            "target": target,
+            "content_hash": content_hash,
+            "decisive": bool(args.decisive),
+            "source": source,
+        }
+    if errors:
+        return SkillRunResult(
+            ok=False,
+            skill_id=_log_skill_id(text),
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=errors,
+            run_id=_log_field(text, "run_id"),
+        )
+    if note:
+        event["note"] = note
+    text = _append_observation_event(text, section=section, event=event)
+    _atomic_write_text(log_path, text)
+    return SkillRunResult(
+        ok=True,
+        skill_id=_log_skill_id(text),
+        skill_doc=None,
+        run_log=str(log_path),
+        errors=[],
+        run_id=_log_field(text, "run_id"),
+    )
+
+
+@_locked_log_update
+def update_feedback_observation(args) -> SkillRunResult:
+    log_path = Path(args.log).resolve()
+    text, error = _validate_observation_log(log_path)
+    if error is not None:
+        return error
+    assert text is not None
+    note = str(args.note or "").strip()
+    if not note:
+        return SkillRunResult(
+            ok=False,
+            skill_id=_log_skill_id(text),
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=["--note is required for feedback observations"],
+            run_id=_log_field(text, "run_id"),
+        )
+    allowed_statuses = {
+        "human": {"accepted", "corrected", "rejected", "unknown"},
+        "outcome": {"successful", "failed", "mixed", "unknown"},
+    }
+    if args.status not in allowed_statuses[args.kind]:
+        return SkillRunResult(
+            ok=False,
+            skill_id=_log_skill_id(text),
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=[f"invalid {args.kind} feedback status: {args.status}"],
+            run_id=_log_field(text, "run_id"),
+        )
+    section = "Human Feedback" if args.kind == "human" else "Outcome Feedback"
+    event = {
+        "event": "human.feedback" if args.kind == "human" else "outcome.feedback",
+        "status": str(args.status),
+        "target": str(args.target or "").strip() or None,
+        "note": note,
+    }
+    text = _append_observation_event(text, section=section, event=event)
+    _atomic_write_text(log_path, text)
+    return SkillRunResult(
+        ok=True,
+        skill_id=_log_skill_id(text),
+        skill_doc=None,
+        run_log=str(log_path),
+        errors=[],
+        run_id=_log_field(text, "run_id"),
+    )
+
+
 @_locked_log_update
 def update_token_usage(args) -> SkillRunResult:
     log_path = Path(args.log).resolve()
@@ -1753,7 +2162,34 @@ def run_skill(args) -> SkillRunResult:
         out_path = root / out_path
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
+    raw_run_id = str(getattr(args, "run_id", None) or uuid.uuid4())
+    try:
+        run_id = str(uuid.UUID(raw_run_id))
+    except ValueError:
+        return SkillRunResult(
+            ok=False,
+            skill_id=skill_id,
+            skill_doc=None,
+            run_log=None,
+            errors=[f"run_id must be a UUID: {raw_run_id}"],
+        )
+    sessions_dir = root / "work" / "sessions"
+    if sessions_dir.exists():
+        for existing_log in sessions_dir.rglob("*.md"):
+            try:
+                existing_text = existing_log.read_text(encoding="utf-8")
+            except (OSError, UnicodeError):
+                continue
+            if _log_field(existing_text, "run_id") == run_id:
+                return SkillRunResult(
+                    ok=False,
+                    skill_id=skill_id,
+                    skill_doc=None,
+                    run_log=None,
+                    errors=[f"run_id is already used by an existing Skill Run: {existing_log}"],
+                )
     log = _render_log(
+        run_id=run_id,
         skill_id=skill_id,
         maturity=maturity,
         meta_path=meta_path.relative_to(root),
@@ -1785,6 +2221,7 @@ def run_skill(args) -> SkillRunResult:
         assigned_roles=assigned_roles,
         handoff_sources=validated_handoff_sources,
         domain_knowledge=domain_knowledge,
+        run_id=run_id,
     )
 
 
@@ -1794,6 +2231,7 @@ def cmd_skill_run(args) -> int:
         print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
     elif result.ok:
         print(f"ok: {result.run_log}")
+        print(f"  run_id: {result.run_id}")
         print(f"  skill_id: {result.skill_id}")
         print(f"  skill_doc: {result.skill_doc}")
         for key, value in (result.assigned_roles or {}).items():
@@ -1910,3 +2348,34 @@ def cmd_skill_verify(args) -> int:
         for error in result.errors:
             print(f"  error: {error}")
     return 0 if result.ok else 1
+
+
+def _cmd_observation(args, updater, label: str) -> int:
+    result = updater(args)
+    if args.json:
+        print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+    elif result.ok:
+        print(f"ok: {result.run_log}")
+        print(f"  run_id: {result.run_id}")
+        print(f"  observation: {label}")
+    else:
+        print(f"fail: skill {label}")
+        for error in result.errors:
+            print(f"  error: {error}")
+    return 0 if result.ok else 1
+
+
+def cmd_skill_correlate(args) -> int:
+    return _cmd_observation(args, correlate_skill_run, "correlate")
+
+
+def cmd_skill_routing(args) -> int:
+    return _cmd_observation(args, update_skill_routing, "routing")
+
+
+def cmd_skill_knowledge(args) -> int:
+    return _cmd_observation(args, update_knowledge_observation, "knowledge")
+
+
+def cmd_skill_feedback(args) -> int:
+    return _cmd_observation(args, update_feedback_observation, "feedback")
