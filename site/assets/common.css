@@ -167,7 +167,7 @@ body {
 }
 
 .flow-row-bottom {
-  grid-template-columns: minmax(0, 220px);
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 }
 
 .flow-node {
@@ -297,6 +297,66 @@ body {
 .rationale-column ul { margin: 0; padding-left: 22px; color: var(--muted); font-size: 16px; line-height: 1.55; }
 .rationale-label { margin: 0; color: var(--blue); font-size: 13px; font-weight: 800; letter-spacing: 0; text-transform: uppercase; }
 .rationale-connector { color: var(--blue); font-size: 36px; font-weight: 800; text-align: center; }
+
+.trait-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.trait-item {
+  min-width: 0;
+  padding: 20px 16px;
+  border-top: 3px solid rgba(34, 103, 216, 0.45);
+  background: rgba(255, 255, 255, 0.46);
+}
+
+.trait-item span { color: var(--blue); font-size: 13px; font-weight: 800; }
+.trait-item p { margin: 10px 0 0; color: #435a75; font-size: 15px; line-height: 1.5; }
+
+.mechanism-map {
+  display: grid;
+  border-top: 1px solid var(--line);
+}
+
+.mechanism-row {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.4fr);
+  gap: 28px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.mechanism-row strong { font-size: 17px; }
+.mechanism-row span { color: var(--muted); font-size: 16px; line-height: 1.5; }
+
+.routing-note,
+.improvement-note {
+  margin: 22px 0 0;
+  padding: 18px 20px;
+  border-left: 4px solid var(--blue);
+  background: rgba(255, 255, 255, 0.58);
+  color: #435a75;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.improvement-flow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.improvement-flow > div {
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid rgba(21, 34, 53, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.improvement-flow strong { display: block; margin-bottom: 10px; font-size: 19px; }
+.improvement-flow span { color: var(--muted); font-size: 15px; line-height: 1.5; }
 
 .catalog-card {
   display: grid;
@@ -853,6 +913,16 @@ body {
     gap: 18px;
   }
 
+  .trait-grid,
+  .improvement-flow {
+    grid-template-columns: 1fr;
+  }
+
+  .mechanism-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
   .rationale-connector {
     transform: rotate(90deg);
   }
@@ -873,6 +943,10 @@ body {
   .flow-row-middle,
   .flow-row-bottom {
     grid-template-columns: 1fr;
+  }
+
+  .flow-row .flow-connector {
+    transform: rotate(90deg);
   }
 
   .flow-connector {
