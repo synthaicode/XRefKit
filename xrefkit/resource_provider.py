@@ -101,7 +101,16 @@ class CompiledContractProvider(StaticProvider):
 
     @classmethod
     def installed(cls) -> "CompiledContractProvider":
-        contract_file = resources.files("xrefkit").joinpath("resources/base/contracts.json")
+        base = resources.files("xrefkit").joinpath("resources/base")
+        current_file = base.joinpath("current.json")
+        if current_file.is_file():
+            pointer = json.loads(current_file.read_text(encoding="utf-8"))
+            generation = str(pointer["generation"])
+            if not re.fullmatch(r"[0-9a-f]{16}", generation):
+                raise ValueError("invalid installed base runtime generation")
+            contract_file = base.joinpath("generations", generation, "contracts.json")
+        else:
+            contract_file = base.joinpath("contracts.json")
         compiled = json.loads(contract_file.read_text(encoding="utf-8"))
         obligations_by_xid: dict[str, list[dict[str, object]]] = {}
         for obligation in compiled.get("obligations", []):

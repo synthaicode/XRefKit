@@ -19,6 +19,7 @@ from .models import (
     XidLoadedRef,
 )
 from .registry import SkillRecord, XidAssetRecord, XRefKitRegistry
+from .models.common import version_satisfies
 
 
 def _split_skill_ref(ref: str) -> tuple[str, str]:
@@ -92,6 +93,15 @@ class EffectiveSkillResolver:
             raise ValueError("extends target must be a package SkillDefinition")
 
         base_skill = base_record.definition
+        package = self.registry.packages.require(package_id)
+        if not version_satisfies(package.manifest.version, extends.version):
+            raise ValueError(
+                f"package version {package.manifest.version} does not satisfy {extends.version}"
+            )
+        if not package.manifest.contract.can_be_extended_by_local_skill:
+            raise ValueError(f"package does not allow local extension: {package_id}")
+        if not base_skill.extension_policy.can_be_extended_by_local_skill:
+            raise ValueError(f"Skill does not allow local extension: {base_skill.skill_id}")
         loaded_texts = LoadedTexts()
         source_trace: list[SourceTraceEntry] = []
         conflicts: list[ConflictEntry] = []

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -9,6 +10,10 @@ import time
 
 VALID_PACKET_STATUSES = {"valid", "superseded", "blocked", "cancelled"}
 VALID_WAKE_RECOVERY_TYPES = {"five_hour", "weekly", "unknown"}
+
+
+class StateCorruptionError(ValueError):
+    """Persisted goal state exists but cannot be trusted."""
 
 
 @dataclass
@@ -36,7 +41,9 @@ def _safe_goal_slug(value: str) -> str:
     slug = "".join(chars).strip("_")
     while "__" in slug:
         slug = slug.replace("__", "_")
-    return slug or "goal"
+    slug = slug or "goal"
+    digest = hashlib.sha256(value.encode("utf-8")).hexdigest()[:12]
+    return f"{slug}-{digest}"
 
 
 def _goal_mode_dir(root: Path) -> Path:
@@ -102,9 +109,11 @@ def _read_json(path: Path) -> dict[str, object] | None:
         return None
     try:
         loaded = json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        return None
-    return loaded if isinstance(loaded, dict) else None
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise StateCorruptionError(f"corrupt persisted state: {path}") from exc
+    if not isinstance(loaded, dict):
+        raise StateCorruptionError(f"persisted state must be an object: {path}")
+    return loaded
 
 
 class _GoalLock:
@@ -438,7 +447,7 @@ def acquire_lease(args) -> GoalStateResult:
             }
             lease_path.write_text(json.dumps(lease, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
             _append_jsonl(_lease_events_path(root), {"event": "acquire", **lease})
-    except TimeoutError as exc:
+    except (TimeoutError, StateCorruptionError) as exc:
         return GoalStateResult(ok=False, action="lease.acquire", errors=[str(exc)])
     return GoalStateResult(ok=True, action="lease.acquire", data=lease)
 
@@ -477,7 +486,7 @@ def release_lease(args) -> GoalStateResult:
             }
             lease_path.write_text(json.dumps(released, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
             _append_jsonl(_lease_events_path(root), {"event": "release", **released})
-    except TimeoutError as exc:
+    except (TimeoutError, StateCorruptionError) as exc:
         return GoalStateResult(ok=False, action="lease.release", errors=[str(exc)])
     return GoalStateResult(ok=True, action="lease.release", data=released)
 
@@ -487,7 +496,10 @@ def show_lease(args) -> GoalStateResult:
     goal_id = str(args.goal).strip()
     if not goal_id:
         return GoalStateResult(ok=False, action="lease.show", errors=["missing --goal"])
-    lease = _read_json(_goal_lease_path(root, goal_id))
+    try:
+        lease = _read_json(_goal_lease_path(root, goal_id))
+    except StateCorruptionError as exc:
+        return GoalStateResult(ok=False, action="lease.show", errors=[str(exc)])
     if lease is None:
         return GoalStateResult(ok=False, action="lease.show", errors=[f"no lease found for goal: {goal_id}"])
     return GoalStateResult(ok=True, action="lease.show", data=lease)

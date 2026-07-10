@@ -5,7 +5,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
+import shutil
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -32,7 +35,83 @@ def _estimate_tokens(text: str) -> int:
     return (len(text) + 3) // 4
 
 
+def _atomic_write_bytes(path: Path, data: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    try:
+        with os.fdopen(fd, "wb") as handle:
+            handle.write(data)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    except BaseException:
+        try:
+            os.unlink(temporary)
+        except FileNotFoundError:
+            pass
+        raise
+
+
+def _publish_generation(output: Path, generated: dict[str, Any], model_body: str) -> None:
+    contracts_bytes = json.dumps(generated, ensure_ascii=False, indent=2, default=str).encode("utf-8") + b"\n"
+    model_bytes = model_body.encode("utf-8")
+    generation_id = hashlib.sha256(contracts_bytes + model_bytes).hexdigest()[:16]
+    generations = output / "generations"
+    generations.mkdir(parents=True, exist_ok=True)
+    generation_path = generations / generation_id
+    if not generation_path.exists():
+        temporary = Path(tempfile.mkdtemp(prefix=".generation-", dir=generations))
+        try:
+            (temporary / "contracts.json").write_bytes(contracts_bytes)
+            (temporary / "model_body.md").write_bytes(model_bytes)
+            os.replace(temporary, generation_path)
+        except FileExistsError:
+            shutil.rmtree(temporary, ignore_errors=True)
+        except BaseException:
+            shutil.rmtree(temporary, ignore_errors=True)
+            raise
+    pointer = {
+        "schema": "xrefkit.base_generation/v1",
+        "generation": generation_id,
+        "contracts": f"generations/{generation_id}/contracts.json",
+        "model_body": f"generations/{generation_id}/model_body.md",
+    }
+    # The pointer is the publication boundary. Fixed files remain compatibility snapshots.
+    _atomic_write_bytes(output / "contracts.json", contracts_bytes)
+    _atomic_write_bytes(output / "model_body.md", model_bytes)
+    _atomic_write_bytes(
+        output / "current.json",
+        json.dumps(pointer, ensure_ascii=False, indent=2).encode("utf-8") + b"\n",
+    )
+
+
+def _published_paths(output: Path) -> tuple[Path, Path]:
+    pointer_path = output / "current.json"
+    if not pointer_path.is_file():
+        return output / "contracts.json", output / "model_body.md"
+    pointer = json.loads(pointer_path.read_text(encoding="utf-8"))
+    generation = str(pointer["generation"])
+    if not re.fullmatch(r"[0-9a-f]{16}", generation):
+        raise ValueError("invalid base runtime generation")
+    generation_path = output / "generations" / generation
+    return generation_path / "contracts.json", generation_path / "model_body.md"
+
+
 def compile_base_runtime(
+    repo_root: str | Path,
+    manifest_path: str | Path,
+    output_dir: str | Path,
+) -> dict[str, Any]:
+    result = _compile_base_runtime(repo_root, manifest_path, output_dir)
+    output = Path(output_dir)
+    if not output.is_absolute():
+        output = Path(repo_root).resolve() / output
+    generated = {key: value for key, value in result.items() if key != "model_body"}
+    _publish_generation(output, generated, result["model_body"])
+    return {key: value for key, value in result.items() if key != "model_body"}
+
+
+def _compile_base_runtime(
     repo_root: str | Path,
     manifest_path: str | Path,
     output_dir: str | Path,
@@ -124,16 +203,8 @@ def compile_base_runtime(
         "model_body_hash": _sha256(model_body.encode("utf-8")),
         "estimated_tokens": estimated_tokens,
         "release_ready": approval.get("status") == "accepted" and not lint_candidates,
+        "model_body": model_body,
     }
-    output = Path(output_dir)
-    if not output.is_absolute():
-        output = root / output
-    output.mkdir(parents=True, exist_ok=True)
-    (output / "contracts.json").write_text(
-        json.dumps(result, ensure_ascii=False, indent=2, default=str) + "\n",
-        encoding="utf-8",
-    )
-    (output / "model_body.md").write_text(model_body, encoding="utf-8")
     return result
 
 
@@ -144,16 +215,41 @@ def verify_base_runtime(
     *,
     release: bool,
 ) -> dict[str, Any]:
-    result = compile_base_runtime(repo_root, manifest_path, output_dir)
+    compiled = _compile_base_runtime(repo_root, manifest_path, output_dir)
+    result = {key: value for key, value in compiled.items() if key != "model_body"}
     errors: list[str] = []
-    expected_ids = {item["id"] for item in result["obligations"]}
     generated_path = Path(output_dir)
     if not generated_path.is_absolute():
-        generated_path = Path(repo_root) / generated_path
-    generated = json.loads((generated_path / "contracts.json").read_text(encoding="utf-8"))
-    generated_ids = {item["id"] for item in generated["obligations"]}
-    if expected_ids != generated_ids:
-        errors.append("compiled obligation ID set differs from manifest")
+        generated_path = Path(repo_root).resolve() / generated_path
+    try:
+        contracts_path, model_body_path = _published_paths(generated_path)
+    except (OSError, UnicodeDecodeError, KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        errors.append(f"compiled generation pointer cannot be read: {exc}")
+        return {**result, "ok": False, "errors": errors, "release": release}
+    if not contracts_path.is_file() or not model_body_path.is_file():
+        errors.append("compiled runtime output is missing")
+        return {**result, "ok": False, "errors": errors, "release": release}
+    try:
+        generated = json.loads(contracts_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        errors.append(f"compiled contracts cannot be read: {exc}")
+        return {**result, "ok": False, "errors": errors, "release": release}
+    expected = json.loads(
+        json.dumps(
+            {key: value for key, value in compiled.items() if key != "model_body"},
+            ensure_ascii=False,
+            default=str,
+        )
+    )
+    if generated != expected:
+        errors.append("compiled contracts differ from current source and manifest")
+    try:
+        published_model_body = model_body_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        errors.append(f"compiled model body cannot be read: {exc}")
+        published_model_body = None
+    if published_model_body is not None and published_model_body != compiled["model_body"]:
+        errors.append("compiled model body differs from current source and manifest")
     l0_budget = int(result["budgets"].get("l0_tokens", 0))
     if not l0_budget or result["estimated_tokens"] > l0_budget:
         errors.append(

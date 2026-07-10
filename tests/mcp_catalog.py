@@ -962,6 +962,15 @@ Duplicate external body.
         self.assertIn("tools.materialize_from_mcp", obligation_ids)
         self.assertIn("context.no_duplicate_xid_body_per_session", obligation_ids)
 
+    def test_startup_context_rejects_duplicate_catalog_xid(self) -> None:
+        write(
+            self.repo / "knowledge" / "duplicate-startup.md",
+            "<!-- xid: 0B5C58B5E5B2 -->\n# Duplicate startup document\n",
+        )
+
+        with self.assertRaisesRegex(ValueError, "duplicate catalog-visible XID 0B5C58B5E5B2"):
+            XRefCatalog.build(self.repo).get_startup_context()
+
     def test_startup_context_omits_cached_reference_bodies(self) -> None:
         catalog = XRefCatalog.build(self.repo)
         first = catalog.get_startup_context()

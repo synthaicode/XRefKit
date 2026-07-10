@@ -120,6 +120,47 @@ class GateTests(unittest.TestCase):
         self.assertEqual(rc, 1)
         self.assertEqual(payload["eval_verdict"], EVAL_BLOCKED)
 
+    def test_deleted_test_file_uses_old_path(self):
+        diff = """diff --git a/tests/RemovedTests.cs b/tests/RemovedTests.cs
+deleted file mode 100644
+--- a/tests/RemovedTests.cs
++++ /dev/null
+@@ -1,2 +0,0 @@
+-[Fact]
+-public void Removed() { }
+"""
+        findings = run_evals(parse_unified_diff(diff), scope=[])
+        assert any(f.check == "test_removed" and f.path == "tests/RemovedTests.cs" for f in findings)
+
+    def test_cli_needs_review_returns_nonzero(self):
+        diff = """diff --git a/tests/T.cs b/tests/T.cs
+--- a/tests/T.cs
++++ b/tests/T.cs
+@@ -1,1 +1,1 @@
+-[Fact]
++[Fact(Skip=\"x\")]
+"""
+        import tempfile
+        import os
+
+        fd, path = tempfile.mkstemp(suffix=".diff")
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as fh:
+                fh.write(diff)
+            with contextlib.redirect_stdout(io.StringIO()):
+                assert main(["gate", "eval", "--diff", path, "--json"]) == 1
+        finally:
+            os.remove(path)
+
+    def test_renamed_test_file_is_reviewed_as_removed(self):
+        diff = """diff --git a/tests/test_old.py b/src/new.py
+similarity index 100%
+rename from tests/test_old.py
+rename to src/new.py
+"""
+        findings = run_evals(parse_unified_diff(diff), scope=[])
+        assert any(f.check == "test_removed" and f.path == "tests/test_old.py" for f in findings)
+
 
 if __name__ == "__main__":
     unittest.main()

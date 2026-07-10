@@ -1,10 +1,19 @@
 from __future__ import annotations
 
 import json
+import functools
+import os
 import re
+import tempfile
+import time
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
+
+if os.name == "nt":
+    import msvcrt
+else:  # pragma: no cover - exercised on POSIX only
+    import fcntl
 
 from xrefkit.skillmeta import (
     REQUIRED_OS_CONTRACT,
@@ -50,6 +59,75 @@ class SkillRunResult:
             "handoff_sources": self.handoff_sources or [],
             "domain_knowledge": self.domain_knowledge or {},
         }
+
+
+class _LogFileLock:
+    def __init__(self, path: Path, timeout_seconds: float = 5.0) -> None:
+        self.path = path
+        self.timeout_seconds = timeout_seconds
+        self.handle = None
+
+    def __enter__(self) -> "_LogFileLock":
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.handle = self.path.open("a+b")
+        if self.handle.tell() == 0:
+            self.handle.write(b"0")
+            self.handle.flush()
+        deadline = time.monotonic() + self.timeout_seconds
+        while True:
+            try:
+                self.handle.seek(0)
+                if os.name == "nt":
+                    msvcrt.locking(self.handle.fileno(), msvcrt.LK_NBLCK, 1)
+                else:  # pragma: no cover - exercised on POSIX only
+                    fcntl.flock(self.handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                return self
+            except (OSError, BlockingIOError):
+                if time.monotonic() >= deadline:
+                    self.handle.close()
+                    self.handle = None
+                    raise TimeoutError(f"timed out acquiring Skill log lock: {self.path}")
+                time.sleep(0.02)
+
+    def __exit__(self, exc_type, exc, tb) -> None:
+        if self.handle is None:
+            return
+        try:
+            self.handle.seek(0)
+            if os.name == "nt":
+                msvcrt.locking(self.handle.fileno(), msvcrt.LK_UNLCK, 1)
+            else:  # pragma: no cover - exercised on POSIX only
+                fcntl.flock(self.handle.fileno(), fcntl.LOCK_UN)
+        finally:
+            self.handle.close()
+            self.handle = None
+
+
+def _atomic_write_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="") as handle:
+            handle.write(text)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    except BaseException:
+        try:
+            os.unlink(temporary)
+        except FileNotFoundError:
+            pass
+        raise
+
+
+def _locked_log_update(func):
+    @functools.wraps(func)
+    def wrapper(args, *extra, **kwargs):
+        log_path = Path(args.log).resolve()
+        with _LogFileLock(log_path.with_name(f".{log_path.name}.lock")):
+            return func(args, *extra, **kwargs)
+
+    return wrapper
 
 
 VALID_PHASES = {"startup", "planning", "execution", "check", "quality", "closure", "handoff"}
@@ -702,6 +780,7 @@ def _replace_concrete_work_items_section(text: str, items: list[dict[str, str]])
     return text[:start] + new_body + text[end:]
 
 
+@_locked_log_update
 def update_work_item(args) -> SkillRunResult:
     log_path = Path(args.log).resolve()
     if not log_path.exists():
@@ -736,7 +815,7 @@ def update_work_item(args) -> SkillRunResult:
 
     text = _replace_concrete_work_items_section(text, items)
     text = _append_phase_event(text, phase=f"workitem:{item_id}", status=status, role=role, note=item_text or None)
-    log_path.write_text(text, encoding="utf-8")
+    _atomic_write_text(log_path, text)
     return SkillRunResult(ok=True, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[], work_items=items)
 
 
@@ -816,6 +895,7 @@ def _replace_runtime_artifacts_section(text: str, artifacts: list[dict[str, str]
     return text[:start] + new_body + text[end:]
 
 
+@_locked_log_update
 def update_artifact(args) -> SkillRunResult:
     log_path = Path(args.log).resolve()
     if not log_path.exists():
@@ -870,7 +950,7 @@ def update_artifact(args) -> SkillRunResult:
 
     text = _replace_runtime_artifacts_section(text, artifacts)
     text = _append_phase_event(text, phase=f"artifact:{artifact_id}", status=status, role=role, note=note or target)
-    log_path.write_text(text, encoding="utf-8")
+    _atomic_write_text(log_path, text)
     return SkillRunResult(ok=True, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[], artifacts=artifacts)
 
 
@@ -947,6 +1027,7 @@ def _replace_unknowns_and_risks_section(text: str, concerns: list[dict[str, str]
     return text[:start] + new_body + text[end:]
 
 
+@_locked_log_update
 def update_concern(args) -> SkillRunResult:
     log_path = Path(args.log).resolve()
     if not log_path.exists():
@@ -1004,7 +1085,7 @@ def update_concern(args) -> SkillRunResult:
 
     text = _replace_unknowns_and_risks_section(text, concerns)
     text = _append_phase_event(text, phase=f"concern:{concern_id}", status=status, role=role, note=concern_text or None)
-    log_path.write_text(text, encoding="utf-8")
+    _atomic_write_text(log_path, text)
     return SkillRunResult(ok=True, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[], concerns=concerns)
 
 
@@ -1074,6 +1155,7 @@ def _assign_runtime_roles(*, skill_id: str, execution_mode: str, model_tier: str
     }
 
 
+@_locked_log_update
 def update_skill_phase(args) -> SkillRunResult:
     log_path = Path(args.log).resolve()
     if not log_path.exists():
@@ -1093,7 +1175,7 @@ def update_skill_phase(args) -> SkillRunResult:
 
     text = _set_phase_status(text, phase=phase, status=status)
     text = _append_phase_event(text, phase=phase, status=status, role=args.role, note=args.note)
-    log_path.write_text(text, encoding="utf-8")
+    _atomic_write_text(log_path, text)
 
     return SkillRunResult(ok=True, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[])
 
@@ -1280,6 +1362,7 @@ def _progression_record_errors(
     return errors, work_items, artifacts, concerns, closure_checks
 
 
+@_locked_log_update
 def verify_progression_run(args) -> SkillRunResult:
     """Deterministically verify workflow progression and advance the check phase.
 
@@ -1321,7 +1404,7 @@ def verify_progression_run(args) -> SkillRunResult:
     note = args.note or ("progression record verified" if not errors else "progression record incomplete")
     text = _set_phase_status(text, phase="check", status=new_status)
     text = _append_phase_event(text, phase="check", status=new_status, role=role, note=note)
-    log_path.write_text(text, encoding="utf-8")
+    _atomic_write_text(log_path, text)
 
     return SkillRunResult(
         ok=not errors,
@@ -1336,6 +1419,7 @@ def verify_progression_run(args) -> SkillRunResult:
     )
 
 
+@_locked_log_update
 def close_skill_run(args) -> SkillRunResult:
     log_path = Path(args.log).resolve()
     if not log_path.exists():
@@ -1421,7 +1505,7 @@ def close_skill_run(args) -> SkillRunResult:
     text = _set_phase_status(text, phase="closure", status=close_status)
     text = _replace_closure_checks(text, closure_checks)
     text = _append_phase_event(text, phase="closure", status=close_status, role="closure_gate", note=args.note)
-    log_path.write_text(text, encoding="utf-8")
+    _atomic_write_text(log_path, text)
     return SkillRunResult(
         ok=True,
         skill_id=None,
@@ -1480,6 +1564,7 @@ def _replace_token_usage_section(text: str, new_body: str) -> str:
     return text[:start] + new_body + text[end:]
 
 
+@_locked_log_update
 def update_token_usage(args) -> SkillRunResult:
     log_path = Path(args.log).resolve()
     if not log_path.exists():
@@ -1525,7 +1610,7 @@ def update_token_usage(args) -> SkillRunResult:
         text, phase="tokens", status="recorded", role=None,
         note=note or f"input={input_tokens if input_tokens is not None else '-'} output={output_tokens if output_tokens is not None else '-'} total={total_tokens}",
     )
-    log_path.write_text(text, encoding="utf-8")
+    _atomic_write_text(log_path, text)
     return SkillRunResult(ok=True, skill_id=_log_skill_id(text), skill_doc=None, run_log=str(log_path), errors=[])
 
 
@@ -1688,7 +1773,8 @@ def run_skill(args) -> SkillRunResult:
         model_tier=model_tier,
         domain_knowledge=domain_knowledge,
     )
-    out_path.write_text(log, encoding="utf-8")
+    with _LogFileLock(out_path.with_name(f".{out_path.name}.lock")):
+        _atomic_write_text(out_path, log)
 
     return SkillRunResult(
         ok=True,

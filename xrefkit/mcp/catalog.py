@@ -1024,7 +1024,13 @@ def _managed_markdown_by_xid(root: Path, ownership: Ownership | None = None) -> 
         text = read_text(path)
         xid = first_xid(text)
         if xid:
-            documents.setdefault(xid, (path, text))
+            previous = documents.get(xid)
+            if previous is not None:
+                raise ValueError(
+                    f"duplicate catalog-visible XID {xid}: "
+                    f"{relative_to_repo(previous[0], root)} and {relative_to_repo(path, root)}"
+                )
+            documents[xid] = (path, text)
     return documents
 
 

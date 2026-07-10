@@ -49,12 +49,15 @@ def test_compile_base_runtime_writes_compact_resources(tmp_path: Path) -> None:
     assert result["release_ready"] is True
     assert result["lint_candidates"] == []
     assert (tmp_path / "out" / "contracts.json").is_file()
+    assert (tmp_path / "out" / "current.json").is_file()
+    assert len(list((tmp_path / "out" / "generations").iterdir())) == 1
     compiled = json.loads((tmp_path / "out" / "contracts.json").read_text(encoding="utf-8"))
     assert compiled["obligations"][0]["id"] == "startup.load"
 
 
 def test_release_verify_blocks_pending_lint_candidate(tmp_path: Path) -> None:
     manifest = _fixture(tmp_path, extra_must=True)
+    compile_base_runtime(tmp_path, manifest, "out")
 
     result = verify_base_runtime(tmp_path, manifest, "out", release=True)
 
@@ -64,8 +67,37 @@ def test_release_verify_blocks_pending_lint_candidate(tmp_path: Path) -> None:
 
 def test_draft_verify_allows_pending_and_unapproved_manifest(tmp_path: Path) -> None:
     manifest = _fixture(tmp_path, approval="pending", extra_must=True)
+    compile_base_runtime(tmp_path, manifest, "out")
 
     result = verify_base_runtime(tmp_path, manifest, "out", release=False)
 
     assert result["ok"] is True
     assert result["release_ready"] is False
+
+
+def test_verify_does_not_rewrite_stale_compiled_output(tmp_path: Path) -> None:
+    manifest = _fixture(tmp_path)
+    compile_base_runtime(tmp_path, manifest, "out")
+    generation = next((tmp_path / "out" / "generations").iterdir())
+    output = generation / "contracts.json"
+    output.write_text("{}", encoding="utf-8")
+
+    result = verify_base_runtime(tmp_path, manifest, "out", release=True)
+
+    assert result["ok"] is False
+    assert "compiled contracts differ" in result["errors"][0]
+    assert output.read_text(encoding="utf-8") == "{}"
+
+
+def test_verify_reports_corrupt_model_body_as_structured_error(tmp_path: Path) -> None:
+    manifest = _fixture(tmp_path)
+    compile_base_runtime(tmp_path, manifest, "out")
+    (tmp_path / "out" / "generations").joinpath(
+        next((tmp_path / "out" / "generations").iterdir()).name,
+        "model_body.md",
+    ).write_bytes(b"\xff")
+
+    result = verify_base_runtime(tmp_path, manifest, "out", release=True)
+
+    assert result["ok"] is False
+    assert any("compiled model body cannot be read" in error for error in result["errors"])

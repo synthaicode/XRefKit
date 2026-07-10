@@ -99,6 +99,7 @@ class DiffFile:
     status: str  # added | deleted | modified | renamed
     added: list[tuple[int, str]] = field(default_factory=list)  # (new line no, text)
     removed: list[str] = field(default_factory=list)
+    old_path: str | None = None
 
 
 @dataclass
@@ -157,10 +158,14 @@ def parse_unified_diff(text: str) -> list[DiffFile]:
     cur: DiffFile | None = None
     new_lineno = 0
     pending_status = "modified"
+    old_path: str | None = None
+    rename_from: str | None = None
     for raw in text.splitlines():
         if raw.startswith("diff --git"):
             cur = None
             pending_status = "modified"
+            old_path = None
+            rename_from = None
             continue
         if raw.startswith("new file mode"):
             pending_status = "added"
@@ -168,20 +173,33 @@ def parse_unified_diff(text: str) -> list[DiffFile]:
         if raw.startswith("deleted file mode"):
             pending_status = "deleted"
             continue
+        if raw.startswith("rename from "):
+            pending_status = "renamed"
+            rename_from = raw[len("rename from "):].strip()
+            continue
+        if raw.startswith("rename to "):
+            pending_status = "renamed"
+            rename_to = raw[len("rename to "):].strip()
+            cur = DiffFile(path=rename_to, status="renamed", old_path=rename_from)
+            files.append(cur)
+            continue
         if raw.startswith("rename "):
             pending_status = "renamed"
             continue
         if raw.startswith("--- "):
+            old_path = raw[4:].strip()
+            if old_path.startswith("a/"):
+                old_path = old_path[2:]
             continue
         if raw.startswith("+++ "):
             path = raw[4:].strip()
             if path.startswith("b/"):
                 path = path[2:]
             if path == "/dev/null":
-                # deleted file: recover path from a previous --- handled below
+                # Deleted files have no new path; retain the old path for gates.
                 pending_status = "deleted"
-                path = cur.path if cur else "(deleted)"
-            cur = DiffFile(path=path, status=pending_status)
+                path = old_path or "(deleted)"
+            cur = DiffFile(path=path, status=pending_status, old_path=old_path if pending_status == "deleted" else None)
             files.append(cur)
             continue
         if raw.startswith("@@"):
@@ -216,8 +234,12 @@ def _matches_any(path: str, patterns: tuple[str, ...]) -> bool:
 def check_removed_tests(files: list[DiffFile]) -> list[Finding]:
     out: list[Finding] = []
     for f in files:
-        if f.status == "deleted" and _is_test_path(f.path):
-            out.append(Finding("test_removed", DISPOSITION_REVIEW, f.path, None, "test file deleted"))
+        source_path = f.old_path or f.path
+        if f.status == "deleted" and _is_test_path(source_path):
+            out.append(Finding("test_removed", DISPOSITION_REVIEW, source_path, None, "test file deleted"))
+            continue
+        if f.status == "renamed" and _is_test_path(source_path) and not _is_test_path(f.path):
+            out.append(Finding("test_removed", DISPOSITION_REVIEW, source_path, None, f"test file renamed to {f.path}"))
             continue
         if not _is_test_path(f.path):
             continue
@@ -339,7 +361,7 @@ def cmd_gate(args) -> int:
 
     # Non-zero exit when the diff cannot proceed to CI, so the gate can run in
     # scripts and pre-CI hooks.
-    if verdict == EVAL_BLOCKED:
+    if verdict != EVAL_CLEAN:
         return 1
     return 0
 

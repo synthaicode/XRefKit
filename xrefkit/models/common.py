@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 XID_PATTERN = re.compile(r"^\S+$")
 PACKAGE_ID_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$")
 SHA256_PATTERN = re.compile(r"^sha256:[0-9a-fA-F]{64}$")
+VERSION_TOKEN_RE = re.compile(r"^(>=|<=|==|>|<)?\s*(\d+(?:\.\d+){0,2})$")
 
 
 class StrictModel(BaseModel):
@@ -76,6 +77,38 @@ def validate_non_empty(value: str, field_name: str) -> str:
     if not value or not value.strip():
         raise ValueError(f"{field_name} must not be empty")
     return value
+
+
+def version_tuple(value: str) -> tuple[int, int, int]:
+    match = re.fullmatch(r"\d+(?:\.\d+){0,2}", value.strip())
+    if not match:
+        raise ValueError(f"unsupported version: {value!r}")
+    parts = [int(part) for part in value.split(".")]
+    return tuple((parts + [0, 0, 0])[:3])  # type: ignore[return-value]
+
+
+def version_satisfies(version: str, constraint: str) -> bool:
+    actual = version_tuple(version)
+    tokens = [token for token in constraint.replace(",", " ").split() if token]
+    if not tokens:
+        raise ValueError("version constraint must not be empty")
+    for token in tokens:
+        match = VERSION_TOKEN_RE.fullmatch(token)
+        if not match:
+            raise ValueError(f"unsupported version constraint: {constraint!r}")
+        operator = match.group(1) or "=="
+        expected = version_tuple(match.group(2))
+        if operator == "==" and actual != expected:
+            return False
+        if operator == ">=" and actual < expected:
+            return False
+        if operator == "<=" and actual > expected:
+            return False
+        if operator == ">" and actual <= expected:
+            return False
+        if operator == "<" and actual >= expected:
+            return False
+    return True
 
 
 class XidRef(StrictModel):

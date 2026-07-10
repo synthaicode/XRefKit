@@ -15,6 +15,7 @@ from xrefkit.registry import XRefKitRegistry
 from xrefkit.resolver import EffectiveSkillResolver
 from xrefkit.runlog import JsonlRunLogWriter, read_run_log_aggregate
 from xrefkit.workspace import build_registry
+from xrefkit.models.common import version_satisfies
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -262,6 +263,53 @@ def test_resolver_rejects_skill_internal_fragment_include_xid(tmp_path: Path) ->
     registry = build_registry(package_manifests=[package_manifest_path], local_manifest_path=local_manifest_path)
 
     with pytest.raises(ValueError, match="xid=xid-fragment-xddp-traceability-required.*actual asset_type=fragment"):
+        EffectiveSkillResolver(registry).resolve_entry("project.order_change_design")
+
+
+def test_build_registry_rejects_package_asset_path_escape(tmp_path: Path) -> None:
+    package_manifest_path, _ = _sample_workspace(tmp_path)
+    data = yaml.safe_load(package_manifest_path.read_text(encoding="utf-8"))
+    data["provides"]["skills"][0]["path"] = "../outside.skill.yaml"
+    _write_yaml(package_manifest_path, data)
+
+    with pytest.raises(ValueError, match="package asset .* escapes root"):
+        build_registry(package_manifests=[package_manifest_path])
+
+
+def test_build_registry_rejects_local_asset_path_escape(tmp_path: Path) -> None:
+    package_manifest_path, local_manifest_path = _sample_workspace(tmp_path)
+    data = yaml.safe_load(local_manifest_path.read_text(encoding="utf-8"))
+    data["mounts"]["knowledge"][0]["path"] = "../outside.md"
+    _write_yaml(local_manifest_path, data)
+
+    with pytest.raises(ValueError, match="local asset .* escapes root"):
+        build_registry(package_manifests=[package_manifest_path], local_manifest_path=local_manifest_path)
+
+
+def test_unsupported_version_constraint_operators_are_rejected() -> None:
+    with pytest.raises(ValueError, match="unsupported version constraint"):
+        version_satisfies("0.9.0", "^0.2.0")
+
+
+def test_resolver_rejects_incompatible_package_version(tmp_path: Path) -> None:
+    package_manifest_path, local_manifest_path = _sample_workspace(tmp_path)
+    data = yaml.safe_load(local_manifest_path.read_text(encoding="utf-8"))
+    data["requires"]["skill_packages"][0]["version"] = ">=2.0.0 <3.0.0"
+    _write_yaml(local_manifest_path, data)
+
+    with pytest.raises(ValueError, match="does not satisfy local requirement"):
+        build_registry(package_manifests=[package_manifest_path], local_manifest_path=local_manifest_path)
+
+
+def test_resolver_rejects_skill_extension_policy(tmp_path: Path) -> None:
+    package_manifest_path, local_manifest_path = _sample_workspace(tmp_path)
+    package_skill_path = package_manifest_path.parent / "skills" / "change_design.skill.yaml"
+    skill_data = yaml.safe_load(package_skill_path.read_text(encoding="utf-8"))
+    skill_data["extension_policy"] = {"can_be_extended_by_local_skill": False}
+    _write_yaml(package_skill_path, skill_data)
+    registry = build_registry(package_manifests=[package_manifest_path], local_manifest_path=local_manifest_path)
+
+    with pytest.raises(ValueError, match="does not allow local extension"):
         EffectiveSkillResolver(registry).resolve_entry("project.order_change_design")
 
 
