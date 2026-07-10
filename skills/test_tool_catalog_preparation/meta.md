@@ -28,7 +28,7 @@
 - skill_doc: `./SKILL.md`
 - knowledge_slots:
   - name=test_design_criteria; bind=8C4D2A7E5102
-  - name=skill_domain_knowledge_runtime_input_design; bind=BC6C6D89E4E1
+  - name=skill_knowledge_operating_model; bind=91C4B7E2D5A8
   - name=domain_knowledge_ontology_rules; bind=5803607419B9
 - knowledge_inputs:
   - name=current_source_structure_finding; accepts=current-source-structure-findings,source-structure-overview,module-map,service-map; purpose=optional-tool-location-and-runtime-context

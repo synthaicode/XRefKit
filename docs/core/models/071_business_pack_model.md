@@ -10,7 +10,6 @@ It is a concept/model page, not a usage guide and not a pack-specific design.
 
 Related:
 
-- [AI agent OS reorganization design](../../designs/063_ai_agent_os_reorganization_design.md#xid-22CAE81A6D3E)
 - [OS utility and business skill classification design](../../designs/064_os_utility_and_business_skill_classification_design.md#xid-ECF29DC3E268)
 - [Business intake pack dependency design](../../packs/business-intake/065_business_intake_pack_dependency_design.md#xid-D334C1964342)
 - [Business Pack Explained (diagram)](../../../human-docs/diagrams/02_business_pack_explained.md)

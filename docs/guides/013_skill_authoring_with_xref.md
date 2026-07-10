@@ -210,8 +210,8 @@ reference, and no SKILL.md guard section.
   rule says otherwise; the ambient guard enforces the direction.
 - See `docs/core/contracts/053_context_direction_security_guard.md#xid-A7F3C92D4E11`
   for the guard contract and
-  `docs/designs/083_skill_centric_architecture_consolidation.md#xid-9DF3B80F9CBE`
-  for why it is ambient.
+  `docs/core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8`
+  for the current Skill/Knowledge operating model.
 
 ## Execution Mode Rule
 
