@@ -42,7 +42,6 @@ Execute `CAP-QA-007` and review C# code and evidence for security risks.
 
 ## Monitoring and Control
 
-- Downgrade unsupported conclusions to `unknown`.
 - Preserve explicit evidence gaps.
 
 ## Closure

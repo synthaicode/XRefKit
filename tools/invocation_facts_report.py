@@ -1,3 +1,5 @@
+# xid: 7577F6A5C6AC
+
 """On-demand report over the deterministic framework-invocation inventory.
 
 Mechanism C (invocation-pattern locators) of the structure-analysis determinism

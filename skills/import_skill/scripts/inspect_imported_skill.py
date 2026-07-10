@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# xid: A7E8C7F2A7BC
+
 """Inspect imported skill content for malicious or risky instructions."""
 
 from __future__ import annotations

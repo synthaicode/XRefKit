@@ -69,7 +69,6 @@ Execute the investigation sequence `CAP-INV-001 -> CAP-INV-002 -> CAP-INV-003` a
 
 - Check that every investigation coverage area has a recorded state.
 - Treat any unrecorded coverage area as a leak.
-- Downgrade weakly supported conclusions to `unknown`.
 - Downgrade impacted-target claims to `unknown` when the current source or document evidence is not strong enough to localize the change.
 - Preserve the reason for every `out_of_scope` item.
 

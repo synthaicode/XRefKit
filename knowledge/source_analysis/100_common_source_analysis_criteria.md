@@ -161,6 +161,37 @@ Check at least the following:
   or external-boundary processing, especially when later delete/archive/update
   removes original evidence
 
+### Usage-Dependent Resource Exhaustion Uncertainty
+
+Treat OS and shared-resource exhaustion that depends on caller volume,
+deployment limits, host quotas, runtime configuration, or installed package
+behavior as a common uncertainty category when static analysis cannot confirm
+or rule it out.
+
+Use `needs_confirmation` instead of `pass` when source review finds no direct
+unbounded resource creation, but the safety of the path still depends on
+operational evidence such as:
+
+- production concurrency, request rate, batch size, backlog size, or retry
+  volume
+- host or container limits for CPU, memory, process ids, file descriptors,
+  sockets, ephemeral ports, temp storage, or cache directories
+- service-host, worker-pool, thread-pool, connection-pool, queue, or
+  downstream dependency capacity
+- deployment-specific timeout, cancellation, rate-limit, throttle,
+  backpressure, load-shedding, or bulkhead configuration
+- installed package, plugin, extension, or entry-point behavior that is not
+  visible in the reviewed source tree
+- filesystem, temp/cache, permission, quota, antivirus, lock, or cleanup policy
+  that can change resource availability outside source control
+
+Do not report this category as a confirmed defect unless a source-visible path
+connects volume or failure to unbounded allocation, handle/socket/process
+creation, pool saturation, backlog growth, retry amplification, or missing
+release/cleanup. When that path is not source-visible, record the missing
+runtime or deployment evidence explicitly in the review matrix and uncertainty
+section.
+
 ### Operational Escalation Rule
 
 If a loop or worker repeatedly creates, opens, or disposes a client,
@@ -339,6 +370,34 @@ Report at least:
   branch
 - whether the default value is explicitly configured or invented by code
 - controlled disposition that should replace the missing-input path
+
+### Required Input Result Facts
+
+Do not reduce this category to only "business input is present/absent" or
+"library scope". The reviewer must preserve the detector facts needed to make
+the decision basis visible.
+
+Preserve this shape for report composition:
+
+| input / candidate | decision gated | source | missing or invalid behavior | default provenance | disposition | status |
+|---|---|---|---|---|---|---|
+
+- `input / candidate`: the reviewed value, or an explicit absence row when no
+  business input candidate exists in the reviewed scope.
+- `decision gated`: the business decision or `none` when no business decision
+  is gated in the scope.
+- `source`: API, DB, config, cache, file, message, external API, or `none`.
+- `missing or invalid behavior`: reject, throw, retry, dead-letter,
+  quarantine, explicit handoff, default substitution, catch-and-default,
+  skipped branch, or `not_applicable`.
+- `default provenance`: explicitly configured, derived from source, invented
+  by code, none, or unknown.
+- `disposition`: pass, fail, needs_confirmation, or not_applicable with the
+  absence or decision reason.
+- `status`: the category status contribution for that row.
+
+For `not_applicable`, state the absence basis. For `pass`, name the controlled
+behavior found by the detector.
 
 ## Error Handling And Exception Path Review
 

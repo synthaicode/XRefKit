@@ -71,7 +71,7 @@ structurally, and under what conditions can this overview be reused?"
 
 ## Startup
 
-1. Start through `fm skill run`.
+1. Start through `xrefkit skill run`.
 2. Confirm the target path exists.
 3. Confirm the source scope boundary before analysis:
    - whole repository
@@ -131,20 +131,20 @@ knowledge registration.
 Plan only the inventories needed for the confirmed scope:
 
 - custom attribute values: `tools/structure_graph --attributes` +
-  `tools/attribute_inventory_report.py`
+  `tools/attribute_inventory_report.py#xid-86FEF434AF94`
 - DI lifetime graph and captive-dependency candidates:
-  `tools/structure_graph --di` + `tools/di_registration_report.py --graph`
+  `tools/structure_graph --di` + `tools/di_registration_report.py#xid-66D9070B4548 --graph`
 - pipeline, config, discovery, logging, and transaction call shapes:
   `tools/structure_graph --invocations` +
-  `tools/invocation_facts_report.py`
+  `tools/invocation_facts_report.py#xid-7577F6A5C6AC`
 - async/static state/lock/DbSet/#if/TFM facts:
-  `tools/structure_graph --decl` + `tools/declaration_facts_report.py`
+  `tools/structure_graph --decl` + `tools/declaration_facts_report.py#xid-4F003AE89B45`
 - dependency direction, fan-in/out, and writes ownership:
-  `tools/structure_graph_report.py`
+  `tools/structure_graph_report.py#xid-13E32D7ED058`
 - test-to-SUT reachability when test boundary is in scope:
-  `tools/test_coverage_reach.py`
+  `tools/test_coverage_reach.py#xid-CAD4CA8E817C`
 - C# naming convention profile:
-  `tools/csharp_naming_profile.py`
+  `tools/csharp_naming_profile.py#xid-2FA1A52CFEE6`
 
 If a needed deterministic inventory cannot run, record that as an `unknown`
 concern. Do not treat the overview as complete for a scope that depends on the

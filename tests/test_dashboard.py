@@ -5,9 +5,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from fm.__main__ import main
-from fm.dashboard import _html_page, build_payload
-from fm.skillmeta import GUARD_CAPABILITY_REF, GUARD_KNOWLEDGE_REF, REQUIRED_OS_CONTRACT, SKILL_RUNTIME_CAPABILITY_REF
+from xrefkit.__main__ import main
+from xrefkit.dashboard import _html_page, build_payload
+from xrefkit.skillmeta import GUARD_CAPABILITY_REF, GUARD_KNOWLEDGE_REF, REQUIRED_OS_CONTRACT, SKILL_RUNTIME_CAPABILITY_REF
 
 
 class DashboardTests(unittest.TestCase):

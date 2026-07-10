@@ -1,0 +1,10 @@
+axis_id: xddp.traceability_completeness
+xid: xid-axis-xddp-traceability-completeness
+summary: Check whether change design items are connected to loaded evidence and downstream impact.
+checks:
+  - id: evidence_basis_present
+    description: Each design item identifies loaded evidence or an explicit unknown.
+  - id: downstream_impact_present
+    description: Each design item identifies implementation or test impact.
+  - id: used_xids_present
+    description: Evidence used as judgment basis appears in used_xids.

@@ -209,7 +209,6 @@ required_followup: <next owner or specialist Skill, or none>
 - Check that each review domain has a recorded result.
 - Check that the diff-consistency result records XDDP, semantic structure, and
   graph-backed impact handling, or marks unavailable evidence explicitly.
-- Downgrade unsupported conclusions to `unknown`.
 - Downgrade review coverage to `unknown` when the intended difference is not clear enough to bound the review target.
 - Downgrade review coverage to `unknown` when a required review domain or
   artifact family was skipped because it could not fit the current context and

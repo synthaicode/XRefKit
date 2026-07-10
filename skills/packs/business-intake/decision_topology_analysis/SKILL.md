@@ -48,7 +48,7 @@ personal power or employee value.
 
 While this Skill remains `trial`, read both examples before analysis:
 
-- `examples/sample_input.normalized_messages.yaml`
+- `examples/sample_input.normalized_messages.yaml#xid-CC6318A5143E`
 - `examples/sample_output.decision_topology_analysis.md`
 
 Use them as the minimum safety and interpretation boundary, not as factual

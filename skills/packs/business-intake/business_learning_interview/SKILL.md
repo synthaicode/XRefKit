@@ -24,7 +24,7 @@ Use the canonical rules in
 
 ## Optional References
 
-- [Business learning interview template](./references/business_learning_interview_template.md)
+- [Business learning interview template](references/business_learning_interview_template.md#xid-0CF99F96165F)
 
 ## Inputs
 

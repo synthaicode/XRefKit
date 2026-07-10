@@ -118,8 +118,15 @@ concurrency rules).
 
 - Put the execution or judgment method and guardrails in `Skill`.
 - Put evidence, domain facts, and local rules in `Knowledge`.
+- When source material mixes procedure, judgment criteria, and domain facts,
+  decompose it through
+  [Skill authoring with xref](../../guides/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B)
+  before creating or revising Skill and Knowledge files.
 - Declare knowledge needs as `knowledge_slots` resolved at runtime; do not copy
   facts into `SKILL.md` or pin static knowledge/capability XID lists.
+- When the same judgment method can apply to many targets, list candidate
+  targets as metadata first, select the target set from prompt and task cues,
+  and load only selected XID bodies.
 - Identify a Skill by its `capability` / `tuning` / `responsibility` triad; do
   not add a role field (executor is implicit; the checker is the deterministic
   protocol).

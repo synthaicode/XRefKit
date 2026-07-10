@@ -69,8 +69,8 @@ Take approved promotion candidates from `work/` and apply them to canonical repo
 
 ## Closure
 
-- Run `python -m fm xref init` when new managed files were added.
-- Run `python -m fm xref fix`.
+- Run `python -m xrefkit xref init` when new managed files were added.
+- Run `python -m xrefkit xref fix`.
 - Report:
   - applied items
   - skipped items

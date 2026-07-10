@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI 組織説明動画 改善版プレビュー</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Yu Gothic UI", sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+    }
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 20px 48px;
+    }
+    h1 {
+      margin: 0 0 20px;
+      font-size: 28px;
+    }
+    .viewer {
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 16px;
+    }
+    img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: contain;
+      background: white;
+      border-radius: 6px;
+    }
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 14px;
+    }
+    button {
+      min-width: 92px;
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 6px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #475569;
+    }
+    .counter {
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+    .narration {
+      margin-top: 16px;
+      padding: 18px;
+      border-left: 5px solid #60a5fa;
+      background: #1e293b;
+      border-radius: 6px;
+      font-size: 18px;
+      line-height: 1.65;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>AI 組織説明動画 改善版プレビュー</h1>
+    <section class="viewer">
+      <img id="slide" src="../../assets/063_ai_organization_explainer_clear/01_title_q.png" alt="" />
+      <div class="controls">
+        <button class="secondary" id="prev">前へ</button>
+        <button id="next">次へ</button>
+        <button class="secondary" id="play">自動再生</button>
+        <span class="counter" id="counter"></span>
+      </div>
+      <div class="narration" id="narration"></div>
+    </section>
+  </main>
+  <script>
+    const slides = [
+      ["../../assets/063_ai_organization_explainer_clear/01_title_q.png", "聞き手: AI を入れれば、仕事は楽になるんじゃないですか。"],
+      ["../../assets/063_ai_organization_explainer_clear/01_title.png", "解説: なる部分もあります。ただし使い方を間違えると、人間側の管理仕事が増えます。今日は、プロンプト、Skill、ドメイン知識、AI Team の順に見ていきます。"],
+      ["../../assets/063_ai_organization_explainer_clear/02_team_definition_q.png", "聞き手: その AI Team って、最初に言うと何なんですか。"],
+      ["../../assets/063_ai_organization_explainer_clear/02_team_definition.png", "解説: 目的に対して、Skill、ドメイン知識、役割、チェック点、引き渡しを固定した AI の作業体制です。人間が毎回やっていた説明、判断、確認、引き渡しを、管理できる形にまとめます。"],
+      ["../../assets/063_ai_organization_explainer_clear/03_problem_q.png", "聞き手: 丁寧にプロンプトを書けば十分ではないですか。"],
+      ["../../assets/063_ai_organization_explainer_clear/03_problem.png", "解説: 最初はそう見えます。でも、目的、前提、制約、出力形式を人間が毎回説明することになります。書き漏れれば結果がぶれる。つまりプロンプトだけだと、人間に説明疲れが起きます。"],
+      ["../../assets/063_ai_organization_explainer_clear/04_work_q.png", "聞き手: では、Skill にすれば安定しますか。"],
+      ["../../assets/063_ai_organization_explainer_clear/04_work.png", "解説: 毎回の説明は減ります。ただし今度は、どの Skill を使うべきか、手順が目的に合っているかを管理する必要が出ます。たとえば説明動画なら、台本化や音声化は Skill。何を正しい説明と見るかは、別に決める必要があります。"],
+      ["../../assets/063_ai_organization_explainer_clear/05_not_one_ai_q.png", "聞き手: 手順があるのに、なぜドメイン知識が必要なんですか。"],
+      ["../../assets/063_ai_organization_explainer_clear/05_not_one_ai.png", "解説: Skill は進め方です。何を正しいと見るかは、業務の用語、基準、制約で決まります。たとえば初見向けにする、特定の説明を外す、実行とチェックを入れる。この判断基準がドメイン知識です。"],
+      ["../../assets/063_ai_organization_explainer_clear/06_repository_q.png", "聞き手: 知識を共有すれば、それで終わりですか。"],
+      ["../../assets/063_ai_organization_explainer_clear/06_repository.png", "解説: 終わりではありません。ルールや前提が変わったら、知識も更新する必要があります。古い知識のまま AI が動くと、古い正解で作業してしまいます。"],
+      ["../../assets/063_ai_organization_explainer_clear/07_handoff_q.png", "聞き手: Skill と知識が揃えば、仕事は回りますか。"],
+      ["../../assets/063_ai_organization_explainer_clear/07_handoff.png", "解説: まだ回りません。調査、判断、制作、確認をどの順番で進めるのか。誰が責任を持つのか。どこへ渡すのか。そこを決めないと、人間が毎回交通整理をすることになります。"],
+      ["../../assets/063_ai_organization_explainer_clear/08_or_team_q.png", "聞き手: そこで AI Team が出てくるんですね。"],
+      ["../../assets/063_ai_organization_explainer_clear/08_or_team.png", "解説: そうです。AI Team は、人間が毎回やっていた交通整理を仕組みに変えます。制作役が作り、チェック役が漏れを見て、記録を残して次へ渡す。ここまでをチーム構成として先に決めます。"],
+      ["../../assets/063_ai_organization_explainer_clear/09_value_q.png", "聞き手: でも、AI が忘れるなら人間が確認すればいいのでは。"],
+      ["../../assets/063_ai_organization_explainer_clear/09_value.png", "解説: 全部を人間の記憶で追う設計にすると疲弊します。作業漏れ、確認漏れ、根拠漏れを見落としやすい。だから AI Team では、実行役とチェック役を分けます。"],
+      ["../../assets/063_ai_organization_explainer_clear/10_conclusion_q.png", "聞き手: では、人間の仕事はなくなるんですか。"],
+      ["../../assets/063_ai_organization_explainer_clear/10_conclusion.png", "解説: なくなりません。ただし、全部を覚えて追いかける仕事から、見るべき点を確認する仕事に変わります。目的、実行、チェック、記録、引き渡しをチーム内に固定します。"],
+      ["../../assets/063_ai_organization_explainer_clear/11_before_after_q.png", "聞き手: 導入前後で、何が変わるんですか。"],
+      ["../../assets/063_ai_organization_explainer_clear/11_before_after.png", "解説: Before では、人間が毎回説明し、判断し、確認し、引き渡します。After では、Skill、知識、チェック点、責任が AI Team に固定されます。人間は全部を見るのではなく、見るべき点を確認します。"],
+      ["../../assets/063_ai_organization_explainer_clear/12_license_q.png", "聞き手: 結局、AI Team が必要な理由は何ですか。"],
+      ["../../assets/063_ai_organization_explainer_clear/12_license.png", "解説: AI を使うほど、人間には説明、手順管理、知識更新、交通整理、確認の負担が増えるからです。AI Team は、それらを役割、流れ、チェックに変え、組織で扱える仕事にします。"],
+      ["../../assets/063_ai_organization_explainer_clear/13_voicevox_credit.png", "クレジット: 音声、VOICEVOX、ずんだもん。VOICEVOX、四国めたん。"]
+    ];
+    let index = 0;
+    let timer = null;
+    const slide = document.getElementById("slide");
+    const narration = document.getElementById("narration");
+    const counter = document.getElementById("counter");
+    function render() {
+      slide.src = slides[index][0];
+      narration.textContent = slides[index][1].replaceAll("｜", "\n");
+      counter.textContent = `${index + 1} / ${slides.length}`;
+    }
+    document.getElementById("prev").onclick = () => {
+      index = Math.max(0, index - 1);
+      render();
+    };
+    document.getElementById("next").onclick = () => {
+      index = Math.min(slides.length - 1, index + 1);
+      render();
+    };
+    document.getElementById("play").onclick = () => {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+        return;
+      }
+      timer = setInterval(() => {
+        index = index >= slides.length - 1 ? 0 : index + 1;
+        render();
+      }, 8000);
+    };
+    render();
+  </script>
+</body>
+</html>

@@ -77,7 +77,7 @@ cannot account for the business-specific delta, fall back to (b) and preserve.
 | 1. Classify | AI (proposes) | classify each fragment into (a)/(b)/(c); for (a), name the candidate standard; attach evidence and a concern for anything uncertain. |
 | 2. Quality gate | Human (decides) | approve the preserve / re-base / discard calls; unresolved resolution stays as `unknown`. |
 | 3. Re-home (trial) | AI | generate trial pack scaffolds via `legacy_flow_skill_migration`; preserve XIDs so old references still resolve; run the context-direction guard on every imported fragment; keep scaffolds in `work/` — the live system is unchanged. |
-| 4. Verify & incremental cutover | AI verify + human closure | run `fm skill verify`, quality gate, and `fm xref check`; keep old and new coexisting by XID until the new pack passes its gate, then retire the old flow; promote trial → canonical via `retro` / `doc_ship`. |
+| 4. Verify & incremental cutover | AI verify + human closure | run `xrefkit skill verify`, quality gate, and `xrefkit xref check`; keep old and new coexisting by XID until the new pack passes its gate, then retire the old flow; promote trial → canonical via `retro` / `doc_ship`. |
 
 ## Role Split (QCD)
 

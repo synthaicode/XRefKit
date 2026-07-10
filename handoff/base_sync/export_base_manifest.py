@@ -30,7 +30,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from fm.ownership import Ownership, load_ownership, validate_ownership
+from xrefkit.ownership import Ownership, load_ownership, validate_ownership
 
 TEXT_EXTENSIONS = {
     ".md", ".py", ".yaml", ".yml", ".json", ".cs", ".csproj",

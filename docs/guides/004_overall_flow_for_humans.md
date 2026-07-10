@@ -9,7 +9,7 @@ As a secondary benefit, you can center your workflow around XIDs and `knowledge/
 
 The basic loop is:
 
-**`sources/` (originals) → `knowledge/` (extracted fragments) → skills (select/use knowledge) → `fm xref` (connection maintenance) → CI (breakage detection)**
+**`sources/` (originals) → `knowledge/` (extracted fragments) → skills (select/use knowledge) → `xrefkit xref` (connection maintenance) → CI (breakage detection)**
 
 This page is a one-page overview of what goes where and how day-to-day work proceeds. It is easiest to think in three situations: (1) import, (2) reference, (3) update.
 
@@ -20,7 +20,7 @@ This page is a one-page overview of what goes where and how day-to-day work proc
 - `knowledge/`: extracted knowledge base (the canonical form the AI reads)
   - “one page = one fragment” Markdown with an XID
   - each fragment ends with a source pointer (`sources/` path + locator)
-- `fm/`: supporting CLI that protects skill-to-knowledge connections by assigning XIDs, rewriting managed links, and validating consistency
+- `xrefkit/`: installable runtime that resolves XIDs, runs Skills and gates, exposes tools, and serves the integrated MCP adapter
 
 The key split is: **humans verify `sources/`**, **AI reads `knowledge/`**. The AI should usually work only from `knowledge/`, and consult `sources/` only when needed, using the source pointer recorded in the fragment.
 
@@ -47,13 +47,13 @@ Use the import-specific guidance in [Importing existing documents](003_import_fo
 Instead of scanning the originals every time, first find and read the relevant fragments in `knowledge/`. This keeps AI reads small and stable.
 
 1. Start at `knowledge/000_index.md`
-2. Find candidate XIDs: `python -m fm xref search "<query>"`
-3. Read only what you need: `python -m fm xref show <XID>`
+2. Find candidate XIDs: `python -m xrefkit xref search "<query>"`
+3. Read only what you need: `python -m xrefkit xref show <XID>`
 
 If needed, bundle neighbors:
 
 ```powershell
-python -m fm ctx pack --seed <XID> --depth 1 --out .xref/pack.md
+python -m xrefkit ctx pack --seed <XID> --depth 1 --out .xref/pack.md
 ```
 
 ### 3) Update (edit or reorganize existing docs)

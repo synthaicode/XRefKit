@@ -9,7 +9,7 @@
 > [skill-centric architecture consolidation](083_skill_centric_architecture_consolidation.md#xid-9DF3B80F9CBE).
 > The surviving idea is the **generic per-Skill deterministic control** — moving
 > transition selection, checks, and closure out of model judgment — now carried
-> by the workflow protocol (`fm skill run` / `verify` / `close`), not by flow
+> by the workflow protocol (`xrefkit skill run` / `verify` / `close`), not by flow
 > definitions. Read this page for that control principle; the flow-definition
 > specifics no longer apply.
 
@@ -168,7 +168,7 @@ define criteria so the check collapses to ③.
 This is already the mechanism in
 [Skill operating contract](../core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61): work
 items carry the execution, `check`-kind artifacts carry the acceptance criteria
-declared at planning, `fm skill verify` re-derives the predefined conditions
+declared at planning, `xrefkit skill verify` re-derives the predefined conditions
 deterministically, and only judgment-bearing acceptance is routed to an
 independent quality reviewer. The same shape holds across the flow chain:
 `planning_workflow` defines the policies (criteria) non-deterministically, and
@@ -301,7 +301,7 @@ derives the transition from that result, per mode:
 - **① human edge** — the human's answer maps through `resume:` (deterministic).
 - **③ Tool/Skill execution** — the label is derived deterministically from the
   run's **result vector** (closure state, phase states, concern inventory).
-  `fm skill verify` / `fm skill close` fix that state deterministically and the
+  `xrefkit skill verify` / `xrefkit skill close` fix that state deterministically and the
   engine reads it; the node never emits the label freely. See
   [Skill operating contract](../core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61).
   No new result format is introduced — the existing run-log result vector *is*
@@ -316,7 +316,7 @@ resume belong to the engine.
 ### Implemented Bridge (fm flow label)
 
 The Skill-run side of this contract is implemented in `fm/flowbridge.py`. The
-bridge reads the `closure` phase event that only `fm skill close` writes
+bridge reads the `closure` phase event that only `xrefkit skill close` writes
 (`role=closure_gate`) and maps it to the node label:
 
 - closure `done` -> `Go`
@@ -327,8 +327,8 @@ bridge reads the `closure` phase event that only `fm skill close` writes
 
 Usage:
 
-- `python -m fm flow label --log <run-log>` derives the label standalone.
-- `python -m fm flow run --flow <flow> --label log:<run-log>` bridges inline;
+- `python -m xrefkit flow label --log <run-log>` derives the label standalone.
+- `python -m xrefkit flow run --flow <flow> --label log:<run-log>` bridges inline;
   a refused bridge refuses the whole engine run.
 
 Rework loops stay inside the run (a failed quality gate blocks `close`, the
@@ -347,8 +347,8 @@ fm flow start   --flow flows/<f>.yaml [--state <path>]
 fm flow next    --state <path>     # current step, capability, bound skill,
                                    # facets, permission, exit labels — or the
                                    # suspend question, or the outcome
-(harness: fm skill run --meta <skill_meta from next> -> executor subagent
- -> fm skill verify -> fm skill close)
+(harness: xrefkit skill run --meta <skill_meta from next> -> executor subagent
+ -> xrefkit skill verify -> xrefkit skill close)
 fm flow advance --state <path> --label log:<run-log>   # bridge + transition
 fm flow advance --state <path> --answer <answer>       # resolve a suspend
 ```
@@ -362,7 +362,7 @@ The dispatch side is resolved by declaration, not inference: a ② step may
 declare `skill: <skill_id>` next to its `capability:`. `flow doctor` enforces
 (G4) that the bound skill exists and declares that capability in its
 `capability_refs`, and `fm flow next` returns the bound skill's `meta.md`
-path so the harness can issue `fm skill run` directly. The business work
+path so the harness can issue `xrefkit skill run` directly. The business work
 inside the step remains the harness's responsibility by design — fm stays a
 deterministic driver and never becomes an agent runner.
 
@@ -464,7 +464,7 @@ global_handback:
 ## Layer Boundary
 
 Transitions stay in the **flow** layer. They must **not** move into skill phases
-(`fm skill phase`):
+(`xrefkit skill phase`):
 
 - **flow** = the business state machine — *whose* failure loops back to *where*.
 - **skill phase** = execution / check / handoff *inside one work-unit*.

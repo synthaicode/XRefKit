@@ -1,8 +1,11 @@
+<!-- xid: 505FA1F89936 -->
+<a id="xid-505FA1F89936"></a>
+
 # tools/ — when to use which
 
 Choose by the **question you are answering**, not by the tool you remember. The
 headline rule comes from a measured A/B
-([ADR 0001](../docs/adr/0001-where-step-grep-first.md)):
+([ADR 0001](../docs/adr/0001-where-step-grep-first.md#xid-F4B92B6AC13E)):
 
 > For **text-greppable** questions — where a type / method / config key is
 > referenced, used, or constructed — use `grep`/`rg` + LLM reasoning. Do **not**
@@ -74,10 +77,12 @@ Output is candidate-only; disposition and per-case approval stay downstream
 
 | Tool | Role |
 |---|---|
-| `run_quality_gate.py` | the repository's own gate: unittest, `fm xref/skill/pack` checks, log audit, baselines, node project checks |
-| `audit_skill_runtime_logs.py` | audit skill runtime logs (`fm.skillrun`) |
+| `run_quality_gate.py` | the repository's own gate: pytest, `xrefkit xref/skill/pack` checks, log audit, baselines, node project checks |
+| `audit_skill_runtime_logs.py` | audit Skill runtime logs (`xrefkit.skillrun`) |
+| `check_skill_knowledge_xids.py` | verify Skill `knowledge_slots` / `knowledge_refs` and Skill-body `knowledge/` links are connected by resolvable canonical `#xid-...` references (`12` uppercase hex chars); use `--fix-missing-xids` to assign or replace XIDs in checked Skill files and directly referenced local Markdown/source files |
 | `check_project_quality_baseline.py` | node projects under `projects/` baseline check |
 | `migrate_legacy_flow_skill.py` | migrate a legacy flow into the Flow/Capability/Skill model |
+| `convert_to_xrefkit_skill.py` | normalize external Skill directories or `skills/` + `knowledge/` trees into XRefKit Skill/Knowledge split form |
 
 ## Binding rules
 

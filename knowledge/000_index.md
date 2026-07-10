@@ -11,7 +11,7 @@ Skills should reference these pages by XID and load only what is needed.
 - Keep one fragment per coherent topic.
 - Preserve XID blocks.
 - Use links with `#xid-...` for cross-fragment references.
-- After edits, run `python -m fm xref fix`.
+- After edits, run `python -m xrefkit xref fix`.
 
 ## Entries
 

@@ -203,7 +203,7 @@ It includes at least:
 
 - startup entry rule
 - semantic routing rule
-- `fm skill run` load gate
+- `xrefkit skill run` load gate
 - work-item recording
 - artifact recording
 - concern recording for `unknown`, `risk`, and `judgment`

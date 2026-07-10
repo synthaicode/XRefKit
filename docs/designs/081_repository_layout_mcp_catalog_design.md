@@ -234,7 +234,7 @@ MCP-side validation should cover:
 - local-only zones are excluded from base-distribution outputs.
 - generated and record zones do not appear in normal Skill, knowledge, flow, or
   capability catalogs.
-- `get_document_by_xid` resolves moved content by XID after `python -m fm xref
+- `get_document_by_xid` resolves moved content by XID after `python -m xrefkit xref
   fix`.
 - client-tool bundles include pack Skill scripts only after Skill selection.
 

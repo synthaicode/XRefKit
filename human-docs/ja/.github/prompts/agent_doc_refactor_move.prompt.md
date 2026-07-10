@@ -14,14 +14,14 @@
 2. 整合性を回復する
 
 ```powershell
-python -m fm xref rewrite
-python -m fm xref check
+python -m xrefkit xref rewrite
+python -m xrefkit xref check
 ```
 
 3. 新規 Markdown を作った場合は `xref init` も行う
 
 ```powershell
-python -m fm xref init
-python -m fm xref rewrite
-python -m fm xref check
+python -m xrefkit xref init
+python -m xrefkit xref rewrite
+python -m xrefkit xref check
 ```

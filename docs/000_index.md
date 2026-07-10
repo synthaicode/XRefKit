@@ -75,9 +75,10 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Skill Run Observation Dashboard usage](guides/086_skill_run_observation_dashboard_usage.md#xid-4A4763A2DE63)
 - [Repository layout zones design (ownership-explicit, pack-centric)](designs/080_repository_layout_zones_design.md#xid-5C1F8A2D7E43)
 - [Repository layout MCP catalog design](designs/081_repository_layout_mcp_catalog_design.md#xid-C8B7A1E940D2)
-- [Client authoring and unified supply design](designs/082_client_authoring_and_unified_supply_design.md)
-- [Skill-centric architecture consolidation](designs/083_skill_centric_architecture_consolidation.md)
-- [Skill-centric MCP catalog design](designs/084_skill_centric_mcp_catalog_design.md)
+- [Client authoring and unified supply design](designs/082_client_authoring_and_unified_supply_design.md#xid-B0572E20DFBA)
+- [Skill-centric architecture consolidation](designs/083_skill_centric_architecture_consolidation.md#xid-9DF3B80F9CBE)
+- [Skill-centric MCP catalog design](designs/084_skill_centric_mcp_catalog_design.md#xid-261B40E5C76B)
+- [XRefKit unified package migration plan](designs/087_xrefkit_unified_package_migration_plan.md#xid-F6A2C9D14E70)
 
 ## Common links
 

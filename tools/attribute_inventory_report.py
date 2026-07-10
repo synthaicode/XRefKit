@@ -1,3 +1,5 @@
+# xid: 86FEF434AF94
+
 """On-demand report over a deterministic custom-attribute inventory.
 
 Consumes the attribute inventory emitted by tools/structure_graph

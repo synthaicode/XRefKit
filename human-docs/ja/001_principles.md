@@ -36,5 +36,5 @@
 運用を揃えるために次を推奨:
 
 ```powershell
-python -m fm xref deprecate <OLD_XID> <NEW_XID> --note "変更理由（任意）"
+python -m xrefkit xref deprecate <OLD_XID> <NEW_XID> --note "変更理由（任意）"
 ```

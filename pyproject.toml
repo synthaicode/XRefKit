@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xrefkit"
+version = "0.3.0"
+description = "Portable XID, Skill, Knowledge, workflow, and MCP runtime for XRefKit"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "synthaicode" }]
+dependencies = [
+  "PyYAML>=6.0.2,<7",
+  "pydantic>=2.0,<3",
+]
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.0.0", "uvicorn>=0.30"]
+test = ["pytest>=8.0.0"]
+
+[project.scripts]
+xrefkit = "xrefkit.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["xrefkit*"]
+
+[tool.setuptools.package-data]
+xrefkit = ["resources/**/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

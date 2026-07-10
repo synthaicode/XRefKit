@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "xrefkit.skills.xddp.design.change_design",
+  "type": "object",
+  "required": [
+    "traceability",
+    "unknowns",
+    "assumptions",
+    "used_xids",
+    "change_design"
+  ],
+  "properties": {
+    "traceability": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["item", "basis", "impact"],
+        "properties": {
+          "item": {"type": "string"},
+          "basis": {"type": "string"},
+          "impact": {"type": "string"}
+        }
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "used_xids": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "change_design": {
+      "type": "string"
+    }
+  }
+}

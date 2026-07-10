@@ -10,4 +10,4 @@ document states and decision diffs. Current documentation update rules are in
 
 | ADR | Title | Status |
 |---|---|---|
-| [0001](0001-where-step-grep-first.md) | Where step is grep-first; the deterministic pack is for grep-weak questions only | Accepted |
+| [0001](0001-where-step-grep-first.md#xid-F4B92B6AC13E) | Where step is grep-first; the deterministic pack is for grep-weak questions only | Accepted |

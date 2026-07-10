@@ -1,0 +1,64 @@
+package_id: xrefkit.skills.xddp.design
+package_type: skill_package
+version: 0.1.0
+
+requires:
+  xrefkit_core: ">=2.0.0 <3.0.0"
+
+provides:
+  skills:
+    - id: xddp.design.change_design
+      xid: xid-skill-xddp-design-change-design
+      path: skills/change_design.skill.yaml
+      contract_role: base_skill
+      required_outputs:
+        - traceability
+        - unknowns
+        - assumptions
+        - used_xids
+        - change_design
+      required_knowledge:
+        - xid-knowledge-xddp-traceability-principles
+        - xid-knowledge-xddp-unknown-handling-principles
+      required_review_axes:
+        - xid-axis-xddp-traceability-completeness
+        - xid-axis-xddp-unknown-visibility
+      must_not:
+        - infer_current_spec_without_source
+        - omit_traceability
+        - omit_unknowns
+        - weaken_core_contract
+
+  fragments:
+    - id: xddp.traceability_instruction
+      xid: xid-include-xddp-traceability-instruction
+      path: skills/common/traceability_instruction.md
+
+  knowledge:
+    - id: xddp.traceability_principles
+      xid: xid-knowledge-xddp-traceability-principles
+      path: knowledge/traceability_principles.md
+    - id: xddp.unknown_handling_principles
+      xid: xid-knowledge-xddp-unknown-handling-principles
+      path: knowledge/unknown_handling_principles.md
+
+  review_axes:
+    - id: xddp.traceability_completeness
+      xid: xid-axis-xddp-traceability-completeness
+      path: review_axes/traceability_completeness.yaml
+    - id: xddp.unknown_visibility
+      xid: xid-axis-xddp-unknown-visibility
+      path: review_axes/unknown_visibility.yaml
+
+  schemas:
+    - id: xddp.change_design
+      xid: xid-schema-xddp-change-design
+      path: schemas/change_design.schema.json
+
+contract:
+  can_be_extended_by_local_skill: true
+  local_skill_can_weaken_contract: false
+  local_can_weaken_required_outputs: false
+  local_can_override_must_not: false
+  requires_unknown_declaration: true
+  requires_traceability: true

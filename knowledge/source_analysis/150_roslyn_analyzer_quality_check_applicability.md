@@ -52,6 +52,6 @@ under `bin/`, `obj/`, `.git/`, `.vs/`, `node_modules/` are excluded.
   findings; a hit never fails closure on its own. See
   [External analyzer rule map](132_csharp_error_policy_analyzer_rule_map.md#xid-C7A1E94D3B62).
 - **Quality axis only.** This is output acceptance, not progression. The
-  deterministic check phase (`fm skill verify`) never runs this.
+  deterministic check phase (`xrefkit skill verify`) never runs this.
 - **Disposition is judgment, separated from execution.** The quality reviewer
   dispositions candidates in a context separate from the executor.

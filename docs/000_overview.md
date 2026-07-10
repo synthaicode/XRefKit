@@ -35,7 +35,7 @@ References treat the **XID** as the primary key.
 
 - Each managed Markdown file has an XID
 - Managed links include `#xid-<XID>`
-- After rename/move, `python -m fm xref rewrite` updates only the *path* portion of managed links
+- After rename/move, `python -m xrefkit xref rewrite` updates only the *path* portion of managed links
 
 ## Positioning: xref is a supporting feature
 
@@ -45,7 +45,7 @@ The primary value of this repository is to **connect each skill to domain knowle
 - Separation rule: keep skill files and domain-knowledge files separate.
 - Shared knowledge rule: `knowledge/` is common domain knowledge across skills.
 - Primary: skills select and consume the right knowledge fragments for the task
-- Supporting: `fm xref` maintains IDs, link paths, and breakage checks
+- Supporting: `xrefkit xref` maintains IDs, link paths, and breakage checks
 - Outcome: skill-to-knowledge wiring stays stable even when tools or agents change
 
 In operating-model terms, this wiring is the OS's nervous system: `xref` is how
@@ -124,7 +124,7 @@ The OS is optimized for **efficient task processing**, where efficiency means
 **minimizing rework, re-execution, and audit failure**. Control and quality
 gates are therefore kept and strengthened, not treated as overhead — they are
 how work stays efficient. The through-line at every level is **determinism**:
-deterministic checks at the OS level (`fm skill verify`,
+deterministic checks at the OS level (`xrefkit skill verify`,
 `tools/run_quality_gate.py`) and deterministic tools at the task level (the
 `tools/` extractors) make output reproducible, which removes rework and keeps
 work auditable. Determinism is both the efficiency mechanism and the control
@@ -134,7 +134,7 @@ mechanism.
 
 It does **not** mean the AI invents IDs. It means the AI (or CI) uses `fm` commands to keep the system consistent.
 
-- `python -m fm xref init` assigns/replaces XIDs (AI runs it and interprets results)
+- `python -m xrefkit xref init` assigns/replaces XIDs (AI runs it and interprets results)
 - Run `init` / `rewrite` / `check` until `issues: 0`
 - If you want a lookup file, regenerate it only when XIDs change
 
@@ -146,7 +146,7 @@ It does **not** mean the AI invents IDs. It means the AI (or CI) uses `fm` comma
 - `work/`: AI-authored operational memory for sessions, judgments,
   retrospectives, and handover logs (non-canonical)
 - `agent/`: Agent entry + contract (keep L0 short and stable)
-- `fm/`: CLI implementation (`python -m fm ...`)
+- `xrefkit/`: installable runtime, CLI, resolver, tools registry, and MCP adapter
 - `sources/`: Original materials (PDF/Excel/Web snapshots, etc.) for human review
 - `.github/`: GitHub-side “control plane” (Copilot instructions, prompts, CI)
 
@@ -165,15 +165,15 @@ Shared xref routing policy: [Startup xref routing policy](core/contracts/011_sta
 ## Common commands
 
 ```powershell
-python -m fm xref init
-python -m fm xref rewrite
-python -m fm xref check
-python -m fm xref check --review
+python -m xrefkit xref init
+python -m xrefkit xref rewrite
+python -m xrefkit xref check
+python -m xrefkit xref check --review
 
-python -m fm xref search "query"
-python -m fm xref show 1A2B3C4D5E6F
+python -m xrefkit xref search "query"
+python -m xrefkit xref show 1A2B3C4D5E6F
 
-python -m fm xref index > .xref/xid-index.json
+python -m xrefkit xref index > .xref/xid-index.json
 ```
 
 `.xref/` is for generated artifacts and caches (gitignored). XRefKit also uses `.xref/xid-index.json` as an index cache to avoid rescanning when nothing changed.

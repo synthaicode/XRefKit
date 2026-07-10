@@ -87,14 +87,14 @@ sessions). `work/*` is local-only operational history (`.gitignore`);
 when a `work/` record becomes the maturity basis of a Skill, **move it to
 `observations/`** (keep the date-prefixed filename) and reference it
 there. A reference that cannot resolve in a fresh clone is not evidence:
-`fm skill check` rejects observation refs that point into `work/` or at
+`xrefkit skill check` rejects observation refs that point into `work/` or at
 untracked files, at trial or higher.
 
 The point is to keep the refinement basis explicit and durable.
 
 ### Draft-To-Trial Bootstrap
 
-`draft` Skills are not load-ready: `fm skill run` rejects them. `trial`
+`draft` Skills are not load-ready: `xrefkit skill run` rejects them. `trial`
 requires at least one `observation_refs` entry, but a Skill that has never
 run cannot yet reference its own run log. The bootstrap sequence is:
 
@@ -110,7 +110,7 @@ run cannot yet reference its own run log. The bootstrap sequence is:
 
 Do not leave maturity undeclared to bypass this ladder: an undeclared
 maturity historically defaulted to `stable` while silently failing
-`fm skill run`, which hides the evidence gap until the moment of use.
+`xrefkit skill run`, which hides the evidence gap until the moment of use.
 
 ### Stable Requirements
 
@@ -159,11 +159,11 @@ record that justifies governed status.
 Use the CLI to check either the declared maturity or a target promotion level:
 
 ```powershell
-python -m fm skill check --meta skills/<skill_id>/meta.md
-python -m fm skill check --meta skills/<skill_id>/meta.md --level draft
-python -m fm skill check --meta skills/<skill_id>/meta.md --level trial
-python -m fm skill check --meta skills/<skill_id>/meta.md --level stable
-python -m fm skill check --meta skills/<skill_id>/meta.md --level governed
+python -m xrefkit skill check --meta skills/<skill_id>/meta.md
+python -m xrefkit skill check --meta skills/<skill_id>/meta.md --level draft
+python -m xrefkit skill check --meta skills/<skill_id>/meta.md --level trial
+python -m xrefkit skill check --meta skills/<skill_id>/meta.md --level stable
+python -m xrefkit skill check --meta skills/<skill_id>/meta.md --level governed
 ```
 
 - no `--level`: check against declared `maturity` or `status`

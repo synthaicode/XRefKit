@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  fm-quality:
+  xrefkit-quality:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,10 +15,10 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install Python dependencies
-        run: python -m pip install -r requirements.txt
-      - name: Run fm quality gate
+        run: python -m pip install -r requirements.txt -e ".[test]"
+      - name: Run XRefKit quality gate
         run: |
-          python tools/run_quality_gate.py fm
+          python tools/run_quality_gate.py xrefkit
 
   slides-app-quality:
     runs-on: ubuntu-latest
@@ -36,4 +36,3 @@ jobs:
           cache-dependency-path: projects/slides-app/package-lock.json
       - name: Run standardized quality gate
         run: python tools/run_quality_gate.py slides-app --install-node-deps
-

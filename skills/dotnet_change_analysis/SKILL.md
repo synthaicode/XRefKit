@@ -28,7 +28,7 @@ Use the canonical viewpoints in `knowledge/source_analysis/120_dotnet_change_ana
 
 ## Optional References
 
-- [Dotnet change analysis template](./references/change_analysis_template.md)
+- [Dotnet change analysis template](references/change_analysis_template.md#xid-6B38F0E4C2A7)
 
 ## Inputs
 
@@ -146,7 +146,7 @@ Use the canonical viewpoints in `knowledge/source_analysis/120_dotnet_change_ana
 ## Where Impacted-Boundary Analysis (grep-first)
 
 The standard Where path is **grep-first, not pack-first**. An A/B test
-([ADR 0001](../../docs/adr/0001-where-step-grep-first.md))
+([ADR 0001](../../docs/adr/0001-where-step-grep-first.md#xid-F4B92B6AC13E))
 showed that for text-greppable impact — type names, method names, construction
 sites, references — the deterministic structure pack gives **no token or accuracy
 gain** over grep at any codebase scale, because `grep`/`rg` returns the full
@@ -179,12 +179,12 @@ the question needs, not the whole pack. See
 
 | Grep-weak question | Pack tool |
 |------|------|
-| custom attribute values (constant-folded ctor/named args) | `tools/structure_graph --attributes` + `tools/attribute_inventory_report.py` |
-| DI lifetime graph / captive-dependency | `tools/structure_graph --di` + `tools/di_registration_report.py --graph` |
-| async methods lacking CancellationToken | `tools/structure_graph --decl` + `tools/declaration_facts_report.py --category async --missing-ct` |
+| custom attribute values (constant-folded ctor/named args) | `tools/structure_graph --attributes` + `tools/attribute_inventory_report.py#xid-86FEF434AF94` |
+| DI lifetime graph / captive-dependency | `tools/structure_graph --di` + `tools/di_registration_report.py#xid-66D9070B4548 --graph` |
+| async methods lacking CancellationToken | `tools/structure_graph --decl` + `tools/declaration_facts_report.py#xid-4F003AE89B45 --category async --missing-ct` |
 | IDisposable / IAsyncDisposable ownership | `implements` edges in `graph.json` + the CA2000 / CA2213 analyzer pipeline |
-| reflection / convention-based binding sites | `tools/structure_graph --invocations` + `tools/invocation_facts_report.py --category discovery` |
-| transitive impact with no textual reference | `tools/where_seed_traversal.py --seed <s>` (the one impact case grep cannot follow) |
+| reflection / convention-based binding sites | `tools/structure_graph --invocations` + `tools/invocation_facts_report.py#xid-7577F6A5C6AC --category discovery` |
+| transitive impact with no textual reference | `tools/where_seed_traversal.py#xid-39959ED2E7EC --seed <s>` (the one impact case grep cannot follow) |
 
 These are candidate facts, not verdicts: confirm activation / consuming mechanism,
 curate against the change objective, and record what the pack cannot establish as
@@ -345,7 +345,6 @@ curate against the change objective, and record what the pack cannot establish a
   - `unknown`
   - `not_applicable`
 - Treat unrecorded viewpoints as analysis leaks.
-- Downgrade weakly supported conclusions to `unknown`.
 - Separate:
   - observed structure
   - inferred change impact
@@ -361,7 +360,7 @@ curate against the change objective, and record what the pack cannot establish a
 ## Unknowns And Risks
 
 - Mirror every `unknown` viewpoint state that affects closure as an `unknown`
-  concern with `python -m fm skill concern`.
+  concern with `python -m xrefkit skill concern`.
 - Record unresolved external dependencies (unavailable package or framework
   source) as `unknown` concerns.
 - Record discovered-but-unanalyzed risk areas (suspected defects, suspected
@@ -385,7 +384,7 @@ Closure is allowed only when all of the following hold:
 - impacted targets and unresolved items are listed with reasons
 - defect-level and security-scope discoveries are on the handoff list, not
   silently dropped
-- the run log passes `python -m fm skill close`
+- the run log passes `python -m xrefkit skill close`
 
 ## Handoff
 

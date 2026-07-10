@@ -65,7 +65,7 @@ After startup, route work by user intent:
 - Use `skills/_index.md` and needed `skills/index/*` files only when a Skill
   must be selected.
 - Select the Skill semantically before direct `--meta <path>` execution.
-- Create the runtime envelope with `python -m fm skill run --meta <path> --task
+- Create the runtime envelope with `python -m xrefkit skill run --meta <path> --task
   "<task>" --json` before opening or executing `SKILL.md`.
 - Load selected knowledge, workflow, and linked documents only when the active
   task or selected Skill requires them.
@@ -80,6 +80,12 @@ same governance contract:
 - `startup_contract_pack.body` is the MCP model-facing compressed startup text.
 - `get_document_by_xid` resolves needed linked XIDs.
 - `get_skill` transfers selected Skill content.
+
+In MCP mode, an XID-bearing path such as `docs/...md#xid-...` is a lookup
+handle and diagnostic location, not an instruction for the client to search its
+local filesystem. The client resolves the selected body by calling
+`get_document_by_xid` with the XID. Any filesystem lookup needed to map that XID
+to content is an MCP server-side responsibility.
 
 This is the MCP mode for clients. It does not change the repository-native rule
 that XRefKit's own startup contract must be valid without MCP.

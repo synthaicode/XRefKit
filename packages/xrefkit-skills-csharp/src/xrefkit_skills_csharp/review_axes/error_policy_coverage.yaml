@@ -1,0 +1,10 @@
+axis_id: csharp.error_policy_coverage
+xid: xid-axis-csharp-error-policy-coverage
+summary: Check whether error policy extraction preserves coverage limits.
+checks:
+  - id: inventory_present
+    description: Error-handling inventory is present.
+  - id: matrix_present
+    description: Category by disposition matrix is present.
+  - id: coverage_limits_present
+    description: Coverage limits are explicit and not treated as completeness.

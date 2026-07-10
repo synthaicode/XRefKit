@@ -1,3 +1,5 @@
+# xid: 66D9070B4548
+
 """On-demand report over the deterministic DI registration inventory.
 
 Mechanism C (invocation-pattern locators) of the structure-analysis determinism

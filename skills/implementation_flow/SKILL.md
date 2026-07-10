@@ -41,9 +41,9 @@ transferred `meta.md` and `SKILL.md` bodies as the procedure source.
   resolver, not by assuming a local XRefKit checkout.
 - Use the MCP-provided Skill catalog and `get_skill` response to load this
   procedure before execution.
-- Run `fm skill run` in the client execution environment to create the runtime
+- Run `xrefkit skill run` in the client execution environment to create the runtime
   envelope before opening the procedure for operational use.
-- Execute deterministic `fm` commands and any implementation tools in the
+- Execute deterministic `xrefkit` commands and any implementation tools in the
   client environment; the MCP server distributes content and contracts only.
 - Keep the run log, work items, artifacts, concerns, verification evidence, and
   handoff records on the client side unless a separate approved publication

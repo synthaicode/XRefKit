@@ -49,7 +49,7 @@ Notes:
 - `responsibility` is the Skill's business use (implementation, quality check,
   design, ...). There is no role field: every Skill is the executor, and the
   checker is the workflow protocol, advanced deterministically with
-  `fm skill verify`.
+  `xrefkit skill verify`.
 - If later AI runs would need to remember something critical, encode it as
   `input`, `output`, `constraints`, `knowledge_slots`, `observation_refs`, or
   handoff/closure wording instead of leaving it unstated.

@@ -5,8 +5,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from fm.__main__ import main
-from fm.skillmeta import GUARD_CAPABILITY_REF, GUARD_KNOWLEDGE_REF, REQUIRED_OS_CONTRACT, SKILL_RUNTIME_CAPABILITY_REF
+from xrefkit.__main__ import main
+from xrefkit.skillmeta import GUARD_CAPABILITY_REF, GUARD_KNOWLEDGE_REF, REQUIRED_OS_CONTRACT, SKILL_RUNTIME_CAPABILITY_REF
 
 
 class CliTests(unittest.TestCase):
@@ -91,7 +91,7 @@ class CliTests(unittest.TestCase):
             )
             for artifact_id, kind, target, role in (
                 ("OUT-001", "output", "docs/output.md", "sample_skill:executor"),
-                ("EVD-001", "evidence", "python tools/run_quality_gate.py fm", "sample_skill:checker"),
+                ("EVD-001", "evidence", "python tools/run_quality_gate.py xrefkit", "sample_skill:checker"),
             ):
                 self.assertEqual(
                     0,
@@ -153,7 +153,7 @@ class CliTests(unittest.TestCase):
             doc = root / "docs" / "ok.md"
             doc.parent.mkdir(parents=True, exist_ok=True)
             doc.write_text(
-                "<!-- xid: OK1234567890 -->\n<a id=\"xid-OK1234567890\"></a>\n\n# Ok\n",
+                "<!-- xid: A01234567890 -->\n<a id=\"xid-A01234567890\"></a>\n\n# Ok\n",
                 encoding="utf-8",
             )
 
@@ -173,7 +173,7 @@ class CliTests(unittest.TestCase):
             doc = root / "docs" / "ok.md"
             doc.parent.mkdir(parents=True, exist_ok=True)
             doc.write_text(
-                "<!-- xid: OK1234567890 -->\n<a id=\"xid-OK1234567890\"></a>\n\n# Ok\n",
+                "<!-- xid: A01234567890 -->\n<a id=\"xid-A01234567890\"></a>\n\n# Ok\n",
                 encoding="utf-8",
             )
 
@@ -312,7 +312,7 @@ class CliTests(unittest.TestCase):
             self.assertIn("## Role Responsibilities", text)
             self.assertIn("- executor: `sample execution responsibility`", text)
             self.assertIn("## Workflow Protocol", text)
-            self.assertIn("- checker: `protocol-owned deterministic workflow-progression verification via fm skill verify`", text)
+            self.assertIn("- checker: `protocol-owned deterministic workflow-progression verification via xrefkit skill verify`", text)
             self.assertIn("- quality_reviewer: `protocol-owned output-content acceptance when the quality gate is required`", text)
             self.assertIn("- handoff_owner: `protocol-owned explicit handoff progression`", text)
             self.assertIn(f"- `{SKILL_RUNTIME_CAPABILITY_REF}`", text)
@@ -1386,7 +1386,7 @@ class CliTests(unittest.TestCase):
                 )
                 for artifact_id, kind, target, role in (
                     ("OUT-001", "output", "docs/output.md", "sample_skill:executor"),
-                    ("EVD-001", "evidence", "python tools/run_quality_gate.py fm", "sample_skill:checker"),
+                    ("EVD-001", "evidence", "python tools/run_quality_gate.py xrefkit", "sample_skill:checker"),
                 ):
                     self.assertEqual(
                         0,

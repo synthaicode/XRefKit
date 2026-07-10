@@ -1,0 +1,67 @@
+skill_id: xddp.design.change_design
+xid: xid-skill-xddp-design-change-design
+role: base_skill_contract
+
+entry:
+  xid: xid-entry-xddp-design-change-design
+  path: skills/change_design/entry.md
+  load_policy: required_inline
+
+required_fragments:
+  - id: traceability_required
+    xid: xid-fragment-xddp-design-traceability-required
+    path: skills/change_design/fragments/traceability_required.md
+    load_policy: required_inline
+  - id: unknowns_required
+    xid: xid-fragment-xddp-design-unknowns-required
+    path: skills/change_design/fragments/unknowns_required.md
+    load_policy: required_inline
+
+branches:
+  - id: db_schema_change
+    xid: xid-branch-xddp-design-db-schema-change
+    path: skills/change_design/branches/db_schema_change.md
+    condition:
+      any_intent:
+        - database schema change
+        - table column change
+        - SQL impact
+    load_policy: on_demand
+  - id: external_interface_change
+    xid: xid-branch-xddp-design-external-interface-change
+    path: skills/change_design/branches/external_interface_change.md
+    condition:
+      any_intent:
+        - API change
+        - external interface change
+        - file layout change
+    load_policy: on_demand
+
+required_outputs:
+  - traceability
+  - unknowns
+  - assumptions
+  - used_xids
+  - change_design
+
+required_knowledge:
+  - xid-knowledge-xddp-traceability-principles
+  - xid-knowledge-xddp-unknown-handling-principles
+
+review_axes:
+  - xid-axis-xddp-traceability-completeness
+  - xid-axis-xddp-unknown-visibility
+
+schemas:
+  - xid-schema-xddp-change-design
+
+must_not:
+  - infer_current_spec_without_source
+  - omit_traceability
+  - omit_unknowns
+  - weaken_core_contract
+
+extension_policy:
+  can_be_extended_by_local_skill: true
+  local_can_weaken_required_outputs: false
+  local_can_override_must_not: false

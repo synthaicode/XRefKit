@@ -13,12 +13,14 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
 - .NET: `csharp_review`, `dotnet_change_analysis`, `db_current_state_analysis`,
   `csharp_error_policy_extraction`, `code_constraint_derivation`,
   `cross_constraint_derivation`, `integration_scenario_derivation`
+- Python: `python_review`, `python_implementation_flow`
 - repository: `doc_ship`, `retro`, `knowledge_ontology_management`,
   `consultation_research_mapping`, `judgment_log`, `skill_flow_authoring`,
   `goal_mode`, `pptx_spec_traceability`, `xlsx_spec_traceability`,
   `investigation_flow`, `estimation_flow`, `requirements_flow`,
   `planning_flow`, `design_flow`, `db_current_state_analysis`,
   `db_design`, `test_flow`, `test_tool_catalog_preparation`, `implementation_flow`,
+  `python_implementation_flow`,
   `manufacturing_self_check`, `qa_gate_review`, `security_review`,
   `release_planning_flow`, `cab_review_flow`,
   `editorial_ops_index`,

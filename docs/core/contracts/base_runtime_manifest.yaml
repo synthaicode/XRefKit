@@ -1,0 +1,121 @@
+schema: xrefkit.base_runtime/v1
+profile: model-compact
+compiler_version: 1
+approval:
+  status: accepted
+  owner: repository_owner
+  approved_on: 2026-07-10
+  reference: user-directed execution of design 087
+estimator:
+  id: chars_div_4
+  version: 1
+budgets:
+  l0_tokens: 2500
+  l1_tokens: 6000
+  selected_context_tokens: 12000
+sources:
+  - xid: 0B5C58B5E5B2
+    path: agent/000_agent_entry.md
+  - xid: 5A1C8E4D2F90
+    path: docs/core/models/017_base_and_xref_layering.md
+  - xid: 6C0B62D6366A
+    path: docs/core/contracts/011_startup_xref_routing.md
+  - xid: 8A666C1FD121
+    path: docs/core/contracts/016_uncertainty_protocol.md
+  - xid: A7F3C92D4E11
+    path: docs/core/contracts/053_context_direction_security_guard.md
+  - xid: 4A423E72D2ED
+    path: docs/core/contracts/015_shared_memory_operations.md
+  - xid: B7A2C94F0E61
+    path: docs/core/contracts/058_skill_operating_contract.md
+  - xid: C3A1F78D9B22
+    path: docs/core/contracts/080_xrefkit_startup_contract.md
+obligations:
+  - id: skill.os_contract_required
+    source_xid: 0B5C58B5E5B2
+    level: must
+    statement: New Skills include the Skill operating contract.
+    source_match: New skills MUST include the Skill operating contract
+  - id: skill.run_first
+    source_xid: 0B5C58B5E5B2
+    level: must
+    statement: Start Skill execution through the runtime envelope before loading the Skill body.
+    source_match: Skill execution MUST start
+  - id: skill.workitem_required
+    source_xid: 0B5C58B5E5B2
+    level: must
+    statement: Record concrete work items before closure.
+    source_match: Skill-backed work MUST add concrete task items
+  - id: skill.artifact_required
+    source_xid: 0B5C58B5E5B2
+    level: must
+    statement: Record output and evidence artifacts before closure.
+    source_match: Skill-backed work MUST record outputs and evidence
+  - id: skill.concern_required
+    source_xid: 0B5C58B5E5B2
+    level: must
+    statement: Record closure-relevant unknowns, risks, and judgments.
+    source_match: Skill-backed work MUST record closure-relevant unknowns
+  - id: skill.verify_separate
+    source_xid: 0B5C58B5E5B2
+    level: must
+    statement: Advance check through deterministic verification, not the producer context.
+    source_match: The check phase MUST be advanced deterministically
+  - id: work.log_required
+    source_xid: 0B5C58B5E5B2
+    level: must
+    statement: Write execution logs and retrospectives under work.
+    source_match: MUST write execution logs/retrospectives
+  - id: work.date_prefix
+    source_xid: 0B5C58B5E5B2
+    level: must
+    statement: Use date-prefixed work-record filenames.
+    source_match: MUST use date-prefixed filenames
+  - id: work.session_before_complete
+    source_xid: 0B5C58B5E5B2
+    level: must
+    statement: Update a session log before completion, commit, or push.
+    source_match: MUST create or update a `work/sessions/` log
+  - id: work.promote_stable
+    source_xid: 0B5C58B5E5B2
+    level: must
+    statement: Promote stabilized facts and decisions to canonical locations.
+    source_match: MUST promote stabilized decisions/facts
+  - id: uncertainty.explicit
+    source_xid: 8A666C1FD121
+    level: must
+    statement: Classify and expose material uncertainty, search Knowledge, and pause risky work.
+    source_match: When uncertain, AI MUST
+  - id: claims.no_unsupported_fact
+    source_xid: 8A666C1FD121
+    level: must
+    statement: Do not present unsupported claims as facts; expose the evidence gap and route material uncertainty through the uncertainty protocol.
+    source_match: No confident guesses presented as facts.
+  - id: memory.write
+    source_xid: 4A423E72D2ED
+    level: must
+    statement: Write logs after significant discussions, decisions, or work sessions.
+    source_match: AI MUST write logs automatically
+  - id: memory.session
+    source_xid: 4A423E72D2ED
+    level: must
+    statement: Ensure a work session entry exists before final response.
+    source_match: AI MUST ensure the current task has a `work/sessions/` entry
+  - id: memory.before_publish
+    source_xid: 4A423E72D2ED
+    level: must
+    statement: Update logs before commit or push.
+    source_match: AI MUST ensure logs are updated before
+  - id: memory.promote
+    source_xid: 4A423E72D2ED
+    level: must
+    statement: Promote stabilized work content into canonical docs or Knowledge.
+    source_match: AI MUST promote stabilized decisions/facts
+  - id: memory.filename
+    source_xid: 4A423E72D2ED
+    level: must
+    statement: Prefix work record filenames with the date.
+    source_match: Filename MUST be date-prefixed
+conditional_loads:
+  - xid: B7A2C94F0E61
+    when: skill_execution

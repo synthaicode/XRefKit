@@ -18,7 +18,7 @@ AI が参照する“知識”は `knowledge/` 側の Markdown（XID 付き断�
 
 1. `sources/` に元データを追加する（PDF/Excel/HTML など）
 2. 元データを読み、`knowledge/` に “1ページ=1断片” で Markdown を追加/更新する
-3. 変更の最後に `python -m fm xref init` / `rewrite` / `check` を回し、`issues: 0` にする
+3. 変更の最後に `python -m xrefkit xref init` / `rewrite` / `check` を回し、`issues: 0` にする
 
 ## 出典の書き方（推奨）
 
@@ -48,5 +48,5 @@ AI が参照する“知識”は `knowledge/` 側の Markdown（XID 付き断�
 
 ## AI の運用（重要）
 
-- AI は元データ全体を毎回読むのではなく、まず `knowledge/000_index.md` と `python -m fm xref search/show` で該当断片を探して読む
+- AI は元データ全体を毎回読むのではなく、まず `knowledge/000_index.md` と `python -m xrefkit xref search/show` で該当断片を探して読む
 - 元データが必要な時だけ、出典情報から `sources/` の該当箇所（ページ/シート/URL）を辿る

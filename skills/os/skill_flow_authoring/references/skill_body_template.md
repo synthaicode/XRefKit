@@ -53,7 +53,7 @@
 
 ## Monitoring and Control
 
-- <downgrade unsupported inference>
+- <Skill-specific evidence, state-transition, or scope-leak condition>
 - <stop and escalate condition>
 
 ## Closure

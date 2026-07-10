@@ -111,7 +111,7 @@ and [Skill maturity governance](../core/contracts/059_skill_maturity_governance.
    - For deterministic inventory and first-pass classification, run:
 
 ```powershell
-python -m fm skill merge-plan --source work/imports/<legacy-skill> --json
+python -m xrefkit skill merge-plan --source work/imports/<legacy-skill> --json
 ```
 
 3. Determine whether a current Skill already corresponds to the old Skill.
@@ -132,10 +132,10 @@ python -m fm skill merge-plan --source work/imports/<legacy-skill> --json
 Run:
 
 ```powershell
-python -m fm xref fix
-python -m fm skill check --scope all
-python -m fm pack lint
-python tools/run_quality_gate.py fm
+python -m xrefkit xref fix
+python -m xrefkit skill check --scope all
+python -m xrefkit pack lint
+python tools/run_quality_gate.py xrefkit
 ```
 
 When the imported Skill belongs to a pack, also confirm the pack manifest owns or
@@ -182,7 +182,7 @@ classification rather than guessing.
 The current deterministic command is report-only:
 
 ```powershell
-python -m fm skill merge-plan --source work/imports/<legacy-skill> --json
+python -m xrefkit skill merge-plan --source work/imports/<legacy-skill> --json
 ```
 
 It inventories the source, extracts XIDs, finds exact current Skill candidates,

@@ -40,8 +40,8 @@ Because auto-routing is not guaranteed, AI MUST use date-prefixed filenames.
    - `docs/` for operational/design policy
    - `knowledge/` for domain facts
 6. Add/normalize XIDs after promotion:
-   - `python -m fm xref init`
-   - `python -m fm xref fix`
+   - `python -m xrefkit xref init`
+   - `python -m xrefkit xref fix`
 7. Keep a short pointer in `work/` (moved-to path/date).
 
 ## Notes

@@ -45,7 +45,7 @@ Skill such as `source_structure_overview` for baseline current structure or
 
 ## Startup
 
-1. Start through `fm skill run`.
+1. Start through `xrefkit skill run`.
 2. Confirm the input analysis Markdown exists or the XID resolves.
 3. Confirm whether publication mode is `proposal_only` or `apply`.
 4. Use `apply` only when the user or active workflow authorizes canonical
@@ -60,11 +60,11 @@ Skill such as `source_structure_overview` for baseline current structure or
 1. Search for existing current findings before creating a new fragment:
 
 ```powershell
-python -m fm xref search "<target identity> <source scope> source structure findings"
-python -m fm xref search "<aliases> <framework or service name> <analysis kind>"
+python -m xrefkit xref search "<target identity> <source scope> source structure findings"
+python -m xrefkit xref search "<aliases> <framework or service name> <analysis kind>"
 ```
 
-2. Read only plausible candidate XIDs with `python -m fm xref show <XID>`.
+2. Read only plausible candidate XIDs with `python -m xrefkit xref show <XID>`.
 3. Decide one publication action:
    - `create`: no current finding owns the target/source-scope concept
    - `refresh`: an existing finding owns the concept and should stay current
@@ -116,8 +116,8 @@ python -m fm xref search "<aliases> <framework or service name> <analysis kind>"
   `knowledge/`.
 - In authorized `apply`, create or refresh the canonical finding under
   `knowledge/source_analysis/`, update
-  `knowledge/source_analysis/170_current_source_structure_findings_catalog.md`,
-  and update `knowledge/000_index.md` when a public fragment is created,
+  `knowledge/source_analysis/170_current_source_structure_findings_catalog.md#xid-A9E742B1C6D0`,
+  and update `knowledge/000_index.md#xid-23059118FBB9` when a public fragment is created,
   renamed, superseded, or removed.
 
 ## Monitoring and Control
@@ -150,9 +150,9 @@ Closure is allowed only when all of the following are recorded:
 For authorized `apply`, run:
 
 ```powershell
-python -m fm xref fix --include skills docs knowledge agent capabilities
+python -m xrefkit xref fix --include skills docs knowledge agent capabilities
 python skills/os/knowledge_ontology_management/scripts/validate_knowledge_relations.py
-python -m fm xref check --include skills docs knowledge agent capabilities
+python -m xrefkit xref check --include skills docs knowledge agent capabilities
 ```
 
 ## Handoff

@@ -83,7 +83,7 @@ The canonical, machine-checkable definition of a pack is its manifest at
 - `uses_*`: shared references that may live anywhere, including the OS core,
 - `depends_on.os_contract_version`: the OS-core contract the pack depends on.
 
-Validate manifests with `python -m fm pack lint`. The linter checks that owned
+Validate manifests with `python -m xrefkit pack lint`. The linter checks that owned
 assets resolve, that ownership is exclusive across packs, that an owned Skill
 does not live in the OS core, and that the declared OS-core contract version
 still matches the live contract.

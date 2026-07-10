@@ -1,0 +1,10 @@
+axis_id: xddp.unknown_visibility
+xid: xid-axis-xddp-unknown-visibility
+summary: Check whether missing evidence and unresolved decisions remain visible.
+checks:
+  - id: unknowns_listed
+    description: Missing evidence and unresolved decisions are listed.
+  - id: unknown_impact_present
+    description: Each unknown includes affected area and downstream impact.
+  - id: unknowns_not_silently_closed
+    description: Unresolved unknowns are not presented as normal completion.

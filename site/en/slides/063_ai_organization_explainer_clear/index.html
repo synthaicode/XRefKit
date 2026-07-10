@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Team Explainer Preview</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+    }
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 20px 48px;
+    }
+    h1 {
+      margin: 0 0 20px;
+      font-size: 28px;
+    }
+    .viewer {
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 16px;
+    }
+    img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: contain;
+      background: white;
+      border-radius: 6px;
+    }
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 14px;
+    }
+    button {
+      min-width: 92px;
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 6px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #475569;
+    }
+    .counter {
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+    .narration {
+      margin-top: 16px;
+      padding: 18px;
+      border-left: 5px solid #60a5fa;
+      background: #1e293b;
+      border-radius: 6px;
+      font-size: 18px;
+      line-height: 1.65;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>AI Team Explainer Preview</h1>
+    <section class="viewer">
+      <img id="slide" src="../../assets/063_ai_organization_explainer_clear/01_title_q.png" alt="" />
+      <div class="controls">
+        <button class="secondary" id="prev">Prev</button>
+        <button id="next">Next</button>
+        <button class="secondary" id="play">Play</button>
+        <span class="counter" id="counter"></span>
+      </div>
+      <div class="narration" id="narration"></div>
+    </section>
+  </main>
+  <script>
+    const slides = [
+      ["../../assets/063_ai_organization_explainer_clear/01_title_q.png", "Question: If we add AI, doesn't work simply get easier?"],
+      ["../../assets/063_ai_organization_explainer_clear/01_title.png", "Answer: It can. But used the wrong way, AI increases the management work on the human side. Today we will trace Prompt, Skill, domain knowledge, and AI Team, and separate the burden each step creates from the structure that solves it."],
+      ["../../assets/063_ai_organization_explainer_clear/02_team_definition_q.png", "Question: So what exactly is an AI Team?"],
+      ["../../assets/063_ai_organization_explainer_clear/02_team_definition.png", "Answer: An AI Team is an operating structure that fixes the Skill, domain knowledge, roles, checkpoints, and handoffs around a purpose. It packages the explaining, deciding, checking, and handoff work humans used to repeat every time."],
+      ["../../assets/063_ai_organization_explainer_clear/03_problem_q.png", "Question: Isn't a careful prompt enough?"],
+      ["../../assets/063_ai_organization_explainer_clear/03_problem.png", "Answer: It looks enough at first. But every run still asks a human to explain the goal, assumptions, constraints, and output format. If anything is missing, the result drifts. With prompts alone, humans become the explainer every time."],
+      ["../../assets/063_ai_organization_explainer_clear/04_work_q.png", "Question: If we use Skills, does it become stable?"],
+      ["../../assets/063_ai_organization_explainer_clear/04_work.png", "Answer: The repeated explanation decreases. But humans must now manage which Skill to use and whether the procedure fits the purpose. For example, scripting and voice production are Skills. What counts as a correct explanation must be decided separately."],
+      ["../../assets/063_ai_organization_explainer_clear/05_not_one_ai_q.png", "Question: If the procedure exists, why do we need domain knowledge?"],
+      ["../../assets/063_ai_organization_explainer_clear/05_not_one_ai.png", "Answer: A Skill is the way to proceed. Correctness depends on business terms, criteria, and constraints. Beginner-friendly explanation, exclusions, execution, and checking are not just steps. They are decision criteria, and that is domain knowledge."],
+      ["../../assets/063_ai_organization_explainer_clear/06_repository_q.png", "Question: If we share the knowledge, are we done?"],
+      ["../../assets/063_ai_organization_explainer_clear/06_repository.png", "Answer: No. Shared knowledge still has to be updated when the rules or assumptions change. If the knowledge is stale, AI keeps working from an old version of correctness. Organizations need ownership for maintaining knowledge."],
+      ["../../assets/063_ai_organization_explainer_clear/07_handoff_q.png", "Question: If we have the Skills and knowledge, does the work run?"],
+      ["../../assets/063_ai_organization_explainer_clear/07_handoff.png", "Answer: Not yet. Humans still have to connect research, decisions, production, and review each time. Unless sequence, responsibility, and handoff are fixed, humans keep carrying the coordination burden."],
+      ["../../assets/063_ai_organization_explainer_clear/08_or_team_q.png", "Question: This is where the AI Team comes in, right?"],
+      ["../../assets/063_ai_organization_explainer_clear/08_or_team.png", "Answer: Yes. An AI Team turns human coordination into structure. A producer creates, a checker catches omissions, records remain, and the work is handed to the next step. That complete flow is the Team."],
+      ["../../assets/063_ai_organization_explainer_clear/09_value_q.png", "Question: If AI forgets, can't humans just check?"],
+      ["../../assets/063_ai_organization_explainer_clear/09_value.png", "Answer: If humans must remember everything, they get exhausted and misses become likely. Work omissions, review omissions, and missing rationale are easy to overlook. That is why execution and checking should be separate roles."],
+      ["../../assets/063_ai_organization_explainer_clear/10_conclusion_q.png", "Question: Does this remove human work?"],
+      ["../../assets/063_ai_organization_explainer_clear/10_conclusion.png", "Answer: No. It changes the job from chasing everything to checking the points that matter. Purpose, execution, checking, records, and handoffs are fixed inside the team so humans can inspect the right places."],
+      ["../../assets/063_ai_organization_explainer_clear/11_before_after_q.png", "Question: What changes before and after adoption?"],
+      ["../../assets/063_ai_organization_explainer_clear/11_before_after.png", "Answer: Before, humans explain, decide, check, and hand work over every time. After, Skills, knowledge, checkpoints, responsibility, and handoffs are fixed in the AI Team. Humans no longer watch everything. They check the right points."],
+      ["../../assets/063_ai_organization_explainer_clear/12_license_q.png", "Question: So why is an AI Team necessary?"],
+      ["../../assets/063_ai_organization_explainer_clear/12_license.png", "Answer: Because the more AI is used, the more humans must explain, manage procedures, update knowledge, coordinate flow, and check work. An AI Team turns those burdens into roles, flow, and checkpoints, so the organization can handle AI work."]
+    ];
+    let index = 0;
+    let timer = null;
+    const slide = document.getElementById("slide");
+    const narration = document.getElementById("narration");
+    const counter = document.getElementById("counter");
+    function render() {
+      slide.src = slides[index][0];
+      narration.textContent = slides[index][1];
+      counter.textContent = `${index + 1} / ${slides.length}`;
+    }
+    document.getElementById("prev").onclick = () => {
+      index = Math.max(0, index - 1);
+      render();
+    };
+    document.getElementById("next").onclick = () => {
+      index = Math.min(slides.length - 1, index + 1);
+      render();
+    };
+    document.getElementById("play").onclick = () => {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+        return;
+      }
+      timer = setInterval(() => {
+        index = index >= slides.length - 1 ? 0 : index + 1;
+        render();
+      }, 8000);
+    };
+    render();
+  </script>
+</body>
+</html>

@@ -101,7 +101,7 @@ The business-intake pack owns:
 The AI Agent OS core owns:
 
 - startup entry and routing order
-- load gating through `fm skill run`
+- load gating through `xrefkit skill run`
 - work item, artifact, concern, and phase recording
 - execution / check / handoff separation
 - unknown / risk visibility
@@ -170,14 +170,14 @@ The intended runtime path is:
 
 The business-intake pack requires the following OS-core contract surface:
 
-- `fm skill run`
-- `fm skill workitem`
-- `fm skill artifact`
-- `fm skill concern`
-- `fm skill phase`
-- `fm skill close`
-- `fm xref search`
-- `fm xref show`
+- `xrefkit skill run`
+- `xrefkit skill workitem`
+- `xrefkit skill artifact`
+- `xrefkit skill concern`
+- `xrefkit skill phase`
+- `xrefkit skill close`
+- `xrefkit xref search`
+- `xrefkit xref show`
 
 If these operating controls change, the pack must be revalidated.
 

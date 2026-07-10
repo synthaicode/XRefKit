@@ -23,7 +23,7 @@ summary, ToDo extractor, employee ranking, or personality analysis.
 
 While this Skill remains `trial`, read both examples before analysis:
 
-- `examples/sample_input.normalized_messages.yaml`
+- `examples/sample_input.normalized_messages.yaml#xid-4884B84503CF`
 - `examples/sample_output.topic_branch_map.md`
 
 Use them as the minimum safety and interpretation boundary, not as factual

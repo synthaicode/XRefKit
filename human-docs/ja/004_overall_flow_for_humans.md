@@ -7,7 +7,7 @@
 
 現在はこれに加えて、AI の運用規約・知識の読み方・作業の境界もリポジトリ内で明示します。副次的なメリットとして、AI ベンダーごとに異なる「指示ファイル」や「ルールファイル」を個別に直接更新し続けなくても、共通の運用（XID・`knowledge/`・agent 契約）を中心に据えて運用できます。ツールが変わっても知識の保管場所と参照方法が揺れにくく、移植や乗り換えのコストを下げられます。
 
-運用の基本的な流れは、**`sources/`（原本） → `knowledge/`（抽出した断片） → Skill（知識を選んで使う） → `fm xref`（接続を保守） → CI（破綻検出）** です。
+運用の基本的な流れは、**`sources/`（原本） → `knowledge/`（抽出した断片） → Skill（知識を選んで使う） → `xrefkit xref`（接続を保守） → CI（破綻検出）** です。
 
 このページは、初めて使う人が「何をどこに置き、どんな順で作業するのか」を一枚で把握するための概要です。実際の作業は、(1)取り込み、(2)参照、(3)更新の 3 つに分けると理解しやすくなります。
 
@@ -18,7 +18,7 @@
 - `knowledge/`: 抽出結果の知識ベース（AIが読む正本）
   - 1ページ=1断片の Markdown にして XID を付ける
   - 各断片の末尾に出典（`sources/` のパス＋位置情報）を残す
-- `fm/`: Skill と知識の接続を壊さないために、XID 付与・リンク整合・検査を担保する補助 CLI
+- `xrefkit/`: Skill、知識、XID、実行ゲート、MCP を同じ規則で扱う Python パッケージ
 
 ポイントは、**人間が確認する対象（出典）は `sources/`**、**AI が参照する正本は `knowledge/`**、という役割分担です。AI は通常 `knowledge/` を中心に作業し、必要なときだけ断片の出典情報を手がかりに `sources/` を参照します。
 
@@ -41,9 +41,9 @@ XID は参照の主キーです。そのため、XID を変えることは単な
 4. 最後に整合性コマンドを実行する（ローカルで実行できる場合）
 
 ```powershell
-python -m fm xref init
-python -m fm xref rewrite
-python -m fm xref check
+python -m xrefkit xref init
+python -m xrefkit xref rewrite
+python -m xrefkit xref check
 ```
 
 完了条件は `issues: 0` です。
@@ -53,13 +53,13 @@ python -m fm xref check
 参照は「元データを総当たりで読む」ではなく、まず `knowledge/` の断片を探して読むのが基本です。
 
 1. まず `knowledge/000_index.md` を見る（入口）
-2. `python -m fm xref search "<query>"` で候補 XID を探す
-3. `python -m fm xref show <XID>` で必要な断片だけ読む
+2. `python -m xrefkit xref search "<query>"` で候補 XID を探す
+3. `python -m xrefkit xref show <XID>` で必要な断片だけ読む
 
 必要なら周辺もまとめて確認します。
 
 ```powershell
-python -m fm ctx pack --seed <XID> --depth 1 --out .xref/pack.md
+python -m xrefkit ctx pack --seed <XID> --depth 1 --out .xref/pack.md
 ```
 
 ### 3) 更新（既存ドキュメントを直す・再編する）

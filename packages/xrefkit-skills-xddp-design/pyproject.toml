@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xrefkit-skills-xddp-design"
+version = "0.1.0"
+description = "Text-only XRefKit XDDP design Skill Package"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "xrefkit>=2.0,<3.0"
+]
+
+[project.entry-points."xrefkit.skill_packages"]
+xddp_design = "xrefkit_skills_xddp_design:package_root"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"xrefkit_skills_xddp_design" = [
+  "package_manifest.yaml",
+  "skills/*.yaml",
+  "skills/**/*.md",
+  "knowledge/*.md",
+  "review_axes/*.yaml",
+  "schemas/*.json"
+]

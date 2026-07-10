@@ -18,8 +18,8 @@
 ## 参照の取り方（固定手順）
 
 1. 入口（`docs/000_index.md`）を読む
-2. `python -m fm xref search "<query>"` で候補 XID を出す
-3. `python -m fm xref show <XID>` で必要なページだけ読む
+2. `python -m xrefkit xref search "<query>"` で候補 XID を出す
+3. `python -m xrefkit xref show <XID>` で必要なページだけ読む
 
 ## Skill 実行時における xref の役割
 

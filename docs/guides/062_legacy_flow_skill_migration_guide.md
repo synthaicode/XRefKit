@@ -100,8 +100,8 @@ Reasons:
    `knowledge/`
 6. remove `checker`, `quality_reviewer`, and `handoff_owner` from
    `role_responsibilities`; keep only the Skill-specific `executor` entry
-7. validate with `python -m fm xref fix`
-8. validate the new target with `python -m fm skill check --level trial`
+7. validate with `python -m xrefkit xref fix`
+8. validate the new target with `python -m xrefkit skill check --level trial`
 
 ## Related
 

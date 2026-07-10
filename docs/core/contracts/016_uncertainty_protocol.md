@@ -27,7 +27,7 @@ When uncertain, AI MUST:
 
 1. State uncertainty explicitly.
 2. Classify it as knowledge gap or context gap.
-3. For a knowledge gap: search domain knowledge first via `python -m fm xref search "<query>"`.
+3. For a knowledge gap: search domain knowledge first via `python -m xrefkit xref search "<query>"`.
    - If a relevant fragment is found: present the XID, the matched content, and how it resolves the unknown, then ask for human permission before proceeding.
    - If no relevant fragment is found: proceed to step 4.
 4. List the minimum information needed to proceed.

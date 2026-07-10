@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from fm.ownership import OwnershipError, load_ownership, validate_ownership
+from xrefkit.ownership import OwnershipError, load_ownership, validate_ownership
 
 
 OWNERSHIP = """\

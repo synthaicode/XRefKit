@@ -54,4 +54,4 @@ foreach ($name in $files) {
 
 - HTML 8 枚生成
 - PNG 8 枚生成
-- `python -m fm xref fix` 通過
+- `python -m xrefkit xref fix` 通過

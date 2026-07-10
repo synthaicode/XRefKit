@@ -18,7 +18,7 @@ For the repository purpose and operating model, see [Overview](000_overview.md#x
   - `docs/reference/`: Reference definitions, source handling, naming conventions, matrices, and baselines
   - `docs/assets/`: Shared non-Markdown documentation assets such as diagrams and PDFs
 - `agent/`: Agent entry + operational contract (keep L0 short and stable)
-- `fm/`: CLI implementation (`python -m fm ...`)
+- `xrefkit/`: installable runtime, CLI, resolver, tools registry, and MCP adapter
 - `knowledge/`: Shared domain knowledge fragments
 - `skills/`: Executable procedures and routing index
 - `sources/`: Original materials (PDF/Excel/Web snapshots, etc.) kept in-repo for human review
@@ -55,7 +55,7 @@ For the repository purpose and operating model, see [Overview](000_overview.md#x
 │  ├─ reference/  # Definitions, conventions, matrices, and baselines
 │  └─ assets/     # Non-Markdown documentation assets
 ├─ agent/         # Agent entry/contract (XID-managed)
-├─ fm/            # CLI implementation
+├─ xrefkit/       # installable runtime and integrated MCP adapter
 ├─ knowledge/     # Shared domain knowledge
 ├─ skills/        # Executable skills
 ├─ sources/       # Original materials (PDF/Excel/Web)

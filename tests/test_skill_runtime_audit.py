@@ -4,8 +4,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from fm.__main__ import main
-from fm.skillmeta import GUARD_CAPABILITY_REF, GUARD_KNOWLEDGE_REF, REQUIRED_OS_CONTRACT, SKILL_RUNTIME_CAPABILITY_REF
+from xrefkit.__main__ import main
+from xrefkit.skillmeta import GUARD_CAPABILITY_REF, GUARD_KNOWLEDGE_REF, REQUIRED_OS_CONTRACT, SKILL_RUNTIME_CAPABILITY_REF
 from tools.audit_skill_runtime_logs import audit_skill_runtime_logs
 
 
@@ -92,7 +92,7 @@ class SkillRuntimeAuditTests(unittest.TestCase):
             )
             for artifact_id, kind, target, role in (
                 ("OUT-001", "output", "docs/output.md", "sample_skill:executor"),
-                ("EVD-001", "evidence", "python tools/run_quality_gate.py fm", "sample_skill:checker"),
+                ("EVD-001", "evidence", "python tools/run_quality_gate.py xrefkit", "sample_skill:checker"),
             ):
                 self.assertEqual(
                     0,
@@ -169,7 +169,7 @@ class SkillRuntimeAuditTests(unittest.TestCase):
             if with_artifacts:
                 for artifact_id, kind, target, role in (
                     ("OUT-001", "output", "docs/output.md", "sample_skill:executor"),
-                    ("EVD-001", "evidence", "python tools/run_quality_gate.py fm", "sample_skill:checker"),
+                    ("EVD-001", "evidence", "python tools/run_quality_gate.py xrefkit", "sample_skill:checker"),
                 ):
                     self.assertEqual(
                         0,
@@ -239,7 +239,7 @@ class SkillRuntimeAuditTests(unittest.TestCase):
             )
             artifacts = [
                 ("OUT-001", "output", "docs/output.md", "sample_skill:executor"),
-                ("EVD-001", "evidence", "python tools/run_quality_gate.py fm", "sample_skill:checker"),
+                ("EVD-001", "evidence", "python tools/run_quality_gate.py xrefkit", "sample_skill:checker"),
             ]
             if with_quality:
                 artifacts.append(("QC-001", "check", "output meets acceptance criteria", "sample_skill:quality_reviewer"))
@@ -333,7 +333,7 @@ class SkillRuntimeAuditTests(unittest.TestCase):
             log_text = out.read_text(encoding="utf-8")
 
             self.assertIn(
-                "- checker_context: `deterministic_fm_verification`",
+                "- checker_context: `deterministic_xrefkit_verification`",
                 log_text,
             )
             self.assertIn("- executor_context: `current_context_allowed`", log_text)
@@ -358,7 +358,7 @@ class SkillRuntimeAuditTests(unittest.TestCase):
 
             self.assertFalse(result.ok)
             self.assertEqual(1, result.checked)
-            self.assertIn("work/sessions/bad.md: missing fm skill run load gate", result.errors)
+            self.assertIn("work/sessions/bad.md: missing xrefkit skill run load gate", result.errors)
 
     def test_audit_rejects_unclosed_skill_run_log(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

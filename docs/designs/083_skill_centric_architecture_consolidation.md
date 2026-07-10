@@ -28,7 +28,7 @@ overlay assigning ownership. Each layer had a rationale. Three shifts hollowed
 several of them:
 
 1. **Determinism moved to the generic workflow protocol** — the per-Skill run
-   envelope (`fm skill run/phase/verify/close`, `workflow_protocol: required`),
+   envelope (`xrefkit skill run/phase/verify/close`, `workflow_protocol: required`),
    not to specific flow definitions. Determinism is a property of the protocol;
    a Skill's internal processing and the selection of what to run are
    non-deterministic judgment.
@@ -121,7 +121,7 @@ consistent and preserve the audit-facing inventory of abilities.
 ### D3. `role_responsibilities` is removed from Skill meta
 
 Every Skill is the executor. The checker is the deterministic protocol
-(`fm skill verify`, context-independent by construction), never a Skill-authored
+(`xrefkit skill verify`, context-independent by construction), never a Skill-authored
 role. With the executor/checker distinction absent on the Skill side, recording
 it conveys nothing.
 
@@ -217,13 +217,13 @@ determinism lived.
 | Step | Change | Surface |
 | --- | --- | --- |
 | 1 | Adopt this direction; supersede 052 and rewrite 031 to the triad-as-meta + routing model | docs |
-| 2 | Remove `role_responsibilities` from meta; drop the requirement in 058 / `fm skill check` | skills, contract, code |
+| 2 | Remove `role_responsibilities` from meta; drop the requirement in 058 / `xrefkit skill check` | skills, contract, code |
 | 3 | Move capability Preconditions/Trigger/IO/Constraints onto Skill meta; replace `capabilities/` with a vocabulary registry | skills, capabilities/, code |
 | 4 | Delete `flows/*.yaml` and `docs/workflows/`; move sequencing to Skill preconditions; repoint/retire MCP `list_workflows` / `_build_workflows` and the kernel's flow-execution parts | flows, docs, MCP, kernel |
 | 5 | Remove the Group overlay (`040`/`041`/`021`, group-keyed `042`–`044`) and group owners in any remaining flow/skill references | docs, skills |
 | 6 | Naming cleanup: "workflow protocol" / "flow control kernel" retain "flow" but now mean generic per-Skill control; reconcile the naming after flow-definition removal | docs, code |
 
-Each step keeps `python -m fm xref check` clean and resolves references before
+Each step keeps `python -m xrefkit xref check` clean and resolves references before
 deleting targets, as done for the team-doc removal.
 
 ## Relationship to the Earlier `docs/` Cleanup

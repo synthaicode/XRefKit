@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "xrefkit.skills.csharp.error_policy_report",
+  "type": "object",
+  "required": ["error_policy_inventory", "disposition_matrix", "contradictions", "coverage_limits", "used_xids"],
+  "properties": {
+    "error_policy_inventory": {"type": "array"},
+    "disposition_matrix": {"type": "object"},
+    "contradictions": {"type": "array"},
+    "coverage_limits": {"type": "array"},
+    "used_xids": {"type": "array", "items": {"type": "string"}}
+  }
+}

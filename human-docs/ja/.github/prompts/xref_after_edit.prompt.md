@@ -8,15 +8,15 @@
 2. 変更後、次を順に実行する
 
 ```powershell
-python -m fm xref init
-python -m fm xref rewrite
-python -m fm xref check --review
+python -m xrefkit xref init
+python -m xrefkit xref rewrite
+python -m xrefkit xref check --review
 ```
 
 3. `xref init` により XID が付与された（=XID 一覧が変わった）場合のみ、索引用の一覧を再生成する（任意）
 
 ```powershell
-python -m fm xref index > .xref/xid-index.json
+python -m xrefkit xref index > .xref/xid-index.json
 ```
 
 4. `xref check` が失敗したら、出力に従ってリンクを修正し、再度 `rewrite` / `check` を通す
@@ -26,9 +26,9 @@ python -m fm xref index > .xref/xid-index.json
 内容の意味が大きく変わり、XID を分けるべきだと判断した場合は、旧ページを消さずに後継ページへ誘導する。
 
 ```powershell
-python -m fm xref deprecate <OLD_XID> <NEW_XID> --note "変更理由（任意）"
-python -m fm xref rewrite
-python -m fm xref check --review
+python -m xrefkit xref deprecate <OLD_XID> <NEW_XID> --note "変更理由（任意）"
+python -m xrefkit xref rewrite
+python -m xrefkit xref check --review
 ```
 
 ## 注意

@@ -7,14 +7,14 @@
 1. 現状を確認する
 
 ```powershell
-python -m fm xref check
+python -m xrefkit xref check
 ```
 
 2. 改名/移動が原因なら、まず機械的に回復する
 
 ```powershell
-python -m fm xref rewrite
-python -m fm xref check
+python -m xrefkit xref rewrite
+python -m xrefkit xref check
 ```
 
 3. まだ壊れている場合は、`xref check` の指摘に従ってリンクを修正する

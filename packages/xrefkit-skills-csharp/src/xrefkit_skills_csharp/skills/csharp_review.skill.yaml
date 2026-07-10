@@ -1,0 +1,66 @@
+skill_id: csharp.review
+xid: xid-skill-csharp-review
+role: base_skill_contract
+
+entry:
+  xid: xid-entry-csharp-review
+  path: skills/csharp_review/entry.md
+  load_policy: required_inline
+
+required_fragments:
+  - id: evidence_required
+    xid: xid-fragment-csharp-review-evidence-required
+    path: skills/csharp_review/fragments/evidence_required.md
+    load_policy: required_inline
+  - id: handoff_required
+    xid: xid-fragment-csharp-review-handoff-required
+    path: skills/csharp_review/fragments/handoff_required.md
+    load_policy: required_inline
+
+branches:
+  - id: async_synchronization
+    xid: xid-branch-csharp-review-async-synchronization
+    path: skills/csharp_review/branches/async_synchronization.md
+    condition:
+      any_intent:
+        - async hang
+        - synchronization bug
+        - fake clock wait
+    load_policy: on_demand
+  - id: error_handling
+    xid: xid-branch-csharp-review-error-handling
+    path: skills/csharp_review/branches/error_handling.md
+    condition:
+      any_intent:
+        - exception handling
+        - error policy
+        - catch block
+    load_policy: on_demand
+
+required_outputs:
+  - findings
+  - evidence
+  - unknowns
+  - used_xids
+  - handoffs
+
+required_knowledge:
+  - xid-knowledge-csharp-review-spec
+
+review_axes:
+  - xid-axis-csharp-review-findings
+  - xid-axis-csharp-evidence-coverage
+
+schemas:
+  - xid-schema-csharp-review
+
+must_not:
+  - report_roslyn_diagnostics_as_primary_findings
+  - infer_runtime_behavior_without_source
+  - omit_evidence_paths
+  - weaken_core_contract
+
+extension_policy:
+  can_be_extended_by_local_skill: true
+  local_can_weaken_required_outputs: false
+  local_can_override_must_not: false

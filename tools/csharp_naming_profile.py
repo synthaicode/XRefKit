@@ -1,3 +1,5 @@
+# xid: 2FA1A52CFEE6
+
 """Extract the de-facto C# naming conventions from an existing (brownfield)
 codebase so new code can match what is already there.
 

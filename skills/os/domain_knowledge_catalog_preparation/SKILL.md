@@ -60,7 +60,7 @@ MCP configuration.
 
 ## Startup
 
-1. Start through `fm skill run`.
+1. Start through `xrefkit skill run`.
 2. Confirm the MCP/domain-knowledge root configuration is available.
 3. Confirm whether a selected Skill's `knowledge_inputs` should be used to
    filter or rank the catalog.
@@ -159,7 +159,7 @@ Closure is allowed only when all of the following are recorded:
 Run:
 
 ```powershell
-python -m fm xref fix
+python -m xrefkit xref fix
 ```
 
 When implementation-side catalog tooling exists, also run the MCP/catalog

@@ -192,7 +192,7 @@ def render() -> None:
         [
             ("人間が決める", ["方向性", "優先順位", "許容tradeoff", "承認 / 差し戻し"], AMBER),
             ("AIが変更する", ["Skill修正", "Knowledge追加", "Guard調整", "Quality Gate調整"], BLUE),
-            ("検証する", ["fm xref fix", "Skill verify", "テスト", "Dashboard確認"], GREEN),
+            ("検証する", ["xrefkit xref fix", "Skill verify", "テスト", "Dashboard確認"], GREEN),
             ("次の判断へ", ["結果を見る", "未解決を残す", "必要なら再指示"], PURPLE),
         ],
         "AIが方針を独断で決めるのではなく、人間の判断を実装作業へ落とす。",

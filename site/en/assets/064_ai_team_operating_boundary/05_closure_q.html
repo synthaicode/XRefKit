@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <style>:root {
+  --bg: #f8f9fa;
+  --ink: #111827;
+  --muted: #4b5563;
+  --line: #cbd5e1;
+  --blue: #1d4ed8;
+  --blue-soft: #dbeafe;
+  --teal: #0f766e;
+  --teal-soft: #ccfbf1;
+  --amber: #b45309;
+  --amber-soft: #fef3c7;
+  --red: #b91c1c;
+  --red-soft: #fee2e2;
+  --green: #047857;
+  --green-soft: #d1fae5;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Inter", "Noto Sans JP", sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+.canvas {
+  width: 1600px;
+  height: 900px;
+  padding: 56px 72px 64px;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.kicker {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+h1 {
+  margin: 24px 0 18px;
+  max-width: 1260px;
+  font-size: 66px;
+  line-height: 1.1;
+  letter-spacing: 0;
+  font-weight: 900;
+}
+
+.lead {
+  margin: 0;
+  max-width: 1160px;
+  color: var(--muted);
+  font-size: 34px;
+  line-height: 1.42;
+  font-weight: 700;
+}
+
+.stage {
+  margin-top: 34px;
+}
+
+.dialogue-grid {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: 28px;
+}
+
+.dialogue-grid.question-only {
+  grid-template-columns: 1fr;
+  max-width: 1040px;
+}
+
+.bubble {
+  min-height: 360px;
+  padding: 28px 30px;
+  border-radius: 18px;
+  border: 3px solid var(--line);
+  background: #fff;
+}
+
+.bubble.question {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.bubble.answer {
+  border-color: #99f6e4;
+  background: #f0fdfa;
+}
+
+.card-label {
+  display: inline-flex;
+  min-width: 48px;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--ink);
+  color: white;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.bubble h2 {
+  margin: 18px 0 14px;
+  font-size: 46px;
+  line-height: 1.16;
+}
+
+.bubble p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 31px;
+  line-height: 1.42;
+}
+
+.summary {
+  margin-top: 28px;
+  padding: 18px 22px;
+  border-left: 4px solid #2563eb;
+  background: #eff6ff;
+  color: var(--ink);
+  font-size: 28px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 26px;
+}
+
+.card {
+  min-height: 320px;
+  padding: 24px 26px;
+  border-radius: 18px;
+  border: 3px solid var(--line);
+  background: white;
+}
+
+.card h2 {
+  margin: 0 0 14px;
+  font-size: 40px;
+  line-height: 1.18;
+}
+
+.card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 28px;
+  line-height: 1.38;
+}
+
+.card.blue { border-color: #93c5fd; background: #eff6ff; }
+.card.red { border-color: #fca5a5; background: #fef2f2; }
+.card.green { border-color: #86efac; background: #f0fdf4; }
+.card.amber { border-color: #fcd34d; background: #fffbeb; }
+.card.teal { border-color: #5eead4; background: #f0fdfa; }
+
+.stack {
+  display: grid;
+  gap: 18px;
+}
+
+.stack-row {
+  display: grid;
+  grid-template-columns: 240px 1fr 240px;
+  gap: 18px;
+  align-items: center;
+}
+
+.pill {
+  min-height: 86px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  border: 3px solid var(--line);
+  background: white;
+  font-size: 30px;
+  font-weight: 800;
+  text-align: center;
+  padding: 12px 14px;
+}
+
+.pill.blue { border-color: #93c5fd; background: #eff6ff; }
+.pill.teal { border-color: #5eead4; background: #f0fdfa; }
+.pill.red { border-color: #fca5a5; background: #fef2f2; }
+.pill.green { border-color: #86efac; background: #f0fdf4; }
+
+.arrow {
+  min-height: 74px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #e2e8f0;
+  color: var(--ink);
+  font-size: 24px;
+  font-weight: 800;
+  text-align: center;
+  padding: 10px 14px;
+}
+
+.levels {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.level {
+  min-height: 340px;
+  padding: 22px;
+  border-radius: 18px;
+  border: 3px solid var(--line);
+  background: white;
+}
+
+.level .tag {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: white;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.level h2 {
+  margin: 16px 0 12px;
+  font-size: 38px;
+  line-height: 1.14;
+}
+
+.level p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 26px;
+  line-height: 1.36;
+}
+
+.closing-grid {
+  display: grid;
+  grid-template-columns: 1.08fr 0.92fr;
+  gap: 28px;
+}
+
+.big-card {
+  min-height: 420px;
+  padding: 30px 32px;
+  border-radius: 20px;
+  border: 3px solid #93c5fd;
+  background: #eff6ff;
+}
+
+.big-card h2 {
+  margin: 0 0 16px;
+  font-size: 52px;
+  line-height: 1.14;
+}
+
+.big-card p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 32px;
+  line-height: 1.42;
+}
+
+.checklist {
+  display: grid;
+  gap: 14px;
+}
+
+.check-item {
+  min-height: 82px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  border: 3px solid #86efac;
+  background: #f0fdf4;
+  font-size: 28px;
+  line-height: 1.3;
+  font-weight: 800;
+}
+</style>
+</head>
+<body>
+  <main class="canvas">
+    <div class="kicker">Closure discipline</div>
+    <h1>Closure gate means the run cannot declare success by optimism</h1>
+    
+    <section class="stage">
+  <div class="dialogue-grid question-only">
+    <div class="bubble question">
+      <div class="card-label">Q</div>
+      <h2>Why do we need an explicit closure gate?</h2>
+      <p>Because incomplete evidence, unresolved concerns, and skipped checks otherwise vanish into a casual “done.”</p>
+    </div>
+    
+  </div></section>
+    <div class="summary">Closure is a control point, not a formatting step</div>
+  </main></body>
+</html>

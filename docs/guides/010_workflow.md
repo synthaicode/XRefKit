@@ -9,10 +9,10 @@
 - Cross-file references must use links that include `#xid-<XID>`
 - Metadata and manifest references written as `path.md#xid-<XID>` are also
   rewritten and path-validated; fenced examples are not rewritten
-- After rename/move/split/merge, run `python -m fm xref rewrite`
-- Continuously validate with `python -m fm xref check` (e.g., in CI)
-- For one-shot maintenance, use `python -m fm xref fix` (runs init + rewrite + check)
-- For human review hints during updates, use `python -m fm xref check --review` (best-effort)
+- After rename/move/split/merge, run `python -m xrefkit xref rewrite`
+- Continuously validate with `python -m xrefkit xref check` (e.g., in CI)
+- For one-shot maintenance, use `python -m xrefkit xref fix` (runs init + rewrite + check)
+- For human review hints during updates, use `python -m xrefkit xref check --review` (best-effort)
 - When creating new documents, follow the existing format conventions, character encoding, and encoding form used in the surrounding repository area unless an intentional change is required
 - When editing source files, preserve the existing format conventions, character encoding, and encoding form unless an intentional change is required
 - When adding entries to XML, preserve the existing semantic grouping and insert entries in the structurally appropriate location instead of appending mechanically to the end
@@ -21,8 +21,8 @@
 ## Fixed procedure for any AI using this repo
 
 1. Read the entry index: `docs/000_index.md`
-2. Find candidate pages: `python -m fm xref search "<query>"` and list the XIDs to read
-3. Read only what you need: `python -m fm xref show <XID>`
+2. Find candidate pages: `python -m xrefkit xref search "<query>"` and list the XIDs to read
+3. Read only what you need: `python -m xrefkit xref show <XID>`
 4. Do the work and record the XIDs you referenced in the work log
 
 When a running skill needs additional domain knowledge, use the same route on demand:
@@ -34,8 +34,8 @@ When a running skill needs additional domain knowledge, use the same route on de
 
 1. Add a Markdown file under `docs/`, `agent/`, `knowledge/`, `capabilities/`, or `skills/`
 2. Follow the existing format conventions, character encoding, and encoding form used by nearby managed files unless the task explicitly requires a controlled change
-3. Assign XIDs: `python -m fm xref init`
-4. If needed: `python -m fm xref rewrite`
+3. Assign XIDs: `python -m xrefkit xref init`
+4. If needed: `python -m xrefkit xref rewrite`
 
 ### Ingest sources (PDF/Excel/Web → knowledge)
 
@@ -46,7 +46,7 @@ Store originals under `sources/` so humans can always verify them. Treat `knowle
 3. Run consistency steps
 
 ```powershell
-python -m fm xref fix
+python -m xrefkit xref fix
 ```
 
 Details: [Sources](../reference/020_sources.md#xid-2FAD591BF725)
@@ -54,13 +54,13 @@ Details: [Sources](../reference/020_sources.md#xid-2FAD591BF725)
 ### Let the AI write managed docs (recommended)
 
 - Let the AI write normal Markdown (no need to invent XIDs)
-- After generation, run `python -m fm xref init` to assign XIDs
+- After generation, run `python -m xrefkit xref init` to assign XIDs
 - From then on, use `...#xid-...` managed links
 
 ### Rename / move
 
 - Never remove `<!-- xid: ... -->` and `<a id="xid-..."></a>`
-- After changes: `python -m fm xref rewrite`
+- After changes: `python -m xrefkit xref rewrite`
 
 ### Edit structured source files
 
@@ -85,14 +85,14 @@ Use this checklist whenever an edit touches XML or JSON:
 ### Split
 
 - Keep the original file’s XID in the original file (preserve existing links)
-- New split-out files get new XIDs via `python -m fm xref init`
-- After rewiring references: `python -m fm xref rewrite`
+- New split-out files get new XIDs via `python -m xrefkit xref init`
+- After rewiring references: `python -m xrefkit xref rewrite`
 
 ### Merge
 
 - Keep the XID of the page with more inbound references
 - Before deleting anything, repoint references to the surviving page
-- Only delete when `python -m fm xref check` reports `broken_xref: 0`
+- Only delete when `python -m xrefkit xref check` reports `broken_xref: 0`
 
 ### Semantic change (switch to a new XID)
 
@@ -102,14 +102,14 @@ If keeping the same XID would turn the page into “a different thing”, do not
 2. Record old→new relationship:
 
 ```powershell
-python -m fm xref deprecate <OLD_XID> <NEW_XID> --note "reason (optional)"
+python -m xrefkit xref deprecate <OLD_XID> <NEW_XID> --note "reason (optional)"
 ```
 
 3. Verify consistency:
 
 ```powershell
-python -m fm xref rewrite
-python -m fm xref check --review
+python -m xrefkit xref rewrite
+python -m xrefkit xref check --review
 ```
 
-`python -m fm xref check` and `python -m fm xref fix` return exit code `1` when issues are found.
+`python -m xrefkit xref check` and `python -m xrefkit xref fix` return exit code `1` when issues are found.

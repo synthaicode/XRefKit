@@ -1,3 +1,5 @@
+# xid: 4F003AE89B45
+
 """On-demand report over the deterministic declaration/signature inventory.
 
 Mechanism D (signature/declaration facts) of the structure-analysis determinism

@@ -1,0 +1,110 @@
+package_id: xrefkit.skills.csharp
+package_type: skill_package
+version: 0.1.0
+
+requires:
+  xrefkit_core: ">=2.0.0 <3.0.0"
+
+provides:
+  skills:
+    - id: csharp.review
+      xid: xid-skill-csharp-review
+      path: skills/csharp_review.skill.yaml
+      contract_role: base_skill
+      required_outputs:
+        - findings
+        - evidence
+        - unknowns
+        - used_xids
+        - handoffs
+      required_knowledge:
+        - xid-knowledge-csharp-review-spec
+      required_review_axes:
+        - xid-axis-csharp-review-findings
+        - xid-axis-csharp-evidence-coverage
+      must_not:
+        - report_roslyn_diagnostics_as_primary_findings
+        - infer_runtime_behavior_without_source
+        - omit_evidence_paths
+        - weaken_core_contract
+
+    - id: dotnet.change_analysis
+      xid: xid-skill-dotnet-change-analysis
+      path: skills/dotnet_change_analysis.skill.yaml
+      contract_role: supporting_skill
+      required_outputs:
+        - structure_summary
+        - impact_boundaries
+        - unknowns
+        - used_xids
+        - handoffs
+      required_knowledge:
+        - xid-knowledge-dotnet-change-analysis-viewpoints
+      required_review_axes:
+        - xid-axis-csharp-evidence-coverage
+      must_not:
+        - decide_implementation_policy
+        - emit_defect_review_findings
+        - omit_unknowns
+        - weaken_core_contract
+
+    - id: csharp.error_policy_extraction
+      xid: xid-skill-csharp-error-policy-extraction
+      path: skills/csharp_error_policy_extraction.skill.yaml
+      contract_role: supporting_skill
+      required_outputs:
+        - error_policy_inventory
+        - disposition_matrix
+        - contradictions
+        - coverage_limits
+        - used_xids
+      required_knowledge:
+        - xid-knowledge-csharp-error-policy-patterns
+      required_review_axes:
+        - xid-axis-csharp-error-policy-coverage
+      must_not:
+        - decide_desired_error_policy
+        - claim_exhaustive_omission_policy_coverage
+        - omit_coverage_limits
+        - weaken_core_contract
+
+  knowledge:
+    - id: csharp.review_spec
+      xid: xid-knowledge-csharp-review-spec
+      path: knowledge/csharp_review_spec.md
+    - id: dotnet.change_analysis_viewpoints
+      xid: xid-knowledge-dotnet-change-analysis-viewpoints
+      path: knowledge/dotnet_change_analysis_viewpoints.md
+    - id: csharp.error_policy_patterns
+      xid: xid-knowledge-csharp-error-policy-patterns
+      path: knowledge/csharp_error_policy_patterns.md
+
+  review_axes:
+    - id: csharp.review_findings
+      xid: xid-axis-csharp-review-findings
+      path: review_axes/csharp_review_findings.yaml
+    - id: csharp.evidence_coverage
+      xid: xid-axis-csharp-evidence-coverage
+      path: review_axes/evidence_coverage.yaml
+    - id: csharp.error_policy_coverage
+      xid: xid-axis-csharp-error-policy-coverage
+      path: review_axes/error_policy_coverage.yaml
+
+  schemas:
+    - id: csharp.review
+      xid: xid-schema-csharp-review
+      path: schemas/csharp_review.schema.json
+    - id: dotnet.change_analysis
+      xid: xid-schema-dotnet-change-analysis
+      path: schemas/dotnet_change_analysis.schema.json
+    - id: csharp.error_policy_report
+      xid: xid-schema-csharp-error-policy-report
+      path: schemas/error_policy_report.schema.json
+
+contract:
+  can_be_extended_by_local_skill: true
+  local_skill_can_weaken_contract: false
+  local_can_weaken_required_outputs: false
+  local_can_override_must_not: false
+  requires_unknown_declaration: true
+  requires_traceability: true

@@ -55,7 +55,7 @@ conditions. It is not a test plan, test design, or test execution result.
 
 ## Startup
 
-1. Start through `fm skill run`.
+1. Start through `xrefkit skill run`.
 2. Confirm the target domain, environment set, test levels, and intended catalog
    consumers.
 3. Confirm whether the catalog must become canonical domain knowledge or only a
@@ -198,7 +198,7 @@ Closure is allowed only when all of the following are recorded:
 Run:
 
 ```powershell
-python -m fm xref fix
+python -m xrefkit xref fix
 ```
 
 If the catalog is published as canonical or external XID-bearing domain

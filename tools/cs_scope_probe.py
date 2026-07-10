@@ -1,3 +1,5 @@
+# xid: 60ABA6411E7B
+
 """Deterministic content probe: is C# in scope for this work?
 
 The Roslyn analyzer quality check (``collect_analyzer_sarif.py`` ->

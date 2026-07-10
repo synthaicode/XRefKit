@@ -1,0 +1,35 @@
+schema: xrefkit.source_structure_catalog/v1
+targets:
+  - target_xid: E9A4C7B2106A
+    name: Maverick.NET Friendbook sample
+    repository_identity: sourceforge:maverick-net-1.0
+    source_scope: Friendbook sample
+    target_kind: dotnet_sample
+    aliases: [Maverick.NET Friendbook]
+  - target_xid: E9A4C7B2106B
+    name: Modular Monolith with DDD
+    repository_identity: github:kgrzybek/modular-monolith-with-ddd
+    source_scope: repository
+    target_kind: dotnet_repository
+    aliases: [modular-monolith-with-ddd]
+findings:
+  - finding_xid: B4F8D2A91C03
+    target_xid: E9A4C7B2106A
+    title: Maverick.NET Friendbook XML-command structure findings
+    analysis_kinds: [dotnet_structure, custom_framework_xml_routing]
+    status: current
+    source_revision: source_snapshot_2026-07-03
+    last_verified: 2026-07-03
+    coverage: Structure pivots, route/usecase traces, implicit runtime bindings, and prohibited changes.
+    unresolved_verification: Build/runtime execution, browser verification, security assessment, and C# defect review remain out of scope.
+    detail_path: knowledge/source_analysis/171_maverick_net_friendbook_structure_findings.md
+  - finding_xid: D8F2A6C91B74
+    target_xid: E9A4C7B2106B
+    title: Modular Monolith with DDD API structure findings
+    analysis_kinds: [dotnet_structure, brownfield_api_naming, business_logic_api]
+    status: current
+    source_revision: 91c8ef24b4cb6ef558c95d8267fa07d68c7059f8
+    last_verified: 2026-07-04
+    coverage: Business-rich API surface, module boundaries, naming, external dependencies, and prohibited changes.
+    unresolved_verification: Runtime/API execution, database migration execution, security review, SQL parsing, and NuGet remediation remain out of scope.
+    detail_path: knowledge/source_analysis/172_modular_monolith_ddd_api_structure_findings.md

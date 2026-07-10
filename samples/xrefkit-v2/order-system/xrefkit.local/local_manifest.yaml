@@ -1,0 +1,28 @@
+local_id: project.order-system
+version: 0.1.0
+type: project_local
+
+requires:
+  xrefkit_core: ">=2.0.0 <3.0.0"
+  skill_packages:
+    - package_id: xrefkit.skills.xddp.design
+      version: ">=0.1.0 <1.0.0"
+
+mounts:
+  skills:
+    - path: skills/order_change_design.skill.yaml
+
+  knowledge:
+    - id: project.current_spec
+      xid: xid-project-order-current-spec
+      path: knowledge/current_spec.md
+
+  templates:
+    - id: project.change_design_report
+      xid: xid-template-project-order-change-design-report
+      path: templates/change_design_report.md
+
+merge_policy:
+  can_extend_core: true
+  can_weaken_core: false
+  can_weaken_pack_contract: false
