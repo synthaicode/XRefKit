@@ -43,6 +43,9 @@ Import an external skill into this repository while preserving the split model:
    references local Markdown or text files that should become XRefKit
    knowledge:
 
+   Single Skill mode takes the Skill directory itself. The directory may contain
+   `SKILL.md`, `skill.md`, `README.md`, or `readme.md`:
+
 ```powershell
 python tools/convert_to_xrefkit_skill.py <extracted_skill_dir> --skill-id <skill_id> --json
 ```
@@ -53,18 +56,26 @@ python tools/convert_to_xrefkit_skill.py <extracted_skill_dir> --skill-id <skill
    - It assigns XIDs when missing.
    - It rewrites Skill links to XID-backed `knowledge/` links.
    - It creates draft `meta.md` with `knowledge_slots` bound to imported XIDs.
-   - For a source tree with `skills/` and `knowledge/` subfolders, use batch
-     mode:
+
+   Batch mode takes the parent root that contains `skills/` and optional
+   `knowledge/`. Do not pass the `skills/` directory itself:
 
 ```powershell
 python tools/convert_to_xrefkit_skill.py <extracted_root> --batch --skill-id-prefix <prefix> --json
 ```
 
-   - Batch mode scans `<extracted_root>/skills/*` for Skill documents.
+   - Batch mode scans direct children of `<extracted_root>/skills/*` for Skill
+     documents.
+   - A child is treated as a Skill only when it contains `SKILL.md`,
+     `skill.md`, `README.md`, or `readme.md`.
+   - Only Markdown/TXT files linked from the Skill document are imported.
+     Unlinked files are not copied.
    - It imports shared references under
      `knowledge/imported_skills/<prefix>/`.
    - It creates private Skill directories as
      `skills_private/<prefix>.<source_skill_dir>/`.
+   - Existing XIDs in linked reference files are preserved; missing XIDs are
+     assigned.
 5. Create `skills/<skill_id>/SKILL.md` with behavior-only instructions when the
    converter is not sufficient or manual normalization is required.
 6. Create or rebuild `meta.md` using the current runtime rule:

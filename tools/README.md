@@ -84,6 +84,54 @@ Output is candidate-only; disposition and per-case approval stay downstream
 | `migrate_legacy_flow_skill.py` | migrate a legacy flow into the Flow/Capability/Skill model |
 | `convert_to_xrefkit_skill.py` | normalize external Skill directories or `skills/` + `knowledge/` trees into XRefKit Skill/Knowledge split form |
 
+### `convert_to_xrefkit_skill.py` usage
+
+Use this when importing file-based external Skills whose `SKILL.md`, `skill.md`,
+`README.md`, or `readme.md` links to local Markdown/TXT reference files that
+should become XRefKit Knowledge.
+
+Single Skill mode takes one Skill directory:
+
+```powershell
+python tools/convert_to_xrefkit_skill.py <external-skill-dir> --skill-id <skill_id> --json
+```
+
+Batch mode takes the parent root that contains `skills/` and optional
+`knowledge/`, not the `skills/` directory itself:
+
+```powershell
+python tools/convert_to_xrefkit_skill.py <external-root> --batch --skill-id-prefix <prefix> --json
+```
+
+For batch mode, the expected source shape is:
+
+```text
+<external-root>/
++-- skills/
+|   +-- alpha/
+|   |   +-- SKILL.md
+|   +-- beta/
+|       +-- skill.md
++-- knowledge/
+    +-- shared.md
+```
+
+The tool scans only direct children of `<external-root>/skills/`. A child is a
+Skill when it contains `SKILL.md`, `skill.md`, `README.md`, or `readme.md`.
+It imports only Markdown/TXT files that are directly linked from the Skill
+document. Unlinked files are left untouched.
+
+Default output is private draft content:
+
+```text
+skills_private/<skill_id-or-prefix.skill-folder>/
+knowledge/imported_skills/<skill_id-or-prefix>/
+```
+
+Existing canonical XIDs in linked reference files are preserved. Missing XIDs
+are assigned. Skill links are rewritten to `knowledge/...#xid-...`, and the
+generated `meta.md` receives `knowledge_slots` bound to the imported XIDs.
+
 ## Binding rules
 
 - **Greppable → grep.** The structure pack is opt-in per grep-weak question, never a

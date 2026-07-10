@@ -14,6 +14,7 @@ from xrefkit.mcp.catalog import (
     _conditional_document_response,
     _document_cache_policy,
 )
+from xrefkit.mcp.contracts import builtin_tool_contracts
 from xrefkit.mcp.schemas import ToolContract, XRefDocument
 
 
@@ -183,7 +184,7 @@ if __name__ == "__main__":
                 },
             ],
         )
-        self.assertTrue(all(tool.side_effects == "none" for tool in catalog.tools))
+        self.assertTrue(all(tool.side_effects in {"none", "audit_write"} for tool in catalog.tools))
         self.assertTrue(
             all(tool.to_dict()["input_json_schema"]["type"] == "object" for tool in catalog.tools)
         )
@@ -828,6 +829,39 @@ Duplicate external body.
 
         with self.assertRaises(ValueError):
             contract.validate()
+
+    def test_accepts_server_tool_with_audit_write_side_effect(self) -> None:
+        contract = ToolContract(
+            tool_id="audit.write",
+            provider="test",
+            version="1",
+            execution_location="server",
+            side_effects="audit_write",
+            input_schema={},
+            output_schema={},
+            requires_workspace=True,
+            required_when="audit correlation",
+        )
+
+        contract.validate()
+
+    def test_audit_writing_tools_declare_audit_write(self) -> None:
+        contracts = {contract.tool_id: contract for contract in builtin_tool_contracts()}
+        audit_tools = {
+            "xref.bind_skill_run",
+            "xref.end_skill_run",
+            "xref.search_knowledge_catalog",
+            "xref.expand_knowledge",
+            "xref.get_knowledge_summary",
+            "xref.get_document_by_xid",
+            "xref.build_knowledge_context",
+            "xref.get_skill",
+            "xref.rank_skills_for_purpose",
+        }
+
+        self.assertTrue(all(contracts[tool_id].side_effects == "audit_write" for tool_id in audit_tools))
+        self.assertEqual("none", contracts["xref.list_knowledge_catalog"].side_effects)
+        self.assertEqual("none", contracts["xref.list_skills"].side_effects)
 
     def test_startup_context_lists_base_control_references(self) -> None:
         catalog = XRefCatalog.build(self.repo)

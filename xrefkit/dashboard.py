@@ -12,6 +12,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
+from xrefkit.mcp.audit import AUDIT_SCHEMA
 from xrefkit.skillrun import (
     ACCEPTED_CLOSE_STATUSES,
     PHASE_SECTIONS,
@@ -34,7 +35,43 @@ EXPLICIT_XID_RE = re.compile(
 )
 AVAILABLE_XID_RE = re.compile(r"^- xid: `(?P<xid>[^`]+)`", re.MULTILINE)
 BACKTICK_TOKEN_RE = re.compile(r"`(?P<token>[A-Za-z0-9][A-Za-z0-9_-]{5,})`")
+OBSERVATION_EVENT_RE = re.compile(r"^- event: (?P<event>\{.*\})$", re.MULTILINE)
 NON_XID_TOKEN_PREFIXES = ("WI-", "OUT-", "EVD-", "CHK-", "HND-", "UNK-", "RISK-", "JDG-")
+FIELD_RE_TEMPLATE = r"^- {name}:\s*`?(?P<value>[^`\r\n]+)`?\s*$"
+
+MISSING_INFORMATION_DEFINITIONS = {
+    "run_id": ("Run correlation ID", "No run_id is recorded for cross-log correlation."),
+    "mcp_session_id": ("MCP session ID", "No MCP session ID links this run to server-side XID queries."),
+    "repository_fingerprint": (
+        "Repository fingerprint",
+        "No repository fingerprint identifies the Knowledge source generation.",
+    ),
+    "skill_routing_trace": (
+        "Skill routing trace",
+        "Skill candidates, ranking, and the selection reason are not recorded.",
+    ),
+    "loaded_xid_trace": (
+        "Loaded XID trace",
+        "XIDs actually injected into model context are not recorded separately from selected XIDs.",
+    ),
+    "knowledge_application_trace": (
+        "Knowledge application trace",
+        "No explicit XID link from a runtime artifact or concern shows where Knowledge was applied.",
+    ),
+    "knowledge_search_trace": (
+        "Knowledge search trace",
+        "Knowledge search queries, misses, and fallback decisions are not recorded.",
+    ),
+    "human_feedback": (
+        "Human feedback",
+        "No human correction, rejection, or acceptance feedback is linked to this run.",
+    ),
+    "outcome_feedback": (
+        "Outcome feedback",
+        "No downstream or operational outcome is linked to this run.",
+    ),
+    "token_usage": ("Token usage", "Measured input, output, and total token usage is not recorded."),
+}
 
 
 @dataclass(frozen=True)
@@ -43,6 +80,9 @@ class DashboardRun:
     name: str
     mtime: str
     skill_id: str
+    run_id: str | None
+    mcp_session_id: str | None
+    repository_fingerprint: str | None
     status: str
     closure_status: str
     quality_required: bool
@@ -57,6 +97,13 @@ class DashboardRun:
     selected_xids: list[str]
     used_xids: list[str]
     unused_xids: list[str]
+    queried_xids: list[str]
+    loaded_xids: list[str]
+    queried_not_loaded_xids: list[str]
+    loaded_not_applied_xids: list[str]
+    observation_events: list[dict[str, object]]
+    mcp_events: list[dict[str, object]]
+    missing_information: list[dict[str, str]]
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -64,6 +111,9 @@ class DashboardRun:
             "name": self.name,
             "mtime": self.mtime,
             "skill_id": self.skill_id,
+            "run_id": self.run_id,
+            "mcp_session_id": self.mcp_session_id,
+            "repository_fingerprint": self.repository_fingerprint,
             "status": self.status,
             "closure_status": self.closure_status,
             "quality_required": self.quality_required,
@@ -78,6 +128,13 @@ class DashboardRun:
             "selected_xids": self.selected_xids,
             "used_xids": self.used_xids,
             "unused_xids": self.unused_xids,
+            "queried_xids": self.queried_xids,
+            "loaded_xids": self.loaded_xids,
+            "queried_not_loaded_xids": self.queried_not_loaded_xids,
+            "loaded_not_applied_xids": self.loaded_not_applied_xids,
+            "observation_events": self.observation_events,
+            "mcp_events": self.mcp_events,
+            "missing_information": self.missing_information,
         }
 
 
@@ -116,6 +173,138 @@ def _section_text(text: str, heading: str) -> str:
     candidates = [value for value in (next_h3, next_h2) if value != -1]
     end = min(candidates) if candidates else len(text)
     return text[start:end]
+
+
+def _field_value(text: str, name: str) -> str | None:
+    pattern = re.compile(FIELD_RE_TEMPLATE.format(name=re.escape(name)), re.MULTILINE)
+    match = pattern.search(text)
+    if match is None:
+        return None
+    value = match.group("value").strip()
+    return None if value in {"", "-", "pending", "unknown", "unset"} else value
+
+
+def _observation_events(text: str) -> list[dict[str, object]]:
+    events: list[dict[str, object]] = []
+    for match in OBSERVATION_EVENT_RE.finditer(text):
+        try:
+            event = json.loads(match.group("event"))
+        except json.JSONDecodeError:
+            continue
+        if isinstance(event, dict) and isinstance(event.get("event"), str):
+            events.append(event)
+    return events
+
+
+def _load_mcp_audit(path: Path) -> tuple[dict[str, list[dict[str, object]]], list[str]]:
+    by_run: dict[str, list[dict[str, object]]] = {}
+    errors: list[str] = []
+    if not path.exists():
+        return by_run, errors
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeError) as exc:
+        errors.append(f"{path}: cannot read audit log: {exc}")
+        return by_run, errors
+    for line_number, raw in enumerate(lines, start=1):
+        if not raw.strip():
+            continue
+        try:
+            event = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            errors.append(f"{path}:{line_number}: invalid JSON: {exc.msg}")
+            continue
+        if not isinstance(event, dict):
+            errors.append(f"{path}:{line_number}: audit event must be an object")
+            continue
+        run_id = str(event.get("run_id") or "").strip()
+        if run_id:
+            by_run.setdefault(run_id, []).append(event)
+    return by_run, errors
+
+
+def _validated_mcp_events(
+    events: list[dict[str, object]],
+    *,
+    run_id: str | None,
+    skill_id: str,
+    mcp_session_id: str | None,
+    repository_fingerprint: str | None,
+    audit_errors: list[str],
+    source_path: Path,
+) -> list[dict[str, object]]:
+    if not events:
+        return []
+    if not run_id or not mcp_session_id or not repository_fingerprint:
+        audit_errors.append(f"{source_path}: audit events ignored because the Skill Run correlation is incomplete")
+        return []
+    expected = {
+        "schema": AUDIT_SCHEMA,
+        "run_id": run_id,
+        "skill_id": skill_id,
+        "mcp_session_id": mcp_session_id,
+        "repository_fingerprint": repository_fingerprint,
+    }
+    valid = [
+        event
+        for event in events
+        if all(event.get(field) == value for field, value in expected.items())
+        and isinstance(event.get("event_type"), str)
+    ]
+    if len(valid) != len(events):
+        audit_errors.append(f"{source_path}: ignored MCP audit events with mismatched correlation identity")
+    if not any(event.get("event_type") == "run.bound" for event in valid):
+        audit_errors.append(f"{source_path}: ignored MCP audit events without a matching run.bound event")
+        return []
+    return valid
+
+
+def _missing_information(
+    text: str,
+    *,
+    run_id: str | None,
+    mcp_session_id: str | None,
+    repository_fingerprint: str | None,
+    selected_xids: list[str],
+    queried_xids: list[str],
+    loaded_xids: list[str],
+    applied_xids: list[str],
+    observation_events: list[dict[str, object]],
+    mcp_events: list[dict[str, object]],
+) -> list[dict[str, str]]:
+    missing_codes: list[str] = []
+    if run_id is None:
+        missing_codes.append("run_id")
+    if mcp_session_id is None:
+        missing_codes.append("mcp_session_id")
+    if repository_fingerprint is None:
+        missing_codes.append("repository_fingerprint")
+
+    local_types = {str(item.get("event")) for item in observation_events}
+    mcp_types = {str(item.get("event_type")) for item in mcp_events}
+    if "skill.routed" not in local_types and "skill.ranked" not in mcp_types:
+        missing_codes.append("skill_routing_trace")
+    if (selected_xids or queried_xids) and not loaded_xids:
+        missing_codes.append("loaded_xid_trace")
+    if loaded_xids and not applied_xids:
+        missing_codes.append("knowledge_application_trace")
+    if "knowledge.search" not in local_types and "knowledge.search" not in mcp_types:
+        missing_codes.append("knowledge_search_trace")
+    if "human.feedback" not in local_types:
+        missing_codes.append("human_feedback")
+    if "outcome.feedback" not in local_types:
+        missing_codes.append("outcome_feedback")
+
+    token_section = _section_text(text, "Token Usage")
+    if not token_section:
+        token_section = text[text.find("## Token Usage") :] if "## Token Usage" in text else ""
+    if _field_value(token_section, "total") is None:
+        missing_codes.append("token_usage")
+
+    return [
+        {"code": code, "label": MISSING_INFORMATION_DEFINITIONS[code][0], "detail": MISSING_INFORMATION_DEFINITIONS[code][1]}
+        for code in missing_codes
+    ]
 
 
 def _normalize_xid(value: str) -> str:
@@ -179,7 +368,12 @@ def _runtime_used_xids(artifacts: list[dict[str, str]], concerns: list[dict[str,
     return sorted(xids)
 
 
-def _parse_one_run(path: Path, root: Path) -> DashboardRun | None:
+def _parse_one_run(
+    path: Path,
+    root: Path,
+    mcp_events_by_run: dict[str, list[dict[str, object]]],
+    audit_errors: list[str],
+) -> DashboardRun | None:
     text = path.read_text(encoding="utf-8")
     if not _is_skill_run_log(text):
         return None
@@ -238,9 +432,59 @@ def _parse_one_run(path: Path, root: Path) -> DashboardRun | None:
     }
     available_xids = _domain_available_xids(text)
     selected_xids = _domain_selected_xids(text)
-    used_xids = sorted(set(selected_xids) | set(_runtime_used_xids(artifacts, concerns)))
-    unused_xids = sorted(set(available_xids) - set(used_xids))
+    run_id = _field_value(text, "run_id")
     skill_id = _log_skill_id(text) or "unknown"
+    observation_events = _observation_events(text)
+    mcp_session_id = _field_value(text, "mcp_session_id")
+    repository_fingerprint = _field_value(text, "repository_fingerprint")
+    mcp_events = _validated_mcp_events(
+        mcp_events_by_run.get(run_id, []) if run_id else [],
+        run_id=run_id,
+        skill_id=skill_id,
+        mcp_session_id=mcp_session_id,
+        repository_fingerprint=repository_fingerprint,
+        audit_errors=audit_errors,
+        source_path=path,
+    )
+    loaded_pairs = {
+        (str(event["xid"]), str(event["content_hash"]))
+        for event in observation_events
+        if event.get("event") == "knowledge.loaded"
+        and event.get("xid")
+        and event.get("content_hash")
+    }
+    resolved_pairs = {
+        (str(event["xid"]), str(event["content_hash"]))
+        for event in mcp_events
+        if event.get("event_type") == "xid.resolved"
+        and event.get("xid")
+        and event.get("content_hash")
+    }
+    applied_pairs = {
+        (str(event["xid"]), str(event["content_hash"]))
+        for event in observation_events
+        if event.get("event") == "knowledge.applied"
+        and event.get("xid")
+        and event.get("content_hash")
+        and (str(event["xid"]), str(event["content_hash"])) in loaded_pairs
+    }
+    queried_xids = sorted({xid for xid, _ in resolved_pairs})
+    loaded_xids = sorted({xid for xid, _ in loaded_pairs})
+    applied_xids = sorted({xid for xid, _ in applied_pairs})
+    used_xids = applied_xids
+    unused_xids = sorted(set(available_xids) - set(used_xids))
+    missing_information = _missing_information(
+        text,
+        run_id=run_id,
+        mcp_session_id=mcp_session_id,
+        repository_fingerprint=repository_fingerprint,
+        selected_xids=selected_xids,
+        queried_xids=queried_xids,
+        loaded_xids=loaded_xids,
+        applied_xids=applied_xids,
+        observation_events=observation_events,
+        mcp_events=mcp_events,
+    )
     stat = path.stat()
     mtime = datetime.fromtimestamp(stat.st_mtime).isoformat(timespec="seconds")
     return DashboardRun(
@@ -248,6 +492,9 @@ def _parse_one_run(path: Path, root: Path) -> DashboardRun | None:
         name=path.name,
         mtime=mtime,
         skill_id=skill_id,
+        run_id=run_id,
+        mcp_session_id=mcp_session_id,
+        repository_fingerprint=repository_fingerprint,
         status=_status_from_blockers(blockers, closure_status),
         closure_status=closure_status,
         quality_required=quality_required,
@@ -262,10 +509,22 @@ def _parse_one_run(path: Path, root: Path) -> DashboardRun | None:
         selected_xids=selected_xids,
         used_xids=used_xids,
         unused_xids=unused_xids,
+        queried_xids=queried_xids,
+        loaded_xids=loaded_xids,
+        queried_not_loaded_xids=sorted({xid for xid, content_hash in resolved_pairs if (xid, content_hash) not in loaded_pairs}),
+        loaded_not_applied_xids=sorted({xid for xid, content_hash in loaded_pairs if (xid, content_hash) not in applied_pairs}),
+        observation_events=observation_events,
+        mcp_events=mcp_events,
+        missing_information=missing_information,
     )
 
 
-def collect_runs(root: Path, sessions_dir: Path) -> list[DashboardRun]:
+def collect_runs(
+    root: Path,
+    sessions_dir: Path,
+    mcp_events_by_run: dict[str, list[dict[str, object]]] | None = None,
+    audit_errors: list[str] | None = None,
+) -> list[DashboardRun]:
     root = root.resolve()
     sessions_dir = sessions_dir.resolve()
     if not sessions_dir.exists():
@@ -274,7 +533,7 @@ def collect_runs(root: Path, sessions_dir: Path) -> list[DashboardRun]:
     for path in sorted(sessions_dir.rglob("*.md")):
         if not path.is_file():
             continue
-        run = _parse_one_run(path, root)
+        run = _parse_one_run(path, root, mcp_events_by_run or {}, audit_errors if audit_errors is not None else [])
         if run is not None:
             runs.append(run)
     runs.sort(key=lambda item: item.mtime, reverse=True)
@@ -292,6 +551,8 @@ def _summary(runs: list[DashboardRun]) -> dict[str, int]:
         "handoffs": sum(run.counts["handoffs"] for run in runs),
         "used_xids": len({xid for run in runs for xid in run.used_xids}),
         "unused_xids": len({xid for run in runs for xid in run.unused_xids}),
+        "runs_with_missing_information": sum(1 for run in runs if run.missing_information),
+        "missing_information": sum(len(run.missing_information) for run in runs),
     }
 
 
@@ -319,13 +580,55 @@ def _unused_xid_ranking(runs: list[DashboardRun]) -> list[dict[str, object]]:
     return rows
 
 
-def build_payload(root: Path, sessions_dir: Path) -> dict[str, object]:
-    runs = collect_runs(root, sessions_dir)
+def _missing_information_ranking(runs: list[DashboardRun]) -> list[dict[str, object]]:
+    ranking: dict[str, dict[str, object]] = {}
+    for run in runs:
+        for item in run.missing_information:
+            code = item["code"]
+            entry = ranking.setdefault(
+                code,
+                {
+                    "code": code,
+                    "label": item["label"],
+                    "detail": item["detail"],
+                    "count": 0,
+                    "skills": set(),
+                    "runs": [],
+                },
+            )
+            entry["count"] = int(entry["count"]) + 1
+            assert isinstance(entry["skills"], set)
+            assert isinstance(entry["runs"], list)
+            entry["skills"].add(run.skill_id)
+            entry["runs"].append(run.path)
+    rows = [
+        {
+            **entry,
+            "skills": sorted(entry["skills"]),
+            "runs": sorted(entry["runs"]),
+        }
+        for entry in ranking.values()
+    ]
+    rows.sort(key=lambda item: (-int(item["count"]), str(item["code"])))
+    return rows
+
+
+def build_payload(
+    root: Path,
+    sessions_dir: Path,
+    mcp_audit_log: Path | None = None,
+) -> dict[str, object]:
+    audit_path = (mcp_audit_log or (root / "work" / "mcp" / "xid_audit.jsonl")).resolve()
+    mcp_events_by_run, audit_errors = _load_mcp_audit(audit_path)
+    runs = collect_runs(root, sessions_dir, mcp_events_by_run, audit_errors)
     return {
         "root": str(root.resolve()),
         "sessions_dir": str(sessions_dir.resolve()),
+        "mcp_audit_log": str(audit_path),
+        "audit_errors": audit_errors,
         "summary": _summary(runs),
         "unused_xid_ranking": _unused_xid_ranking(runs),
+        "missing_information_ranking": _missing_information_ranking(runs),
         "runs": [run.to_dict() for run in runs],
     }
 
@@ -356,6 +659,8 @@ def _html_page(payload: dict[str, object]) -> str:
             ("Handoffs", summary["handoffs"]),
             ("Used XIDs", summary["used_xids"]),
             ("Unused XIDs", summary["unused_xids"]),
+            ("Runs missing info", summary["runs_with_missing_information"]),
+            ("Missing info items", summary["missing_information"]),
         ]
     )
     overview_rows = "\n".join(_overview_row(run) for run in runs[:30])
@@ -365,6 +670,12 @@ def _html_page(payload: dict[str, object]) -> str:
     handoff_rows = "\n".join(_handoff_card(run) for run in runs if _has_handoff_records(run))
     xid_rows = "\n".join(_xid_usage_card(run) for run in runs if _has_xid_records(run))
     unused_xid_rows = _unused_xid_ranking_table(payload.get("unused_xid_ranking", []))
+    missing_information_rows = _missing_information_ranking_table(payload.get("missing_information_ranking", []))
+    missing_information_cards = "\n".join(
+        _missing_information_card(run)
+        for run in runs
+        if isinstance(run, dict) and run.get("missing_information")
+    )
     empty = "<section class='empty'>No Skill run logs found under the configured sessions directory.</section>"
     if not runs:
         overview_rows = empty
@@ -376,6 +687,8 @@ def _html_page(payload: dict[str, object]) -> str:
         handoff_rows = "<section class='empty'>No handoff, unknown, risk, or judgment records.</section>"
     if not xid_rows:
         xid_rows = "<section class='empty'>No XID usage records found in Skill run logs.</section>"
+    if not missing_information_cards:
+        missing_information_cards = "<section class='empty'>No missing tuning information detected.</section>"
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -511,6 +824,7 @@ def _html_page(payload: dict[str, object]) -> str:
       <button class="tab" data-panel="evidence">Evidence</button>
       <button class="tab" data-panel="handoff">Handoff</button>
       <button class="tab" data-panel="xids">XID Usage</button>
+      <button class="tab" data-panel="missing-information">Missing Information</button>
     </nav>
     <section id="overview" class="panel active">
       <section class="metrics">{cards}</section>
@@ -540,6 +854,11 @@ def _html_page(payload: dict[str, object]) -> str:
       <p class="category-note">Base and local XIDs selected or used by each Skill run, plus available XIDs that were not used.</p>
       <div class="box"><h3>Unused XID Ranking</h3>{unused_xid_rows}</div>
       {xid_rows}
+    </section>
+    <section id="missing-information" class="panel">
+      <p class="category-note">Information required to correlate Skill execution, MCP access, Knowledge application, and downstream feedback.</p>
+      <div class="box"><h3>Missing Information Ranking</h3>{missing_information_rows}</div>
+      {missing_information_cards}
     </section>
   </main>
   <script>
@@ -676,18 +995,40 @@ def _xid_usage_card(run: object) -> str:
     assert isinstance(run, dict)
     used_xids = run.get("used_xids") if isinstance(run.get("used_xids"), list) else []
     selected_xids = run.get("selected_xids") if isinstance(run.get("selected_xids"), list) else []
+    queried_xids = run.get("queried_xids") if isinstance(run.get("queried_xids"), list) else []
+    loaded_xids = run.get("loaded_xids") if isinstance(run.get("loaded_xids"), list) else []
     available_xids = run.get("available_xids") if isinstance(run.get("available_xids"), list) else []
     unused_xids = run.get("unused_xids") if isinstance(run.get("unused_xids"), list) else []
     used = _xid_pills(used_xids, empty="No used XIDs recorded.")
     selected = _xid_pills(selected_xids, empty="No selected knowledge XIDs.")
+    queried = _xid_pills(queried_xids, empty="No MCP-resolved XIDs.")
+    loaded = _xid_pills(loaded_xids, empty="No client-loaded XIDs.")
     available = _xid_pills(available_xids, empty="No available base/local knowledge XIDs.")
     unused = _xid_pills(unused_xids, empty="No unused available base/local XIDs.")
     body = (
         f"<div class='box'><h3>Used XIDs</h3>{used}</div>"
         f"<div class='box'><h3>Selected Knowledge Inputs</h3>{selected}</div>"
+        f"<div class='box'><h3>MCP-resolved XIDs</h3>{queried}</div>"
+        f"<div class='box'><h3>Client-loaded XIDs</h3>{loaded}</div>"
         f"<div class='box'><h3>Available Knowledge XIDs (base/local)</h3>{available}</div>"
         f"<div class='box'><h3>Unused Available XIDs (base/local)</h3>{unused}</div>"
     )
+    return _category_card(status=status, skill_id=skill_id, path=path, mtime=mtime, body=body)
+
+
+def _missing_information_card(run: object) -> str:
+    status, skill_id, path, mtime, _, _, _ = _base_run_parts(run)
+    assert isinstance(run, dict)
+    values = run.get("missing_information") if isinstance(run.get("missing_information"), list) else []
+    items = "".join(
+        "<li>"
+        f"<strong>{html.escape(str(item.get('label', item.get('code', '-'))))}</strong>: "
+        f"{html.escape(str(item.get('detail', '-')))}"
+        "</li>"
+        for item in values
+        if isinstance(item, dict)
+    )
+    body = f"<div class='box'><h3>Missing Tuning Information</h3><ul>{items}</ul></div>"
     return _category_card(status=status, skill_id=skill_id, path=path, mtime=mtime, body=body)
 
 
@@ -706,6 +1047,26 @@ def _unused_xid_ranking_table(rows: object) -> str:
     return (
         "<table class='table'>"
         "<thead><tr><th>XID</th><th>Unused Count</th><th>Skills</th><th>Runs</th></tr></thead>"
+        f"<tbody>{body}</tbody></table>"
+    )
+
+
+def _missing_information_ranking_table(rows: object) -> str:
+    if not isinstance(rows, list) or not rows:
+        return "<p class='path'>No missing tuning information was detected.</p>"
+    body = "".join(
+        "<tr>"
+        f"<td>{html.escape(str(row.get('label', row.get('code', ''))))}</td>"
+        f"<td>{html.escape(str(row.get('count', '')))}</td>"
+        f"<td>{html.escape(', '.join(str(value) for value in row.get('skills', [])[:8]))}</td>"
+        f"<td>{html.escape(str(row.get('detail', '')))}</td>"
+        "</tr>"
+        for row in rows[:50]
+        if isinstance(row, dict)
+    )
+    return (
+        "<table class='table'>"
+        "<thead><tr><th>Information</th><th>Runs</th><th>Skills</th><th>Reason</th></tr></thead>"
         f"<tbody>{body}</tbody></table>"
     )
 
@@ -754,15 +1115,31 @@ def _has_xid_records(run: object) -> bool:
         return False
     return any(
         isinstance(run.get(name), list) and len(run.get(name)) > 0
-        for name in ("available_xids", "selected_xids", "used_xids", "unused_xids")
+        for name in (
+            "available_xids",
+            "selected_xids",
+            "queried_xids",
+            "loaded_xids",
+            "used_xids",
+            "unused_xids",
+        )
     )
 
 
 class DashboardServer(ThreadingHTTPServer):
-    def __init__(self, server_address: tuple[str, int], handler, *, root: Path, sessions_dir: Path) -> None:
+    def __init__(
+        self,
+        server_address: tuple[str, int],
+        handler,
+        *,
+        root: Path,
+        sessions_dir: Path,
+        mcp_audit_log: Path,
+    ) -> None:
         super().__init__(server_address, handler)
         self.root = root
         self.sessions_dir = sessions_dir
+        self.mcp_audit_log = mcp_audit_log
 
 
 class DashboardHandler(BaseHTTPRequestHandler):
@@ -774,14 +1151,14 @@ class DashboardHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
         if parsed.path == "/api/runs":
-            payload = build_payload(self.server.root, self.server.sessions_dir)
+            payload = build_payload(self.server.root, self.server.sessions_dir, self.server.mcp_audit_log)
             _json_response(self, payload)
             return
         if parsed.path == "/healthz":
             _json_response(self, {"ok": True})
             return
         if parsed.path in {"/", "/index.html"}:
-            payload = build_payload(self.server.root, self.server.sessions_dir)
+            payload = build_payload(self.server.root, self.server.sessions_dir, self.server.mcp_audit_log)
             body = _html_page(payload).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -792,8 +1169,22 @@ class DashboardHandler(BaseHTTPRequestHandler):
         _json_response(self, {"error": "not found"}, status=404)
 
 
-def serve_dashboard(*, root: Path, sessions_dir: Path, host: str, port: int, open_browser: bool) -> None:
-    server = DashboardServer((host, port), DashboardHandler, root=root.resolve(), sessions_dir=sessions_dir.resolve())
+def serve_dashboard(
+    *,
+    root: Path,
+    sessions_dir: Path,
+    mcp_audit_log: Path,
+    host: str,
+    port: int,
+    open_browser: bool,
+) -> None:
+    server = DashboardServer(
+        (host, port),
+        DashboardHandler,
+        root=root.resolve(),
+        sessions_dir=sessions_dir.resolve(),
+        mcp_audit_log=mcp_audit_log.resolve(),
+    )
     url = f"http://{host}:{server.server_port}/"
     print(f"Skill Run Observation Dashboard: {url}")
     print(f"root: {root.resolve()}")
@@ -811,14 +1202,16 @@ def serve_dashboard(*, root: Path, sessions_dir: Path, host: str, port: int, ope
 def cmd_dashboard(args: argparse.Namespace) -> int:
     root = Path(args.root).resolve()
     sessions_dir = Path(args.sessions_dir).resolve() if args.sessions_dir else root / "work" / "sessions"
+    mcp_audit_log = Path(args.mcp_audit_log).resolve() if args.mcp_audit_log else root / "work" / "mcp" / "xid_audit.jsonl"
     if args.dashboard_cmd == "data":
-        payload = build_payload(root, sessions_dir)
+        payload = build_payload(root, sessions_dir, mcp_audit_log)
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return 0
     if args.dashboard_cmd == "serve":
         serve_dashboard(
             root=root,
             sessions_dir=sessions_dir,
+            mcp_audit_log=mcp_audit_log,
             host=args.host,
             port=args.port,
             open_browser=args.open_browser,

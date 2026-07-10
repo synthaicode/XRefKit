@@ -155,6 +155,29 @@ For Python, also check:
 - retry, replay, duplicate-message, worker-restart, or test-order paths where
   non-idempotent state transitions can repeat silently
 
+## Uncertainty And Escalation Path Checks
+
+Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+for language-neutral uncertainty and escalation path review.
+
+For Python, also check:
+
+- `dict.get`, `os.getenv`, falsey-value fallbacks, `int`/`float` conversion,
+  regular-expression matching, parsers, and classifiers whose missing, invalid,
+  no-match, or low-confidence result becomes a normal default, empty
+  collection, or `None` without an explicit controlled disposition
+- `Optional`/`Union` values, dataclass defaults, and Pydantic defaults that
+  turn an unresolved or unsupported value into a valid-looking value and allow
+  it to propagate past the decision boundary
+- LLM, external API, rule-engine, classifier, or model outputs represented as
+  plain dictionaries, dataclasses, or Pydantic models without a confidence,
+  status, and unsupported-value disposition when a downstream decision depends
+  on the result
+- parse, classification, schema-conversion, or model-output paths that use
+  bare `except`, `except Exception: return None`, or equivalent exception-to-
+  default handling instead of rejection, retry, quarantine,
+  `needs_confirmation`, or an explicit handoff
+
 ## Contract And Schema Resilience Checks
 
 For Python, also check:

@@ -1,8 +1,5 @@
 <!doctype html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8" />
-  <style>:root {
+<html lang="ja"><head><meta charset="utf-8"><style>:root {
   --bg: #F8F9FA;
   --ink: #111827;
   --muted: #4b5563;
@@ -588,26 +585,16 @@ h1 {
   font-size: 24px;
   font-weight: 700;
 }
-</style>
-</head>
-<body>
+</style></head><body>
   <main class="canvas">
-    <div class="kicker">でも足りないもの</div>
-    <h1>業務知識がない Skill は、判断を人間に戻してしまう</h1>
-    
-    <section class="stage compact">
-  <div class="dialogue-grid">
-    <div class="bubble question">
-      <div class="card-label">Q</div>
-      <h2>手順があるのに、なぜ業務知識が必要?</h2>
-      <p>Skill は進め方。何を正しいと見るかは、業務の用語・基準・制約で決まる。</p>
-    </div>
-    <div class="bubble answer">
-      <div class="card-label">A</div>
-      <h2>業務知識と判断ルールを共有する</h2>
-      <p>例: 初見向け、XRefkit は説明しない、実行とチェックを入れる。このルールが業務知識と判断ルールになる。</p>
-    </div>
-  </div></section>
-    <div class="summary">Skill は手順。正しさは業務知識と判断ルールで決まる</div>
-  </main></body>
-</html>
+    <div class="kicker">Routing</div>
+    <h1>次に必要な Skill は、Goal と現在状態から選ぶ</h1>
+    <section class="stage">
+      <div class="dialogue-grid">
+        <div class="bubble question"><div class="card-label">問い</div><h2>どう選ぶ?</h2></div>
+        <div class="bubble answer"><div class="card-label">答え</div><p>semantic routing が Skill の capability、tuning、responsibility と precondition を照合し、次の責務を選ぶ。</p></div>
+      </div>
+    </section>
+    <div class="summary">Skill の完了後は、新しい状態から次の Skill を選ぶ</div>
+  </main>
+</body></html>

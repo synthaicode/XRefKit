@@ -5,7 +5,7 @@ from typing import Any, Literal
 
 
 ExecutionLocation = Literal["server", "client"]
-SideEffects = Literal["none", "repo_write", "external_write", "unknown"]
+SideEffects = Literal["none", "audit_write", "repo_write", "external_write", "unknown"]
 ResponseEnvelope = Literal["direct_object", "mcp_result_array"]
 
 
@@ -24,9 +24,9 @@ class ToolContract:
     response_envelope: ResponseEnvelope = "direct_object"
 
     def validate(self) -> None:
-        if self.execution_location == "server" and self.side_effects != "none":
+        if self.execution_location == "server" and self.side_effects not in {"none", "audit_write"}:
             raise ValueError(
-                f"server tool {self.tool_id!r} must declare side_effects='none'"
+                f"server tool {self.tool_id!r} may declare only side_effects='none' or 'audit_write'"
             )
 
     def to_dict(self) -> dict[str, Any]:

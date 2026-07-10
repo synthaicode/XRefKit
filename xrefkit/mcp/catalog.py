@@ -851,6 +851,8 @@ def _client_instructions() -> list[str]:
         "Use the returned document content as the authoritative text for that XID.",
         "At startup, record the XIDs used for client-side routing, policy, or context-injection decisions in a client-side audit log.",
         "For Skill entries, use skill_content as the procedure body and resolve skill_links through get_document_by_xid when needed.",
+        "After python -m xrefkit skill run returns run_id and run_log, call bind_skill_run with run_id and skill_id, then execute the returned client_record_command with <run-log> replaced by run_log before task-specific XID access.",
+        "MCP xid.resolved audit events prove server resolution only. After a body is actually injected into model context, record knowledge load with xrefkit skill knowledge --action load; after it supports a judgment or artifact, record --action apply.",
         "Keep client-side XID document cache entries only when cache_policy.cache_recommended is true.",
         "Fetch client-side tool manifests or packages only after a selected Skill declares client-side required_tools.",
         "Send cached content_hash values as known_version or known_document_versions; when cache_status is not_modified, use the locally hash-validated body instead of downloading it again.",

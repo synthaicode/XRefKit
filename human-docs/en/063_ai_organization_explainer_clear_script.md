@@ -1,19 +1,39 @@
 <!-- xid: C4C18E540D44 -->
 <a id="xid-C4C18E540D44"></a>
 
-# AI Team Explainer Script
+# AI Work Execution Explainer Script
 
-This English script explains why AI Team is needed for organizational AI use.
+This explainer describes the current XRefKit operating model for turning AI
+output speed into continuous, reviewable work execution.
 
-The story flow is:
+## Core Message
 
-1. Prompt: humans must explain everything every time.
-2. Skill: repeated procedure is stabilized, but humans must manage procedure selection.
-3. Domain knowledge: Skills need judgment criteria to be useful for an organization.
-4. AI Team: roles, flow, checkpoints, responsibility, and handoffs make AI work manageable.
+AI can stop midway. The operational problem is not interruption itself; it is
+allowing unfinished or unchecked work to look complete.
 
-The video intentionally excludes XRefKit and OR Team explanations.
+- A Goal manages the desired state and acceptance conditions across Skills.
+- Semantic routing selects the next Skill from the Goal and current state.
+- A Skill narrows the delegated responsibility to a method and output boundary.
+- Knowledge provides only the selected domain material needed for that judgment.
+- The workflow protocol records and verifies each Skill Run before handoff or closure.
 
-## Narration
+`verify` checks process completeness. Quality review and people accept output
+content when that is required.
 
-The narration source is `human-docs/en/video/063_ai_organization_explainer_clear/manifest.tsv`.
+## Story Flow
+
+1. AI can accelerate individual work, but output is not completed work.
+2. Interruption loses context unless work state, evidence, and next ownership are explicit.
+3. Prompts alone leave repeated explanation and completion judgment to people.
+4. Goals hold the destination; Skills hold bounded responsibilities.
+5. Routing selects the next responsibility from the current state.
+6. Skills use selected Knowledge rather than loading an entire corpus.
+7. The workflow protocol records work, evidence, uncertainty, verification, and handoff.
+8. Verification catches process omissions; it does not automatically approve quality.
+9. A stopped run can resume or hand off without reconstructing the whole conversation.
+10. People own goals, acceptance, approvals, and exceptions.
+
+## Closing Line
+
+This is not a system for preventing AI from stopping. It is a system for
+preventing work from being lost, or treated as complete, when AI stops.

@@ -80,6 +80,10 @@ same governance contract:
 - `startup_contract_pack.body` is the MCP model-facing compressed startup text.
 - `get_document_by_xid` resolves needed linked XIDs.
 - `get_skill` transfers selected Skill content.
+- After `xrefkit skill run` creates `run_id`, `bind_skill_run` binds that ID to
+  the active MCP session. The client then executes the returned
+  `client_record_command` against the returned `run_log` before task-specific
+  XID access.
 
 In MCP mode, an XID-bearing path such as `docs/...md#xid-...` is a lookup
 handle and diagnostic location, not an instruction for the client to search its

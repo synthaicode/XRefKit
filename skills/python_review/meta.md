@@ -7,7 +7,7 @@
 - summary: review Python code for language-dependent defects and system-level implementation risks beyond configured static diagnostics
 - use_when: user asks for Python code review beyond configured formatter, linter, type-checker, test, or dependency diagnostics, including async/event-loop hazards, resource lifetime risks, silent fallback behavior, schema/coercion risks, import-time side effects, or implementation patterns that can break system-level behavior
 - input: target path, optional scope filters, optional output mode
-- output: check item matrix with pass/fail/escalated/not-applicable statuses, static-analysis boundary table separating confirmed_by_static_analysis, not_detectable_by_static_analysis, and requires_runtime_or_human_evidence, detector facts, evidence-based findings for Python language-dependent issues and system-level implementation risks across static baseline, resource efficiency, operational resilience, synchronization, required business input integrity, lifecycle support, error handling, time/locale/encoding correctness, state/determinism boundaries, uncertainty/escalation paths, contract/schema resilience, and traceability/context propagation, plus handoff items for XDDP trace gaps, security findings, design/business assumptions outside this Skill, or report composition by review_report_composition
+- output: check item matrix with pass/needs_confirmation/not_applicable category statuses, static-analysis boundary table separating confirmed_by_static_analysis, not_detectable_by_static_analysis, and requires_runtime_or_human_evidence, detector facts, evidence-based findings with critical/major/minor/needs_confirmation severity, a blocked/needs-review/proceed gate verdict, and findings for Python language-dependent issues and system-level implementation risks across static baseline, resource efficiency, operational resilience, synchronization, required business input integrity, lifecycle support, error handling, time/locale/encoding correctness, state/determinism boundaries, uncertainty/escalation paths, contract/schema resilience, and traceability/context propagation, plus handoff items for implementation-local findings to python_implementation_flow, XDDP trace gaps, security findings, design/business assumptions outside this Skill, or report composition by review_report_composition
 - maturity: `trial`
 - execution_mode: `subagent_preferred`
 - model_tier: `standard`
@@ -32,5 +32,6 @@
   - name=custom_framework_common; bind=5F21C8A41002
   - name=custom_framework; bind=A9B7C6D5E4F2
   - name=feedback_rules; bind=7A2F4C8D1901
+  - name=gate_design; bind=7A2F4C8D1801
 - observation_refs:
   - `../../observations/2026-07-07_session_python_skill_authoring.md`

@@ -270,6 +270,11 @@ def _build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Session log directory; defaults to <root>/work/sessions",
     )
+    p_dashboard_serve.add_argument(
+        "--mcp-audit-log",
+        default=None,
+        help="MCP audit JSONL; defaults to <root>/work/mcp/xid_audit.jsonl",
+    )
     p_dashboard_serve.add_argument("--host", default="127.0.0.1", help="Bind host (default: 127.0.0.1)")
     p_dashboard_serve.add_argument("--port", type=int, default=8765, help="Bind port (default: 8765)")
     p_dashboard_serve.add_argument("--open-browser", action="store_true", help="Open the dashboard in a browser")
@@ -280,6 +285,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "--sessions-dir",
         default=None,
         help="Session log directory; defaults to <root>/work/sessions",
+    )
+    p_dashboard_data.add_argument(
+        "--mcp-audit-log",
+        default=None,
+        help="MCP audit JSONL; defaults to <root>/work/mcp/xid_audit.jsonl",
     )
 
     skill = subparsers.add_parser("skill", help="Validate skill metadata before loading")
@@ -333,6 +343,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_run.add_argument("--task", default=None, help="Task text for the Skill run")
     p_skill_run.add_argument("--task-file", default=None, help="Read task text from a UTF-8 file")
     p_skill_run.add_argument("--out", default=None, help="Write run log to this path")
+    p_skill_run.add_argument("--run-id", default=None, help="Caller-supplied UUID used to correlate MCP and client logs")
     p_skill_run.add_argument(
         "--domain-knowledge-catalog",
         default=None,
@@ -351,6 +362,60 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Prior Skill run log that handed work into this startup; may be repeated",
     )
     p_skill_run.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_skill_correlate = skill_sub.add_parser("correlate", help="Bind a Skill run log to its MCP session")
+    p_skill_correlate.add_argument("--log", required=True, help="Skill run log to update")
+    p_skill_correlate.add_argument("--run-id", default=None, help="Expected run_id returned by bind_skill_run")
+    p_skill_correlate.add_argument("--mcp-session-id", required=True, help="MCP session ID returned by bind_skill_run")
+    p_skill_correlate.add_argument(
+        "--repository-fingerprint",
+        required=True,
+        help="Repository fingerprint returned by bind_skill_run",
+    )
+    p_skill_correlate.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_skill_routing = skill_sub.add_parser("routing", help="Record Skill routing candidates and selection evidence")
+    p_skill_routing.add_argument("--log", required=True, help="Skill run log to update")
+    p_skill_routing.add_argument("--selected-skill", required=True, help="Selected Skill ID")
+    p_skill_routing.add_argument("--candidate", action="append", default=[], help="Candidate Skill ID; repeatable")
+    p_skill_routing.add_argument(
+        "--selection-mode",
+        choices=["semantic", "explicit", "handoff", "fallback"],
+        default="semantic",
+        help="Routing decision mode",
+    )
+    p_skill_routing.add_argument("--reason", required=True, help="Evidence-bound selection reason")
+    p_skill_routing.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_skill_knowledge = skill_sub.add_parser("knowledge", help="Record Knowledge search, load, or application evidence")
+    p_skill_knowledge.add_argument("--log", required=True, help="Skill run log to update")
+    p_skill_knowledge.add_argument("--action", required=True, choices=["search", "load", "apply"])
+    p_skill_knowledge.add_argument("--query", default=None, help="Search query for action=search")
+    p_skill_knowledge.add_argument("--xid", action="append", default=[], help="Knowledge XID; repeatable for search results")
+    p_skill_knowledge.add_argument("--content-hash", default=None, help="Document content hash for action=load or action=apply")
+    p_skill_knowledge.add_argument(
+        "--status",
+        choices=["hit", "miss", "fallback"],
+        default="hit",
+        help="Search result for action=search",
+    )
+    p_skill_knowledge.add_argument("--source", default="client", help="Observation source such as mcp or filesystem")
+    p_skill_knowledge.add_argument("--target", default=None, help="Judgment or artifact target for action=apply")
+    p_skill_knowledge.add_argument("--decisive", action="store_true", help="Mark the XID as decision-changing evidence")
+    p_skill_knowledge.add_argument("--note", default=None, help="Optional observation note")
+    p_skill_knowledge.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_skill_feedback = skill_sub.add_parser("feedback", help="Record human or downstream outcome feedback")
+    p_skill_feedback.add_argument("--log", required=True, help="Skill run log to update")
+    p_skill_feedback.add_argument("--kind", required=True, choices=["human", "outcome"])
+    p_skill_feedback.add_argument(
+        "--status",
+        required=True,
+        choices=["accepted", "corrected", "rejected", "successful", "failed", "mixed", "unknown"],
+    )
+    p_skill_feedback.add_argument("--target", default=None, help="Feedback target artifact, judgment, or deployment")
+    p_skill_feedback.add_argument("--note", required=True, help="Observed feedback or outcome")
+    p_skill_feedback.add_argument("--json", action="store_true", help="Emit JSON")
 
     p_skill_phase = skill_sub.add_parser("phase", help="Update a Skill run log phase state")
     p_skill_phase.add_argument("--log", required=True, help="Skill run log to update")
@@ -503,6 +568,22 @@ def main(argv: list[str] | None = None) -> int:
             from xrefkit.skillrun import cmd_skill_run
 
             return cmd_skill_run(args)
+        if args.skill_cmd == "correlate":
+            from xrefkit.skillrun import cmd_skill_correlate
+
+            return cmd_skill_correlate(args)
+        if args.skill_cmd == "routing":
+            from xrefkit.skillrun import cmd_skill_routing
+
+            return cmd_skill_routing(args)
+        if args.skill_cmd == "knowledge":
+            from xrefkit.skillrun import cmd_skill_knowledge
+
+            return cmd_skill_knowledge(args)
+        if args.skill_cmd == "feedback":
+            from xrefkit.skillrun import cmd_skill_feedback
+
+            return cmd_skill_feedback(args)
         if args.skill_cmd == "phase":
             from xrefkit.skillrun import cmd_skill_phase
 
