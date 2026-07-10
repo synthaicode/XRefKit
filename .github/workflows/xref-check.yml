@@ -15,7 +15,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install Python dependencies
-        run: python -m pip install -r requirements.txt
+        run: python -m pip install -r requirements.txt -e ".[test]"
       - name: Run XRefKit quality gate
         run: |
           python tools/run_quality_gate.py xrefkit

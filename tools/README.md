@@ -77,7 +77,7 @@ Output is candidate-only; disposition and per-case approval stay downstream
 
 | Tool | Role |
 |---|---|
-| `run_quality_gate.py` | the repository's own gate: unittest, `xrefkit xref/skill/pack` checks, log audit, baselines, node project checks |
+| `run_quality_gate.py` | the repository's own gate: pytest, `xrefkit xref/skill/pack` checks, log audit, baselines, node project checks |
 | `audit_skill_runtime_logs.py` | audit Skill runtime logs (`xrefkit.skillrun`) |
 | `check_skill_knowledge_xids.py` | verify Skill `knowledge_slots` / `knowledge_refs` and Skill-body `knowledge/` links are connected by resolvable canonical `#xid-...` references (`12` uppercase hex chars); use `--fix-missing-xids` to assign or replace XIDs in checked Skill files and directly referenced local Markdown/source files |
 | `check_project_quality_baseline.py` | node projects under `projects/` baseline check |

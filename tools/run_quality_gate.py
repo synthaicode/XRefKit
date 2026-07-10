@@ -20,7 +20,7 @@ def _run(command: list[str], *, cwd: Path) -> None:
 
 
 def _run_xrefkit_stage() -> None:
-    _run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"], cwd=REPO_ROOT)
+    _run([sys.executable, "-m", "pytest", "-q"], cwd=REPO_ROOT)
     _run(
         [
             sys.executable,
