@@ -281,6 +281,23 @@ body {
   align-items: start;
 }
 
+.operating-rationale {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+  gap: 22px;
+  align-items: center;
+  margin: 0 0 30px;
+  padding: 28px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.rationale-column { min-width: 0; }
+.rationale-column h3 { margin: 8px 0 14px; font-size: clamp(23px, 2.4vw, 31px); line-height: 1.16; }
+.rationale-column ul { margin: 0; padding-left: 22px; color: var(--muted); font-size: 16px; line-height: 1.55; }
+.rationale-label { margin: 0; color: var(--blue); font-size: 13px; font-weight: 800; letter-spacing: 0; text-transform: uppercase; }
+.rationale-connector { color: var(--blue); font-size: 36px; font-weight: 800; text-align: center; }
+
 .catalog-card {
   display: grid;
   gap: 12px;
@@ -829,6 +846,15 @@ body {
   .hero-grid,
   .featured-rail {
     grid-template-columns: 1fr;
+  }
+
+  .operating-rationale {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .rationale-connector {
+    transform: rotate(90deg);
   }
 
   .catalog-grid {
