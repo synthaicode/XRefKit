@@ -17,7 +17,7 @@ signals.
 
 ## Optional References
 
-- [Upward derivation output template](../references/upward_derivation_output_template.md)
+- [Upward derivation output template](../references/upward_derivation_output_template.md#xid-3266CDEF3729)
 
 ## Inputs
 

@@ -19,7 +19,7 @@ Use the canonical rules in
 
 ## Optional References
 
-- [Legacy Flow / Skill migration template](./references/legacy_flow_skill_migration_template.md)
+- [Legacy Flow / Skill migration template](references/legacy_flow_skill_migration_template.md#xid-9DD40488BB9D)
 
 ## Inputs
 

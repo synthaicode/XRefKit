@@ -196,6 +196,26 @@ class XrefTests(unittest.TestCase):
             self.assertIn("duplicate_xid", issue_types)
             self.assertIn("broken_xref", issue_types)
 
+    def test_xref_check_default_include_resolves_tool_xids(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            skill = root / "skills" / "sample" / "SKILL.md"
+            tool = root / "tools" / "sample_tool.py"
+            skill.parent.mkdir(parents=True, exist_ok=True)
+            tool.parent.mkdir(parents=True, exist_ok=True)
+            skill.write_text(
+                "<!-- xid: AAAA11111111 -->\n"
+                '<a id="xid-AAAA11111111"></a>\n\n'
+                "# Skill\n\n"
+                "`tools/sample_tool.py#xid-BBBB22222222`\n",
+                encoding="utf-8",
+            )
+            tool.write_text("# xid: BBBB22222222\n", encoding="utf-8")
+
+            result = xref_check(XrefConfig(root=str(root)))
+
+            self.assertEqual([], result["issues"])
+
     def test_xref_init_inserts_block_after_frontmatter(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

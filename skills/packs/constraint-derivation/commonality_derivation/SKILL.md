@@ -17,7 +17,7 @@ integration automatically.
 
 ## Optional References
 
-- [Commonality derivation output template](../references/commonality_derivation_output_template.md)
+- [Commonality derivation output template](../references/commonality_derivation_output_template.md#xid-B6A11501AD6D)
 
 ## Inputs
 

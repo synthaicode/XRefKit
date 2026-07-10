@@ -18,7 +18,7 @@ Use the canonical schema in `knowledge/organization/121_judgment_log_schema.md#x
 
 ## Optional References
 
-- [Judgment log template](./references/judgment_log_template.md)
+- [Judgment log template](references/judgment_log_template.md#xid-B1F7D54A9C33)
 
 ## Inputs
 

@@ -27,7 +27,7 @@ Use the canonical rules in
 
 ## Optional References
 
-- [Business intake scoping template](./references/business_intake_scoping_template.md)
+- [Business intake scoping template](references/business_intake_scoping_template.md#xid-EE767C5CFC9F)
 
 ## Inputs
 

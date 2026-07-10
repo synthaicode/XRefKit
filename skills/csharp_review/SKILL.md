@@ -48,7 +48,7 @@ Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4
 
 ## Drift-Detection Eval
 
-- [csharp_review drift-detection eval](./references/eval/eval_drift_detection.md):
+- [csharp_review drift-detection eval](references/eval/eval_drift_detection.md#xid-34E706142F30):
   run it after changes to this skill's assets and before maturity promotion.
   It is a regression alarm, not an optimization target; never load
   `references/eval/eval_manifest_heldout.yaml#xid-DE766335B3F0` during skill authoring.

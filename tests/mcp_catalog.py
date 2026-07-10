@@ -971,6 +971,19 @@ Duplicate external body.
         with self.assertRaisesRegex(ValueError, "duplicate catalog-visible XID 0B5C58B5E5B2"):
             XRefCatalog.build(self.repo).get_startup_context()
 
+    def test_startup_context_ignores_manifest_reference_xids(self) -> None:
+        write(
+            self.repo / "docs" / "core" / "contracts" / "base_runtime_manifest.yaml",
+            "schema: xrefkit.base_runtime/v1\n"
+            "sources:\n"
+            "  - xid: 0B5C58B5E5B2\n"
+            "    path: agent/000_agent_entry.md\n",
+        )
+
+        context = XRefCatalog.build(self.repo).get_startup_context()
+
+        self.assertEqual(context["load_order"][0], "0B5C58B5E5B2")
+
     def test_startup_context_omits_cached_reference_bodies(self) -> None:
         catalog = XRefCatalog.build(self.repo)
         first = catalog.get_startup_context()

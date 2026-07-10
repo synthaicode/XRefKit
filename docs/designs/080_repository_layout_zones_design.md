@@ -37,7 +37,7 @@ forces make this a problem now:
    local-pack model supersedes them by giving local content a single
    declared namespace (zone metadata, XID identity, MCP cataloging) even
    while it stays git-untracked. See
-   [Client authoring and unified supply design](082_client_authoring_and_unified_supply_design.md).
+   [Client authoring and unified supply design](082_client_authoring_and_unified_supply_design.md#xid-B0572E20DFBA).
 
 ## Non-Goals
 
@@ -130,7 +130,7 @@ content by XID / skill_id with `forked_from` provenance).
   that is catalog-visible to the local MCP server and governed by
   `ownership.yaml` (zone metadata, XID identity). Locality guarantee and
   the `.gitignore` decision are settled in
-  [Client authoring and unified supply design](082_client_authoring_and_unified_supply_design.md).
+  [Client authoring and unified supply design](082_client_authoring_and_unified_supply_design.md#xid-B0572E20DFBA).
 - `skills/_index.md` becomes generated (`fm` subcommand, multi-root
   aware), removing the last hand-maintained catalog.
 - Stray working files at the repository root (for example

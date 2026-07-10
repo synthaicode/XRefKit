@@ -5,7 +5,7 @@
 
 Choose by the **question you are answering**, not by the tool you remember. The
 headline rule comes from a measured A/B
-([ADR 0001](../docs/adr/0001-where-step-grep-first.md)):
+([ADR 0001](../docs/adr/0001-where-step-grep-first.md#xid-F4B92B6AC13E)):
 
 > For **text-greppable** questions — where a type / method / config key is
 > referenced, used, or constructed — use `grep`/`rg` + LLM reasoning. Do **not**

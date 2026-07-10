@@ -11,10 +11,10 @@ This skill may also be used in `single_image_infographic` mode when Marketing Gr
 
 ## References
 
-- [Marketing Slide PNG Style Guide](references/style-guide.md)
-- [Japanese Presentation Tone Guide](references/japanese-presentation-tone.md)
-- [Marketing Slide PNG Layout Patterns](references/layout-patterns.md)
-- [Marketing Slide PNG Pattern Samples](references/pattern-samples.md)
+- [Marketing Slide PNG Style Guide](references/style-guide.md#xid-8B1A7D45C9E2)
+- [Japanese Presentation Tone Guide](references/japanese-presentation-tone.md#xid-D5C8A5F2E731)
+- [Marketing Slide PNG Layout Patterns](references/layout-patterns.md#xid-B0F915C6A4D8)
+- [Marketing Slide PNG Pattern Samples](references/pattern-samples.md#xid-3F2B8D7EA551)
 
 ## Ownership
 

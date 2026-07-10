@@ -26,11 +26,11 @@ reconstructing everything from scratch.
 
 ## Optional References
 
-- [Skill meta template](./references/skill_meta_template.md)
-- [Skill body template](./references/skill_body_template.md)
+- [Skill meta template](references/skill_meta_template.md#xid-C2FF81FBEE8E)
+- [Skill body template](references/skill_body_template.md#xid-84C920557A2C)
 - [Flow YAML template](references/flow_yaml_template.yaml#xid-87F138864C3F)
-- [Flow doc template](./references/flow_doc_template.md)
-- [Authoring checklist](./references/authoring_checklist.md)
+- [Flow doc template](references/flow_doc_template.md#xid-9604C0C31FE3)
+- [Authoring checklist](references/authoring_checklist.md#xid-6E8A134DCEE5)
 
 ## Inputs
 

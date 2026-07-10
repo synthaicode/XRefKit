@@ -106,7 +106,7 @@ For Japanese decks, prioritize natural presentation tone over direct translated 
 
 See also:
 
-- [Japanese Presentation Tone Guide](japanese-presentation-tone.md)
+- [Japanese Presentation Tone Guide](japanese-presentation-tone.md#xid-D5C8A5F2E731)
 
 ## Layout Rules
 

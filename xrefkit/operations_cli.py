@@ -19,7 +19,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "--include",
             nargs="*",
             default=None,
-            help="Top-level folders to include (default: docs agent knowledge capabilities skills packs)",
+            help="Top-level folders to include (default: docs agent knowledge capabilities skills packs tools)",
         )
         p.add_argument(
             "--exclude",

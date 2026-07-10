@@ -16,7 +16,7 @@ structure before restart and recovery behavior becomes implicit.
 
 ## Optional References
 
-- [Primary derivation output template](../references/primary_derivation_output_template.md)
+- [Primary derivation output template](../references/primary_derivation_output_template.md#xid-FF9A33B945ED)
 
 ## Inputs
 

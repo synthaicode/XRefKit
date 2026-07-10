@@ -7,7 +7,18 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-XID_RE = re.compile(r"xid[:=-]\s*([A-Za-z0-9]+)|#xid-([A-Za-z0-9]+)")
+OWN_XID_RE = re.compile(
+    r"""
+    ^\s*
+    (?:
+        <!--\s*xid\s*:\s*(?P<html>[A-Za-z0-9_-]+)\s*-->
+      | (?:\#|//|--|')\s*xid\s*:\s*(?P<comment>[A-Za-z0-9_-]+)\s*$
+      | xid\s*:\s*(?P<yaml>[A-Za-z0-9_-]+)\s*$
+      | <a\s+[^>]*id=["']xid-(?P<anchor>[A-Za-z0-9_-]+)["'][^>]*>\s*</a>
+    )
+    """,
+    re.IGNORECASE | re.MULTILINE | re.VERBOSE,
+)
 HEADING_RE = re.compile(r"^#\s+(.+?)\s*$", re.MULTILINE)
 MD_LINK_RE = re.compile(r"\]\((?P<target>[^)]+#xid-(?P<xid>[A-Za-z0-9]+))\)")
 XID_TARGET_RE = re.compile(r"(?P<path>[A-Za-z0-9_.\-/]+\.md)#xid-(?P<xid>[A-Za-z0-9]+)")
@@ -79,10 +90,14 @@ def _git_stdout(repo_root: Path, arguments: list[str]) -> str | None:
 
 
 def first_xid(text: str) -> str | None:
-    match = XID_RE.search(text)
-    if not match:
-        return None
-    return match.group(1) or match.group(2)
+    for match in OWN_XID_RE.finditer(text):
+        return (
+            match.group("html")
+            or match.group("comment")
+            or match.group("yaml")
+            or match.group("anchor")
+        )
+    return None
 
 
 def first_heading(text: str, fallback: str) -> str:

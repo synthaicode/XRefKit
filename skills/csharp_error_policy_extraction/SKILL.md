@@ -28,7 +28,7 @@ and does not perform vulnerability assessment (that is `security_review`).
 
 ## Optional References
 
-- [Error policy report template](./references/error_policy_report_template.md)
+- [Error policy report template](references/error_policy_report_template.md#xid-8A6A9B1C3223)
 
 ## Inputs
 

@@ -1,3 +1,6 @@
+<!-- xid: D6B24A7C5E10 -->
+<a id="xid-D6B24A7C5E10"></a>
+
 # Business Pack Explained
 
 ![Business Pack Explained](02_business_pack_explained.png)
