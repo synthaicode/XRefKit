@@ -286,6 +286,17 @@ def test_build_registry_rejects_local_asset_path_escape(tmp_path: Path) -> None:
         build_registry(package_manifests=[package_manifest_path], local_manifest_path=local_manifest_path)
 
 
+def test_registry_direct_local_asset_registration_rejects_path_escape(tmp_path: Path) -> None:
+    _, local_manifest_path = _sample_workspace(tmp_path)
+    data = yaml.safe_load(local_manifest_path.read_text(encoding="utf-8"))
+    data["mounts"]["knowledge"][0]["path"] = "../outside.md"
+    _write_yaml(local_manifest_path, data)
+    local = load_local_manifest(local_manifest_path)
+
+    with pytest.raises(ValueError, match="local asset .* escapes root"):
+        XRefKitRegistry().add_local_manifest_assets(local_manifest_path.parent, local)
+
+
 def test_unsupported_version_constraint_operators_are_rejected() -> None:
     with pytest.raises(ValueError, match="unsupported version constraint"):
         version_satisfies("0.9.0", "^0.2.0")

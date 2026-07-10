@@ -25,8 +25,9 @@ def test_cutover_readiness_reports_missing_surfaces(tmp_path: Path, capsys) -> N
 
 def test_cutover_readiness_requires_legacy_entry_state(tmp_path: Path, capsys) -> None:
     required = [
-        "pyproject.toml",
-        "xrefkit/resources/base/contracts.json",
+            "pyproject.toml",
+            "xrefkit/resources/base/current.json",
+            "xrefkit/resources/base/contracts.json",
         "xrefkit/resources/base/model_body.md",
         "tools/contracts.yaml",
         "knowledge/source_analysis/source_structure_catalog.yaml",

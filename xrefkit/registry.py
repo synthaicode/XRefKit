@@ -8,6 +8,16 @@ from pathlib import Path
 from .models import LocalDomainSkill, LocalManifest, PackageManifest, SkillDefinition
 
 
+def _contained_path(root: Path, relative_path: str, *, label: str) -> Path:
+    root = root.resolve()
+    candidate = (root / relative_path).resolve()
+    try:
+        candidate.relative_to(root)
+    except ValueError as exc:
+        raise ValueError(f"{label} escapes root: {relative_path}") from exc
+    return candidate
+
+
 @dataclass(frozen=True)
 class XidAssetRecord:
     xid: str
@@ -259,7 +269,7 @@ class XRefKitRegistry:
             )
 
     def add_local_manifest_assets(self, local_root: str | Path, manifest: LocalManifest) -> None:
-        local_root = Path(local_root)
+        local_root = Path(local_root).resolve()
         local_assets = (
             ("knowledge", manifest.mounts.knowledge),
             ("template", manifest.mounts.templates),
@@ -268,11 +278,12 @@ class XRefKitRegistry:
         )
         for asset_type, assets in local_assets:
             for asset in assets:
+                asset_path = _contained_path(local_root, asset.path, label=f"local asset {asset.id}")
                 self.xids.add(
                     asset.xid,
                     XidAssetRecord(
                         xid=asset.xid,
-                        path=local_root / asset.path,
+                        path=asset_path,
                         root=local_root,
                         source_type="local",
                         asset_type=asset_type,
@@ -282,18 +293,20 @@ class XRefKitRegistry:
                     ),
                 )
         for asset in manifest.mounts.knowledge:
+            asset_path = _contained_path(local_root, asset.path, label=f"local asset {asset.id}")
             self.knowledge.add(
                 KnowledgeRecord(
                     id=asset.id,
                     xid=asset.xid,
-                    path=local_root / asset.path,
+                    path=asset_path,
                     source_type="local",
                     local_id=manifest.local_id,
                 )
             )
 
     def add_local_skill(self, *, skill: LocalDomainSkill, path: str | Path, root: str | Path, local_id: str) -> None:
-        root = Path(root)
+        root = Path(root).resolve()
+        path = _contained_path(root, str(path), label=f"local skill {skill.skill_id}")
         self.xids.add(
             skill.xid,
             XidAssetRecord(

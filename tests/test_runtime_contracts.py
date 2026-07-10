@@ -101,3 +101,14 @@ def test_verify_reports_corrupt_model_body_as_structured_error(tmp_path: Path) -
 
     assert result["ok"] is False
     assert any("compiled model body cannot be read" in error for error in result["errors"])
+
+
+def test_verify_requires_generation_pointer(tmp_path: Path) -> None:
+    manifest = _fixture(tmp_path)
+    compile_base_runtime(tmp_path, manifest, "out")
+    (tmp_path / "out" / "current.json").unlink()
+
+    result = verify_base_runtime(tmp_path, manifest, "out", release=True)
+
+    assert result["ok"] is False
+    assert "current.json is required" in result["errors"][0]

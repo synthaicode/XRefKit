@@ -88,7 +88,7 @@ def _publish_generation(output: Path, generated: dict[str, Any], model_body: str
 def _published_paths(output: Path) -> tuple[Path, Path]:
     pointer_path = output / "current.json"
     if not pointer_path.is_file():
-        return output / "contracts.json", output / "model_body.md"
+        raise ValueError("base runtime generation pointer current.json is required")
     pointer = json.loads(pointer_path.read_text(encoding="utf-8"))
     generation = str(pointer["generation"])
     if not re.fullmatch(r"[0-9a-f]{16}", generation):

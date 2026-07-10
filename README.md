@@ -138,6 +138,13 @@ The agent can read the operating contract and explain the repository structure i
 
 - Base runtime obligations are authored structurally and compiled into package resources with source hashes and token budgets.
 - Repository, installed-package, and MCP providers resolve the same XID identities; conflicts and stale base packs fail explicitly.
+
+The installed base runtime pack is generation-published. Formal consumers must
+read `xrefkit/resources/base/current.json` first and then load both files from
+the referenced `generations/<generation>/` directory. The top-level
+`contracts.json` and `model_body.md` files are compatibility snapshots only;
+they are not an authoritative source and must not be used for generation
+consistency checks.
 - Source structure is split into a target catalog and finding catalog. The AI loads lists before selected details.
 - `xrefkit catalog maintain --apply-safe` promotes only unambiguous candidate findings; conflicts remain in a review queue.
 - MCP exposes the shared resolver and catalogs. It does not own independent domain rules or execute client tools.

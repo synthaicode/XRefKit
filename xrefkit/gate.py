@@ -371,6 +371,7 @@ def _command_cutover_readiness(args) -> int:
     checks = [
         ("package_manifest", (root / "pyproject.toml").is_file()),
         ("instance_manifest", (root / "xrefkit.toml").is_file()),
+        ("base_generation_pointer", (root / "xrefkit/resources/base/current.json").is_file()),
         ("compiled_contract", (root / "xrefkit/resources/base/contracts.json").is_file()),
         ("compiled_model_body", (root / "xrefkit/resources/base/model_body.md").is_file()),
         ("tool_contracts", (root / "tools/contracts.yaml").is_file()),

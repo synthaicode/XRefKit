@@ -126,8 +126,11 @@ XRefKit/
 │  └─ resources/
 │     └─ base/
 │        ├─ manifest.json
-│        ├─ contracts.json
-│        └─ model_body.md
+│        ├─ current.json
+│        ├─ generations/<generation>/contracts.json
+│        ├─ generations/<generation>/model_body.md
+│        ├─ contracts.json       compatibility snapshot
+│        └─ model_body.md        compatibility snapshot
 │
 ├─ skills/
 ├─ skills_private/
@@ -239,6 +242,12 @@ escalation rules, closure requirements, and XID references.
 
 Runtime contract compilation is a build operation, not a runtime AI summary.
 Generated resources are not edited manually.
+
+The formal consumer contract is generation-based: consumers MUST read
+`current.json` first, resolve the referenced generation, and read
+`contracts.json` and `model_body.md` from that same generation directory.
+Top-level `contracts.json` and `model_body.md` are compatibility snapshots only
+and MUST NOT be used as the authoritative pair for generation consistency.
 
 Parity verification is deterministic after authoring acceptance:
 
