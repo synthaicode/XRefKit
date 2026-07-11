@@ -124,12 +124,24 @@ def font(size: int, *, bold: bool = False) -> ImageFont.FreeTypeFont:
 
 
 def wrap(draw: ImageDraw.ImageDraw, text: str, text_font: ImageFont.ImageFont, max_width: int) -> list[str]:
-    words = text.split(" ")
-    if len(words) == 1:
-        chars = list(text)
-        lines: list[str] = []
-        current = ""
-        for ch in chars:
+    lines: list[str] = []
+    current = ""
+    for word in text.split():
+        separator = " " if current else ""
+        trial = f"{current}{separator}{word}"
+        if draw.textbbox((0, 0), trial, font=text_font)[2] <= max_width:
+            current = trial
+            continue
+
+        if current:
+            lines.append(current)
+            current = ""
+
+        if draw.textbbox((0, 0), word, font=text_font)[2] <= max_width:
+            current = word
+            continue
+
+        for ch in word:
             trial = current + ch
             if draw.textbbox((0, 0), trial, font=text_font)[2] <= max_width:
                 current = trial
@@ -137,20 +149,8 @@ def wrap(draw: ImageDraw.ImageDraw, text: str, text_font: ImageFont.ImageFont, m
                 if current:
                     lines.append(current)
                 current = ch
-        if current:
-            lines.append(current)
-        return lines
-
-    lines = []
-    current = ""
-    for word in words:
-        trial = word if not current else f"{current} {word}"
-        if draw.textbbox((0, 0), trial, font=text_font)[2] <= max_width:
-            current = trial
-        else:
-            if current:
-                lines.append(current)
-            current = word
+        if not current:
+            continue
     if current:
         lines.append(current)
     return lines
@@ -205,13 +205,13 @@ def render_answer(slide: dict[str, object]) -> None:
     image, draw = base_image()
     draw_header(draw, title_text=str(slide["title"]))
 
-    draw.rounded_rectangle((56, 180, 1544, 362), radius=24, fill=PANEL, outline=LINE, width=2)
-    draw.text((86, 206), "問い", font=font(22, bold=True), fill=BLUE)
-    draw_multiline(draw, (86, 240), str(slide["question"]), text_font=font(24), fill=MUTED, max_width=1380, line_gap=6)
-    draw_multiline(draw, (86, 280), str(slide["copy"]), text_font=font(36, bold=True), fill=INK, max_width=1380, line_gap=6)
+    draw.rounded_rectangle((56, 200, 1544, 402), radius=24, fill=PANEL, outline=LINE, width=2)
+    draw.text((86, 226), "問い", font=font(22, bold=True), fill=BLUE)
+    draw_multiline(draw, (86, 260), str(slide["question"]), text_font=font(24), fill=MUTED, max_width=1380, line_gap=6)
+    draw_multiline(draw, (86, 300), str(slide["copy"]), text_font=font(36, bold=True), fill=INK, max_width=1380, line_gap=6)
 
     card_left = 56
-    card_top = 392
+    card_top = 432
     card_width = 468
     gap = 20
     for idx, (tag, text) in enumerate(slide["cards"]):  # type: ignore[index]
