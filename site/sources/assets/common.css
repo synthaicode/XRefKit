@@ -967,12 +967,15 @@ body {
   margin-top: 24px;
 }
 
-.model-main {
+.model-main,
+.distribution-main {
   text-align: center;
 }
 
 .model-main .section-heading,
-.model-main .improvement-note {
+.model-main .improvement-note,
+.distribution-main .section-heading,
+.distribution-main .improvement-note {
   text-align: left;
 }
 
@@ -980,6 +983,15 @@ body {
   display: block;
   width: min(760px, 100%);
   aspect-ratio: 680 / 750;
+  margin: 24px auto 0;
+  border: 0;
+  background: transparent;
+}
+
+.distribution-object {
+  display: block;
+  width: min(900px, 100%);
+  aspect-ratio: 680 / 500;
   margin: 24px auto 0;
   border: 0;
   background: transparent;
