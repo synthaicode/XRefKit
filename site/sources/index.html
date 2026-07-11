@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -11,70 +11,70 @@
   <main class="landing">
     <section class="hero-shell">
       <div class="hero-copy">
-        <p class="hero-note">XRefKit | 運用モデルと参照実装</p>
-        <h1>AIの作業を、受入れへ。<br />仕組みを、組織へ。</h1>
-        <p class="hero-problem">AIは局所作業を終えられても、業務全体の完了、判断の所在、次の担当へ渡す状態を自動では保持しません。</p>
-        <p class="lead hero-lead">XRefKitは、AI作業をGoalから受入れまで検証可能につなぐ実行基盤です。管理したSkill、Knowledge、実行契約は、MCP経由で複数の利用者へ展開できます。</p>
-        <div class="hero-actions"><a class="primary-action" href="./ja/model/">日本語の正典を読む</a><a href="https://github.com/synthaicode/XRefKit">GitHubで参照実装を見る</a><a href="./en/">English supplemental materials</a></div>
+        <p class="hero-note">XRefKit | Operating model and reference implementation</p>
+        <h1>Carry AI work through<br />to business acceptance.</h1>
+        <p class="hero-problem">AI can finish a local task, but it does not automatically preserve business completion, decision ownership, or the state required by the next responsibility.</p>
+        <p class="lead hero-lead">XRefKit is an operating base that connects AI work from a Goal to human acceptance with verifiable progression. Managed Skills, Knowledge, and execution contracts can be distributed to multiple users through MCP.</p>
+        <div class="hero-actions"><a class="primary-action" href="./en/model/">Read the canonical model</a><a href="https://github.com/synthaicode/XRefKit">View the reference implementation</a><a href="./ja/">Japanese translation</a></div>
       </div>
     </section>
 
     <section class="landing-section model-main" aria-labelledby="model-heading">
       <div class="section-heading">
-        <h2 id="model-heading">1. XRefKit内部の動作</h2>
-        <p>一つのAI作業をGoalから人間による受入れまでつなぐ、実行時の責任境界です。</p>
+        <h2 id="model-heading">1. How XRefKit operates internally</h2>
+        <p>The runtime responsibility boundary that connects one AI work unit from Goal definition to human acceptance.</p>
       </div>
-      <div class="model-inline" data-inline-svg="./assets/xrefkit_model_ja.svg"><a href="./assets/xrefkit_model_ja.svg">XRefKit全体図を開く</a></div>
+      <div class="model-inline" data-inline-svg="./assets/xrefkit_model_en.svg"><a href="./assets/xrefkit_model_en.svg">Open the XRefKit operating model</a></div>
       <div class="model-reading">
-        <h3>この図が示すもの</h3>
-        <p>この図の主題は作業手順ではなく、AIに作業を委ねたときの<strong>判断の所在</strong>です。XRefKitでは、判断を消さず、実行の前・中・後へ再配置します。実行前には、業務の完了状態と受入条件を<a href="./ja/slides/063_ai_organization_explainer_clear/#goal">Goal</a>として人間が固定します。実行中は、<a href="./ja/slides/063_ai_organization_explainer_clear/#skill">Skill</a>がAIの限定責務を定め、範囲外の判断は推測で埋めず<a href="./ja/slides/064_ai_team_operating_boundary/#escalation">Escalation</a>によって人間へ返します。</p>
-        <p><a href="./ja/slides/063_ai_organization_explainer_clear/#workflow-protocol">Workflow protocol</a>は作業状態と証跡を記録し、<a href="./ja/slides/064_ai_team_operating_boundary/#closure">Closure</a>は進行の完全性を決定論的に照合します。ただし、Closureは成果物の正しさや業務上の採用を決めません。最終的な責任は<a href="./ja/slides/064_ai_team_operating_boundary/#acceptance">Human acceptance</a>として人間に戻ります。実行中の判断、未解決事項、根拠は<a href="./ja/slides/063_ai_organization_explainer_clear/#evidence">Evidence</a>へ残り、<a href="./ja/slides/065_xrefkit_repository_overview/#xid">XID</a>で後から辿れます。</p>
+        <h3>What the model shows</h3>
+        <p>The model is not primarily a task sequence. It shows <strong>where decisions belong</strong> when work is delegated to AI. Before execution, people define business completion and acceptance conditions as a <a href="./en/slides/063_ai_organization_explainer_clear/#goal">Goal</a>. During execution, a <a href="./en/slides/063_ai_organization_explainer_clear/#skill">Skill</a> bounds the AI responsibility. Decisions outside that boundary return to people through <a href="./en/slides/064_ai_team_operating_boundary/#escalation">Escalation</a> instead of being filled by assumption.</p>
+        <p>The <a href="./en/slides/063_ai_organization_explainer_clear/#workflow-protocol">workflow protocol</a> records progression and evidence. <a href="./en/slides/064_ai_team_operating_boundary/#closure">Closure</a> deterministically checks whether the execution record is complete, but it does not decide whether the result is correct or should be adopted. Accountability returns to people through <a href="./en/slides/064_ai_team_operating_boundary/#acceptance">human acceptance</a>. Decisions, unresolved items, and sources remain as <a href="./en/slides/063_ai_organization_explainer_clear/#evidence">Evidence</a> and can be traced through <a href="./en/slides/065_xrefkit_repository_overview/#xid">XIDs</a>.</p>
       </div>
-      <p class="improvement-note">Evidenceは人間の改善判断の入力です。AIが実行結果から組織ルールを自動的に書き換える仕組みではありません。</p>
-      <p class="section-cta"><a href="./ja/model/">12要素の定義と図の読み方を正典で確認する</a></p>
+      <p class="improvement-note">Evidence is input to human improvement decisions. XRefKit does not let AI rewrite organizational rules automatically from execution results.</p>
+      <p class="section-cta"><a href="./en/model/">Read the canonical definitions of the 12 model elements</a></p>
     </section>
 
     <section class="landing-section distribution-main" aria-labelledby="distribution-heading">
       <div class="section-heading">
-        <h2 id="distribution-heading">2. 複数人で共有する仕組み</h2>
-        <p>XRefKitで管理した同じSkill、Knowledge、実行契約を、MCP経由で複数の利用者側AIへ届けます。</p>
+        <h2 id="distribution-heading">2. How the operating base is shared</h2>
+        <p>MCP delivers the same managed Skills, Knowledge, and execution contracts to AI clients used by multiple people.</p>
       </div>
-      <object class="distribution-object" data="./assets/xrefkit_mcp_en.svg" type="image/svg+xml" aria-label="XRefKitの管理資産をMCPが選択して複数のAIクライアントへ配信する図">
-        <a href="./assets/xrefkit_mcp_en.svg">XRefKit MCP配信図を開く</a>
+      <object class="distribution-object" data="./assets/xrefkit_mcp_en.svg" type="image/svg+xml" aria-label="MCP selects managed XRefKit assets and distributes them to multiple AI clients">
+        <a href="./assets/xrefkit_mcp_en.svg">Open the XRefKit MCP distribution model</a>
       </object>
       <div class="model-reading">
-        <h3>MCPが共有するもの</h3>
-        <p>組織は、Skill、Knowledge、実行契約、一覧、XIDをXRefKitの管理資産として維持します。MCPはその一覧を提示し、利用目的に合う資産だけを選択・解決して各利用者側AIへ返します。全利用者へリポジトリ全体を読み込ませず、同じ識別子と同じ版の管理資産を必要な分だけ共有できます。</p>
-        <p>MCPは検索・選択・参照解決・配信を担う読取り境界です。Skillの実行、クライアント用ツールの副作用、Evidenceの記録、終了確認は各利用者のクライアント側に残ります。そのため、複数人で同じKnowledgeと手順を使いながら、個々の実行権限と作業記録を混ぜずに運用できます。</p>
+        <h3>What MCP shares</h3>
+        <p>An organization maintains Skills, Knowledge, execution contracts, catalogs, and XIDs as managed XRefKit assets. MCP presents the catalogs, then selects and resolves only the assets needed for the current purpose. Users receive the same identifiers and managed versions without loading the entire repository into every AI context.</p>
+        <p>MCP is a read boundary for discovery, selection, resolution, and delivery. Skill execution, client-side tool side effects, Evidence recording, and closure remain on each user's client. People can therefore share the same Knowledge and procedures without merging their execution permissions or work records.</p>
       </div>
-      <p class="improvement-note">共有するのは管理された定義と知識です。MCPサーバーが利用者に代わって業務作業を実行するわけではありません。</p>
+      <p class="improvement-note">MCP shares managed definitions and Knowledge. The MCP server does not perform business work on behalf of its users.</p>
     </section>
 
     <section class="landing-section">
-      <div class="section-heading"><h2>用途から選ぶ</h2><p>正典を起点に、現在必要な深さだけを選びます。全資料の再掲はここでは行いません。</p></div>
+      <div class="section-heading"><h2>Choose by purpose</h2><p>Start from the canonical model, then read only the depth required for the current question.</p></div>
       <div class="learning-tiers">
-        <section class="learning-tier"><span>1</span><div><h3>まず全体像を理解する</h3><p>AI固有の問題と、XRefKitの運用モデルを確認します。</p><div class="tier-links"><a href="./ja/slides/why-ai-organization-needed/">AI活用を継続可能な業務実行に変える</a><a href="./ja/model/">運用モデルと12要素の定義</a></div></div></section>
-        <section class="learning-tier"><span>2</span><div><h3>業務で運用する</h3><p>限定責務の接続と、ツール・AI・人間の責任境界を確認します。</p><div class="tier-links"><a href="./ja/slides/063_ai_organization_explainer_clear/">XRefKitの業務実行モデル</a><a href="./ja/slides/064_ai_team_operating_boundary/">ツール・AI・人間の責任境界</a></div></div></section>
-        <section class="learning-tier"><span>3</span><div><h3>実装し、改善して配布する</h3><p>リポジトリ構造、実行状況の観測、次版の組織配布を確認します。</p><div class="tier-links"><a href="./ja/slides/065_xrefkit_repository_overview/">XRefKit リポジトリ概要</a><a href="./ja/slides/073_xrefkit_organization_distribution/">XRefKit 改善と組織配布</a></div></div></section>
+        <section class="learning-tier"><span>1</span><div><h3>Understand the need and the model</h3><p>See which AI characteristics require an operating structure and learn the canonical elements.</p><div class="tier-links"><a href="./en/slides/why-ai-organization-needed/">Turning AI Use into Continuous Business Execution</a><a href="./en/model/">Operating Model and 12 Element Definitions</a></div></div></section>
+        <section class="learning-tier"><span>2</span><div><h3>Operate AI work</h3><p>Understand how bounded responsibilities connect and where tool, AI, and human decisions belong.</p><div class="tier-links"><a href="./en/slides/063_ai_organization_explainer_clear/">XRefKit Business Execution Model</a><a href="./en/slides/064_ai_team_operating_boundary/">AI Work Operating Boundary</a></div></div></section>
+        <section class="learning-tier"><span>3</span><div><h3>Implement, improve, and distribute</h3><p>Connect the repository structure to evidence-led improvement and distribution of the next version.</p><div class="tier-links"><a href="./en/slides/065_xrefkit_repository_overview/">XRefKit Repository Overview</a><a href="./en/slides/073_xrefkit_organization_distribution/">XRefKit Improvement and Distribution</a></div></div></section>
       </div>
     </section>
 
     <section class="landing-section">
-      <div class="section-heading"><h2>End-to-End例: csharp_review</h2><p>Roslyn診断だけでは確認できないC#固有・システム境界の問題を、限定責務としてレビューする例です。</p></div>
+      <div class="section-heading"><h2>End-to-End Example: csharp_review</h2><p>A bounded review responsibility for C# and system-boundary problems that Roslyn diagnostics alone cannot confirm.</p></div>
       <div class="example-flow">
-        <div class="example-step"><strong>1. Goal</strong> 対象範囲、完了状態、受入条件を定義する。すべての検査カテゴリに結果があり、未確認事項が明示されている状態を目指す。</div>
-        <div class="example-step"><strong>2. 意味による選択</strong> 「コンパイラー診断を越えたC#レビュー」という目的から、限定責務を持つ <code>csharp_review</code> を選ぶ。</div>
-        <div class="example-step"><strong>3. Skill・Knowledge</strong> Skillの手順に従い、<a href="https://github.com/synthaicode/XRefKit/blob/main/knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4F6F3AA">C#レビュー基準（XID: 30E6A4F6F3AA）</a>と<a href="https://github.com/synthaicode/XRefKit/blob/main/knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001">共通ソース分析基準（XID: 5F21C8A41001）</a>を必要な分だけ参照する。</div>
-        <div class="example-step"><strong>4. レビュー実行</strong> Roslyn診断を基準線として確定し、診断済みの問題を重複報告せず、言語依存・ライフサイクル・例外経路・不確実性などを検査する。</div>
-        <div class="example-step"><strong>5. Evidence</strong> カテゴリ別の検査表、指摘の重要度・根拠・修正方針、判断、未確認事項、引き継ぎ先を実行記録へ残す。</div>
-        <div class="example-step"><strong>6. 作業進行規約</strong> <code>xrefkit skill verify</code> が作業項目、証跡、未解決事項、役割分離を決定論的に確認する。レビュー内容の正しさ自体は判定しない。</div>
-        <div class="example-step"><strong>7. 品質確認・引き継ぎ</strong> 独立した品質確認を行い、結果を <code>blocked</code>、<code>needs-review</code>、<code>proceed</code> で示す。実装修正、セキュリティ、設計などは対応するSkillへ引き継ぐ。</div>
-        <div class="example-step"><strong>8. 人間による受入れ</strong> 人間がEvidenceと判定を確認し、受入れ、差し戻し、または次の限定責務への移行を決める。</div>
+        <div class="example-step"><strong>1. Goal</strong> Define scope, desired state, and acceptance conditions. The target state has a result for every review category and makes every unconfirmed item explicit.</div>
+        <div class="example-step"><strong>2. Semantic routing</strong> Select <code>csharp_review</code> from the purpose of reviewing C# beyond compiler diagnostics.</div>
+        <div class="example-step"><strong>3. Skill and Knowledge</strong> Follow the Skill procedure and load only the needed parts of the <a href="https://github.com/synthaicode/XRefKit/blob/main/knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4F6F3AA">C# review criteria (XID: 30E6A4F6F3AA)</a> and <a href="https://github.com/synthaicode/XRefKit/blob/main/knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001">common source analysis criteria (XID: 5F21C8A41001)</a>.</div>
+        <div class="example-step"><strong>4. Review execution</strong> Establish Roslyn diagnostics as the baseline, avoid duplicate findings, then inspect language-specific behavior, lifecycle boundaries, exception paths, and uncertainty.</div>
+        <div class="example-step"><strong>5. Evidence</strong> Record category results, finding severity, rationale, remediation direction, judgments, unconfirmed items, and the next owner.</div>
+        <div class="example-step"><strong>6. Workflow protocol</strong> <code>xrefkit skill verify</code> deterministically checks work items, evidence, unresolved concerns, and role separation. It does not judge whether the review content is correct.</div>
+        <div class="example-step"><strong>7. Quality and handoff</strong> An independent quality review returns <code>blocked</code>, <code>needs-review</code>, or <code>proceed</code>. Implementation, security, and design findings move to the corresponding Skills.</div>
+        <div class="example-step"><strong>8. Human acceptance</strong> A person reviews the Evidence and verdict, then accepts the result, returns it for repair, or selects the next bounded responsibility.</div>
       </div>
     </section>
 
     <section class="landing-section">
-      <div class="catalog-directory-links"><span>資料を探す</span><a href="./ja/">日本語カタログ（正）</a><a href="./en/">English supplemental catalog</a><a href="https://github.com/synthaicode/XRefKit">GitHub</a></div>
+      <div class="catalog-directory-links"><span>Find a deck</span><a href="./en/">English catalog</a><a href="./ja/">Japanese translation catalog</a><a href="https://github.com/synthaicode/XRefKit">GitHub</a></div>
     </section>
   </main>
 </body>
