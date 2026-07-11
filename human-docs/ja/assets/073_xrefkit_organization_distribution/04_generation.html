@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8" /><title>実行時資産は世代単位で公開し、current.jsonが現在世代を示します。</title><style>:root {
+<!doctype html><html lang="ja"><head><meta charset="utf-8" /><title>実行識別子で記録を結び、XIDの利用段階を分けます。</title><style>:root {
   --bg: #f8f9fa;
   --panel: #ffffff;
   --ink: #0f172a;
@@ -196,10 +196,4 @@ body {
   background: #fff7ed;
   color: var(--amber);
 }
-</style></head>
-  <body><main class="slide"><header class="header"><div><div class="eyebrow">組織配布</div><h1 class="title">実行時資産は世代単位で公開し、current.jsonが現在世代を示します。</h1></div><div class="brand">XRefKit</div></header>
-  <section class="summary"><div class="summary-label">問い</div><div class="summary-copy">更新途中の資産が混ざることはありませんか。</div><div class="summary-title">新しい世代を完成させてから参照先を切り替えるため、利用側が複数世代の契約や知識を混ぜて読むことを防ぎます。</div></section>
-  <section class="cards">
-    <article class="card"><div class="card-tag">世代</div><p>契約本文、必須XID、マニフェストを一つの世代にまとめます。</p></article>
-    <article class="card"><div class="card-tag">原子的公開</div><p>世代を完成させた後で現在世代の参照先を切り替えます。</p></article>
-    <article class="card"><div class="card-tag">利用契約</div><p>正式な利用側はcurrent.jsonが指す世代を必ず読みます。</p></article></section><div class="takeaway">配布資産の一貫性は、<strong>世代単位の公開</strong>と<strong>正式な参照点</strong>で守ります。</div></main></body></html>
+</style></head><body><main class="slide"><header class="header"><div><div class="eyebrow">改善と組織配布</div><h1 class="title">実行識別子で記録を結び、XIDの利用段階を分けます。</h1></div><div class="brand">XRefKit</div></header><section style="display:grid;grid-template-columns:1.8fr 1fr;gap:24px;align-items:start"><img src="dashboard_xid_usage.jpg" alt="Skill Run Dashboard" style="width:100%;border:1px solid #dbe3ee;border-radius:8px"><section class="cards" style="grid-template-columns:1fr"><article class="card"><div class="card-tag">相関</div><p>同じ実行識別子（run_id）でクライアント記録とMCP監査記録を結びます。</p></article><article class="card"><div class="card-tag">段階</div><p>選択・解決・読込・適用を同じ意味にまとめません。</p></article></section></section><div class="takeaway">不使用XIDだけで削除を決めず、どの段階で止まったかを確認します。</div></main></body></html>
