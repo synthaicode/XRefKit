@@ -1,17 +1,18 @@
 const XREFKIT_DECKS = [
   {
-    id: "065",
-    role: "Repository overview",
-    title: { en: "XRefKit Repository Overview", ja: "XRefKit リポジトリ概要" },
-    summary: {
-      en: "Explains XRefKit as the operating base that connects Goals, Skills, Knowledge, workflow evidence, and MCP distribution.",
-      ja: "Goal、Skill、Knowledge、workflowの証拠、MCP配布を接続する運用基盤としてXRefKitを説明します。",
-    },
-    links: { en: "065_xrefkit_repository_overview", ja: "065_xrefkit_repository_overview" },
+    id: "055",
+    level: "Problem",
+    role: "Problem framing",
+    question: { ja: "なぜ通常のAI利用だけでは、継続可能な業務実行にならないのか。" },
+    title: { ja: "AI活用を継続可能な業務実行に変える" },
+    summary: { ja: "AIの応答終了と業務完了の違いから、Goalと限定責務が必要になる理由を説明します。" },
+    links: { ja: "why-ai-organization-needed" },
   },
   {
     id: "063",
+    level: "Model",
     role: "Execution model",
+    question: { en: "How do Goal, Skills, routing, Knowledge, and workflow connect?", ja: "Goal、Skill、routing、Knowledge、workflowはどう接続するのか。" },
     title: { en: "AI Work Execution", ja: "AI 作業実行の説明資料" },
     summary: {
       en: "Shows how a Goal, bounded Skills, routing, Knowledge, and the workflow protocol make AI work resumable and reviewable.",
@@ -20,18 +21,25 @@ const XREFKIT_DECKS = [
     links: { en: "063_ai_organization_explainer_clear", ja: "063_ai_organization_explainer_clear" },
   },
   {
+    id: "065",
+    level: "Implementation",
+    role: "Repository implementation",
+    question: { en: "How does the repository implement controlled AI work?", ja: "リポジトリは管理可能なAI作業をどう実現するのか。" },
+    title: { en: "XRefKit Repository Overview", ja: "XRefKit リポジトリ概要" },
+    summary: {
+      en: "Explains XRefKit as the operating base that connects Goals, Skills, Knowledge, workflow evidence, and MCP distribution.",
+      ja: "Goal、Skill、Knowledge、workflowの証拠、MCP配布を接続する運用基盤としてXRefKitを説明します。",
+    },
+    links: { en: "065_xrefkit_repository_overview", ja: "065_xrefkit_repository_overview" },
+  },
+  {
     id: "064",
-    role: "Operating boundary",
+    level: "Boundary",
+    role: "Human and AI boundary",
+    question: { en: "What does AI decide, and what remains with humans?" },
     title: { en: "AI Work Operating Boundary" },
     summary: { en: "Explains quality review, closure, handoff, and the decisions that remain with humans." },
     links: { en: "064_ai_team_operating_boundary" },
-  },
-  {
-    id: "054",
-    role: "Production background",
-    title: { ja: "AI を本番利用するための論点" },
-    summary: { ja: "AIを単発の出力評価から継続可能な業務実行へ進める際の論点を整理します。" },
-    links: { ja: "ai-production-topics" },
   },
 ];
 
@@ -57,10 +65,11 @@ function renderRootCard(deck) {
 
 function renderLanguageCard(deck, lang) {
   const other = lang === "ja" ? "en" : "ja";
-  const status = deck.links[other] ? (lang === "ja" ? "英語版あり" : "Japanese version available") : `${lang === "ja" ? "日本語" : "English"} only`;
+  const status = deck.links[other] ? (lang === "ja" ? "英語版あり" : "Japanese version available") : (lang === "ja" ? "日本語のみ" : "English only");
   return `<a class="deck-card" href="${languageLink(lang, deck.links[lang])}">
-    <span class="deck-tag">Deck ${deck.id} · ${deck.role}</span>
+    <span class="deck-tag">${deck.level} · ${deck.role}</span>
     <h2>${deck.title[lang]}</h2>
+    <p class="deck-question">${deck.question[lang]}</p>
     <p>${deck.summary[lang]}</p>
     <div class="status-row"><span class="status-chip ${deck.links[other] ? "dual" : "single"}">${status}</span></div>
   </a>`;

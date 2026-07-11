@@ -19,3 +19,23 @@ For diagram entry points, see
 
 For the canonical language boundary, see
 [docs/policies/030_language_policy.md](../docs/policies/030_language_policy.md#xid-72FB974C8236).
+
+## Public Deck Scope
+
+A public deck has one reader level, one central question, and one learning
+outcome. It should normally contain 8 to 12 slides and should link to another
+deck instead of repeating that deck's explanation.
+
+The public catalog uses four levels:
+
+| Level | Reader starting point | Deck scope |
+| --- | --- | --- |
+| Problem | New to the operating problem | Why prompt-centric AI use does not become durable business execution |
+| Model | Familiar with AI agents | How Goal, Skills, routing, Knowledge, and workflow connect |
+| Implementation | Evaluating XRefKit | How the repository and package implement the operating model |
+| Boundary | Designing governance | What AI may decide and what remains with humans |
+
+The site top page routes readers by their current question. Complete deck
+discovery belongs to the language catalogs under `site/ja/` and `site/en/`.
+Legacy decks may keep stable routes without being listed in the current public
+catalog.

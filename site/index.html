@@ -92,106 +92,47 @@
     <section class="landing-section">
       <div class="section-heading">
         <h2>Start here</h2>
-        <p>Use one learning path: overview first, execution model second, and the operating boundary third.</p>
+        <p>Choose the question that matches what you already understand. Each entry leads to one deck with one learning outcome.</p>
       </div>
 
-      <div class="featured-rail">
-        <article class="featured-card featured-card-primary">
-          <div class="featured-step">Recommended first read</div>
-          <div class="featured-head">
-            <span class="catalog-deck">Deck 065</span>
-            <span class="catalog-lang">JA / EN</span>
-          </div>
-          <h3>XRefKit Repository Overview</h3>
-          <p>Start with what XRefKit provides and how the repository supports controlled AI work.</p>
-          <div class="featured-actions">
-            <a class="featured-link" href="./ja/slides/065_xrefkit_repository_overview/">Japanese →</a>
-            <a class="featured-link" href="./en/slides/065_xrefkit_repository_overview/">English →</a>
+      <div class="entry-path-grid">
+        <article class="entry-path">
+          <div class="entry-path-level">Problem · New to the operating problem</div>
+          <h3>Why is ordinary AI use not enough for business execution?</h3>
+          <p>Understand the gap between an AI response and durable, accepted business work.</p>
+          <a href="./ja/slides/why-ai-organization-needed/">Deck 055 · Japanese →</a>
+        </article>
+        <article class="entry-path">
+          <div class="entry-path-level">Model · Familiar with AI agents</div>
+          <h3>How do Goal, Skills, routing, Knowledge, and workflow connect?</h3>
+          <p>Learn the execution model that keeps bounded responsibilities connected to the Goal.</p>
+          <div class="entry-path-links">
+            <a href="./ja/slides/063_ai_organization_explainer_clear/">Japanese →</a>
+            <a href="./en/slides/063_ai_organization_explainer_clear/">English →</a>
           </div>
         </article>
-
-        <div class="featured-steps">
-          <article class="featured-step-item">
-            <div class="featured-step-item-top">
-              <span class="featured-step-number">1</span>
-              <span class="catalog-deck">Deck 063</span>
-            </div>
-            <h3>AI Work Execution</h3>
-            <p>Follow Goal, Skills, routing, Knowledge, workflow progression, and evidence.</p>
-            <a class="featured-inline-link" href="./ja/slides/063_ai_organization_explainer_clear/">Japanese →</a>
-            <a class="featured-inline-link" href="./en/slides/063_ai_organization_explainer_clear/">English →</a>
-          </article>
-
-          <article class="featured-step-item">
-            <div class="featured-step-item-top">
-              <span class="featured-step-number">2</span>
-              <span class="catalog-deck">Deck 064</span>
-            </div>
-            <h3>AI Work Operating Boundary</h3>
-            <p>Understand quality review, closure, handoff, and what humans must decide.</p>
-            <a class="featured-inline-link" href="./en/slides/064_ai_team_operating_boundary/">English →</a>
-          </article>
-        </div>
+        <article class="entry-path">
+          <div class="entry-path-level">Implementation · Evaluating XRefKit</div>
+          <h3>How does the repository implement controlled AI work?</h3>
+          <p>See the package, runtime, XID loading, evidence, and MCP distribution structure.</p>
+          <div class="entry-path-links">
+            <a href="./ja/slides/065_xrefkit_repository_overview/">Japanese →</a>
+            <a href="./en/slides/065_xrefkit_repository_overview/">English →</a>
+          </div>
+        </article>
+        <article class="entry-path">
+          <div class="entry-path-level">Boundary · Designing governance</div>
+          <h3>What does AI decide, and what remains with humans?</h3>
+          <p>Review quality, closure, handoff, escalation, and human decision boundaries.</p>
+          <a href="./en/slides/064_ai_team_operating_boundary/">Deck 064 · English →</a>
+        </article>
       </div>
-    </section>
-
-    <section class="landing-section">
-      <div class="section-heading">
-        <h2>Deck catalog</h2>
-        <p>
-          Filter by language, then open the deck that matches your audience and depth.
-          The catalog is organized as public explainers, not as the repository's internal docs map.
-        </p>
+      <div class="catalog-directory-links">
+        <span>Looking for every published deck?</span>
+        <a href="./ja/">Japanese catalog →</a>
+        <a href="./en/">English catalog →</a>
       </div>
-
-      <div class="catalog-filter" role="tablist" aria-label="Language filter">
-        <button class="filter-button is-active" type="button" data-filter="all" aria-pressed="true">All</button>
-        <button class="filter-button" type="button" data-filter="ja" aria-pressed="false">Japanese</button>
-        <button class="filter-button" type="button" data-filter="en" aria-pressed="false">English</button>
-      </div>
-
-      <div class="catalog-grid" data-deck-catalog="root"></div>
     </section>
   </main>
-
-  <script src="./assets/deck-catalog.js"></script>
-  <script>
-    const buttons = [...document.querySelectorAll("[data-filter]")];
-    const cards = [...document.querySelectorAll(".catalog-card")];
-
-    function applyFilter(filter) {
-      for (const button of buttons) {
-        const active = button.dataset.filter === filter;
-        button.classList.toggle("is-active", active);
-        button.setAttribute("aria-pressed", active ? "true" : "false");
-      }
-
-      const visibleCards = [];
-      for (const card of cards) {
-        const langs = (card.dataset.lang || "").split(",");
-        const visible = filter === "all" || langs.includes(filter);
-        card.classList.toggle("is-filtered-out", !visible);
-        card.classList.remove("catalog-card-last-row-wide");
-        if (visible) visibleCards.push(card);
-      }
-
-      if (window.innerWidth > 720 && visibleCards.length % 3 === 2) {
-        for (const card of visibleCards.slice(-2)) {
-          card.classList.add("catalog-card-last-row-wide");
-        }
-      }
-    }
-
-    for (const button of buttons) {
-      button.addEventListener("click", () => applyFilter(button.dataset.filter));
-    }
-
-    window.addEventListener("resize", () => {
-      const active = document.querySelector(".filter-button.is-active")?.dataset.filter || "all";
-      applyFilter(active);
-    });
-
-    applyFilter("all");
-  </script>
 </body>
 </html>
