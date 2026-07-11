@@ -18,8 +18,8 @@
 
     <section class="landing-section model-main" aria-labelledby="model-heading">
       <div class="section-heading">
-        <h2 id="model-heading">XRefKitの構成と責任境界</h2>
-        <p>構成要素を選ぶと、その役割を説明するスライドへ直接移動します。</p>
+        <h2 id="model-heading">1. XRefKit内部の動作</h2>
+        <p>一つのAI作業をGoalから人間による受入れまでつなぐ、実行時の責任境界です。</p>
       </div>
       <object class="model-object" data="./assets/xrefkit_model_en.svg" type="image/svg+xml" aria-label="XRefKitのGoal、Semantic routing、Skill、Knowledge、Workflow protocol、Evidence、人間への返却、改善と配布の全体図">
         <a href="./assets/xrefkit_model_en.svg">XRefKit全体図を開く</a>
@@ -30,6 +30,22 @@
         <p><a href="./ja/slides/063_ai_organization_explainer_clear/#workflow-protocol">Workflow protocol</a>は作業状態と証跡を記録し、<a href="./ja/slides/064_ai_team_operating_boundary/#closure">Closure</a>は進行の完全性を決定論的に照合します。ただし、Closureは成果物の正しさや業務上の採用を決めません。最終的な責任は<a href="./ja/slides/064_ai_team_operating_boundary/#acceptance">Human acceptance</a>として人間に戻ります。実行中の判断、未解決事項、根拠は<a href="./ja/slides/063_ai_organization_explainer_clear/#evidence">Evidence</a>へ残り、<a href="./ja/slides/065_xrefkit_repository_overview/#xid">XID</a>で後から辿れます。</p>
       </div>
       <p class="improvement-note">Evidenceは人間の改善判断の入力です。AIが実行結果から組織ルールを自動的に書き換える仕組みではありません。</p>
+    </section>
+
+    <section class="landing-section distribution-main" aria-labelledby="distribution-heading">
+      <div class="section-heading">
+        <h2 id="distribution-heading">2. 複数人で共有する仕組み</h2>
+        <p>XRefKitで管理した同じSkill、Knowledge、実行契約を、MCP経由で複数の利用者側AIへ届けます。</p>
+      </div>
+      <object class="distribution-object" data="./assets/xrefkit_mcp_en.svg" type="image/svg+xml" aria-label="XRefKitの管理資産をMCPが選択して複数のAIクライアントへ配信する図">
+        <a href="./assets/xrefkit_mcp_en.svg">XRefKit MCP配信図を開く</a>
+      </object>
+      <div class="model-reading">
+        <h3>MCPが共有するもの</h3>
+        <p>組織は、Skill、Knowledge、実行契約、一覧、XIDをXRefKitの管理資産として維持します。MCPはその一覧を提示し、利用目的に合う資産だけを選択・解決して各利用者側AIへ返します。全利用者へリポジトリ全体を読み込ませず、同じ識別子と同じ版の管理資産を必要な分だけ共有できます。</p>
+        <p>MCPは検索・選択・参照解決・配信を担う読取り境界です。Skillの実行、クライアント用ツールの副作用、Evidenceの記録、終了確認は各利用者のクライアント側に残ります。そのため、複数人で同じKnowledgeと手順を使いながら、個々の実行権限と作業記録を混ぜずに運用できます。</p>
+      </div>
+      <p class="improvement-note">共有するのは管理された定義と知識です。MCPサーバーが利用者に代わって業務作業を実行するわけではありません。</p>
     </section>
 
     <section class="landing-section">
