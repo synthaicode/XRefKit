@@ -1,7 +1,7 @@
 order	slide_path	narration
-01a	../../assets/065_xrefkit_repository_overview/01_title_q.png	聞き手: 055で示した解決策は、XRefKitのどこに実装されているのですか。
-01b	../../assets/065_xrefkit_repository_overview/01_title.png	解説: 055では、AIの特性から完了、責務、進行、判断材料、接続の問題を分けました。065では、それぞれをXRefKitのどの構造が担うかを説明します。
-02a	../../assets/065_xrefkit_repository_overview/02_not_docs_q.png	聞き手: 055で分けた解決策は、どの実装構造が担当するのですか。
+01a	../../assets/065_xrefkit_repository_overview/01_title_q.png	聞き手: AIの特性に応じて分けた解決策は、XRefKitのどこに実装されているのですか。
+01b	../../assets/065_xrefkit_repository_overview/01_title.png	解説: 通常のAI利用では、完了、責務、進行、判断材料、接続に別々の問題があります。問題ごとに異なる実装構造を対応させます。
+02a	../../assets/065_xrefkit_repository_overview/02_not_docs_q.png	聞き手: 完了、責務、進行、判断材料、接続は、どの実装構造が担当するのですか。
 02b	../../assets/065_xrefkit_repository_overview/02_not_docs.png	解説: 目標状態は実行管理、担当範囲は責務定義、進行は実行記録、判断材料はXID本文が持ち、次作業選択が責務間を接続します。
 03a	../../assets/065_xrefkit_repository_overview/03_layers_q.png	聞き手: では、このリポジトリは何をどう分けているのですか。
 03b	../../assets/065_xrefkit_repository_overview/03_layers.png	解説: パッケージ、責務定義、組織固有知識、実行記録、元資料を役割別に分け、読む相手と目的を分離しています。
@@ -14,4 +14,4 @@ order	slide_path	narration
 07a	../../assets/065_xrefkit_repository_overview/07_human_q.png	聞き手: 実行後に、どの組織固有知識が使われたか確認できますか。
 07b	../../assets/065_xrefkit_repository_overview/07_human.png	解説: 責務実行とMCPを実行識別子で相関し、XIDの選択、解決、読込み、適用を区別して記録します。利用証拠は一覧、責務、組織固有知識を改善する入力になります。
 08a	../../assets/065_xrefkit_repository_overview/08_conclusion_q.png	聞き手: この実装構造を、組織の利用環境へどう届けるのですか。
-08b	../../assets/065_xrefkit_repository_overview/08_conclusion.png	解説: XRefKitは、055で分けた解決策を責務定義、組織固有知識、実行管理、証拠、参照解決として実装し、同じ契約のままリポジトリ、導入済みパッケージ、MCPから利用できるようにします。
+08b	../../assets/065_xrefkit_repository_overview/08_conclusion.png	解説: XRefKitは、問題ごとに分けた解決策を責務定義、組織固有知識、実行管理、証拠、参照解決として実装し、同じ契約のままリポジトリ、導入済みパッケージ、MCPから利用できるようにします。
