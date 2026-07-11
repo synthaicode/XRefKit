@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <title>XRefKitは、問題ごとの解決策をリポジトリ構造として実装します。</title>
+  <title>概念ごとに、実装位置と記録先を分けています。</title>
   <style>:root {
   --bg: #f8f9fa;
   --panel: #ffffff;
@@ -208,27 +208,27 @@ body {
     <header class="header">
       <div>
         <div class="eyebrow">リポジトリ概要</div>
-        <h1 class="title">XRefKitは、問題ごとの解決策をリポジトリ構造として実装します。</h1>
+        <h1 class="title">概念ごとに、実装位置と記録先を分けています。</h1>
       </div>
       <div class="brand">XRefKit</div>
     </header>
     <section class="summary">
       <div class="summary-label">問い</div>
-      <div class="summary-copy">AIの特性に応じて分けた解決策は、XRefKitのどこに実装されているのですか。</div>
-      <div class="summary-title">通常のAI利用では、完了、責務、進行、判断材料、接続に別々の問題があります。問題ごとに異なる実装構造を対応させます。</div>
+      <div class="summary-copy">業務実行モデルは、XRefKitのどこに実装されているのですか。</div>
+      <div class="summary-title">Goal、Skill、Knowledge、Semantic routing、Workflow protocol、Evidence、Distributionを、同じ文書へ混ぜずに対応する実装へ配置します。</div>
     </section>
     <section class="cards">
       <article class="card">
-        <div class="card-tag">完了と責務</div>
-        <p>目標の状態管理と責務定義を別々に持ちます。</p>
+        <div class="card-tag">Goal・Skill</div>
+        <p>Goal stateとSkill packageが、完了条件と限定責務を別々に持ちます。</p>
       </article>
       <article class="card">
-        <div class="card-tag">進行と判断材料</div>
-        <p>実行管理とXID参照知識を分離します。</p>
+        <div class="card-tag">Knowledge・routing</div>
+        <p>XID管理資産とresolver・選択規則を分離します。</p>
       </article>
       <article class="card">
-        <div class="card-tag">接続と証拠</div>
-        <p>次作業選択と実行記録で、責務間を追跡可能につなぎます。</p>
+        <div class="card-tag">Workflow protocol・Evidence</div>
+        <p>xrefkit skillとRuntimeが進行を管理し、run logへ証跡を残します。</p>
       </article></section>
     <div class="takeaway">ここからは<strong>なぜ必要か</strong>ではなく、<strong>どこに実装されるか</strong>を見ます。</div>
   </main>

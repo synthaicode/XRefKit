@@ -1,0 +1,17 @@
+order	slide_path	narration
+01a	../../assets/064_ai_team_operating_boundary/01_title_q.html	問い: ツール・AI・人間は、それぞれ何を決めるのか。
+01b	../../assets/064_ai_team_operating_boundary/01_title.html	答え: 形式的制御、分析と推論、業務上の受入れを分けます。
+02a	../../assets/064_ai_team_operating_boundary/02_review_q.html	問い: ツールとRuntimeは何を決めるのか。
+02b	../../assets/064_ai_team_operating_boundary/02_review.html	答え: 形式検証、状態記録、参照解決、進行と終了条件を確認します。
+03a	../../assets/064_ai_team_operating_boundary/03_concern_q.html	問い: AIは何を担当するのか。
+03b	../../assets/064_ai_team_operating_boundary/03_concern.html	答え: 分析、生成、推論、選択肢と未知事項の表明を担当します。
+04a	../../assets/064_ai_team_operating_boundary/04_roles_q.html	問い: 人間へ戻すのはいつか。
+04b	../../assets/064_ai_team_operating_boundary/04_roles.html	答え: 受入れ、例外承認、リスク、不可逆判断、責任の引受けで戻します。
+05a	../../assets/064_ai_team_operating_boundary/05_closure_q.html	問い: 形式検証が通れば業務成果も承認されるか。
+05b	../../assets/064_ai_team_operating_boundary/05_closure.html	答え: Workflow protocolの終了確認とHuman acceptanceは別です。
+06a	../../assets/064_ai_team_operating_boundary/06_handoff_q.html	問い: Handoffで何を渡すか。
+06b	../../assets/064_ai_team_operating_boundary/06_handoff.html	答え: Evidence、未解決事項、判断、次の所有者を渡します。
+07a	../../assets/064_ai_team_operating_boundary/07_maturity_q.html	問い: 外部入力は上位方針を変えられるか。
+07b	../../assets/064_ai_team_operating_boundary/07_maturity.html	答え: 下位入力は上位のGoal、運用方針、責任境界を再定義できません。
+08a	../../assets/064_ai_team_operating_boundary/08_conclusion_q.html	問い: 三者を分ける意味は何か。
+08b	../../assets/064_ai_team_operating_boundary/08_conclusion.html	答え: 決定論的制御、AI判断、人間責任を混同しません。

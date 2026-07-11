@@ -1,143 +1,75 @@
 <!doctype html>
-<html lang="en">
+<html lang="ja">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>XRefKit Public Slides</title>
+  <title>XRefKit</title>
   <link rel="stylesheet" href="./assets/common.css" />
 </head>
 <body>
   <main class="landing">
     <section class="hero-shell">
-      <div class="hero-grid">
-        <div class="hero-copy">
-          <p class="hero-note">Controlled AI Work With XRefKit</p>
-          <h1>AI work needs a goal,<br />bounded responsibility, and proof.</h1>
-          <p class="lead hero-lead">
-            AI can focus its capabilities when the purpose, decision scope, and expected output are bounded.
-            XRefKit defines the overall desired state and acceptance conditions as a Goal, divides the work
-            into bounded responsibilities, and connects them until the Goal is accepted.
-          </p>
-        </div>
-
-        <div class="hero-panel">
-          <div class="flow-board" aria-label="XRefKit operating flow">
-            <div class="flow-row flow-row-top">
-              <div class="flow-node">Goal + acceptance</div>
-              <div class="flow-connector">→</div>
-              <div class="flow-node">Bounded responsibilities as Skills</div>
-            </div>
-            <div class="flow-drop">↓</div>
-            <div class="flow-row flow-row-middle">
-              <div class="flow-node flow-node-split">Semantic routing selects the next Skill</div>
-              <div class="flow-connector">→</div>
-              <div class="flow-node flow-node-strong">Workflow protocol</div>
-            </div>
-            <div class="flow-drop">↓</div>
-            <div class="flow-row flow-row-bottom">
-              <div class="flow-node">Evidence / proof</div>
-              <div class="flow-connector">→</div>
-              <div class="flow-node">Human acceptance / handoff</div>
-            </div>
-          </div>
-          <p class="flow-caption">
-            The Goal holds the completion criteria. Skills focus AI work, routing connects responsibilities,
-            and evidence makes workflow progression reviewable before human acceptance.
-          </p>
-        </div>
+      <div class="hero-copy">
+        <p class="hero-note">XRefKit</p>
+        <h1>AIの局所作業を、<br />業務の受入れまで切らさずにつなぐ。</h1>
+        <p class="lead hero-lead">XRefKitは、Goal、Skill、Knowledge、Workflow protocol、Evidenceを分離し、AIの作業を検証可能な業務状態として接続する実行基盤です。</p>
       </div>
     </section>
 
-    <section class="landing-section">
+    <section class="landing-section" aria-labelledby="model-heading">
       <div class="section-heading">
-        <h2>AI characteristics</h2>
-        <p>These characteristics explain why prompt instructions alone do not create durable business execution.</p>
+        <h2 id="model-heading">二つの循環で、実行と改善を分ける</h2>
+        <p>AIは限定された作業を行い、人間は受入れと組織ルールの改訂を担います。</p>
       </div>
+      <div class="loop-diagram">
+        <div class="loop-caption">業務実行ループ</div>
+        <div class="loop-line">
+          <div class="loop-step">Goal<br />目標と受入条件</div><div class="loop-step">Semantic routing<br />意味による次作業選択</div><div class="loop-step">Skill<br />限定責務</div><div class="loop-step">Workflow protocol<br />作業進行規約</div><div class="loop-step">Evidence<br />証跡</div><div class="loop-step">Human acceptance<br />人間による受入れ・引継ぎ</div>
+        </div>
+        <div class="loop-caption">組織改善ループ</div>
+        <div class="loop-line improvement">
+          <div class="loop-step">Evidence</div><div class="loop-step">人間による評価</div><div class="loop-step">Knowledge・Skill・routing・受入条件の改訂</div><div class="loop-step">検証</div><div class="loop-step">バージョン化・パッケージ化</div><div class="loop-step">XID・MCP・クライアント配布</div><div class="loop-step">次の業務実行</div>
+        </div>
+      </div>
+      <p class="improvement-note">Evidenceは人間の改善判断の入力です。AIが実行結果から組織ルールを自動的に書き換える仕組みではありません。</p>
+    </section>
+
+    <section class="landing-section">
+      <div class="section-heading"><h2>XRefKitが必要になるAIの特性</h2><p>通常のプロンプト利用だけでは、局所作業と業務完了の間が管理されません。</p></div>
       <div class="trait-grid">
-        <div class="trait-item"><span>01</span><p>Responds to the context and request available now.</p></div>
-        <div class="trait-item"><span>02</span><p>Can complete a local task without knowing whether the business work is complete.</p></div>
-        <div class="trait-item"><span>03</span><p>May stop while the larger body of work is still incomplete.</p></div>
-        <div class="trait-item"><span>04</span><p>Focuses its capabilities when purpose, decision scope, and expected output are bounded.</p></div>
-        <div class="trait-item"><span>05</span><p>Does not automatically turn execution results into organizational Knowledge or Skill definitions.</p></div>
+        <div class="trait-item"><span>01</span><p>現在の依頼と文脈に応答する。</p></div>
+        <div class="trait-item"><span>02</span><p>局所作業を終えても、業務全体の完了は分からない。</p></div>
+        <div class="trait-item"><span>03</span><p>業務が未完了でも応答を終了できる。</p></div>
+        <div class="trait-item"><span>04</span><p>目的、判断範囲、入力、出力を限定すると能力を集中できる。</p></div>
+        <div class="trait-item"><span>05</span><p>組織固有知識や実行結果を自動的に保持・改訂しない。</p></div>
       </div>
     </section>
 
     <section class="landing-section">
-      <div class="section-heading">
-        <h2>Prepared operating structure</h2>
-        <p>XRefKit externalizes the structure that connects focused AI work to a business Goal.</p>
-      </div>
-      <div class="mechanism-map">
-        <div class="mechanism-row"><strong>Context-bound response</strong><span>Knowledge supplies organization-specific rules and evidence.</span></div>
-        <div class="mechanism-row"><strong>Capability through focus</strong><span>Skills define bounded purpose, decisions, inputs, and outputs.</span></div>
-        <div class="mechanism-row"><strong>Local task versus business completion</strong><span>A Goal defines the desired state and acceptance conditions.</span></div>
-        <div class="mechanism-row"><strong>Stopping before the work is complete</strong><span>The workflow protocol records progression, unknowns, evidence, and handoff.</span></div>
-      </div>
-      <p class="routing-note"><strong>Semantic routing</strong> is the connection mechanism created by decomposition: it selects the next bounded Skill from the Goal and current state.</p>
-    </section>
-
-    <section class="landing-section">
-      <div class="section-heading">
-        <h2>Improve the structure during operation</h2>
-        <p>AI does not automatically preserve learning as organizational operating knowledge, so improvement is externalized to XRefKit.</p>
-      </div>
-      <div class="improvement-flow">
-        <div><strong>Evidence / proof</strong><span>XIDs, work items, artifacts, judgments, unknowns, and outcomes record what happened.</span></div>
-        <div><strong>Quality and acceptance</strong><span>Quality gates and human acceptance record responsibility for the decision.</span></div>
-        <div><strong>Update the structure</strong><span>Humans use the evidence to revise Knowledge, Skills, routing, and acceptance criteria.</span></div>
-      </div>
-      <p class="improvement-note">Evidence is an input to human improvement decisions. It does not automatically optimize or rewrite the operating structure.</p>
-    </section>
-
-    <section class="landing-section">
-      <div class="section-heading">
-        <h2>Start here</h2>
-        <p>Start with the AI-specific problem, then follow how XRefKit executes bounded work, separates control from judgment, returns decisions to humans, and distributes managed assets.</p>
-      </div>
-
+      <div class="section-heading"><h2>Guided Tour</h2><p>なぜ必要かから、改善した次の版を配布するまでを順に辿ります。</p></div>
       <div class="entry-path-grid">
-        <article class="entry-path">
-          <div class="entry-path-level">Problem · New to the operating problem</div>
-          <h3>Why is ordinary AI use not enough for business execution?</h3>
-          <p>Understand the gap between an AI response and durable, accepted business work.</p>
-          <a href="./ja/slides/why-ai-organization-needed/">Deck 055 · Japanese →</a>
-        </article>
-        <article class="entry-path">
-          <div class="entry-path-level">Execution · Connecting the solutions</div>
-          <h3>How does XRefKit connect a Goal to bounded responsibilities?</h3>
-          <p>See how routing, Knowledge, and the workflow protocol connect multiple responsibilities without losing the Goal.</p>
-          <div class="entry-path-links">
-            <a href="./ja/slides/063_ai_organization_explainer_clear/">Japanese →</a>
-            <a href="./en/slides/063_ai_organization_explainer_clear/">English →</a>
-          </div>
-        </article>
-        <article class="entry-path">
-          <div class="entry-path-level">Implementation · Control and judgment</div>
-          <h3>Which parts are enforced by tools, and which parts require AI judgment?</h3>
-          <p>See how the repository separates managed definitions, execution controls, evidence, and judgment inputs.</p>
-          <div class="entry-path-links">
-            <a href="./ja/slides/065_xrefkit_repository_overview/">Japanese →</a>
-            <a href="./en/slides/065_xrefkit_repository_overview/">English →</a>
-          </div>
-        </article>
-        <article class="entry-path">
-          <div class="entry-path-level">Boundary · Returning to humans</div>
-          <h3>When must XRefKit return a decision to a human?</h3>
-          <p>Review acceptance, uncertainty, risk, escalation, and irreversible decision boundaries.</p>
-          <a href="./en/slides/064_ai_team_operating_boundary/">Deck 064 · English →</a>
-        </article>
-        <article class="entry-path">
-          <div class="entry-path-level">Distribution · Organizational use</div>
-          <h3>How are managed Knowledge and procedures delivered to the organization?</h3>
-          <p>See how versioned packages, XID resolution, and MCP deliver the same contract to multiple AI environments.</p>
-          <a href="./ja/slides/073_xrefkit_organization_distribution/">Deck 073 · Japanese →</a>
-        </article>
+        <article class="entry-path"><div class="entry-path-level">Why</div><h3>なぜ通常のAI利用だけでは業務実行にならないのか</h3><p>AIの特性と、必要になる構成要素を確認します。</p><a href="./ja/slides/why-ai-organization-needed/">資料055を見る</a></article>
+        <article class="entry-path"><div class="entry-path-level">How</div><h3>Goalから受入れまで、限定責務をどう接続するか</h3><p>業務実行ループの接続順序を確認します。</p><a href="./ja/slides/063_ai_organization_explainer_clear/">資料063を見る</a></article>
+        <article class="entry-path"><div class="entry-path-level">Boundary</div><h3>ツール・AI・人間は、それぞれ何を決めるのか</h3><p>形式的制御、推論、人間への返却条件を分けます。</p><a href="./ja/slides/064_ai_team_operating_boundary/">資料064を見る</a></article>
+        <article class="entry-path"><div class="entry-path-level">Implementation</div><h3>業務実行モデルは、XRefKitのどこに実装されるのか</h3><p>読むもの、従うもの、残すものと実装位置を対応させます。</p><a href="./ja/slides/065_xrefkit_repository_overview/">資料065を見る</a></article>
+        <article class="entry-path"><div class="entry-path-level">Improvement and Distribution</div><h3>実行証跡から改善し、検証された次の版をどう配布するのか</h3><p>人間による改訂、検証、版管理、XID・MCP配布を辿ります。</p><a href="./ja/slides/073_xrefkit_organization_distribution/">資料073を見る</a></article>
       </div>
-      <div class="catalog-directory-links">
-        <span>Looking for every published deck?</span>
-        <a href="./ja/">Japanese catalog →</a>
-        <a href="./en/">English catalog →</a>
+    </section>
+
+    <section class="landing-section">
+      <div class="section-heading"><h2>End-to-End例: コードレビュー</h2><p>一つのGoalが、限定責務の実行と人間による受入れまで進む例です。</p></div>
+      <div class="example-flow">
+        <div class="example-step"><strong>1. Goal</strong> レビュー完了状態と受入条件を定義する。</div>
+        <div class="example-step"><strong>2. Semantic routing</strong> 対象と現在状態からレビューSkillを選ぶ。</div>
+        <div class="example-step"><strong>3. Skill・Knowledge</strong> 限定されたレビュー責務を実行し、組織基準をXIDで参照する。</div>
+        <div class="example-step"><strong>4. Evidence</strong> findings、judgments、unknowns、artifactsを実行記録へ残す。</div>
+        <div class="example-step"><strong>5. Workflow protocol</strong> 作業項目、証跡、未解決事項、終了条件を確認する。</div>
+        <div class="example-step"><strong>6. Human acceptance</strong> 人間が受け入れ、差し戻し、または次の責務へ引き継ぐ。</div>
       </div>
+    </section>
+
+    <section class="landing-section">
+      <div class="catalog-directory-links"><span>すべての資料を探す</span><a href="./ja/">日本語カタログ</a><a href="./en/">English catalog</a></div>
     </section>
   </main>
 </body>

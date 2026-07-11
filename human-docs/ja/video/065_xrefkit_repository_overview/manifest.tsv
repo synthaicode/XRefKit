@@ -1,6 +1,6 @@
 order	slide_path	narration
-01a	../../assets/065_xrefkit_repository_overview/01_title_q.png	聞き手: AIの特性に応じて分けた解決策は、XRefKitのどこに実装されているのですか。
-01b	../../assets/065_xrefkit_repository_overview/01_title.png	解説: 通常のAI利用では、完了、責務、進行、判断材料、接続に別々の問題があります。問題ごとに異なる実装構造を対応させます。
+01a	../../assets/065_xrefkit_repository_overview/01_title_q.png	聞き手: 業務実行モデルは、XRefKitのどこに実装されているのですか。
+01b	../../assets/065_xrefkit_repository_overview/01_title.png	解説: Goal、Skill、Knowledge、Semantic routing、Workflow protocol、Evidence、Distributionを対応する実装位置へ分けます。
 02a	../../assets/065_xrefkit_repository_overview/02_not_docs_q.png	聞き手: 完了、責務、進行、判断材料、接続は、どの実装構造が担当するのですか。
 02b	../../assets/065_xrefkit_repository_overview/02_not_docs.png	解説: 目標状態は実行管理、担当範囲は責務定義、進行は実行記録、判断材料はXID本文が持ち、次作業選択が責務間を接続します。
 03a	../../assets/065_xrefkit_repository_overview/03_layers_q.png	聞き手: では、このリポジトリは何をどう分けているのですか。

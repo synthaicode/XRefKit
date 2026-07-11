@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI Work Execution Explainer Preview</title><style>
+<title>XRefKit Business Execution Model</title><link rel="stylesheet" href="../../../assets/common.css"><style>
 body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#0f172a;color:#f8fafc}main{max-width:1180px;margin:0 auto;padding:28px 20px 48px}h1{margin:0 0 20px;font-size:28px}.viewer{background:#111827;border:1px solid #334155;border-radius:8px;padding:16px}img{display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:white;border-radius:6px}.controls{display:flex;gap:12px;align-items:center;margin-top:14px}button{min-width:92px;padding:10px 14px;border:0;border-radius:6px;background:#2563eb;color:white;font-size:16px;font-weight:700;cursor:pointer}button.secondary{background:#475569}.counter{color:#cbd5e1;font-weight:700}.narration{margin-top:16px;padding:18px;border-left:5px solid #60a5fa;background:#1e293b;border-radius:6px;font-size:18px;line-height:1.65}</style></head>
-<body><main><h1>AI Work Execution Explainer Preview</h1><section class="viewer"><img id="slide" src="../../assets/063_ai_organization_explainer_clear/01_title.png" alt=""><div class="controls"><button class="secondary" id="prev">Prev</button><button id="next">Next</button><span class="counter" id="counter"></span></div><div class="narration" id="narration"></div></section></main>
+<body><main><h1>XRefKit Business Execution Model</h1><nav data-xrefkit-navigation="063" aria-label="Deck navigation"></nav><section class="viewer"><img id="slide" src="../../assets/063_ai_organization_explainer_clear/01_title.png" alt="Business execution loop from Goal to human acceptance"><div class="controls"><button class="secondary" id="prev">Prev</button><button id="next">Next</button><span class="counter" id="counter"></span></div><div class="narration" id="narration"></div></section></main>
 <script>
 const slides=[
 ["01_title.png","The model connects Goal, routing, Skill Run, workflow state, and acceptance so bounded work reaches the business endpoint."],
@@ -20,4 +20,4 @@ const slides=[
 ["12_license.png","This does not prevent AI from stopping. It prevents work from being lost when AI stops."]
 ].map(([file,narration])=>[`../../assets/063_ai_organization_explainer_clear/${file}`,narration]);
 let index=0;const image=document.getElementById("slide"),narration=document.getElementById("narration"),counter=document.getElementById("counter");function render(){image.src=slides[index][0];narration.textContent=slides[index][1];counter.textContent=`${index+1} / ${slides.length}`;}document.getElementById("prev").onclick=()=>{index=Math.max(0,index-1);render()};document.getElementById("next").onclick=()=>{index=Math.min(slides.length-1,index+1);render()};render();
-</script></body></html>
+</script><script src="../../../assets/xrefkit-information-model.js"></script></body></html>

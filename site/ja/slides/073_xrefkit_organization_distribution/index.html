@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>XRefKit 組織配布</title>
+  <link rel="stylesheet" href="../../../assets/common.css" />
   <style>
     body { margin: 0; font-family: Inter, "Noto Sans JP", sans-serif; background: #f8f9fa; color: #0f172a; }
     main { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; }
@@ -17,16 +18,18 @@
 </head>
 <body>
   <main>
-    <h1>XRefKit 組織配布</h1>
-    <p class="lead">管理・検証された知識と手順を、同じ契約で組織のAI利用環境へ届ける仕組みを説明します。</p>
+    <h1>XRefKit 改善と組織配布</h1>
+    <p class="lead">Evidenceを人間が評価し、Knowledge、Skill、routing、受入条件を改訂・検証して、次の版をAI利用環境へ届ける循環を説明します。</p>
+    <nav data-xrefkit-navigation="073" aria-label="資料ナビゲーション"></nav>
     <div id="slides"></div>
   </main>
+  <script src="../../../assets/xrefkit-information-model.js"></script>
   <script>
     const slides = [
-      ["01a", "01_title_q", "管理された知識と手順を、組織のAI利用環境へどう届けるのですか。"],
-      ["01b", "01_title", "XRefKitは、検証済みの知識と手順を同じ契約で配布します。"],
-      ["02a", "02_unit_q", "組織へ配布する単位には、何が含まれるのですか。"],
-      ["02b", "02_unit", "文書一式ではなく、実行に必要な契約と資産を配布します。"],
+      ["01a", "01_title_q", "実行証跡から、組織の知識と手順をどう改善するのですか。"],
+      ["01b", "01_title", "Evidenceを、人間が改善判断を行うための入力にします。"],
+      ["02a", "02_unit_q", "改訂したKnowledgeやSkillは、そのまま公開するのですか。"],
+      ["02b", "02_unit", "改訂内容を検証し、承認された版だけを配布対象にします。"],
       ["03a", "03_package_q", "これらの配布資産は、どこにまとめられるのですか。"],
       ["03b", "03_package", "Pythonパッケージに実行、MCP、ツール、責務資産をまとめます。"],
       ["04a", "04_generation_q", "更新途中の資産が混ざることはありませんか。"],
@@ -37,7 +40,7 @@
       ["06b", "06_mcp", "MCPは配布と参照解決を担い、作業実行はクライアント側が行います。"],
       ["07a", "07_bootstrap_q", "クライアントは、受け取った配布物をそのまま信頼するのですか。"],
       ["07b", "07_bootstrap", "取得後に、ハッシュ、版、互換性を確認してから利用します。"],
-      ["08a", "08_conclusion_q", "管理と配布を分けると、組織では何が揃うのですか。"],
+      ["08a", "08_conclusion_q", "配布された次の版は、どこへ戻るのですか。"],
       ["08b", "08_conclusion", "一つの管理済み正本を、同じ契約で複数のAI利用環境へ届けられます。"],
     ];
     const container = document.getElementById("slides");
