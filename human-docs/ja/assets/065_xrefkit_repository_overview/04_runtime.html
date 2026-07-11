@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <title>責務の実行を、記録と終了判定を持つ実行管理枠で囲います。</title>
+  <title>作業進行規約を、記録と終了判定を持つ実行管理枠として実装します。</title>
   <style>:root {
   --bg: #f8f9fa;
   --panel: #ffffff;
@@ -208,14 +208,14 @@ body {
     <header class="header">
       <div>
         <div class="eyebrow">リポジトリ概要</div>
-        <h1 class="title">責務の実行を、記録と終了判定を持つ実行管理枠で囲います。</h1>
+        <h1 class="title">作業進行規約を、記録と終了判定を持つ実行管理枠として実装します。</h1>
       </div>
       <div class="brand">XRefKit</div>
     </header>
     <section class="summary">
       <div class="summary-label">問い</div>
       <div class="summary-copy">責務定義があれば、そのまま実行すればいいのではないですか。</div>
-      <div class="summary-title">xrefkit skill runコマンドで開始し、作業項目、成果物、懸念事項、役割分離を記録してから閉じます。責務定義を読むだけでは完了しません。</div>
+      <div class="summary-title">xrefkit skill runコマンドで責務実行を開始し、作業項目、成果物、懸念事項、役割分離を記録してから閉じます。これが055で示した進行問題への実装です。</div>
     </section>
     <section class="cards">
       <article class="card">
@@ -230,7 +230,7 @@ body {
         <div class="card-tag">終了</div>
         <p>未完了、未記録、未解決の懸念事項があると終了が拒否されます。</p>
       </article></section>
-    <div class="takeaway">責務定義は手順書ではなく、<strong>実行記録ごと管理される作業単位</strong>として扱います。</div>
+    <div class="takeaway">限定責務と作業進行規約を混ぜず、<strong>責務定義</strong>と<strong>実行管理</strong>に分けます。</div>
   </main>
 </body>
 </html>

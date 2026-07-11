@@ -11,18 +11,12 @@
     {"source": "human-docs/ja/assets/065_xrefkit_repository_overview", "target": "ja/assets/065_xrefkit_repository_overview", "include": ["*.png"]},
     {"source": "human-docs/ja/assets/055_why_ai_organization_needed", "target": "ja/slides/why-ai-organization-needed", "include": ["*.png"]},
     {"source": "human-docs/ja/assets/054_why_ai_organization_needed", "target": "ja/slides/ai-production-topics", "include": ["*.png"]},
-    {"source": "human-docs/ja/assets/056_structure_for_ai_organization", "target": "ja/slides/structure-for-ai-organization", "include": ["*.png"]},
     {"source": "human-docs/en/video/063_ai_organization_explainer_clear", "target": "en/slides/063_ai_organization_explainer_clear", "include": ["index.html", "manifest.tsv"]},
     {"source": "human-docs/en/video/064_ai_team_operating_boundary", "target": "en/slides/064_ai_team_operating_boundary", "include": ["index.html", "manifest.tsv"]},
     {"source": "human-docs/en/video/065_xrefkit_repository_overview", "target": "en/slides/065_xrefkit_repository_overview", "include": ["index.html", "manifest.tsv"]},
     {"source": "human-docs/ja/video/063_ai_organization_explainer_clear", "target": "ja/slides/063_ai_organization_explainer_clear", "include": ["index.html", "manifest.tsv"]},
     {"source": "human-docs/ja/video/065_xrefkit_repository_overview", "target": "ja/slides/065_xrefkit_repository_overview", "include": ["index.html", "manifest.tsv"]},
     {"source": "site/sources/ja/slides/why-ai-organization-needed", "target": "ja/slides/why-ai-organization-needed", "include": ["index.html"]},
-    {"source": "site/sources/ja/slides/ai-production-topics", "target": "ja/slides/ai-production-topics", "include": ["index.html"]},
-    {"source": "site/sources/ja/slides/structure-for-ai-organization", "target": "ja/slides/structure-for-ai-organization", "include": ["index.html"]}
-  ],
-  "legacy_routes": [
-    "ja/slides/structure-for-ai-organization/",
-    "slides/056_structure_for_ai_organization.html"
+    {"source": "site/sources/ja/slides/ai-production-topics", "target": "ja/slides/ai-production-topics", "include": ["index.html"]}
   ]
 }
