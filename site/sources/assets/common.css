@@ -939,6 +939,74 @@ body {
   line-height: 1.6;
 }
 
+.xrefkit-deck-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin: 24px 0;
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.xrefkit-deck-navigation a {
+  color: var(--accent);
+  font-weight: 700;
+  line-height: 1.5;
+  text-decoration: none;
+}
+
+.xrefkit-deck-navigation a:hover,
+.xrefkit-deck-navigation a:focus-visible {
+  text-decoration: underline;
+}
+
+.loop-diagram {
+  display: grid;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.loop-line {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  align-items: stretch;
+}
+
+.loop-line.improvement {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.loop-step {
+  padding: 14px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  font-weight: 750;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.loop-caption {
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.example-flow {
+  display: grid;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.example-step {
+  padding: 16px 18px;
+  border-left: 4px solid var(--accent);
+  background: var(--panel);
+  line-height: 1.55;
+}
+
 .slide-list {
   display: grid;
   gap: 28px;
@@ -1083,6 +1151,11 @@ body {
 
   .slide-card {
     padding: 12px;
+  }
+
+  .loop-line,
+  .loop-line.improvement {
+    grid-template-columns: 1fr;
   }
 
   .viewer {

@@ -22,13 +22,13 @@ FONT_REG = str(Path("C:/Windows/Fonts/YuGothR.ttc"))
 SLIDES = [
     {
         "name": "01_title",
-        "question": "AIの特性に応じて分けた解決策は、XRefKitのどこに実装されているのですか。",
-        "title": "XRefKitは、問題ごとの解決策をリポジトリ構造として実装します。",
-        "copy": "通常のAI利用では、完了、責務、進行、判断材料、接続に別々の問題があります。問題ごとに異なる実装構造を対応させます。",
+        "question": "業務実行モデルは、XRefKitのどこに実装されているのですか。",
+        "title": "概念ごとに、実装位置と記録先を分けています。",
+        "copy": "Goal、Skill、Knowledge、Semantic routing、Workflow protocol、Evidence、Distributionを、対応する実装へ配置します。",
         "cards": [
-            ("完了と責務", "目標の状態管理と責務定義を別々に持ちます。"),
-            ("進行と判断材料", "実行管理とXID参照知識を分離します。"),
-            ("接続と証拠", "次作業選択と実行記録で、責務間を追跡可能につなぎます。"),
+            ("Goal・Skill", "Goal stateとSkill packageが完了条件と限定責務を持ちます。"),
+            ("Knowledge・routing", "XID管理資産とresolver・選択規則を分離します。"),
+            ("Workflow protocol・Evidence", "xrefkit skillとRuntimeが進行を管理し、run logへ証跡を残します。"),
         ],
         "takeaway": "ここからは、なぜ必要かではなく、どこに実装されるかを見ます。",
     },
