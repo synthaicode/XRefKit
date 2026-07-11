@@ -24,7 +24,7 @@ const XREFKIT_DECKS = [
     id: "065",
     level: "Implementation",
     role: "Repository implementation",
-    question: { en: "How does the repository implement controlled AI work?", ja: "055で分けた解決策を、XRefKitはどの構造として実装するのか。" },
+    question: { en: "How does the repository implement controlled AI work?", ja: "AIの特性に応じて分けた解決策を、XRefKitはどの構造として実装するのか。" },
     title: { en: "XRefKit Repository Overview", ja: "XRefKit リポジトリ概要" },
     summary: {
       en: "Explains XRefKit as the operating base that connects Goals, Skills, Knowledge, workflow evidence, and MCP distribution.",
