@@ -13,12 +13,12 @@ const page = ({ kicker, title, question, answer, summary }) => `<!doctype html>
   </div></section><div class="summary">${escape(summary)}</div></main></body></html>`;
 
 const slides = {
-  "01_title_q": ["Starting point", "AI makes individual work faster. Does it finish the work?", "Does adding AI simply make work easier?", "", "Separate output speed from completed business work."],
-  "01_title": ["Starting point", "AI makes individual work faster. Does it finish the work?", "What changes?", "Drafting, research, summarization, and coding can accelerate. Verification, judgment, and handoff may still remain.", "Connect AI convenience to organizational outcomes."],
-  "02_team_definition_q": ["Problem", "When AI stops midway, the remaining work becomes unclear", "Is work finished when there is an output?", "", "Incomplete work can look complete."],
-  "02_team_definition": ["Problem", "When AI stops midway, the remaining work becomes unclear", "What is lost?", "Unfinished work, unchecked points, evidence, and the next owner disappear into a conversation when execution stops.", "Do not eliminate interruption; preserve work through interruption."],
-  "03_problem_q": ["Limit", "Prompts leave explanation and completion judgment to people", "Is a careful prompt enough?", "", "Repeated explanation is not a repeatable work system."],
-  "03_problem": ["Limit", "Prompts leave explanation and completion judgment to people", "What remains?", "People still explain, review outputs, and decide what remains. Omissions accumulate.", "Structure the work, not only the answer."],
+  "01_title_q": ["Execution model", "How are bounded AI tasks connected from Goal to acceptance?", "What does the execution model connect?", "", "This deck explains the relationships between the operating parts."],
+  "01_title": ["Execution model", "How are bounded AI tasks connected from Goal to acceptance?", "What is the whole flow?", "A Goal holds the endpoint, routing selects the next responsibility, a Skill Run performs work, the protocol preserves state, and acceptance returns to the Goal.", "Keep individual work connected to the business endpoint."],
+  "02_team_definition_q": ["Goal", "A Goal holds the desired state, not a task count", "What does a Goal define?", "", "Fix the desired state and acceptance conditions."],
+  "02_team_definition": ["Goal", "A Goal holds the desired state, not a task count", "What is checked?", "The Goal retains desired state and acceptance conditions. Finishing one Skill does not complete the Goal.", "Separate business completion from the moment an AI stops."],
+  "03_problem_q": ["Decomposition", "Reaching a Goal requires multiple bounded responsibilities", "Why decompose the work?", "", "Give AI one judgment method and output boundary at a time."],
+  "03_problem": ["Decomposition", "Reaching a Goal requires multiple bounded responsibilities", "What is separated?", "Each responsibility groups its method, input, output, required Knowledge, and handoff boundary.", "Decomposition clarifies responsibility without shrinking the Goal."],
   "04_work_q": ["Skill", "A Skill narrows the responsibility delegated to AI", "What changes with a Skill?", "", "Focus one judgment method and one output boundary."],
   "04_work": ["Skill", "A Skill narrows the responsibility delegated to AI", "What does it contain?", "A Skill declares capability, tuning, responsibility, I/O, method, needed Knowledge, and its handoff boundary.", "Split large requests at accountable responsibility boundaries."],
   "05_not_one_ai_q": ["Routing", "The next Skill is selected from the Goal and current state", "Who selects the Skill?", "", "Do not make people manually choose from a long list every time."],

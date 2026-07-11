@@ -104,26 +104,14 @@ const handoffCards = () => `
   </div>`;
 
 const maturityLevels = () => `
-  <div class="levels">
-    <div class="level">
-      <div class="tag">draft</div>
-      <h2>Boundary is still a hypothesis</h2>
-      <p>Purpose exists, but return conditions and human checkpoints are not yet reliable.</p>
+  <div class="two-col">
+    <div class="card amber">
+      <h2>Return for judgment</h2>
+      <p>Trade-offs, unsupported assumptions, policy exceptions, and risk acceptance return with evidence and explicit options.</p>
     </div>
-    <div class="level">
-      <div class="tag">trial</div>
-      <h2>Boundary is being observed</h2>
-      <p>Real runs expose where unknowns, judgments, and handoffs still depend on human improvisation.</p>
-    </div>
-    <div class="level">
-      <div class="tag">stable</div>
-      <h2>Boundary is dependable</h2>
-      <p>Runtime roles, evidence, concern handling, and closure conditions are explicit enough to reuse.</p>
-    </div>
-    <div class="level">
-      <div class="tag">governed</div>
-      <h2>Boundary is auditable</h2>
-      <p>Governance and audit references explain why this responsibility split is acceptable for the organization.</p>
+    <div class="card green">
+      <h2>Accept at the named boundary</h2>
+      <p>The accountable human or independent reviewer decides whether the result may advance, must be revised, or must stop.</p>
     </div>
   </div>`;
 
@@ -256,22 +244,22 @@ const slides = {
     summary: "A good handoff prevents the next person from reconstructing the missing context"
   }),
   "07_maturity_q": wrap({
-    kicker: "Why Skill maturity exists",
-    title: "A Skill is not complete when it is written. It matures as its human boundary becomes clear",
+    kicker: "Acceptance and escalation",
+    title: "The boundary must name who decides and what evidence they receive",
     body: dialogue(
-      "Why do Skills need maturity levels at all?",
-      "Because the procedure text may exist early, while the practical boundary with humans is still uncertain.",
+      "What happens after work returns to a human?",
+      "A return point is useful only when the decision owner, evidence, options, and next state are explicit.",
       "",
       "",
       "question"
     ),
-    summary: "Maturity tracks boundary clarity, not cosmetic progress"
+    summary: "Escalation without a named decision is only deferred ambiguity"
   }),
   "07_maturity": wrap({
-    kicker: "Why Skill maturity exists",
-    title: "Skill maturity shows how clear the human boundary has become",
+    kicker: "Acceptance and escalation",
+    title: "Human acceptance converts evidence into the next authorized state",
     body: maturityLevels(),
-    summary: "The real question is whether the team knows what AI may do and when humans must take over"
+    summary: "The boundary records who decided, what was accepted, and what happens next"
   }),
   "08_conclusion_q": wrap({
     kicker: "The operating conclusion",

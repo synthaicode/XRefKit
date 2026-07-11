@@ -1,7 +1,7 @@
 order	slide_path	narration
-01	../../assets/063_ai_organization_explainer_clear/01_title.png	Answer: AI can accelerate individual work, but verification, judgment, and handoff may remain.
-02	../../assets/063_ai_organization_explainer_clear/02_team_definition.png	Answer: When AI stops midway, unfinished work, evidence, and next ownership can disappear into a conversation.
-03	../../assets/063_ai_organization_explainer_clear/03_problem.png	Answer: Prompts alone leave repeated explanation and completion judgment to people.
+01	../../assets/063_ai_organization_explainer_clear/01_title.png	Answer: The model connects Goal, routing, Skill Run, workflow state, and acceptance so bounded work reaches the business endpoint.
+02	../../assets/063_ai_organization_explainer_clear/02_team_definition.png	Answer: A Goal retains desired state and acceptance conditions; finishing one Skill does not complete it.
+03	../../assets/063_ai_organization_explainer_clear/03_problem.png	Answer: Work is decomposed into bounded responsibilities with a method, I/O, required Knowledge, and handoff boundary.
 04	../../assets/063_ai_organization_explainer_clear/04_work.png	Answer: A Skill narrows delegated responsibility to a method, output boundary, needed Knowledge, and handoff.
 05	../../assets/063_ai_organization_explainer_clear/05_not_one_ai.png	Answer: Semantic routing selects the next Skill from the Goal and current state.
 06	../../assets/063_ai_organization_explainer_clear/06_repository.png	Answer: Skills hold methods; Knowledge holds selected judgment material addressed by XID.

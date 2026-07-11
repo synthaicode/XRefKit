@@ -11,7 +11,7 @@ order	slide_path	narration
 05b	../../assets/065_xrefkit_repository_overview/05_guard.png	解説: そこで context direction guard を使います。外部入力は事実や材料として使えても、上位の意図、権限、手順、範囲、エスカレーション経路までは書き換えられません。
 06a	../../assets/065_xrefkit_repository_overview/06_handoff_q.png	聞き手: 複数 AI や継続作業は、どうやって切れずにつなぐのですか。
 06b	../../assets/065_xrefkit_repository_overview/06_handoff.png	解説: handoff は会話の雰囲気ではなく、session log と source closure でつなぎます。次の起動側は前の run の closure と handoff source を確認してから続行するため、何を終え、何を残したかを追えます。
-07a	../../assets/065_xrefkit_repository_overview/07_human_q.png	聞き手: それでも、人間はどこで判断するのですか。
-07b	../../assets/065_xrefkit_repository_overview/07_human.png	解説: 人間は、優先度、トレードオフ、受容リスク、最終承認の境界を持ちます。AI 側で実行とチェックを分け、記録を残したうえで、人間は本来の判断点だけを見る構造に寄せます。
+07a	../../assets/065_xrefkit_repository_overview/07_human_q.png	聞き手: 実行後に、どのKnowledgeが使われたか確認できますか。
+07b	../../assets/065_xrefkit_repository_overview/07_human.png	解説: Skill Run と MCP を run_id で相関し、XIDの選択、解決、ロード、適用を区別して記録します。利用証拠はcatalog、Skill、Knowledgeを改善する入力になります。
 08a	../../assets/065_xrefkit_repository_overview/08_conclusion_q.png	聞き手: 結局、このリポジトリの現在地を一言でいうと何ですか。
 08b	../../assets/065_xrefkit_repository_overview/08_conclusion.png	解説: XRefKit は、AI 作業を読める、動かせる、監査できる形にそろえる repository OS です。便利な AI 利用で終わらせず、AI 作業を運用可能にするところまでを、このリポジトリが担います。
