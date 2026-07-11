@@ -3,20 +3,149 @@ import path from "node:path";
 
 const dir = path.resolve("human-docs/ja/assets/055_why_ai_organization_needed");
 const css = await fs.readFile(path.join(dir, "diagram.css"), "utf8");
-const cards = (items) => `<div class="grid-3" style="margin-top:88px;">${items.map(([title, body, tone = "soft-blue"]) => `<div class="card ${tone}"><h3>${title}</h3><p>${body}</p></div>`).join("")}</div>`;
-const slide = (title, subtitle, items, summary) => `<div class="canvas"><h1 class="title">${title}</h1><p class="subtitle">${subtitle}</p>${cards(items)}<div class="summary-band"><strong>${summary}</strong></div></div>`;
+
+const frame = (title, subtitle, body, summary) => `<div class="canvas">
+  <h1 class="title">${title}</h1>
+  <p class="subtitle">${subtitle}</p>
+  ${body}
+  <div class="summary-band"><strong>${summary}</strong></div>
+</div>`;
+
+const node = (title, body, tone = "soft-blue") => `<div class="diagram-node ${tone}"><h3>${title}</h3><p>${body}</p></div>`;
+const arrow = (label = "") => `<div class="diagram-arrow"><span>${label}</span>→</div>`;
+const row = (...parts) => `<div class="flow-row">${parts.join("")}</div>`;
+
 const renderers = {
-  "00_intro": () => slide("AI活用を継続可能な業務実行に変える", "途中で止まっても、再開・検証・受入れ・改善できる仕事にする", [["継続", "中断しても、未完了を残して再開できる"], ["検証", "作業漏れと根拠を確認できる"], ["改善", "実行ログから次の運用を良くする", "soft-green"]], "AI活用を、単発の会話から継続可能な業務実行へ変える。"),
-  "01_title": () => slide("毎回のプロンプト主体の利用方法では、業務の状態が残らない", "会話を終えるたびに、次の仕事に必要な状態が失われる", [["判断材料", "何を根拠に判断したか"], ["未確認点", "何がまだ分からないか"], ["次作業と受入れ", "誰が何をし、何を満たせば完了か", "soft-orange"]], "次の実行者は、会話から業務の状態を再構成しなければならない。"),
-  "02_individual_limit": () => slide("AIは、途中で作業を終えても完了として扱いやすい", "出力終了と業務完了は、同じではない", [["AIの応答", "その時点の要求に対して出力を返す"], ["残りやすい問題", "未了項目、確認待ち、例外、根拠"], ["起きる誤認", "出力が終わったので業務も終わったと扱う", "soft-red"]], "業務全体の未了事項と受入れ条件は、別の仕組みで残す必要がある。"),
-  "03_input_organization": () => slide("目標が、業務の完了を定義する", "個々の作業ではなく、達成後の状態と受入条件を持つ", [["達成状態", "何が実現されていれば業務が完了か"], ["受入条件", "何を満たせば受け入れられるか"], ["作業分割", "目標達成のため、AIが扱える責務単位へ作業を分ける", "soft-green"]], "AIの停止や個別作業の終了を、業務完了にはしない。"),
-  "04_scattered_controls": () => slide("AIには、限定した責務を担当させる", "分割した作業を、判断と引継ぎの境界を持つ責務単位として扱う", [["担当範囲", "何を行い、どこまで責任を持つか"], ["判断と入出力", "何を見て、何を返すか"], ["組織固有知識と引継ぎ", "何を参照し、どこで次へ渡すか", "soft-green"]], "責務を限定することで、AIは必要な判断と成果物に集中できる。"),
-  "05_organization_role": () => slide("分割した責務には、接続する仕組みが必要", "個別作業を速くしても、業務の終点へつながらなければ完了しない", [["現在状態", "何が終わり、何が未了か"], ["次の責務", "いま必要な判断と作業は何か"], ["目標への接続", "個別完了を全体完了と混同しない", "soft-green"]], "XRefKitでは、この接続を実行モデルとして分けて扱う。"),
-  "06_organization_value": () => slide("途中終了を前提に、仕事の状態を残す", "AIを止めないのではなく、止まっても次が続けられるようにする", [["完了済み", "何を行い、何ができたか"], ["未完了", "何が残り、何が不明か"], ["次の責任地点", "誰または何が続けるか", "soft-green"]], "継続可能性は、会話履歴ではなく明示された業務状態から生まれる。"),
-  "07_human_control_unit": () => slide("AI活用には、組織固有の知識が必要", "一般化された学習知識だけでは、組織の業務判断を支えられない", [["AIが持つ一般知識", "概念、方法、一般的な事例"], ["組織固有知識", "ルール、対象情報、例外、過去の判断、責任境界"], ["段階的な参照", "XIDを選び、必要な本文だけを判断へ使う", "soft-green"]], "組織固有知識は、AIの一般知識を組織の業務判断へ接続する。"),
-  "08_ai_control_unit": () => slide("検証と受入れは、業務状態に対して行う", "AIの自己申告ではなく、残された状態から未了と判断点を確認する", [["作業の完全性", "必要な作業が残っていないか"], ["成果物の受入れ", "業務目的に使える内容か"], ["人間の判断", "承認、例外、トレードオフを担う", "soft-green"]], "検証できる状態を残すことが、信頼の前提になる。"),
-  "09_conclusion": () => slide("必要なのは、AIの回答ではなく業務実行の構造", "目標、限定責務、組織固有知識、状態記録、受入れを分けて接続する", [["終点", "目標と受入条件を持つ"], ["実行", "限定した責務へ集中させる"], ["継続", "未了を残し、次へ渡す", "soft-green"]], "具体的な接続方法は、実行モデル資料で説明する。")
+  "00_intro": () => frame(
+    "通常のAI利用だけでは、継続的な業務実行にならない",
+    "AIの特性を前提に問題を分け、それぞれに異なる仕組みを用意する",
+    `<div class="hero-flow">
+      ${node("通常のAI利用", "その都度、依頼文と会話で作業を進める")}
+      ${arrow("AIの特性を確認")}
+      ${node("問題を細分化", "完了、責務、進行、知識、接続の問題に分ける", "soft-orange")}
+      ${arrow("問題ごとに設計")}
+      ${node("業務実行の仕組み", "一つの万能機能ではなく、独立した解決策を持つ", "soft-green")}
+    </div>`,
+    "最初に仕組みを並べるのではなく、AIの特性から解くべき問題を分ける。"
+  ),
+  "01_title": () => frame(
+    "AIの特性から、業務実行上の問題を分ける",
+    "異なる問題を一つの仕組みで解こうとしない",
+    `<div class="trait-map">
+      ${row(node("局所作業を終えられる", "業務全体の完了は分からない"), arrow(), node("完了の問題", "何を満たせば業務完了か", "soft-orange"))}
+      ${row(node("目的を絞ると能力を発揮する", "大きな依頼では判断範囲が広がる"), arrow(), node("責務の問題", "何を担当させるか", "soft-orange"))}
+      ${row(node("途中でも応答を終了する", "未完了が会話に埋もれる"), arrow(), node("進行の問題", "作業漏れをどう残すか", "soft-orange"))}
+      ${row(node("一般化された知識で応答する", "組織固有の判断材料は持たない"), arrow(), node("知識の問題", "何を判断材料にするか", "soft-orange"))}
+    </div>`,
+    "AIの弱点を一括りにせず、業務実行で現れる問題ごとに扱う。"
+  ),
+  "02_individual_limit": () => frame(
+    "細分化した問題には、それぞれ別の解決策がある",
+    "各仕組みは役割が異なり、相互の代用品ではない",
+    `<div class="solution-map">
+      ${row(node("業務完了を認識できない", "局所作業の終了と業務完了が混ざる"), arrow("解決"), node("目標と受入条件", "達成状態を業務側で定義する", "soft-green"))}
+      ${row(node("大きな目的では範囲が広すぎる", "判断と成果物が拡散する"), arrow("解決"), node("限定責務", "AIが集中できる単位へ分ける", "soft-green"))}
+      ${row(node("途中で作業を終了する", "未完了や根拠が残らない"), arrow("解決"), node("作業進行規約", "進行状態と終了条件を検査する", "soft-green"))}
+      ${row(node("組織の判断を再現できない", "一般知識だけでは材料が不足する"), arrow("解決"), node("組織固有知識", "必要な判断材料を参照する", "soft-green"))}
+      ${row(node("細分化した作業がつながらない", "次に何を行うか選ぶ必要がある"), arrow("解決"), node("意味による次作業選択", "目標と現在状態から次を選ぶ", "soft-green"))}
+    </div>`,
+    "全体像は対応関係として示し、各解決策の詳細は別々に確認する。"
+  ),
+  "03_input_organization": () => frame(
+    "目標と受入条件は、業務の完了を定義する",
+    "AIが停止した時点ではなく、達成後の状態で完了を判断する",
+    `<div class="decision-flow">
+      ${node("局所作業の終了", "AIが依頼された出力を返す")}
+      ${arrow("業務完了ではない")}
+      ${node("受入条件を確認", "達成状態を満たしているか", "soft-orange")}
+      <div class="branch-grid">
+        ${node("未達", "目標を継続し、残りの作業を明示する", "soft-red")}
+        ${node("達成", "人が業務成果として受け入れる", "soft-green")}
+      </div>
+    </div>`,
+    "目標が解くのは、局所作業の終了と業務完了を混同する問題である。"
+  ),
+  "04_scattered_controls": () => frame(
+    "限定責務は、大きな目標をAIが集中できる単位へ分ける",
+    "担当範囲、判断方法、入力、出力を一つの目的に限定する",
+    `<div class="decomposition-flow">
+      ${node("大きな業務目標", "複数の判断と成果物を含む", "soft-orange")}
+      ${arrow("必要な作業へ細分化")}
+      <div class="responsibility-grid">
+        ${node("限定責務 1", "一つの判断方法と成果物")}
+        ${node("限定責務 2", "一つの判断方法と成果物")}
+        ${node("限定責務 3", "一つの判断方法と成果物", "soft-green")}
+      </div>
+    </div>`,
+    "限定責務が解くのは、AIの担当範囲が広がりすぎる問題である。"
+  ),
+  "05_organization_role": () => frame(
+    "作業進行規約は、途中終了を完了として扱わない",
+    "責務を決めるのではなく、担当した作業の進行と終了を管理する",
+    `<div class="decision-flow">
+      ${node("AIが作業を終了", "応答が終わっても未完了の可能性がある")}
+      ${arrow("進行状態を検査")}
+      ${node("作業項目・成果物・根拠・未確定事項", "必要な記録と終了条件を確認する", "soft-orange")}
+      <div class="branch-grid">
+        ${node("不足あり", "未完了として残し、修復または引継ぎへ戻す", "soft-red")}
+        ${node("不足なし", "責務単位の作業を終了できる", "soft-green")}
+      </div>
+    </div>`,
+    "作業進行規約が解くのは、作業途中の終了と作業漏れの問題である。"
+  ),
+  "06_organization_value": () => frame(
+    "組織固有知識は、実務判断に必要な材料を与える",
+    "AIの一般知識と、組織のルールや例外を混同しない",
+    `<div class="knowledge-flow">
+      ${node("AIの一般知識", "一般的な概念、方法、事例")}
+      <div class="plus">＋</div>
+      ${node("組織固有知識", "ルール、対象、例外、過去の判断", "soft-green")}
+      ${arrow("必要なXIDだけ参照")}
+      ${node("組織の業務判断", "固有の条件に基づいて判断する", "soft-orange")}
+    </div>`,
+    "組織固有知識が解くのは、一般知識だけでは組織の判断を再現できない問題である。"
+  ),
+  "07_human_control_unit": () => frame(
+    "意味による次作業選択は、細分化した限定責務をつなぐ",
+    "限定責務そのものではなく、細分化によって生じた接続問題を解く",
+    `<div class="routing-flow">
+      <div class="input-stack">
+        ${node("目標", "どの達成状態へ向かうか")}
+        ${node("現在状態", "何が完了し、何が未了か")}
+      </div>
+      ${arrow("照合")}
+      ${node("意味による次作業選択", "次に必要な責務を選ぶ", "soft-orange")}
+      ${arrow("選択")}
+      ${node("次の限定責務", "現在必要な判断と成果物", "soft-green")}
+    </div>`,
+    "次作業選択が解くのは、分割した仕事を目標へ向けて接続する問題である。"
+  ),
+  "08_ai_control_unit": () => frame(
+    "人は、成果物の受入れと例外判断を担う",
+    "機械的な進行検証と、業務として採用する判断を分ける",
+    `<div class="acceptance-map">
+      ${node("進行検証", "作業項目、記録、未解決事項の完全性を確認する")}
+      ${node("品質確認", "成果物が要求する品質を満たすか確認する", "soft-orange")}
+      ${node("人による受入れ", "承認、例外、トレードオフを判断する", "soft-green")}
+    </div>`,
+    "作業が漏れなく進んだことと、業務成果として受け入れることは別の判断である。"
+  ),
+  "09_conclusion": () => frame(
+    "AIの特性を前提に、業務実行の問題を個別に解く",
+    "一つの仕組みにまとめず、問題と解決策の対応を保つ",
+    `<div class="conclusion-grid">
+      ${node("完了", "目標と受入条件")}
+      ${node("責務", "限定責務")}
+      ${node("進行", "作業進行規約")}
+      ${node("判断材料", "組織固有知識")}
+      ${node("接続", "意味による次作業選択", "soft-green")}
+    </div>`,
+    "XRefKitは、異なる問題を異なる仕組みで扱い、継続可能な業務実行へつなげる。"
+  )
 };
+
 const html = (body) => `<!doctype html><html lang="ja"><head><meta charset="utf-8"><style>${css}</style></head><body>${body}</body></html>`;
-for (const [name, render] of Object.entries(renderers)) await fs.writeFile(path.join(dir, `${name}.html`), html(render()), "utf8");
+for (const [name, render] of Object.entries(renderers)) {
+  await fs.writeFile(path.join(dir, `${name}.html`), html(render()), "utf8");
+}
 console.log(`rendered ${Object.keys(renderers).length} slides`);
