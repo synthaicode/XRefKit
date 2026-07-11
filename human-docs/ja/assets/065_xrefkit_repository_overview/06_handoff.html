@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <title>handoff は会話の雰囲気ではなく、session log と source closure でつなぎます。</title>
+  <title>引継ぎは会話の雰囲気ではなく、実行履歴と引継ぎ元の終了状態でつなぎます。</title>
   <style>:root {
   --bg: #f8f9fa;
   --panel: #ffffff;
@@ -207,30 +207,30 @@ body {
   <main class="slide">
     <header class="header">
       <div>
-        <div class="eyebrow">Repository Overview</div>
-        <h1 class="title">handoff は会話の雰囲気ではなく、session log と source closure でつなぎます。</h1>
+        <div class="eyebrow">リポジトリ概要</div>
+        <h1 class="title">引継ぎは会話の雰囲気ではなく、実行履歴と引継ぎ元の終了状態でつなぎます。</h1>
       </div>
       <div class="brand">XRefKit</div>
     </header>
     <section class="summary">
       <div class="summary-label">問い</div>
       <div class="summary-copy">複数 AI や継続作業は、どうやって切れずにつなぐのですか。</div>
-      <div class="summary-title">次の起動側は前の run の closure と handoff source を確認してから続行します。だから、前の作業が何を終え、何を残したかを追えます。</div>
+      <div class="summary-title">次の起動側は前の実行の終了状態と引継ぎ元を確認してから続行します。だから、前の作業が何を終え、何を残したかを追えます。</div>
     </section>
     <section class="cards">
       <article class="card">
         <div class="card-tag">残すもの</div>
-        <p>session、artifact、judgment、retrospective に分けて記録を残します。</p>
+        <p>実行単位、成果物、判断、振り返りに分けて記録を残します。</p>
       </article>
       <article class="card">
         <div class="card-tag">受け取り条件</div>
-        <p>前 run の閉鎖状態と handoff source が確認できなければ継続しません。</p>
+        <p>前の実行の終了状態と引継ぎ元が確認できなければ継続しません。</p>
       </article>
       <article class="card">
         <div class="card-tag">効く場面</div>
         <p>複数 AI、長い作業、途中再開、レビュー引き継ぎで効きます。</p>
       </article></section>
-    <div class="takeaway">継続性は記憶頼みではなく、<strong>確認可能な handoff source</strong>で作ります。</div>
+    <div class="takeaway">継続性は記憶頼みではなく、<strong>確認可能な引継ぎ元</strong>で作ります。</div>
   </main>
 </body>
 </html>

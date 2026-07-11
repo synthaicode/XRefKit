@@ -13,7 +13,7 @@ const slides = [
       "単なる文書置き場ではなく、AI が必要な知識だけを読み、決められた境界で動き、後から追跡できる形で作業するためのリポジトリです。",
     cards: [
       ["役割", "AI のふるまい、知識読み込み、作業構造、記録を一つの場所で扱います。"],
-      ["中心", "主役は controlled AI work であり、リンク維持はその補助機能です。"],
+      ["中心", "主役は管理可能なAI作業であり、リンク維持はその補助機能です。"],
       ["狙い", "忘却、責務混在、判断漏れ、引き継ぎ断絶を減らします。"],
     ],
     takeaway: "XRefKit は <strong>AI が作業できること</strong>ではなく、<strong>AI 作業を運用できること</strong>を狙います。",
@@ -26,7 +26,7 @@ const slides = [
       "ファイルがあるだけでは、知識の場所、手順の境界、判断の責任、確認のしかたが毎回ゆらぎます。XRefKit はその揺れを構造で減らします。",
     cards: [
       ["保管だけの問題", "AI が毎回広く読んで迷い、古い文脈や余計な断片も拾いやすくなります。"],
-      ["必要な追加", "知識の置き場所だけでなく、Skill、記録、境界の定義が必要です。"],
+      ["必要な追加", "知識の置き場所だけでなく、責務、記録、境界の定義が必要です。"],
       ["結果", "読ませ方と動かし方が分かれるので、再現しやすくなります。"],
     ],
     takeaway: "<strong>情報の保管</strong>だけでは足りず、<strong>AI の読み方と働き方の構造</strong>まで必要です。",
@@ -34,37 +34,37 @@ const slides = [
   {
     name: "03_layers",
     question: "では、このリポジトリは何をどう分けているのですか。",
-    title: "`xrefkit / skills / knowledge / tools / work / sources` を役割別に分けています。",
+    title: "パッケージ、責務、知識、道具、実行記録、元資料を役割別に分けています。",
     copy:
       "人向け説明、実行手順、共有知識、実行記録、元資料を混ぜずに置くことで、読む相手と目的を分離します。",
     cards: [
-      ["パッケージ", "`xrefkit` が runtime、XID resolver、tools registry、MCP adapter を持ちます。"],
-      ["実行と知識", "`skills` と `knowledge` を XID で選択して必要な本文だけを読みます。"],
-      ["証拠と元資料", "`sources` と `work` で根拠、判断、実行履歴を残します。"],
+      ["パッケージ", "xrefkitが実行管理、XID参照解決、ツール一覧、MCP接続を持ちます。"],
+      ["実行と知識", "責務と組織固有知識をXIDで選択し、必要な本文だけを読みます。"],
+      ["証拠と元資料", "元資料と実行記録を分け、根拠、判断、履歴を残します。"],
     ],
     takeaway: "層を分ける目的は整理整頓ではなく、<strong>AI が読むもの、従うもの、残すものを分離すること</strong>です。",
   },
   {
     name: "04_runtime",
-    question: "Skill があれば、そのまま実行すればいいのではないですか。",
-    title: "このリポジトリでは Skill 実行を runtime envelope で囲います。",
+    question: "責務定義があれば、そのまま実行すればいいのではないですか。",
+    title: "責務の実行を、記録と終了判定を持つ実行管理枠で囲います。",
     copy:
-      "`xrefkit skill run` で開始し、work item、artifact、concern、role separation を記録してから閉じます。Skill を直接読むだけでは閉じられません。",
+      "xrefkit skill runコマンドで開始し、作業項目、成果物、懸念事項、役割分離を記録してから閉じます。責務定義を読むだけでは完了しません。",
     cards: [
-      ["開始", "meta を検証し、run log を開いてから作業を始めます。"],
+      ["開始", "定義情報を検証し、実行記録を開いてから作業を始めます。"],
       ["途中", "実行項目、成果物、証拠、未知やリスクを機械可読で残します。"],
-      ["終了", "未完了、未記録、未解決の concern があると closure が拒否されます。"],
+      ["終了", "未完了、未記録、未解決の懸念事項があると終了が拒否されます。"],
     ],
-    takeaway: "Skill は手順書ではなく、<strong>実行記録ごと管理される作業単位</strong>として扱います。",
+    takeaway: "責務定義は手順書ではなく、<strong>実行記録ごと管理される作業単位</strong>として扱います。",
   },
   {
     name: "05_guard",
     question: "外部入力やコピーした文書で、方針が崩れる心配はありませんか。",
-    title: "Context direction guard が、下位入力で上位方針を書き換えさせないようにします。",
+    title: "文脈方向保護が、下位入力による上位方針の書き換えを防ぎます。",
     copy:
       "外部タスク入力、ツール結果、生成物は事実や材料として使えても、意図、権限、手順、範囲、エスカレーション経路までは上書きできません。",
     cards: [
-      ["守るもの", "startup policy、Skill contract、workflow protocol などの上位制御です。"],
+      ["守るもの", "起動方針、責務契約、作業進行規約などの上位制御です。"],
       ["許すもの", "外部入力は根拠、補足、局所事実として利用できます。"],
       ["防ぐもの", "もっともらしい入力が勝手に目的や責任境界を変えることを防ぎます。"],
     ],
@@ -73,39 +73,39 @@ const slides = [
   {
     name: "06_handoff",
     question: "複数 AI や継続作業は、どうやって切れずにつなぐのですか。",
-    title: "handoff は会話の雰囲気ではなく、session log と source closure でつなぎます。",
+    title: "引継ぎは会話の雰囲気ではなく、実行履歴と引継ぎ元の終了状態でつなぎます。",
     copy:
-      "次の起動側は前の run の closure と handoff source を確認してから続行します。だから、前の作業が何を終え、何を残したかを追えます。",
+      "次の起動側は前の実行の終了状態と引継ぎ元を確認してから続行します。だから、前の作業が何を終え、何を残したかを追えます。",
     cards: [
-      ["残すもの", "session、artifact、judgment、retrospective に分けて記録を残します。"],
-      ["受け取り条件", "前 run の閉鎖状態と handoff source が確認できなければ継続しません。"],
+      ["残すもの", "実行単位、成果物、判断、振り返りに分けて記録を残します。"],
+      ["受け取り条件", "前の実行の終了状態と引継ぎ元が確認できなければ継続しません。"],
       ["効く場面", "複数 AI、長い作業、途中再開、レビュー引き継ぎで効きます。"],
     ],
-    takeaway: "継続性は記憶頼みではなく、<strong>確認可能な handoff source</strong>で作ります。",
+    takeaway: "継続性は記憶頼みではなく、<strong>確認可能な引継ぎ元</strong>で作ります。",
   },
   {
     name: "07_human",
-    question: "実行後に、どのKnowledgeが使われたか確認できますか。",
-    title: "Skill Run と MCP を run_id で相関し、XID 利用を観測します。",
+    question: "実行後に、どの組織固有知識が使われたか確認できますか。",
+    title: "責務実行とMCPを実行識別子で結び、XIDの利用を観測します。",
     copy:
-      "選択、解決、ロード、適用を分けて記録し、使われなかったKnowledgeや不足したKnowledgeを改善材料にします。",
+      "選択、解決、読込み、適用を分けて記録し、使われなかった知識や不足した知識を改善材料にします。",
     cards: [
-      ["相関", "クライアントrunとMCPアクセスを同じrun_idで結びます。"],
-      ["区別", "XIDの選択、解決、ロード、適用を別イベントとして残します。"],
-      ["改善", "証拠からcatalog、Skill、Knowledgeの正本を見直します。"],
+      ["相関", "クライアント実行とMCPアクセスを同じ識別子で結びます。"],
+      ["区別", "XIDの選択、解決、読込み、適用を別の記録として残します。"],
+      ["改善", "証拠から一覧、責務、組織固有知識の正本を見直します。"],
     ],
     takeaway: "観測は監査の終点ではなく、<strong>次の実行を改善する入力</strong>です。",
   },
   {
     name: "08_conclusion",
     question: "結局、このリポジトリの現在地を一言でいうと何ですか。",
-    title: "XRefKit は、ドメイン手順と判断を組織へ配布する portable Python package です。",
+    title: "XRefKitは、ドメイン手順と判断を組織へ配布するPythonパッケージです。",
     copy:
       "知識、実行、確認、引き継ぎ、人間判断を同じ場所で分離し、AI 作業を場当たり的なプロンプト運用から、管理可能な作業へ変えます。",
     cards: [
-      ["読む", "target と finding の一覧から選び、必要な XID 本文だけを展開します。"],
-      ["動かす", "統合 package の Skill runtime と tools で作業を囲います。"],
-      ["配る", "同じ resolver を repository、installed package、MCP から利用します。"],
+      ["読む", "対象と検出事項の一覧から選び、必要なXID本文だけを展開します。"],
+      ["動かす", "統合パッケージの責務実行機能とツールで作業を囲います。"],
+      ["配る", "同じ参照解決機構をリポジトリ、導入済みパッケージ、MCPから利用します。"],
     ],
     takeaway: "<strong>AI が便利</strong>で終わらせず、<strong>AI 作業を運用可能にする</strong>ところまでを、このリポジトリが担います。",
   },
@@ -161,14 +161,14 @@ function questionOnly({ title, question }) {
   <main class="slide">
     <header class="header">
       <div>
-        <div class="eyebrow">Repository Overview</div>
+        <div class="eyebrow">リポジトリ概要</div>
         <h1 class="title">現在の XRefKit を短く説明します。</h1>
       </div>
       <div class="brand">XRefKit</div>
     </header>
     <section class="question-wrap">
       <div class="question-box">
-        <div class="question-label">Question</div>
+        <div class="question-label">問い</div>
         <div class="question-text">${question}</div>
       </div>
     </section>
@@ -182,5 +182,5 @@ for (const slide of slides) {
   const qPath = path.join(dir, `${slide.name}_q.html`);
   const aPath = path.join(dir, `${slide.name}.html`);
   await fs.writeFile(qPath, questionOnly(slide), "utf8");
-  await fs.writeFile(aPath, layout({ ...slide, eyebrow: "Repository Overview" }), "utf8");
+  await fs.writeFile(aPath, layout({ ...slide, eyebrow: "リポジトリ概要" }), "utf8");
 }

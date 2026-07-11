@@ -1,16 +1,16 @@
 order	slide_path	narration
-01	../../assets/063_ai_organization_explainer_clear/01_title.png	解説: Goal が終点を持ち、routing、Skill Run、workflow protocol、受入れを接続して、個別作業を業務完了までつなぎます。
-02	../../assets/063_ai_organization_explainer_clear/02_team_definition.png	解説: Goal は desired state と acceptance conditions を保持し、個別Skillの終了だけでは完了しません。
-03	../../assets/063_ai_organization_explainer_clear/03_problem.png	解説: Goalへ進む作業を、判断方法、入出力、Knowledge、handoff境界を持つ限定責務へ分けます。
-04	../../assets/063_ai_organization_explainer_clear/03_prompt_skill_limit.png	解説: Goal、Skill、routing、状態記録、受入れ地点を分けて定義することが実行モデルの全体像です。
-05	../../assets/063_ai_organization_explainer_clear/04_work.png	解説: Skill は判断方法、入出力、必要な Knowledge、handoff 境界を持つ責務単位です。
-06	../../assets/063_ai_organization_explainer_clear/05_not_one_ai.png	解説: semantic routing は Goal と現在状態から、次に必要な Skill を選びます。
-07	../../assets/063_ai_organization_explainer_clear/06_repository.png	解説: Skill は方法を持ち、Knowledge は判断材料を持ちます。必要な XID だけを選んで読みます。
-08	../../assets/063_ai_organization_explainer_clear/07_handoff.png	解説: workflow protocol は各 Skill Run の work item、成果物、根拠、unknown、handoff を記録します。
-09	../../assets/063_ai_organization_explainer_clear/08_burden_flow.png	解説: Goal、routing、Skill Run、verify、handoff をつなぎ、未完了を成功扱いにしません。
-10	../../assets/063_ai_organization_explainer_clear/08_or_team.png	解説: verify は作業記録の完全性を検査します。成果物の受入れは quality review と人が別に判断します。
-11	../../assets/063_ai_organization_explainer_clear/09_value.png	解説: AI が止まっても、run log から再開または handoff できます。Goal は受入条件が満たされるまで続きます。
-12	../../assets/063_ai_organization_explainer_clear/10_conclusion.png	解説: 人は Goal、受入れ、承認、例外を担い、すべてを会話履歴から監視しません。
+01	../../assets/063_ai_organization_explainer_clear/01_title.png	解説: 目標が終点を持ち、次作業選択、責務実行、作業進行規約、受入れを接続して、個別作業を業務完了までつなぎます。
+02	../../assets/063_ai_organization_explainer_clear/02_team_definition.png	解説: 目標は達成状態と受入条件を保持し、個別責務の終了だけでは完了しません。
+03	../../assets/063_ai_organization_explainer_clear/03_problem.png	解説: 目標へ進む作業を、判断方法、入出力、組織固有知識、引継ぎ境界を持つ限定責務へ分けます。
+04	../../assets/063_ai_organization_explainer_clear/03_prompt_skill_limit.png	解説: 目標、責務、次作業選択、状態記録、受入れ地点を分けて定義することが実行モデルの全体像です。
+05	../../assets/063_ai_organization_explainer_clear/04_work.png	解説: 責務は判断方法、入出力、必要な組織固有知識、引継ぎ境界を持つ責務単位です。
+06	../../assets/063_ai_organization_explainer_clear/05_not_one_ai.png	解説: 意味による次作業選択は、目標と現在状態から次に必要な責務を選びます。
+07	../../assets/063_ai_organization_explainer_clear/06_repository.png	解説: 責務は方法を持ち、組織固有知識は判断材料を持ちます。必要なXIDだけを選んで読みます。
+08	../../assets/063_ai_organization_explainer_clear/07_handoff.png	解説: 作業進行規約は各責務実行の作業項目、成果物、根拠、未確定事項、引継ぎを記録します。
+09	../../assets/063_ai_organization_explainer_clear/08_burden_flow.png	解説: 目標、次作業選択、責務実行、進行検証、引継ぎをつなぎ、未完了を成功扱いにしません。
+10	../../assets/063_ai_organization_explainer_clear/08_or_team.png	解説: 進行検証は作業記録の完全性を検査します。成果物の受入れは品質確認と人が別に判断します。
+11	../../assets/063_ai_organization_explainer_clear/09_value.png	解説: AIが止まっても、実行記録から再開または引継ぎできます。目標は受入条件が満たされるまで続きます。
+12	../../assets/063_ai_organization_explainer_clear/10_conclusion.png	解説: 人は目標、受入れ、承認、例外を担い、すべてを会話履歴から監視しません。
 13	../../assets/063_ai_organization_explainer_clear/11_before_after.png	解説: 単発の会話から、継続可能で監査可能な業務実行へ変えます。
 14	../../assets/063_ai_organization_explainer_clear/12_license.png	解説: AI を止めないためではなく、止まっても仕事を失わないための仕組みです。
 15	../../assets/063_ai_organization_explainer_clear/13_voicevox_credit.png	クレジット: 音声、VOICEVOX、ずんだもん。VOICEVOX、四国めたん。
