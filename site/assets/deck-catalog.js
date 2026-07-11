@@ -51,9 +51,9 @@ const XREFKIT_DECKS = [
     levelJa: "改善と組織配布",
     role: "Evidence-led improvement and distribution",
     roleJa: "人間による改善と次版の配布",
-    question: { ja: "実行証跡から改善し、検証された次の版をどう配布するのか。" },
+    question: { ja: "実行状況ダッシュボードの観測から、改善した次版をどう配布するのか。" },
     title: { ja: "XRefKit 改善と組織配布" },
-    summary: { ja: "Evidenceを人間が評価し、Knowledge、Skill、routing、受入条件を改訂・検証して、版管理された資産をXIDとMCPで配布する循環を説明します。" },
+    summary: { ja: "実行状況ダッシュボードで実行状態、XID利用、不足情報を観測し、人間がKnowledge、Skill、routing、受入条件を改訂・検証して次版を配布する循環を説明します。" },
     links: { ja: "073_xrefkit_organization_distribution" },
   },
 ];
