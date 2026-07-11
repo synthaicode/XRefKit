@@ -985,6 +985,36 @@ body {
   background: transparent;
 }
 
+.model-reading {
+  max-width: 900px;
+  margin: 28px auto 0;
+  padding: 24px 28px;
+  border-left: 4px solid var(--accent);
+  background: var(--panel);
+  text-align: left;
+}
+
+.model-reading h3 {
+  margin: 0 0 14px;
+  font-size: 26px;
+}
+
+.model-reading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.9;
+}
+
+.model-reading p + p {
+  margin-top: 12px;
+}
+
+.model-reading a {
+  color: var(--accent);
+  font-weight: 750;
+}
+
 .loop-line {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
