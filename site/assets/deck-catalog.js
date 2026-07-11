@@ -70,7 +70,7 @@ function renderRootCard(deck) {
   const languages = Object.keys(deck.links);
   const actions = languages.map((lang) => `<a class="open-deck-button" href="${rootLink(lang, deck.links[lang])}">${lang === "ja" ? "Japanese" : "English"} →</a>`).join("");
   return `<article class="catalog-card" data-lang="${languages.join(",")}">
-    <div class="catalog-top"><span class="catalog-deck">Deck ${deck.id}</span><span class="catalog-lang">${languages.map((lang) => lang.toUpperCase()).join(" / ")}</span></div>
+    <div class="catalog-top"><span class="catalog-deck">${deck.level}</span><span class="catalog-lang">${languages.map((lang) => lang.toUpperCase()).join(" / ")}</span></div>
     <h3>${deck.title.en || deck.title.ja}</h3>
     <p class="catalog-summary">${deck.summary.en || deck.summary.ja}</p>
     <p class="catalog-meta-line">${deck.role}</p>

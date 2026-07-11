@@ -13,7 +13,6 @@
 .tt1{fill:#085041}.tt2{fill:#0F6E56}
 .bg{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:.5}
 .tg1{fill:#444441}.tg2{fill:#5F5E5A}
-a:hover rect{stroke-width:1.5}
 @media (prefers-color-scheme: dark){
 .zone{stroke:#9c9a92}.zl{fill:#D3D1C7}.arr{stroke:#9c9a92}
 .bp{fill:#3C3489;stroke:#CECBF6}.tp1{fill:#CECBF6}.tp2{fill:#AFA9EC}
@@ -25,80 +24,80 @@ a:hover rect{stroke-width:1.5}
 
 <rect class="zone" x="40" y="40" width="600" height="90" rx="12"/>
 <text class="th zl" x="56" y="64">Human zone — coordination</text>
-<a href="/XRefKit/ja/slides/063_ai_organization_explainer_clear/#goal"><g>
+<g>
   <rect class="bp" x="220" y="58" width="240" height="56" rx="8"/>
   <text class="th tp1" x="340" y="76" text-anchor="middle" dominant-baseline="central">Goal</text>
   <text class="ts tp2" x="340" y="96" text-anchor="middle" dominant-baseline="central">Desired state + acceptance criteria</text>
-</g></a>
+</g>
 
 <line x1="340" y1="114" x2="340" y2="186" class="arr" marker-end="url(#xrk-arrow)"/>
 
 <rect class="zone" x="40" y="170" width="600" height="270" rx="12"/>
 <text class="th zl" x="56" y="194">AI zone — execution</text>
 
-<a href="/XRefKit/ja/slides/063_ai_organization_explainer_clear/#semantic-routing"><g>
+<g>
   <rect class="bt" x="220" y="190" width="240" height="56" rx="8"/>
   <text class="th tt1" x="340" y="208" text-anchor="middle" dominant-baseline="central">Semantic routing</text>
   <text class="ts tt2" x="340" y="228" text-anchor="middle" dominant-baseline="central">Selects the skill for the goal</text>
-</g></a>
+</g>
 
 <line x1="340" y1="246" x2="340" y2="276" class="arr" marker-end="url(#xrk-arrow)"/>
 
-<a href="/XRefKit/ja/slides/063_ai_organization_explainer_clear/#workflow-protocol"><rect class="zone" x="170" y="280" width="340" height="140" rx="12"/>
+<rect class="zone" x="170" y="280" width="340" height="140" rx="12"/>
 <text class="ts zl" x="340" y="298" text-anchor="middle">Workflow protocol</text>
-<text class="ts zl" x="340" y="314" text-anchor="middle">execution → check → quality → handoff → closure</text></a>
-<a href="/XRefKit/ja/slides/063_ai_organization_explainer_clear/#skill"><g>
+<text class="ts zl" x="340" y="314" text-anchor="middle">execution → check → quality → handoff → closure</text>
+<g>
   <rect class="bt" x="200" y="330" width="280" height="56" rx="8"/>
   <text class="th tt1" x="340" y="348" text-anchor="middle" dominant-baseline="central">Skill</text>
   <text class="ts tt2" x="340" y="368" text-anchor="middle" dominant-baseline="central">Bounded unit of execution</text>
-</g></a>
+</g>
 
-<a href="/XRefKit/ja/slides/063_ai_organization_explainer_clear/#knowledge"><g>
+<g>
   <rect class="bg" x="44" y="330" width="132" height="56" rx="8"/>
   <text class="th tg1" x="110" y="348" text-anchor="middle" dominant-baseline="central">Knowledge</text>
   <text class="ts tg2" x="110" y="368" text-anchor="middle" dominant-baseline="central">Loaded on demand</text>
-</g></a>
+</g>
 <line x1="176" y1="358" x2="194" y2="358" class="arr" marker-end="url(#xrk-arrow)"/>
 
-<a href="/XRefKit/ja/slides/063_ai_organization_explainer_clear/#evidence"><g>
+<g>
   <rect class="bg" x="504" y="330" width="132" height="56" rx="8"/>
   <text class="th tg1" x="570" y="348" text-anchor="middle" dominant-baseline="central">Evidence</text>
   <text class="ts tg2" x="570" y="368" text-anchor="middle" dominant-baseline="central">Records judgments</text>
-</g></a>
+</g>
 <line x1="480" y1="358" x2="498" y2="358" class="arr" marker-end="url(#xrk-arrow)"/>
 
-<a href="/XRefKit/ja/slides/064_ai_team_operating_boundary/#escalation"><g>
+<g>
 <path d="M510 310 L590 310 L590 134" class="arr" stroke-dasharray="4 4" marker-end="url(#xrk-arrow)"/>
 <text class="ts zl" x="584" y="262" text-anchor="end">Escalation: returns judgment</text>
-</g></a>
+</g>
 
 <line x1="340" y1="440" x2="340" y2="452" class="arr" marker-end="url(#xrk-arrow)"/>
-<a href="/XRefKit/ja/slides/064_ai_team_operating_boundary/#closure"><g>
+<g>
   <rect class="bg" x="240" y="456" width="200" height="52" rx="8"/>
   <text class="th tg1" x="340" y="472" text-anchor="middle" dominant-baseline="central">Closure</text>
   <text class="ts tg2" x="340" y="492" text-anchor="middle" dominant-baseline="central">Asserts process integrity</text>
-</g></a>
-<a href="/XRefKit/ja/slides/064_ai_team_operating_boundary/#handoff"><g>
+</g>
+<g>
 <line x1="340" y1="508" x2="340" y2="536" class="arr" marker-end="url(#xrk-arrow)"/>
 <text class="ts zl" x="452" y="506" text-anchor="start">Handoff: closure verified</text>
-</g></a>
+</g>
 
 <rect class="zone" x="40" y="520" width="600" height="90" rx="12"/>
 <text class="th zl" x="56" y="544">Human zone — coordination</text>
-<a href="/XRefKit/ja/slides/064_ai_team_operating_boundary/#acceptance"><g>
+<g>
   <rect class="bp" x="220" y="540" width="240" height="56" rx="8"/>
   <text class="th tp1" x="340" y="558" text-anchor="middle" dominant-baseline="central">Acceptance</text>
   <text class="ts tp2" x="340" y="578" text-anchor="middle" dominant-baseline="central">Checked against goal criteria</text>
-</g></a>
+</g>
 
-<a href="/XRefKit/ja/slides/065_xrefkit_repository_overview/#xid"><g>
+<g>
   <rect class="bg" x="40" y="630" width="600" height="36" rx="8"/>
   <text class="ts tg1" x="340" y="648" text-anchor="middle" dominant-baseline="central">XID — every element is cross-referenced by stable identifiers</text>
-</g></a>
+</g>
 <line x1="340" y1="666" x2="340" y2="686" class="arr" marker-end="url(#xrk-arrow)"/>
-<a href="/XRefKit/ja/slides/073_xrefkit_organization_distribution/#improvement-distribution"><g>
+<g>
   <rect class="bt" x="170" y="690" width="340" height="42" rx="8"/>
   <text class="th tt1" x="340" y="704" text-anchor="middle" dominant-baseline="central">Improvement and distribution</text>
   <text class="ts tt2" x="340" y="720" text-anchor="middle" dominant-baseline="central">Human revision → validation → next version</text>
-</g></a>
+</g>
 </svg>
