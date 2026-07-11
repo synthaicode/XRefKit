@@ -12,7 +12,7 @@ const XREFKIT_DECKS = [
     id: "063",
     level: "Model",
     role: "Execution model",
-    question: { en: "How do Goal, Skills, routing, Knowledge, and workflow connect?", ja: "Goal、Skill、routing、Knowledge、workflowはどう接続するのか。" },
+    question: { en: "How is AI work kept resumable and reviewable?", ja: "AI作業を、どう再開・検証可能にするのか。" },
     title: { en: "AI Work Execution", ja: "AI 作業実行の説明資料" },
     summary: {
       en: "Shows how a Goal, bounded Skills, routing, Knowledge, and the workflow protocol make AI work resumable and reviewable.",
@@ -23,14 +23,27 @@ const XREFKIT_DECKS = [
   {
     id: "065",
     level: "Implementation",
+    levelJa: "実装",
     role: "Repository implementation",
-    question: { en: "How does the repository implement controlled AI work?", ja: "AIの特性に応じて分けた解決策を、XRefKitはどの構造として実装するのか。" },
+    roleJa: "知識・手順の管理",
+    question: { en: "How does the repository implement controlled AI work?", ja: "組織固有知識とAIに任せる手順を、どう管理・実行・改善するのか。" },
     title: { en: "XRefKit Repository Overview", ja: "XRefKit リポジトリ概要" },
     summary: {
       en: "Explains XRefKit as the operating base that connects Goals, Skills, Knowledge, workflow evidence, and MCP distribution.",
-      ja: "目標、責務定義、組織固有知識、実行管理、証拠、参照解決を実装・配布する構造としてXRefKitを説明します。",
+      ja: "責務定義、組織固有知識、実行管理、証拠、元資料を分離し、更新・検証可能な正本として管理する構造を説明します。",
     },
     links: { en: "065_xrefkit_repository_overview", ja: "065_xrefkit_repository_overview" },
+  },
+  {
+    id: "073",
+    level: "Distribution",
+    levelJa: "組織配布",
+    role: "Organization distribution",
+    roleJa: "管理済み資産の配布",
+    question: { ja: "管理された知識と手順を、組織のAI利用環境へどう届けるのか。" },
+    title: { ja: "XRefKit 組織配布" },
+    summary: { ja: "検証済みの責務定義、必須知識、実行契約を、PythonパッケージとMCPを通じて同じ契約のまま届ける仕組みを説明します。" },
+    links: { ja: "073_xrefkit_organization_distribution" },
   },
   {
     id: "064",
@@ -67,7 +80,7 @@ function renderLanguageCard(deck, lang) {
   const other = lang === "ja" ? "en" : "ja";
   const status = deck.links[other] ? (lang === "ja" ? "英語版あり" : "Japanese version available") : (lang === "ja" ? "日本語のみ" : "English only");
   return `<a class="deck-card" href="${languageLink(lang, deck.links[lang])}">
-    <span class="deck-tag">${deck.level} · ${deck.role}</span>
+    <span class="deck-tag">${lang === "ja" ? (deck.levelJa || deck.level) : deck.level} · ${lang === "ja" ? (deck.roleJa || deck.role) : deck.role}</span>
     <h2>${deck.title[lang]}</h2>
     <p class="deck-question">${deck.question[lang]}</p>
     <p>${deck.summary[lang]}</p>

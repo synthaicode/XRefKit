@@ -1,0 +1,17 @@
+order	slide_path	narration
+01a	../../assets/073_xrefkit_organization_distribution/01_title_q.png	聞き手: 管理された知識と手順を、組織のAI利用環境へどう届けるのですか。
+01b	../../assets/073_xrefkit_organization_distribution/01_title.png	解説: XRefKitは、リポジトリで検証した正本から実行に必要な契約と資産をまとめ、利用環境によって意味が変わらない形で届けます。
+02a	../../assets/073_xrefkit_organization_distribution/02_unit_q.png	聞き手: 組織へ配布する単位には、何が含まれるのですか。
+02b	../../assets/073_xrefkit_organization_distribution/02_unit.png	解説: 文書一式ではなく、起動・進行契約、責務定義、必須知識、クライアント側ツールを配布します。
+03a	../../assets/073_xrefkit_organization_distribution/03_package_q.png	聞き手: これらの配布資産は、どこにまとめられるのですか。
+03b	../../assets/073_xrefkit_organization_distribution/03_package.png	解説: Pythonパッケージを共通の配布単位とし、実行管理、参照解決、MCP接続、クライアント用ツールを同じ版として扱います。
+04a	../../assets/073_xrefkit_organization_distribution/04_generation_q.png	聞き手: 更新途中の資産が混ざることはありませんか。
+04b	../../assets/073_xrefkit_organization_distribution/04_generation.png	解説: 実行時資産は世代単位で完成させてから公開し、正式な利用側はcurrent.jsonが示す現在世代を必ず参照します。
+05a	../../assets/073_xrefkit_organization_distribution/05_providers_q.png	聞き手: 利用環境が違っても、同じXIDを参照できますか。
+05b	../../assets/073_xrefkit_organization_distribution/05_providers.png	解説: 同じXIDを、リポジトリ、導入済みパッケージ、MCPから解決します。競合する本文を黙って選ぶことはありません。
+06a	../../assets/073_xrefkit_organization_distribution/06_mcp_q.png	聞き手: MCPサーバーが、責務の作業まで実行するのですか。
+06b	../../assets/073_xrefkit_organization_distribution/06_mcp.png	解説: MCPは起動契約、責務定義、XID本文、実行用資産を提供します。AIの作業とコマンド実行はクライアント側が担います。
+07a	../../assets/073_xrefkit_organization_distribution/07_bootstrap_q.png	聞き手: クライアントは、受け取った配布物をそのまま信頼するのですか。
+07b	../../assets/073_xrefkit_organization_distribution/07_bootstrap.png	解説: 導入または配置した後に、マニフェスト、ハッシュ、版、互換性を確認します。通信や配布元の信頼は配置環境で管理します。
+08a	../../assets/073_xrefkit_organization_distribution/08_conclusion_q.png	聞き手: 管理と配布を分けると、組織では何が揃うのですか。
+08b	../../assets/073_xrefkit_organization_distribution/08_conclusion.png	解説: 一つの管理済み正本を、直接利用、パッケージ導入、MCP配信のいずれからでも、同じ契約で複数のAI利用環境へ届けられます。

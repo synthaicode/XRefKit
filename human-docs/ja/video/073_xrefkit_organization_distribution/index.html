@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>XRefKit 組織配布</title>
+  <style>
+    body { margin: 0; font-family: Inter, "Noto Sans JP", sans-serif; background: #f8f9fa; color: #0f172a; }
+    main { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; }
+    h1 { margin: 0 0 12px; font-size: 40px; }
+    .lead { font-size: 18px; line-height: 1.6; color: #475569; }
+    .entry { margin-top: 28px; padding: 20px; border: 1px solid #dbe3ee; border-radius: 8px; background: #fff; }
+    .entry p { font-size: 18px; line-height: 1.6; color: #475569; }
+    img { display: block; width: 100%; margin-top: 16px; border-radius: 8px; border: 1px solid #dbe3ee; }
+    .order { color: #2563eb; font-size: 15px; font-weight: 800; letter-spacing: 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>XRefKit 組織配布</h1>
+    <p class="lead">管理・検証された知識と手順を、同じ契約で組織のAI利用環境へ届ける仕組みを説明します。</p>
+    <div id="slides"></div>
+  </main>
+  <script>
+    const slides = [
+      ["01a", "01_title_q", "管理された知識と手順を、組織のAI利用環境へどう届けるのですか。"],
+      ["01b", "01_title", "XRefKitは、検証済みの知識と手順を同じ契約で配布します。"],
+      ["02a", "02_unit_q", "組織へ配布する単位には、何が含まれるのですか。"],
+      ["02b", "02_unit", "文書一式ではなく、実行に必要な契約と資産を配布します。"],
+      ["03a", "03_package_q", "これらの配布資産は、どこにまとめられるのですか。"],
+      ["03b", "03_package", "Pythonパッケージに実行、MCP、ツール、責務資産をまとめます。"],
+      ["04a", "04_generation_q", "更新途中の資産が混ざることはありませんか。"],
+      ["04b", "04_generation", "実行時資産は世代単位で公開し、current.jsonが現在世代を示します。"],
+      ["05a", "05_providers_q", "利用環境が違っても、同じXIDを参照できますか。"],
+      ["05b", "05_providers", "同じXIDを、リポジトリ、導入済みパッケージ、MCPから解決します。"],
+      ["06a", "06_mcp_q", "MCPサーバーが、責務の作業まで実行するのですか。"],
+      ["06b", "06_mcp", "MCPは配布と参照解決を担い、作業実行はクライアント側が行います。"],
+      ["07a", "07_bootstrap_q", "クライアントは、受け取った配布物をそのまま信頼するのですか。"],
+      ["07b", "07_bootstrap", "取得後に、ハッシュ、版、互換性を確認してから利用します。"],
+      ["08a", "08_conclusion_q", "管理と配布を分けると、組織では何が揃うのですか。"],
+      ["08b", "08_conclusion", "一つの管理済み正本を、同じ契約で複数のAI利用環境へ届けられます。"],
+    ];
+    const container = document.getElementById("slides");
+    for (const [order, file, text] of slides) {
+      const section = document.createElement("section");
+      section.className = "entry";
+      const number = document.createElement("div");
+      number.className = "order";
+      number.textContent = order;
+      const description = document.createElement("p");
+      description.textContent = text;
+      const image = document.createElement("img");
+      image.setAttribute("src", `../../assets/073_xrefkit_organization_distribution/${file}.png`);
+      image.alt = text;
+      section.append(number, description, image);
+      container.append(section);
+    }
+  </script>
+</body>
+</html>

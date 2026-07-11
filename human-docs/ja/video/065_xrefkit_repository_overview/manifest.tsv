@@ -13,5 +13,5 @@ order	slide_path	narration
 06b	../../assets/065_xrefkit_repository_overview/06_handoff.png	解説: 引継ぎは会話の雰囲気ではなく、実行履歴と引継ぎ元の終了状態でつなぎます。次の起動側は前の実行の終了判定と引継ぎ元を確認してから続行するため、何を終え、何を残したかを追えます。
 07a	../../assets/065_xrefkit_repository_overview/07_human_q.png	聞き手: 実行後に、どの組織固有知識が使われたか確認できますか。
 07b	../../assets/065_xrefkit_repository_overview/07_human.png	解説: 責務実行とMCPを実行識別子で相関し、XIDの選択、解決、読込み、適用を区別して記録します。利用証拠は一覧、責務、組織固有知識を改善する入力になります。
-08a	../../assets/065_xrefkit_repository_overview/08_conclusion_q.png	聞き手: この実装構造を、組織の利用環境へどう届けるのですか。
-08b	../../assets/065_xrefkit_repository_overview/08_conclusion.png	解説: XRefKitは、問題ごとに分けた解決策を責務定義、組織固有知識、実行管理、証拠、参照解決として実装し、同じ契約のままリポジトリ、導入済みパッケージ、MCPから利用できるようにします。
+08a	../../assets/065_xrefkit_repository_overview/08_conclusion_q.png	聞き手: 知識と手順を、更新・検証できる状態で管理できますか。
+08b	../../assets/065_xrefkit_repository_overview/08_conclusion.png	解説: XRefKitは、責務定義、組織固有知識、実行管理、証拠、元資料を分離し、変更箇所と検証対象を明確にした状態で正本を更新します。ここで整えた正本が組織配布の入力になります。
