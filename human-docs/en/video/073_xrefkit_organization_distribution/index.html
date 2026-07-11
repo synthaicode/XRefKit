@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>XRefKit Improvement and Distribution</title>
+  <link rel="stylesheet" href="../../../assets/common.css" />
+  <style>
+    body { margin: 0; font-family: Inter, "Noto Sans", sans-serif; background: #f8f9fa; color: #0f172a; }
+    main { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; }
+    h1 { margin: 0 0 12px; font-size: 40px; }
+    .lead { font-size: 18px; line-height: 1.6; color: #475569; }
+    .entry { margin-top: 28px; padding: 20px; border: 1px solid #dbe3ee; border-radius: 8px; background: #fff; }
+    .entry p { font-size: 18px; line-height: 1.6; color: #475569; }
+    img { display: block; width: 100%; margin-top: 16px; border-radius: 8px; border: 1px solid #dbe3ee; }
+    .order { color: #2563eb; font-size: 15px; font-weight: 800; letter-spacing: 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>XRefKit Improvement and Distribution</h1>
+    <p class="lead">This deck shows how people use Skill Run Dashboard evidence and XID usage to select improvements, validate a new version, and distribute it to AI work environments.</p>
+    <nav data-xrefkit-navigation="073" aria-label="Deck navigation"></nav>
+    <div id="slides"></div>
+  </main>
+  <script src="../../../assets/xrefkit-information-model.js"></script>
+  <script>
+    const slides = [
+      ["01a", "01_title_q", "How do we find the runs that need improvement among many responsibility executions?"],
+      ["01b", "01_title", "Skill Run Dashboard is the entry point for improvement decisions."],
+      ["02a", "02_unit_q", "Which states should we inspect in the run list?"],
+      ["02b", "02_unit", "Narrow the list by blocked state, closure, quality review, and missing information."],
+      ["03a", "03_package_q", "What should we inspect for one responsibility execution?"],
+      ["03b", "03_package", "Inspect work items, evidence, concerns, progress, and closure as one run."],
+      ["04a", "04_generation_q", "Can we tell which Knowledge was selected and actually used?"],
+      ["04b", "04_generation", "Correlate records by run ID and distinguish each stage of XID usage."],
+      ["05a", "05_providers_q", "How do we detect missing evidence needed for an improvement decision?"],
+      ["05b", "05_providers", "Rank missing information and correlation gaps within and across runs."],
+      ["06a", "06_mcp_q", "Does Skill Run Dashboard automatically rewrite Knowledge or Skills?"],
+      ["06b", "06_mcp", "The dashboard supplies evidence; people decide what to revise and approve."],
+      ["07a", "07_bootstrap_q", "How does an approved improvement become the next version?"],
+      ["07b", "07_bootstrap", "Revise the canonical sources, validate the contracts, and approve the next version."],
+      ["08a", "08_conclusion_q", "How do we confirm that the distributed version improved later executions?"],
+      ["08b", "08_conclusion", "Distribute the approved version and observe the next runs with the same measures."],
+    ];
+    const container = document.getElementById("slides");
+    for (const [order, file, text] of slides) {
+      const section = document.createElement("section");
+      section.className = "entry";
+      if (file === "01_title") section.id = "improvement-distribution";
+      const number = document.createElement("div");
+      number.className = "order";
+      number.textContent = order;
+      const description = document.createElement("p");
+      description.textContent = text;
+      const image = document.createElement("img");
+      image.setAttribute("src", `../../assets/073_xrefkit_organization_distribution/${file}.png`);
+      image.alt = text;
+      section.append(number, description, image);
+      container.append(section);
+    }
+    if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView();
+  </script>
+</body>
+</html>

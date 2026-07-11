@@ -1,0 +1,224 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><style>:root {
+  --bg: linear-gradient(135deg, #f7fafc 0%, #eef4fb 100%);
+  --panel: #ffffff;
+  --ink: #132237;
+  --muted: #62748a;
+  --line: #d8e1eb;
+  --primary: #2267d8;
+  --primary-soft: #eaf1ff;
+  --warning: #e28a2e;
+  --warning-soft: #fff1de;
+  --positive: #1b8f67;
+  --positive-soft: #e8f7f0;
+  --danger: #d44f4f;
+  --danger-soft: #fcecec;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: #f7fafc;
+  font-family: "Inter", "Noto Sans JP", sans-serif;
+}
+
+.canvas {
+  width: 1600px;
+  height: 900px;
+  overflow: hidden;
+  padding: 56px 72px;
+  background: #f7fafc;
+}
+
+.title {
+  margin: 0;
+  font-size: 64px;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+.subtitle {
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 29px;
+  line-height: 1.4;
+}
+
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); }
+
+.card {
+  min-height: 270px;
+  padding: 28px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+}
+
+.card h3 { margin: 0 0 18px; font-size: 34px; line-height: 1.2; color: var(--ink); }
+.card p { margin: 0; color: var(--muted); font-size: 25px; line-height: 1.45; }
+
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+.panel { min-height: 340px; padding: 28px; border: 2px solid var(--line); border-radius: 14px; background: var(--panel); }
+.stack { display: grid; gap: 14px; margin-top: 22px; }
+.box { padding: 18px 20px; border: 1px solid var(--line); border-radius: 10px; color: var(--ink); font-size: 26px; font-weight: 700; line-height: 1.3; }
+.badge { display: inline-block; padding: 9px 14px; border-radius: 999px; font-weight: 800; }
+.b-blue { background: var(--primary-soft); color: var(--primary); }
+.b-green { background: var(--positive-soft); color: var(--positive); }
+.b-red { background: var(--danger-soft); color: var(--danger); }
+
+.soft-blue { background: var(--primary-soft); border-color: #cfdcff; }
+.soft-gray { background: #f3f6fa; border-color: #d7e0ea; }
+.soft-orange { background: var(--warning-soft); border-color: #ffd8ad; }
+.soft-green { background: var(--positive-soft); border-color: #bee8d9; }
+.soft-red { background: var(--danger-soft); border-color: #f2c5c5; }
+
+.summary-band {
+  margin-top: 24px;
+  padding: 24px 28px;
+  border-radius: 24px;
+  border: 2px solid #9fb9e8;
+  background: #f7faff;
+  text-align: center;
+}
+
+.summary-band strong {
+  display: block;
+  font-size: 34px;
+  color: #234e95;
+}
+
+.summary-band span {
+  display: block;
+  margin-top: 10px;
+  font-size: 22px;
+  line-height: 1.45;
+  color: #526985;
+}
+
+.big-arrow {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+  color: #6e8fbd;
+  font-size: 88px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.hero-note {
+  margin-top: 34px;
+  padding: 24px 28px;
+  border-radius: 24px;
+  border: 1px solid #d8e1eb;
+  background: rgba(255,255,255,0.84);
+  box-shadow: 0 16px 34px rgba(21,34,53,0.08);
+  text-align: center;
+  font-size: 24px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.hero-flow,
+.knowledge-flow,
+.routing-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  margin-top: 72px;
+}
+
+.diagram-node {
+  min-width: 250px;
+  padding: 22px 24px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.diagram-node h3 { margin: 0 0 10px; font-size: 29px; line-height: 1.25; }
+.diagram-node p { margin: 0; color: var(--muted); font-size: 21px; line-height: 1.42; }
+.diagram-arrow { min-width: 112px; color: #5579ad; font-size: 52px; font-weight: 800; text-align: center; }
+.diagram-arrow span { display: block; margin-bottom: 4px; color: var(--muted); font-size: 17px; font-weight: 700; }
+
+.trait-map,
+.solution-map {
+  display: grid;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.flow-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 130px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+}
+
+.trait-map .diagram-node,
+.solution-map .diagram-node { padding: 14px 20px; }
+.trait-map .diagram-node h3,
+.solution-map .diagram-node h3 { font-size: 24px; }
+.trait-map .diagram-node p,
+.solution-map .diagram-node p { font-size: 18px; }
+.trait-map .diagram-arrow,
+.solution-map .diagram-arrow { font-size: 38px; }
+
+.solution-map + .summary-band { display: none; }
+
+.decision-flow,
+.decomposition-flow {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 76px;
+}
+
+.decision-flow > .diagram-node {
+  width: 270px;
+  min-width: 0;
+  flex: 0 0 270px;
+}
+
+.decision-flow > .diagram-arrow {
+  min-width: 82px;
+  flex: 0 0 82px;
+}
+
+.branch-grid,
+.responsibility-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  flex: 1;
+}
+
+.branch-grid { min-width: 0; }
+.branch-grid .diagram-node { min-width: 0; }
+
+.responsibility-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.responsibility-grid .diagram-node { min-width: 0; }
+.plus { color: var(--primary); font-size: 58px; font-weight: 800; }
+.input-stack { display: grid; gap: 14px; }
+.routing-flow .diagram-node { min-width: 280px; }
+
+.acceptance-map {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 100px;
+}
+
+.acceptance-map .diagram-node { min-height: 220px; display: flex; flex-direction: column; justify-content: center; }
+
+.conclusion-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 18px;
+  margin-top: 110px;
+}
+
+.conclusion-grid .diagram-node { min-width: 0; min-height: 190px; display: flex; flex-direction: column; justify-content: center; }
+</style></head><body><div class="canvas"><h1 class="title">Organization-specific Knowledge supplies the inputs for real decisions</h1><p class="subtitle">Do not confuse generalized model knowledge with organizational rules and exceptions</p><div class="knowledge-flow"><div class="diagram-node soft-blue"><h3>General model knowledge</h3><p>General concepts, methods, and examples</p></div><div class="plus">＋</div><div class="diagram-node soft-green"><h3>Organization-specific Knowledge</h3><p>Rules, targets, exceptions, and prior decisions</p></div><div class="diagram-arrow"><span>Load only selected XIDs</span>→</div><div class="diagram-node soft-orange"><h3>Organizational judgment</h3><p>Decide from the applicable local conditions</p></div></div><div class="summary-band"><strong>Knowledge addresses the gap between general training and organization-specific judgment.</strong></div></div></body></html>

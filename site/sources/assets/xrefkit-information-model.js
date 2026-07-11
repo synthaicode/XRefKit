@@ -1,9 +1,9 @@
 const XREFKIT_TOUR = [
-  { id: "055", phase: "Why", ja: "なぜ通常のAI利用だけでは業務実行にならないのか", en: "Why ordinary AI use is not business execution", jaPath: "why-ai-organization-needed" },
+  { id: "055", phase: "Why", ja: "なぜ通常のAI利用だけでは業務実行にならないのか", en: "Why ordinary AI use is not business execution", jaPath: "why-ai-organization-needed", enPath: "why-ai-organization-needed" },
   { id: "063", phase: "How", ja: "Goalから受入れまで、限定責務をどう接続するか", en: "How bounded responsibilities connect Goal to acceptance", jaPath: "063_ai_organization_explainer_clear", enPath: "063_ai_organization_explainer_clear" },
   { id: "064", phase: "Boundary", ja: "ツール・AI・人間はそれぞれ何を決めるのか", en: "What tools, AI, and humans decide", jaPath: "064_ai_team_operating_boundary", enPath: "064_ai_team_operating_boundary" },
   { id: "065", phase: "Implementation", ja: "業務実行モデルはXRefKitのどこに実装されるのか", en: "Where the operating model is implemented", jaPath: "065_xrefkit_repository_overview", enPath: "065_xrefkit_repository_overview" },
-  { id: "073", phase: "Improvement and Distribution", ja: "実行状況の観測から改善し、次の版をどう配布するのか", en: "How evidence becomes an improved, distributed version", jaPath: "073_xrefkit_organization_distribution" },
+  { id: "073", phase: "Improvement and Distribution", ja: "実行状況の観測から改善し、次の版をどう配布するのか", en: "How evidence becomes an improved, distributed version", jaPath: "073_xrefkit_organization_distribution", enPath: "073_xrefkit_organization_distribution" },
 ];
 
 const XREFKIT_TERMS = {
