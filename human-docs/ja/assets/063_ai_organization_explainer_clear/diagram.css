@@ -1,10 +1,11 @@
 :root {
   --bg: #F8F9FA;
-  --ink: #111827;
-  --muted: #4b5563;
-  --line: #cbd5e1;
-  --blue: #1d4ed8;
-  --blue-soft: #dbeafe;
+  --panel: #ffffff;
+  --ink: #0f172a;
+  --muted: #475569;
+  --line: #dbe3ee;
+  --blue: #2563eb;
+  --blue-soft: #eff6ff;
   --green: #047857;
   --green-soft: #d1fae5;
   --orange: #c2410c;
@@ -32,19 +33,20 @@ body {
   position: relative;
   overflow: hidden;
   padding: 56px 72px 64px;
-  background: #F8F9FA;
+  background:
+    radial-gradient(circle at top right, #dbeafe 0, transparent 28%),
+    linear-gradient(180deg, #fafafa 0%, #f8f9fa 100%);
 }
 
 .kicker {
   display: inline-flex;
   align-items: center;
-  min-height: 42px;
-  padding: 0 18px;
-  border-radius: 999px;
-  background: var(--blue-soft);
+  min-height: 32px;
+  padding: 0;
   color: var(--blue);
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 h1 {
@@ -336,18 +338,19 @@ h1 {
   min-height: 300px;
   padding: 20px;
   border-radius: 12px;
-  border: 2px solid var(--line);
-  background: #F8F9FA;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
 }
 
 .bubble.question {
-  border-color: hsl(45, 85%, 50%);
-  background: hsl(45, 80%, 93%);
+  border-color: #bfdbfe;
+  background: var(--panel);
 }
 
 .bubble.answer {
-  border-color: hsl(150, 65%, 38%);
-  background: hsl(150, 55%, 92%);
+  border-color: var(--line);
+  background: var(--panel);
 }
 
 .bubble.placeholder {
@@ -388,12 +391,13 @@ h1 {
 }
 
 .question .card-label {
-  background: hsl(45, 85%, 50%);
+  background: var(--blue-soft);
+  color: var(--blue);
 }
 
 .answer .card-label {
-  background: hsl(150, 65%, 38%);
-  color: #fff;
+  background: var(--blue);
+  color: white;
 }
 
 .definition-main .card-label {
@@ -568,9 +572,10 @@ h1 {
   right: 72px;
   bottom: 48px;
   padding: 22px 28px;
-  border-left: 4px solid #2563EB;
-  background: #EFF6FF;
-  color: #1e3a8a;
+  border-left: 0;
+  border-top: 4px solid var(--blue);
+  background: var(--blue-soft);
+  color: var(--ink);
   font-size: 34px;
   line-height: 1.35;
   font-weight: 600;
