@@ -5,7 +5,7 @@
   "trees": [
     {"source": "site/sources", "target": "", "include": ["*", "**/*"]},
     {"source": "human-docs/en/assets/063_ai_organization_explainer_clear", "target": "en/assets/063_ai_organization_explainer_clear", "include": ["*.png"]},
-    {"source": "human-docs/en/assets/064_ai_team_operating_boundary", "target": "en/assets/064_ai_team_operating_boundary", "include": ["*.html", "*.css"]},
+    {"source": "human-docs/en/assets/064_ai_team_operating_boundary", "target": "en/assets/064_ai_team_operating_boundary", "include": ["*.html", "*.css", "*.png"]},
     {"source": "human-docs/en/assets/065_xrefkit_repository_overview", "target": "en/assets/065_xrefkit_repository_overview", "include": ["*.png"]},
     {"source": "human-docs/ja/assets/063_ai_organization_explainer_clear", "target": "ja/assets/063_ai_organization_explainer_clear", "include": ["*.png"]},
     {"source": "human-docs/ja/assets/065_xrefkit_repository_overview", "target": "ja/assets/065_xrefkit_repository_overview", "include": ["*.png"]},

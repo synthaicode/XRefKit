@@ -11,7 +11,7 @@ order	slide_path	narration
 05b	../../assets/064_ai_team_operating_boundary/05_closure.png	Answer: Because incomplete evidence, unresolved concerns, and skipped checks otherwise disappear into a casual done claim. The closure gate keeps unfinished work from being released as accepted work.
 06a	../../assets/064_ai_team_operating_boundary/06_handoff_q.png	Question: If the work is checked, isn't that enough?
 06b	../../assets/064_ai_team_operating_boundary/06_handoff.png	Answer: No. Handoff is where responsibility changes. The next owner still needs the output, evidence, unresolved edges, and the acceptance condition in a form they can use without rediscovering the context.
-07a	../../assets/064_ai_team_operating_boundary/07_maturity_q.png	Question: Why do Skills need maturity levels at all?
-07b	../../assets/064_ai_team_operating_boundary/07_maturity.png	Answer: Because procedure text can exist before the practical human boundary is clear. Skill maturity shows how far the team has clarified what AI may do, what must be returned, and what is auditable.
+07a	../../assets/064_ai_team_operating_boundary/07_maturity_q.png	Question: What happens after work returns to a human?
+07b	../../assets/064_ai_team_operating_boundary/07_maturity.png	Answer: The return point names the decision owner, evidence, options, and next state. Human acceptance authorizes advancement, revision, or stop and records the decision boundary.
 08a	../../assets/064_ai_team_operating_boundary/08_conclusion_q.png	Question: What should an organization design first?
 08b	../../assets/064_ai_team_operating_boundary/08_conclusion.png	Answer: Not more prompts, and not more review load. First design the human boundary and the conditions that govern return, closure, and handoff. AI convenience becomes organizational control only when the responsibility boundary is explicit.
