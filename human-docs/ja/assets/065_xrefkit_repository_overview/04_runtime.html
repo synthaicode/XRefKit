@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <title>このリポジトリでは Skill 実行を runtime envelope で囲います。</title>
+  <title>責務の実行を、記録と終了判定を持つ実行管理枠で囲います。</title>
   <style>:root {
   --bg: #f8f9fa;
   --panel: #ffffff;
@@ -207,20 +207,20 @@ body {
   <main class="slide">
     <header class="header">
       <div>
-        <div class="eyebrow">Repository Overview</div>
-        <h1 class="title">このリポジトリでは Skill 実行を runtime envelope で囲います。</h1>
+        <div class="eyebrow">リポジトリ概要</div>
+        <h1 class="title">責務の実行を、記録と終了判定を持つ実行管理枠で囲います。</h1>
       </div>
       <div class="brand">XRefKit</div>
     </header>
     <section class="summary">
       <div class="summary-label">問い</div>
-      <div class="summary-copy">Skill があれば、そのまま実行すればいいのではないですか。</div>
-      <div class="summary-title">`xrefkit skill run` で開始し、work item、artifact、concern、role separation を記録してから閉じます。Skill を直接読むだけでは閉じられません。</div>
+      <div class="summary-copy">責務定義があれば、そのまま実行すればいいのではないですか。</div>
+      <div class="summary-title">xrefkit skill runコマンドで開始し、作業項目、成果物、懸念事項、役割分離を記録してから閉じます。責務定義を読むだけでは完了しません。</div>
     </section>
     <section class="cards">
       <article class="card">
         <div class="card-tag">開始</div>
-        <p>meta を検証し、run log を開いてから作業を始めます。</p>
+        <p>定義情報を検証し、実行記録を開いてから作業を始めます。</p>
       </article>
       <article class="card">
         <div class="card-tag">途中</div>
@@ -228,9 +228,9 @@ body {
       </article>
       <article class="card">
         <div class="card-tag">終了</div>
-        <p>未完了、未記録、未解決の concern があると closure が拒否されます。</p>
+        <p>未完了、未記録、未解決の懸念事項があると終了が拒否されます。</p>
       </article></section>
-    <div class="takeaway">Skill は手順書ではなく、<strong>実行記録ごと管理される作業単位</strong>として扱います。</div>
+    <div class="takeaway">責務定義は手順書ではなく、<strong>実行記録ごと管理される作業単位</strong>として扱います。</div>
   </main>
 </body>
 </html>

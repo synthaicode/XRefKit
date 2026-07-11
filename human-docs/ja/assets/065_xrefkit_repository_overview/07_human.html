@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <title>Skill Run と MCP を run_id で相関し、XID 利用を観測します。</title>
+  <title>責務実行とMCPを実行識別子で結び、XIDの利用を観測します。</title>
   <style>:root {
   --bg: #f8f9fa;
   --panel: #ffffff;
@@ -207,28 +207,28 @@ body {
   <main class="slide">
     <header class="header">
       <div>
-        <div class="eyebrow">Repository Overview</div>
-        <h1 class="title">Skill Run と MCP を run_id で相関し、XID 利用を観測します。</h1>
+        <div class="eyebrow">リポジトリ概要</div>
+        <h1 class="title">責務実行とMCPを実行識別子で結び、XIDの利用を観測します。</h1>
       </div>
       <div class="brand">XRefKit</div>
     </header>
     <section class="summary">
       <div class="summary-label">問い</div>
-      <div class="summary-copy">実行後に、どのKnowledgeが使われたか確認できますか。</div>
-      <div class="summary-title">選択、解決、ロード、適用を分けて記録し、使われなかったKnowledgeや不足したKnowledgeを改善材料にします。</div>
+      <div class="summary-copy">実行後に、どの組織固有知識が使われたか確認できますか。</div>
+      <div class="summary-title">選択、解決、読込み、適用を分けて記録し、使われなかった知識や不足した知識を改善材料にします。</div>
     </section>
     <section class="cards">
       <article class="card">
         <div class="card-tag">相関</div>
-        <p>クライアントrunとMCPアクセスを同じrun_idで結びます。</p>
+        <p>クライアント実行とMCPアクセスを同じ識別子で結びます。</p>
       </article>
       <article class="card">
         <div class="card-tag">区別</div>
-        <p>XIDの選択、解決、ロード、適用を別イベントとして残します。</p>
+        <p>XIDの選択、解決、読込み、適用を別の記録として残します。</p>
       </article>
       <article class="card">
         <div class="card-tag">改善</div>
-        <p>証拠からcatalog、Skill、Knowledgeの正本を見直します。</p>
+        <p>証拠から一覧、責務、組織固有知識の正本を見直します。</p>
       </article></section>
     <div class="takeaway">観測は監査の終点ではなく、<strong>次の実行を改善する入力</strong>です。</div>
   </main>
