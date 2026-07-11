@@ -5,15 +5,15 @@ body{margin:0;font-family:Inter,"Noto Sans JP",sans-serif;background:#f8f9fa;col
 <body><main><h1>XRefKitの業務実行モデル</h1><p>GoalからHuman acceptanceまで、限定責務をどう接続するかを説明します。</p><nav data-xrefkit-navigation="063" aria-label="資料ナビゲーション"></nav><section class="viewer"><img id="slide" src="../../assets/063_ai_organization_explainer_clear/01_title.png" alt="Goalから人間による受入れまでを接続する業務実行モデル"><div class="controls"><button class="secondary" id="prev">前へ</button><button id="next">次へ</button><span class="counter" id="counter"></span></div><div class="narration" id="narration"></div></section></main>
 <script>
 const slides=[
-["01_title.png","Goal、Semantic routing、Skill、Knowledge、Workflow protocol、Evidence、Human acceptance、Handoffを接続します。"],
+["01_title.png","Goal、意味による次作業選択、Skill、Knowledge、作業進行規約、Evidence、人間による受入れを接続します。判断返却と引継ぎは別の経路です。"],
 ["02_team_definition.png","Goalは達成状態と受入条件を保持し、一つのSkillの終了だけでは完了しません。"],
 ["03_problem.png","Goalへ進む作業を、判断方法、入出力、Knowledge、Handoff境界を持つSkillへ分けます。"],
 ["03_prompt_skill_limit.png","GoalとSkillを、Semantic routingとEvidenceで接続します。"],
 ["04_work.png","Skillは目的、判断範囲、入力、出力、Knowledge、Handoff境界を持つ限定責務です。"],
 ["05_not_one_ai.png","Semantic routingはGoalと現在状態から、次に必要なSkillを選びます。"],
 ["06_repository.png","Skillは方法を持ち、Knowledgeは判断材料を持ちます。必要なXIDだけを読みます。"],
-["07_handoff.png","Workflow protocolは作業項目、成果物、Evidence、unknown、risk、judgment、Handoffを記録します。"],
-["08_burden_flow.png","GoalからHandoffまでを接続し、未完了を成功扱いにしません。"],
+["07_handoff.png","作業進行規約は作業項目、成果物、Evidence、未確認事項、リスク、判断、引継ぎを記録します。"],
+["08_burden_flow.png","実行、検証、品質確認、引継ぎ記録、終了判定を接続し、未完了を成功扱いにしません。"],
 ["08_or_team.png","進行検証 は作業記録の完全性を検査します。成果物の受入れは 品質確認 と人が別に判断します。"],
 ["09_value.png","AIが止まってもEvidenceから再開またはHandoffできます。Goalは受入条件が満たされるまで続きます。"],
 ["10_conclusion.png","人はGoalの達成、Human acceptance、承認、例外を担い、すべてを会話履歴から監視しません。"],

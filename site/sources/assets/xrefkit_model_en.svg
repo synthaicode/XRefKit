@@ -45,7 +45,7 @@
 
 <rect class="zone" x="170" y="280" width="340" height="140" rx="12"/>
 <text class="ts zl" x="340" y="298" text-anchor="middle">Workflow protocol</text>
-<text class="ts zl" x="340" y="314" text-anchor="middle">execution → check → quality → handoff → closure</text>
+<text class="ts zl" x="340" y="314" text-anchor="middle">execution → verify → quality → handoff → close</text>
 <g>
   <rect class="bt" x="200" y="330" width="280" height="56" rx="8"/>
   <text class="th tt1" x="340" y="348" text-anchor="middle" dominant-baseline="central">Skill</text>
@@ -79,7 +79,7 @@
 </g>
 <g>
 <line x1="340" y1="508" x2="340" y2="536" class="arr" marker-end="url(#xrk-arrow)"/>
-<text class="ts zl" x="452" y="506" text-anchor="start">Handoff: closure verified</text>
+<text class="ts zl" x="452" y="506" text-anchor="start">Handoff: output + unresolved state</text>
 </g>
 
 <rect class="zone" x="40" y="520" width="600" height="90" rx="12"/>

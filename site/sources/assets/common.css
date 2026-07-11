@@ -979,13 +979,21 @@ body {
   text-align: left;
 }
 
-.model-object {
+.model-object,
+.model-inline {
   display: block;
   width: min(760px, 100%);
   aspect-ratio: 680 / 750;
   margin: 24px auto 0;
   border: 0;
   background: transparent;
+}
+
+.model-inline svg,
+.model-doc-object svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .distribution-object {
@@ -1025,6 +1033,170 @@ body {
 .model-reading a {
   color: var(--accent);
   font-weight: 750;
+}
+
+.hero-problem {
+  max-width: 760px;
+  margin: 18px 0 0;
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.65;
+}
+
+.hero-actions,
+.tier-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hero-actions {
+  margin-top: 24px;
+}
+
+.hero-actions a,
+.section-cta a,
+.tier-links a {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 14px;
+  background: var(--panel);
+  color: var(--ink);
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.hero-actions .primary-action {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.section-cta {
+  margin: 18px 0 0;
+  text-align: left;
+}
+
+.learning-tiers {
+  display: grid;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.learning-tier {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 18px;
+  border-top: 1px solid var(--line);
+  padding: 22px 0 8px;
+}
+
+.learning-tier > span {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 800;
+}
+
+.learning-tier h3,
+.learning-tier p {
+  margin: 0;
+}
+
+.learning-tier p {
+  margin-top: 6px;
+  color: var(--muted);
+}
+
+.tier-links {
+  margin-top: 14px;
+}
+
+.model-doc {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 72px;
+}
+
+.model-doc-hero {
+  padding: 44px 0 24px;
+}
+
+.model-doc-hero h1 {
+  margin: 8px 0 16px;
+  font-size: 48px;
+}
+
+.model-doc-hero p:last-child,
+.model-doc-reading p,
+.model-definitions p {
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.85;
+}
+
+.model-doc-object {
+  display: block;
+  width: min(760px, 100%);
+  aspect-ratio: 680 / 750;
+  margin: 12px auto 36px;
+  border: 0;
+}
+
+.model-doc-reading {
+  border-left: 4px solid var(--accent);
+  padding: 24px 28px;
+  background: var(--panel);
+}
+
+.model-doc-reading h2,
+.model-definitions h2 {
+  margin: 0 0 10px;
+}
+
+.model-toc {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 28px 0;
+}
+
+.model-toc a {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: var(--panel);
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.model-definitions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.model-definitions section {
+  scroll-margin-top: 20px;
+  border-top: 2px solid var(--line);
+  padding: 20px 4px 8px;
+}
+
+@media (max-width: 720px) {
+  .model-toc,
+  .model-definitions {
+    grid-template-columns: 1fr;
+  }
+
+  .model-doc-hero h1 {
+    font-size: 38px;
+  }
 }
 
 .loop-line {
