@@ -61,6 +61,6 @@ Skill RunとMCPのログから、Skillの選択とXIDの選択・解決・ロー
 
 ## 関連
 
-- [AIの業務実行構造をどう持たせるか](056_structure_for_ai_organization_presentation.md#xid-C8E2B4D19A65)
+- [AI作業実行の説明資料](063_ai_organization_explainer_clear_script.md)
 - [AI組織説明動画 改訂シナリオ](063_ai_organization_explainer_clear_script.md)
 - [XID利用状況を確認し、SkillとKnowledgeを改善する](072_xid_usage_observability_and_improvement_presentation.md#xid-E5B0D94A71C3)

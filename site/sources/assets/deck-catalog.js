@@ -5,7 +5,7 @@ const XREFKIT_DECKS = [
     role: "Problem framing",
     question: { ja: "なぜ通常のAI利用だけでは、継続可能な業務実行にならないのか。" },
     title: { ja: "AI活用を継続可能な業務実行に変える" },
-    summary: { ja: "AIの応答終了と業務完了の違いから、Goalと限定責務が必要になる理由を説明します。" },
+    summary: { ja: "AIの特性から業務実行上の問題を分け、目標、限定責務、作業進行規約、組織固有知識、次作業選択が解く内容を示します。" },
     links: { ja: "why-ai-organization-needed" },
   },
   {
@@ -24,11 +24,11 @@ const XREFKIT_DECKS = [
     id: "065",
     level: "Implementation",
     role: "Repository implementation",
-    question: { en: "How does the repository implement controlled AI work?", ja: "リポジトリは管理可能なAI作業をどう実現するのか。" },
+    question: { en: "How does the repository implement controlled AI work?", ja: "055で分けた解決策を、XRefKitはどの構造として実装するのか。" },
     title: { en: "XRefKit Repository Overview", ja: "XRefKit リポジトリ概要" },
     summary: {
       en: "Explains XRefKit as the operating base that connects Goals, Skills, Knowledge, workflow evidence, and MCP distribution.",
-      ja: "Goal、Skill、Knowledge、workflowの証拠、MCP配布を接続する運用基盤としてXRefKitを説明します。",
+      ja: "目標、責務定義、組織固有知識、実行管理、証拠、参照解決を実装・配布する構造としてXRefKitを説明します。",
     },
     links: { en: "065_xrefkit_repository_overview", ja: "065_xrefkit_repository_overview" },
   },
