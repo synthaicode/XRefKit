@@ -33,17 +33,6 @@
     </section>
 
     <section class="landing-section">
-      <div class="section-heading"><h2>XRefKitが必要になるAIの特性</h2><p>通常のプロンプト利用だけでは、局所作業と業務完了の間が管理されません。</p></div>
-      <div class="trait-grid">
-        <div class="trait-item"><span>01</span><p>現在の依頼と文脈に応答する。</p></div>
-        <div class="trait-item"><span>02</span><p>局所作業を終えても、業務全体の完了は分からない。</p></div>
-        <div class="trait-item"><span>03</span><p>業務が未完了でも応答を終了できる。</p></div>
-        <div class="trait-item"><span>04</span><p>目的、判断範囲、入力、出力を限定すると能力を集中できる。</p></div>
-        <div class="trait-item"><span>05</span><p>組織固有知識や実行結果を自動的に保持・改訂しない。</p></div>
-      </div>
-    </section>
-
-    <section class="landing-section">
       <div class="section-heading"><h2>Guided Tour</h2><p>なぜ必要かから、改善した次の版を配布するまでを順に辿ります。</p></div>
       <div class="entry-path-grid">
         <article class="entry-path"><div class="entry-path-level">Why</div><h3>なぜ通常のAI利用だけでは業務実行にならないのか</h3><p>AIの特性と、必要になる構成要素を確認します。</p><a href="./ja/slides/why-ai-organization-needed/">資料055を見る</a></article>
@@ -55,14 +44,16 @@
     </section>
 
     <section class="landing-section">
-      <div class="section-heading"><h2>End-to-End例: コードレビュー</h2><p>一つのGoalが、限定責務の実行と人間による受入れまで進む例です。</p></div>
+      <div class="section-heading"><h2>End-to-End例: csharp_review</h2><p>Roslyn診断だけでは確認できないC#固有・システム境界の問題を、限定責務としてレビューする例です。</p></div>
       <div class="example-flow">
-        <div class="example-step"><strong>1. Goal</strong> レビュー完了状態と受入条件を定義する。</div>
-        <div class="example-step"><strong>2. Semantic routing</strong> 対象と現在状態からレビューSkillを選ぶ。</div>
-        <div class="example-step"><strong>3. Skill・Knowledge</strong> 限定されたレビュー責務を実行し、組織基準をXIDで参照する。</div>
-        <div class="example-step"><strong>4. Evidence</strong> findings、judgments、unknowns、artifactsを実行記録へ残す。</div>
-        <div class="example-step"><strong>5. Workflow protocol</strong> 作業項目、証跡、未解決事項、終了条件を確認する。</div>
-        <div class="example-step"><strong>6. Human acceptance</strong> 人間が受け入れ、差し戻し、または次の責務へ引き継ぐ。</div>
+        <div class="example-step"><strong>1. Goal</strong> 対象範囲、完了状態、受入条件を定義する。すべての検査カテゴリに結果があり、未確認事項が明示されている状態を目指す。</div>
+        <div class="example-step"><strong>2. 意味による選択</strong> 「コンパイラー診断を越えたC#レビュー」という目的から、限定責務を持つ <code>csharp_review</code> を選ぶ。</div>
+        <div class="example-step"><strong>3. Skill・Knowledge</strong> Skillの手順に従い、C#レビュー基準（XID: 30E6A4F6F3AA）と共通ソース分析基準（XID: 5F21C8A41001）を必要な分だけ参照する。</div>
+        <div class="example-step"><strong>4. レビュー実行</strong> Roslyn診断を基準線として確定し、診断済みの問題を重複報告せず、言語依存・ライフサイクル・例外経路・不確実性などを検査する。</div>
+        <div class="example-step"><strong>5. Evidence</strong> カテゴリ別の検査表、指摘の重要度・根拠・修正方針、判断、未確認事項、引き継ぎ先を実行記録へ残す。</div>
+        <div class="example-step"><strong>6. 作業進行規約</strong> <code>xrefkit skill verify</code> が作業項目、証跡、未解決事項、役割分離を決定論的に確認する。レビュー内容の正しさ自体は判定しない。</div>
+        <div class="example-step"><strong>7. 品質確認・引き継ぎ</strong> 独立した品質確認を行い、結果を <code>blocked</code>、<code>needs-review</code>、<code>proceed</code> で示す。実装修正、セキュリティ、設計などは対応するSkillへ引き継ぐ。</div>
+        <div class="example-step"><strong>8. 人間による受入れ</strong> 人間がEvidenceと判定を確認し、受入れ、差し戻し、または次の限定責務への移行を決める。</div>
       </div>
     </section>
 
