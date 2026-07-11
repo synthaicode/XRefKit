@@ -48,7 +48,7 @@
       <div class="example-flow">
         <div class="example-step"><strong>1. Goal</strong> 対象範囲、完了状態、受入条件を定義する。すべての検査カテゴリに結果があり、未確認事項が明示されている状態を目指す。</div>
         <div class="example-step"><strong>2. 意味による選択</strong> 「コンパイラー診断を越えたC#レビュー」という目的から、限定責務を持つ <code>csharp_review</code> を選ぶ。</div>
-        <div class="example-step"><strong>3. Skill・Knowledge</strong> Skillの手順に従い、C#レビュー基準（XID: 30E6A4F6F3AA）と共通ソース分析基準（XID: 5F21C8A41001）を必要な分だけ参照する。</div>
+        <div class="example-step"><strong>3. Skill・Knowledge</strong> Skillの手順に従い、<a href="https://github.com/synthaicode/XRefKit/blob/main/knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4F6F3AA">C#レビュー基準（XID: 30E6A4F6F3AA）</a>と<a href="https://github.com/synthaicode/XRefKit/blob/main/knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001">共通ソース分析基準（XID: 5F21C8A41001）</a>を必要な分だけ参照する。</div>
         <div class="example-step"><strong>4. レビュー実行</strong> Roslyn診断を基準線として確定し、診断済みの問題を重複報告せず、言語依存・ライフサイクル・例外経路・不確実性などを検査する。</div>
         <div class="example-step"><strong>5. Evidence</strong> カテゴリ別の検査表、指摘の重要度・根拠・修正方針、判断、未確認事項、引き継ぎ先を実行記録へ残す。</div>
         <div class="example-step"><strong>6. 作業進行規約</strong> <code>xrefkit skill verify</code> が作業項目、証跡、未解決事項、役割分離を決定論的に確認する。レビュー内容の正しさ自体は判定しない。</div>
