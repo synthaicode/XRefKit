@@ -967,6 +967,24 @@ body {
   margin-top: 24px;
 }
 
+.model-main {
+  text-align: center;
+}
+
+.model-main .section-heading,
+.model-main .improvement-note {
+  text-align: left;
+}
+
+.model-object {
+  display: block;
+  width: min(760px, 100%);
+  aspect-ratio: 680 / 750;
+  margin: 24px auto 0;
+  border: 0;
+  background: transparent;
+}
+
 .loop-line {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
