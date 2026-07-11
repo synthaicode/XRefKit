@@ -15,6 +15,7 @@ This skill may also be used in `single_image_infographic` mode when Marketing Gr
 - [Japanese Presentation Tone Guide](references/japanese-presentation-tone.md#xid-D5C8A5F2E731)
 - [Marketing Slide PNG Layout Patterns](references/layout-patterns.md#xid-B0F915C6A4D8)
 - [Marketing Slide PNG Pattern Samples](references/pattern-samples.md#xid-3F2B8D7EA551)
+- [XRefKit Slide Authoring Checklist](references/xrefkit-slide-authoring-checklist.md#xid-6A2D9F4C8E71)
 
 ## Ownership
 
@@ -126,6 +127,7 @@ npx --yes playwright screenshot --browser chromium --viewport-size "1600,900" fi
   - minimal decorative effects
 - Follow `references/style-guide.md` for color, typography, and markdown split decisions.
 - Follow `references/japanese-presentation-tone.md` when writing Japanese titles, subtitles, badges, and summary lines.
+- Apply `references/xrefkit-slide-authoring-checklist.md` before closure when the deck explains XRefKit or is published in the XRefKit site.
 
 ## Closure
 
