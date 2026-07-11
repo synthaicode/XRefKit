@@ -47,6 +47,7 @@
     for (const [order, file, text] of slides) {
       const section = document.createElement("section");
       section.className = "entry";
+      if (file === "01_title") section.id = "improvement-distribution";
       const number = document.createElement("div");
       number.className = "order";
       number.textContent = order;
@@ -58,6 +59,7 @@
       section.append(number, description, image);
       container.append(section);
     }
+    if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView();
   </script>
 </body>
 </html>
