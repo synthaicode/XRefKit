@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>XRefKit 運用モデルと参照実装</title>
+  <link rel="stylesheet" href="../../assets/common.css" />
+  <script src="../../assets/inline-svg.js" defer></script>
+</head>
+<body>
+  <main class="model-doc">
+    <nav class="page-header" aria-label="ページ導線">
+      <a href="../../">← XRefKit Top</a>
+      <a href="https://github.com/synthaicode/XRefKit">GitHub</a>
+      <a href="../../en/">English supplemental materials</a>
+    </nav>
+
+    <header class="model-doc-hero">
+      <p class="eyebrow">運用モデルと参照実装</p>
+      <h1>第2章 モデル</h1>
+      <p>Goalから人間による受入れまで、AIの限定責務、決定論的制御、判断返却、引継ぎをどのように接続するかを定義します。</p>
+    </header>
+
+    <div class="model-doc-object" data-inline-svg="../../assets/xrefkit_model_ja.svg"><a href="../../assets/xrefkit_model_ja.svg">XRefKit業務実行モデルを開く</a></div>
+
+    <section class="model-doc-reading" aria-labelledby="reading-heading">
+      <h2 id="reading-heading">図の読み方</h2>
+      <p>上段で人間がGoalと受入条件を固定し、AIは現在状態に合うSkillを選んで限定された責務を実行します。Skillは必要なKnowledgeだけを参照し、作業、成果、判断、未解決事項をEvidenceへ残します。作業進行規約は実行記録を決定論的に検証し、必要な場合は別の品質確認を通します。判断権限が不足する場合はEscalationとして人間へ戻し、次の責務へ移る場合はHandoffとして成果と未解決状態を渡します。終了判定は進行記録の完全性を確認しますが、業務上の採用を決めません。最終的な受入れは人間がGoalの条件に照らして判断します。各定義とEvidenceはXIDで追跡され、改善された次版を同じ識別子で配布できます。</p>
+    </section>
+
+    <nav class="model-toc" aria-label="モデル要素一覧">
+      <a href="#goal">Goal</a><a href="#semantic-routing">意味による次作業選択</a><a href="#skill">Skill</a><a href="#knowledge">Knowledge</a>
+      <a href="#workflow-protocol">作業進行規約</a><a href="#evidence">Evidence</a><a href="#verification">検証と品質確認</a><a href="#escalation">判断返却</a>
+      <a href="#handoff">引継ぎ</a><a href="#closure">終了判定</a><a href="#acceptance">人間による受入れ</a><a href="#xid">XID</a>
+    </nav>
+
+    <div class="model-definitions">
+      <section id="goal"><h2>Goal</h2><p>業務として達成する状態と受入条件を保持します。個々のSkillが終了しても、受入条件を満たすまではGoal完了ではありません。</p></section>
+      <section id="semantic-routing"><h2>意味による次作業選択</h2><p>Goal、現在状態、Skillの責務定義から、次に必要なSkillを選びます。候補選択はAIによる意味判断であり、決定論的検証とは分離します。</p></section>
+      <section id="skill"><h2>Skill</h2><p>目的、判断範囲、入力、出力、必要なKnowledge、終了条件を持つ限定責務です。AIが一度に担う責務を絞り、範囲外の判断を明示します。</p></section>
+      <section id="knowledge"><h2>Knowledge</h2><p>組織固有の事実、基準、判断観点です。一覧から必要なXIDを選び、現在の責務に必要な本文だけをモデル文脈へ読み込みます。</p></section>
+      <section id="workflow-protocol"><h2>作業進行規約</h2><p>責務実行ごとに作業項目、成果物、懸念、役割、進行状態、引継ぎを記録します。Skillの業務判断を代行せず、作業漏れを検出できる状態を作ります。</p></section>
+      <section id="evidence"><h2>Evidence</h2><p>成果物、判断根拠、未確認事項、リスク、使用したXIDを残す証跡です。再開、確認、改善判断の入力であり、自動改訂の命令ではありません。</p></section>
+      <section id="verification"><h2>検証と品質確認</h2><p><code>xrefkit skill verify</code>は作業記録、役割分離、証跡、懸念の状態を決定論的に検証します。成果物の妥当性は、必要に応じて独立した品質確認が別に判断します。</p></section>
+      <section id="escalation"><h2>Escalation（判断返却）</h2><p>権限、例外、リスク、不可逆な選択など、現在の責務で決められない事項を人間へ戻します。作業成果を次の担当へ渡すHandoffとは目的が異なります。</p></section>
+      <section id="handoff"><h2>Handoff（引継ぎ）</h2><p>次のSkillまたは担当者へ、成果物、Evidence、未解決事項、次の所有者を渡します。判断権限を上位へ戻すEscalationとは分離します。</p></section>
+      <section id="closure"><h2>終了判定</h2><p>実行、検証、必要な品質確認、引継ぎ記録が完了しているかを確認します。終了判定は業務上の採用やGoal達成を自動的に宣言しません。</p></section>
+      <section id="acceptance"><h2>人間による受入れ</h2><p>成果とEvidenceをGoalの受入条件に照らし、受入れ、差し戻し、停止、次の責務への移行を決めます。業務責任を引き受ける判断点です。</p></section>
+      <section id="xid"><h2>XID</h2><p>Skill、Knowledge、契約、Evidenceを安定して参照する識別子です。ファイル配置や配信経路が変わっても、同じ管理対象を追跡できます。</p></section>
+    </div>
+  </main>
+</body>
+</html>

@@ -5,12 +5,12 @@ order	slide_path	narration
 02b	../../assets/064_ai_team_operating_boundary/02_review.html	答え: 形式検証、状態記録、参照解決、進行と終了条件を確認します。
 03a	../../assets/064_ai_team_operating_boundary/03_concern_q.html	問い: AIは何を担当するのか。
 03b	../../assets/064_ai_team_operating_boundary/03_concern.html	答え: 分析、生成、推論、選択肢と未知事項の表明を担当します。
-04a	../../assets/064_ai_team_operating_boundary/04_roles_q.html	問い: 人間へ戻すのはいつか。
-04b	../../assets/064_ai_team_operating_boundary/04_roles.html	答え: 受入れ、例外承認、リスク、不可逆判断、責任の引受けで戻します。
+04a	../../assets/064_ai_team_operating_boundary/04_roles_q.html	問い: Escalation（判断返却）はいつ行うか。
+04b	../../assets/064_ai_team_operating_boundary/04_roles.html	答え: 受入れ、例外承認、リスク、不可逆判断など、現在の責務で決められない事項を人間へ戻します。
 05a	../../assets/064_ai_team_operating_boundary/05_closure_q.html	問い: 形式検証が通れば業務成果も承認されるか。
-05b	../../assets/064_ai_team_operating_boundary/05_closure.html	答え: Workflow protocolの終了確認とHuman acceptanceは別です。
-06a	../../assets/064_ai_team_operating_boundary/06_handoff_q.html	問い: Handoffで何を渡すか。
-06b	../../assets/064_ai_team_operating_boundary/06_handoff.html	答え: Evidence、未解決事項、判断、次の所有者を渡します。
+05b	../../assets/064_ai_team_operating_boundary/05_closure.html	答え: 作業進行規約の終了判定と人間による受入れは別です。
+06a	../../assets/064_ai_team_operating_boundary/06_handoff_q.html	問い: Handoff（引継ぎ）で何を渡すか。
+06b	../../assets/064_ai_team_operating_boundary/06_handoff.html	答え: 成果、Evidence、未解決事項、次の所有者を次の責務へ渡します。判断返却とは目的が異なります。
 07a	../../assets/064_ai_team_operating_boundary/07_maturity_q.html	問い: 外部入力は上位方針を変えられるか。
 07b	../../assets/064_ai_team_operating_boundary/07_maturity.html	答え: 下位入力は上位のGoal、運用方針、責任境界を再定義できません。
 08a	../../assets/064_ai_team_operating_boundary/08_conclusion_q.html	問い: 三者を分ける意味は何か。

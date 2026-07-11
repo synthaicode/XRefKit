@@ -5,14 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>XRefKit</title>
   <link rel="stylesheet" href="./assets/common.css" />
+  <script src="./assets/inline-svg.js" defer></script>
 </head>
 <body>
   <main class="landing">
     <section class="hero-shell">
       <div class="hero-copy">
-        <p class="hero-note">XRefKit</p>
-        <h1>AIの局所作業を、<br />業務の受入れまで切らさずにつなぐ。</h1>
-        <p class="lead hero-lead">XRefKitは、Goal、Skill、Knowledge、Workflow protocol、Evidenceを分離し、AIの作業を検証可能な業務状態として接続する実行基盤です。</p>
+        <p class="hero-note">XRefKit | 運用モデルと参照実装</p>
+        <h1>AIの作業を、受入れへ。<br />仕組みを、組織へ。</h1>
+        <p class="hero-problem">AIは局所作業を終えられても、業務全体の完了、判断の所在、次の担当へ渡す状態を自動では保持しません。</p>
+        <p class="lead hero-lead">XRefKitは、AI作業をGoalから受入れまで検証可能につなぐ実行基盤です。管理したSkill、Knowledge、実行契約は、MCP経由で複数の利用者へ展開できます。</p>
+        <div class="hero-actions"><a class="primary-action" href="./ja/model/">日本語の正典を読む</a><a href="https://github.com/synthaicode/XRefKit">GitHubで参照実装を見る</a><a href="./en/">English supplemental materials</a></div>
       </div>
     </section>
 
@@ -21,15 +24,14 @@
         <h2 id="model-heading">1. XRefKit内部の動作</h2>
         <p>一つのAI作業をGoalから人間による受入れまでつなぐ、実行時の責任境界です。</p>
       </div>
-      <object class="model-object" data="./assets/xrefkit_model_en.svg" type="image/svg+xml" aria-label="XRefKitのGoal、Semantic routing、Skill、Knowledge、Workflow protocol、Evidence、人間への返却、改善と配布の全体図">
-        <a href="./assets/xrefkit_model_en.svg">XRefKit全体図を開く</a>
-      </object>
+      <div class="model-inline" data-inline-svg="./assets/xrefkit_model_ja.svg"><a href="./assets/xrefkit_model_ja.svg">XRefKit全体図を開く</a></div>
       <div class="model-reading">
         <h3>この図が示すもの</h3>
         <p>この図の主題は作業手順ではなく、AIに作業を委ねたときの<strong>判断の所在</strong>です。XRefKitでは、判断を消さず、実行の前・中・後へ再配置します。実行前には、業務の完了状態と受入条件を<a href="./ja/slides/063_ai_organization_explainer_clear/#goal">Goal</a>として人間が固定します。実行中は、<a href="./ja/slides/063_ai_organization_explainer_clear/#skill">Skill</a>がAIの限定責務を定め、範囲外の判断は推測で埋めず<a href="./ja/slides/064_ai_team_operating_boundary/#escalation">Escalation</a>によって人間へ返します。</p>
         <p><a href="./ja/slides/063_ai_organization_explainer_clear/#workflow-protocol">Workflow protocol</a>は作業状態と証跡を記録し、<a href="./ja/slides/064_ai_team_operating_boundary/#closure">Closure</a>は進行の完全性を決定論的に照合します。ただし、Closureは成果物の正しさや業務上の採用を決めません。最終的な責任は<a href="./ja/slides/064_ai_team_operating_boundary/#acceptance">Human acceptance</a>として人間に戻ります。実行中の判断、未解決事項、根拠は<a href="./ja/slides/063_ai_organization_explainer_clear/#evidence">Evidence</a>へ残り、<a href="./ja/slides/065_xrefkit_repository_overview/#xid">XID</a>で後から辿れます。</p>
       </div>
       <p class="improvement-note">Evidenceは人間の改善判断の入力です。AIが実行結果から組織ルールを自動的に書き換える仕組みではありません。</p>
+      <p class="section-cta"><a href="./ja/model/">12要素の定義と図の読み方を正典で確認する</a></p>
     </section>
 
     <section class="landing-section distribution-main" aria-labelledby="distribution-heading">
@@ -49,13 +51,11 @@
     </section>
 
     <section class="landing-section">
-      <div class="section-heading"><h2>Guided Tour</h2><p>なぜ必要かから、改善した次の版を配布するまでを順に辿ります。</p></div>
-      <div class="entry-path-grid">
-        <article class="entry-path"><div class="entry-path-level">Why</div><h3>なぜ通常のAI利用だけでは業務実行にならないのか</h3><p>AIの特性と、必要になる構成要素を確認します。</p><a href="./ja/slides/why-ai-organization-needed/">「AI活用を継続可能な業務実行に変える」を見る</a></article>
-        <article class="entry-path"><div class="entry-path-level">How</div><h3>Goalから受入れまで、限定責務をどう接続するか</h3><p>業務実行ループの接続順序を確認します。</p><a href="./ja/slides/063_ai_organization_explainer_clear/">「XRefKitの業務実行モデル」を見る</a></article>
-        <article class="entry-path"><div class="entry-path-level">Boundary</div><h3>ツール・AI・人間は、それぞれ何を決めるのか</h3><p>形式的制御、推論、人間への返却条件を分けます。</p><a href="./ja/slides/064_ai_team_operating_boundary/">「ツール・AI・人間の責任境界」を見る</a></article>
-        <article class="entry-path"><div class="entry-path-level">Implementation</div><h3>業務実行モデルは、XRefKitのどこに実装されるのか</h3><p>読むもの、従うもの、残すものと実装位置を対応させます。</p><a href="./ja/slides/065_xrefkit_repository_overview/">「XRefKit リポジトリ概要」を見る</a></article>
-        <article class="entry-path"><div class="entry-path-level">Improvement and Distribution</div><h3>実行状況の観測から改善し、検証された次の版をどう配布するのか</h3><p>実行状態とXID利用を観測し、人間による改訂、検証、次版配布を辿ります。</p><a href="./ja/slides/073_xrefkit_organization_distribution/">「XRefKit 改善と組織配布」を見る</a></article>
+      <div class="section-heading"><h2>用途から選ぶ</h2><p>正典を起点に、現在必要な深さだけを選びます。全資料の再掲はここでは行いません。</p></div>
+      <div class="learning-tiers">
+        <section class="learning-tier"><span>1</span><div><h3>まず全体像を理解する</h3><p>AI固有の問題と、XRefKitの運用モデルを確認します。</p><div class="tier-links"><a href="./ja/slides/why-ai-organization-needed/">AI活用を継続可能な業務実行に変える</a><a href="./ja/model/">運用モデルと12要素の定義</a></div></div></section>
+        <section class="learning-tier"><span>2</span><div><h3>業務で運用する</h3><p>限定責務の接続と、ツール・AI・人間の責任境界を確認します。</p><div class="tier-links"><a href="./ja/slides/063_ai_organization_explainer_clear/">XRefKitの業務実行モデル</a><a href="./ja/slides/064_ai_team_operating_boundary/">ツール・AI・人間の責任境界</a></div></div></section>
+        <section class="learning-tier"><span>3</span><div><h3>実装し、改善して配布する</h3><p>リポジトリ構造、実行状況の観測、次版の組織配布を確認します。</p><div class="tier-links"><a href="./ja/slides/065_xrefkit_repository_overview/">XRefKit リポジトリ概要</a><a href="./ja/slides/073_xrefkit_organization_distribution/">XRefKit 改善と組織配布</a></div></div></section>
       </div>
     </section>
 
@@ -74,7 +74,7 @@
     </section>
 
     <section class="landing-section">
-      <div class="catalog-directory-links"><span>すべての資料を探す</span><a href="./ja/">日本語カタログ</a><a href="./en/">English catalog</a></div>
+      <div class="catalog-directory-links"><span>資料を探す</span><a href="./ja/">日本語カタログ（正）</a><a href="./en/">English supplemental catalog</a><a href="https://github.com/synthaicode/XRefKit">GitHub</a></div>
     </section>
   </main>
 </body>

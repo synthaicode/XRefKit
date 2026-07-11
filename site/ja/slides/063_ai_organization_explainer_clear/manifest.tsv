@@ -7,7 +7,7 @@ order	slide_path	narration
 06	../../assets/063_ai_organization_explainer_clear/05_not_one_ai.png	解説: 意味による次作業選択は、目標と現在状態から次に必要な責務を選びます。
 07	../../assets/063_ai_organization_explainer_clear/06_repository.png	解説: 責務は方法を持ち、組織固有知識は判断材料を持ちます。必要なXIDだけを選んで読みます。
 08	../../assets/063_ai_organization_explainer_clear/07_handoff.png	解説: 作業進行規約は各責務実行の作業項目、成果物、根拠、未確定事項、引継ぎを記録します。
-09	../../assets/063_ai_organization_explainer_clear/08_burden_flow.png	解説: 目標、次作業選択、責務実行、進行検証、引継ぎをつなぎ、未完了を成功扱いにしません。
+09	../../assets/063_ai_organization_explainer_clear/08_burden_flow.png	解説: 実行、決定論的検証、品質確認、引継ぎ記録、終了判定をつなぎ、未完了を成功扱いにしません。判断権限が不足する場合は別経路で人間へ戻します。
 10	../../assets/063_ai_organization_explainer_clear/08_or_team.png	解説: 進行検証は作業記録の完全性を検査します。成果物の受入れは品質確認と人が別に判断します。
 11	../../assets/063_ai_organization_explainer_clear/09_value.png	解説: AIが止まっても、実行記録から再開または引継ぎできます。目標は受入条件が満たされるまで続きます。
 12	../../assets/063_ai_organization_explainer_clear/10_conclusion.png	解説: 人は目標、受入れ、承認、例外を担い、すべてを会話履歴から監視しません。
