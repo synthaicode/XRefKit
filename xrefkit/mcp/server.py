@@ -506,20 +506,27 @@ def main(argv: list[str] | None = None) -> int:
     def check_xrefkit_runtime_version(installed: dict[str, str] | None = None) -> dict[str, Any]:
         return catalog.check_xrefkit_runtime_version(installed)
 
-    if args.transport == "streamable-http":
-        _run_streamable_http(
-            app,
-            args.host,
-            args.port,
-            args.http_path,
-            args.log_level,
-            args.ssl_certfile,
-            args.ssl_keyfile,
-            dist,
-            dist_base_url,
-        )
-    else:
-        app.run(transport=args.transport)
+    try:
+        if args.transport == "streamable-http":
+            _run_streamable_http(
+                app,
+                args.host,
+                args.port,
+                args.http_path,
+                args.log_level,
+                args.ssl_certfile,
+                args.ssl_keyfile,
+                dist,
+                dist_base_url,
+            )
+        else:
+            app.run(transport=args.transport)
+    except KeyboardInterrupt:
+        # Ctrl+C is the expected operator action for stopping a foreground
+        # MCP server. anyio may surface the cancellation as KeyboardInterrupt
+        # after Uvicorn has already completed its graceful shutdown; do not
+        # print a traceback for that normal lifecycle event.
+        return 0
     return 0
 
 
