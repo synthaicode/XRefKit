@@ -12,9 +12,8 @@ with
 
 - Keep `knowledge/` focused on domain knowledge.
 - Identify each Skill by the capability / tuning / responsibility triad.
-- There is no separate `capabilities/` definition layer; capability is the Skill
-  meta triad element and the routing vocabulary (see the triad-as-identity rule
-  below).
+- Treat capability as the Skill meta triad element and routing vocabulary (see
+  the triad-as-identity rule below).
 
 ## Layers
 
@@ -45,9 +44,8 @@ The triad is the Skill's fixed meta identity and the routing vocabulary.
   time: `tuning` and `responsibility` are structural (they shape the Skill's
   method and viewpoints), so a differently-tuned or differently-responsible unit
   is a different Skill, not the same Skill parameterized at runtime.
-- The triad is **not** stored in `capabilities/` definition files; those are
-  dissolved. A controlled capability / tuning / responsibility vocabulary
-  registry keeps routing terms consistent and preserves the ability inventory.
+- A controlled capability / tuning / responsibility vocabulary registry keeps
+  routing terms consistent and preserves the ability inventory.
 - Semantic routing matches intent and current state against the triad to select
   the Skill; only the task and its concrete inputs are supplied per run.
 

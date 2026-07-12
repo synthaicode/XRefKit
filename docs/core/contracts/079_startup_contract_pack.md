@@ -71,7 +71,8 @@ Sources:
 
 ## Workflow and XRef routing
 
-- Orchestration is semantic routing over the Skill catalog from user intent; there is no separate capability or workflow model.
+- Orchestration is semantic routing over the Skill catalog from user intent,
+  using each Skill's meta triad and the generic workflow protocol.
 - When a Skill needs domain knowledge, search and load only the needed fragment:
   python -m xrefkit xref search "<query>"
   python -m xrefkit xref show <XID>

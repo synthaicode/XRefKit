@@ -38,9 +38,8 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 ## XRefKit Routing And Authoring
 
 - [Skill authoring with xref](guides/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B)
-- [Legacy Skill merge guide](guides/075_legacy_skill_merge_guide.md#xid-271DA9EDBE1A)
 - [Sources (PDF/Excel/Web)](reference/020_sources.md#xid-2FAD591BF725)
-- [Flow Capability Skill Knowledge model](core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
+- [Skill and Knowledge operating model](core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
 - [Context direction security guard](core/contracts/053_context_direction_security_guard.md#xid-A7F3C92D4E11)
 - [Change analysis skill usage](guides/054_change_analysis_skill_usage.md#xid-C5A8F13D7E21)
 - [Judgment log usage](guides/055_judgment_log_usage.md#xid-9D64B2F18E44)
