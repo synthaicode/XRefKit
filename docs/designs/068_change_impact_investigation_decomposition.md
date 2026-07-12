@@ -3,153 +3,100 @@
 
 # Change Impact Investigation Decomposition
 
-This page clarifies how `change impact investigation` should be decomposed in
-XRefKit when the work is broadly reusable but still depends strongly on domain
-knowledge.
-
-This page is a design note.
-It does not replace the investigation workflow, capability definitions, or
-usage guides.
+This page defines how change-impact investigation is expressed through Skills,
+Knowledge, and Business Pack placement when the method is reusable but its
+evidence depends strongly on the target domain.
 
 Related:
 
-- [Flow Capability Skill Knowledge model](../core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
-- [Change analysis skill usage](../guides/054_change_analysis_skill_usage.md#xid-C5A8F13D7E21)
+- [Skill and Knowledge operating model](../core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
+- [Change analysis Skill usage](../guides/054_change_analysis_skill_usage.md#xid-C5A8F13D7E21)
 
 ## Core Point
 
-`change impact investigation` is reusable enough to define as a shared
-capability, but it does not execute well without domain-tuned knowledge.
+Change-impact investigation uses three current repository surfaces:
 
-That means the reusable structure is not one flat artifact.
-It is a layered composition:
+- **Skill**: owns the executable investigation method, output contract,
+  evidence handling, and unknown handling.
+- **Knowledge**: supplies domain-specific viewpoints, rules, dependency types,
+  activation conditions, and evidence categories.
+- **Business Pack**: places the investigation in business progression and
+  defines what consumes its output next.
 
-- pack:
-  - where this investigation sits in the business progression and handoff
-- capability:
-  - the reusable impact-enumeration ability
-- skill:
-  - the executable investigation procedure for one technical context
-- knowledge:
-  - the domain-specific viewpoints, rules, and evidence categories that make
-    the investigation meaningful
+The Skill's capability / tuning / responsibility meta triad identifies and
+routes the method. It is metadata on the Skill, not a separate work artifact.
 
-## Software Development Decomposition Table
+## Responsibility Split
 
-| Layer | What it owns | Reuse level | Example in software development | What changes by domain |
-|------|------|------|------|------|
-| `Pack` | why this investigation is being done, where it hands off, what later work consumes it | medium | `investigation pack` before requirements / planning / design | handoff target, owner group, required artifacts, escalation meaning |
-| `Capability` | reusable ability to enumerate impacts and preserve unknowns | high | CAP-INV-002 Change Impact Enumeration | almost none; the core ability stays stable |
-| `Skill` | how to run the investigation against a concrete technical surface | medium | `dotnet_change_analysis` | repository scan strategy, viewpoint buckets, target artifact kinds |
-| `Knowledge` | what counts as relevant evidence, dependency, boundary, or activation condition | low to medium | `.NET` structure viewpoints, XML/config-driven activation viewpoints, domain rules | strongly domain-dependent |
+| Surface | What it owns | Example |
+| --- | --- | --- |
+| Skill | reusable investigation procedure for a technical surface | `dotnet_change_analysis` |
+| Knowledge | criteria for dependencies, boundaries, activation, evidence, and test viewpoints | .NET structure, custom-framework, and external-definition viewpoints |
+| Business Pack | business purpose, progression, handoff target, and required outputs | investigation before requirements, planning, or design |
 
-## What Is Actually Reusable
+## Reusable Skill Method
 
-The following parts of change impact investigation are highly reusable:
+The investigation Skill should consistently:
 
-| Reusable part | Why it is reusable |
-|------|------|
-| identify the change trigger | every change investigation starts from a requested difference |
-| enumerate directly affected targets | every system has direct impact points |
-| enumerate indirect dependencies | every system has second-order effects |
-| keep evidence and inference separate | investigation quality depends on traceability |
-| preserve `unknown` instead of guessing | missing evidence is a stable investigation concern |
-| produce test viewpoints | downstream validation always needs impact-based checks |
+- identify the requested change trigger
+- enumerate direct impact targets
+- enumerate indirect dependencies
+- separate observed evidence from inference
+- preserve `unknown` instead of guessing
+- produce downstream test viewpoints
+- record evidence and handoff artifacts through the workflow protocol
 
-These belong mainly in capability and shared investigation method.
+The method remains reusable because domain-specific facts are resolved from
+Knowledge rather than copied into the Skill body.
 
-## What Must Be Domain-Tuned
+## Domain-Tuned Knowledge
 
-The following parts depend heavily on the technical or business domain:
+Knowledge determines what the Skill looks for in each target context:
 
-| Domain-tuned part | Why it changes |
-|------|------|
-| what counts as a dependency | code call graph, DB relation, XML mapping, event route, batch chain, and approval flow are different kinds of dependency |
-| what counts as activation | runtime registration, DI, annotation, XML enablement, scheduler settings, and feature flags differ |
-| what counts as a boundary | module, service, job, screen, table, document, and approval step boundaries differ |
-| what counts as important evidence | source code, definitions, schema, logs, config, operations docs, and business rules differ |
-| what test viewpoints matter most | UI behavior, batch timing, transaction effect, retry behavior, report output, or downstream integration may dominate depending on the system |
+| Viewpoint | Examples |
+| --- | --- |
+| dependency | code call graph, database relation, XML mapping, event route, batch chain, approval flow |
+| activation | runtime registration, dependency injection, annotations, XML enablement, schedules, feature flags |
+| boundary | module, service, job, screen, table, document, approval step |
+| evidence | source code, definitions, schema, logs, configuration, operations documentation, business rules |
+| testing | UI behavior, transaction effects, batch timing, retries, report output, downstream integration |
 
-These belong mainly in domain knowledge and skill-specific execution details.
+## .NET Line-Of-Business Example
 
-## Example 1: .NET Line-Of-Business Application
+- Skill:
+  [dotnet_change_analysis](../../skills/dotnet_change_analysis/SKILL.md#xid-D94E3B3A7C11)
+- Knowledge:
+  [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001),
+  [Custom framework common criteria](../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002), and
+  [Dotnet change analysis viewpoints](../../knowledge/source_analysis/120_dotnet_change_analysis_viewpoints.md#xid-2E7B5A1FD201)
+- Typical dependencies: controller, application service, repository, database,
+  logging, batch, API, and tests
+- Typical activation evidence: route registration, service wiring, attributes,
+  and startup configuration
 
-| Layer | Concrete example |
-|------|------|
-| `Pack` | investigation work before requirements or design for a requested feature or bug change |
-| `Capability` | enumerate controller, application service, repository, DB, logging, batch, and test impacts |
-| `Skill` | [dotnet_change_analysis](../../skills/dotnet_change_analysis/SKILL.md#xid-D94E3B3A7C11) |
-| `Knowledge` | [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001), [Custom framework common criteria](../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002), [Dotnet change analysis viewpoints](../../knowledge/source_analysis/120_dotnet_change_analysis_viewpoints.md#xid-2E7B5A1FD201) |
+## External-Definition-Driven Example
 
-What changes here:
-
-- dependency often means code references, DI registration, DB access, API calls,
-  logging hooks, and test targets
-- activation often means route registration, service wiring, attribute use, or
-  startup configuration
-
-## Example 2: External-Definition-Driven Enterprise Application
-
-| Layer | Concrete example |
-|------|------|
-| `Pack` | investigation work before deciding how to modify XML or configuration-controlled business behavior |
-| `Capability` | enumerate definition file, activation rule, consuming code, transition, validation, scheduler, and downstream impact |
-| `Skill` | `dotnet_change_analysis` applying the external-definition viewpoints (no separate skill) |
-| `Knowledge` | [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001), [Custom framework common criteria](../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002), [External-definition change analysis viewpoints](../../knowledge/source_analysis/130_external_definition_change_analysis_viewpoints.md#xid-4D91A26BE301) |
-
-What changes here:
-
-- dependency often means definition-to-code mapping, load order, runtime
-  activation condition, transition target, and operations configuration
-- activation cannot be inferred from file presence alone; the consuming
-  mechanism must be verified
+- Skill: `dotnet_change_analysis`, using external-definition viewpoints
+- Knowledge:
+  [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001),
+  [Custom framework common criteria](../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002), and
+  [External-definition change analysis viewpoints](../../knowledge/source_analysis/130_external_definition_change_analysis_viewpoints.md#xid-4D91A26BE301)
+- Typical dependencies: definition-to-code mapping, load order, consuming code,
+  transition targets, validation, schedules, and downstream behavior
+- Activation rule: file presence alone is not evidence of runtime activation;
+  verify the consuming mechanism and activation condition
 
 ## Practical Rule
 
-When you want to generalize `change impact investigation`, generalize in this
-order:
+1. Route to the investigation Skill whose tuning and applicability match the
+   target technical surface.
+2. Open the Skill through the runtime envelope.
+3. Resolve only the domain Knowledge needed for the target context.
+4. Execute the reusable investigation method against that evidence.
+5. Record outputs, unknowns, verification, and handoff through the workflow
+   protocol.
+6. Let the Business Pack or subsequent semantic routing determine the next
+   Skill from the resulting state.
 
-1. capability:
-   - keep the reusable impact-enumeration skeleton stable
-2. skill family:
-   - split execution by technical control surface such as source-code-driven or
-     external-definition-driven
-3. knowledge:
-   - load the domain-specific viewpoints that make the capability meaningful
-4. pack:
-   - decide where the investigation sits in the business progression and where
-     it hands off next
-
-Do not generalize by pretending the same investigation can run without domain
-knowledge.
-
-## Pack Versus Capability In This Case
-
-For this kind of work:
-
-- `capability` answers:
-  - what reusable investigation ability is needed?
-- `pack` answers:
-  - why is this investigation being done here, and what does it hand off to?
-
-That is why `change impact investigation` can be one shared capability while
-still appearing in different packs:
-
-- an `investigation pack`
-- a `delivery pack`
-- a domain-specific migration pack
-
-The capability stays shared.
-The pack meaning changes with progression, boundary, and handoff.
-
-## Design Implication
-
-If XRefKit later extracts an `investigation pack`, it should not duplicate
-`CAP-INV-002`.
-
-Instead:
-
-- keep `CAP-INV-002` as the shared impact-enumeration capability
-- keep multiple investigation Skills for different technical surfaces
-- keep domain-tuned knowledge fragments for each analysis context
-- let the pack define the business progression and next handoff
+Do not make the Skill self-contained by copying domain criteria into it. Do not
+run the method without evidence appropriate to the target domain.

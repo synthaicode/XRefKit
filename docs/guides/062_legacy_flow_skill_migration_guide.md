@@ -106,7 +106,6 @@ Reasons:
 ## Related
 
 - [Skill authoring with xref](013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B)
-- [Legacy Skill merge guide](075_legacy_skill_merge_guide.md#xid-271DA9EDBE1A)
 - [Skill operating contract](../core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61)
 - [Skill maturity governance](../core/contracts/059_skill_maturity_governance.md#xid-4E7B8D9C1A20)
-- [Flow Capability Skill Knowledge model](../core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
+- [Skill and Knowledge operating model](../core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)

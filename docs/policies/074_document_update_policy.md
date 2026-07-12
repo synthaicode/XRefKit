@@ -4,8 +4,7 @@
 # Document Update Policy
 
 This policy applies to repository documentation, knowledge pages, Skill-facing
-instructions, capability definitions, workflow definitions, and agent startup or
-routing documents.
+instructions, workflow definitions, and agent startup or routing documents.
 
 ## Rule
 

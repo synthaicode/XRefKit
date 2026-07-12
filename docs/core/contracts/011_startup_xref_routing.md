@@ -32,7 +32,7 @@ is not part of the mandatory startup read path.
   `docs/core/models/017_base_and_xref_layering.md#xid-5A1C8E4D2F90`.
 - Manage skill definitions and domain knowledge as separate files.
 - Treat domain knowledge in `knowledge/` as shared/common.
-- A Skill's capability/tuning/responsibility is its meta identity and the routing vocabulary; there is no separate `capabilities/` layer.
+- A Skill's capability/tuning/responsibility is its meta identity and the routing vocabulary.
 - When updating repository documents, apply the document update policy in
   `docs/policies/074_document_update_policy.md#xid-B1D42A6F90C3`: target
   documents describe the latest authoritative state; prior document states stay

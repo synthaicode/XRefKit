@@ -6,9 +6,6 @@
 This page defines which parts of legacy Skill merge can be made deterministic
 and which parts must remain explicit judgment.
 
-For the human-facing procedure, see
-[Legacy Skill merge guide](../guides/075_legacy_skill_merge_guide.md#xid-271DA9EDBE1A).
-
 ## Problem
 
 Older Skills created on a previous XRefKit version may lack current operating
@@ -186,7 +183,6 @@ When the planner is used inside a Skill-backed task:
 
 ## Related
 
-- [Legacy Skill merge guide](../guides/075_legacy_skill_merge_guide.md#xid-271DA9EDBE1A)
 - [Skill operating contract](../core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61)
 - [Skill maturity governance](../core/contracts/059_skill_maturity_governance.md#xid-4E7B8D9C1A20)
 - [Context direction security guard](../core/contracts/053_context_direction_security_guard.md#xid-A7F3C92D4E11)
