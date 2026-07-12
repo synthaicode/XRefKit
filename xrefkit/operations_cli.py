@@ -295,6 +295,22 @@ def _build_parser() -> argparse.ArgumentParser:
     skill = subparsers.add_parser("skill", help="Validate skill metadata before loading")
     skill_sub = skill.add_subparsers(dest="skill_cmd", required=True)
 
+    p_skill_import = skill_sub.add_parser(
+        "import",
+        help="Import an external file-based Skill into XRefKit Skill + Knowledge files",
+    )
+    p_skill_import.add_argument("source_dir", help="External Skill directory or batch root")
+    p_skill_import.add_argument("--root", default=".", help="Project root (default: .)")
+    p_skill_import.add_argument("--skill-id", help="Target XRefKit skill id")
+    p_skill_import.add_argument("--batch", action="store_true", help="Treat source_dir as a root containing skills/ and knowledge/")
+    p_skill_import.add_argument("--skill-id-prefix", default=None, help="Prefix for generated skill ids in --batch mode")
+    p_skill_import.add_argument("--source-skill-doc", default=None, help="Source skill document path relative to source_dir")
+    p_skill_import.add_argument("--target-skill-dir", default=None, help="Target Skill directory")
+    p_skill_import.add_argument("--target-skill-root", default=None, help="Batch target Skill root")
+    p_skill_import.add_argument("--target-knowledge-dir", default=None, help="Target Knowledge directory")
+    p_skill_import.add_argument("--dry-run", action="store_true", help="Show planned output without writing files")
+    p_skill_import.add_argument("--json", action="store_true", help="Emit JSON")
+
     p_skill_check = skill_sub.add_parser("check", help="Validate skill meta guard compliance")
     p_skill_check.add_argument("--root", default=".", help="Project root (default: .)")
     p_skill_check.add_argument("--meta", default=None, help="Relative path to a single meta.md to validate")
@@ -552,6 +568,10 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_ctx(args, cfg)
 
     if args.command == "skill":
+        if args.skill_cmd == "import":
+            from xrefkit.import_skill import cmd_skill_import
+
+            return cmd_skill_import(args)
         if args.skill_cmd == "list":
             from xrefkit.skillmeta import cmd_skill_list
 

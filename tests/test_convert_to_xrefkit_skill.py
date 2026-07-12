@@ -1,24 +1,11 @@
 from __future__ import annotations
 
-import importlib.util
 import re
-import sys
 import tempfile
 from pathlib import Path
 
 from tools.check_skill_knowledge_xids import check_skill_knowledge_xids
-
-
-SCRIPT = (
-    Path(__file__).resolve().parents[1]
-    / "tools"
-    / "convert_to_xrefkit_skill.py"
-)
-SPEC = importlib.util.spec_from_file_location("convert_to_xrefkit_skill", SCRIPT)
-assert SPEC is not None and SPEC.loader is not None
-convert_module = importlib.util.module_from_spec(SPEC)
-sys.modules[SPEC.name] = convert_module
-SPEC.loader.exec_module(convert_module)
+from xrefkit import import_skill as convert_module
 
 
 def test_convert_external_skill_copies_referenced_files_to_knowledge() -> None:
