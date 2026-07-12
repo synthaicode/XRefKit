@@ -11,6 +11,10 @@ on:
 permissions:
   contents: read
 
+env:
+  PYTHON_PACKAGE_ROOT: .
+  PYTHON_PACKAGE_PROJECT: pyproject.toml
+
 jobs:
   build-distribution:
     name: Build Python distribution
@@ -21,6 +25,15 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+          cache-dependency-path: ${{ env.PYTHON_PACKAGE_ROOT }}/${{ env.PYTHON_PACKAGE_PROJECT }}
+      - name: Verify Python package project
+        shell: bash
+        run: |
+          project="${PYTHON_PACKAGE_ROOT}/${PYTHON_PACKAGE_PROJECT}"
+          test -f "$project" || {
+            echo "::error::Python package project was not found: $project"
+            exit 1
+          }
       - name: Install build tooling
         run: python -m pip install --upgrade build twine
       - name: Verify tag matches package version
@@ -36,23 +49,30 @@ jobs:
           if not tag.startswith("v"):
               raise SystemExit(f"Python package tag must start with 'v': {tag}")
 
+          project_file = (
+              Path(os.environ["PYTHON_PACKAGE_ROOT"])
+              / os.environ["PYTHON_PACKAGE_PROJECT"]
+          )
           package_version = tomllib.loads(
-              Path("pyproject.toml").read_text(encoding="utf-8")
+              project_file.read_text(encoding="utf-8")
           )["project"]["version"]
           tag_version = tag.removeprefix("v")
           if tag_version != package_version:
               raise SystemExit(
                   "tag/package version mismatch: "
-                  f"tag={tag_version}, pyproject.toml={package_version}"
+                  f"tag={tag_version}, {project_file}={package_version}"
               )
 
           print(f"tag/package version match: {package_version}")
           PY
       - name: Build wheel and source distribution
+        working-directory: ${{ env.PYTHON_PACKAGE_ROOT }}
         run: python -m build
       - name: Validate distribution metadata
+        working-directory: ${{ env.PYTHON_PACKAGE_ROOT }}
         run: python -m twine check dist/*
       - name: Verify distribution contents
+        working-directory: ${{ env.PYTHON_PACKAGE_ROOT }}
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -87,7 +107,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: xrefkit-python-distribution
-          path: dist/
+          path: ${{ env.PYTHON_PACKAGE_ROOT }}/dist/
           if-no-files-found: error
 
   installed-package-smoke:
