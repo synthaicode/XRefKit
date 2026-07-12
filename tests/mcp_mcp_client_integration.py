@@ -445,11 +445,16 @@ class McpClientIntegrationTests(unittest.TestCase):
         captured_stderr.seek(0)
         console_output = captured_stderr.read()
         captured_stderr.close()
-        self.assertIn("tool=get_startup_context xid=8A666C1FD121", console_output)
+        # The MCP server logger may wrap fields differently depending on the
+        # platform/terminal width. Normalize all whitespace before checking
+        # the structured field sequence so the assertion is not tied to the
+        # human-readable console layout.
+        structured_log = " ".join(console_output.split())
+        self.assertIn("tool=get_startup_context xid=8A666C1FD121", structured_log)
         for expanded in results["knowledge_context"]["entries"]:
             self.assertIn(
                 f"tool=build_knowledge_context xid={expanded['entry']['xid']}",
-                console_output,
+                structured_log,
             )
         audit_events = [
             json.loads(line)
