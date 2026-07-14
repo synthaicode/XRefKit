@@ -54,6 +54,15 @@ Markdown directly from the local filesystem.
 | 5 | MCP | `get_document_by_xid` | Resolve only needed transferred links by XID. |
 | 6 | MCP | Skill and workflow catalog tools | Route task-specific work after initialization. |
 
+The Skill catalog is a routing surface, not an execution-tool manifest:
+
+- `list_skills` and `rank_skills_for_purpose` do not carry each candidate's
+  `required_tools`.
+- After a Skill is selected, `get_skill` or `get_skill_requirements` returns
+  that Skill's tool requirements.
+- `get_skill_requirements` returns requirement metadata without procedure
+  bodies; use `get_skill` when the selected procedure itself is needed.
+
 Current MCP startup XID order observed for this repository:
 
 1. `0B5C58B5E5B2` - `agent/000_agent_entry.md`

@@ -114,6 +114,7 @@ class McpClientIntegrationTests(unittest.TestCase):
                     ][0]
                     self.assertIsNone(metadata_entry["meta_content"])
                     self.assertIsNone(metadata_entry["skill_content"])
+                    self.assertNotIn("required_tools", metadata_entry)
                     self.assertTrue(metadata_entry["document_versions"])
 
                     startup_result = await session.call_tool("get_startup_context", {})
@@ -289,6 +290,15 @@ class McpClientIntegrationTests(unittest.TestCase):
                         skill["client_tool_download"]["manifest_tool"],
                         "get_client_tool_manifest",
                     )
+                    requirements_result = await session.call_tool(
+                        "get_skill_requirements",
+                        {"skill_id": "csharp_review"},
+                    )
+                    requirements = requirements_result.structuredContent
+                    self.assertFalse(requirements_result.isError)
+                    self.assertNotIn("meta_content", requirements)
+                    self.assertNotIn("skill_content", requirements)
+                    self.assertIn("required_tools", requirements)
                     self.assertEqual(
                         skill["skill_links"][0]["resolver_tool"],
                         "get_document_by_xid",
