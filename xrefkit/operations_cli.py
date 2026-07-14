@@ -292,6 +292,44 @@ def _build_parser() -> argparse.ArgumentParser:
         help="MCP audit JSONL; defaults to <root>/work/mcp/xid_audit.jsonl",
     )
 
+    analysis = subparsers.add_parser(
+        "analysis",
+        help="Generate proposal-only analysis reports from observed runtime data",
+    )
+    analysis_sub = analysis.add_subparsers(dest="analysis_cmd", required=True)
+    boundary = analysis_sub.add_parser(
+        "boundary",
+        help="Analyze Skill and Knowledge boundary evidence",
+    )
+    boundary_sub = boundary.add_subparsers(dest="boundary_cmd", required=True)
+    p_boundary_report = boundary_sub.add_parser(
+        "report",
+        help="Create a proposal-only boundary report from dashboard JSON",
+    )
+    p_boundary_report.add_argument(
+        "--input",
+        required=True,
+        help="Dashboard JSON emitted by `xrefkit dashboard data`",
+    )
+    p_boundary_report.add_argument(
+        "--out",
+        default=None,
+        help="Write the Markdown report to this path",
+    )
+    p_boundary_report.add_argument(
+        "--min-samples",
+        type=int,
+        default=2,
+        help="Minimum repeated support for a proposal (default: 2)",
+    )
+    p_boundary_report.add_argument(
+        "--max-candidates",
+        type=int,
+        default=20,
+        help="Maximum candidates in the report (default: 20)",
+    )
+    p_boundary_report.add_argument("--json", action="store_true", help="Emit the report as JSON")
+
     skill = subparsers.add_parser("skill", help="Validate skill metadata before loading")
     skill_sub = skill.add_subparsers(dest="skill_cmd", required=True)
 
@@ -651,6 +689,11 @@ def main(argv: list[str] | None = None) -> int:
         from xrefkit.dashboard import cmd_dashboard
 
         return cmd_dashboard(args)
+
+    if args.command == "analysis":
+        from xrefkit.boundary_analysis import cmd_analysis
+
+        return cmd_analysis(args)
 
     if args.command == "gate":
         from xrefkit.gate import cmd_gate

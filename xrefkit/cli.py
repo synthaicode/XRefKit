@@ -6,7 +6,7 @@ import sys
 from collections.abc import Sequence
 
 
-_OPERATIONS = {"xref", "ctx", "goal", "gate", "pack", "dashboard", "skill"}
+_OPERATIONS = {"xref", "ctx", "goal", "gate", "pack", "dashboard", "analysis", "skill"}
 _V2 = {"package", "show"}
 
 
@@ -24,6 +24,7 @@ def _print_help() -> None:
         "  gate       evaluate deterministic gates\n"
         "  goal       manage desired-state Goals and continuation state\n"
         "  dashboard  inspect runtime state\n"
+        "  analysis   generate proposal-only observation reports\n"
         "  mcp        start the integrated MCP server\n"
         "  package    inspect installed Skill packages\n"
         "  show       show effective Skill bundles"

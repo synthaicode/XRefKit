@@ -379,6 +379,20 @@ class DashboardTests(unittest.TestCase):
             self.assertEqual({}, by_run)
             self.assertIn("cannot read audit log", errors[0])
 
+    def test_dashboard_payload_includes_proposal_only_boundary_analysis(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_closed_run(root)
+
+            payload = build_payload(root, root / "work" / "sessions")
+            analysis = payload["boundary_analysis"]
+
+            self.assertIsInstance(analysis, dict)
+            self.assertEqual("xrefkit.boundary_observation/v1", analysis["schema"])
+            self.assertEqual("proposal_only", analysis["status"])
+            self.assertEqual(1, analysis["sample_count"])
+            self.assertEqual(0, analysis["summary"]["proposals"])
+
     def test_dashboard_html_splits_categories(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -392,6 +406,7 @@ class DashboardTests(unittest.TestCase):
             self.assertIn('data-panel="evidence"', html)
             self.assertIn('data-panel="handoff"', html)
             self.assertIn('data-panel="xids"', html)
+            self.assertIn('data-panel="analysis"', html)
             self.assertIn('data-panel="missing-information"', html)
             self.assertIn('id="overview"', html)
             self.assertIn('id="attention"', html)
@@ -399,8 +414,62 @@ class DashboardTests(unittest.TestCase):
             self.assertIn('id="evidence"', html)
             self.assertIn('id="handoff"', html)
             self.assertIn('id="xids"', html)
+            self.assertIn('id="analysis"', html)
             self.assertIn('id="missing-information"', html)
+            self.assertIn("Proposal-only analysis", html)
+            self.assertIn("No boundary proposals reached", html)
             self.assertIn("Missing Information Ranking", html)
             self.assertIn("Available Knowledge XIDs (base/local)", html)
             self.assertIn("local-service-map-001", html)
             self.assertIn("LOCAL-KNOWLEDGE-UNUSED-001", html)
+            self.assertIn('id="run-search"', html)
+            self.assertIn('data-status="blocked"', html)
+            self.assertIn('id="refresh-runs"', html)
+            self.assertIn("async function refreshDashboard()", html)
+            self.assertIn("selectRun(run.dataset.runPath)", html)
+            self.assertIn("data-run-path=", html)
+
+    def test_dashboard_html_search_index_contains_run_correlation_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_closed_run(root)
+
+            payload = build_payload(root, root / "work" / "sessions")
+            run_id = payload["runs"][0]["run_id"]
+            html = _html_page(payload)
+
+            self.assertIsNotNone(run_id)
+            self.assertIn(str(run_id).lower(), html)
+            self.assertIn("sample_skill", html)
+
+    def test_dashboard_html_escapes_boundary_proposal_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_closed_run(root)
+
+            payload = build_payload(root, root / "work" / "sessions")
+            payload["boundary_analysis"]["summary"]["proposals"] = 1
+            payload["boundary_analysis"]["proposals"] = [
+                {
+                    "proposal_id": "bo-test",
+                    "proposal": "investigate",
+                    "category": "skill_correction",
+                    "skill_ids": ["sample_skill"],
+                    "subject_xids": ["xid-test"],
+                    "support": 2,
+                    "evidence_refs": ["<script>alert(1)</script>"],
+                    "rationale": "<script>alert(2)</script>",
+                    "counterevidence": ["counter"],
+                    "unknowns": ["unknown"],
+                    "verification_plan": ["verify"],
+                    "decision": {"status": "pending", "owner": None},
+                }
+            ]
+
+            html = _html_page(payload)
+
+            self.assertIn("bo-test", html)
+            self.assertIn("Counterevidence", html)
+            self.assertIn("&lt;script&gt;alert(1)&lt;/script&gt;", html)
+            self.assertIn("&lt;script&gt;alert(2)&lt;/script&gt;", html)
+            self.assertNotIn("<script>alert(1)", html)
