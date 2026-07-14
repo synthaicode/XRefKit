@@ -107,9 +107,14 @@ class SkillCatalogEntry:
     missing: list[str] = field(default_factory=list)
     zone_metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self, *, include_tools: bool = True) -> dict[str, Any]:
         data = asdict(self)
         data["closure_contract"] = self.closure_contract.to_dict()
+        if not include_tools:
+            # Tool requirements are useful after a Skill has been selected,
+            # but they are not routing metadata. Keep them out of catalog
+            # listings so every candidate does not carry execution detail.
+            data.pop("required_tools", None)
         return data
 
 

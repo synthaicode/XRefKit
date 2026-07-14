@@ -348,7 +348,10 @@ class XRefCatalog:
         # SKILL.md body, bypassing both the startup ordering and the
         # body_mode=lazy context policy.
         entries = self.skills[: limit or None]
-        results = [entry.to_dict() for entry in entries]
+        # Keep the routing surface small. The selected Skill response from
+        # get_skill/get_skill_requirements carries required_tools when the
+        # client is ready to execute it.
+        results = [entry.to_dict(include_tools=False) for entry in entries]
         duplicate_ids = _duplicate_skill_ids(self.skills)
         for result in results:
             if result["skill_id"] in duplicate_ids:
@@ -405,10 +408,8 @@ class XRefCatalog:
             "content_resolution": _mcp_content_resolution_policy(),
             "closure_contract": entry.closure_contract.to_dict(),
             "meta_path": entry.meta_path,
-            "meta_content": entry.meta_content,
             "meta_links": entry.meta_links,
             "skill_doc": entry.path,
-            "skill_content": entry.skill_content,
             "skill_links": entry.skill_links,
             "missing": entry.missing,
         }

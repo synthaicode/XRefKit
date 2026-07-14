@@ -552,6 +552,7 @@ Duplicate external body.
 
         self.assertIsNone(skill["meta_content"])
         self.assertIsNone(skill["skill_content"])
+        self.assertNotIn("required_tools", skill)
         self.assertTrue(skill["document_versions"])
 
     def test_list_skills_returns_bodies_only_when_requested(self) -> None:
@@ -577,6 +578,19 @@ Duplicate external body.
             {document["xid"] for document in skill["document_versions"]},
             {"SKILLMETA", "SKILLDOC"},
         )
+
+    def test_selected_skill_response_carries_deferred_tool_requirements(self) -> None:
+        catalog = XRefCatalog.build(self.repo)
+
+        listed = catalog.list_skills()[0]
+        selected = catalog.get_skill("sample_review")
+        requirements = catalog.get_skill_requirements("sample_review")
+
+        self.assertNotIn("required_tools", listed)
+        self.assertEqual(selected["required_tools"], catalog.skills[0].required_tools)
+        self.assertEqual(requirements["required_tools"], catalog.skills[0].required_tools)
+        self.assertNotIn("meta_content", requirements)
+        self.assertNotIn("skill_content", requirements)
 
     def test_surfaces_triad_preconditions_and_knowledge_slots(self) -> None:
         # Skill-centric consolidation (design 083/084): the catalog surfaces the
@@ -1226,6 +1240,8 @@ flow_id: sample
             contracts["xref.list_skills"]["response_envelope"],
             "mcp_result_array",
         )
+        self.assertEqual(contracts["xref.list_skills"]["version"], "4")
+        self.assertEqual(contracts["xref.get_skill_requirements"]["version"], "2")
         self.assertEqual(
             contracts["xref.get_startup_context"]["response_envelope"],
             "direct_object",
