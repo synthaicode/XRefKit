@@ -76,7 +76,7 @@ sequence is described in
 
 ### Pack Control Dependencies
 
-The pack depends on OS-core controls, not on pack-owned capability files:
+The pack depends on these OS-core controls:
 
 - the Skill runtime envelope (workflow protocol / `os_contract`)
 - the ambient context-direction guard (startup contract pack + per-response

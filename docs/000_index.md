@@ -38,9 +38,8 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 ## XRefKit Routing And Authoring
 
 - [Skill authoring with xref](guides/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B)
-- [Legacy Skill merge guide](guides/075_legacy_skill_merge_guide.md#xid-271DA9EDBE1A)
 - [Sources (PDF/Excel/Web)](reference/020_sources.md#xid-2FAD591BF725)
-- [Flow Capability Skill Knowledge model](core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
+- [Skill and Knowledge operating model](core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
 - [Context direction security guard](core/contracts/053_context_direction_security_guard.md#xid-A7F3C92D4E11)
 - [Change analysis skill usage](guides/054_change_analysis_skill_usage.md#xid-C5A8F13D7E21)
 - [Judgment log usage](guides/055_judgment_log_usage.md#xid-9D64B2F18E44)
@@ -71,6 +70,8 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Deterministic legacy Skill merge design](designs/076_deterministic_legacy_skill_merge_design.md#xid-8D5C74573895)
 - [Structure graph build guide (binary setup after a source-level copy)](guides/078_structure_graph_build_guide.md#xid-8B3E5D0A94C7)
 - [Skill Run Observation Dashboard usage](guides/086_skill_run_observation_dashboard_usage.md#xid-4A4763A2DE63)
+- [Knowledge observation and improvement platform design](designs/088_knowledge_observation_and_improvement_platform_design.md#xid-32B512763C78)
+- [Copilot trace Skill boundary analysis design](designs/089_copilot_trace_skill_boundary_analysis_design.md#xid-B6E4A91C7D2F)
 
 ## Common links
 

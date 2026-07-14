@@ -3,9 +3,7 @@
 
 # Skill and Knowledge Operating Model
 
-This page is the repository's canonical operating model after the skill-centric
-consolidation. It supersedes the earlier four-layer model
-(Flow → Capability → Skill → Knowledge).
+This page is the repository's canonical Skill and Knowledge operating model.
 
 ## Model
 
@@ -35,22 +33,6 @@ routing:
 | Skill | procedure, judgment method, I/O contract, guardrails, the meta triad, declared knowledge slots and preconditions | copied domain facts, language-specific rule catalogs, static knowledge/capability XID lists, whole-business sequencing |
 | Knowledge | domain knowledge, quality criteria, operational and local rules, glossary, evidence basis | execution procedure, orchestration, control definitions |
 
-## Removed Layers
-
-The four-layer model's other layers are removed; their content relocates:
-
-- **Flow definitions** (`flows/`, `docs/workflows/`) — removed. Determinism is
-  the protocol's, and business structure is not pre-templated. Cross-Skill
-  sequencing becomes precondition/dataflow-driven: a Skill declares its
-  preconditions, and routing runs it only when current state satisfies them.
-- **Capability definition files** (`capabilities/`) — dissolved. Capability
-  survives as the Skill meta triad element and the routing vocabulary; the
-  triad definitions live in
-  [Capability layering](../../reference/031_capability_layering.md#xid-8D50A972BA9F).
-- **Group overlay** — removed. Ownership, handoff, and self-check are carried by
-  the protocol roles (executor / deterministic checker) and the generic control,
-  not an organizational chart.
-
 ## Routing And Execution Order
 
 1. identify the goal or user intent
@@ -69,9 +51,7 @@ The four-layer model's other layers are removed; their content relocates:
   knowledge selection.
 
 Non-deterministic steps run between deterministic protocol boundaries; they are
-gated, not made deterministic themselves. Removing Flow, the Capability files,
-and the Group overlay does not touch this boundary — those layers were not where
-determinism lived.
+gated, not made deterministic themselves.
 
 ## Skill Runtime Envelope
 
@@ -152,9 +132,3 @@ The model stays traceable when paired with execution records:
 - `knowledge/` holds normalized operational evidence
 - `skills/` perform the work under the protocol
 - `work/` records what was executed, why, and with which basis
-
-## Migration Status
-
-This page describes the authoritative model. Removed four-layer artifacts such
-as `flows/`, `capabilities/`, and group overlays are not part of the current
-runtime model.
