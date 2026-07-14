@@ -94,6 +94,52 @@ searches and XID resolutions then share the same `run_id` as the client Skill
 Run. The client separately records actual model-context loading and judgment
 application with `xrefkit skill knowledge --action load|apply`.
 
+## Skill Run Observation Dashboard
+
+The local dashboard lets a human inspect Skill run status, closure and quality
+gates, evidence, handoffs, XID usage, missing information, and proposal-only
+boundary analysis.
+
+Start it from the repository root:
+
+```powershell
+python -m xrefkit dashboard serve --root .
+```
+
+Open [http://127.0.0.1:8765/](http://127.0.0.1:8765/). To open the browser
+automatically, add `--open-browser`. Use `--port 8766` when the default port is
+already in use, or `--sessions-dir path\to\sessions` when logs are stored
+elsewhere.
+
+The main tabs are:
+
+- **Overview / Attention / Closure**: run status, blockers, phases, closure,
+  and quality-gate state.
+- **Evidence / Handoff**: outputs, checks, handoffs, unknowns, risks, and
+  judgments needed for review and continuity.
+- **XID Usage**: selected, resolved, loaded, used, available, and unused XIDs.
+- **Analysis**: deterministic candidates for Knowledge correction, Skill
+  correction, split, merge, or usage-gap investigation. Review the evidence,
+  counterevidence, unknowns, and verification plan before changing canonical
+  files. The dashboard never applies these proposals automatically.
+- **Missing Information**: absent correlation, MCP, Knowledge, or feedback
+  records.
+
+Export the dashboard data and create a human-reviewable boundary report:
+
+```powershell
+python -m xrefkit dashboard data --root . > work/reports/dashboard-observation.json
+python -m xrefkit analysis boundary report `
+  --input work/reports/dashboard-observation.json `
+  --out work/reports/boundary-observation.md
+```
+
+The running dashboard also exposes JSON at
+[http://127.0.0.1:8765/api/runs](http://127.0.0.1:8765/api/runs) and health at
+[http://127.0.0.1:8765/healthz](http://127.0.0.1:8765/healthz). Stop a foreground
+server with `Ctrl+C`. For the complete review loop and screen guide, see the
+[Skill Run Observation Dashboard Usage guide](docs/guides/086_skill_run_observation_dashboard_usage.md).
+
 XRefKit is designed to be driven by an AI agent. The agent first resolves the
 startup contract XID, selects a Skill or source target from a compact catalog,
 and expands only the selected body.

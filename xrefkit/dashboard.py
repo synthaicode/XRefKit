@@ -12,6 +12,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
+from xrefkit.boundary_analysis import analyze_dashboard_payload
 from xrefkit.mcp.audit import AUDIT_SCHEMA
 from xrefkit.skillrun import (
     ACCEPTED_CLOSE_STATUSES,
@@ -621,7 +622,7 @@ def build_payload(
     audit_path = (mcp_audit_log or (root / "work" / "mcp" / "xid_audit.jsonl")).resolve()
     mcp_events_by_run, audit_errors = _load_mcp_audit(audit_path)
     runs = collect_runs(root, sessions_dir, mcp_events_by_run, audit_errors)
-    return {
+    payload: dict[str, object] = {
         "root": str(root.resolve()),
         "sessions_dir": str(sessions_dir.resolve()),
         "mcp_audit_log": str(audit_path),
@@ -631,6 +632,13 @@ def build_payload(
         "missing_information_ranking": _missing_information_ranking(runs),
         "runs": [run.to_dict() for run in runs],
     }
+    payload["boundary_analysis"] = analyze_dashboard_payload(
+        payload,
+        source_ref="dashboard://current",
+        min_samples=2,
+        max_candidates=20,
+    )
+    return payload
 
 
 def _json_response(handler: BaseHTTPRequestHandler, payload: object, status: int = 200) -> None:
@@ -647,6 +655,18 @@ def _html_page(payload: dict[str, object]) -> str:
     runs = payload["runs"]
     assert isinstance(summary, dict)
     assert isinstance(runs, list)
+    boundary_analysis = payload.get("boundary_analysis")
+    if not isinstance(boundary_analysis, dict):
+        boundary_analysis = {}
+    analysis_summary = boundary_analysis.get("summary")
+    if not isinstance(analysis_summary, dict):
+        analysis_summary = {}
+    analysis_correlation = boundary_analysis.get("correlation")
+    if not isinstance(analysis_correlation, dict):
+        analysis_correlation = {}
+    analysis_proposals = boundary_analysis.get("proposals")
+    if not isinstance(analysis_proposals, list):
+        analysis_proposals = []
     cards = "".join(
         f"<div class='metric'><span>{html.escape(str(label))}</span><strong>{value}</strong></div>"
         for label, value in [
@@ -663,7 +683,7 @@ def _html_page(payload: dict[str, object]) -> str:
             ("Missing info items", summary["missing_information"]),
         ]
     )
-    overview_rows = "\n".join(_overview_row(run) for run in runs[:30])
+    overview_rows = "\n".join(_overview_row(run) for run in runs)
     attention_rows = "\n".join(_attention_card(run) for run in runs if isinstance(run, dict) and run.get("status") == "blocked")
     closure_rows = "\n".join(_closure_card(run) for run in runs)
     evidence_rows = "\n".join(_evidence_card(run) for run in runs if _has_observed_records(run))
@@ -676,6 +696,32 @@ def _html_page(payload: dict[str, object]) -> str:
         for run in runs
         if isinstance(run, dict) and run.get("missing_information")
     )
+    analysis_cards = "".join(
+        f"<div class='metric'><span>{html.escape(str(label))}</span><strong>{html.escape(str(value))}</strong></div>"
+        for label, value in [
+            ("Proposals", analysis_summary.get("proposals", len(analysis_proposals))),
+            ("Samples", boundary_analysis.get("sample_count", 0)),
+            ("Exact correlation", analysis_correlation.get("exact", 0)),
+            ("Unknown correlation", analysis_correlation.get("unknown", 0)),
+        ]
+    )
+    analysis_correlation_pills = "".join(
+        f"<span class='pill'>{html.escape(str(level))}: {html.escape(str(analysis_correlation.get(level, 0)))}</span>"
+        for level in ("exact", "bounded", "heuristic", "unknown")
+    )
+    if analysis_proposals:
+        analysis_proposal_rows = "\n".join(
+            _analysis_proposal_card(proposal)
+            for proposal in analysis_proposals
+            if isinstance(proposal, dict)
+        )
+    else:
+        analysis_proposal_rows = (
+            "<section class='empty'>No boundary proposals reached the configured minimum sample support. "
+            "This is not proof that no issue exists.</section>"
+        )
+    if not analysis_proposal_rows:
+        analysis_proposal_rows = "<section class='empty'>No usable boundary proposals were found.</section>"
     empty = "<section class='empty'>No Skill run logs found under the configured sessions directory.</section>"
     if not runs:
         overview_rows = empty
@@ -689,6 +735,14 @@ def _html_page(payload: dict[str, object]) -> str:
         xid_rows = "<section class='empty'>No XID usage records found in Skill run logs.</section>"
     if not missing_information_cards:
         missing_information_cards = "<section class='empty'>No missing tuning information detected.</section>"
+    audit_errors = payload.get("audit_errors") if isinstance(payload.get("audit_errors"), list) else []
+    audit_warning = ""
+    if audit_errors:
+        audit_items = "".join(f"<li>{html.escape(str(item))}</li>" for item in audit_errors[:5])
+        audit_warning = (
+            "<section class='audit-warning'><strong>MCP audit log contains unreadable records.</strong>"
+            f"<ul>{audit_items}</ul></section>"
+        )
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -750,6 +804,46 @@ def _html_page(payload: dict[str, object]) -> str:
       background: #eaf1fb;
       font-weight: 700;
     }}
+    .controls {{
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto auto;
+      gap: 12px;
+      align-items: center;
+      margin: 0 0 18px;
+    }}
+    .search {{
+      min-height: 42px;
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      font: inherit;
+      padding: 9px 12px;
+    }}
+    .status-filters {{ display: flex; flex-wrap: wrap; gap: 6px; }}
+    .status-filter, .refresh-button, .clear-selection {{
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--muted);
+      cursor: pointer;
+      font: inherit;
+      padding: 9px 12px;
+    }}
+    .status-filter.active {{ border-color: var(--blue); color: var(--blue); background: #eaf1fb; font-weight: 700; }}
+    .refresh-button {{ color: white; background: var(--blue); border-color: var(--blue); font-weight: 700; }}
+    .refresh-button:disabled {{ cursor: wait; opacity: .7; }}
+    .selection-bar {{ display: none; align-items: center; gap: 10px; margin: 0 0 16px; color: var(--muted); }}
+    .selection-bar.active {{ display: flex; }}
+    .result-count {{ margin: -8px 0 16px; color: var(--muted); font-size: 13px; }}
+    .audit-warning {{ margin: 0 0 18px; padding: 14px 16px; border: 1px solid #f0b7c8; border-radius: 8px; background: #fff1f5; color: var(--red); }}
+    .audit-warning ul {{ color: var(--ink); }}
+    .filterable-run[hidden] {{ display: none !important; }}
+    .selectable-run {{ cursor: pointer; }}
+    tr.selectable-run:focus, tr.selectable-run:hover {{ outline: 2px solid #93b4ef; outline-offset: -2px; }}
+    .run.selected {{ box-shadow: 0 0 0 2px #93b4ef; }}
     .panel {{ display: none; }}
     .panel.active {{ display: block; }}
     .metric {{
@@ -802,12 +896,35 @@ def _html_page(payload: dict[str, object]) -> str:
     .box h3 {{ margin: 0 0 8px; font-size: 14px; }}
     .kv {{ display: flex; flex-wrap: wrap; gap: 8px; }}
     .pill {{ border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; color: var(--muted); background: white; font-size: 12px; }}
+    .analysis-intro {{ margin: 0 0 14px; color: var(--muted); }}
+    .analysis-correlation {{ margin-bottom: 18px; }}
+    .proposal {{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-left: 6px solid var(--blue);
+      border-radius: 8px;
+      padding: 18px;
+      margin: 14px 0;
+    }}
+    .proposal.split {{ border-left-color: var(--amber); }}
+    .proposal.merge {{ border-left-color: #7c3aed; }}
+    .proposal.investigate {{ border-left-color: var(--blue); }}
+    .proposal-head {{ display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }}
+    .proposal-head h2 {{ margin: 4px 0 0; font-size: 18px; }}
+    .proposal-kicker {{ color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }}
+    .badge.pending {{ background: #eef2ff; color: #4338ca; }}
+    .proposal-rationale {{ margin: 16px 0 0; }}
+    .analysis-grid {{ display: grid; grid-template-columns: repeat(2, minmax(260px, 1fr)); gap: 14px; margin-top: 14px; }}
+    .analysis-grid .box {{ min-width: 0; }}
+    .analysis-grid code {{ word-break: break-all; }}
     ul {{ margin: 8px 0 0; padding-left: 20px; }}
     li {{ margin: 3px 0; }}
     .empty {{ background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 24px; color: var(--muted); }}
     @media (max-width: 780px) {{
       header, main {{ padding-left: 16px; padding-right: 16px; }}
       .grid {{ grid-template-columns: 1fr; }}
+      .analysis-grid {{ grid-template-columns: 1fr; }}
+      .controls {{ grid-template-columns: 1fr; }}
     }}
   </style>
 </head>
@@ -824,8 +941,22 @@ def _html_page(payload: dict[str, object]) -> str:
       <button class="tab" data-panel="evidence">Evidence</button>
       <button class="tab" data-panel="handoff">Handoff</button>
       <button class="tab" data-panel="xids">XID Usage</button>
+      <button class="tab" data-panel="analysis">Analysis</button>
       <button class="tab" data-panel="missing-information">Missing Information</button>
     </nav>
+    <section class="controls" aria-label="Skill run filters">
+      <input id="run-search" class="search" type="search" placeholder="Search skill, path, run ID, session, repository, or status" aria-label="Search Skill runs">
+      <div class="status-filters" aria-label="Status filter">
+        <button class="status-filter active" data-status="all">All</button>
+        <button class="status-filter" data-status="blocked">Blocked</button>
+        <button class="status-filter" data-status="open">Open</button>
+        <button class="status-filter" data-status="closed">Closed</button>
+      </div>
+      <button id="refresh-runs" class="refresh-button" type="button">Refresh</button>
+    </section>
+    <div id="selection-bar" class="selection-bar"><span id="selection-label"></span><button id="clear-selection" class="clear-selection" type="button">Show all runs</button></div>
+    <p id="result-count" class="result-count"></p>
+    {audit_warning}
     <section id="overview" class="panel active">
       <section class="metrics">{cards}</section>
       <p class="category-note">Recent Skill runs and aggregate status. Detailed records are split into the other categories.</p>
@@ -855,6 +986,15 @@ def _html_page(payload: dict[str, object]) -> str:
       <div class="box"><h3>Unused XID Ranking</h3>{unused_xid_rows}</div>
       {xid_rows}
     </section>
+    <section id="analysis" class="panel">
+      <p class="analysis-intro">Proposal-only analysis. Review evidence, counterevidence, unknowns, and the verification plan before changing canonical Skills, Knowledge, routing, or XIDs.</p>
+      <section class="metrics">{analysis_cards}</section>
+      <div class="box analysis-correlation">
+        <h3>Correlation coverage</h3>
+        <div class="kv">{analysis_correlation_pills}</div>
+      </div>
+      {analysis_proposal_rows}
+    </section>
     <section id="missing-information" class="panel">
       <p class="category-note">Information required to correlate Skill execution, MCP access, Knowledge application, and downstream feedback.</p>
       <div class="box"><h3>Missing Information Ranking</h3>{missing_information_rows}</div>
@@ -862,13 +1002,80 @@ def _html_page(payload: dict[str, object]) -> str:
     </section>
   </main>
   <script>
-    const tabs = Array.from(document.querySelectorAll(".tab"));
-    const panels = Array.from(document.querySelectorAll(".panel"));
+    let activePanel = "overview";
+    let statusFilter = "all";
+    let searchQuery = "";
+    let selectedRun = null;
     function showPanel(id) {{
+      activePanel = id;
+      const tabs = Array.from(document.querySelectorAll(".tab"));
+      const panels = Array.from(document.querySelectorAll(".panel"));
       tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.panel === id));
       panels.forEach((panel) => panel.classList.toggle("active", panel.id === id));
     }}
-    tabs.forEach((tab) => tab.addEventListener("click", () => showPanel(tab.dataset.panel)));
+    function applyFilters() {{
+      const query = searchQuery.trim().toLowerCase();
+      const runs = Array.from(document.querySelectorAll(".filterable-run"));
+      let visible = 0;
+      const visiblePaths = new Set();
+      runs.forEach((run) => {{
+        const matchesStatus = statusFilter === "all" || run.dataset.status === statusFilter;
+        const matchesSearch = !query || (run.dataset.search || "").includes(query);
+        const matchesSelection = !selectedRun || run.dataset.runPath === selectedRun;
+        const show = matchesStatus && matchesSearch && matchesSelection;
+        run.hidden = !show;
+        run.classList.toggle("selected", Boolean(selectedRun && run.dataset.runPath === selectedRun));
+        if (show && run.dataset.runPath) visiblePaths.add(run.dataset.runPath);
+      }});
+      visible = visiblePaths.size;
+      document.getElementById("result-count").textContent = `${{visible}} matching run${{visible === 1 ? "" : "s"}}`;
+      const selectionBar = document.getElementById("selection-bar");
+      selectionBar.classList.toggle("active", Boolean(selectedRun));
+      document.getElementById("selection-label").textContent = selectedRun ? `Focused run: ${{selectedRun}}` : "";
+    }}
+    function selectRun(path) {{ selectedRun = path; applyFilters(); }}
+    function bindDashboard() {{
+      document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => showPanel(tab.dataset.panel)));
+      const search = document.getElementById("run-search");
+      search.value = searchQuery;
+      search.addEventListener("input", () => {{ searchQuery = search.value; applyFilters(); }});
+      document.querySelectorAll(".status-filter").forEach((button) => {{
+        button.classList.toggle("active", button.dataset.status === statusFilter);
+        button.addEventListener("click", () => {{
+          statusFilter = button.dataset.status;
+          document.querySelectorAll(".status-filter").forEach((item) => item.classList.toggle("active", item === button));
+          applyFilters();
+        }});
+      }});
+      document.querySelectorAll(".selectable-run").forEach((run) => {{
+        run.addEventListener("click", () => selectRun(run.dataset.runPath));
+        run.addEventListener("keydown", (event) => {{ if (event.key === "Enter" || event.key === " ") selectRun(run.dataset.runPath); }});
+      }});
+      document.getElementById("clear-selection").addEventListener("click", () => {{ selectedRun = null; applyFilters(); }});
+      document.getElementById("refresh-runs").addEventListener("click", refreshDashboard);
+      showPanel(activePanel);
+      applyFilters();
+    }}
+    async function refreshDashboard() {{
+      const button = document.getElementById("refresh-runs");
+      button.disabled = true;
+      button.textContent = "Refreshing";
+      try {{
+        const probe = await fetch(`/api/runs?t=${{Date.now()}}`, {{ cache: "no-store" }});
+        if (!probe.ok) throw new Error(`JSON refresh failed: ${{probe.status}}`);
+        const response = await fetch(`/?t=${{Date.now()}}`, {{ cache: "no-store" }});
+        if (!response.ok) throw new Error(`Dashboard refresh failed: ${{response.status}}`);
+        const next = new DOMParser().parseFromString(await response.text(), "text/html");
+        document.querySelector("header").replaceWith(next.querySelector("header"));
+        document.querySelector("main").replaceWith(next.querySelector("main"));
+        bindDashboard();
+      }} catch (error) {{
+        button.textContent = "Refresh failed";
+        button.title = String(error);
+        button.disabled = false;
+      }}
+    }}
+    bindDashboard();
   </script>
 </body>
 </html>"""
@@ -889,8 +1096,9 @@ def _base_run_parts(run: object) -> tuple[str, str, str, str, dict, dict, list]:
 def _overview_row(run: object) -> str:
     status, skill_id, path, mtime, _, _, _ = _base_run_parts(run)
     closure = html.escape(str(run["closure_status"])) if isinstance(run, dict) else ""
+    attributes = _run_data_attributes(run)
     return (
-        "<tr>"
+        f"<tr class='filterable-run selectable-run' tabindex='0' {attributes}>"
         f"<td>{skill_id}</td>"
         f"<td><span class='badge {status}'>{status}</span></td>"
         f"<td>{closure}</td>"
@@ -904,6 +1112,7 @@ def _attention_card(run: object) -> str:
     status, skill_id, path, mtime, _, _, blockers = _base_run_parts(run)
     blocker_html = "<ul>" + "".join(f"<li>{html.escape(str(item))}</li>" for item in blockers[:16]) + "</ul>"
     return _category_card(
+        run=run,
         status=status,
         skill_id=skill_id,
         path=path,
@@ -926,7 +1135,7 @@ def _closure_card(run: object) -> str:
         f"<div class='box'><h3>Closure</h3><div class='kv'><span class='pill'>closure: {closure}</span>"
         f"<span class='pill'>quality: {quality}</span><span class='pill'>quality required: {required}</span></div></div>"
     )
-    return _category_card(status=status, skill_id=skill_id, path=path, mtime=mtime, body=body)
+    return _category_card(run=run, status=status, skill_id=skill_id, path=path, mtime=mtime, body=body)
 
 
 def _evidence_card(run: object) -> str:
@@ -952,7 +1161,7 @@ def _evidence_card(run: object) -> str:
         f"<div class='box'><h3>Artifact Counts</h3><div class='kv'>{count_pills}</div></div>"
         f"<div class='box'><h3>Recent Records</h3><ul>{artifact_items}</ul></div>"
     )
-    return _category_card(status=status, skill_id=skill_id, path=path, mtime=mtime, body=body)
+    return _category_card(run=run, status=status, skill_id=skill_id, path=path, mtime=mtime, body=body)
 
 
 def _handoff_card(run: object) -> str:
@@ -987,7 +1196,7 @@ def _handoff_card(run: object) -> str:
         f"<div class='box'><h3>Handoff</h3><ul>{handoff_items}</ul></div>"
         f"<div class='box'><h3>Unknown / Risk / Judgment</h3><ul>{concern_items}</ul></div>"
     )
-    return _category_card(status=status, skill_id=skill_id, path=path, mtime=mtime, body=body)
+    return _category_card(run=run, status=status, skill_id=skill_id, path=path, mtime=mtime, body=body)
 
 
 def _xid_usage_card(run: object) -> str:
@@ -1013,7 +1222,7 @@ def _xid_usage_card(run: object) -> str:
         f"<div class='box'><h3>Available Knowledge XIDs (base/local)</h3>{available}</div>"
         f"<div class='box'><h3>Unused Available XIDs (base/local)</h3>{unused}</div>"
     )
-    return _category_card(status=status, skill_id=skill_id, path=path, mtime=mtime, body=body)
+    return _category_card(run=run, status=status, skill_id=skill_id, path=path, mtime=mtime, body=body)
 
 
 def _missing_information_card(run: object) -> str:
@@ -1029,7 +1238,7 @@ def _missing_information_card(run: object) -> str:
         if isinstance(item, dict)
     )
     body = f"<div class='box'><h3>Missing Tuning Information</h3><ul>{items}</ul></div>"
-    return _category_card(status=status, skill_id=skill_id, path=path, mtime=mtime, body=body)
+    return _category_card(run=run, status=status, skill_id=skill_id, path=path, mtime=mtime, body=body)
 
 
 def _xid_pills(values: object, *, empty: str) -> str:
@@ -1081,9 +1290,78 @@ def _unused_xid_row(row: dict[str, object]) -> str:
     return f"<tr><td>{xid}</td><td>{count}</td><td>{skills}</td><td class='path'>{runs}</td></tr>"
 
 
-def _category_card(*, status: str, skill_id: str, path: str, mtime: str, body: str) -> str:
+_ANALYSIS_CATEGORY_LABELS = {
+    "knowledge_correction": "Knowledge correction candidate",
+    "skill_correction": "Skill correction candidate",
+    "split": "Skill split candidate",
+    "merge": "Skill merge candidate",
+    "knowledge_usage_gap": "Knowledge usage gap",
+}
+
+
+def _analysis_list(value: object, *, empty: str, code: bool = False, limit: int = 8) -> str:
+    values = value if isinstance(value, list) else []
+    if not values:
+        return f"<p class='path'>{html.escape(empty)}</p>"
+    items = []
+    for item in values[:limit]:
+        rendered = html.escape(str(item))
+        items.append(f"<li><code>{rendered}</code></li>" if code else f"<li>{rendered}</li>")
+    if len(values) > limit:
+        items.append(f"<li>... and {len(values) - limit} more</li>")
+    return "<ul>" + "".join(items) + "</ul>"
+
+
+def _analysis_value_text(value: object, *, empty: str) -> str:
+    values = value if isinstance(value, list) else []
+    if not values:
+        return html.escape(empty)
+    rendered = [html.escape(str(item)) for item in values[:12]]
+    if len(values) > 12:
+        rendered.append(f"... and {len(values) - 12} more")
+    return ", ".join(rendered)
+
+
+def _analysis_proposal_card(proposal: dict[str, object]) -> str:
+    category = str(proposal.get("category", "")).strip()
+    category_label = _ANALYSIS_CATEGORY_LABELS.get(category, "Boundary investigation candidate")
+    proposal_kind = str(proposal.get("proposal", "investigate")).strip() or "investigate"
+    proposal_class = proposal_kind if proposal_kind in {"split", "merge"} else "investigate"
+    proposal_id = str(proposal.get("proposal_id", "unnamed-proposal"))
+    decision = proposal.get("decision") if isinstance(proposal.get("decision"), dict) else {}
+    decision_status = str(decision.get("status", "pending"))
+    skills = proposal.get("skill_ids") if isinstance(proposal.get("skill_ids"), list) else []
+    xids = proposal.get("subject_xids") if isinstance(proposal.get("subject_xids"), list) else []
+    rationale = str(proposal.get("rationale", "No rationale recorded."))
     return f"""
-<section class="run {status}">
+<article class="proposal {proposal_class}">
+  <div class="proposal-head">
+    <div>
+      <div class="proposal-kicker">{html.escape(category_label)}</div>
+      <h2>{html.escape(proposal_id)}</h2>
+    </div>
+    <span class="badge pending">decision: {html.escape(decision_status)}</span>
+  </div>
+  <div class="kv" style="margin-top: 14px;">
+    <span class="pill">type: {html.escape(proposal_kind)}</span>
+    <span class="pill">support: {html.escape(str(proposal.get("support", 0)))}</span>
+    <span class="pill">Skills: {_analysis_value_text(skills, empty="none")}</span>
+    <span class="pill">XIDs: {_analysis_value_text(xids, empty="none")}</span>
+  </div>
+  <p class="proposal-rationale"><strong>Rationale:</strong> {html.escape(rationale)}</p>
+  <div class="analysis-grid">
+    <div class="box"><h3>Evidence</h3>{_analysis_list(proposal.get("evidence_refs"), empty="No evidence reference.", code=True)}</div>
+    <div class="box"><h3>Counterevidence</h3>{_analysis_list(proposal.get("counterevidence"), empty="None recorded.")}</div>
+    <div class="box"><h3>Unknowns</h3>{_analysis_list(proposal.get("unknowns"), empty="None recorded.")}</div>
+    <div class="box"><h3>Verification plan</h3>{_analysis_list(proposal.get("verification_plan"), empty="Define a human verification plan.")}</div>
+  </div>
+</article>"""
+
+
+def _category_card(*, run: object, status: str, skill_id: str, path: str, mtime: str, body: str) -> str:
+    attributes = _run_data_attributes(run)
+    return f"""
+<section class="run {status} filterable-run selectable-run" tabindex="0" {attributes}>
   <div class="run-head">
     <div>
       <h2>{skill_id}</h2>
@@ -1094,6 +1372,34 @@ def _category_card(*, status: str, skill_id: str, path: str, mtime: str, body: s
   </div>
   <div class="grid">{body}</div>
 </section>"""
+
+
+def _run_data_attributes(run: object) -> str:
+    if not isinstance(run, dict):
+        return 'data-run-path="" data-status="" data-search=""'
+    missing = run.get("missing_information") if isinstance(run.get("missing_information"), list) else []
+    missing_text = " ".join(
+        f"{item.get('code', '')} {item.get('label', '')}"
+        for item in missing
+        if isinstance(item, dict)
+    )
+    values = [
+        run.get("skill_id", ""),
+        run.get("path", ""),
+        run.get("run_id", ""),
+        run.get("mcp_session_id", ""),
+        run.get("repository_fingerprint", ""),
+        run.get("status", ""),
+        run.get("closure_status", ""),
+        run.get("quality_status", ""),
+        missing_text,
+    ]
+    search = " ".join(str(value) for value in values if value).lower()
+    return (
+        f'data-run-path="{html.escape(str(run.get("path", "")), quote=True)}" '
+        f'data-status="{html.escape(str(run.get("status", "")), quote=True)}" '
+        f'data-search="{html.escape(search, quote=True)}"'
+    )
 
 
 def _has_observed_records(run: object) -> bool:
