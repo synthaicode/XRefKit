@@ -82,6 +82,8 @@ class CliTests(unittest.TestCase):
                         "WI-001",
                         "--text",
                         "Implement controlled output",
+                        "--completion-criterion",
+                        "output is written and validated",
                         "--status",
                         "done",
                         "--role",
@@ -739,6 +741,8 @@ class CliTests(unittest.TestCase):
                         "WI-001",
                         "--text",
                         "Implement controlled output",
+                        "--completion-criterion",
+                        "output is written and validated",
                         "--status",
                         "in_progress",
                         "--role",
@@ -765,6 +769,8 @@ class CliTests(unittest.TestCase):
                             "WI-001",
                             "--status",
                             "done",
+                            "--completion-criterion",
+                            "output is written and validated",
                             "--role",
                             "sample_skill:executor",
                         ]
@@ -772,7 +778,7 @@ class CliTests(unittest.TestCase):
                 )
 
             text = out.read_text(encoding="utf-8")
-            self.assertIn("- [x] WI-001 status=`done` role=`sample_skill:executor`: Implement controlled output", text)
+            self.assertIn("WI-001 status=`done` role=`sample_skill:executor` criterion=`output is written and validated`", text)
 
     def test_main_skill_close_rejects_pending_concrete_work_item(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -808,9 +814,11 @@ class CliTests(unittest.TestCase):
                             str(out),
                             "--item",
                             "WI-001",
-                            "--text",
-                            "Implement controlled output",
-                            "--status",
+                        "--text",
+                        "Implement controlled output",
+                        "--completion-criterion",
+                        "output is written and validated",
+                        "--status",
                             "pending",
                             "--role",
                             "sample_skill:executor",
@@ -1065,9 +1073,11 @@ class CliTests(unittest.TestCase):
                             str(out),
                             "--item",
                             "WI-001",
-                            "--text",
-                            "Implement controlled output",
-                            "--status",
+                        "--text",
+                        "Implement controlled output",
+                        "--completion-criterion",
+                        "output is written and validated",
+                        "--status",
                             "done",
                             "--role",
                             "sample_skill:executor",
@@ -1375,9 +1385,11 @@ class CliTests(unittest.TestCase):
                             str(out),
                             "--item",
                             "WI-001",
-                            "--text",
-                            "Implement controlled output",
-                            "--status",
+                        "--text",
+                        "Implement controlled output",
+                        "--completion-criterion",
+                        "output is written and validated",
+                        "--status",
                             "done",
                             "--role",
                             "sample_skill:executor",

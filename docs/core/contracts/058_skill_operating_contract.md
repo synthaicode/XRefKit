@@ -208,6 +208,11 @@ Instruction-backed runs do not make the workflow protocol responsible for
 business or output quality. Human output acceptance is recorded separately
 with the human feedback record and remains distinct from procedural closure.
 
+Each concrete work item must declare an observable completion criterion when it
+is created. If that criterion cannot yet be defined, the work item must use an
+`unknown`, `blocked`, or `escalated` status with an explicit reason. Such a
+work item cannot pass progression verification as ordinary completed work.
+
 The generated log also contains a `Concrete Work Items` section. Add or update
 task-specific work items with:
 

@@ -180,6 +180,11 @@ WORKLIST_ROWS = [
 ]
 WORKITEM_RE = re.compile(
     r"^- \[(?P<checkbox>[ x!])\] (?P<item_id>[A-Za-z0-9_.-]+) "
+    r"status=`(?P<status>[^`]+)` role=`(?P<role>[^`]+)` "
+    r"criterion=`(?P<criterion>[^`]*)` reason=`(?P<reason>[^`]*)`: (?P<text>.*)$"
+)
+LEGACY_WORKITEM_RE = re.compile(
+    r"^- \[(?P<checkbox>[ x!])\] (?P<item_id>[A-Za-z0-9_.-]+) "
     r"status=`(?P<status>[^`]+)` role=`(?P<role>[^`]+)`: (?P<text>.*)$"
 )
 ARTIFACT_RE = re.compile(
@@ -825,6 +830,19 @@ def _parse_work_items(text: str) -> list[dict[str, str]]:
     items: list[dict[str, str]] = []
     for line in body.splitlines():
         match = WORKITEM_RE.match(line)
+        if match:
+            items.append(
+                {
+                    "item_id": match.group("item_id"),
+                    "status": match.group("status"),
+                    "role": match.group("role"),
+                    "criterion": match.group("criterion"),
+                    "reason": match.group("reason"),
+                    "text": match.group("text"),
+                }
+            )
+            continue
+        match = LEGACY_WORKITEM_RE.match(line)
         if not match:
             continue
         items.append(
@@ -832,14 +850,19 @@ def _parse_work_items(text: str) -> list[dict[str, str]]:
                 "item_id": match.group("item_id"),
                 "status": match.group("status"),
                 "role": match.group("role"),
+                "criterion": "",
+                "reason": "legacy work item has no recorded completion criterion",
                 "text": match.group("text"),
             }
         )
     return items
 
 
-def _render_workitem_line(*, item_id: str, status: str, role: str, text: str) -> str:
-    return f"- [{_workitem_checkbox(status)}] {item_id} status=`{status}` role=`{role}`: {text}"
+def _render_workitem_line(*, item_id: str, status: str, role: str, criterion: str, reason: str, text: str) -> str:
+    return (
+        f"- [{_workitem_checkbox(status)}] {item_id} status=`{status}` role=`{role}` "
+        f"criterion=`{criterion}` reason=`{reason}`: {text}"
+    )
 
 
 def _overall_workitem_status(items: list[dict[str, str]]) -> str:
@@ -860,7 +883,7 @@ def _replace_concrete_work_items_section(text: str, items: list[dict[str, str]])
         insert_at = text.find("\n## Execution Role")
         if insert_at == -1:
             insert_at = len(text)
-        section = "\n\n## Concrete Work Items\n\n- status: `pending`\n- rule: task-specific work items must be added with `xrefkit skill workitem` and closed as `done` or `escalated`\n"
+        section = "\n\n## Concrete Work Items\n\n- status: `pending`\n- rule: each work item requires a completion criterion; use unknown, blocked, or escalated with a reason when the criterion cannot yet be defined\n"
         text = text[:insert_at] + section + text[insert_at:]
         body, start, end = _section_body(text, "Concrete Work Items")
         if body is None:
@@ -871,7 +894,7 @@ def _replace_concrete_work_items_section(text: str, items: list[dict[str, str]])
         "## Concrete Work Items",
         "",
         f"- status: `{status}`",
-        "- rule: task-specific work items must be added with `xrefkit skill workitem` and closed as `done` or `escalated`",
+        "- rule: each work item requires a completion criterion; use unknown, blocked, or escalated with a reason when the criterion cannot yet be defined",
     ]
     lines.extend(_render_workitem_line(**item) for item in items)
     new_body = "\n".join(lines) + "\n"
@@ -888,12 +911,18 @@ def update_work_item(args) -> SkillRunResult:
     status = str(args.status).lower()
     role = str(args.role).strip()
     item_text = str(args.text or "").strip()
+    criterion = str(getattr(args, "completion_criterion", None) or "").strip().replace("`", "'").replace("\n", " ")
+    reason = str(getattr(args, "criterion_unknown_reason", None) or "").strip().replace("`", "'").replace("\n", " ")
     if not item_id:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["missing --item"])
     if status not in VALID_WORKITEM_STATUSES:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[f"invalid work item status: {status}"])
     if not role:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["missing --role"])
+    if not criterion and not reason and status in {"unknown", "blocked", "escalated"}:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["completion criterion is undefined; provide --criterion-unknown-reason for unknown, blocked, or escalated work items"])
+    if not criterion and status in {"pending", "in_progress", "done"}:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["--completion-criterion is required for pending, in_progress, and done work items"])
 
     text = log_path.read_text(encoding="utf-8")
     if not _has_opened_run_gate(text):
@@ -904,12 +933,16 @@ def update_work_item(args) -> SkillRunResult:
     if existing:
         existing["status"] = status
         existing["role"] = role
+        if criterion:
+            existing["criterion"] = criterion
+        if reason:
+            existing["reason"] = reason
         if item_text:
             existing["text"] = item_text
     else:
         if not item_text:
             return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["new work item requires --text"])
-        items.append({"item_id": item_id, "status": status, "role": role, "text": item_text})
+        items.append({"item_id": item_id, "status": status, "role": role, "criterion": criterion, "reason": reason, "text": item_text})
 
     text = _replace_concrete_work_items_section(text, items)
     text = _append_phase_event(text, phase=f"workitem:{item_id}", status=status, role=role, note=item_text or None)
@@ -1436,6 +1469,13 @@ def _progression_record_errors(
     if not work_items:
         errors.append("at least one concrete work item is required before closure")
     for item in work_items:
+        if not item.get("criterion"):
+            if item["status"] in {"unknown", "blocked", "escalated"} and item.get("reason"):
+                pass
+            else:
+                errors.append(f"work item {item['item_id']} must record a completion criterion or a reason why it cannot be defined")
+        if item.get("criterion") == "unknown" and item["status"] in {"pending", "in_progress", "done"}:
+            errors.append(f"work item {item['item_id']} cannot use unknown as its completion criterion while executable")
         if item["status"] not in ACCEPTED_CLOSE_STATUSES:
             errors.append(
                 f"work item {item['item_id']} must be done or escalated before closure; current={item['status']}"

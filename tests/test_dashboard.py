@@ -118,6 +118,8 @@ class DashboardTests(unittest.TestCase):
                 "WI-001",
                 "--text",
                 "Implement controlled output",
+                "--completion-criterion",
+                "output is written and validated",
                 "--status",
                 "done",
                 "--role",

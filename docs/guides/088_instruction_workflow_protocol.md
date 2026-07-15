@@ -3,7 +3,7 @@
 
 # Instruction-Backed Workflow Protocol
 
-XRefKit v0.4.1 extends the workflow protocol to instructions that do not have
+XRefKit v0.4.2 extends the workflow protocol to instructions that do not have
 an applicable Skill. This does not make the instruction an implicit Skill and
 does not make the protocol responsible for judging output quality.
 
@@ -45,6 +45,20 @@ xrefkit skill close --log <run-log>
 
 These commands verify process records. They do not inspect the content of the
 output artifact.
+
+Every work item must also declare its own procedural completion criterion:
+
+```powershell
+xrefkit skill workitem --log <run-log> --item WI-001 `
+  --text "Update the document" `
+  --completion-criterion "The document is updated and xref check passes" `
+  --status pending --role instruction:executor
+```
+
+If the criterion cannot yet be defined, do not invent one. Register the item
+as `unknown`, `blocked`, or `escalated` and provide
+`--criterion-unknown-reason`. Such an item cannot be treated as normally done
+until the uncertainty is resolved or explicitly handed off.
 
 ## Human Output Acceptance
 

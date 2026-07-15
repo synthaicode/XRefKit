@@ -81,6 +81,9 @@ xrefkit workflow run --task "Perform the requested procedure" `
 
 `verify` and `close` determine procedural completion only. Output quality is
 recorded separately after human acceptance with the existing feedback record.
+Each work item also requires its own completion criterion; if that criterion is
+not yet definable, record the item as unknown, blocked, or escalated with a
+reason instead of inventing a criterion.
 
 ## Quick Start
 

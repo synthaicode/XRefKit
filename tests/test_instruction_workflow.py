@@ -48,6 +48,8 @@ def test_instruction_workflow_uses_default_conditions_and_shared_protocol(tmp_pa
         "WI-001",
         "--text",
         "Perform the instruction",
+        "--completion-criterion",
+        "instruction result is recorded and verified",
         "--status",
         "done",
         "--role",
@@ -98,3 +100,53 @@ def test_instruction_workflow_uses_default_conditions_and_shared_protocol(tmp_pa
     ) == 0
     assert _run(tmp_path, "skill", "close", "--log", str(out)) == 0
     assert "## Completion Conditions" in out.read_text(encoding="utf-8")
+
+
+def test_workitem_requires_criterion_or_explicit_unknown_reason(tmp_path: Path) -> None:
+    out = tmp_path / "work" / "sessions" / "run.md"
+    assert _run(
+        tmp_path,
+        "workflow",
+        "run",
+        "--task",
+        "Do work",
+        "--out",
+        str(out),
+        "--use-default-completion-conditions",
+    ) == 0
+    assert _run(
+        tmp_path,
+        "skill",
+        "workitem",
+        "--log",
+        str(out),
+        "--item",
+        "WI-001",
+        "--text",
+        "Investigate missing requirement",
+        "--status",
+        "pending",
+        "--role",
+        "instruction:executor",
+    ) == 1
+    assert _run(
+        tmp_path,
+        "skill",
+        "workitem",
+        "--log",
+        str(out),
+        "--item",
+        "WI-001",
+        "--text",
+        "Investigate missing requirement",
+        "--status",
+        "unknown",
+        "--criterion-unknown-reason",
+        "The business owner has not defined the acceptance outcome",
+        "--role",
+        "instruction:executor",
+    ) == 0
+    text = out.read_text(encoding="utf-8")
+    assert "criterion=`` reason=`The business owner has not defined the acceptance outcome`" in text
+    assert _run(tmp_path, "skill", "phase", "--log", str(out), "--phase", "execution", "--status", "done", "--role", "instruction:executor") == 0
+    assert _run(tmp_path, "skill", "verify", "--log", str(out)) == 1

@@ -497,6 +497,8 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_workitem.add_argument("--log", required=True, help="Skill run log to update")
     p_skill_workitem.add_argument("--item", required=True, help="Stable work item id, such as WI-001")
     p_skill_workitem.add_argument("--text", default=None, help="Work item text; required when adding a new item")
+    p_skill_workitem.add_argument("--completion-criterion", default=None, help="Observable procedural condition for this work item")
+    p_skill_workitem.add_argument("--criterion-unknown-reason", default=None, help="Why the completion criterion cannot yet be defined for unknown/blocked/escalated work")
     p_skill_workitem.add_argument(
         "--status",
         required=True,

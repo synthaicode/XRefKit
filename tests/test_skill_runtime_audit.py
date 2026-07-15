@@ -84,6 +84,8 @@ class SkillRuntimeAuditTests(unittest.TestCase):
                         "WI-001",
                         "--text",
                         "Implement controlled output",
+                        "--completion-criterion",
+                        "output is written and validated",
                         "--status",
                         "done",
                         "--role",
@@ -322,6 +324,7 @@ class SkillRuntimeAuditTests(unittest.TestCase):
                     [
                         "skill", "workitem", "--log", str(out), "--item", "WI-001",
                         "--text", "Implement controlled output", "--status", "done",
+                        "--completion-criterion", "output is written and validated",
                         "--role", "sample_skill:executor",
                     ]
                 ),
@@ -393,7 +396,7 @@ class SkillRuntimeAuditTests(unittest.TestCase):
                 main(
                     [
                         "skill", "workitem", "--log", str(out), "--item", "WI-001",
-                        "--text", "do work", "--status", "done", "--role", "sample_skill:executor",
+                        "--text", "do work", "--status", "done", "--completion-criterion", "work is verified", "--role", "sample_skill:executor",
                     ]
                 ),
             )
