@@ -17,7 +17,7 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
   `business_learning_interview`, `conversation_topic_branch_mapping`,
   `decision_topology_analysis`, `editorial_ops_index`, `editorial_intake`,
   `crosspost_release`
-- engineering: `csharp_review`, `python_review`, `dotnet_change_analysis`,
+- engineering: `csharp_review`, `python_review`, `dotnet_change_analysis`, `batch-impact-regression`,
   `csharp_error_policy_extraction`,
   `implementation_flow`, `python_implementation_flow`, `design_flow`, `db_current_state_analysis`,
   `db_design`, `test_flow`, `test_tool_catalog_preparation`,

@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xrefkit-skills-batch-regression"
+version = "0.4.1"
+description = "XRefKit Skill Package for C# and SQL Server batch impact analysis and combination regression"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "xrefkit>=0.4.0,<0.5.0",
+]
+
+[project.entry-points."xrefkit.skill_packages"]
+batch_regression = "xrefkit_skills_batch_regression:package_root"
+
+[project.scripts]
+xrefkit-batch-regression = "xrefkit_skills_batch_regression.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"xrefkit_skills_batch_regression" = [
+  "package_manifest.yaml",
+  "skills/*.yaml",
+  "skill_assets/**/*",
+]

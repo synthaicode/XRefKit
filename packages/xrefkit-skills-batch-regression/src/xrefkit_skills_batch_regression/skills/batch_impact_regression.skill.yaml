@@ -1,0 +1,44 @@
+skill_id: batch.impact_regression
+xid: xid-skill-batch-impact-regression
+role: base_skill_contract
+
+entry:
+  xid: xid-entry-batch-impact-regression
+  path: skill_assets/entry.md
+  load_policy: required_inline
+
+required_fragments:
+  - id: batch_regression_workflow
+    xid: xid-fragment-batch-regression-workflow
+    path: skill_assets/references/workflow.md
+    load_policy: required_inline
+  - id: batch_regression_adapter_boundary
+    xid: xid-fragment-batch-regression-adapter-boundary
+    path: skill_assets/references/adapter-contract.md
+    load_policy: required_inline
+
+branches: []
+
+required_outputs:
+  - decision_table
+  - orthogonal_table
+  - regression_report
+  - evidence
+  - unknowns
+  - human_handoffs
+
+required_knowledge: []
+review_axes: []
+schemas: []
+
+must_not:
+  - treat_source_conditions_as_business_truth
+  - treat_baseline_results_as_business_correctness
+  - execute_against_production
+  - auto_accept_unexplained_differences
+  - claim_dynamic_sql_is_resolved_without_runtime_evidence
+
+extension_policy:
+  can_be_extended_by_local_skill: true
+  local_can_weaken_required_outputs: false
+  local_can_override_must_not: false

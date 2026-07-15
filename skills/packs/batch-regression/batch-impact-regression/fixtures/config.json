@@ -1,0 +1,6 @@
+{
+  "combination": {"elements": [{"name":"a","values":[1,2]}, {"name":"b","values":["x","y"]}], "constraints": [{"id":"fixture-ban","kind":"forbidden","when":{"all":[{"field":"a","op":"eq","value":2},{"field":"b","op":"eq","value":"y"}]},"reason":"fixture-only constraint","evidence":["fixtures/config.json"]}]},
+  "comparison": {"key_fields":["a","b"],"fields":["status","result","updated_rows"],"ignore_fields":["execution_id"],"normalize_fields":{}},
+  "planned_differences": [{"id":"fixture-change","when":{"all":[{"field":"a","op":"eq","value":1},{"field":"b","op":"eq","value":"y"}]},"fields":["result"],"relation":"fixture-only planned difference"}],
+  "regression_set":{"max_size":10,"seed":7}
+}

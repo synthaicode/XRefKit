@@ -97,6 +97,10 @@ Current family paths:
   - summary: execute CAB business activities through reusable quality, operational-readiness, and value-alignment evaluation capabilities
   - meta: `skills/cab_review_flow/meta.md`
   - skill_doc: `skills/cab_review_flow/SKILL.md`
+- `batch-impact-regression`:
+  - summary: analyze C# and SQL Server stored-procedure batch changes with deterministic combination regression and human-gated classification
+  - meta: `skills/packs/batch-regression/batch-impact-regression/meta.md`
+  - skill_doc: `skills/packs/batch-regression/batch-impact-regression/SKILL.md`
 - `csharp_error_policy_extraction`:
   - summary: extract the existing de-facto error policy from C# source as an inventory, a category-by-disposition matrix, detected contradictions, and explicit coverage limits
   - meta: `skills/csharp_error_policy_extraction/meta.md`
