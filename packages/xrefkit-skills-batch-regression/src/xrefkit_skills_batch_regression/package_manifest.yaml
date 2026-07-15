@@ -1,0 +1,42 @@
+package_id: xrefkit.skills.batch_regression
+package_type: skill_package
+version: 0.4.1
+
+requires:
+  xrefkit_core: ">=2.0.0 <3.0.0"
+
+provides:
+  skills:
+    - id: batch.impact_regression
+      xid: xid-skill-batch-impact-regression
+      path: skills/batch_impact_regression.skill.yaml
+      contract_role: base_skill
+      required_outputs:
+        - decision_table
+        - orthogonal_table
+        - regression_report
+        - evidence
+        - unknowns
+        - human_handoffs
+      required_knowledge: []
+      required_review_axes: []
+      must_not:
+        - treat_source_conditions_as_business_truth
+        - treat_baseline_results_as_business_correctness
+        - execute_against_production
+        - auto_accept_unexplained_differences
+        - claim_dynamic_sql_is_resolved_without_runtime_evidence
+
+  fragments: []
+  knowledge: []
+  review_axes: []
+  schemas: []
+  templates: []
+
+contract:
+  can_be_extended_by_local_skill: true
+  local_skill_can_weaken_contract: false
+  local_can_weaken_required_outputs: false
+  local_can_override_must_not: false
+  requires_unknown_declaration: true
+  requires_traceability: true

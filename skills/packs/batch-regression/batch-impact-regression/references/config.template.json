@@ -1,0 +1,31 @@
+{
+  "system": {
+    "solution": "path/to/app.sln",
+    "project": "path/to/batch.csproj",
+    "command": "dotnet run --project path/to/batch.csproj -- ...",
+    "test_db": "isolated-test-db-connection-placeholder",
+    "old_version": "old-build-or-commit",
+    "new_version": "new-build-or-commit",
+    "timeout_seconds": 60,
+    "parallelism": 1,
+    "side_effect_check": "before-after row counts and changed keys; human-approved rollback/restore"
+  },
+  "combination": {
+    "elements": [
+      {"name": "dimension_a", "values": ["value_a1", "value_a2"]},
+      {"name": "dimension_b", "values": ["value_b1", "value_b2"]}
+    ],
+    "constraints": [
+      {"id": "constraint-placeholder", "kind": "forbidden", "when": {"all": [{"field": "dimension_a", "op": "eq", "value": "value_a1"}, {"field": "dimension_b", "op": "eq", "value": "value_b2"}]}, "reason": "REPLACE_WITH_EVIDENCED_RULE", "evidence": ["human-approved-source"]}
+    ]
+  },
+  "comparison": {
+    "key_fields": ["dimension_a", "dimension_b"],
+    "fields": ["status", "result", "updated_rows"],
+    "ignore_fields": ["execution_id", "started_at", "finished_at"],
+    "normalize_fields": {"started_at": "datetime", "finished_at": "datetime"}
+  },
+  "planned_differences": [],
+  "paths": [],
+  "regression_set": {"max_size": 20, "seed": 7}
+}

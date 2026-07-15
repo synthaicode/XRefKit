@@ -10,10 +10,11 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
 - xref: `import_skill`, `knowledge_ontology_management`,
   `source_structure_findings_registration`,
   `xlsx_spec_traceability`, `pptx_spec_traceability`
-- .NET: `csharp_review`, `dotnet_change_analysis`, `db_current_state_analysis`,
+- .NET: `csharp_review`, `dotnet_change_analysis`, `batch-impact-regression`, `db_current_state_analysis`,
   `csharp_error_policy_extraction`, `code_constraint_derivation`,
   `cross_constraint_derivation`, `integration_scenario_derivation`
 - Python: `python_review`, `python_implementation_flow`
+- SQL Server: `batch-impact-regression`, `db_current_state_analysis`, `db_design`
 - repository: `doc_ship`, `retro`, `knowledge_ontology_management`,
   `consultation_research_mapping`, `judgment_log`, `skill_flow_authoring`,
   `goal_mode`, `pptx_spec_traceability`, `xlsx_spec_traceability`,
