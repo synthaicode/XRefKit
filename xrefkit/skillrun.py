@@ -181,6 +181,12 @@ WORKLIST_ROWS = [
 WORKITEM_RE = re.compile(
     r"^- \[(?P<checkbox>[ x!])\] (?P<item_id>[A-Za-z0-9_.-]+) "
     r"status=`(?P<status>[^`]+)` role=`(?P<role>[^`]+)` "
+    r"criterion=`(?P<criterion>[^`]*)` reason=`(?P<reason>[^`]*)` "
+    r"supersedes=`(?P<supersedes>[^`]*)`: (?P<text>.*)$"
+)
+WORKITEM_V2_RE = re.compile(
+    r"^- \[(?P<checkbox>[ x!])\] (?P<item_id>[A-Za-z0-9_.-]+) "
+    r"status=`(?P<status>[^`]+)` role=`(?P<role>[^`]+)` "
     r"criterion=`(?P<criterion>[^`]*)` reason=`(?P<reason>[^`]*)`: (?P<text>.*)$"
 )
 LEGACY_WORKITEM_RE = re.compile(
@@ -838,6 +844,21 @@ def _parse_work_items(text: str) -> list[dict[str, str]]:
                     "role": match.group("role"),
                     "criterion": match.group("criterion"),
                     "reason": match.group("reason"),
+                    "supersedes": match.group("supersedes"),
+                    "text": match.group("text"),
+                }
+            )
+            continue
+        match = WORKITEM_V2_RE.match(line)
+        if match:
+            items.append(
+                {
+                    "item_id": match.group("item_id"),
+                    "status": match.group("status"),
+                    "role": match.group("role"),
+                    "criterion": match.group("criterion"),
+                    "reason": match.group("reason"),
+                    "supersedes": "",
                     "text": match.group("text"),
                 }
             )
@@ -852,16 +873,17 @@ def _parse_work_items(text: str) -> list[dict[str, str]]:
                 "role": match.group("role"),
                 "criterion": "",
                 "reason": "legacy work item has no recorded completion criterion",
+                "supersedes": "",
                 "text": match.group("text"),
             }
         )
     return items
 
 
-def _render_workitem_line(*, item_id: str, status: str, role: str, criterion: str, reason: str, text: str) -> str:
+def _render_workitem_line(*, item_id: str, status: str, role: str, criterion: str, reason: str, supersedes: str, text: str) -> str:
     return (
         f"- [{_workitem_checkbox(status)}] {item_id} status=`{status}` role=`{role}` "
-        f"criterion=`{criterion}` reason=`{reason}`: {text}"
+        f"criterion=`{criterion}` reason=`{reason}` supersedes=`{supersedes}`: {text}"
     )
 
 
@@ -913,6 +935,7 @@ def update_work_item(args) -> SkillRunResult:
     item_text = str(args.text or "").strip()
     criterion = str(getattr(args, "completion_criterion", None) or "").strip().replace("`", "'").replace("\n", " ")
     reason = str(getattr(args, "criterion_unknown_reason", None) or "").strip().replace("`", "'").replace("\n", " ")
+    supersedes = str(getattr(args, "supersedes", None) or "").strip().replace("`", "'").replace("\n", " ")
     if not item_id:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["missing --item"])
     if status not in VALID_WORKITEM_STATUSES:
@@ -931,10 +954,21 @@ def update_work_item(args) -> SkillRunResult:
     items = _parse_work_items(text)
     existing = next((item for item in items if item["item_id"] == item_id), None)
     if existing:
+        existing_criterion = existing.get("criterion", "")
+        if criterion and criterion != existing_criterion:
+            return SkillRunResult(
+                ok=False,
+                skill_id=None,
+                skill_doc=None,
+                run_log=str(log_path),
+                errors=[
+                    f"completion criterion for {item_id} is immutable; create a new work item with --supersedes {item_id}"
+                ],
+            )
+        if supersedes:
+            return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[f"--supersedes is only valid when creating a new work item, not updating {item_id}"])
         existing["status"] = status
         existing["role"] = role
-        if criterion:
-            existing["criterion"] = criterion
         if reason:
             existing["reason"] = reason
         if item_text:
@@ -942,7 +976,9 @@ def update_work_item(args) -> SkillRunResult:
     else:
         if not item_text:
             return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["new work item requires --text"])
-        items.append({"item_id": item_id, "status": status, "role": role, "criterion": criterion, "reason": reason, "text": item_text})
+        if supersedes and not any(item["item_id"] == supersedes for item in items):
+            return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[f"superseded work item not found: {supersedes}"])
+        items.append({"item_id": item_id, "status": status, "role": role, "criterion": criterion, "reason": reason, "supersedes": supersedes, "text": item_text})
 
     text = _replace_concrete_work_items_section(text, items)
     text = _append_phase_event(text, phase=f"workitem:{item_id}", status=status, role=role, note=item_text or None)
@@ -1469,6 +1505,10 @@ def _progression_record_errors(
     if not work_items:
         errors.append("at least one concrete work item is required before closure")
     for item in work_items:
+        if item.get("supersedes") and not any(previous["item_id"] == item["supersedes"] for previous in work_items):
+            errors.append(f"work item {item['item_id']} supersedes missing work item {item['supersedes']}")
+        if item.get("supersedes") == item["item_id"]:
+            errors.append(f"work item {item['item_id']} cannot supersede itself")
         if not item.get("criterion"):
             if item["status"] in {"unknown", "blocked", "escalated"} and item.get("reason"):
                 pass

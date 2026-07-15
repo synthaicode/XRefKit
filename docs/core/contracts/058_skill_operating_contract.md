@@ -212,6 +212,8 @@ Each concrete work item must declare an observable completion criterion when it
 is created. If that criterion cannot yet be defined, the work item must use an
 `unknown`, `blocked`, or `escalated` status with an explicit reason. Such a
 work item cannot pass progression verification as ordinary completed work.
+After creation, the criterion is immutable. A changed outcome requires a new
+work item linked with `supersedes`; the previous item remains in the run log.
 
 The generated log also contains a `Concrete Work Items` section. Add or update
 task-specific work items with:

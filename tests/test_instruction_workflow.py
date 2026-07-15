@@ -150,3 +150,23 @@ def test_workitem_requires_criterion_or_explicit_unknown_reason(tmp_path: Path) 
     assert "criterion=`` reason=`The business owner has not defined the acceptance outcome`" in text
     assert _run(tmp_path, "skill", "phase", "--log", str(out), "--phase", "execution", "--status", "done", "--role", "instruction:executor") == 0
     assert _run(tmp_path, "skill", "verify", "--log", str(out)) == 1
+
+
+def test_workitem_criterion_is_immutable_and_changes_use_supersedes(tmp_path: Path) -> None:
+    out = tmp_path / "work" / "sessions" / "run.md"
+    assert _run(tmp_path, "workflow", "run", "--task", "Do work", "--out", str(out), "--use-default-completion-conditions") == 0
+    base = [
+        "skill", "workitem", "--log", str(out), "--item", "WI-001",
+        "--text", "Implement original outcome", "--completion-criterion", "original outcome is verified",
+        "--status", "pending", "--role", "instruction:executor",
+    ]
+    assert _run(tmp_path, *base) == 0
+    assert _run(tmp_path, *base[:-6], "--completion-criterion", "different outcome is verified", "--status", "pending", "--role", "instruction:executor") == 1
+    assert _run(
+        tmp_path,
+        "skill", "workitem", "--log", str(out), "--item", "WI-002", "--supersedes", "WI-001",
+        "--text", "Implement revised outcome", "--completion-criterion", "revised outcome is verified",
+        "--status", "pending", "--role", "instruction:executor",
+    ) == 0
+    text = out.read_text(encoding="utf-8")
+    assert "WI-002" in text and "supersedes=`WI-001`" in text

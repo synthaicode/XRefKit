@@ -499,6 +499,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_workitem.add_argument("--text", default=None, help="Work item text; required when adding a new item")
     p_skill_workitem.add_argument("--completion-criterion", default=None, help="Observable procedural condition for this work item")
     p_skill_workitem.add_argument("--criterion-unknown-reason", default=None, help="Why the completion criterion cannot yet be defined for unknown/blocked/escalated work")
+    p_skill_workitem.add_argument("--supersedes", default=None, help="Existing work item whose criterion is being replaced by this new item")
     p_skill_workitem.add_argument(
         "--status",
         required=True,
