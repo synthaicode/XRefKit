@@ -3,13 +3,16 @@
 
 # Workflow Protocol Sequence For Humans
 
-This guide explains how XRefKit's workflow protocol, `xrefkit skill` commands, Skill
-execution, deterministic verification, and quality review fit together.
+This guide explains how XRefKit's workflow protocol, `xrefkit skill` commands,
+Skill execution, instruction-backed runs, deterministic verification, and human
+quality review fit together.
 
 ## Short Version
 
 `xrefkit skill` is the deterministic runtime harness. It does not interpret a
-Skill's business procedure and does not judge output quality.
+Skill's business procedure or an instruction's business meaning, and it does
+not judge output quality. Instructions without a matching Skill can start an
+instruction-backed run with `xrefkit workflow run`.
 
 The AI executor interprets the selected `SKILL.md` and performs the actual
 work.

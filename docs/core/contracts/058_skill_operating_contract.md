@@ -195,6 +195,19 @@ The assigned roles are returned in JSON and written to the `Runtime Role
 Assignment` section. The execution, check, and quality roles must each differ
 from the executor role.
 
+## Instruction-Backed Workflow Runs
+
+When no applicable Skill exists, the same workflow protocol may be opened as an
+instruction-backed run with `xrefkit workflow run`. This is a protocol run,
+not an implicit Skill. The start gate requires either explicit procedural
+completion conditions or an explicit opt-in to the repository default
+conditions. The run reuses work items, artifacts, concerns, phases,
+deterministic `verify`, handoff, and `close`.
+
+Instruction-backed runs do not make the workflow protocol responsible for
+business or output quality. Human output acceptance is recorded separately
+with the human feedback record and remains distinct from procedural closure.
+
 The generated log also contains a `Concrete Work Items` section. Add or update
 task-specific work items with:
 

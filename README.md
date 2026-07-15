@@ -52,7 +52,7 @@ XRefKit makes AI work explicit by separating:
 
 - Skills: executable work units, each identified by a capability/tuning/responsibility triad and carrying its execution and check contract
 - Knowledge: source-backed domain facts and local rules loaded only when needed
-- Workflow protocol: the generic, deterministic per-Skill control (phases, verification, closure) that wraps every Skill run
+- Workflow protocol: the generic, deterministic control for Skill-backed and instruction-backed runs (phases, verification, closure)
 - Semantic routing: selecting the right Skill for a goal from user intent and the Skill catalog
 - Evidence: logs, judgments, concerns, and quality checks
 - XIDs: stable references that survive file movement and restructuring so AI can load targeted context without treating the whole repository as one prompt
@@ -69,6 +69,18 @@ and handoff records from collapsing into one opaque instruction block.
 3. Work is defined in `skills/` (executable procedure with a capability/tuning/responsibility identity) and `knowledge/`.
 4. Agents are routed semantically to the right Skill and load only the relevant context.
 5. Evidence and quality gates make incomplete or unsupported work visible.
+
+When an instruction has no matching Skill, open an instruction-backed workflow
+run explicitly. The run requires either user-supplied procedural completion
+conditions or an explicit opt-in to the repository defaults:
+
+```powershell
+xrefkit workflow run --task "Perform the requested procedure" `
+  --use-default-completion-conditions --json
+```
+
+`verify` and `close` determine procedural completion only. Output quality is
+recorded separately after human acceptance with the existing feedback record.
 
 ## Quick Start
 

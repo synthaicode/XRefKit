@@ -16,9 +16,9 @@ routing:
 - **Knowledge** — evidence, facts, domain and local rules. Resolved dynamically
   from a Skill's slots against the base+local unified catalog. Lives in
   `knowledge/`.
-- **Workflow protocol / kernel** — the generic, business-independent per-Skill
-  control (phases, `verify`, `close`) that carries determinism. The same for all
-  work; not a per-business definition. See
+- **Workflow protocol / kernel** — the generic, business-independent control
+  for Skill-backed and instruction-backed runs (phases, `verify`, `close`) that
+  carries determinism. The same for all work; not a per-business definition. See
   [Skill operating contract](../contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61)
   and
   [Workflow protocol sequence for humans](../../guides/087_workflow_protocol_sequence_for_humans.md#xid-E8B4D2F19A63).
@@ -39,14 +39,16 @@ routing:
 2. route to the Skill by matching intent and current state against the meta
    triad (`capability` / `tuning` / `responsibility`) and `applies_when`
 3. confirm the Skill's `preconditions` are satisfied by current state
-4. run the Skill inside the workflow protocol envelope
+4. run the Skill, or an instruction without an applicable Skill, inside the
+   workflow protocol envelope
 5. resolve the Skill's `knowledge_slots` against the base+local catalog and load
    only the needed fragments
 6. hand off; the next Skill is selected the same way from the new state
 
 ## Determinism Boundary
 
-- **Deterministic**: the workflow protocol per-Skill gate (`verify`, `close`).
+- **Deterministic**: the workflow protocol gate (`verify`, `close`) for both
+  Skill-backed and instruction-backed runs.
 - **Non-deterministic**: routing (selection), Skill-internal judgment, and
   knowledge selection.
 

@@ -14,7 +14,9 @@ the workflow; it is not the workflow by itself.
 2. Apply the startup contract's base-control and xref-routing source set in the
    defined order. Do not discover startup context by recursively following
    `docs/` links or by bulk-loading `docs/000_index.md`.
-3. Identify the user's goal and decide whether the task requires a Skill.
+3. Identify the user's goal and decide whether the task requires a Skill. If
+   no Skill applies, use an instruction-backed workflow run and require explicit
+   completion conditions or an explicit default-condition opt-in.
 4. When a Skill is required, route semantically from `skills/_index.md` and the
    needed `skills/index/*` entries. Read candidate `meta.md` files only; do not
    open a candidate `SKILL.md` yet.
@@ -47,8 +49,8 @@ The full Skill runtime sequence is documented in
 
 - `skills/` contains executable procedures and their meta identity.
 - `knowledge/` contains shared evidence, facts, domain rules, and local rules.
-- the generic workflow protocol wraps each Skill run and owns deterministic
-  progression and closure checks.
+- the generic workflow protocol wraps each Skill run or instruction-backed run
+  and owns deterministic progression and closure checks.
 - `work/` contains non-canonical execution records.
 - `sources/` contains original materials retained for human verification.
 - `tools/` and the `xrefkit` runtime provide deterministic operations.

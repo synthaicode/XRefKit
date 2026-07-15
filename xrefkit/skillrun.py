@@ -748,6 +748,18 @@ def _log_skill_id(text: str) -> str | None:
     return text[start:end]
 
 
+def _has_opened_run_gate(text: str) -> bool:
+    """Return whether this log was opened by a supported workflow runner.
+
+    Skill runs retain their historical gate text.  Instruction-backed workflow
+    runs use the generic gate text, but share the same progression machinery.
+    """
+    return (
+        "## Skill Load Gate\n\n- status: `opened_by_xrefkit_skill_run`" in text
+        or "## Run Load Gate\n\n- status: `opened_by_xrefkit_workflow_run`" in text
+    )
+
+
 def _log_model_tier(text: str) -> str | None:
     prefix = "- model_tier: `"
     start = text.find(prefix)
@@ -884,7 +896,7 @@ def update_work_item(args) -> SkillRunResult:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["missing --role"])
 
     text = log_path.read_text(encoding="utf-8")
-    if "## Skill Load Gate\n\n- status: `opened_by_xrefkit_skill_run`" not in text:
+    if not _has_opened_run_gate(text):
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["skill run log is missing an opened Skill Load Gate"])
 
     items = _parse_work_items(text)
@@ -1004,7 +1016,7 @@ def update_artifact(args) -> SkillRunResult:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["missing --role"])
 
     text = log_path.read_text(encoding="utf-8")
-    if "## Skill Load Gate\n\n- status: `opened_by_xrefkit_skill_run`" not in text:
+    if not _has_opened_run_gate(text):
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["skill run log is missing an opened Skill Load Gate"])
 
     artifacts = _parse_artifacts(text)
@@ -1140,7 +1152,7 @@ def update_concern(args) -> SkillRunResult:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["missing --role"])
 
     text = log_path.read_text(encoding="utf-8")
-    if "## Skill Load Gate\n\n- status: `opened_by_xrefkit_skill_run`" not in text:
+    if not _has_opened_run_gate(text):
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["skill run log is missing an opened Skill Load Gate"])
 
     concerns = _parse_concerns(text)
@@ -1388,7 +1400,7 @@ def _validate_handoff_sources(root: Path, source_logs: list[str]) -> tuple[list[
             errors.append(f"handoff source log not found: {source_path}")
             continue
         text = source_path.read_text(encoding="utf-8")
-        if "## Skill Load Gate\n\n- status: `opened_by_xrefkit_skill_run`" not in text:
+        if not _has_opened_run_gate(text):
             errors.append(f"handoff source log was not opened by xrefkit skill run: {source_path}")
             continue
         closure_status = _section_status(text, "Closure Gate")
@@ -1463,7 +1475,7 @@ def verify_progression_run(args) -> SkillRunResult:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"log not found: {log_path}"])
 
     text = log_path.read_text(encoding="utf-8")
-    if "## Skill Load Gate\n\n- status: `opened_by_xrefkit_skill_run`" not in text:
+    if not _has_opened_run_gate(text):
         return SkillRunResult(
             ok=False,
             skill_id=None,
@@ -1512,7 +1524,7 @@ def close_skill_run(args) -> SkillRunResult:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"log not found: {log_path}"])
 
     text = log_path.read_text(encoding="utf-8")
-    if "## Skill Load Gate\n\n- status: `opened_by_xrefkit_skill_run`" not in text:
+    if not _has_opened_run_gate(text):
         return SkillRunResult(
             ok=False,
             skill_id=None,
@@ -1663,7 +1675,7 @@ def _validate_observation_log(log_path: Path) -> tuple[str | None, SkillRunResul
             run_log=str(log_path),
             errors=[f"could not read skill run log: {exc}"],
         )
-    if "## Skill Load Gate\n\n- status: `opened_by_xrefkit_skill_run`" not in text:
+    if not _has_opened_run_gate(text):
         return None, SkillRunResult(
             ok=False,
             skill_id=None,
@@ -2003,7 +2015,7 @@ def update_token_usage(args) -> SkillRunResult:
         )
 
     text = log_path.read_text(encoding="utf-8")
-    if "## Skill Load Gate\n\n- status: `opened_by_xrefkit_skill_run`" not in text:
+    if not _has_opened_run_gate(text):
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=str(log_path), errors=["skill run log is missing an opened Skill Load Gate"])
 
     total_tokens = total_arg if total_arg is not None else (input_tokens or 0) + (output_tokens or 0)
@@ -2223,6 +2235,126 @@ def run_skill(args) -> SkillRunResult:
         domain_knowledge=domain_knowledge,
         run_id=run_id,
     )
+
+
+DEFAULT_INSTRUCTION_COMPLETION_CONDITIONS = (
+    "all concrete work items are done or escalated",
+    "an output artifact and an evidence artifact are recorded",
+    "unknowns and risks are resolved or escalated",
+    "execution, check, and handoff phases are complete or escalated",
+)
+
+
+def run_workflow_instruction(args) -> SkillRunResult:
+    """Open a generic workflow run for an instruction without a Skill.
+
+    This intentionally creates the same run-log shape consumed by the
+    progression commands.  It does not infer business quality; that remains a
+    human acceptance decision recorded separately with ``skill feedback``.
+    """
+    root = Path(args.root).resolve()
+    task, task_errors = _read_task(args)
+    if task_errors:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=task_errors)
+
+    explicit = [str(value).strip() for value in getattr(args, "completion_condition", []) if str(value).strip()]
+    use_default = bool(getattr(args, "use_default_completion_conditions", False))
+    if not explicit and not use_default:
+        return SkillRunResult(
+            ok=False,
+            skill_id=None,
+            skill_doc=None,
+            run_log=None,
+            errors=[
+                "completion conditions are required; provide --completion-condition or explicitly opt into --use-default-completion-conditions"
+            ],
+        )
+    conditions = explicit or list(DEFAULT_INSTRUCTION_COMPLETION_CONDITIONS)
+    basis = "explicit" if explicit else "default"
+
+    raw_run_id = str(getattr(args, "run_id", None) or uuid.uuid4())
+    try:
+        run_id = str(uuid.UUID(raw_run_id))
+    except ValueError:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"run_id must be a UUID: {raw_run_id}"])
+
+    out_path = Path(args.out) if args.out else _default_log_path(root, "instruction")
+    if not out_path.is_absolute():
+        out_path = root / out_path
+    sessions_dir = root / "work" / "sessions"
+    if sessions_dir.exists():
+        for existing_log in sessions_dir.rglob("*.md"):
+            try:
+                existing_text = existing_log.read_text(encoding="utf-8")
+            except (OSError, UnicodeError):
+                continue
+            if _log_field(existing_text, "run_id") == run_id:
+                return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"run_id is already used by an existing workflow run: {existing_log}"])
+
+    assigned_roles = _assign_runtime_roles(skill_id="instruction", execution_mode="local_default", model_tier=None)
+    log = _render_log(
+        run_id=run_id,
+        skill_id="instruction",
+        maturity="not_applicable",
+        meta_path=Path("-") ,
+        skill_doc=Path("-"),
+        execution_mode="local_default",
+        guard_policy="required",
+        capability_layering="not_applicable",
+        workflow_protocol="required",
+        capability="instruction execution",
+        tuning="generic procedural completion",
+        role_responsibilities={"executor": "execute the user instruction"},
+        capability_refs=[],
+        assigned_roles=assigned_roles,
+        task=str(task),
+        os_contract=dict(REQUIRED_OS_CONTRACT),
+        handoff_sources=[],
+        model_tier=None,
+        domain_knowledge={"available": [], "selected": {}, "requirements": []},
+    )
+    log = log.replace("# Skill Run Log", "# Workflow Run Log", 1)
+    log = log.replace("## Skill Load Gate", "## Run Load Gate", 1)
+    log = log.replace("opened_by_xrefkit_skill_run", "opened_by_xrefkit_workflow_run", 1)
+    log = log.replace("- rule: do not open or execute the Skill procedure until this runtime envelope exists", "- rule: do not treat the instruction as procedurally complete until this workflow envelope closes", 1)
+    log = log.replace("## Skill Routing Trace", "## Instruction Routing Trace", 1)
+    condition_lines = [
+        "## Completion Conditions",
+        "",
+        f"- basis: `{basis}`",
+        "- quality_policy: `human_acceptance`",
+        "- rule: workflow verification checks procedural records; a human confirms output quality separately",
+    ] + [f"- condition: {condition.replace('`', "'")}" for condition in conditions]
+    marker = "\n## Startup Inputs\n"
+    log = log.replace(marker, "\n" + "\n".join(condition_lines) + "\n" + marker, 1)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with _LogFileLock(out_path.with_name(f".{out_path.name}.lock")):
+        _atomic_write_text(out_path, log)
+    return SkillRunResult(
+        ok=True,
+        skill_id="instruction",
+        skill_doc=None,
+        run_log=str(out_path),
+        errors=[],
+        assigned_roles=assigned_roles,
+        run_id=run_id,
+    )
+
+
+def cmd_workflow_run(args) -> int:
+    result = run_workflow_instruction(args)
+    if args.json:
+        print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+    elif result.ok:
+        print(f"ok: {result.run_log}")
+        print(f"  run_id: {result.run_id}")
+        print("  run_type: instruction")
+        print("  next: add work items, record artifacts/evidence, verify, human-accept output, then close")
+    else:
+        print("fail: workflow run")
+        for error in result.errors:
+            print(f"  error: {error}")
+    return 0 if result.ok else 1
 
 
 def cmd_skill_run(args) -> int:

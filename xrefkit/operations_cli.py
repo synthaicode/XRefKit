@@ -574,6 +574,33 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_verify.add_argument("--note", default=None, help="Optional check event note")
     p_skill_verify.add_argument("--json", action="store_true", help="Emit JSON")
 
+    workflow = subparsers.add_parser(
+        "workflow",
+        help="Run the generic workflow protocol for an instruction without a Skill",
+    )
+    workflow_sub = workflow.add_subparsers(dest="workflow_cmd", required=True)
+    p_workflow_run = workflow_sub.add_parser(
+        "run",
+        help="Open an instruction-backed workflow run with explicit or default completion conditions",
+    )
+    p_workflow_run.add_argument("--root", default=".", help="Project root (default: .)")
+    p_workflow_run.add_argument("--task", default=None, help="Instruction text")
+    p_workflow_run.add_argument("--task-file", default=None, help="Read instruction text from a UTF-8 file")
+    p_workflow_run.add_argument("--out", default=None, help="Write workflow run log to this path")
+    p_workflow_run.add_argument("--run-id", default=None, help="Caller-supplied UUID")
+    p_workflow_run.add_argument(
+        "--completion-condition",
+        action="append",
+        default=[],
+        help="Explicit procedural completion condition; may be repeated",
+    )
+    p_workflow_run.add_argument(
+        "--use-default-completion-conditions",
+        action="store_true",
+        help="Use the repository's procedural completion conditions when the instruction omits them",
+    )
+    p_workflow_run.add_argument("--json", action="store_true", help="Emit JSON")
+
     return parser
 
 
@@ -674,6 +701,12 @@ def main(argv: list[str] | None = None) -> int:
         from xrefkit.skillmeta import cmd_skill
 
         return cmd_skill(args)
+
+    if args.command == "workflow":
+        if args.workflow_cmd == "run":
+            from xrefkit.skillrun import cmd_workflow_run
+
+            return cmd_workflow_run(args)
 
     if args.command == "pack":
         if args.pack_cmd == "list":
