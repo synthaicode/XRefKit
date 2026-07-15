@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xrefkit-skills-batch-regression"
-version = "0.4.1"
+version = "0.4.2"
 description = "XRefKit Skill Package for C# and SQL Server batch impact analysis and combination regression"
 readme = "README.md"
 requires-python = ">=3.11"

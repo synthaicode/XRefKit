@@ -1,0 +1,6 @@
+interface:
+  display_name: "Batch Impact Regression"
+  short_description: "Analyze C# and SQL batch changes"
+  default_prompt: "Use $batch-impact-regression to analyze a C# and SQL Server batch change and build a safe combination regression plan."
+policy:
+  allow_implicit_invocation: true

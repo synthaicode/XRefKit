@@ -1,6 +1,6 @@
 package_id: xrefkit.skills.batch_regression
 package_type: skill_package
-version: 0.4.1
+version: 0.4.2
 
 requires:
   xrefkit_core: ">=2.0.0 <3.0.0"
