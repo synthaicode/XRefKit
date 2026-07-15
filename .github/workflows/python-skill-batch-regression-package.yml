@@ -73,8 +73,11 @@ jobs:
               if missing:
                   raise SystemExit(f"wheel is missing Skill Package assets: {missing}")
           with tarfile.open(sdists[0], "r:gz") as archive:
-              names = {name.split("/", 1)[-1] for name in archive.getnames() if "/" in name}
-              missing = sorted(required - names)
+              names = set(archive.getnames())
+              missing = sorted(
+                  item for item in required
+                  if not any(name == item or name.endswith("/" + item) for name in names)
+              )
               if missing:
                   raise SystemExit(f"sdist is missing Skill Package assets: {missing}")
           PY
