@@ -1188,6 +1188,149 @@ body {
   padding: 20px 4px 8px;
 }
 
+.concept-doc {
+  width: min(980px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 80px;
+}
+
+.concept-doc-hero {
+  padding: 44px 0 30px;
+}
+
+.concept-doc-hero h1 {
+  max-width: 900px;
+  margin: 8px 0 18px;
+  font-size: clamp(38px, 5vw, 58px);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+
+.concept-series {
+  margin: 0;
+  color: var(--accent-strong);
+  font-weight: 800;
+}
+
+.concept-description {
+  max-width: 820px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1.65;
+}
+
+.concept-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.concept-body {
+  max-width: 860px;
+}
+
+.concept-body h2 {
+  margin: 48px 0 14px;
+  font-size: clamp(28px, 3.4vw, 38px);
+  line-height: 1.16;
+}
+
+.concept-body p,
+.concept-body li {
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.85;
+}
+
+.concept-body strong {
+  color: var(--ink);
+}
+
+.concept-body code {
+  padding: 0.08em 0.28em;
+  border-radius: 4px;
+  background: #e8eef7;
+  color: #173c75;
+  font-size: 0.92em;
+}
+
+.concept-body ul,
+.concept-body ol {
+  padding-left: 1.5em;
+}
+
+.concept-table-wrap {
+  width: 100%;
+  margin: 24px 0;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.concept-table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+}
+
+.concept-table th,
+.concept-table td {
+  padding: 13px 15px;
+  border: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.55;
+}
+
+.concept-table th {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.concept-implementation {
+  margin-top: 48px;
+  padding: 24px 28px 26px;
+  border-left: 4px solid var(--accent);
+  background: var(--panel);
+}
+
+.concept-implementation h2 {
+  margin-top: 0;
+}
+
+.concept-implementation table {
+  margin-bottom: 18px;
+}
+
+@media (max-width: 720px) {
+  .concept-doc {
+    width: calc(100vw - 24px);
+    padding-top: 18px;
+  }
+
+  .concept-doc-hero {
+    padding-top: 30px;
+  }
+
+  .concept-doc-hero h1 {
+    font-size: 38px;
+    overflow-wrap: anywhere;
+  }
+
+  .concept-body p,
+  .concept-body li {
+    font-size: 16px;
+  }
+
+  .concept-implementation {
+    padding: 20px 18px 22px;
+  }
+}
+
 @media (max-width: 720px) {
   .model-toc,
   .model-definitions {
