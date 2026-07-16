@@ -1048,7 +1048,7 @@ body {
 .model-object,
 .model-inline {
   display: block;
-  width: min(760px, 100%);
+  width: min(640px, 100%);
   aspect-ratio: 680 / 750;
   margin: 24px auto 0;
   border: 0;
@@ -1064,7 +1064,7 @@ body {
 
 .distribution-object {
   display: block;
-  width: min(900px, 100%);
+  width: min(780px, 100%);
   aspect-ratio: 680 / 500;
   margin: 24px auto 0;
   border: 0;
