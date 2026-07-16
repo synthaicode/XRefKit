@@ -147,6 +147,12 @@ jobs:
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install --yes clamav clamav-freshclam
+          # apt may start the background updater. Stop it so the required
+          # one-shot update owns the database and freshclam.log lock.
+          if command -v systemctl >/dev/null 2>&1 && \
+             sudo systemctl cat clamav-freshclam.service >/dev/null 2>&1; then
+            sudo systemctl stop clamav-freshclam.service
+          fi
           # A failed definition update must fail this job; malware scanning
           # has no success fallback.
           sudo freshclam
