@@ -32,6 +32,12 @@ a {
   color: inherit;
 }
 
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--accent-strong);
+  outline-offset: 3px;
+}
+
 body {
   min-height: 100vh;
   background:
@@ -68,7 +74,7 @@ body {
 .hero-grid {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
   gap: 28px;
   align-items: stretch;
 }
@@ -89,7 +95,7 @@ body {
 .hero-copy h1 {
   margin: 0;
   max-width: 660px;
-  font-size: clamp(36px, 4.6vw, 56px);
+  font-size: clamp(36px, 4.2vw, 52px);
   line-height: 1.08;
   letter-spacing: -0.03em;
 }
@@ -104,6 +110,66 @@ body {
   flex-wrap: wrap;
   gap: 14px;
   margin-top: 28px;
+}
+
+.hero-clarity-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  min-height: 100%;
+  padding: 28px;
+  border: 1px solid rgba(34, 103, 216, 0.16);
+  border-radius: 24px;
+  background: linear-gradient(160deg, rgba(234, 241, 255, 0.92), rgba(255, 255, 255, 0.86));
+}
+
+.hero-clarity-eyebrow,
+.concept-label {
+  margin: 0 0 10px;
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero-clarity-card h2 {
+  max-width: 12ch;
+  margin: 0;
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+
+.hero-clarity-card h2 a,
+.hero-clarity-link {
+  color: var(--accent-strong);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.hero-clarity-card p:not(.hero-clarity-eyebrow) {
+  max-width: 34ch;
+  margin: 18px 0 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.hero-clarity-link {
+  margin-top: 24px;
+  font-weight: 800;
+}
+
+.canonical-concept {
+  border: 1px solid rgba(34, 103, 216, 0.18);
+  border-radius: 16px;
+  padding: 20px 22px 20px 0;
+  background: rgba(234, 241, 255, 0.5);
+}
+
+.canonical-concept .concept-label {
+  margin-bottom: 6px;
 }
 
 .primary-button,
@@ -1306,6 +1372,12 @@ body {
   margin-bottom: 18px;
 }
 
+@media (max-width: 860px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 720px) {
   .concept-doc {
     width: calc(100vw - 24px);
@@ -1481,6 +1553,19 @@ body {
 
   .hero-copy h1 {
     font-size: 40px;
+  }
+
+  .hero-clarity-card {
+    min-height: 0;
+    padding: 22px;
+  }
+
+  .hero-clarity-card h2 {
+    max-width: none;
+  }
+
+  .canonical-concept {
+    padding: 18px;
   }
 
   .hero-actions {
