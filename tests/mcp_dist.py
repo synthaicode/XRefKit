@@ -11,6 +11,7 @@ from pathlib import Path
 
 from xrefkit.mcp.bootstrap import (
     BootstrapError,
+    _validate_http_url,
     materialize_package_zip,
     parse_jsonrpc_response,
     verify_sha256,
@@ -65,6 +66,11 @@ class DeterministicPackageTests(DistRepoTestCase):
 
 
 class ArtifactDistributionTests(DistRepoTestCase):
+    def test_bootstrap_rejects_non_http_urls(self) -> None:
+        for url in ("file:///tmp/bootstrap.py", "ftp://example.test/file", "/relative"):
+            with self.assertRaises(BootstrapError):
+                _validate_http_url(url)
+
     def test_artifacts_include_packages_and_bootstrap(self) -> None:
         dist = ArtifactDistribution(self.catalog)
         filenames = [artifact.filename for artifact in dist.artifacts()]
@@ -272,6 +278,7 @@ class BootstrapTests(unittest.TestCase):
             "subprocess",
             "sys",
             "urllib",
+            "urllib.parse",
             "urllib.request",
             "zipfile",
         }

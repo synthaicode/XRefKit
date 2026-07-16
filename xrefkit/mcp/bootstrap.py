@@ -37,6 +37,7 @@ import sys
 import urllib.request
 import zipfile
 from pathlib import Path
+from urllib.parse import urlsplit
 
 
 DIST_STATE_RELATIVE_PATH = ".xrefkit/dist-state.json"
@@ -50,6 +51,12 @@ class BootstrapError(RuntimeError):
     pass
 
 
+def _validate_http_url(url: str) -> None:
+    parsed = urlsplit(url)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise BootstrapError("bootstrap endpoints must use an absolute http(s) URL")
+
+
 def _ssl_context(ca_file: str | None) -> ssl.SSLContext:
     if ca_file:
         return ssl.create_default_context(cafile=ca_file)
@@ -57,8 +64,10 @@ def _ssl_context(ca_file: str | None) -> ssl.SSLContext:
 
 
 def http_get(url: str, ca_file: str | None = None, headers: dict[str, str] | None = None) -> bytes:
+    _validate_http_url(url)
     request = urllib.request.Request(url, headers=headers or {})
-    with urllib.request.urlopen(request, context=_ssl_context(ca_file)) as response:
+    # The URL scheme is validated above; B310 cannot infer that from Request.
+    with urllib.request.urlopen(request, context=_ssl_context(ca_file)) as response:  # nosec B310
         return response.read()
 
 
@@ -68,6 +77,7 @@ def http_post_json(
     ca_file: str | None = None,
     headers: dict[str, str] | None = None,
 ) -> tuple[bytes, dict[str, str]]:
+    _validate_http_url(url)
     request_headers = {
         "Content-Type": "application/json",
         "Accept": "application/json, text/event-stream",
@@ -79,7 +89,8 @@ def http_post_json(
         headers=request_headers,
         method="POST",
     )
-    with urllib.request.urlopen(request, context=_ssl_context(ca_file)) as response:
+    # The URL scheme is validated above; B310 cannot infer that from Request.
+    with urllib.request.urlopen(request, context=_ssl_context(ca_file)) as response:  # nosec B310
         return response.read(), {key.lower(): value for key, value in response.headers.items()}
 
 

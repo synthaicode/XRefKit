@@ -1,6 +1,7 @@
 name: python-skill-batch-regression-package
 
 on:
+  pull_request:
   push:
     tags:
       - "xrefkit-skills-batch-regression-v*.*.*"
@@ -11,19 +12,74 @@ permissions:
 env:
   PACKAGE_ROOT: packages/xrefkit-skills-batch-regression
   PACKAGE_PROJECT: packages/xrefkit-skills-batch-regression/pyproject.toml
+  PACKAGE_NAME: xrefkit-skills-batch-regression
+  PACKAGE_MODULE: xrefkit_skills_batch_regression
+  PACKAGE_SOURCE_ROOT: packages/xrefkit-skills-batch-regression/src/xrefkit_skills_batch_regression
 
 jobs:
-  build-distribution:
-    name: Build batch regression Skill Package
+  quality:
+    name: Test and security quality
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v6
+      # actions/checkout v4.2.2; pinned to the release commit.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      # actions/setup-python v6.3.0; pinned to the release commit.
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: ${{ env.PACKAGE_PROJECT }}
+      - name: Install project and security dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest
+          python -m pip install -e "${PACKAGE_ROOT}"
+          python -m pip install bandit pip-audit
+      - name: Run existing Skill Package tests
+        run: python -m pytest "${PACKAGE_ROOT}/tests" -q
+      - name: Run Bandit source security scan
+        run: |
+          # -ll makes medium/high findings release-blocking. The two current
+          # low B311 findings are deterministic fixture selection, not secret
+          # or security randomness, and remain visible in full local scans.
+          bandit -r "${PACKAGE_SOURCE_ROOT}" -ll
+      - name: Audit dependencies resolved from pyproject.toml
+        run: |
+          # This package has no lock or requirements file; pyproject.toml is
+          # the authoritative dependency declaration for this audit.
+          python -m pip_audit \
+            "${PACKAGE_ROOT}" \
+            --cache-dir "${RUNNER_TEMP}/pip-audit-project-cache"
+      - name: Audit resolved installed dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          audit_venv="${RUNNER_TEMP}/batch-regression-pip-audit-venv"
+          python -m venv "$audit_venv"
+          "$audit_venv/bin/python" -m pip install --upgrade pip
+          "$audit_venv/bin/python" -m pip install -e "${PACKAGE_ROOT}"
+          "$audit_venv/bin/python" -m pip install pip-audit
+          "$audit_venv/bin/python" -m pip_audit \
+            --local \
+            --skip-editable \
+            --cache-dir "${RUNNER_TEMP}/pip-audit-local-cache"
+
+  build-distribution:
+    name: Build Skill Package wheel and sdist once
+    runs-on: ubuntu-latest
+    steps:
+      # actions/checkout v4.2.2; pinned to the release commit.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      # actions/setup-python v6.3.0; pinned to the release commit.
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
           python-version: "3.12"
       - name: Install build tooling
-        run: python -m pip install --upgrade build twine
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build twine
       - name: Verify package tag and version
+        if: startsWith(github.ref, 'refs/tags/')
         shell: bash
         run: |
           python - <<'PY'
@@ -42,66 +98,176 @@ jobs:
               raise SystemExit(f"tag/package version mismatch: tag={expected}, package={actual}")
           print(f"tag/package version match: {actual}")
           PY
-      - name: Build distribution
+      - name: Build wheel and source distribution exactly once
         working-directory: ${{ env.PACKAGE_ROOT }}
         run: python -m build
       - name: Validate distribution metadata
         working-directory: ${{ env.PACKAGE_ROOT }}
         run: python -m twine check dist/*
-      - name: Verify Skill Package contents
-        working-directory: ${{ env.PACKAGE_ROOT }}
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import tarfile
-          import zipfile
-
-          dist = Path("dist")
-          wheels = list(dist.glob("xrefkit_skills_batch_regression-*.whl"))
-          sdists = list(dist.glob("xrefkit_skills_batch_regression-*.tar.gz"))
-          if len(wheels) != 1 or len(sdists) != 1:
-              raise SystemExit(f"expected one wheel and one sdist: wheels={wheels}, sdists={sdists}")
-          required = {
-              "xrefkit_skills_batch_regression/package_manifest.yaml",
-              "xrefkit_skills_batch_regression/skills/batch_impact_regression.skill.yaml",
-              "xrefkit_skills_batch_regression/skill_assets/entry.md",
-              "xrefkit_skills_batch_regression/skill_assets/scripts/batch_regression.py",
-              "xrefkit_skills_batch_regression/skill_assets/scripts/code_tables.py",
-          }
-          with zipfile.ZipFile(wheels[0]) as archive:
-              missing = sorted(required - set(archive.namelist()))
-              if missing:
-                  raise SystemExit(f"wheel is missing Skill Package assets: {missing}")
-          with tarfile.open(sdists[0], "r:gz") as archive:
-              names = set(archive.getnames())
-              missing = sorted(
-                  item for item in required
-                  if not any(name == item or name.endswith("/" + item) for name in names)
-              )
-              if missing:
-                  raise SystemExit(f"sdist is missing Skill Package assets: {missing}")
-          PY
-      - uses: actions/upload-artifact@v4
+      # actions/upload-artifact v4.6.2; pinned to the release commit.
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: xrefkit-skills-batch-regression-distribution
           path: ${{ env.PACKAGE_ROOT }}/dist/
           if-no-files-found: error
 
-  publish-to-pypi:
-    name: Publish batch regression Skill Package to PyPI
+  artifact-inspection:
+    name: Inspect built artifacts and scan for malware/secrets
     needs: build-distribution
+    runs-on: ubuntu-latest
+    steps:
+      # actions/checkout v4.2.2; pinned to the release commit.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      # actions/setup-python v6.3.0; pinned to the release commit.
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12"
+      # actions/download-artifact v8.0.0; pinned to the release commit.
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
+        with:
+          name: xrefkit-skills-batch-regression-distribution
+          path: dist
+      - name: Validate artifact allowlist, metadata, archives, and credentials
+        run: |
+          # The package currently contains Python/YAML/Markdown assets only;
+          # the shared 5 MiB ceiling rejects unexpected oversized payloads.
+          python tools/inspect_python_artifacts.py \
+            --dist dist \
+            --project-name "${PACKAGE_NAME}" \
+            --package-module "${PACKAGE_MODULE}" \
+            --required-member xrefkit_skills_batch_regression/package_manifest.yaml \
+            --required-member xrefkit_skills_batch_regression/skills/batch_impact_regression.skill.yaml \
+            --required-member xrefkit_skills_batch_regression/skill_assets/entry.md \
+            --required-member xrefkit_skills_batch_regression/skill_assets/scripts/batch_regression.py \
+            --required-member xrefkit_skills_batch_regression/skill_assets/scripts/code_tables.py \
+            --manifest-output artifact-manifest.txt
+      - name: Install ClamAV and update virus definitions
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes clamav clamav-freshclam
+          # A failed definition update must fail this job; malware scanning
+          # has no success fallback.
+          sudo freshclam
+      - name: Scan built artifacts with ClamAV
+        shell: bash
+        run: |
+          set -euo pipefail
+          if clamscan --help | grep -Fq -- "--fail-if-cvd-older-than"; then
+            clamscan --recursive --infected --fail-if-cvd-older-than=1 dist/
+          else
+            echo "::warning::ClamAV lacks --fail-if-cvd-older-than; freshclam succeeded, using recursive infected scan."
+            clamscan --recursive --infected dist/
+          fi
+      # actions/upload-artifact v4.6.2; pinned to the release commit.
+      - name: Upload artifact member manifest
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: xrefkit-skills-batch-regression-artifact-manifest
+          path: artifact-manifest.txt
+          if-no-files-found: error
+
+  install-smoke-test:
+    name: Clean wheel install/import
+    needs: build-distribution
+    runs-on: ubuntu-latest
+    steps:
+      # actions/checkout v4.2.2; pinned to the release commit.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      # actions/setup-python v6.3.0; pinned to the release commit.
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12"
+      # actions/download-artifact v8.0.0; pinned to the release commit.
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
+        with:
+          name: xrefkit-skills-batch-regression-distribution
+          path: dist
+      - name: Install the built wheel in a new virtual environment
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: |
+          set -euo pipefail
+          venv="${RUNNER_TEMP}/batch-regression-wheel-smoke"
+          work="${RUNNER_TEMP}/batch-regression-wheel-smoke-work"
+          python -m venv "$venv"
+          mkdir -p "$work"
+          wheel="$(find "${GITHUB_WORKSPACE}/dist" -maxdepth 1 -name 'xrefkit_skills_batch_regression-*.whl' -print -quit)"
+          test -f "$wheel"
+          "$venv/bin/python" -m pip install --upgrade pip
+          "$venv/bin/python" -m pip install "$wheel"
+          cd "$work"
+          "$venv/bin/python" -B "${GITHUB_WORKSPACE}/tools/run_import_smoke.py" \
+            --package-name "${PACKAGE_NAME}" \
+            --import-module "${PACKAGE_MODULE}" \
+            --import-module "${PACKAGE_MODULE}.cli"
+          "$venv/bin/xrefkit-batch-regression" --help
+
+  sdist-install-smoke:
+    name: Clean sdist install/import
+    needs: build-distribution
+    runs-on: ubuntu-latest
+    steps:
+      # actions/checkout v4.2.2; pinned to the release commit.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      # actions/setup-python v6.3.0; pinned to the release commit.
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12"
+      # actions/download-artifact v8.0.0; pinned to the release commit.
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
+        with:
+          name: xrefkit-skills-batch-regression-distribution
+          path: dist
+      - name: Install the built sdist in a new virtual environment
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: |
+          set -euo pipefail
+          venv="${RUNNER_TEMP}/batch-regression-sdist-smoke"
+          work="${RUNNER_TEMP}/batch-regression-sdist-smoke-work"
+          python -m venv "$venv"
+          mkdir -p "$work"
+          sdist="$(find "${GITHUB_WORKSPACE}/dist" -maxdepth 1 -name 'xrefkit_skills_batch_regression-*.tar.gz' -print -quit)"
+          test -f "$sdist"
+          "$venv/bin/python" -m pip install --upgrade pip
+          "$venv/bin/python" -m pip install "$sdist"
+          cd "$work"
+          "$venv/bin/python" -B "${GITHUB_WORKSPACE}/tools/run_import_smoke.py" \
+            --package-name "${PACKAGE_NAME}" \
+            --import-module "${PACKAGE_MODULE}" \
+            --import-module "${PACKAGE_MODULE}.cli"
+          "$venv/bin/xrefkit-batch-regression" --help
+
+  publish-to-pypi:
+    name: Publish Skill Package to PyPI
+    needs:
+      - quality
+      - build-distribution
+      - artifact-inspection
+      - install-smoke-test
+      - sdist-install-smoke
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/xrefkit-skills-batch-regression-v')
     runs-on: ubuntu-latest
     environment:
       name: pypi
       url: https://pypi.org/p/xrefkit-skills-batch-regression
     permissions:
+      contents: read
       id-token: write
     steps:
-      - uses: actions/download-artifact@v8
+      # actions/download-artifact v8.0.0; pinned to the release commit.
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
         with:
           name: xrefkit-skills-batch-regression-distribution
           path: dist
-      - name: Publish package to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Publish the inspected build artifact to PyPI
+        # pypa/gh-action-pypi-publish v1.14.0; pinned to the release commit.
+        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b
         with:
           packages-dir: dist/
+          skip-existing: false
+          verify-metadata: true
+          print-hash: true
