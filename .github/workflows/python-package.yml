@@ -14,18 +14,72 @@ permissions:
 env:
   PYTHON_PACKAGE_ROOT: .
   PYTHON_PACKAGE_PROJECT: pyproject.toml
+  PYTHON_PROJECT_NAME: xrefkit
+  PYTHON_PACKAGE_MODULE: xrefkit
+  PYTHON_SOURCE_ROOT: xrefkit
 
 jobs:
-  build-distribution:
-    name: Build Python distribution
+  quality:
+    name: Test and security quality
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v6
+      # actions/checkout v4.2.2; pinned to the release commit.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      # actions/setup-python v6.3.0; pinned to the release commit.
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: ${{ env.PYTHON_PACKAGE_ROOT }}/${{ env.PYTHON_PACKAGE_PROJECT }}
+          cache-dependency-path: |
+            pyproject.toml
+            requirements.txt
+      - name: Install project, test, and security dependencies
+        working-directory: ${{ env.PYTHON_PACKAGE_ROOT }}
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install -e ".[test,mcp]"
+          python -m pip install bandit pip-audit
+      - name: Run existing repository quality gate and tests
+        run: python tools/run_quality_gate.py xrefkit
+      - name: Run Bandit source security scan
+        run: |
+          # -ll makes medium/high findings release-blocking. The repository
+          # currently has reviewed low-severity findings (asserts and explicit
+          # subprocess calls); they remain visible in local full scans.
+          bandit -r "${PYTHON_SOURCE_ROOT}" -ll
+      - name: Audit declared runtime dependencies
+        run: |
+          # There is no lock file. requirements.txt is the repository's
+          # declared runtime dependency set, while the local audit below also
+          # covers the installed optional mcp extra.
+          python -m pip_audit \
+            -r requirements.txt \
+            --cache-dir "${RUNNER_TEMP}/pip-audit-requirements-cache"
+      - name: Audit resolved installed dependencies and optional extras
+        shell: bash
+        run: |
+          set -euo pipefail
+          audit_venv="${RUNNER_TEMP}/xrefkit-pip-audit-venv"
+          python -m venv "$audit_venv"
+          "$audit_venv/bin/python" -m pip install --upgrade pip
+          "$audit_venv/bin/python" -m pip install -e ".[test,mcp]"
+          "$audit_venv/bin/python" -m pip install pip-audit
+          "$audit_venv/bin/python" -m pip_audit \
+            --local \
+            --skip-editable \
+            --cache-dir "${RUNNER_TEMP}/pip-audit-local-cache"
+
+  build-distribution:
+    name: Build Python wheel and sdist once
+    runs-on: ubuntu-latest
+    steps:
+      # actions/checkout v4.2.2; pinned to the release commit.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      # actions/setup-python v6.3.0; pinned to the release commit.
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12"
       - name: Verify Python package project
         shell: bash
         run: |
@@ -35,7 +89,9 @@ jobs:
             exit 1
           }
       - name: Install build tooling
-        run: python -m pip install --upgrade build twine
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build twine
       - name: Verify tag matches package version
         if: startsWith(github.ref, 'refs/tags/')
         shell: bash
@@ -65,75 +121,85 @@ jobs:
 
           print(f"tag/package version match: {package_version}")
           PY
-      - name: Build wheel and source distribution
+      - name: Build wheel and source distribution exactly once
         working-directory: ${{ env.PYTHON_PACKAGE_ROOT }}
         run: python -m build
       - name: Validate distribution metadata
         working-directory: ${{ env.PYTHON_PACKAGE_ROOT }}
         run: python -m twine check dist/*
-      - name: Verify distribution contents
-        working-directory: ${{ env.PYTHON_PACKAGE_ROOT }}
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import tarfile
-          import zipfile
-
-          dist = Path("dist")
-          wheels = list(dist.glob("xrefkit-*.whl"))
-          sdists = list(dist.glob("xrefkit-*.tar.gz"))
-          if len(wheels) != 1 or len(sdists) != 1:
-              raise SystemExit(f"expected one wheel and one sdist: wheels={wheels}, sdists={sdists}")
-
-          required = {
-              "xrefkit/resources/base/current.json",
-              "xrefkit/resources/base/contracts.json",
-              "xrefkit/resources/base/model_body.md",
-          }
-          with zipfile.ZipFile(wheels[0]) as archive:
-              names = set(archive.namelist())
-              missing = sorted(required - names)
-              if missing:
-                  raise SystemExit(f"wheel is missing runtime resources: {missing}")
-              if any(name.endswith((".pyc", ".pyo")) or "__pycache__" in name for name in names):
-                  raise SystemExit("wheel contains generated Python cache files")
-
-          with tarfile.open(sdists[0], "r:gz") as archive:
-              names = {name.split("/", 1)[-1] for name in archive.getnames() if "/" in name}
-              missing = sorted(required - names)
-              if missing:
-                  raise SystemExit(f"sdist is missing runtime resources: {missing}")
-          PY
-      - uses: actions/upload-artifact@v4
+      # actions/upload-artifact v4.6.2; pinned to the release commit.
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: xrefkit-python-distribution
           path: ${{ env.PYTHON_PACKAGE_ROOT }}/dist/
           if-no-files-found: error
 
-  publish-to-pypi:
-    name: Publish package to PyPI
+  artifact-inspection:
+    name: Inspect built artifacts and scan for malware/secrets
     needs: build-distribution
-    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/p/xrefkit
-    permissions:
-      id-token: write
-
     steps:
-      - uses: actions/download-artifact@v8
+      # The checkout supplies only the repository-owned inspection script; the
+      # files under test always come from the build job artifact.
+      # actions/checkout v4.2.2; pinned to the release commit.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      # actions/setup-python v6.3.0; pinned to the release commit.
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12"
+      # actions/download-artifact v8.0.0; pinned to the release commit.
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
         with:
           name: xrefkit-python-distribution
           path: dist
-
-      - name: Publish package to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Validate artifact allowlist, metadata, archives, and credentials
+        run: |
+          # The current package has Python/resources only and no large binary
+          # payloads; 5 MiB is an explicit unexpected-file size ceiling.
+          python tools/inspect_python_artifacts.py \
+            --dist dist \
+            --project-name "${PYTHON_PROJECT_NAME}" \
+            --package-module "${PYTHON_PACKAGE_MODULE}" \
+            --required-member xrefkit/resources/base/current.json \
+            --required-member xrefkit/resources/base/contracts.json \
+            --required-member xrefkit/resources/base/model_body.md \
+            --manifest-output artifact-manifest.txt
+      - name: Install ClamAV and update virus definitions
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes clamav clamav-freshclam
+          # apt may start the background updater. Stop it so the required
+          # one-shot update owns the database and freshclam.log lock.
+          if command -v systemctl >/dev/null 2>&1 && \
+             sudo systemctl cat clamav-freshclam.service >/dev/null 2>&1; then
+            sudo systemctl stop clamav-freshclam.service
+          fi
+          # A failed definition update must fail this job; malware scanning
+          # has no success fallback.
+          sudo freshclam
+      - name: Scan built artifacts with ClamAV
+        shell: bash
+        run: |
+          set -euo pipefail
+          if clamscan --help | grep -Fq -- "--fail-if-cvd-older-than"; then
+            clamscan --recursive --infected --fail-if-cvd-older-than=1 dist/
+          else
+            echo "::warning::ClamAV lacks --fail-if-cvd-older-than; freshclam succeeded, using recursive infected scan."
+            clamscan --recursive --infected dist/
+          fi
+      # actions/upload-artifact v4.6.2; pinned to the release commit.
+      - name: Upload artifact member manifest
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          packages-dir: dist/
+          name: xrefkit-python-artifact-manifest
+          path: artifact-manifest.txt
+          if-no-files-found: error
 
-  installed-package-smoke:
-    name: Installed package / Python ${{ matrix.python-version }}
+  install-smoke-test:
+    name: Clean wheel install/import / Python ${{ matrix.python-version }}
     needs: build-distribution
     runs-on: ubuntu-latest
     strategy:
@@ -141,64 +207,105 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/setup-python@v6
+      # actions/checkout v4.2.2; pinned to the release commit.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      # actions/setup-python v6.3.0; pinned to the release commit.
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: actions/download-artifact@v8
+      # actions/download-artifact v8.0.0; pinned to the release commit.
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
         with:
           name: xrefkit-python-distribution
           path: dist
-      - name: Install wheel with MCP extras
+      - name: Install the built wheel in a new virtual environment
         shell: bash
-        run: |
-          wheel="$(find dist -maxdepth 1 -name 'xrefkit-*.whl' -print -quit)"
-          test -n "$wheel"
-          python -m pip install "${wheel}[mcp]"
-      - name: Verify installed package outside the repository
         working-directory: ${{ runner.temp }}
         run: |
-          python - <<'PY'
-          from importlib import metadata, resources
-          import json
-          import xrefkit
-          import xrefkit.mcp.server
-          import xrefkit.tools
+          set -euo pipefail
+          venv="${RUNNER_TEMP}/xrefkit-wheel-smoke"
+          work="${RUNNER_TEMP}/xrefkit-wheel-smoke-work"
+          python -m venv "$venv"
+          mkdir -p "$work"
+          wheel="$(find "${GITHUB_WORKSPACE}/dist" -maxdepth 1 -name 'xrefkit-*.whl' -print -quit)"
+          test -f "$wheel"
+          "$venv/bin/python" -m pip install --upgrade pip
+          "$venv/bin/python" -m pip install "${wheel}[mcp]"
+          cd "$work"
+          "$venv/bin/python" -B "${GITHUB_WORKSPACE}/tools/run_import_smoke.py" \
+            --package-name xrefkit \
+            --import-module xrefkit \
+            --import-module xrefkit.mcp.server \
+            --import-module xrefkit.tools \
+            --version-module xrefkit
+          "$venv/bin/xrefkit" --help
+          "$venv/bin/python" -B -m xrefkit --help
 
-          version = metadata.version("xrefkit")
-          if version != xrefkit.__version__:
-              raise SystemExit(
-                  f"metadata/package version mismatch: metadata={version}, package={xrefkit.__version__}"
-              )
-
-          base = resources.files("xrefkit").joinpath("resources/base")
-          current = json.loads(base.joinpath("current.json").read_text(encoding="utf-8"))
-          if not current.get("generation"):
-              raise SystemExit("installed current.json has no generation pointer")
-          if not base.joinpath("contracts.json").is_file():
-              raise SystemExit("installed package has no contracts.json")
-          if not base.joinpath("model_body.md").is_file():
-              raise SystemExit("installed package has no model_body.md")
-          PY
-          xrefkit --help
-          python -m xrefkit --help
-
-  source-distribution-install:
-    name: Install source distribution
+  sdist-install-smoke:
+    name: Clean sdist install/import
     needs: build-distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-python@v6
+      # actions/checkout v4.2.2; pinned to the release commit.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      # actions/setup-python v6.3.0; pinned to the release commit.
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
           python-version: "3.12"
-      - uses: actions/download-artifact@v8
+      # actions/download-artifact v8.0.0; pinned to the release commit.
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
         with:
           name: xrefkit-python-distribution
           path: dist
-      - name: Build and install from sdist
+      - name: Install the built sdist in a new virtual environment
         shell: bash
+        working-directory: ${{ runner.temp }}
         run: |
-          sdist="$(find dist -maxdepth 1 -name 'xrefkit-*.tar.gz' -print -quit)"
-          test -n "$sdist"
-          python -m pip install "$sdist"
-          python -c "from importlib.metadata import version; import xrefkit; assert version('xrefkit') == xrefkit.__version__"
-          xrefkit --help
+          set -euo pipefail
+          venv="${RUNNER_TEMP}/xrefkit-sdist-smoke"
+          work="${RUNNER_TEMP}/xrefkit-sdist-smoke-work"
+          python -m venv "$venv"
+          mkdir -p "$work"
+          sdist="$(find "${GITHUB_WORKSPACE}/dist" -maxdepth 1 -name 'xrefkit-*.tar.gz' -print -quit)"
+          test -f "$sdist"
+          "$venv/bin/python" -m pip install --upgrade pip
+          "$venv/bin/python" -m pip install "${sdist}[mcp]"
+          cd "$work"
+          "$venv/bin/python" -B "${GITHUB_WORKSPACE}/tools/run_import_smoke.py" \
+            --package-name xrefkit \
+            --import-module xrefkit \
+            --import-module xrefkit.mcp.server \
+            --import-module xrefkit.tools \
+            --version-module xrefkit
+          "$venv/bin/xrefkit" --help
+
+  publish-to-pypi:
+    name: Publish package to PyPI
+    needs:
+      - quality
+      - build-distribution
+      - artifact-inspection
+      - install-smoke-test
+      - sdist-install-smoke
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/xrefkit
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      # actions/download-artifact v8.0.0; pinned to the release commit.
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
+        with:
+          name: xrefkit-python-distribution
+          path: dist
+      - name: Publish the inspected build artifact to PyPI
+        # pypa/gh-action-pypi-publish v1.14.0; pinned to the release commit.
+        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b
+        with:
+          packages-dir: dist/
+          skip-existing: false
+          verify-metadata: true
+          print-hash: true
