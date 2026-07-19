@@ -1,7 +1,6 @@
 package_id: xrefkit.skills.brownfield
 package_type: skill_package
 version: 0.1.0
-evaluation_manifest: evaluation/manifest.yaml
 
 requires:
   xrefkit_core: ">=0.4.3 <0.5.0"

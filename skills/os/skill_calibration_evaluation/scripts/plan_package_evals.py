@@ -24,10 +24,9 @@ def package_roots() -> list[Path]:
 def load_package_plan(root: Path) -> list[dict[str, Any]]:
     package_manifest_path = root / "package_manifest.yaml"
     package_manifest = yaml.safe_load(package_manifest_path.read_text(encoding="utf-8"))
-    relative_manifest = package_manifest.get("evaluation_manifest")
-    if not relative_manifest:
+    manifest_path = root / "evaluation" / "manifest.yaml"
+    if not manifest_path.is_file():
         return []
-    manifest_path = root / relative_manifest
     manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
     package_id = manifest.get("package_id", package_manifest.get("package_id"))
     plan: list[dict[str, Any]] = []

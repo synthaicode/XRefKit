@@ -1,7 +1,6 @@
 package_id: xrefkit.skills.xddp.design
 package_type: skill_package
 version: 0.1.0
-evaluation_manifest: evaluation/manifest.yaml
 
 requires:
   xrefkit_core: ">=2.0.0 <3.0.0"

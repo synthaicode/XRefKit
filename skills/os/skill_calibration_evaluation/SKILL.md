@@ -15,7 +15,8 @@ the package contract.
 ## Inputs
 
 - installed packages registered through the `xrefkit.skill_packages` entry-point;
-- each package's `package_manifest.yaml` and declared `evaluation/manifest.yaml`;
+- each package's strict `package_manifest.yaml` and co-located
+  `evaluation/manifest.yaml`;
 - model provider, exact model snapshot, and inference parameters;
 - repetition count, normally at least three independent runs;
 - output directory for raw outputs, scores, and the final human handoff.
