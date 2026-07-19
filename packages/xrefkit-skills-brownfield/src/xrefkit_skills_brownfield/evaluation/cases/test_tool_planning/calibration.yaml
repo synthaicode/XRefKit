@@ -1,0 +1,4 @@
+checks:
+  - planning_and_testing_are_distinguished
+  - test_preparation_is_reproducible
+  - unresolved_items_are_explicit

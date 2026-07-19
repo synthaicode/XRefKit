@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill Calibration Evaluation"
+  short_description: "Run isolated Skill calibration evaluations"
+  default_prompt: "Run installed Skill evaluation manifests in isolated contexts and report calibration alarms."

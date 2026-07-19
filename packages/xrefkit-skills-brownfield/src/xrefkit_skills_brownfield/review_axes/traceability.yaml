@@ -1,0 +1,6 @@
+axis_id: brownfield.traceability
+xid: xid-axis-brownfield-traceability
+checks:
+  - every_in_scope_item_has_an_upstream_ref
+  - every_phase_result_has_a_target_or_scope_reason
+  - every_handoff_points_to_a_next_phase_item

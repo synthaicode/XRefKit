@@ -20,8 +20,9 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
   `editorial_intake`
 - estimate: `estimation_flow`
 - define-requirements: `requirements_flow`
-- plan: `planning_flow`, `release_planning_flow`, `business_intake_scoping`
-- design: `design_flow`, `db_current_state_analysis`, `db_design`, `test_flow`, `test_tool_catalog_preparation`, `batch-impact-regression`, `marketing_slide_png`,
+- plan: `planning_flow`, `release_planning_flow`, `business_intake_scoping`,
+  `brownfield_workflow`
+- design: `design_flow`, `db_current_state_analysis`, `db_design`, `test_flow`, `test_tool_catalog_preparation`, `batch-impact-regression`, `brownfield_workflow`, `marketing_slide_png`,
   `marketing-explainer-video`, `skill_flow_authoring`,
   `constraint_derivation_index`, `design_constraint_derivation`,
   `ui_constraint_derivation`, `logic_constraint_derivation`,
@@ -30,12 +31,12 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
   `code_constraint_derivation`, `cross_constraint_derivation`,
   `integration_scenario_derivation`, `editorial_ops_index`,
   `draft_authoring`
-- implement: `implementation_flow`, `python_implementation_flow`,
+- implement: `implementation_flow`, `python_implementation_flow`, `brownfield_workflow`,
   `marketing-explainer-video`
 - release: `crosspost_release`
 - control: `doc_ship`, `retro`, `knowledge_ontology_management`,
   `source_structure_findings_registration`,
   `domain_knowledge_catalog_preparation`,
   `consultation_research_mapping`, `judgment_log`,
-  `goal_mode`, `fact_review`,
+  `goal_mode`, `fact_review`, `skill_calibration_evaluation`,
   `reader_experience_review`

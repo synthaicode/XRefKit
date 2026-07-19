@@ -1,0 +1,34 @@
+skill_id: brownfield.workflow
+xid: xid-skill-brownfield-workflow
+role: base_skill_contract
+
+entry:
+  xid: xid-entry-brownfield-workflow
+  path: skills/brownfield_workflow/entry.md
+  load_policy: required_inline
+
+required_outputs:
+  - phase_summary
+  - traced_items
+  - decisions
+  - unknowns
+  - evidence
+  - phase_gates
+  - handoffs
+
+required_knowledge: []
+review_axes: []
+
+must_not:
+  - treat_existing_implementation_as_business_truth
+  - hide_unresolved_items
+  - invent_missing_behavior
+  - create_untraced_work
+  - prepare_test_tools_only_during_test_execution
+  - hand_off_unreviewed_design
+  - approve_human_owned_decisions
+
+extension_policy:
+  can_be_extended_by_local_skill: true
+  local_can_weaken_required_outputs: false
+  local_can_override_must_not: false

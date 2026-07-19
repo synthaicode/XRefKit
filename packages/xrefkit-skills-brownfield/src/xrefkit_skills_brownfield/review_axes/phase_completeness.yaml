@@ -1,0 +1,6 @@
+axis_id: brownfield.phase_completeness
+xid: xid-axis-brownfield-phase-completeness
+checks:
+  - phase_summary_precedes_detail
+  - phase_gate_is_explicit
+  - required_evidence_is_recorded_before_closure

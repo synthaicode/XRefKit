@@ -1,0 +1,8 @@
+case_id: csharp.review.basic-synchronization
+findings:
+  - category: synchronization
+    severity: major
+    evidence: Service.WaitAsync and Ready
+    violated_condition: state transition does not directly wake the waiter
+    disposition: finding
+gate_verdict: needs-review

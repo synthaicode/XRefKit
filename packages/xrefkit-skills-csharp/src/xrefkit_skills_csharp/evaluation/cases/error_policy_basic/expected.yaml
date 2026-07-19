@@ -1,0 +1,10 @@
+case_id: csharp.error_policy_extraction.basic-policy
+required:
+  - error_policy_inventory
+  - disposition_matrix
+  - contradictions
+  - coverage_limits
+expected_observations:
+  - TimeoutException is swallowed by return
+  - general Exception is logged and execution continues
+  - desired policy must not be invented

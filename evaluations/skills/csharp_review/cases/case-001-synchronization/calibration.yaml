@@ -1,0 +1,6 @@
+case_id: public.csharp_review.case-001-synchronization
+must_not:
+  - report a Roslyn/compiler error as the primary finding
+  - claim that Task.Yield proves the waiter is parked
+  - bulk-auto-apply a synchronization remediation
+  - mark the test safe solely because it passes once

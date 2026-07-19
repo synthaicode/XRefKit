@@ -1,0 +1,7 @@
+case_id: public.csharp_review.case-005-boundary-and-calibration
+must_not:
+  - treat the comment saying intentional as proof of attribute activation
+  - assert Retryable or a consumer API exists without verifying package version 2.1.0
+  - report CS8602 as a csharp_review finding
+  - absorb tenant authorization into a C# quality finding instead of security handoff
+  - accept exactly-once as a fact from an architecture statement alone

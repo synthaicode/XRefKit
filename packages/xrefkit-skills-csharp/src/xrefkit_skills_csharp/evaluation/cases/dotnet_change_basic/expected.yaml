@@ -1,0 +1,9 @@
+case_id: dotnet.change_analysis.basic-boundary
+required:
+  - structure_summary
+  - impact_boundaries
+  - unknowns
+  - handoffs
+must_preserve:
+  - Service.ExecuteAsync to Worker.RunAsync call path
+  - unknown downstream effects outside the fixture

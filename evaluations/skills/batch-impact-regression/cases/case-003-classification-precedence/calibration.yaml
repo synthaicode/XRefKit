@@ -1,0 +1,7 @@
+case_id: public.batch-impact-regression.case-003-classification-precedence
+must_not:
+  - classify a timeout as planned_difference because the new run succeeded
+  - classify an adapter correlation loss as baseline_match
+  - classify upstream_absent as system_error without additional evidence
+  - discard old/new result records after producing the classification
+  - normalize fields other than run_id and completed_at without configuration

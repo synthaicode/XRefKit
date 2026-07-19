@@ -1,0 +1,5 @@
+case_id: batch.impact_regression.basic-comparison
+must_not:
+  - treat source conditions as business truth
+  - treat a baseline result as business correctness
+  - execute against production

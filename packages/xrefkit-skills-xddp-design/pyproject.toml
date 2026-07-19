@@ -25,5 +25,6 @@ where = ["src"]
   "skills/**/*.md",
   "knowledge/*.md",
   "review_axes/*.yaml",
-  "schemas/*.json"
+  "schemas/*.json",
+  "evaluation/**/*"
 ]

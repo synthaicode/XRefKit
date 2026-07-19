@@ -1,0 +1,21 @@
+case_id: public.batch-impact-regression.case-002-dynamic-dispatch-unknown
+expected:
+  classification: uncertain
+  stop_before:
+    - candidate_execution
+    - old_new_comparison
+    - reduced_regression_set_selection
+    - release_disposition
+  evidence_required:
+    - resolved value of ORDER_DELTA_PROCEDURE
+    - stored-procedure and child-object dependency trace for OrderDelta
+    - dynamic table-prefix mapping and side-effect inventory
+    - rollback_or_restore_procedure
+  handoff:
+    owner: batch-design-or-release-owner
+    reason: execution path and side effects cannot be proven
+  known_facts:
+    - RunAsync reads an external procedure selector
+    - the selector value is unavailable
+    - old/new result artifacts are unavailable
+  required_statement: do not infer the stored procedure from the filename or operation name

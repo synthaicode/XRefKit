@@ -1,0 +1,33 @@
+case_id: public.batch-impact-regression.case-004-reduction-and-feasibility
+expected:
+  candidate_count: 12
+  post_constraint_count: 8
+  excluded_classes:
+    business_invalid:
+      - {region: US, mode: Full, priority: Rush}
+      - {region: US, mode: Delta, priority: Rush}
+    upstream_absent:
+      - {region: EU, mode: Delta, priority: Normal}
+      - {region: EU, mode: Delta, priority: Rush}
+  full_run:
+    sequential_minutes: 20
+    allowed_concurrency: 2
+    measured_lock_waits: stop_or_investigate
+    release_window_fit: technically_possible_but_not_approved
+  reduced_set:
+    disposition: reject_existing_proposal
+    reasons:
+      - includes an upstream_absent candidate without a stated coverage purpose
+      - does not show coverage of all valid region/mode/priority boundaries
+      - does not explain how six unexplained differences are represented
+    required_properties:
+      - reproducible selection rule
+      - coverage of valid dimensions and constraint boundaries
+      - explicit treatment of upstream_absent candidates
+      - traceability to unexplained difference classes
+      - not_claimed_as_mathematically_balanced_orthogonal_array
+  release_stop_gates:
+    - unresolved unexplained differences
+    - lock waits above the approved threshold
+    - rollback/restore verification failure
+    - missing human release disposition

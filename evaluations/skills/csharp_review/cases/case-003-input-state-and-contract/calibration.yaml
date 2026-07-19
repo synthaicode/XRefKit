@@ -1,0 +1,6 @@
+case_id: public.csharp_review.case-003-input-state-and-contract
+must_not:
+  - treat USD as a valid default merely because it is common
+  - claim IgnoreUnknownProperties is always wrong without checking the endpoint contract
+  - claim Dictionary is thread-safe because reads appear simple
+  - convert the schema uncertainty into a definitive security finding
