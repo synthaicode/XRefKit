@@ -1,0 +1,19 @@
+case_id: public.csharp_review.case-001-synchronization
+expected:
+  findings:
+    - id: SYNC-001
+      category: synchronization
+      severity: major
+      evidence:
+        - WaitUntilReadyAsync
+        - MarkReady
+        - clock.Advance
+      violated_condition: state transition does not directly wake the waiter and test readiness is not proven before clock advancement
+      remediation: propose a direct signal/state-transition notification and explicit waiter synchronization; proposal requires case-by-case approval
+  category_status:
+    synchronization: fail
+    all_other_categories: not_applicable_or_not_evidenced
+  gate_verdict:
+    verdict: needs-review
+    reason: major synchronization finding remains
+    required_followup: implementation owner and test owner

@@ -1,0 +1,7 @@
+case_id: public.batch-impact-regression.case-001
+must_not:
+  - claim that US + Delta is a business-invalid case solely because the SQL source returns 17
+  - classify US + Full as unexplained_difference when the only changed field is tax_total and the explicit planned rule matches
+  - classify US + Delta as system_error when it is excluded by the explicit business constraint
+  - claim that the old output is the correct business behavior merely because it is the baseline
+  - close the release without handing the planned difference and business constraint to human owners

@@ -1,0 +1,4 @@
+case_id: xddp.design.change_design.basic-trace
+must_not:
+  - invent the external credit API contract
+  - treat the requested transition as implementation-ready without the missing target evidence

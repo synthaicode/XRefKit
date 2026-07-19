@@ -1,0 +1,33 @@
+case_id: public.csharp_review.case-002-resource-and-resilience
+expected:
+  findings:
+    - id: RES-001
+      category: resource_efficiency
+      severity: major
+      evidence: new HttpClient inside the per-item loop
+      violated_condition: repeated outbound client creation can cause connection churn, TIME_WAIT, and socket exhaustion
+      remediation: use an approved client-factory/lifetime pattern and verify handler policy
+    - id: OPS-001
+      category: operational_resilience
+      severity: major
+      evidence: 50000-item loop and catch-and-continue
+      violated_condition: repeated failures can drain the backlog without bounded retry, quarantine, or failure accounting
+      remediation: define bounded retry/backoff, durable failure disposition, and backlog/connection-pressure controls
+    - id: ERR-001
+      category: error_handling
+      severity: major
+      evidence: catch(Exception) logs and continues after SaveAsync/File.Delete path
+      violated_condition: data failure and cleanup failure can be swallowed, losing release/accounting integrity
+      remediation: classify failures, preserve item state, and make cleanup/idempotency behavior explicit
+    - id: TRACE-001
+      category: traceability_and_context_propagation
+      severity: major
+      evidence: path-only identity and background SaveAsync without correlation id or attempt number
+      violated_condition: retries and failures cannot be reliably attributed to one source item and attempt
+      remediation: preserve durable source identity, correlation id, tenant/context where applicable, and attempt metadata across the queue
+  handoff:
+    - owner: qa_gate_review
+      reason: source identity and context continuity may require XDDP trace review
+  gate_verdict:
+    verdict: needs-review
+    reason: major resource, resilience, error, and traceability findings

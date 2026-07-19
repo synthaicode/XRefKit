@@ -1,0 +1,23 @@
+evaluation_id: public.xrefkit-skills-csharp.v1
+package_id: xrefkit.skills.csharp
+cases:
+  - id: csharp.review.basic-synchronization
+    skill_id: csharp.review
+    target: cases/csharp_review_basic/fixture
+    expected: cases/csharp_review_basic/expected.yaml
+    calibration: cases/csharp_review_basic/calibration.yaml
+  - id: dotnet.change_analysis.basic-boundary
+    skill_id: dotnet.change_analysis
+    target: cases/dotnet_change_basic/fixture
+    expected: cases/dotnet_change_basic/expected.yaml
+    calibration: cases/dotnet_change_basic/calibration.yaml
+  - id: csharp.error_policy_extraction.basic-policy
+    skill_id: csharp.error_policy_extraction
+    target: cases/error_policy_basic/fixture
+    expected: cases/error_policy_basic/expected.yaml
+    calibration: cases/error_policy_basic/calibration.yaml
+run_policy:
+  target_isolation: required
+  expected_answers_are_not_in_target: true
+  calibration_is_not_loaded_by_skill: true
+  minimum_independent_runs: 3

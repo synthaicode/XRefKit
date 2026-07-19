@@ -1,0 +1,13 @@
+evaluation_id: public.xrefkit-skills-xddp-design.v1
+package_id: xrefkit.skills.xddp.design
+cases:
+  - id: xddp.design.change_design.basic-trace
+    skill_id: xddp.design.change_design
+    target: cases/change_design_basic/fixture
+    expected: cases/change_design_basic/expected.yaml
+    calibration: cases/change_design_basic/calibration.yaml
+run_policy:
+  target_isolation: required
+  expected_answers_are_not_in_target: true
+  calibration_is_not_loaded_by_skill: true
+  minimum_independent_runs: 3

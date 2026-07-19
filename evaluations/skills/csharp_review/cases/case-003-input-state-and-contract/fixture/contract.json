@@ -1,0 +1,5 @@
+{
+  "required": ["customer_id", "currency", "amount"],
+  "unknown_fields": "preserve_for_forward_handoff",
+  "missing_currency": "reject"
+}

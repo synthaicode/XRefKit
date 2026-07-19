@@ -1,0 +1,30 @@
+case_id: public.batch-impact-regression.case-003-classification-precedence
+expected:
+  classifications:
+    - input: {region: JP, mode: Full}
+      classification: baseline_match
+      normalized_fields: [run_id, completed_at]
+    - input: {region: US, mode: Full}
+      classification: planned_difference
+      changed_fields: [tax_total]
+      required_check: processed_count remains unchanged
+    - input: {region: JP, mode: Delta}
+      classification: upstream_absent
+      evidence_ref: jp-delta-feed
+    - input: {region: US, mode: Delta}
+      classification: system_error
+      evidence_ref: old-timeout-4
+      reason: system_error_has_precedence_over_result_comparison
+    - input: {region: EU, mode: Full}
+      classification: system_error
+      evidence_ref: new-serialization-5
+    - input: {region: EU, mode: Delta}
+      classification: uncertain
+      reason: missing_source_correlation
+  required_trace_fields:
+    - serialized_input
+    - old_result
+    - new_result
+    - evidence_reference
+    - planned_rule_relation
+  release_disposition: human_decision_required_for_system_error_and_uncertain_cases

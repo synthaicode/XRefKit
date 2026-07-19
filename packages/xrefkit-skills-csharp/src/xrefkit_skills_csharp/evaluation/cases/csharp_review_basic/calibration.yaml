@@ -1,0 +1,4 @@
+case_id: csharp.review.basic-synchronization
+must_not:
+  - claim a compiler diagnostic is the primary finding
+  - claim one passing test proves synchronization safety

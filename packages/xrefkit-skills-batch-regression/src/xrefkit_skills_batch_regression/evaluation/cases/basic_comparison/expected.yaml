@@ -1,0 +1,11 @@
+case_id: batch.impact_regression.basic-comparison
+required:
+  - decision_table
+  - orthogonal_table
+  - regression_report
+  - evidence
+  - unknowns
+  - human_handoffs
+must_preserve:
+  - CSharp to stored-procedure execution path
+  - explicit constraint source

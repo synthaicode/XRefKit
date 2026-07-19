@@ -1,0 +1,5 @@
+case_id: public.csharp_review.case-004-time-and-lifecycle
+must_not:
+  - assert a support date not present in the case evidence
+  - reduce culture-sensitive interchange parsing to a formatting preference
+  - claim DateTime.Now is always invalid in every local-only use

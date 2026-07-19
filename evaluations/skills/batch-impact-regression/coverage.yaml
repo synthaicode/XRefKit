@@ -1,0 +1,29 @@
+evaluation_id: public.batch-impact-regression.coverage-v1
+cases:
+  - cases/case-001
+  - cases/case-002-dynamic-dispatch-unknown
+  - cases/case-003-classification-precedence
+  - cases/case-004-reduction-and-feasibility
+  - cases/case-005-safety-stop
+workflow_coverage:
+  1_boundary_versions_adapter: [case-001, case-002-dynamic-dispatch-unknown]
+  2_csharp_entrypoints_sp_invocations: [case-001, case-002-dynamic-dispatch-unknown]
+  3_child_objects_dynamic_sql_transactions_outputs: [case-002-dynamic-dispatch-unknown, case-005-safety-stop]
+  4_extract_dimensions_values_unknowns: [case-001, case-004-reduction-and-feasibility]
+  5_separate_constraint_ledgers: [case-001, case-004-reduction-and-feasibility]
+  6_candidate_and_post_constraint_counts: [case-001, case-004-reduction-and-feasibility]
+  7_safe_small_execution_and_side_effect_check: [case-005-safety-stop]
+  8_full_run_feasibility: [case-004-reduction-and-feasibility]
+  9_observed_baseline_not_business_truth: [case-001, case-003-classification-precedence]
+  10_requirement_predicate_and_allowed_differences: [case-001, case-003-classification-precedence]
+  11_identical_serialized_old_new_inputs: [case-001, case-003-classification-precedence]
+  12_normalize_and_trace_each_difference: [case-003-classification-precedence]
+  13_reduced_regression_set: [case-004-reduction-and-feasibility]
+  14_release_full_run_rollback_stop_gates: [case-004-reduction-and-feasibility, case-005-safety-stop]
+  15_unresolved_decisions_handoff_no_close: [case-002-dynamic-dispatch-unknown, case-005-safety-stop]
+classification_precedence:
+  - system_error
+  - uncertain
+  - business_invalid
+  - upstream_absent
+  - result_comparison

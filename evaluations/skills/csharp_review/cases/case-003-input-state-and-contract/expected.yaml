@@ -1,0 +1,30 @@
+case_id: public.csharp_review.case-003-input-state-and-contract
+expected:
+  findings:
+    - id: INPUT-001
+      category: required_business_input_integrity
+      severity: major
+      evidence: invalid amount becomes 0 and missing currency becomes USD
+      violated_condition: required billing input is converted into a normal value instead of rejected or escalated
+      remediation: validate and reject or explicitly escalate missing/invalid customer_id, currency, and amount
+    - id: STATE-001
+      category: state_and_determinism
+      severity: major
+      evidence: static mutable Dictionary accessed by concurrent requests and replay tests
+      violated_condition: shared mutable state can race, leak across requests, and make replay results order-dependent
+      remediation: define ownership, synchronization, lifecycle, and deterministic test isolation
+    - id: SCHEMA-001
+      category: contract_and_schema_resilience
+      severity: needs_confirmation
+      evidence: IgnoreUnknownProperties=true at an external billing boundary
+      violated_condition: whether dropped fields are required for routing, authorization, idempotency, audit, or billing is not proven
+      remediation: verify the contract and either preserve/validate required unknown fields or document controlled compatibility
+    - id: UNC-001
+      category: uncertainty_and_escalation
+      severity: major
+      evidence: null-deserialization and TryParse/currency fallbacks
+      violated_condition: malformed or ambiguous input is silently accepted as a normal command
+      remediation: controlled rejection or explicit escalation with reason and source evidence
+  gate_verdict:
+    verdict: needs-review
+    reason: confirmed input/state/uncertainty findings and a schema boundary requiring confirmation

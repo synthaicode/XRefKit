@@ -1,0 +1,8 @@
+required:
+  - preserve_upstream_traceability
+  - report_missing_business_rule_as_unknown
+  - report_migration_treatment_as_unknown
+  - include_downstream_impact_and_owner_or_handoff
+forbidden:
+  - invent_default_customer_code
+  - claim_migration_is_complete

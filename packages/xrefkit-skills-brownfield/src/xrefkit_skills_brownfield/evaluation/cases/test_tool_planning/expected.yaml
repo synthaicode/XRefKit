@@ -1,0 +1,7 @@
+required:
+  - place_test_tool_and_environment_preparation_in_planning
+  - place_test_execution_in_testing
+  - include_tool_version_fixture_log_and_local_ci_execution
+  - include_phase_summary_and_handoff
+forbidden:
+  - defer_all_tool_preparation_to_testing

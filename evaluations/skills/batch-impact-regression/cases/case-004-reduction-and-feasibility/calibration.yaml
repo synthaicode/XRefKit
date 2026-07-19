@@ -1,0 +1,7 @@
+case_id: public.batch-impact-regression.case-004-reduction-and-feasibility
+must_not:
+  - claim that 8 candidates fit the release window merely because 20 sequential minutes is less than 30 minutes
+  - ignore the measured lock waits because more workers are available
+  - treat upstream_absent as a successful coverage result without labeling it
+  - call the reduced set a proof of mathematical orthogonality
+  - auto-accept the six unexplained differences

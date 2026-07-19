@@ -1,0 +1,4 @@
+case_id: csharp.error_policy_extraction.basic-policy
+must_not:
+  - present a desired error policy as the existing policy
+  - claim the two catch branches are equivalent

@@ -93,14 +93,14 @@ Current family paths:
 - `packs/local/<system>/skills/` for local-instance Skills; these are catalog-visible locally but not distributable
 - existing top-level `skills/<skill_id>/` paths remain valid for Skills that have not yet moved
 
+- `brownfield_workflow`:
+  - summary: organize brownfield change work across requirements, planning, design, manufacturing, and testing while surfacing unresolved items
+  - meta: `skills/brownfield-workflow/meta.md`
+  - skill_doc: `skills/brownfield-workflow/SKILL.md`
 - `cab_review_flow`:
   - summary: execute CAB business activities through reusable quality, operational-readiness, and value-alignment evaluation capabilities
   - meta: `skills/cab_review_flow/meta.md`
   - skill_doc: `skills/cab_review_flow/SKILL.md`
-- `batch-impact-regression`:
-  - summary: analyze C# and SQL Server stored-procedure batch changes with deterministic combination regression and human-gated classification
-  - meta: `skills/packs/batch-regression/batch-impact-regression/meta.md`
-  - skill_doc: `skills/packs/batch-regression/batch-impact-regression/SKILL.md`
 - `csharp_error_policy_extraction`:
   - summary: extract the existing de-facto error policy from C# source as an inventory, a category-by-disposition matrix, detected contradictions, and explicit coverage limits
   - meta: `skills/csharp_error_policy_extraction/meta.md`
@@ -185,6 +185,10 @@ Current family paths:
   - summary: review session logs and current work artifacts, then propose promotion candidates from `work/` into canonical repository assets
   - meta: `skills/os/retro/meta.md`
   - skill_doc: `skills/os/retro/SKILL.md`
+- `skill_calibration_evaluation`:
+  - summary: run isolated calibration evaluations for PyPI-distributed XRefKit Skills without exposing evaluator answers to the evaluated Skill
+  - meta: `skills/os/skill_calibration_evaluation/meta.md`
+  - skill_doc: `skills/os/skill_calibration_evaluation/SKILL.md`
 - `skill_flow_authoring`:
   - summary: create or update repository-native Skill / Flow assets in XRefKit with correct split, publication boundary, runtime envelope, forgetting countermeasures, and validation
   - meta: `skills/os/skill_flow_authoring/meta.md`
@@ -193,6 +197,10 @@ Current family paths:
   - summary: register an existing source-structure analysis Markdown file as current canonical source-structure findings knowledge
   - meta: `skills/os/source_structure_findings_registration/meta.md`
   - skill_doc: `skills/os/source_structure_findings_registration/SKILL.md`
+- `batch-impact-regression`:
+  - summary: analyze C# and SQL Server stored-procedure batch changes with deterministic combination regression and human-gated classification
+  - meta: `skills/packs/batch-regression/batch-impact-regression/meta.md`
+  - skill_doc: `skills/packs/batch-regression/batch-impact-regression/SKILL.md`
 - `business_intake_scoping`:
   - summary: discover and scope one business task into a boundary-visible responsibility unit even when the user only knows partial materials or structure
   - meta: `skills/packs/business-intake/business_intake_scoping/meta.md`

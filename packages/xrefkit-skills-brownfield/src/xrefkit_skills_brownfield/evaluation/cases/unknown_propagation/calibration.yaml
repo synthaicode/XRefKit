@@ -1,0 +1,5 @@
+checks:
+  - unknown_has_reason
+  - unknown_has_impact
+  - unknown_has_next_action
+  - summary_precedes_detail

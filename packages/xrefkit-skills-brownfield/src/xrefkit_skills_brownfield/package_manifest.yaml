@@ -1,0 +1,57 @@
+package_id: xrefkit.skills.brownfield
+package_type: skill_package
+version: 0.1.0
+
+requires:
+  xrefkit_core: ">=0.4.3 <0.5.0"
+
+provides:
+  skills:
+    - id: brownfield.workflow
+      xid: xid-skill-brownfield-workflow
+      path: skills/brownfield_workflow.skill.yaml
+      contract_role: base_skill
+      required_outputs:
+        - phase_summary
+        - traced_items
+        - decisions
+        - unknowns
+        - evidence
+        - phase_gates
+        - handoffs
+      required_knowledge: []
+      required_review_axes:
+        - xid-axis-brownfield-traceability
+        - xid-axis-brownfield-unknown-visibility
+        - xid-axis-brownfield-phase-completeness
+      must_not:
+        - treat_existing_implementation_as_business_truth
+        - hide_unresolved_items
+        - invent_missing_behavior
+        - create_untraced_work
+        - prepare_test_tools_only_during_test_execution
+        - hand_off_unreviewed_design
+        - approve_human_owned_decisions
+
+  fragments: []
+  knowledge: []
+  review_axes:
+    - id: brownfield.traceability
+      xid: xid-axis-brownfield-traceability
+      path: review_axes/traceability.yaml
+    - id: brownfield.unknown_visibility
+      xid: xid-axis-brownfield-unknown-visibility
+      path: review_axes/unknown_visibility.yaml
+    - id: brownfield.phase_completeness
+      xid: xid-axis-brownfield-phase-completeness
+      path: review_axes/phase_completeness.yaml
+  schemas: []
+  templates: []
+
+contract:
+  can_be_extended_by_local_skill: true
+  local_skill_can_weaken_contract: false
+  local_can_weaken_required_outputs: false
+  local_can_override_must_not: false
+  requires_unknown_declaration: true
+  requires_traceability: true

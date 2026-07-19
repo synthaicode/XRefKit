@@ -1,0 +1,10 @@
+case_id: xddp.design.change_design.basic-trace
+required:
+  - traceability
+  - unknowns
+  - assumptions
+  - change_design
+must_identify:
+  - missing external API contract
+  - missing implementation target
+  - evidence links for the status transition

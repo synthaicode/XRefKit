@@ -1,0 +1,18 @@
+case_id: public.csharp_review.case-004-time-and-lifecycle
+expected:
+  findings:
+    - id: TIME-001
+      category: time_and_culture
+      severity: major
+      evidence: DateTime.Now, culture-sensitive ToString, DateTime.Parse, decimal.Parse at interchange boundary
+      violated_condition: persisted protocol values can shift timezone or culture and fail or change meaning across machines
+      remediation: define an explicit UTC/offset and invariant wire format with matching parse rules
+    - id: LIFE-001
+      category: support_lifecycle
+      severity: minor
+      evidence: net8.0 and Microsoft.Extensions.DependencyInjection 9.0.x with supplied policy date 2026-11-10
+      violated_condition: release may depend on components approaching the stated support boundary
+      remediation: verify the policy date against the release target and plan upgrade/exception ownership
+  gate_verdict:
+    verdict: needs-review
+    reason: protocol time/culture defect plus lifecycle follow-up

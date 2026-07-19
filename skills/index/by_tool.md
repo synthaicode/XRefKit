@@ -17,11 +17,12 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
 - SQL Server: `batch-impact-regression`, `db_current_state_analysis`, `db_design`
 - repository: `doc_ship`, `retro`, `knowledge_ontology_management`,
   `consultation_research_mapping`, `judgment_log`, `skill_flow_authoring`,
+  `skill_calibration_evaluation`,
   `goal_mode`, `pptx_spec_traceability`, `xlsx_spec_traceability`,
   `investigation_flow`, `estimation_flow`, `requirements_flow`,
   `planning_flow`, `design_flow`, `db_current_state_analysis`,
   `db_design`, `test_flow`, `test_tool_catalog_preparation`, `implementation_flow`,
-  `python_implementation_flow`,
+  `python_implementation_flow`, `brownfield_workflow`,
   `manufacturing_self_check`, `qa_gate_review`, `security_review`,
   `release_planning_flow`, `cab_review_flow`,
   `editorial_ops_index`,

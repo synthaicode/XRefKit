@@ -1,0 +1,27 @@
+evaluation_id: public.csharp_review.corpus-v1
+status: public_smoke
+skill:
+  id: csharp_review
+  package: xrefkit-skills-csharp
+  package_version: evaluator_supplied
+  procedure_hash: evaluator_supplied
+corpus:
+  revision: evaluator_supplied
+  cases:
+    - id: case-001-synchronization
+      target: cases/case-001-synchronization/fixture
+    - id: case-002-resource-and-resilience
+      target: cases/case-002-resource-and-resilience/fixture
+    - id: case-003-input-state-and-contract
+      target: cases/case-003-input-state-and-contract/fixture
+    - id: case-004-time-and-lifecycle
+      target: cases/case-004-time-and-lifecycle/fixture
+    - id: case-005-boundary-and-calibration
+      target: cases/case-005-boundary-and-calibration/fixture
+model:
+  provider: evaluator_supplied
+  snapshot: evaluator_supplied
+  parameters: evaluator_supplied
+run_policy:
+  minimum_independent_runs: 3
+  human_disposition_required: true

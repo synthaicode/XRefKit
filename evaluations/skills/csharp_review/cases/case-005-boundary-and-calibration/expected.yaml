@@ -1,0 +1,28 @@
+case_id: public.csharp_review.case-005-boundary-and-calibration
+expected:
+  findings:
+    - id: ATTR-001
+      category: attribute_activation_precondition_mismatch
+      severity: needs_confirmation
+      evidence: Retryable attribute is present but no consumer registration or activation path is supplied
+      violated_condition: attribute effect and required runtime/build-time preconditions are unverified
+      remediation: verify the referenced package API and locate the consumer/registration path before deciding whether retry behavior exists
+  handoff:
+    - owner: security_review
+      file: ForwardAsync
+      reason: arbitrary tenant id is a security boundary concern
+    - owner: qa_gate_review
+      file: SaveAsync
+      reason: exactly-once claim is a design/XDDP trace-continuity concern
+    - owner: review_report_composition
+      reason: expression/report wording is outside detector scope if requested
+  excluded_from_primary_findings:
+    - item: CS8602
+      reason: already covered by Roslyn baseline
+    - item: arbitrary tenant id
+      reason: security review handoff
+    - item: exactly-once queue assumption
+      reason: design/XDDP handoff
+  gate_verdict:
+    verdict: needs-review
+    reason: attribute preconditions unverified and out-of-scope handoffs required

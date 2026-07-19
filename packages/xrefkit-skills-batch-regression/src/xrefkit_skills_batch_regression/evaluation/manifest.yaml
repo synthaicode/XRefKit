@@ -1,0 +1,13 @@
+evaluation_id: public.xrefkit-skills-batch-regression.v1
+package_id: xrefkit.skills.batch_regression
+cases:
+  - id: batch.impact_regression.basic-comparison
+    skill_id: batch.impact_regression
+    target: cases/basic_comparison/fixture
+    expected: cases/basic_comparison/expected.yaml
+    calibration: cases/basic_comparison/calibration.yaml
+run_policy:
+  target_isolation: required
+  expected_answers_are_not_in_target: true
+  calibration_is_not_loaded_by_skill: true
+  minimum_independent_runs: 3

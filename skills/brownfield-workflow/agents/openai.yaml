@@ -1,0 +1,4 @@
+interface:
+  display_name: "Brownfield Workflow"
+  short_description: "Plan and design brownfield changes"
+  default_prompt: "Use $brownfield-workflow to reorganize upstream work items across requirements, planning, design, manufacturing, and testing, and surface unresolved items explicitly."

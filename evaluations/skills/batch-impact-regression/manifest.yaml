@@ -1,0 +1,24 @@
+evaluation_id: public.batch-impact-regression.case-001
+status: public_smoke
+skill:
+  id: batch-impact-regression
+  package: xrefkit-skills-batch-regression
+  package_version: evaluator_supplied
+  procedure_hash: evaluator_supplied
+corpus:
+  revision: evaluator_supplied
+  coverage: coverage.yaml
+  cases:
+    - cases/case-001
+    - cases/case-002-dynamic-dispatch-unknown
+    - cases/case-003-classification-precedence
+    - cases/case-004-reduction-and-feasibility
+    - cases/case-005-safety-stop
+model:
+  provider: evaluator_supplied
+  snapshot: evaluator_supplied
+  parameters: evaluator_supplied
+run_policy:
+  minimum_independent_runs: 3
+  compare_against_baseline: optional
+  human_disposition_required: true

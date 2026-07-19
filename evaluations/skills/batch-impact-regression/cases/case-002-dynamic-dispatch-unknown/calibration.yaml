@@ -1,0 +1,7 @@
+case_id: public.batch-impact-regression.case-002-dynamic-dispatch-unknown
+must_not:
+  - invent a procedure name for ORDER_DELTA_PROCEDURE
+  - run against a guessed procedure or guessed table
+  - report a regression score when no old/new result files exist
+  - classify the missing path as business_invalid
+  - close the work while the dynamic path and rollback evidence remain unresolved

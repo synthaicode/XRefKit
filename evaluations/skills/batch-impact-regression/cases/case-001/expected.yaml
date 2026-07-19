@@ -1,0 +1,34 @@
+case_id: public.batch-impact-regression.case-001
+expected:
+  candidate_count: 4
+  post_constraint_count: 3
+  path:
+    - CSharp: RunAsync
+    - StoredProcedure: dbo.ApplyOrderBatch
+  classifications:
+    - input: {region: JP, mode: Full}
+      classification: baseline_match
+      evidence: same serialized input and same observed output
+    - input: {region: JP, mode: Delta}
+      classification: baseline_match
+      evidence: same serialized input and same observed output
+    - input: {region: US, mode: Full}
+      classification: planned_difference
+      changed_fields: [tax_total]
+      evidence: explicit approved tax-rate-table change
+    - input: {region: US, mode: Delta}
+      classification: business_invalid
+      evidence: explicit business-owner constraint
+      execution_status: not_executed
+  required_handoffs:
+    - business_owner: confirm the US + Delta constraint remains approved
+    - release_test_owner: accept or reject the planned US + Full tax_total difference
+  reduced_regression_set:
+    required_inputs:
+      - {region: JP, mode: Full}
+      - {region: JP, mode: Delta}
+      - {region: US, mode: Full}
+    excluded_by_explicit_constraint:
+      - {region: US, mode: Delta}
+  release_disposition: human_decision_required
+  baseline_statement: old results are observed baseline evidence, not business truth

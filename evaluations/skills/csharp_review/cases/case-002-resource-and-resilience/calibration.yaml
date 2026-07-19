@@ -1,0 +1,6 @@
+case_id: public.csharp_review.case-002-resource-and-resilience
+must_not:
+  - reduce per-item HttpClient creation to a minor style preference
+  - claim that logging the exception is equivalent to durable failure handling
+  - assert a specific HttpClientFactory API without verifying the project version
+  - silently treat the XDDP trace gap as a completed C# finding

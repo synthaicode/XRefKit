@@ -1,0 +1,18 @@
+evaluation_id: public.xrefkit-skills-brownfield.v1
+package_id: xrefkit.skills.brownfield
+cases:
+  - id: brownfield.workflow.unknown-propagation
+    skill_id: brownfield.workflow
+    target: cases/unknown_propagation/fixture
+    expected: cases/unknown_propagation/expected.yaml
+    calibration: cases/unknown_propagation/calibration.yaml
+  - id: brownfield.workflow.test-tool-planning
+    skill_id: brownfield.workflow
+    target: cases/test_tool_planning/fixture
+    expected: cases/test_tool_planning/expected.yaml
+    calibration: cases/test_tool_planning/calibration.yaml
+run_policy:
+  target_isolation: required
+  expected_answers_are_not_in_target: true
+  calibration_is_not_loaded_by_skill: true
+  minimum_independent_runs: 3

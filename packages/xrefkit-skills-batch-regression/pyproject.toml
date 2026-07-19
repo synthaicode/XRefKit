@@ -26,4 +26,5 @@ where = ["src"]
   "package_manifest.yaml",
   "skills/*.yaml",
   "skill_assets/**/*",
+  "evaluation/**/*",
 ]

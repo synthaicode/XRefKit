@@ -1,0 +1,21 @@
+evaluation_id: public.csharp_review.coverage-v1
+case_coverage:
+  attribute_activation_precondition_mismatch: [case-005-boundary-and-calibration]
+  resource_efficiency: [case-002-resource-and-resilience]
+  operational_resilience: [case-002-resource-and-resilience]
+  synchronization: [case-001-synchronization]
+  required_business_input_integrity: [case-003-input-state-and-contract]
+  support_lifecycle: [case-004-time-and-lifecycle]
+  error_handling: [case-002-resource-and-resilience]
+  time_and_culture: [case-004-time-and-lifecycle]
+  state_and_determinism: [case-003-input-state-and-contract]
+  uncertainty_and_escalation: [case-003-input-state-and-contract, case-005-boundary-and-calibration]
+  contract_and_schema_resilience: [case-003-input-state-and-contract]
+  traceability_and_context_propagation: [case-002-resource-and-resilience, case-005-boundary-and-calibration]
+boundary_coverage:
+  compiler_or_roslyn_diagnostic_exclusion: [case-005-boundary-and-calibration]
+  security_handoff: [case-005-boundary-and-calibration]
+  design_assumption_handoff: [case-005-boundary-and-calibration]
+  xddp_trace_handoff: [case-005-boundary-and-calibration]
+  report_composition_handoff: [case-005-boundary-and-calibration]
+  third_party_api_needs_confirmation: [case-005-boundary-and-calibration]
