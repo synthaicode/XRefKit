@@ -1,0 +1,8 @@
+required:
+  - error_policy_inventory
+  - disposition_matrix
+  - contradictions
+  - coverage_limits
+forbidden:
+  - decide_desired_error_policy
+  - claim_exhaustive_coverage

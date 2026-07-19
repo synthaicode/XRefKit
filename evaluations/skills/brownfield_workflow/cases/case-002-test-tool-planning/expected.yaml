@@ -1,0 +1,7 @@
+required:
+  - test_tool_preparation_in_planning
+  - test_execution_in_testing
+  - tool_version_fixture_and_log_policy
+  - local_and_ci_execution
+forbidden:
+  - defer_all_tool_preparation_to_testing

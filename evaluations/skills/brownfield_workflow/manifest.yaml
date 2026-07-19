@@ -1,0 +1,25 @@
+evaluation_id: public.brownfield-workflow.corpus-v1
+status: public_smoke
+skill:
+  id: brownfield.workflow
+  package: xrefkit-skills-brownfield
+  package_version: evaluator_supplied
+  procedure_hash: evaluator_supplied
+corpus:
+  revision: evaluator_supplied
+  cases:
+    - id: case-001-unknown-propagation
+      target: cases/case-001-unknown-propagation/fixture
+      expected: cases/case-001-unknown-propagation/expected.yaml
+      calibration: cases/case-001-unknown-propagation/calibration.yaml
+    - id: case-002-test-tool-planning
+      target: cases/case-002-test-tool-planning/fixture
+      expected: cases/case-002-test-tool-planning/expected.yaml
+      calibration: cases/case-002-test-tool-planning/calibration.yaml
+model:
+  provider: evaluator_supplied
+  snapshot: evaluator_supplied
+  parameters: evaluator_supplied
+run_policy:
+  minimum_independent_runs: 3
+  human_disposition_required: true

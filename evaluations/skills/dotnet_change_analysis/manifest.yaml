@@ -1,0 +1,21 @@
+evaluation_id: public.dotnet-change-analysis.corpus-v1
+status: public_smoke
+skill:
+  id: dotnet.change_analysis
+  package: xrefkit-skills-csharp
+  package_version: evaluator_supplied
+  procedure_hash: evaluator_supplied
+corpus:
+  revision: evaluator_supplied
+  cases:
+    - id: case-001-basic-impact
+      target: cases/case-001-basic-impact/fixture
+      expected: cases/case-001-basic-impact/expected.yaml
+      calibration: cases/case-001-basic-impact/calibration.yaml
+model:
+  provider: evaluator_supplied
+  snapshot: evaluator_supplied
+  parameters: evaluator_supplied
+run_policy:
+  minimum_independent_runs: 3
+  human_disposition_required: true

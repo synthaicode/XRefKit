@@ -1,0 +1,4 @@
+checks:
+  - request_is_traced_to_design
+  - compatibility_unknown_is_visible
+  - design_does_not_approve_business_scope

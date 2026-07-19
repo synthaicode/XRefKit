@@ -1,0 +1,9 @@
+required:
+  - phase_summary
+  - traced_items
+  - unknowns
+  - downstream_impact
+  - handoff_owner
+forbidden:
+  - invent_default_customer_code
+  - claim_migration_is_complete
