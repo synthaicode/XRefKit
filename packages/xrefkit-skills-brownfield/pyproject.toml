@@ -7,9 +7,9 @@ name = "xrefkit-skills-brownfield"
 version = "0.1.0"
 description = "XRefKit brownfield requirements, planning, design, manufacturing, and testing Skill Package"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
-  "xrefkit>=2.0,<3.0"
+  "xrefkit>=0.4.3,<0.5.0"
 ]
 
 [project.entry-points."xrefkit.skill_packages"]
