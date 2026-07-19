@@ -2,6 +2,8 @@
 name: brownfield-workflow
 description: Structure brownfield change work across requirements, planning, design, manufacturing, and testing by re-organizing upstream items into phase results, decisions, unknowns, evidence, gates, and handoffs. Use when an existing codebase or system must be changed without treating its current implementation as the complete specification.
 ---
+<!-- xid: A17C4E8B2D91 -->
+<a id="xid-A17C4E8B2D91"></a>
 
 # Brownfield Workflow
 
