@@ -1,0 +1,21 @@
+evaluation_id: public.xddp-design-change-design.corpus-v1
+status: public_smoke
+skill:
+  id: xddp.design.change_design
+  package: xrefkit-skills-xddp-design
+  package_version: evaluator_supplied
+  procedure_hash: evaluator_supplied
+corpus:
+  revision: evaluator_supplied
+  cases:
+    - id: case-001-basic-trace
+      target: cases/case-001-basic-trace/fixture
+      expected: cases/case-001-basic-trace/expected.yaml
+      calibration: cases/case-001-basic-trace/calibration.yaml
+model:
+  provider: evaluator_supplied
+  snapshot: evaluator_supplied
+  parameters: evaluator_supplied
+run_policy:
+  minimum_independent_runs: 3
+  human_disposition_required: true

@@ -1,0 +1,7 @@
+required:
+  - structure_summary
+  - impact_boundaries
+  - unknowns
+  - evidence_paths
+forbidden:
+  - claim_runtime_behavior_not_supported_by_source

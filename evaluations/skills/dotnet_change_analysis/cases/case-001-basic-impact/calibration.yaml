@@ -1,0 +1,4 @@
+checks:
+  - source_locations_are_recorded
+  - unknowns_are_explicit
+  - implementation_policy_is_not_decided

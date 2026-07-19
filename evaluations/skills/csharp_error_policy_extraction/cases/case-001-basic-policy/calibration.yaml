@@ -1,0 +1,4 @@
+checks:
+  - caught_exception_types_are_distinguished
+  - swallowed_exception_is_visible
+  - coverage_limits_are_recorded
