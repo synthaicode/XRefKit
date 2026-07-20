@@ -19,6 +19,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Business intake scoping guide](packs/business-intake/060_business_intake_scoping_guide.md#xid-C91F7D2A6B40)
 - [Business learning interview guide](packs/business-intake/061_business_learning_interview_guide.md#xid-D2A41E8C7B51)
 - [Legacy Flow Skill migration guide](guides/062_legacy_flow_skill_migration_guide.md#xid-E3B7D5A18C62)
+- [XRefKit and Skill Package first registration](guides/089_xrefkit_package_first_registration.md#xid-4F8C2A7D1E90)
 - [Language policy (AI canonical docs + human language trees)](policies/030_language_policy.md#xid-72FB974C8236)
 
 ## Base Control And Repository Rules
