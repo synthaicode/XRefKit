@@ -1,0 +1,188 @@
+name: python-skill-csharp-package
+
+on:
+  pull_request:
+  push:
+    tags:
+      - "xrefkit-skills-csharp-v*.*.*"
+
+permissions:
+  contents: read
+
+env:
+  PACKAGE_ROOT: packages/xrefkit-skills-csharp
+  PACKAGE_PROJECT: packages/xrefkit-skills-csharp/pyproject.toml
+  PACKAGE_NAME: xrefkit-skills-csharp
+  PACKAGE_MODULE: xrefkit_skills_csharp
+
+jobs:
+  quality:
+    name: Test package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12"
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "${PACKAGE_ROOT}"
+      - name: Verify package root and manifest
+        run: |
+          python - <<'PY'
+          from xrefkit_skills_csharp import package_root
+
+          root = package_root()
+          assert (root / "package_manifest.yaml").is_file()
+          assert (root / "skills" / "csharp_review.skill.yaml").is_file()
+          PY
+
+  build-distribution:
+    name: Build Skill Package
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12"
+      - name: Install build tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build twine
+      - name: Verify package tag and version
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          import tomllib
+
+          tag = os.environ["GITHUB_REF_NAME"]
+          prefix = "xrefkit-skills-csharp-v"
+          if not tag.startswith(prefix):
+              raise SystemExit(f"unexpected Skill Package tag: {tag}")
+          expected = tag.removeprefix(prefix)
+          actual = tomllib.loads(Path(os.environ["PACKAGE_PROJECT"]).read_text())[
+              "project"
+          ]["version"]
+          if actual != expected:
+              raise SystemExit(f"tag/package version mismatch: tag={expected}, package={actual}")
+          PY
+      - name: Build wheel and source distribution
+        working-directory: ${{ env.PACKAGE_ROOT }}
+        run: python -m build
+      - name: Validate distribution metadata
+        working-directory: ${{ env.PACKAGE_ROOT }}
+        run: python -m twine check dist/*
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: xrefkit-skills-csharp-distribution
+          path: ${{ env.PACKAGE_ROOT }}/dist/
+          if-no-files-found: error
+
+  artifact-inspection:
+    name: Inspect built artifacts and scan for malware/secrets
+    needs: build-distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
+        with:
+          name: xrefkit-skills-csharp-distribution
+          path: dist
+      - name: Validate distribution contents
+        run: |
+          python tools/inspect_python_artifacts.py \
+            --dist dist \
+            --project-name "${PACKAGE_NAME}" \
+            --package-module "${PACKAGE_MODULE}" \
+            --required-member xrefkit_skills_csharp/package_manifest.yaml \
+            --required-member xrefkit_skills_csharp/skills/csharp_review.skill.yaml \
+            --required-member xrefkit_skills_csharp/skills/csharp_review/entry.md \
+            --manifest-output artifact-manifest.txt
+      - name: Install ClamAV and update virus definitions
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes clamav clamav-freshclam
+          if command -v systemctl >/dev/null 2>&1 && \
+             sudo systemctl cat clamav-freshclam.service >/dev/null 2>&1; then
+            sudo systemctl stop clamav-freshclam.service
+          fi
+          sudo freshclam
+      - name: Scan built artifacts with ClamAV
+        shell: bash
+        run: |
+          set -euo pipefail
+          if clamscan --help | grep -Fq -- "--fail-if-cvd-older-than"; then
+            clamscan --recursive --infected --fail-if-cvd-older-than=1 dist/
+          else
+            echo "::warning::ClamAV lacks --fail-if-cvd-older-than; using recursive infected scan."
+            clamscan --recursive --infected dist/
+          fi
+      - name: Upload artifact member manifest
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: xrefkit-skills-csharp-artifact-manifest
+          path: artifact-manifest.txt
+          if-no-files-found: error
+
+  install-smoke-test:
+    name: Clean wheel install/import
+    needs: build-distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
+        with:
+          name: xrefkit-skills-csharp-distribution
+          path: dist
+      - name: Install wheel and verify package root
+        shell: bash
+        run: |
+          python -m pip install "$(find dist -name 'xrefkit_skills_csharp-*.whl' -print -quit)"
+          python - <<'PY'
+          from xrefkit_skills_csharp import package_root
+
+          assert (package_root() / "package_manifest.yaml").is_file()
+          assert (package_root() / "skills" / "csharp_review.skill.yaml").is_file()
+          PY
+
+  publish-to-pypi:
+    name: Publish Skill Package to PyPI
+    needs:
+      - quality
+      - build-distribution
+      - artifact-inspection
+      - install-smoke-test
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/xrefkit-skills-csharp-v')
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/xrefkit-skills-csharp
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
+        with:
+          name: xrefkit-skills-csharp-distribution
+          path: dist
+      - name: Publish inspected artifacts to PyPI
+        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b
+        with:
+          packages-dir: dist/
+          skip-existing: false
+          verify-metadata: true
+          print-hash: true

@@ -87,7 +87,36 @@ reason instead of inventing a criterion.
 
 ## Quick Start
 
-Install the package and initialize an instance:
+### Install from PyPI
+
+XRefKit requires Python 3.11 or later. For a normal installation, create a
+virtual environment and install the published package from PyPI:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install xrefkit
+xrefkit init
+xrefkit --help
+```
+
+If the `xrefkit` command is not available on `PATH`, use the module form:
+
+```powershell
+python -m xrefkit --help
+```
+
+To use the integrated MCP server, install the optional MCP dependencies:
+
+```powershell
+python -m pip install "xrefkit[mcp]"
+xrefkit mcp serve --repo . --transport stdio
+```
+
+### Install from a checkout
+
+For XRefKit development, install the local checkout in editable mode instead:
 
 ```powershell
 python -m pip install -e .

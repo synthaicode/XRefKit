@@ -9,7 +9,7 @@ description = "Text-only XRefKit C# Skill Package"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-  "xrefkit>=2.0,<3.0"
+  "xrefkit>=0.4.3,<0.5.0"
 ]
 
 [project.entry-points."xrefkit.skill_packages"]
