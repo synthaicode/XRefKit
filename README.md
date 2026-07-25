@@ -130,6 +130,25 @@ Start the integrated MCP server over stdio:
 xrefkit mcp serve --repo . --transport stdio
 ```
 
+To import existing Skills and prepare a reviewable VS Code MCP setup, run:
+
+```powershell
+python -m pip install "xrefkit[mcp]"
+xrefkit mcp setup `
+  --repo C:\dev\itsm\XRefKit `
+  --import C:\work\existing-skills
+```
+
+The command writes `SETUP.md`, `import-report.json`, a VS Code
+`.vscode/mcp.json` example, and reviewed append text for `AGENTS.md` and
+`CLAUDE.md` into a temporary setup folder. Apply those artifacts after review:
+
+```powershell
+xrefkit mcp setup apply `
+  --source C:\Users\<user>\AppData\Local\Temp\xrefkit-setup-<id> `
+  --repo C:\dev\itsm\XRefKit
+```
+
 The server writes structured correlation events to
 `work/mcp/xid_audit.jsonl` by default. After `xrefkit skill run` returns a
 `run_id`, the client calls MCP `bind_skill_run` and executes the returned
