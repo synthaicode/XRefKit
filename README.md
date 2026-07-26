@@ -62,6 +62,38 @@ and handoff records from collapsing into one opaque instruction block.
 
 ![XRefKit repository snapshot](human-docs/en/assets/xrefkit_repository_snapshot/xrefkit_repository_snapshot.png)
 
+## Skills: what you can ask XRefKit to do
+
+XRefKit includes Skills for common stages of software and business work. For
+example:
+
+- **Business discovery and planning**: `business_learning_interview`,
+  `business_intake_scoping`, `requirements_flow`, `planning_flow`, and
+  `estimation_flow`
+- **Investigation, design, and implementation**: `investigation_flow`,
+  `source_structure_overview`, `db_current_state_analysis`, `db_design`,
+  `design_flow`, and `implementation_flow`
+- **Constraint and change analysis**: `constraint_derivation_index`,
+  `dotnet_change_analysis`, `code_constraint_derivation`,
+  `cross_constraint_derivation`, and `integration_scenario_derivation`
+- **Review and quality**: `csharp_review`, `python_review`, `security_review`,
+  `test_flow`, `qa_gate_review`, and `review_report_composition`
+- **Knowledge and Skill operations**: `import_skill`, `skill_flow_authoring`,
+  `knowledge_ontology_management`, `judgment_log`, `doc_ship`, and
+  `skill_calibration_evaluation`
+- **Documents and communication**: `pptx_spec_traceability`,
+  `xlsx_spec_traceability`, `presentation_flow_review`, `editorial_intake`,
+  `draft_authoring`, and `marketing_slide_png`
+
+Each Skill is a reusable procedure with a capability/tuning/responsibility
+identity. Its procedure, routing metadata, domain Knowledge, and run evidence
+remain separate. Describe your goal in natural language and XRefKit routes it
+to the relevant Skill; the [Skill catalog](skills/_index.md#xid-8D91F66DDBB7)
+contains the complete current list and summaries.
+
+To install and enable Skills distributed as Python Packages, follow the
+[package-first registration guide](docs/guides/089_xrefkit_package_first_registration.md#xid-4F8C2A7D1E90).
+
 ## How It Works
 
 1. Original materials are kept in `sources/`.
