@@ -170,6 +170,18 @@ searches and XID resolutions then share the same `run_id` as the client Skill
 Run. The client separately records actual model-context loading and judgment
 application with `xrefkit skill knowledge --action load|apply`.
 
+For a network deployment without MCP protocol sessions, provide a shared HMAC
+secret and enable stateless HTTP. The client must return the `context_id` from
+`get_startup_context` in `_meta.io.xrefkit/context_id` on later requests:
+
+```powershell
+$env:XREFKIT_CONTEXT_SECRET = 'replace-with-a-managed-secret'
+python -m xrefkit.mcp.server --repo . --transport streamable-http --stateless-http
+```
+
+The context token is signed, repository-bound, and short-lived. It is an
+execution-context token, not a canonical XID or an authorization grant.
+
 ## Skill Run Observation Dashboard
 
 The local dashboard lets a human inspect Skill run status, closure and quality

@@ -3,7 +3,9 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
+import os
 import sys
+import uuid
 import weakref
 from pathlib import Path
 from typing import Any
@@ -11,6 +13,7 @@ from typing import Any
 from . import __version__
 from .audit import McpAuditLog, SessionRunBinding, SessionRunRegistry
 from .catalog import XRefCatalog
+from .context_token import CONTEXT_META_KEY, ContextClaims, ContextTokenCodec
 from .dist import DIST_ROUTE_PATH, ArtifactDistribution, add_dist_routes
 from xrefkit.structure_catalog import get_entry as get_structure_entry
 from xrefkit.structure_catalog import list_findings as list_structure_findings
@@ -49,6 +52,11 @@ def _mark_startup_loaded(ctx: Any) -> None:
 
 
 def _require_startup_loaded(ctx: Any, tool_name: str) -> None:
+    claims = _context_claims(ctx)
+    if claims is not None:
+        if not claims.startup_loaded:
+            raise RuntimeError(f"XREFKIT_STARTUP_REQUIRED: call get_startup_context before {tool_name}")
+        return
     session = _session_of(ctx)
     if session is not None and session not in _STARTUP_LOADED_SESSIONS:
         raise RuntimeError(
@@ -72,6 +80,7 @@ def _with_control_reminder(result: dict[str, Any]) -> dict[str, Any]:
 # per-Skill flag would make distribution unreachable for Skills that don't
 # declare required_tools even though the general tool catalog still applies.
 _CLIENT_TOOLS_UNLOCKED_SESSIONS: "weakref.WeakSet[Any]" = weakref.WeakSet()
+_CONTEXT_CODEC: ContextTokenCodec | None = None
 
 
 def _unlock_client_tools(ctx: Any) -> None:
@@ -80,7 +89,46 @@ def _unlock_client_tools(ctx: Any) -> None:
         _CLIENT_TOOLS_UNLOCKED_SESSIONS.add(session)
 
 
+def _context_claims(ctx: Any) -> ContextClaims | None:
+    if _CONTEXT_CODEC is None:
+        return None
+    meta = getattr(getattr(ctx, "request_context", None), "meta", None)
+    extra = getattr(meta, "model_extra", None) or (meta if isinstance(meta, dict) else {})
+    token = extra.get(CONTEXT_META_KEY)
+    if token is None:
+        return None
+    try:
+        return _CONTEXT_CODEC.verify(str(token))
+    except ValueError as exc:
+        raise RuntimeError("XREFKIT_CONTEXT_INVALID: context_id could not be verified") from exc
+
+
+def _context_token(claims: ContextClaims | None) -> str | None:
+    if _CONTEXT_CODEC is None or claims is None:
+        return None
+    return _CONTEXT_CODEC.refresh(claims)
+
+
+def _binding_for(ctx: Any, run_registry: SessionRunRegistry) -> SessionRunBinding | None:
+    claims = _context_claims(ctx)
+    if claims is not None and claims.run_id and claims.skill_id and claims.mcp_session_id:
+        return SessionRunBinding(
+            run_id=claims.run_id,
+            mcp_session_id=claims.mcp_session_id,
+            repository_fingerprint=claims.repository_fingerprint,
+            skill_id=claims.skill_id,
+        )
+    return run_registry.current(_session_of(ctx))
+
+
 def _require_client_tools_unlocked(ctx: Any, tool_name: str) -> None:
+    claims = _context_claims(ctx)
+    if claims is not None:
+        if not claims.client_tools_unlocked:
+            raise RuntimeError(
+                f"XREFKIT_SKILL_SELECTION_REQUIRED: call get_skill or get_skill_requirements before {tool_name}"
+            )
+        return
     session = _session_of(ctx)
     if session is not None and session not in _CLIENT_TOOLS_UNLOCKED_SESSIONS:
         raise RuntimeError(
@@ -140,6 +188,15 @@ def main(argv: list[str] | None = None) -> int:
         help="Enable /dist executable artifacts after deployment trust is configured.",
     )
     parser.add_argument(
+        "--stateless-http",
+        action="store_true",
+        help="Serve Streamable HTTP without MCP protocol sessions; requires XREFKIT_CONTEXT_SECRET.",
+    )
+    parser.add_argument(
+        "--context-secret",
+        help="HMAC secret for client-carried XRefKit context tokens; defaults to XREFKIT_CONTEXT_SECRET.",
+    )
+    parser.add_argument(
         "--distribution-trust-id",
         help="Out-of-band pinned release manifest or signing-key identity.",
     )
@@ -156,6 +213,11 @@ def main(argv: list[str] | None = None) -> int:
         help="Structured MCP audit JSONL path. Defaults to <repo>/work/mcp/xid_audit.jsonl.",
     )
     args = parser.parse_args(argv)
+    if args.stateless_http and args.transport != "streamable-http":
+        parser.error("--stateless-http requires --transport streamable-http")
+    context_secret = args.context_secret or os.environ.get("XREFKIT_CONTEXT_SECRET")
+    if args.stateless_http and not context_secret:
+        parser.error("--stateless-http requires --context-secret or XREFKIT_CONTEXT_SECRET")
     try:
         _validate_tls_configuration(
             args.transport,
@@ -177,6 +239,11 @@ def main(argv: list[str] | None = None) -> int:
         parser.error(str(exc))
 
     catalog = XRefCatalog.build(Path(args.repo), args.domain_knowledge_root)
+    global _CONTEXT_CODEC
+    _CONTEXT_CODEC = ContextTokenCodec(
+        context_secret or os.urandom(32).hex(),
+        catalog.repository_fingerprint,
+    )
     audit_log = McpAuditLog(args.audit_log or (Path(args.repo) / "work" / "mcp" / "xid_audit.jsonl"))
     run_registry = SessionRunRegistry()
 
@@ -212,6 +279,7 @@ def main(argv: list[str] | None = None) -> int:
         port=args.port,
         streamable_http_path=args.http_path,
         log_level=args.log_level.upper(),
+        stateless_http=args.stateless_http,
     )
 
     @app.tool()
@@ -221,14 +289,29 @@ def main(argv: list[str] | None = None) -> int:
     @app.tool()
     def bind_skill_run(ctx: Context, run_id: str, skill_id: str) -> dict[str, Any]:
         _require_startup_loaded(ctx, "bind_skill_run")
-        binding = run_registry.bind(
-            _session_of(ctx),
-            run_id=run_id,
-            repository_fingerprint=catalog.repository_fingerprint,
-            skill_id=skill_id,
-        )
+        claims = _context_claims(ctx)
+        if claims is not None:
+            try:
+                normalized_run_id = str(uuid.UUID(str(run_id)))
+            except ValueError as exc:
+                raise ValueError(f"run_id must be a UUID: {run_id}") from exc
+            if claims.run_id and claims.run_id != normalized_run_id:
+                raise ValueError("context_id is already bound to a different Skill Run")
+            binding = SessionRunBinding(
+                run_id=normalized_run_id,
+                mcp_session_id=claims.mcp_session_id or claims.context_id,
+                repository_fingerprint=catalog.repository_fingerprint,
+                skill_id=skill_id,
+            )
+        else:
+            binding = run_registry.bind(
+                _session_of(ctx),
+                run_id=run_id,
+                repository_fingerprint=catalog.repository_fingerprint,
+                skill_id=skill_id,
+            )
         audit_log.append("run.bound", binding=binding, tool="bind_skill_run")
-        return {
+        result = {
             **binding.to_dict(),
             "audit_enabled": True,
             "client_record_command": (
@@ -237,11 +320,26 @@ def main(argv: list[str] | None = None) -> int:
                 f"--repository-fingerprint {binding.repository_fingerprint}"
             ),
         }
+        if claims is not None:
+            result["context_id"] = _CONTEXT_CODEC.refresh(
+                claims,
+                startup_loaded=True,
+                run_id=binding.run_id,
+                skill_id=binding.skill_id,
+                mcp_session_id=binding.mcp_session_id,
+            )
+        return result
 
     @app.tool()
     def end_skill_run(ctx: Context, run_id: str) -> dict[str, str]:
         _require_startup_loaded(ctx, "end_skill_run")
-        binding = run_registry.end(_session_of(ctx), run_id=run_id)
+        claims = _context_claims(ctx)
+        if claims is not None:
+            binding = _binding_for(ctx, run_registry)
+            if binding is None or binding.run_id != run_id:
+                raise ValueError("context_id does not match the active MCP Skill Run binding")
+        else:
+            binding = run_registry.end(_session_of(ctx), run_id=run_id)
         audit_log.append("run.ended", binding=binding, tool="end_skill_run")
         return binding.to_dict()
 
@@ -254,6 +352,12 @@ def main(argv: list[str] | None = None) -> int:
         for xid in result.get("load_order", []):
             _log_xid_query("get_startup_context", xid)
         _mark_startup_loaded(ctx)
+        if _CONTEXT_CODEC is not None:
+            claims = _context_claims(ctx)
+            if claims is None:
+                result["context_id"] = _CONTEXT_CODEC.issue(startup_loaded=True)
+            else:
+                result["context_id"] = _CONTEXT_CODEC.refresh(claims, startup_loaded=True)
         if dist is not None:
             result = _with_artifact_distribution(result, dist, dist_base_url)
         return result
@@ -293,7 +397,7 @@ def main(argv: list[str] | None = None) -> int:
 
     @app.tool()
     def search_knowledge_catalog(ctx: Context, query: str, limit: int = 10) -> list[dict[str, Any]]:
-        binding = run_registry.current(_session_of(ctx))
+        binding = _binding_for(ctx, run_registry)
         result = catalog.search_knowledge_catalog(query, limit)
         if binding is not None:
             audit_log.append(
@@ -309,7 +413,7 @@ def main(argv: list[str] | None = None) -> int:
     @app.tool()
     def get_knowledge_summary(ctx: Context, xid: str) -> dict[str, Any]:
         _require_startup_loaded(ctx, "get_knowledge_summary")
-        binding = run_registry.current(_session_of(ctx))
+        binding = _binding_for(ctx, run_registry)
         result = catalog.expand_knowledge(xid)["entry"]
         _log_xid_query(
             "get_knowledge_summary",
@@ -323,7 +427,7 @@ def main(argv: list[str] | None = None) -> int:
     @app.tool()
     def expand_knowledge(ctx: Context, xid: str) -> dict[str, Any]:
         _require_startup_loaded(ctx, "expand_knowledge")
-        binding = run_registry.current(_session_of(ctx))
+        binding = _binding_for(ctx, run_registry)
         result = catalog.expand_knowledge(xid)
         _log_xid_query(
             "expand_knowledge",
@@ -341,7 +445,7 @@ def main(argv: list[str] | None = None) -> int:
         known_version: str | None = None,
     ) -> dict[str, Any]:
         _require_startup_loaded(ctx, "get_document_by_xid")
-        binding = run_registry.current(_session_of(ctx))
+        binding = _binding_for(ctx, run_registry)
         result = catalog.get_document_by_xid(xid, known_version)
         _log_xid_query(
             "get_document_by_xid",
@@ -357,7 +461,7 @@ def main(argv: list[str] | None = None) -> int:
     @app.tool()
     def build_knowledge_context(ctx: Context, query: str, limit: int = 5) -> dict[str, Any]:
         _require_startup_loaded(ctx, "build_knowledge_context")
-        binding = run_registry.current(_session_of(ctx))
+        binding = _binding_for(ctx, run_registry)
         result = catalog.build_knowledge_context(query, limit)
         if binding is not None:
             audit_log.append(
@@ -403,7 +507,7 @@ def main(argv: list[str] | None = None) -> int:
         known_document_versions: dict[str, str] | None = None,
     ) -> dict[str, Any]:
         _require_startup_loaded(ctx, "get_skill")
-        binding = run_registry.current(_session_of(ctx))
+        binding = _binding_for(ctx, run_registry)
         if binding is not None and binding.skill_id != skill_id:
             raise ValueError(
                 f"get_skill requested {skill_id!r}, but the active Skill Run is bound to {binding.skill_id!r}"
@@ -417,14 +521,30 @@ def main(argv: list[str] | None = None) -> int:
                 selected_skill=skill_id,
             )
         _unlock_client_tools(ctx)
-        return _with_control_reminder(result)
+        response = _with_control_reminder(result)
+        claims = _context_claims(ctx)
+        if claims is not None:
+            response["context_id"] = _CONTEXT_CODEC.refresh(
+                claims,
+                startup_loaded=True,
+                client_tools_unlocked=True,
+            )
+        return response
 
     @app.tool()
     def get_skill_requirements(ctx: Context, skill_id: str) -> dict[str, Any]:
         _require_startup_loaded(ctx, "get_skill_requirements")
         result = catalog.get_skill_requirements(skill_id)
         _unlock_client_tools(ctx)
-        return _with_control_reminder(result)
+        response = _with_control_reminder(result)
+        claims = _context_claims(ctx)
+        if claims is not None:
+            response["context_id"] = _CONTEXT_CODEC.refresh(
+                claims,
+                startup_loaded=True,
+                client_tools_unlocked=True,
+            )
+        return response
 
     @app.tool()
     def resolve_skill_knowledge(ctx: Context, skill_id: str) -> dict[str, Any]:
@@ -433,7 +553,7 @@ def main(argv: list[str] | None = None) -> int:
 
     @app.tool()
     def rank_skills_for_purpose(ctx: Context, purpose: str, limit: int = 5) -> list[dict[str, Any]]:
-        binding = run_registry.current(_session_of(ctx))
+        binding = _binding_for(ctx, run_registry)
         result = catalog.rank_skills_for_purpose(purpose, limit)
         if binding is not None:
             audit_log.append(
