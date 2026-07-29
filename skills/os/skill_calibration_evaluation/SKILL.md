@@ -103,7 +103,6 @@ Return a report with:
 The Skill owner or quality reviewer decides whether to accept the alarm,
 investigate the model, revise the Skill, revise the evaluation case, or update
 the approved baseline. The evaluator must not self-approve a correction.
-
 ## Reporting Contract (共通報告)
 
 

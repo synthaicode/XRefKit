@@ -181,7 +181,6 @@ Before closing a phase:
 
 Do not approve business requirements, design, release, or residual risk unless
 the responsible human or governing workflow owns that decision.
-
 ## Reporting Contract (共通報告)
 
 
