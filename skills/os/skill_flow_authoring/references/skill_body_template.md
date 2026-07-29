@@ -28,6 +28,19 @@
 - <output 1>
 - <output 2>
 
+## Reporting Contract (共通報告)
+
+Use the shared [Skill Reporting Contract](../../../../docs/core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73) in the final report. Keep the canonical order `Status`, `Result`, `Evidence`, `Open Items`, and `Handoff`, but express headings and explanations in the user's language. Keep IDs, paths, commands, and status enum values stable. Write the user's equivalent of `なし` when a section is empty.
+If the status is `partial`, `blocked`, `escalated`, or `needs-review`, add a
+`Reason` / `理由` section immediately after `Status` and state the concrete
+conditions that caused the status.
+For checklists and matrices, add a `詳細` / `Details` column. Every `fail`,
+`unknown`, or `not_checked` result must link to the corresponding stable
+finding, open-item, or coverage anchor, such as `[CR-001](#cr-001)`. The
+detailed finding heading must use the same ID as its anchor.
+
+- reporting_profile: `summary_first` / `gate_verdict` / `checklist_verdict` / `phase_summary` / `artifact_traceability`
+
 ## Anti-Forgetting Structure
 
 - explicitly state what later AI runs must not have to reconstruct

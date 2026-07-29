@@ -208,3 +208,19 @@ Execute `CAP-DSN-004 -> CAP-DSN-002 -> CAP-DSN-003 -> CAP-MFG-003` and prepare a
 - Do not treat test tools created for a target as shared XRefKit assets by
   default; they are local-domain artifacts until explicitly adopted or
   published.
+
+## Reporting Contract (共通報告)
+
+
+
+- reporting_profile: phase_summary
+
+Use the shared [Skill Reporting Contract](../../docs/core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73) in the final report. Start with these headings in this order:
+
+1. Status — done, partial, blocked, or escalated
+2. Result — what was produced or decided
+3. Evidence — output, evidence, checks, or XIDs
+4. Open Items — unresolved unknowns, risks, judgments, or なし
+5. Handoff — next owner and next action, or なし
+
+Keep this summary-first section visible before Skill-specific detail; do not omit empty sections.

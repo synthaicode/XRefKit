@@ -88,6 +88,9 @@ Use the canonical spec in `knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4
   Where / How, TM rows, or implementation targets are disconnected
 - implementation-return feedback items for implementation-local findings
 - a gate verdict block (see Gate Verdict Output)
+- when the workflow status or gate verdict is `needs-review`, the human-facing
+  report must state the downgrade reason immediately after `Status`, linking
+  to the relevant finding or validation-boundary anchors
 
 ## Gate Verdict Output
 
@@ -339,7 +342,9 @@ required_followup: <next owner or specialist Skill, or none>
 - Report findings with evidence and remediation.
 - Emit a check item matrix before the findings list. The matrix must include
   each active review category, deterministic baseline checks, pending
-  validation boundaries, status, evidence, and notes. Categories with no
+  validation boundaries, status, evidence, notes, and a detail-anchor link.
+  Every `fail`, `needs_confirmation`, or `not_checked` row must link to the
+  finding, open item, or coverage note that explains the result. Categories with no
   finding must still be present as `pass` or `not_applicable`; do not make
   clean categories invisible.
 - Assign category status by the category's own applicability and result:
@@ -457,3 +462,19 @@ Closure is allowed only when all of the following hold:
 - If Roslyn baseline cannot be collected, continue review and mark output with `baseline_unavailable`.
 - If project preconditions cannot be statically verified, output `needs_confirmation` with missing evidence.
 - If lifecycle status source cannot be resolved, output `needs_confirmation` and list required source URLs.
+
+## Reporting Contract (共通報告)
+
+
+
+- reporting_profile: checklist_verdict
+
+Use the shared [Skill Reporting Contract](../../docs/core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73) in the final report. Start with these headings in this order:
+
+1. Status — done, partial, blocked, or escalated
+2. Result — what was produced or decided
+3. Evidence — output, evidence, checks, or XIDs
+4. Open Items — unresolved unknowns, risks, judgments, or なし
+5. Handoff — next owner and next action, or なし
+
+Keep this summary-first section visible before Skill-specific detail; do not omit empty sections.
