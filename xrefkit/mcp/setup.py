@@ -135,7 +135,7 @@ def setup(args: argparse.Namespace) -> int:
     metas: list[Path] = []
 
     if args.import_source:
-        from xrefkit.import_skill import convert_skill, convert_skill_tree
+        from xrefkit.import_skill import _find_skill_doc, _slug, convert_skill, convert_skill_tree
 
         source = Path(args.import_source).resolve()
         if (source / "skills").is_dir() or args.batch:
@@ -148,14 +148,20 @@ def setup(args: argparse.Namespace) -> int:
             )
             import_report = result.to_dict()
         else:
-            if not args.skill_id:
-                raise SystemExit("--skill-id is required when --import is a single Skill directory")
+            try:
+                _find_skill_doc(source, None)
+            except FileNotFoundError as exc:
+                raise SystemExit(
+                    "--import must point to a Skill directory containing SKILL.md or README.md, "
+                    "or a directory containing skills/"
+                ) from exc
+            skill_id = args.skill_id or _slug(source.name)
             result = convert_skill(
                 source_dir=source,
                 source_root=source.parent,
                 repo_root=root,
-                skill_id=args.skill_id,
-                target_skill_dir=root / "skills" / args.skill_id,
+                skill_id=skill_id,
+                target_skill_dir=root / "skills" / skill_id,
                 dry_run=False,
             )
             import_report = result.to_dict()
@@ -211,7 +217,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="xrefkit mcp")
     sub = parser.add_subparsers(dest="command", required=True)
     setup_parser = sub.add_parser("setup", help="import Skills and generate reviewable MCP setup artifacts")
-    setup_parser.add_argument("--repo", required=True)
+    setup_parser.add_argument("--repo", default=".", help="Target XRefKit repository; defaults to the current directory")
     setup_parser.add_argument("--import", dest="import_source", default=None, help="Skill directory or batch root")
     setup_parser.add_argument("--batch", action="store_true")
     setup_parser.add_argument("--skill-id-prefix", default="imported")
@@ -232,3 +238,4 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
