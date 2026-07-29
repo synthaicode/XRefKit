@@ -55,6 +55,41 @@ def test_mcp_setup_imports_existing_batch_skill_before_writing_report(tmp_path: 
     assert payload["output"] == str(output.resolve())
 
 
+def test_mcp_setup_infers_single_skill_id_without_explicit_option(tmp_path: Path, capsys) -> None:
+    source = tmp_path / "existing-skill"
+    source.mkdir()
+    (source / "SKILL.md").write_text("# Existing Skill\n\nUse the supplied workflow.\n", encoding="utf-8")
+    root = tmp_path / "repo"
+    output = tmp_path / "setup-output"
+
+    exit_code = main(
+        [
+            "mcp",
+            "setup",
+            "--repo",
+            str(root),
+            "--import",
+            str(source),
+            "--output",
+            str(output),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code in {0, 1}
+    assert (root / "skills" / "existing-skill" / "SKILL.md").is_file()
+    report = json.loads((output / "import-report.json").read_text(encoding="utf-8"))
+    assert report["import"]["skill_id"] == "existing-skill"
+    assert payload["output"] == str(output.resolve())
+
+
+def test_mcp_setup_defaults_repo_to_current_directory(tmp_path: Path, monkeypatch, capsys) -> None:
+    monkeypatch.chdir(tmp_path)
+    assert main(["mcp", "setup", "--json"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["ok"] is True
+
+
 def test_mcp_setup_apply_copies_config_and_appends_instructions(tmp_path: Path, capsys) -> None:
     output = tmp_path / "setup-output"
     root = tmp_path / "repo"
