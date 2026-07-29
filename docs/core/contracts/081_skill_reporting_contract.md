@@ -69,6 +69,13 @@ finding or explanation exists. If a category is `pass`, `not_applicable`, or
 one exists. The anchor is a human-navigation addition; status enum values stay
 unchanged.
 
+Category and checklist tables should also expose a short category description
+link when the category name alone does not explain the review axis. Link to the
+canonical Skill, Knowledge, contract, or other definition URL. Keep this
+category-description link separate from the finding-detail link: the former
+explains what the category means, while the latter explains why this run got
+its result.
+
 ## Language Rule
 
 The language of the user's latest clear request is the default report

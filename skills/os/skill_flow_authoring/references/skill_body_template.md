@@ -38,6 +38,9 @@ For checklists and matrices, add a `詳細` / `Details` column. Every `fail`,
 `unknown`, or `not_checked` result must link to the corresponding stable
 finding, open-item, or coverage anchor, such as `[CR-001](#cr-001)`. The
 detailed finding heading must use the same ID as its anchor.
+When category names are not self-explanatory, add a `説明` / `Description`
+column with a URL to the canonical category definition. Keep this link
+separate from the result-specific detail anchor.
 
 - reporting_profile: `summary_first` / `gate_verdict` / `checklist_verdict` / `phase_summary` / `artifact_traceability`
 
