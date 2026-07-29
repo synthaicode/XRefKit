@@ -342,7 +342,8 @@ required_followup: <next owner or specialist Skill, or none>
 - Report findings with evidence and remediation.
 - Emit a check item matrix before the findings list. The matrix must include
   each active review category, deterministic baseline checks, pending
-  validation boundaries, status, evidence, notes, and a detail-anchor link.
+  validation boundaries, status, evidence, notes, a category-description link,
+  and a detail-anchor link.
   Every `fail`, `needs_confirmation`, or `not_checked` row must link to the
   finding, open item, or coverage note that explains the result. Categories with no
   finding must still be present as `pass` or `not_applicable`; do not make
