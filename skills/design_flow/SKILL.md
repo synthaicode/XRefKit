@@ -289,3 +289,19 @@ style guides when the existing codebase provides a local rule.
   `source_structure_findings_registration` first.
 - Do not use a local analysis artifact as the design source-analysis basis until
   it has been registered as canonical domain knowledge.
+
+## Reporting Contract (共通報告)
+
+
+
+- reporting_profile: phase_summary
+
+Use the shared [Skill Reporting Contract](../../docs/core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73) in the final report. Start with these headings in this order:
+
+1. Status — done, partial, blocked, or escalated
+2. Result — what was produced or decided
+3. Evidence — output, evidence, checks, or XIDs
+4. Open Items — unresolved unknowns, risks, judgments, or なし
+5. Handoff — next owner and next action, or なし
+
+Keep this summary-first section visible before Skill-specific detail; do not omit empty sections.

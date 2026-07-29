@@ -84,3 +84,19 @@ Take approved promotion candidates from `work/` and apply them to canonical repo
 - Never duplicate the same stable rule across multiple canonical areas without a clear boundary.
 - Prefer updating an existing canonical file over creating a new fragment when the concept already has a natural home.
 - Keep the moved-to pointer short and factual.
+
+## Reporting Contract (共通報告)
+
+
+
+- reporting_profile: summary_first
+
+Use the shared [Skill Reporting Contract](../../../docs/core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73) in the final report. Start with these headings in this order:
+
+1. Status — done, partial, blocked, or escalated
+2. Result — what was produced or decided
+3. Evidence — output, evidence, checks, or XIDs
+4. Open Items — unresolved unknowns, risks, judgments, or なし
+5. Handoff — next owner and next action, or なし
+
+Keep this summary-first section visible before Skill-specific detail; do not omit empty sections.

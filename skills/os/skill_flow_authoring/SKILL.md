@@ -31,6 +31,7 @@ reconstructing everything from scratch.
 - [Flow YAML template](references/flow_yaml_template.yaml#xid-87F138864C3F)
 - [Flow doc template](references/flow_doc_template.md#xid-9604C0C31FE3)
 - [Authoring checklist](references/authoring_checklist.md#xid-6E8A134DCEE5)
+- [Draft-to-trial evolution loop](references/draft_evolution_loop.md#xid-9E4A71C6B2D8)
 
 ## Inputs
 
@@ -45,6 +46,11 @@ reconstructing everything from scratch.
 - intended behavior boundary
 - expected inputs, outputs, and handoff
 - optional draft notes, legacy artifacts, or related docs
+
+When the input is a rough draft or partial Skill, use the
+[Draft-to-trial evolution loop](references/draft_evolution_loop.md#xid-9E4A71C6B2D8)
+to classify confirmed material, proposed procedure, domain facts, and open
+decisions before editing.
 
 ## Outputs
 
@@ -116,6 +122,9 @@ carry explicit continuity structure.
   `trial` Skill, allow temporary embedded target-specific knowledge only with an
   explicit deferred extraction note.
 - Decide the minimum managed file set.
+- For a rough draft, plan the smallest progression through intake, scaffold,
+  gap diagnosis, human revision, trial promotion, and observation. Do not
+  collapse these stages into one generation step.
 - Define the anti-forgetting package that the authored asset must carry:
   - what must be explicitly remembered at reload time
   - where that memory should live
@@ -142,6 +151,8 @@ carry explicit continuity structure.
    - add `references/` only when they reduce repeated authoring effort
    - force explicit `input`, `output`, lifecycle, observation, and closure
      structure so later AI runs do not rely on implicit memory
+   - when starting from a rough draft, record the gap diagnosis and the next
+     evidence needed before claiming trial readiness
 3. For a public Skill:
    - register it in `skills/_index.md` (the only place holding summary and
      meta/SKILL paths)
@@ -173,13 +184,13 @@ carry explicit continuity structure.
    `knowledge/`, `agent/`, or `capabilities/`, run:
 
 ```powershell
-python -m xrefkit xref init --include skills docs knowledge agent capabilities
+python -m xrefkit xref init --include skills docs knowledge agent capabilities tools
 ```
 
 9. After edits, run:
 
 ```powershell
-python -m xrefkit xref fix --include skills docs knowledge agent capabilities
+python -m xrefkit xref fix --include skills docs knowledge agent capabilities tools
 ```
 
 10. Validate the created Skill at the intended maturity level, and confirm
@@ -258,3 +269,19 @@ python -m xrefkit skill list
   readiness.
 - Do not leave continuity-critical information implicit when it can be recorded
   structurally.
+
+## Reporting Contract (共通報告)
+
+
+
+- reporting_profile: summary_first
+
+Use the shared [Skill Reporting Contract](../../../docs/core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73) in the final report. Start with these headings in this order:
+
+1. Status — done, partial, blocked, or escalated
+2. Result — what was produced or decided
+3. Evidence — output, evidence, checks, or XIDs
+4. Open Items — unresolved unknowns, risks, judgments, or なし
+5. Handoff — next owner and next action, or なし
+
+Keep this summary-first section visible before Skill-specific detail; do not omit empty sections.

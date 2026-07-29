@@ -24,9 +24,9 @@
 - Require explicit inputs, outputs, handoff, sequence, and control rules for
   authored Flows.
 - Update public routing indexes when publishing to `skills/`.
-- Run `python -m xrefkit xref init --include skills docs knowledge agent capabilities`
+- Run `python -m xrefkit xref init --include skills docs knowledge agent capabilities tools`
   when new managed Markdown files are added.
-- Run `python -m xrefkit xref fix --include skills docs knowledge agent capabilities`.
+- Run `python -m xrefkit xref fix --include skills docs knowledge agent capabilities tools`.
 - Run `python -m xrefkit skill check --meta ... --level <target>`.
 - Run `python -m xrefkit skill list` before committing or publishing skill assets;
   violations must be zero. Suppress a reviewed boundary-convention pointer

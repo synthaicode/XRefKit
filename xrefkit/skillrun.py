@@ -434,6 +434,10 @@ def _render_log(
     worklist_lines = "\n".join(
         f"- [ ] {name}: {description}" for name, description in WORKLIST_ROWS
     )
+    worklist_report_lines = "\n".join(
+        f"| [{name}](#{_safe_slug(name.lower())}) | {description} | Phase checklist | not_checked | [{name}](#{_safe_slug(name.lower())}) |"
+        for name, description in WORKLIST_ROWS
+    )
     handoff_source_lines = "\n".join(
         f"- source_log: `{source['source_log']}` skill_id=`{source['skill_id']}` closure=`{source['closure']}` handoff=`{source['handoff']}`"
         for source in handoff_sources
@@ -494,6 +498,8 @@ def _render_log(
 - meta: `{meta_path.as_posix()}`
 - skill_doc: `{skill_doc.as_posix()}`
 - task: {task}
+- report_language: `user_language`
+- language_rule: `human-facing report prose follows the user's language; runtime keys, status enums, IDs, paths, and commands remain stable`
 
 ## Skill Load Gate
 
@@ -602,6 +608,36 @@ def _render_log(
 
 ## Worklist
 
+### Report
+
+### Status
+pending
+
+### Reason
+The workflow protocol has not started; phase results are not yet available.
+
+### Result
+The workflow protocol worklist has not started.
+
+### Checks Performed
+
+| Check ID | What was checked | Target / Scope | Result | Evidence / Details |
+| --- | --- | --- | --- | --- |
+{worklist_report_lines}
+
+### Evidence
+- Phase checklist and phase sections in this Run Log
+- Phase events recorded below
+
+### Open Items
+- All workflow phases are not_checked.
+
+### Handoff
+- Next owner: executor
+- Next action: complete Startup and Planning.
+
+### Phase Checklist
+
 {worklist_lines}
 
 ## Concrete Work Items
@@ -630,6 +666,33 @@ def _render_log(
 - model_tier: `{tier_label}`
 - policy: `{quality_policy}`
 - rule: declare acceptance check items as `check`-kind artifacts at planning; an independent quality reviewer sets each to `done` (pass) or `blocked` (fail) with `xrefkit skill artifact`; domain reviews run as separate review Skills orchestrated by the main session and linked here. Required when model_tier is `standard` or `heavy`; optional otherwise
+
+### Report
+
+### Status
+pending
+
+### Reason
+Quality acceptance checks have not yet been recorded.
+
+### Result
+No quality checklist items have been recorded yet.
+
+### Checks Performed
+
+| Check ID | What was checked | Target / Scope | Result | Evidence / Details |
+| --- | --- | --- | --- | --- |
+| none | No check artifact recorded | Quality Gate | not_checked | [Runtime Artifacts](#runtime-artifacts) |
+
+### Evidence
+- Check-kind artifacts in Runtime Artifacts
+
+### Open Items
+- Quality acceptance checks are pending.
+
+### Handoff
+- Next owner: quality_reviewer
+- Next action: record each acceptance check as a check-kind artifact.
 
 ## Unknowns And Risks
 
@@ -675,12 +738,14 @@ def _append_phase_event(text: str, *, phase: str, status: str, role: str | None,
 
 
 def _section_status(text: str, section: str) -> str | None:
-    marker = f"## {section}\n"
-    start = text.find(marker)
-    if start == -1:
+    heading = re.compile(rf"^## {re.escape(section)}\s*$", re.MULTILINE)
+    match = heading.search(text)
+    if match is None:
         return None
+    start = match.start()
 
-    next_section = text.find("\n## ", start + len(marker))
+    next_heading = re.compile(r"^## (?!#).*$", re.MULTILINE).search(text, match.end())
+    next_section = next_heading.start() if next_heading else -1
     body = text[start:] if next_section == -1 else text[start:next_section]
     prefix = "- status: `"
     status_start = body.find(prefix)
@@ -694,12 +759,13 @@ def _section_status(text: str, section: str) -> str | None:
 
 
 def _section_body(text: str, section: str) -> tuple[str | None, int, int]:
-    marker = f"## {section}\n"
-    start = text.find(marker)
-    if start == -1:
+    heading = re.compile(rf"^## {re.escape(section)}\s*$", re.MULTILINE)
+    match = heading.search(text)
+    if match is None:
         return None, -1, -1
-    next_section = text.find("\n## ", start + len(marker))
-    end = len(text) if next_section == -1 else next_section
+    start = match.start()
+    next_heading = re.compile(r"^## (?!#).*$", re.MULTILINE).search(text, match.end())
+    end = len(text) if next_heading is None else next_heading.start()
     return text[start:end], start, end
 
 
@@ -801,7 +867,128 @@ def _set_phase_status(text: str, *, phase: str, status: str) -> str:
             text, changed = _replace_line(text, old_status, new_status)
             if changed:
                 break
-    return text
+    return _refresh_quality_report(_refresh_worklist_report(text))
+
+
+def _refresh_worklist_report(text: str) -> str:
+    """Keep the human-facing worklist report aligned with phase checkboxes."""
+    body, _, _ = _section_body(text, "Worklist")
+    if body is None or "### Phase Checklist\n" not in body:
+        return text
+
+    rows: list[tuple[str, str, str]] = []
+    for name, _description in WORKLIST_ROWS:
+        match = re.search(
+            rf"^- \[(?P<checkbox>[ x!])\] {re.escape(name)}: (?P<description>.+)$",
+            body,
+            flags=re.MULTILINE,
+        )
+        if match:
+            checkbox = match.group("checkbox")
+            result = "pass" if checkbox == "x" else "fail" if checkbox == "!" else "not_checked"
+            rows.append((name, match.group("description"), result))
+
+    if not rows:
+        return text
+    completed = sum(result == "pass" for _, _, result in rows)
+    if completed == len(rows):
+        status = "done"
+    elif any(result == "fail" for _, _, result in rows):
+        status = "blocked"
+    elif completed:
+        status = "partial"
+    else:
+        status = "pending"
+    open_items = [name for name, _, result in rows if result != "pass"] or ["なし"]
+    next_phase = next((name for name, _, result in rows if result != "pass"), "なし")
+    table = "\n".join(
+        f"| {name} | {description} | {result} | Phase checklist |"
+        for name, description, result in rows
+    )
+    report = (
+        "### Report\n\n"
+        f"### Status\n{status}\n\n"
+        + "### Reason\n"
+        + (
+            "All workflow phases are complete."
+            if status == "done"
+            else f"The workflow remains {status}; incomplete phases: {', '.join(open_items)}."
+        )
+        + "\n\n"
+        f"### Result\n{completed} of {len(rows)} workflow protocol phases are complete.\n\n"
+        "### Checks Performed\n\n"
+        "| Check ID | What was checked | Target / Scope | Result | Evidence / Details |\n"
+        "| --- | --- | --- | --- | --- |\n"
+        + "\n".join(
+            f"| [{name}](#{_safe_slug(name.lower())}) | {description} | Phase checklist | {result} | [{name}](#{_safe_slug(name.lower())}) |"
+            for name, description, result in rows
+        )
+        + "\n\n"
+        "### Evidence\n"
+        "- Phase checklist and phase sections in this Run Log\n"
+        "- Phase events recorded below\n\n"
+        "### Open Items\n"
+        + "\n".join(f"- {item}" for item in open_items)
+        + "\n\n### Handoff\n"
+        f"- Next owner: executor\n- Next action: advance {next_phase}.\n"
+    )
+    updated = re.sub(
+        r"(?ms)### Report\n\n.*?(?=\n### Phase Checklist\n)",
+        report.rstrip(),
+        body,
+        count=1,
+    )
+    start = text.find(body)
+    return text if start == -1 else text[:start] + updated + text[start + len(body):]
+
+
+def _refresh_quality_report(text: str) -> str:
+    """Render quality check artifacts as the common checklist report."""
+    body, start, end = _section_body(text, "Quality Gate")
+    if body is None or "### Report\n" not in body:
+        return text
+    checks = [artifact for artifact in _parse_artifacts(text) if artifact["kind"] == "check"]
+    status = _section_status(text, "Quality Gate") or "pending"
+    if checks:
+        rows = []
+        for check in checks:
+            result = {
+                "done": "pass",
+                "blocked": "fail",
+                "na": "not_applicable",
+                "pending": "not_checked",
+            }.get(check["status"], check["status"])
+            rows.append(
+                f"| {check['artifact_id']} | {check['note']} | {check['target']} | {result} | [{check['artifact_id']}](#runtime-artifacts) |"
+            )
+        result_text = f"{len(checks)} quality checklist item(s) are recorded."
+        open_items = [check["artifact_id"] for check in checks if check["status"] not in {"done", "na"}] or ["なし"]
+    else:
+        rows = ["| none | No check artifact recorded | Quality Gate | not_checked | [Runtime Artifacts](#runtime-artifacts) |"]
+        result_text = "No quality checklist items have been recorded yet."
+        open_items = ["Quality acceptance checks are pending."]
+    report = (
+        "### Report\n\n"
+        f"### Status\n{status}\n\n"
+        + "### Reason\n"
+        + (
+            "All quality checks are complete."
+            if status == "done"
+            else f"The quality gate remains {status}; open checks: {', '.join(open_items)}."
+        )
+        + "\n\n"
+        f"### Result\n{result_text}\n\n"
+        "### Checks Performed\n\n"
+        "| Check ID | What was checked | Target / Scope | Result | Evidence / Details |\n"
+        "| --- | --- | --- | --- | --- |\n"
+        + "\n".join(rows)
+        + "\n\n### Evidence\n- Check-kind artifacts in Runtime Artifacts\n\n"
+        "### Open Items\n"
+        + "\n".join(f"- {item}" for item in open_items)
+        + "\n\n### Handoff\n- Next owner: quality_reviewer\n- Next action: resolve open checklist items.\n"
+    )
+    updated = re.sub(r"(?ms)### Report\n\n.*?(?=\n## Unknowns And Risks\n)", report.rstrip(), body, count=1)
+    return text[:start] + updated + text[end:]
 
 
 def _workitem_checkbox(status: str) -> str:
@@ -1116,6 +1303,7 @@ def update_artifact(args) -> SkillRunResult:
         )
 
     text = _replace_runtime_artifacts_section(text, artifacts)
+    text = _refresh_quality_report(text)
     text = _append_phase_event(text, phase=f"artifact:{artifact_id}", status=status, role=role, note=note or target)
     _atomic_write_text(log_path, text)
     return SkillRunResult(ok=True, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[], artifacts=artifacts)

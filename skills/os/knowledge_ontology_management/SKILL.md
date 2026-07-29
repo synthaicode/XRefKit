@@ -113,9 +113,9 @@ python -m xrefkit skill concern --log <run-log> --id <id> --kind judgment --sign
 7. Run:
 
 ```powershell
-python -m xrefkit xref fix --include skills docs knowledge agent capabilities
+python -m xrefkit xref fix --include skills docs knowledge agent capabilities tools
 python skills/os/knowledge_ontology_management/scripts/validate_knowledge_relations.py
-python -m xrefkit xref check --include skills docs knowledge agent capabilities
+python -m xrefkit xref check --include skills docs knowledge agent capabilities tools
 ```
 
 8. Record the canonical or proposal artifact and validation evidence in the
@@ -152,3 +152,19 @@ python -m xrefkit xref check --include skills docs knowledge agent capabilities
 - Do not put canonical facts in this Skill.
 - Do not write `supersedes` relations manually; use `xref deprecate`.
 - Do not mutate canonical knowledge in `proposal_only`.
+
+## Reporting Contract (共通報告)
+
+
+
+- reporting_profile: summary_first
+
+Use the shared [Skill Reporting Contract](../../../docs/core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73) in the final report. Start with these headings in this order:
+
+1. Status — done, partial, blocked, or escalated
+2. Result — what was produced or decided
+3. Evidence — output, evidence, checks, or XIDs
+4. Open Items — unresolved unknowns, risks, judgments, or なし
+5. Handoff — next owner and next action, or なし
+
+Keep this summary-first section visible before Skill-specific detail; do not omit empty sections.

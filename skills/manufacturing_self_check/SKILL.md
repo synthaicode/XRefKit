@@ -105,3 +105,18 @@ data, data correction/backfill scripts, and DB test output.
   current database state basis, or an explicit evidence gap.
 - Do not silently change design policy.
 
+## Reporting Contract (共通報告)
+
+
+
+- reporting_profile: checklist_verdict
+
+Use the shared [Skill Reporting Contract](../../docs/core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73) in the final report. Start with these headings in this order:
+
+1. Status — done, partial, blocked, or escalated
+2. Result — what was produced or decided
+3. Evidence — output, evidence, checks, or XIDs
+4. Open Items — unresolved unknowns, risks, judgments, or なし
+5. Handoff — next owner and next action, or なし
+
+Keep this summary-first section visible before Skill-specific detail; do not omit empty sections.

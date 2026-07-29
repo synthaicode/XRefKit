@@ -54,6 +54,18 @@ handoff deltas belong in `lifecycle`, `constraints`, `closure`, or check
 artifacts. (The legacy `role_responsibilities.executor` value is still accepted
 as the responsibility, but new Skills declare `responsibility` directly.)
 
+Every Skill must expose a recognizable human-facing report. The report must
+use the common `Report`, `Status`, `Result`, `Evidence`, `Open Items`, and
+`Handoff` labels and order defined in
+`docs/core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73`.
+Each Skill should declare one reporting profile: `summary_first`,
+`gate_verdict`, `checklist_verdict`, `phase_summary`, or
+`artifact_traceability`. Domain-specific
+output shapes may follow the common section; they must not replace or hide it.
+Human-facing report text follows the user's language. Runtime section keys,
+status enums, IDs, paths, commands, and other machine-facing identifiers remain
+stable; localize their explanations rather than changing the identifiers.
+
 ## Required Meta Block
 
 The canonical compact declaration is the version shorthand:
@@ -235,6 +247,13 @@ Supported work-item statuses are the same runtime status set:
 At least one concrete work item is required before closure. Every concrete work
 item must be `done` or `escalated` before the Skill run can close.
 
+The generated `Worklist` is also a report. It must expose `Status`, `Result`,
+`Checks Performed`, `Evidence`, `Open Items`, and `Handoff` before the phase
+checklist. Each protocol phase is a checklist row with an explicit result;
+the checklist is the source of truth for workflow progression. Its human-facing
+summary and explanations use the user's language while its phase keys and
+status values remain stable for tooling.
+
 The generated log also contains a `Runtime Artifacts` section. Add or update
 structured output and evidence links with:
 
@@ -373,6 +392,18 @@ Roslyn analyzer), and a per-run content probe decides whether it applies or is
 subagent performs generic acceptance verification and runs deterministic tools
 itself, while the main session orchestrates any domain-review Skill runs and
 links their verdicts back as `check` artifacts.
+
+The generated `Quality Gate` is also a checklist report. Its `Checks
+Performed` table must list every check artifact with the check ID, what was
+checked, target or scope, result, and evidence. A check that was not performed
+must be recorded as `not_checked` with its reason and owner; omission is not a
+valid coverage result. The quality gate's workflow status and any domain gate
+verdict remain separate fields. The table's descriptions, reasons, and
+handoff text use the user's language; check IDs, status enums, artifact IDs,
+paths, and commands remain unchanged. When a check is `fail`, `unknown`, or
+`not_checked`, its evidence/details cell must link to the stable finding,
+open-item, or coverage anchor that explains the result. A bare status without
+such a link is not recognizable enough for human follow-up.
 
 The quality gate is mandatory only for `model_tier` `standard` and `heavy`;
 `light` and untiered skills may close without it. This keeps routing- and
