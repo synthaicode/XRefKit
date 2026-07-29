@@ -113,9 +113,9 @@ python -m xrefkit skill concern --log <run-log> --id <id> --kind judgment --sign
 7. Run:
 
 ```powershell
-python -m xrefkit xref fix --include skills docs knowledge agent capabilities
+python -m xrefkit xref fix --include skills docs knowledge agent capabilities tools
 python skills/os/knowledge_ontology_management/scripts/validate_knowledge_relations.py
-python -m xrefkit xref check --include skills docs knowledge agent capabilities
+python -m xrefkit xref check --include skills docs knowledge agent capabilities tools
 ```
 
 8. Record the canonical or proposal artifact and validation evidence in the

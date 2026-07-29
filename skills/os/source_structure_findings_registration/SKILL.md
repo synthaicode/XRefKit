@@ -150,9 +150,9 @@ Closure is allowed only when all of the following are recorded:
 For authorized `apply`, run:
 
 ```powershell
-python -m xrefkit xref fix --include skills docs knowledge agent capabilities
+python -m xrefkit xref fix --include skills docs knowledge agent capabilities tools
 python skills/os/knowledge_ontology_management/scripts/validate_knowledge_relations.py
-python -m xrefkit xref check --include skills docs knowledge agent capabilities
+python -m xrefkit xref check --include skills docs knowledge agent capabilities tools
 ```
 
 ## Handoff
