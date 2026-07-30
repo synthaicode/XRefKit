@@ -1,0 +1,53 @@
+name: skill-bundle-release
+
+on:
+  push:
+    tags:
+      - "xrefkit-skills-*-v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  bundle:
+    name: Build and attach Skill bundle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Build release bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          suffix="${tag#xrefkit-skills-}"
+          bundle="${suffix%-v*}"
+          version="${suffix##*-v}"
+          package_root="packages/xrefkit-skills-${bundle}/src"
+          source_root="${package_root}/xrefkit_skills_${bundle//-/_}"
+          if [[ ! -d "${source_root}" ]]; then
+            echo "package source not found: ${source_root}" >&2
+            exit 1
+          fi
+          mkdir -p "bundle/xrefkit-skills-${bundle}"
+          for directory in skills knowledge review_axes schemas; do
+            if [[ -d "${source_root}/${directory}" ]]; then
+              cp -R "${source_root}/${directory}" "bundle/xrefkit-skills-${bundle}/"
+            fi
+          done
+          if [[ -f "${source_root}/package_manifest.yaml" ]]; then
+            cp "${source_root}/package_manifest.yaml" "bundle/xrefkit-skills-${bundle}/"
+          fi
+          test -d "bundle/xrefkit-skills-${bundle}/skills"
+          archive="xrefkit-skills-${bundle}-${version}.zip"
+          (cd bundle && zip -qr "../${archive}" "xrefkit-skills-${bundle}")
+          sha256sum "${archive}" > "${archive}.sha256"
+
+      - name: Attach bundle to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+            gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" --generate-notes
+          fi
+          gh release upload "${GITHUB_REF_NAME}" xrefkit-skills-*.zip xrefkit-skills-*.zip.sha256 --clobber

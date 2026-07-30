@@ -27,6 +27,7 @@ def _print_help() -> None:
         "  dashboard  inspect runtime state\n"
         "  analysis   generate proposal-only observation reports\n"
         "  mcp        start the integrated MCP server\n"
+        "  skills     synchronize released Skill and Knowledge bundles\n"
         "  package    inspect installed Skill packages\n"
         "  show       show effective Skill bundles"
     )
@@ -67,6 +68,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         from .mcp import main as mcp_main
 
         return mcp_main(args[1:])
+    if command == "skills":
+        from .skills_sync import main as skills_main
+
+        return skills_main(args[1:])
 
     print(f"xrefkit: unknown command: {command}", file=sys.stderr)
     _print_help()
