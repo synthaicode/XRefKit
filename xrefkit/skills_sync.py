@@ -53,7 +53,7 @@ def _github_json(url: str) -> dict[str, object]:
         },
     )
     try:
-        with urllib.request.urlopen(request) as response:
+        with urllib.request.urlopen(request) as response:  # nosec B310 - URL is GitHub API HTTPS
             payload = json.loads(response.read().decode("utf-8"))
     except (urllib.error.URLError, urllib.error.HTTPError) as exc:
         raise RuntimeError(f"could not read GitHub release metadata: {url}") from exc
@@ -101,7 +101,7 @@ def _download_asset(asset: dict[str, object]) -> tuple[str, bytes]:
         raise RuntimeError("GitHub release asset has no usable name or download URL")
     request = urllib.request.Request(url, headers={"User-Agent": "xrefkit-skill-sync"})
     try:
-        with urllib.request.urlopen(request) as response:
+        with urllib.request.urlopen(request) as response:  # nosec B310 - URL comes from GitHub release metadata
             return name, response.read()
     except (urllib.error.URLError, urllib.error.HTTPError) as exc:
         raise RuntimeError(f"could not download release asset: {name}") from exc
