@@ -46,6 +46,35 @@ has no content, use the user's equivalent of `なし` instead of omitting the
 section. The report is summary-first; detailed domain sections and tables
 follow it.
 
+### Operational checkpoint extension
+
+For multi-step or resumable work, a report may add the following operational
+details after the common summary and handoff. These details make the current
+execution state visible without changing the common report order:
+
+```md
+### 作業境界
+- 目的:
+- 完了条件:
+- 対象範囲:
+- 対象外:
+
+### 検証条件
+- コマンド or check:
+- 期待結果:
+- 最新結果:
+
+### 現在の checkpoint
+- 現在の step:
+- 判断・ブロッカー:
+- 次の step:
+```
+
+Use this extension only when the work can span meaningful steps, sessions,
+agents, or verification gates. It supplements the Run Log and does not replace
+XID-backed evidence, work items, artifacts, concerns, phases, `skill verify`,
+or `skill close`.
+
 ## Finding And Checklist Anchors
 
 When a report contains a checklist, category matrix, gate table, or other

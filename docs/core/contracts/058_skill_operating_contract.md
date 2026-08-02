@@ -119,6 +119,48 @@ regardless of which meta form is used.
   - when startup begins from a prior handoff, the receiving side must verify
     that the source run already passed closure before continuing
 
+## Bounded Execution And Resume Controls
+
+For work that is multi-step, stateful, ambiguous, long-running, expensive, or
+likely to cross sessions or agents, the run must use a compact preflight before
+substantial execution. Short, low-risk work may express the same information in
+one concise startup record.
+
+The preflight records:
+
+- `route`: the selected Skill or instruction-backed workflow route
+- `goal`: the primary objective
+- `context`: the current repository, branch, source scope, and baseline
+- `constraints`: authority, file ownership, safety, and other limits
+- `done_when`: the observable completion condition
+- `out_of_scope`: work that must not be absorbed by this run
+- `verification_commands`: the checks expected before closure
+- `stop_conditions`: conditions that require stop, re-route, or escalation
+- `handoff_location`: where resumable facts and outputs will be recorded
+
+During execution, record a checkpoint at meaningful step boundaries. A
+checkpoint names the current step, its owned boundary, the expected check, the
+actual result, decisions or blockers, and the next step. A checkpoint is a
+progress record; it does not replace work items, artifacts, concerns, phase
+events, deterministic verification, or closure.
+
+Stop and re-evaluate when the goal, scope, required data, tool result, user
+priority, or verification basis changes; when the same hypothesis fails three
+times; or when a time, tool-call, token, or external-cost budget is exceeded.
+Do not hide the change inside an assumption. Re-route or escalate it as an
+explicit unknown, risk, or handoff.
+
+Completion claims must use fresh verification evidence from the current run.
+Prior summaries, memory, and handoffs are navigation hints and must be
+compared with current repository, runtime, and remote state before they are
+used as evidence.
+
+A resumable handoff must include modified files, verified constraints, the
+verification command and result, key decisions, current priority, a context
+audit of information to keep/externalize/discard or treat as stale, blockers,
+and the next action. The receiving run must compare this handoff with current
+local truth before continuing.
+
 ## Skill Authoring Requirement
 
 When promoting a Skill to `stable` or `governed`, include sections that
