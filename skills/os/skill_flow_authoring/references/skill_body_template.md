@@ -30,7 +30,7 @@
 
 ## Reporting Contract (共通報告)
 
-Use the shared [Skill Reporting Contract](../../../../docs/core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73) in the final report. Keep the canonical order `Status`, `Result`, `Evidence`, `Open Items`, and `Handoff`, but express headings and explanations in the user's language. Keep IDs, paths, commands, and status enum values stable. Write the user's equivalent of `なし` when a section is empty.
+Use the shared [Skill Reporting Contract](../../../../docs/core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73) in the final report. When the request is in Japanese, use the Japanese human-facing form in this order: `結論`, `状態`, `理由` when required, `確認したこと`, `残っている課題`, and `次にすること`. Keep IDs, paths, commands, and status enum values stable. Write the user's equivalent of `なし` when a section is empty.
 If the status is `partial`, `blocked`, `escalated`, or `needs-review`, add a
 `Reason` / `理由` section immediately after `Status` and state the concrete
 conditions that caused the status.
