@@ -46,6 +46,45 @@ has no content, use the user's equivalent of `なし` instead of omitting the
 section. The report is summary-first; detailed domain sections and tables
 follow it.
 
+### Japanese human-facing format
+
+When the latest clear user request is in Japanese, the human-facing report
+MUST use the following overall form and heading order. This is the display
+format for Japanese readers; it does not change Run Log keys, status enum
+values, Skill IDs, XIDs, artifact IDs, paths, commands, or schema values.
+
+```md
+## 報告
+
+### 結論
+<what was found, produced, or decided>
+
+### 状態
+完了 / 一部完了 / 停止中 / 判断待ち
+
+### 理由
+<required for 一部完了, 停止中, 判断待ち>
+
+### 確認したこと
+- <facts, outputs, checks, sources, or XIDs>
+
+### 残っている課題
+- <unknown, risk, judgment, or `なし`>
+
+### 次にすること
+- 担当: <role or human>
+- 作業: <next action or `なし`>
+```
+
+Use Japanese labels rather than English labels in the visible report. When a
+stable machine value is important, show it beside the Japanese value, for
+example `完了 (done)` or `判断待ち (needs-review)`. Keep `理由` immediately
+after `状態` when it is required. Translate profile-specific sections as
+follows while preserving their meaning: `Gate Verdict` becomes `判定`,
+`Checks Performed` becomes `確認したこと`, `Coverage` becomes `確認範囲`,
+`Phase Summary` becomes `段階ごとの結果`, and `Artifact Traceability`
+becomes `成果物と根拠の対応`.
+
 ## Finding And Checklist Anchors
 
 When a report contains a checklist, category matrix, gate table, or other
