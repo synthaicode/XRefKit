@@ -55,6 +55,9 @@ separate from the result-specific detail anchor.
 - <confirm boundary>
 - <confirm required artifacts>
 - <load required rules>
+- For multi-step or resumable work, record `route`, `goal`, `context`,
+- `constraints`, `done_when`, `out_of_scope`, `verification_commands`,
+- `stop_conditions`, and `handoff_location` before substantial execution.
 
 ## Planning
 
@@ -66,15 +69,25 @@ separate from the result-specific detail anchor.
 
 1. <perform creation/update step>
 2. <perform validation step>
+- At each meaningful boundary, record the current step, owned boundary,
+- expected check, actual result, decisions or blockers, and next step.
 
 ## Monitoring and Control
 
 - <Skill-specific evidence, state-transition, or scope-leak condition>
 - <stop and escalate condition>
+- Stop and re-route when goal, scope, required data, tool result, user
+- priority, or verification basis changes; do not hide the change in an
+- assumption.
+- Do not claim completion from prior summaries or memory; use fresh evidence
+- from the current run.
 
 ## Closure
 
 - <return outputs and gaps>
+- Include modified files, verification command and result, key decisions,
+- current priority, context-audit result, blockers, and next action in the
+- handoff when the work is resumable.
 
 ## Rules
 
