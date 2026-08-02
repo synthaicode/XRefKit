@@ -1,74 +1,81 @@
 <!-- xid: 4F8C2A7D1E90 -->
 <a id="xid-4F8C2A7D1E90"></a>
 
-# XRefKit と Skill Package の初回登録
+# XRefKit の pip 利用開始手順
 
-このガイドは、XRefKit 本体と PyPI などで配布された Skill Package を
-初めて利用環境へ登録する手順を定義する。
+XRefKit と Skill Package を PyPI から導入して、ローカル環境で使い始める
+ための最短手順を示す。
 
-## 1. XRefKit 本体をインストールする
+## 最短手順
 
-PowerShell で利用する Python 環境を有効にした後、XRefKit 本体を
-インストールする。
+PowerShell で利用する作業フォルダから実行する。
 
 ```powershell
-python -m pip install --upgrade xrefkit
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install xrefkit
+xrefkit init
 python -m xrefkit --help
 ```
 
-リポジトリを開発対象として使う場合は、リポジトリルートで次を実行する。
+`xrefkit` コマンドが PATH に見つからない場合は、常に次の module 形式を
+使える。
 
 ```powershell
-python -m pip install -e .
+python -m xrefkit --help
 ```
 
-## 2. Skill Package をインストールする
+## 既存 Skill を import して VS Code MCP で使う場合
 
-Skill Package は XRefKit 本体とは別の Python 配布物である。例として、
-バッチ回帰 Skill Package をインストールする。
+管理者は、既存 Skill の取り込みと MCP 接続用の設定例を一度に準備できる。
+設定ファイルや `AGENTS.md`／`CLAUDE.md` の追記文は、リポジトリへ直接書かず、
+確認用の一時フォルダへ出力される。
+
+```powershell
+python -m pip install "xrefkit[mcp]"
+xrefkit mcp setup `
+  --repo C:\dev\itsm\XRefKit `
+  --import C:\work\existing-skills
+```
+
+出力された `SETUP.md` と `import-report.json` を確認する。問題がなければ、
+生成された設定例と追記文を適用する。
+
+```powershell
+xrefkit mcp setup apply `
+  --source C:\Users\<user>\AppData\Local\Temp\xrefkit-setup-<id> `
+  --repo C:\dev\itsm\XRefKit
+```
+
+この適用処理は `.vscode/mcp.json` を作成し、`AGENTS.md` と `CLAUDE.md` に
+semantic routing の案内を追記する。既存の MCP 設定を上書きする場合だけ
+`--force` を指定する。
+
+VS Code 起動後は MCP の `xrefkit` サーバーを有効にし、利用者は自然言語で
+依頼する。Skill の選択と実行は MCP の semantic routing が担当する。
+
+## Skill Package を追加する場合
+
+必要な Package だけをPyPIからインストールする。
 
 ```powershell
 python -m pip install xrefkit-skills-batch-regression
-```
-
-C#、brownfield のパッケージを使う場合は、それぞれ次を実行する。
-
-```powershell
 python -m pip install xrefkit-skills-csharp
 python -m pip install xrefkit-skills-brownfield
 ```
 
-パッケージ名は PyPI の distribution name、登録時に使う package id は
-パッケージ内の `package_manifest.yaml` に定義された `package_id` である。
+## 発見と有効化を確認する
 
-| distribution | package id | 代表 Skill |
-|---|---|---|
-| `xrefkit-skills-batch-regression` | `xrefkit.skills.batch_regression` | `batch.impact_regression` |
-| `xrefkit-skills-csharp` | `xrefkit.skills.csharp` | `csharp.review` |
-| `xrefkit-skills-brownfield` | `xrefkit.skills.brownfield` | `brownfield.workflow` |
-
-## 3. インストール済み Package を発見する
-
-Python entry point に登録された Skill Package を確認する。
+まず、インストール済み Package を発見する。
 
 ```powershell
 python -m xrefkit package discover --json
 ```
 
-ここで表示されるのは発見結果であり、まだ resolver の利用対象として
-有効化されたことを意味しない。
-
-## 4. Package を有効化する
-
-単発の確認では、package id を明示して一覧を表示する。
-
-```powershell
-python -m xrefkit package list `
-  --enabled-package xrefkit.skills.batch_regression
-```
-
-Skill の解決まで行う場合は、entry point discovery と package id の両方を
-指定する。
+発見結果には、Package の `package_id` とバージョンが表示される。発見
+だけでは resolver の利用対象にならないため、使用する package id を明示して
+有効化する。
 
 ```powershell
 python -m xrefkit show effective-skill batch.impact_regression `
@@ -77,7 +84,7 @@ python -m xrefkit show effective-skill batch.impact_regression `
   --enabled-package xrefkit.skills.batch_regression
 ```
 
-複数の Package を使う場合は `--enabled-package` を繰り返す。
+複数 Package を使う場合は `--enabled-package` を追加する。
 
 ```powershell
 python -m xrefkit show effective-skill csharp.review `
@@ -87,219 +94,108 @@ python -m xrefkit show effective-skill csharp.review `
   --enabled-package xrefkit.skills.brownfield
 ```
 
-継続利用するサーバー設定では、`xrefkit.server.toml` の
-`[packages] enabled` に package id を記録する。
+継続利用する場合は、リポジトリルートの `xrefkit.server.toml` に package id
+を保存できる。
 
 ```toml
 [packages]
 enabled = [
-  "xrefkit.skills.brownfield",
+  "xrefkit.skills.batch_regression",
   "xrefkit.skills.csharp",
 ]
 ```
 
-## 5. Core 互換性を確認する
+`distribution name`（pip で指定する名前）と `package_id`（XRefKit が有効化
+に使う名前）は異なる。値は各 Package の `package_manifest.yaml` で確認する。
 
-Package の発見だけでは Core 互換性は確定しない。`package_manifest.yaml` の
-`requires.xrefkit_core` と、インストールされている XRefKit のバージョンを
-確認してから resolver に登録する。
+## Batch Regression をフォルダへ展開する場合
 
-```powershell
-python -m pip show xrefkit
-python -m xrefkit package discover --json
-```
-
-現行リポジトリで確認できる manifest の要求範囲には差がある。特に
-`xrefkit.skills.batch_regression` と `xrefkit.skills.csharp` は現在の manifest
-では `>=2.0.0 <3.0.0` を要求し、`xrefkit.skills.brownfield` は
-`>=0.4.3 <0.5.0` を要求する。Core のバージョンが要求範囲を満たさない
-場合、発見できても resolver では利用できない。
-
-## 6. `skills/_index.md` との関係
-
-PyPI Package のインストール、`package discover`、または
-`--enabled-package` の指定は、リポジトリの `skills/_index.md` を更新しない。
-
-`skills/_index.md` はリポジトリ内の catalog-visible な `meta.md` から、次の
-コマンドで生成する。
-
-```powershell
-python -m xrefkit skill index --write
-```
-
-したがって、配布 Package の初回登録と、リポジトリの公開 Skill カタログへの
-登録は別の作業である。
-
-## 7. 既存 Skill のアップグレード
-
-既存の Skill Package を更新する場合は、distribution name を指定して
-XRefKit 本体または対象 Package を更新する。
-
-```powershell
-# XRefKit 本体を更新
-python -m pip install --upgrade xrefkit
-
-# 例: 既存の Skill Package を更新
-python -m pip install --upgrade xrefkit-skills-batch-regression
-python -m pip install --upgrade xrefkit-skills-csharp
-python -m pip install --upgrade xrefkit-skills-brownfield
-```
-
-特定バージョンへ更新する場合は `==` を使う。
-
-```powershell
-python -m pip install --upgrade xrefkit-skills-csharp==0.1.0
-```
-
-更新後は、次の順で状態を確認する。
-
-```powershell
-python -m pip show xrefkit
-python -m pip show xrefkit-skills-csharp
-python -m xrefkit package discover --json
-python -m xrefkit package list --json `
-  --enabled-package xrefkit.skills.csharp
-```
-
-同じ package id の新バージョンは entry point discovery に反映されるが、
-有効化は package id 単位で明示的に行う。`xrefkit.server.toml` を使っている
-場合は、`[packages] enabled` の package id を変更する必要はない。
-
-更新後に Skill の構成や依存 Knowledge が変わっていないか、代表 Skill の
-実効結果を再確認する。
-
-```powershell
-python -m xrefkit show effective-skill csharp.review `
-  --mode tree `
-  --enable-entry-point-discovery `
-  --enabled-package xrefkit.skills.csharp
-```
-
-更新で Core 互換性エラーが出た場合は、Package を無理に有効化せず、
-`package_manifest.yaml` の `requires.xrefkit_core` と XRefKit 本体の
-バージョン範囲を確認する。複数 Package を同時に更新した場合は、問題の
-Package を1つずつ切り分ける。
-
-リポジトリ内の Skill を更新した場合だけ、必要に応じて次を実行して
-`skills/_index.md` を再生成する。PyPI Package の更新だけでは実行しない。
-
-```powershell
-python -m xrefkit skill index --write
-```
-
-### アップグレード完了条件
-
-- 本体と対象 Package のインストール済みバージョンを確認した。
-- `package discover --json` で新バージョンを確認した。
-- Core 互換性を確認した。
-- `package list` または server config で対象 package id が有効になっている。
-- 代表 Skill の `show effective-skill` を再確認した。
-- リポジトリ内 Skill を変更した場合だけ `skill index --write` を実行した。
-
-## 8. Batch Regression の materialize Skill を更新する場合
-
-`xrefkit-skills-batch-regression` には、entry point discovery とは別に、
-folder-based MCP 用の Skill 資産をリポジトリへ展開する CLI がある。
-
-初回展開は次のコマンドで行う。
+通常の Package 利用では不要。folder-based MCP が Skill ファイルを必要と
+する場合だけ、Package をインストールした後に実行する。
 
 ```powershell
 xrefkit-batch-regression install-mcp-skill `
-  --repo C:\path\to\xrefkit-repository
+  --repo C:\path\to\XRefKit
 ```
 
-既存の展開済み Skill を Package の更新版で置き換える場合は、Package を
-先に更新してから `--force` を付けて再実行する。
+既存の展開先を更新する場合は `--force` を付ける。独自変更があるファイルを
+上書きするため、実行前に Git 差分を確認する。
 
 ```powershell
-python -m pip install --upgrade xrefkit-skills-batch-regression
 xrefkit-batch-regression install-mcp-skill `
-  --repo C:\path\to\xrefkit-repository `
+  --repo C:\path\to\XRefKit `
   --force
 ```
 
-既定の展開先は次のディレクトリである。
+この処理の既定の展開先は
+`skills/packs/batch-regression/batch-impact-regression` である。C# と
+brownfield は、通常の entry point discovery を使う。
 
-```text
-skills/packs/batch-regression/batch-impact-regression
-```
+## GitHub ReleaseからSkillを同期する場合
 
-`--force` は既存ファイルを置き換えるため、実行前に対象ディレクトリの
-Git 差分と、ローカルで独自変更したファイルがないことを確認する。
-materialize 後は folder-based MCP サーバーを再起動する。
-
-この CLI は `batch-regression` Package 固有の展開処理である。C# や
-brownfield の Package は、通常 `package discover` と entry point discovery
-による runtime 登録を使い、同じ `install-mcp-skill` コマンドがあるとは
-仮定しない。
-
-## 9. 指定フォルダ以下の既存 Skill を変換する
-
-外部 Skill フォルダを XRefKit の Skill／Knowledge 分離形式へ変換する
-一般 CLI は `skill import --batch` である。これは PyPI Package の discovery
-や `batch-regression` 固有の MCP materialize とは別の処理である。
-
-変換対象の親フォルダは、`skills/` と任意の `knowledge/` を持つ構成にする。
-
-```text
-external-root/
-├─ skills/
-│  ├─ skill-a/
-│  │  └─ SKILL.md
-│  └─ skill-b/
-│     └─ SKILL.md
-└─ knowledge/   # 任意
-```
-
-親フォルダ以下の Skill をまとめて変換する。
+PyPIに未登録のSkillを管理者がまとめて取得する場合は、GitHub Releaseの
+Skill bundleをXRefKitから同期できる。bundleは `skills/` と `knowledge/`
+を含むドメイン単位のZIPとして公開する。
 
 ```powershell
-python -m xrefkit skill import `
-  C:\path\to\external-root `
-  --batch `
-  --skill-id-prefix imported `
-  --json
+python -m xrefkit skills sync --bundle csharp
+python -m xrefkit skills sync --all
 ```
 
-互換 wrapper を使う場合は次のとおりである。
+既定では `synthaicode/XRefKit` の最新Releaseを取得し、現在のリポジトリの
+`skills/`、`knowledge/`、`review_axes/`、`schemas/`へ登録する。同期状態は
+`.xrefkit/skill-sync/`に記録される。前回同期したファイルは更新できるが、
+手作業で存在するファイルは、確認なしには上書きしない。
+
+更新内容を確認するだけの場合は、次を使う。
 
 ```powershell
-python tools/convert_to_xrefkit_skill.py `
-  C:\path\to\external-root `
-  --batch `
-  --skill-id-prefix imported `
-  --json
+python -m xrefkit skills sync --bundle csharp --dry-run --json
 ```
 
-既定の出力先は次のとおりで、private 境界に出力される。
+同期後にMCPサーバーを再起動すると、ライブカタログが最新のSkillとKnowledgeを
+セマンティックルーティング対象として読み込む。同期は管理者の登録操作であり、
+通常の利用者が個別Skillを選択する操作ではない。
 
-```text
-skills_private/imported.<skill-folder>/
-knowledge/imported_skills/imported/
-```
+## 更新
 
-変換処理は、Skill 文書の走査、参照 Markdown／TXT の Knowledge 分離、
-不足 XID の付与、Knowledge リンクの XID 化、`meta.md` の生成を行う。
-変換計画だけを確認する場合は `--dry-run` を使う。
+更新はインストール時と同じ Python 環境で行う。
 
 ```powershell
-python -m xrefkit skill import `
-  C:\path\to\external-root `
-  --batch `
-  --skill-id-prefix imported `
-  --dry-run `
-  --json
+python -m pip install --upgrade xrefkit
+python -m pip install --upgrade xrefkit-skills-batch-regression
+python -m xrefkit package discover --json
 ```
 
-公開 Skill として扱う場合だけ、変換後の内容を `skills/` へ昇格し、
-`skills/_index.md` を更新する。既定の変換先である `skills_private/` は
-公開カタログへ自動登録されない。
+Package の manifest にある `requires.xrefkit_core` と XRefKit のバージョンが
+合わない場合は、無理に有効化せず、互換範囲を確認する。
 
-## 初回登録の完了条件
+## 使い分け
 
-- `python -m xrefkit --help` が成功する。
-- 対象 distribution が `pip show` で確認できる。
-- `package discover --json` に対象 package id とバージョンが出る。
-- `package_manifest.yaml` の Core 互換性を満たしている。
-- `package list` または `show effective-skill` で明示的な有効化結果を確認する。
-- リポジトリの公開 Skill カタログを更新する場合だけ `skill index --write` を実行する。
+| 目的 | 実行すること |
+|---|---|
+| XRefKit をローカルで使う | `python -m pip install xrefkit` |
+| 公開 Package を使う | `python -m pip install <distribution>` |
+| Package を resolver で使う | `package discover` 後に `--enabled-package` |
+| MCP 用 Skill フォルダを作る | `install-mcp-skill`（Batch Regression 固有） |
+
+## 完了確認
+
+次の3点が成功すれば、通常のローカル利用を開始できる。
+
+```powershell
+python -m xrefkit --help
+python -m xrefkit package discover --json
+python -m xrefkit show effective-skill <skill-id> `
+  --mode tree `
+  --enable-entry-point-discovery `
+  --enabled-package <package-id>
+```
+
+`skills/_index.md` はリポジトリ内 Skill のカタログであり、Package の
+インストールや発見では更新されない。リポジトリ内 Skill 自体を変更した
+場合だけ、必要に応じて次を実行する。
+
+```powershell
+python -m xrefkit skill index --write
+```
