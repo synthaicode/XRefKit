@@ -15,8 +15,17 @@ required_outputs:
   - evidence
   - phase_gates
   - handoffs
+  - knowledge_basis
+  - pattern_decisions
+  - knowledge_import_results
 
-required_knowledge: []
+required_knowledge:
+  - xid-7A2F4C8D1401
+  - xid-7A2F4C8D1501
+  - xid-8C4D2A7E5102
+  - xid-7A2F4C8D1701
+  - xid-7A2F4C8D2201
+  - xid-7A2F4C8D2301
 review_axes: []
 
 must_not:

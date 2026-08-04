@@ -4,6 +4,9 @@ required:
   - unknowns
   - downstream_impact
   - handoff_owner
+  - knowledge_basis
+  - pattern_decisions
+  - knowledge_import_results
 forbidden:
   - invent_default_customer_code
   - claim_migration_is_complete

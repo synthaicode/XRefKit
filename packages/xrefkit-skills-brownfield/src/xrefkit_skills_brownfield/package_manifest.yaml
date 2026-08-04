@@ -19,7 +19,16 @@ provides:
         - evidence
         - phase_gates
         - handoffs
-      required_knowledge: []
+        - knowledge_basis
+        - pattern_decisions
+        - knowledge_import_results
+      required_knowledge:
+        - xid-7A2F4C8D1401
+        - xid-7A2F4C8D1501
+        - xid-8C4D2A7E5102
+        - xid-7A2F4C8D1701
+        - xid-7A2F4C8D2201
+        - xid-7A2F4C8D2301
       required_review_axes:
         - xid-axis-brownfield-traceability
         - xid-axis-brownfield-unknown-visibility
