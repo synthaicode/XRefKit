@@ -27,6 +27,11 @@ Skills should reference these pages by XID and load only what is needed.
 - [Database design viewpoints](database/100_database_design_viewpoints.md#xid-E7D4A11B8C06)
 - [Database current-state analysis viewpoints](database/110_database_current_state_analysis_viewpoints.md#xid-F9B3C6A70412)
 
+### Architecture
+
+- [Service catalog Knowledge schema](architecture/100_service_catalog_knowledge_schema.md#xid-7A2F4C8D2201)
+- [Service interaction and data-flow Knowledge viewpoints](architecture/110_service_interaction_data_flow_viewpoints.md#xid-7A2F4C8D2301)
+
 ### Investigation
 
 - [Investigation coverage checklist](investigation/100_investigation_coverage_checklist.md#xid-91E2A7C56101)
@@ -53,6 +58,7 @@ Skills should reference these pages by XID and load only what is needed.
 - [Agent diff review gate design](organization/180_agent_diff_review_gate_design.md#xid-7A2F4C8D1801)
 - [Quality feedback return rules](organization/190_quality_feedback_return_rules.md#xid-7A2F4C8D1901)
 - [Domain knowledge ontology rules](organization/200_domain_knowledge_ontology_rules.md#xid-5803607419B9)
+- [Term relationship model](organization/210_term_relationship_model.md#xid-7A2F4C8D2101)
 
 ### Business Pack Knowledge
 

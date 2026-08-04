@@ -3,5 +3,8 @@ required:
   - test_execution_in_testing
   - tool_version_fixture_and_log_policy
   - local_and_ci_execution
+  - knowledge_basis
+  - pattern_decisions
+  - knowledge_import_results
 forbidden:
   - defer_all_tool_preparation_to_testing
