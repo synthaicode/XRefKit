@@ -58,6 +58,7 @@ Skills should reference these pages by XID and load only what is needed.
 - [Agent diff review gate design](organization/180_agent_diff_review_gate_design.md#xid-7A2F4C8D1801)
 - [Quality feedback return rules](organization/190_quality_feedback_return_rules.md#xid-7A2F4C8D1901)
 - [Domain knowledge ontology rules](organization/200_domain_knowledge_ontology_rules.md#xid-5803607419B9)
+- [Term relationship model](organization/210_term_relationship_model.md#xid-7A2F4C8D2101)
 
 ### Business Pack Knowledge
 
