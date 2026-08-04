@@ -317,34 +317,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release upload "${GITHUB_REF_NAME}" dist/* --clobber
-      - name: Build Skill and Knowledge bundle archives
-        shell: bash
-        run: |
-          set -euo pipefail
-          version="${GITHUB_REF_NAME#v}"
-          for bundle in brownfield csharp batch-regression; do
-            package_root="packages/xrefkit-skills-${bundle}/src"
-            source_root="${package_root}/xrefkit_skills_${bundle//-/_}"
-            bundle_root="bundle/xrefkit-skills-${bundle}"
-            test -d "${source_root}/skills"
-            mkdir -p "${bundle_root}"
-            for directory in skills knowledge review_axes schemas; do
-              if [[ -d "${source_root}/${directory}" ]]; then
-                cp -R "${source_root}/${directory}" "${bundle_root}/"
-              fi
-            done
-            if [[ -f "${source_root}/package_manifest.yaml" ]]; then
-              cp "${source_root}/package_manifest.yaml" "${bundle_root}/"
-            fi
-            archive="xrefkit-skills-${bundle}-${version}.zip"
-            (cd bundle && zip -qr "../${archive}" "xrefkit-skills-${bundle}")
-            test -s "${archive}"
-          done
-      - name: Attach Skill and Knowledge bundles to GitHub Release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release upload "${GITHUB_REF_NAME}" xrefkit-skills-*.zip --clobber
       - name: Publish the inspected build artifact to PyPI
         # pypa/gh-action-pypi-publish v1.14.0; pinned to the release commit.
         uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b
