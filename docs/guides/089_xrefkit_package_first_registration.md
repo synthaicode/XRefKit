@@ -142,7 +142,7 @@ python -m xrefkit skills sync --bundle csharp
 python -m xrefkit skills sync --all
 ```
 
-既定では `synthaicode/XRefKit` の最新Releaseを取得し、現在のリポジトリの
+既定では `synthaicode/XRefKit` のうち、bundle専用タグに対応する最新Releaseを取得し、現在のリポジトリの
 `skills/`、`knowledge/`、`review_axes/`、`schemas/`へ登録する。同期状態は
 `.xrefkit/skill-sync/`に記録される。前回同期したファイルは更新できるが、
 手作業で存在するファイルは、確認なしには上書きしない。
