@@ -8,7 +8,7 @@ PyPIに未登録のSkillを管理者がまとめて取得する場合は、XRefK
 
 ## 同期
 
-現在のリポジトリへ、GitHub Releaseの最新C# bundleを登録する。
+現在のリポジトリへ、C#用のSkill専用タグに対応する最新GitHub Releaseを取得して登録する。
 
 ```powershell
 python -m xrefkit skills sync --bundle csharp
@@ -66,3 +66,8 @@ xrefkit-skills-csharp-0.1.0.zip
 
 bundleはドメイン単位で作成し、PyPIのPython Packageとは別に、管理者向けの
 導入・レビュー用成果物として扱う。
+
+`--release latest` は通常のXRefKit Releaseではなく、指定したbundleの
+`xrefkit-skills-<bundle>-v<version>` タグに対応する公開Releaseから最新を選ぶ。
+特定のタグを固定する場合は、`--release xrefkit-skills-csharp-v0.1.0` のように
+指定する。

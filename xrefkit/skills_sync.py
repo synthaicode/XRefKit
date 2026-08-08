@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import re
 import tempfile
 import urllib.error
 import urllib.parse
@@ -18,7 +17,6 @@ from pathlib import Path, PurePosixPath
 DEFAULT_SOURCE_REPOSITORY = "synthaicode/XRefKit"
 DEFAULT_GITHUB_API = "https://api.github.com"
 ASSET_PREFIX = "xrefkit-skills-"
-VERSION_SUFFIX_RE = re.compile(r"^(?P<bundle>.+)-(?P<version>\d+\.\d+(?:\.\d+)?(?:[-+][0-9A-Za-z.-]+)?)$")
 ALLOWED_ROOTS = {"skills", "knowledge", "review_axes", "schemas"}
 
 
@@ -44,7 +42,7 @@ class SyncResult:
         }
 
 
-def _github_json(url: str) -> dict[str, object]:
+def _github_json(url: str) -> object:
     request = urllib.request.Request(
         url,
         headers={
@@ -57,8 +55,6 @@ def _github_json(url: str) -> dict[str, object]:
             payload = json.loads(response.read().decode("utf-8"))
     except (urllib.error.URLError, urllib.error.HTTPError) as exc:
         raise RuntimeError(f"could not read GitHub release metadata: {url}") from exc
-    if not isinstance(payload, dict):
-        raise RuntimeError(f"GitHub release metadata was not an object: {url}")
     return payload
 
 
@@ -69,7 +65,17 @@ def _release(source_repository: str, release: str) -> dict[str, object]:
     else:
         encoded_release = urllib.parse.quote(release, safe="")
         url = f"{DEFAULT_GITHUB_API}/repos/{encoded_repo}/releases/tags/{encoded_release}"
-    return _github_json(url)
+    payload = _github_json(url)
+    return payload
+
+
+def _releases(source_repository: str) -> list[dict[str, object]]:
+    encoded_repo = urllib.parse.quote(source_repository, safe="/")
+    url = f"{DEFAULT_GITHUB_API}/repos/{encoded_repo}/releases?per_page=100"
+    payload = _github_json(url)
+    if not isinstance(payload, list):
+        raise RuntimeError(f"GitHub releases metadata was not a list: {url}")
+    return [item for item in payload if isinstance(item, dict)]
 
 
 def _assets(release: dict[str, object]) -> list[dict[str, object]]:
@@ -92,6 +98,52 @@ def _asset_for_bundle(release: dict[str, object], bundle: str) -> dict[str, obje
         names = ", ".join(str(item.get("name")) for item in candidates) or "none"
         raise RuntimeError(f"expected one release asset for bundle {bundle}; found: {names}")
     return candidates[0]
+
+
+def _latest_release_for_bundle(source_repository: str, bundle: str) -> dict[str, object]:
+    tag_prefix = f"{ASSET_PREFIX}{bundle}-v"
+    candidates = []
+    for release in _releases(source_repository):
+        tag = release.get("tag_name")
+        if not isinstance(tag, str) or not tag.startswith(tag_prefix) or release.get("draft"):
+            continue
+        try:
+            _asset_for_bundle(release, bundle)
+        except RuntimeError:
+            continue
+        candidates.append(release)
+    if not candidates:
+        raise RuntimeError(
+            f"could not find a published Skill bundle release for {bundle}; "
+            f"expected tag prefix {tag_prefix}"
+        )
+    candidates.sort(
+        key=lambda release: str(release.get("published_at") or release.get("created_at") or ""),
+        reverse=True,
+    )
+    return candidates[0]
+
+
+def _release_for_bundle(source_repository: str, release: str, bundle: str) -> dict[str, object]:
+    if release == "latest":
+        return _latest_release_for_bundle(source_repository, bundle)
+    return _release(source_repository, release)
+
+
+def _bundle_names(releases: list[dict[str, object]]) -> list[str]:
+    names: list[str] = []
+    for release in releases:
+        tag = release.get("tag_name")
+        if not isinstance(tag, str) or not tag.startswith(ASSET_PREFIX) or "-v" not in tag:
+            continue
+        bundle = tag[len(ASSET_PREFIX) :].rsplit("-v", 1)[0]
+        try:
+            _asset_for_bundle(release, bundle)
+        except RuntimeError:
+            continue
+        if bundle not in names:
+            names.append(bundle)
+    return names
 
 
 def _download_asset(asset: dict[str, object]) -> tuple[str, bytes]:
@@ -163,7 +215,7 @@ def sync_bundle(
     repo = repo.resolve()
     if not repo.is_dir():
         raise FileNotFoundError(f"XRefKit repository not found: {repo}")
-    release_payload = _release(source_repository, release)
+    release_payload = _release_for_bundle(source_repository, release, bundle)
     asset = _asset_for_bundle(release_payload, bundle)
     asset_name, data = _download_asset(asset)
     digest = hashlib.sha256(data).hexdigest()
@@ -240,7 +292,7 @@ def main(argv: list[str] | None = None) -> int:
     sync.add_argument("--repo", default=".", help="Target XRefKit repository; defaults to the current directory")
     sync.add_argument("--source-repository", default=DEFAULT_SOURCE_REPOSITORY, help="GitHub owner/repository containing releases")
     sync.add_argument("--bundle", action="append", help="Bundle name, for example csharp; repeat for multiple bundles")
-    sync.add_argument("--all", action="store_true", help="Synchronize every xrefkit-skills-*.zip asset in the release")
+    sync.add_argument("--all", action="store_true", help="Synchronize every bundle with a matching Skill release")
     sync.add_argument("--release", default="latest", help="Release tag, or latest (default)")
     sync.add_argument("--force", action="store_true", help="Allow overwriting files not owned by a previous sync")
     sync.add_argument("--dry-run", action="store_true", help="Download and validate without writing the repository")
@@ -248,16 +300,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if not args.bundle and not args.all:
         parser.error("one of --bundle or --all is required")
-    release_payload = _release(args.source_repository, args.release)
     bundles = list(args.bundle or [])
     if args.all:
-        for asset in _assets(release_payload):
-            name = asset.get("name")
-            if not isinstance(name, str) or not name.startswith(ASSET_PREFIX) or not name.endswith(".zip"):
-                continue
-            stem = name[:-4][len(ASSET_PREFIX) :]
-            match = VERSION_SUFFIX_RE.match(stem)
-            bundles.append(match.group("bundle") if match else stem)
+        bundles.extend(_bundle_names(_releases(args.source_repository)))
     bundles = list(dict.fromkeys(bundles))
     results = [
         sync_bundle(
