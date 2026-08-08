@@ -29,6 +29,11 @@ required_outputs:
   - scope_adjusted_dfd_views
   - entity_change_point_mappings
   - entity_lifecycle_and_status_propagation
+  - test_investigation_scope
+  - existing_data_investigation_method
+  - change_based_test_suite
+  - test_structure_impact_mapping
+  - overview_detail_report
 
 required_knowledge:
   - xid-7A2F4C8D1401
