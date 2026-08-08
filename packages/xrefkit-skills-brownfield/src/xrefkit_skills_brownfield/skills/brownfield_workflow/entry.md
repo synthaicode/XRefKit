@@ -48,6 +48,33 @@ The plan must identify service ownership, affected flows, communication
 contracts, database read/write ownership, and downstream propagation for each
 in-scope item.
 
+## Scope-adjusted DFD and Entity change mapping
+
+When multiple services generate, transform, approve, retain, or consume the
+same data, create a scope-declared DFD view when it helps human review. Keep
+the view hierarchical: `Level 0` for business context, `Level 1` for service
+flows and persistence, `Level 2` for primary/supporting/derived Entities and
+ownership, and `Level 3` for change points, status transitions, approvals,
+logical deletion, audit, retry/replay, and downstream effects.
+
+Choose the lowest level required by the decision and declare `scope`,
+`included`, `excluded`, `detail_level`, and `unknowns`. Preserve stable
+`service_id`, `entity_id`, `flow_id`, and `change_point_id` links. Map each
+primary Entity's supporting and derived Entities, producing service,
+source-of-truth, permitted writers, and consumers. Replace generic update
+arrows with named change points carrying actor, trigger, before/after state,
+changed fields, business meaning, evidence, and downstream effect.
+
+Model logical deletion as lifecycle and propagation, not disappearance:
+`active -> logically_deleted -> archived -> purged`. For important status
+changes, record transition owner, human actor, approval/rejection evidence,
+audit record, emitted event, and allowed downstream processing. Keep business
+status distinct from technical processing status. If ownership, transition,
+retention, or propagation is not evidenced, record an impact-bearing `unknown`
+and resolver. Use DFD for movement, ER/Entity views for structure, state views
+for lifecycle, and sequence/process views for timing; cross-link them in the
+design-to-test handoff.
+
 When these records already exist in documents, exports, diagrams, OpenAPI/
 AsyncAPI, DDL/ERD, CMDB extracts, or analysis reports, import them before new
 discovery. Preserve the original source, search canonical XIDs, classify each
