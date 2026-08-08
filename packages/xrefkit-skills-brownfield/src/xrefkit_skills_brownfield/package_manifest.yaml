@@ -58,6 +58,33 @@ provides:
         - hand_off_unreviewed_design
         - approve_human_owned_decisions
 
+    - id: brownfield.execution_planning
+      xid: xid-skill-brownfield-execution-planning
+      path: skills/brownfield_execution_planning.skill.yaml
+      contract_role: planning_skill
+      required_outputs:
+        - phase_summary
+        - execution_work_plan
+        - investigation_scope
+        - target_dependency_map
+        - existing_data_investigation_plan
+        - pre_change_test_suite_plan
+        - evidence_plan
+        - phase_gates
+        - unknowns
+        - handoffs
+      required_knowledge:
+        - xid-7A2F4C8D1701
+        - xid-7A2F4C8D2201
+        - xid-7A2F4C8D2301
+      required_review_axes: []
+      must_not:
+        - approve_human_owned_requirements
+        - invent_missing_behavior
+        - hide_unverified_scope
+        - approve_release_or_residual_risk
+        - execute_production_changes
+
   fragments: []
   knowledge: []
   review_axes:

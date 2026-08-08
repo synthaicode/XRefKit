@@ -9,6 +9,7 @@ def test_package_root_contains_manifest_and_skill():
     root = xrefkit_skills_brownfield.package_root()
     assert (root / "package_manifest.yaml").is_file()
     assert (root / "skills" / "brownfield_workflow.skill.yaml").is_file()
+    assert (root / "skills" / "brownfield_execution_planning.skill.yaml").is_file()
 
 
 def test_evaluation_manifest_references_existing_cases():

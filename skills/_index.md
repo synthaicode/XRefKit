@@ -97,6 +97,10 @@ Current family paths:
   - summary: organize brownfield change work across requirements, planning, design, manufacturing, and testing while surfacing unresolved items
   - meta: `skills/brownfield-workflow/meta.md`
   - skill_doc: `skills/brownfield-workflow/SKILL.md`
+- `brownfield_execution_planning`:
+  - summary: create a traceable execution work plan for a brownfield change before investigation, implementation, and change-based testing
+  - meta: `skills/brownfield-execution-planning/meta.md`
+  - skill_doc: `skills/brownfield-execution-planning/SKILL.md`
 - `cab_review_flow`:
   - summary: execute CAB business activities through reusable quality, operational-readiness, and value-alignment evaluation capabilities
   - meta: `skills/cab_review_flow/meta.md`
