@@ -224,6 +224,186 @@ correction back upstream; do not silently create a new local convention.
 Output the implementation summary, changed-target map, verification evidence,
 and unresolved handoff items.
 
+#### Brownfield file editing integrity
+
+When manufacturing edits an existing text file, establish a file-preservation
+record before changing it. Do not use a text API that silently applies the
+platform default encoding, BOM policy, or universal-newline translation.
+
+The pre-edit record must contain the confirmed original character encoding and
+identification basis, BOM presence and exact BOM bytes, the original newline
+convention (`LF`, `CRLF`, `CR`, or `mixed`), the original file bytes or a
+cryptographic hash with retained byte evidence, and the exact Unicode string
+obtained by strict decoding with the original encoding after BOM handling.
+
+Edit the decoded Unicode string while preserving the recorded encoding, BOM,
+and newline policy. Disable universal-newline translation. Ambiguous encoding,
+undecodable bytes, or a requested policy change is `unknown` and requires an
+owner decision; do not guess.
+
+After saving, read raw bytes and require: exact BOM preservation; strict
+decoding with the original encoding; unchanged newline convention; unchanged
+Unicode strings outside approved change spans; strict re-encoding of the full
+edited Unicode string with the original encoding and BOM policy; and exact
+equality between those re-encoded bytes and the saved bytes.
+
+The key round-trip assertion is:
+
+```text
+after_bytes == after_bytes.decode(original_encoding, strict).encode(original_encoding, strict)
+```
+
+Apply BOM handling consistently around this assertion. It proves encoding
+validity, not absence of pre-existing mojibake. Detect mojibake introduced by
+the edit by strictly decoding both versions with the original encoding and
+comparing Unicode sequences, permitting differences only in approved spans.
+The handoff must include the pre-edit record, hashes or byte evidence,
+post-edit verification, BOM/newline results, approved spans, Unicode diff, and
+any residual detection limitation.
+
+#### Human/AI concurrent-edit guard
+
+The pre-edit byte hash is also a concurrency revision token. A text read is
+not permission to write indefinitely. Immediately before writing, read the
+file again as raw bytes and compare its exact bytes (or a cryptographic hash)
+with the pre-edit revision token. If they differ, another actor—including a
+human or another AI operation—has edited the file. Abort the write, preserve
+the current file, and classify the item as `unknown` or `blocked` pending a
+fresh read and rebase of the intended change. Never write the previously
+prepared content over the changed file.
+
+The write path must be a compare-and-swap sequence:
+
+```text
+before = read_bytes(path)
+plan = edit(strict_decode(before, original_encoding))
+current = read_bytes(path)
+if current != before:
+    abort_without_write()
+else:
+    atomically_replace(path, encode_with_original_policy(plan))
+```
+
+Use an atomic temporary-file replacement only after the revision check passes,
+and run the post-write byte/Unicode verification against the replacement. A
+process lock may reduce simultaneous writes, but it does not replace the
+revision check because it cannot detect edits made by tools outside the lock.
+If the file is deleted, replaced, renamed, or its metadata indicates a
+different target before the write, treat that as a conflict and abort as well.
+
+#### Specification-alignment guard
+
+Byte-level concurrency checks cannot detect an edit based on the wrong
+understanding of the specification. Treat the AI's current understanding as a
+hypothesis, never as authoritative fact. Before preparing file content, record
+a semantic edit contract containing the requested outcome, authoritative
+source or decision owner, exact intended changes, protected invariants and
+out-of-scope text, and acceptance checks. Separate repository facts, user
+decisions, inferences, and unresolved assumptions.
+
+Compare that contract with the current authoritative specification, applicable
+Knowledge, local pattern, and relevant tests or schemas. If the sources
+conflict, the requested behavior is ambiguous, or a required source is missing
+or stale, do not prepare a write. Stop as `unknown` or escalate for a human
+decision. A syntactically valid edit, a successful encoding round trip, or a
+passing narrow test does not authorize a semantically unsupported change.
+
+Before atomic replacement, verify both gates:
+
+```text
+semantic_alignment == confirmed
+and current_bytes == pre_edit_revision
+```
+
+After replacement, verify the acceptance checks and re-check protected
+invariants. If semantic verification fails, stop the item, retain the saved
+bytes for diagnosis, and do not make a compensating edit based on the same
+unconfirmed interpretation. Re-read the authoritative source and obtain a new
+decision or rebase the change.
+
+#### Historical conflict investigation
+
+When specification alignment is not confirmed, investigate the conflict's
+history before requesting a decision. Use a bounded time window anchored to
+known revisions—for example, the last confirmed-good revision through the
+current revision—not an arbitrary broad history scan. If the repository is
+under Git, inspect the relevant file history, commit diffs, rename-following
+history, and line attribution (`log`, `show`, `diff`, `blame`) for that window.
+Include uncommitted state in the investigation; committed history cannot prove
+that a current human edit did not happen after the last commit.
+
+Record whether the conflict appears to have been introduced by a requirement
+change, implementation change, generated-file refresh, merge/rebase, manual
+edit, or an unresolved pre-existing discrepancy. Record commit IDs, authors,
+timestamps, affected lines, and links to the authoritative decision where
+available. Treat commit message text, author identity, file timestamps, and
+code history as evidence only; none overrides an explicit current requirement
+or decision owner.
+
+If the conflict cannot be resolved from the bounded history and authoritative
+sources, keep the write blocked. Do not select the newest commit merely because
+it is newest, and do not infer intent from a timestamp alone. For untracked or
+non-Git files, use the available audit/version history; if none exists, record
+the absence as an evidence gap and escalate.
+
+#### Uncommitted-file policy
+
+Treat uncommitted worktree changes and untracked files as protected current
+state. Before editing, inspect the target's worktree state and diff, including
+untracked-file status where applicable. A clean repository history is not a
+clean target state. Never use reset, checkout, clean, stash, or a broad restore
+operation to make the target appear clean unless that exact action is explicitly
+authorized.
+
+Classify the worktree state before writing:
+
+- `pre_existing_human_or_unknown`: preserve it, do not overwrite it, and stop
+  for ownership or merge direction when the intended change overlaps it;
+- `ai_owned_current_work`: continue only with the same work-unit identity,
+  unchanged revision token, and confirmed semantic alignment;
+- `non_overlapping_changes`: preserve the unrelated hunks and apply only the
+  approved target change;
+- `mixed_or_overlapping`: create a reviewable three-way merge or patch proposal
+  without modifying the source, then obtain a decision before writing.
+
+If ownership cannot be established, classify the state as
+`pre_existing_human_or_unknown`. Do not infer ownership from file timestamps,
+editor names, or the fact that the current process can write the file. After a
+permitted write, re-check `status` and the target diff and record which hunks
+were preserved, changed, or left unresolved.
+
+#### New-file extension conformity
+
+When adding a file, do not treat the extension as a complete specification.
+Use it to select existing-file peers and extract code-writing rules from them.
+Group peers by a coherent scope such as the same folder, package, module, or
+responsibility boundary. Within each scope, cluster observed rules and select
+the rule followed by the majority of representative files. Prefer the nearest
+coherent scope in this order: same directory, same package/module subtree,
+nearest owning component, then repository-wide fallback. Do not let a
+repository-wide majority override a clear local folder rule.
+
+Record the peer paths, scope, observed rule signatures, file counts per rule,
+selected majority, and confidence. A majority is usable only when the files are
+representative and the margin is meaningful; a tie, weak margin, or multiple
+equally coherent scopes is an unresolved pattern conflict and requires a
+decision. Never use one arbitrary example as the rule.
+
+Before creating the file, compare peer conventions for filename and placement,
+encoding/BOM/newline, headers and metadata, formatting and trailing newline,
+import/include order, declaration structure, schema/API/configuration/test
+layout, and required companion files, registration, indexes, or build tooling.
+State which conventions the new file follows, adapts, or introduces, with
+evidence and an owner for each deviation.
+
+Validate the parent directory/worktree revision immediately before creation so
+that a human or another AI cannot add a same-named or companion file unnoticed.
+Create atomically, then run the extension-specific parser, formatter, linter,
+schema check, or test where available. If reliable peers are absent, peers
+disagree without a decision, the extension is new, or required registration is
+unknown, stop as `unknown` or create a proposal. Do not invent a convention
+merely because the file parses.
+
 ### 5. Testing
 
 Re-organize the design-to-test handoff and planning test policy into an

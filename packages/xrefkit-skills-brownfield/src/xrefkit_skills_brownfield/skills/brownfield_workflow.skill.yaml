@@ -15,6 +15,14 @@ required_outputs:
   - evidence
   - phase_gates
   - handoffs
+  - file_edit_integrity_record
+  - file_edit_round_trip_verification
+  - file_edit_concurrency_revision_check
+  - file_edit_specification_alignment
+  - file_edit_historical_conflict_investigation
+  - file_edit_uncommitted_state_classification
+  - new_file_extension_conformity
+  - new_file_code_rule_majority_by_scope
   - knowledge_basis
   - pattern_decisions
   - knowledge_import_results
@@ -36,6 +44,12 @@ must_not:
   - prepare_test_tools_only_during_test_execution
   - hand_off_unreviewed_design
   - approve_human_owned_decisions
+  - silently_change_file_encoding_or_newlines
+  - overwrite_concurrent_human_or_ai_edits
+  - write_from_unconfirmed_ai_interpretation
+  - resolve_spec_conflict_by_newest_commit
+  - discard_or_hide_uncommitted_edits_without_authorization
+  - add_file_without_local_extension_pattern_check
 
 extension_policy:
   can_be_extended_by_local_skill: true
