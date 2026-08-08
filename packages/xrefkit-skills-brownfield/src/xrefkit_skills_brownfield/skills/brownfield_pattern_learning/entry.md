@@ -25,5 +25,11 @@ replay/correction, downstream propagation, backup/restore, and recovery. An
 the existing pattern is insufficient and who can operate the added complexity.
 Unclear, stale, weak, or conflicting evidence is an impact-bearing `unknown`.
 
+For every enhancement, load `references/pattern-decision-report.md` and produce
+a concise overview plus detailed evidence. Compare selected and rejected
+options, explain complexity and operational impact, describe data-lifecycle
+impact and protected invariants, and link the decision to XDDP, work items,
+tests, and evidence.
+
 Start output with `Status`, `Result`, `Evidence`, `Open Items`, and `Handoff`.
 Do not approve business requirements, design, release, or residual risk.

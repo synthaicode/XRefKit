@@ -103,6 +103,9 @@ provides:
         - complexity_delta
         - pattern_decision_basis
         - deviation_options
+        - pattern_decision_report
+        - pattern_option_comparison
+        - pattern_traceability_links
         - unknowns
         - handoffs
       required_knowledge:

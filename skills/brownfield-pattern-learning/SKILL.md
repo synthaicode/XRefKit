@@ -16,6 +16,9 @@ When external modernization or lifecycle knowledge is needed, load
 Use it as thematic background only; local evidence and human decisions remain
 authoritative for the target system.
 
+For an enhancement decision, load [Pattern decision report](references/pattern-decision-report.md)
+and produce both a concise overview and detailed evidence.
+
 ## Inputs
 
 - bounded change difference and target service;
@@ -40,6 +43,9 @@ Produce:
   runtime paths, support steps, and failure modes;
 - decision basis for `follows`, `adapts`, `introduces`, or `unknown`;
 - alternatives, deviation rationale, risks, owner, and handoff.
+- human-reviewable `pattern_decision_report` with overview/detail, candidate
+  comparison, complexity and operational impact, data-lifecycle impact, and
+  XDDP links.
 
 ## Learning method
 
@@ -93,6 +99,16 @@ transitions, jobs, storage, cleanup, monitoring, runbook, and failure modes.
 Do not add a lifecycle state or retention path merely because it is
 architecturally cleaner; require an evidenced business or operational need and
 an owner.
+
+## Decision report
+
+For every enhancement decision, explain in plain language why the selected
+pattern is appropriate for the existing system and why rejected alternatives
+were not selected. Record protected invariants, permitted change, evidence,
+operational concerns, data-lifecycle effects, human approval, and stable links
+using `xddp_row_id`, `pattern_id`, `work_item_id`, `test_id`, `evidence_id`, and
+`decision_id`. Keep the overview suitable for review and place the complete
+evidence and comparison in the detailed section.
 
 ## Work item shape
 
