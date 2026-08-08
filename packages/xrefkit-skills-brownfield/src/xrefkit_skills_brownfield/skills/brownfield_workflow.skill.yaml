@@ -29,9 +29,6 @@ required_outputs:
   - scope_adjusted_dfd_views
   - entity_change_point_mappings
   - entity_lifecycle_and_status_propagation
-  - knowledge_basis
-  - pattern_decisions
-  - knowledge_import_results
 
 required_knowledge:
   - xid-7A2F4C8D1401
