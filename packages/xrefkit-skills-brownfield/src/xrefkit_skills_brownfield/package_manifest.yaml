@@ -22,6 +22,22 @@ provides:
         - knowledge_basis
         - pattern_decisions
         - knowledge_import_results
+        - file_edit_integrity_record
+        - file_edit_round_trip_verification
+        - file_edit_concurrency_revision_check
+        - file_edit_specification_alignment
+        - file_edit_historical_conflict_investigation
+        - file_edit_uncommitted_state_classification
+        - new_file_extension_conformity
+        - new_file_code_rule_majority_by_scope
+        - scope_adjusted_dfd_views
+        - entity_change_point_mappings
+        - entity_lifecycle_and_status_propagation
+        - test_investigation_scope
+        - existing_data_investigation_method
+        - change_based_test_suite
+        - test_structure_impact_mapping
+        - overview_detail_report
       required_knowledge:
         - xid-7A2F4C8D1401
         - xid-7A2F4C8D1501
