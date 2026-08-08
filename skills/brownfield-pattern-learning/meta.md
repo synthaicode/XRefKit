@@ -7,7 +7,7 @@
 - summary: learn existing implementation and operational patterns before a brownfield change and prepare a complexity- and operability-aware pattern decision
 - use_when: a brownfield change may introduce a new design pattern, depart from a local convention, or increase operational complexity
 - input: bounded change request, target service and source scope, current implementation and test evidence, service/data-flow Knowledge, operational constraints, and decision owners
-- output: pattern inventory, representative examples, pattern evidence, operational baseline, complexity delta, follows/adapts/introduces/unknown decision basis, deviation options, risks, owner, and handoff
+- output: pattern inventory, representative examples, data-lifecycle pattern inventory, lifecycle/propagation map, pattern evidence, operational baseline, complexity delta, follows/adapts/introduces/unknown decision basis, deviation options, risks, owner, and handoff
 - maturity: `draft`
 - execution_mode: `local_default`
 - capability_layering: `required`
@@ -28,4 +28,5 @@
   - name=custom_framework_common_criteria; bind=5F21C8A41002
   - name=service_catalog; bind=7A2F4C8D2201
   - name=service_interaction_data_flow; bind=7A2F4C8D2301
+  - name=database_current_state_analysis; bind=F9B3C6A70412
   - name=ipa_release_activity_catalog; bind=7B3E5D1A6101

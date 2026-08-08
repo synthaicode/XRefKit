@@ -10,9 +10,13 @@ repository rule. Compare the candidate with existing structure, contracts,
 data flow, state, errors, tests, deployment, monitoring, recovery, support,
 and operator actions.
 
-Return a pattern inventory, operational baseline, complexity/operational delta,
+Return a pattern inventory, data-lifecycle pattern inventory,
+lifecycle/propagation map, operational baseline, complexity/operational delta,
 `follows`/`adapts`/`introduces`/`unknown` decision basis, deviation options,
-risks, owner, and handoff. An `adapts` or `introduces` result must explain why
+risks, owner, and handoff. For in-scope data, cover creation, ownership,
+state/status transitions, logical deletion, retention, archive/purge, audit,
+replay/correction, downstream propagation, backup/restore, and recovery. An
+`adapts` or `introduces` result must explain why
 the existing pattern is insufficient and who can operate the added complexity.
 Unclear, stale, weak, or conflicting evidence is an impact-bearing `unknown`.
 

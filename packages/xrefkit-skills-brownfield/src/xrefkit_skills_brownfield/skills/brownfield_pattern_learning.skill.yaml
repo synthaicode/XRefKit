@@ -11,6 +11,8 @@ required_outputs:
   - phase_summary
   - pattern_inventory
   - representative_peer_evidence
+  - data_lifecycle_pattern_inventory
+  - lifecycle_propagation_map
   - operational_baseline
   - complexity_delta
   - pattern_decision_basis
@@ -23,6 +25,7 @@ required_knowledge:
   - xid-5F21C8A41002
   - xid-7A2F4C8D2201
   - xid-7A2F4C8D2301
+  - xid-F9B3C6A70412
   - xid-7B3E5D1A6101
 
 review_axes: []
@@ -33,4 +36,3 @@ must_not:
   - approve_new_pattern_or_release
   - hide_complexity_or_operational_burden
   - optimize_abstract_elegance_over_operational_baseline
-

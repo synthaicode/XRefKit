@@ -28,6 +28,7 @@ Produce:
 - pattern inventory and scope;
 - representative peer files/components/flows and selection basis;
 - observed pattern rule and counterexamples;
+- data-lifecycle pattern inventory and lifecycle/propagation map;
 - operational baseline: deployment, monitoring, recovery, support, data, and
   failure-handling expectations;
 - complexity delta: new concepts, dependencies, states, configuration,
@@ -44,8 +45,8 @@ Produce:
    is strong. Record peer paths, rule signatures, counts, exceptions, and
    confidence. One convenient example is not a rule.
 4. Compare the candidate with the observed pattern across structure, contracts,
-   data flow, state, errors, tests, deployment, monitoring, recovery, and
-   operator actions.
+   data flow, data lifecycle, state, errors, tests, deployment, monitoring,
+   recovery, and operator actions.
 5. Estimate the candidate's complexity and operational delta before deciding.
 6. Hand off the decision basis to `brownfield_workflow` and
    `brownfield_execution_planning`; do not silently choose a new architecture.
@@ -67,9 +68,31 @@ Do not reject a design only because it is different; reject or escalate it when
 the complexity or operational burden is unexplained, unowned, or inconsistent
 with the service's demonstrated operating level.
 
+## Data-lifecycle learning
+
+For every in-scope Entity or important data set, learn the existing lifecycle:
+
+- creation source, trigger, owner, and initial state;
+- reads, writes, permitted writers, and derived/projection copies;
+- business status versus technical processing status;
+- state transitions, approvals, rejection, retry, replay, and correction;
+- logical deletion, archive, purge, retention, and legal/operational holds;
+- audit history, timestamps, versioning, idempotency, and duplicate handling;
+- downstream propagation, consumers, stale-data behavior, and reconciliation;
+- backup, restore, migration, masking, privacy, and recovery procedures.
+
+Represent the observed lifecycle as a state/propagation map with evidence,
+owner, trigger, before/after state, changed fields, business meaning, and
+downstream effect. Compare any proposed lifecycle change for new states,
+transitions, jobs, storage, cleanup, monitoring, runbook, and failure modes.
+Do not add a lifecycle state or retention path merely because it is
+architecturally cleaner; require an evidenced business or operational need and
+an owner.
+
 ## Work item shape
 
-Each result contains `id`, `target`, `peer_scope`, `pattern_rule`, `evidence`,
+Each result contains `id`, `target`, `peer_scope`, `pattern_rule`,
+`data_lifecycle_scope`, `evidence`,
 `exceptions`, `pattern_decision`, `complexity_delta`, `operational_delta`,
 `owner`, `next_action`, and `completion_criterion`. Unknowns state reason,
 impact, resolver, and owner.
