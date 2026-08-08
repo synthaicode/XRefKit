@@ -55,6 +55,53 @@ The planning Knowledge plan must identify the service owner, affected service
 flows, communication contracts, database read/write ownership, and downstream
 propagation for each in-scope item.
 
+## Scope-adjusted DFD and Entity change mapping
+
+When the brownfield item involves multiple services generating, transforming,
+approving, retaining, or consuming data, create a scope-declared DFD view when
+it helps a human review the impact. Do not force every detail into one diagram.
+Use a hierarchy that can be expanded without changing the meaning of the
+parent view:
+
+- `Level 0`: business context, external actors, major processes, and primary
+  data outcomes;
+- `Level 1`: service-to-service generation, transformation, event/API/file
+  propagation, and persistence boundaries;
+- `Level 2`: primary Entities, supporting Entities, derived/projection data,
+  ownership, and source-of-truth;
+- `Level 3`: change points, changed fields, status transitions, human
+  approvals, logical deletion, audit history, retry/replay, and downstream
+  effects.
+
+Select the lowest level required by the decision: broad impact uses Levels 0-1,
+requirements and design use Levels 1-2, and implementation/test impact uses
+Levels 2-3. Every view must state `scope`, `included`, `excluded`, `detail_level`,
+and `unknowns`, and must retain stable `service_id`, `entity_id`, `flow_id`, and
+`change_point_id` links to its evidence.
+
+Treat the Entity lifecycle as a data-flow concern. For each in-scope primary
+Entity, map its supporting Entities, generated or derived Entities, producing
+service, source-of-truth, permitted writers, and downstream consumers. Record
+updates as named change points rather than one generic update arrow, including
+the actor, trigger, before/after state, changed fields, business meaning,
+evidence, and downstream effect. Model logical deletion as a state transition
+and propagation (`active -> logically_deleted -> archived -> purged`) rather
+than assuming physical removal.
+
+For important status changes, record the transition owner, human actor where
+applicable, approval/rejection evidence, audit record, emitted event, and
+allowed downstream processing. Keep business status separate from technical
+processing status. If ownership, state transition, retention behavior, or
+propagation cannot be established from evidence, record an impact-bearing
+`unknown` and its resolver; do not infer it from a call graph or field name.
+
+Use DFD for data movement, Entity/ER views for structure, state diagrams for
+lifecycles, and sequence or process views for temporal behavior. Cross-link the
+views instead of duplicating untraceable detail. Include the selected DFD and
+Entity change rows in the design-to-test handoff so tests cover status,
+approval, logical deletion, restoration, replay, and downstream propagation
+where applicable.
+
 ## Importing existing service and flow information
 
 When service or flow information already exists in documents, exports, diagrams,
