@@ -11,6 +11,11 @@ Learn the target system's existing patterns before selecting a design approach.
 The purpose is to prevent unnecessary complexity and preserve the operational
 level that the service can actually support.
 
+When external modernization or lifecycle knowledge is needed, load
+[External modernization and lifecycle basis](references/external-modernization-basis.md).
+Use it as thematic background only; local evidence and human decisions remain
+authoritative for the target system.
+
 ## Inputs
 
 - bounded change difference and target service;

@@ -4,6 +4,11 @@ Learn existing implementation and operational patterns before choosing a
 design approach. The purpose is to avoid unnecessary complexity and preserve
 the service's demonstrated operational level.
 
+When external modernization knowledge is needed, use the packaged
+`references/external-modernization-basis.md` as thematic background. Do not
+copy an external pattern without comparing it with local evidence, data
+ownership, operation, rollback, and decision ownership.
+
 Inspect coherent peer scopes, record representative paths, rule signatures,
 counts, exceptions, freshness, and confidence. Do not treat one example as a
 repository rule. Compare the candidate with existing structure, contracts,
