@@ -27,6 +27,11 @@ it from a folder, namespace, one call site, or existing behavior.
 Produce a work plan containing:
 
 - objective, acceptance boundary, and out-of-scope boundary;
+- XDDP change-requirement specification separating change reason, before/after
+  behavior, and concrete change specifications;
+- XDDP traceability matrix mapping each change requirement/specification to
+  impacted services, modules, files, data, tests, evidence, and handoffs;
+- change-design handoff describing the intended change method before editing;
 - investigation scope with included, excluded, detail level, and unknowns;
 - service, component, DB, integration, downstream, and data dependency map;
 - work items ordered by dependency and downstream impact;
@@ -37,6 +42,32 @@ Produce a work plan containing:
 - evidence paths, stable IDs, raw-result retention, and comparison method;
 - preparation, execution, check, closure, and handoff gates;
 - owner, next action, stop condition, and resolver for every unknown.
+
+## XDDP traceability
+
+Use the XDDP three-artifact chain before implementation:
+
+```text
+Why / What: change-requirement specification
+        ↓
+Where: traceability matrix
+        ↓
+How: change-design handoff
+        ↓
+execution plan → tests → evidence → decision
+```
+
+The matrix must use change differences as rows and impacted assets as columns.
+At minimum, map each row to `service_id`, `flow_id`, `entity_id` or target,
+`work_item_id`, `test_id`, `evidence_id`, and `handoff_id` where applicable.
+When a parameter, return value, state, or shared module change expands the
+impact, update the matrix before continuing. Do not begin implementation while
+an in-scope change row has no target, method, test/evidence path, or owner.
+
+Keep the XDDP artifacts focused on the difference; do not reproduce the entire
+base specification. When source or documents are weak, record a bounded
+spec-out investigation as evidence and keep reconstructed behavior separate
+from approved change intent.
 
 ## Planning rules
 
@@ -56,9 +87,9 @@ Produce a work plan containing:
 ## Work item shape
 
 Each work item must contain `id`, `upstream_ref`, `target`, `phase`, `basis`,
-`dependencies`, `state`, `impact`, `evidence_target`, `owner`, `next_action`,
-and `completion_criterion`. Use `done`, `unknown`, or `out_of_scope`; unknowns
-must state reason, impact, resolver, and owner.
+`dependencies`, `state`, `impact`, `xddp_row_id`, `evidence_target`, `owner`,
+`next_action`, and `completion_criterion`. Use `done`, `unknown`, or
+`out_of_scope`; unknowns must state reason, impact, resolver, and owner.
 
 ## Required summary
 

@@ -10,6 +10,9 @@ entry:
 required_outputs:
   - phase_summary
   - execution_work_plan
+  - xddp_change_requirement_specification
+  - xddp_traceability_matrix
+  - xddp_change_design_handoff
   - investigation_scope
   - target_dependency_map
   - existing_data_investigation_plan
@@ -21,6 +24,7 @@ required_outputs:
 
 required_knowledge:
   - xid-7A2F4C8D1701
+  - xid-7A2F4C8D1711
   - xid-7A2F4C8D2201
   - xid-7A2F4C8D2301
 
@@ -32,4 +36,3 @@ must_not:
   - hide_unverified_scope
   - approve_release_or_residual_risk
   - execute_production_changes
-

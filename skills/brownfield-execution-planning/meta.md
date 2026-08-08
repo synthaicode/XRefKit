@@ -7,7 +7,7 @@
 - summary: create an evidence-backed execution work plan for a brownfield change before investigation, implementation, and change-based testing
 - use_when: a brownfield change needs an explicit execution plan covering scope, dependencies, existing data, test suite, evidence, gates, and handoff
 - input: approved or bounded change request, upstream items, current-system evidence, service/data-flow Knowledge, constraints, decision owners, and known test or data artifacts
-- output: execution work plan, investigation scope, target and dependency map, existing-data investigation plan, pre-change test-suite plan, evidence plan, stop conditions, gates, owners, unknowns, and handoff package
+- output: execution work plan, XDDP change-requirement specification, XDDP traceability matrix, change-design handoff, investigation scope, target and dependency map, existing-data investigation plan, pre-change test-suite plan, evidence plan, stop conditions, gates, owners, unknowns, and handoff package
 - maturity: `draft`
 - execution_mode: `local_default`
 - capability_layering: `required`
@@ -22,6 +22,7 @@
   - monitoring_and_control: downgrade unsupported mappings or missing inputs to `unknown` and stop material planning gaps
   - closure: verify every in-scope item has an owner, evidence target, next action, and phase handoff
 - tags: `brownfield`, `planning`, `execution-plan`, `impact-analysis`, `regression-testing`
+- xddp_basis: `Why/What` change requirement, `Where` traceability matrix, `How` change-design handoff
 - skill_doc: `./SKILL.md`
 - knowledge_slots:
   - name=service_catalog; bind=7A2F4C8D2201
