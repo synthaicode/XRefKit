@@ -11,6 +11,26 @@ cases:
     target: cases/test_tool_planning/fixture
     expected: cases/test_tool_planning/expected.yaml
     calibration: cases/test_tool_planning/calibration.yaml
+  - id: brownfield.workflow.testability-gate
+    skill_id: brownfield.workflow
+    target: cases/testability_gate/fixture
+    expected: cases/testability_gate/expected.yaml
+    calibration: cases/testability_gate/calibration.yaml
+  - id: brownfield.workflow.requirement-validation
+    skill_id: brownfield.workflow
+    target: cases/requirement_validation/fixture
+    expected: cases/requirement_validation/expected.yaml
+    calibration: cases/requirement_validation/calibration.yaml
+  - id: brownfield.workflow.specification-reconciliation
+    skill_id: brownfield.workflow
+    target: cases/specification_reconciliation/fixture
+    expected: cases/specification_reconciliation/expected.yaml
+    calibration: cases/specification_reconciliation/calibration.yaml
+  - id: brownfield.workflow.post-reconciliation-planning
+    skill_id: brownfield.workflow
+    target: cases/post_reconciliation_planning/fixture
+    expected: cases/post_reconciliation_planning/expected.yaml
+    calibration: cases/post_reconciliation_planning/calibration.yaml
 run_policy:
   target_isolation: required
   expected_answers_are_not_in_target: true

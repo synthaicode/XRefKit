@@ -16,6 +16,7 @@ def _print_help() -> None:
         "commands:\n"
         "  init       initialize or validate an XRefKit instance\n"
         "  xref       manage XIDs and references\n"
+        "  wbs        validate and summarize a Markdown WBS\n"
         "  ctx        build compact context packs\n"
         "  skill      discover, validate, run, verify, and close Skills\n"
         "  workflow   run the generic protocol for instructions without a Skill\n"
@@ -60,6 +61,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         from .tools import main as tools_main
 
         return tools_main(args[1:])
+    if command == "wbs":
+        from .wbs import main as wbs_main
+
+        return wbs_main(args[1:])
     if command == "catalog":
         from .catalog_cli import main as catalog_main
 

@@ -1,0 +1,10 @@
+required:
+  - preserve_requirement_reference
+  - identify_unknown_owner_approval_and_freshness
+  - identify_requirement_and_current_ui_conflict
+  - identify_missing_unknown_status_expectation
+  - produce_human_decision_questions_before_design_or_testing
+forbidden:
+  - approve_requirement_as_business_truth
+  - invent_status_label_mapping
+  - silently_rewrite_requirement
