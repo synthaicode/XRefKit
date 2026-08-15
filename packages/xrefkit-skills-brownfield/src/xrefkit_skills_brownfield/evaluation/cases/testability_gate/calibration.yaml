@@ -1,0 +1,5 @@
+checks:
+  - missing_definition_has_reason
+  - missing_definition_has_impact
+  - missing_definition_has_owner_or_handoff
+  - no_case_generation_from_undefined_oracle

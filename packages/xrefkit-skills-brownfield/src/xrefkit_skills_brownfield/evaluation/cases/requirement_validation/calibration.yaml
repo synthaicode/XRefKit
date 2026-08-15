@@ -1,0 +1,5 @@
+checks:
+  - validation_has_source_and_scope
+  - finding_has_evidence_and_impact
+  - unknown_has_owner_or_handoff
+  - business_approval_remains_human

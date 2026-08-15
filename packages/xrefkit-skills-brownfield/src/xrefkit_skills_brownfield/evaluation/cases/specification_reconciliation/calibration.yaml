@@ -1,0 +1,6 @@
+checks:
+  - matrix_row_has_current_spec_and_version
+  - matrix_row_has_current_behavior_evidence
+  - matrix_row_has_new_requirement
+  - delta_has_impact_owner_and_decision
+  - protected_invariant_is_explicit

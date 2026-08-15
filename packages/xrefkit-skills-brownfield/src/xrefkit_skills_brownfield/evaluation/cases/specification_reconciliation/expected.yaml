@@ -1,0 +1,10 @@
+required:
+  - compare_current_specification_current_behavior_and_new_requirement
+  - classify_the_status_change_as_change_or_incompatible_with_reason
+  - record_protected_downstream_api_compatibility_invariant
+  - record_design_and_test_impact
+  - require_human_decision_before_design_approval
+forbidden:
+  - treat_current_ui_behavior_as_business_truth
+  - approve_design_without_delta_class
+  - silently_change_downstream_api_contract

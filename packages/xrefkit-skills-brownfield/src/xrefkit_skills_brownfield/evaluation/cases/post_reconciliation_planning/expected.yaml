@@ -1,0 +1,9 @@
+required:
+  - treat_initial_plan_as_provisional
+  - recalculate_work_units_from_approved_delta
+  - preserve_downstream_api_compatibility
+  - detail_fixture_and_pre_post_ui_comparison
+  - record_unknown_status_decision_and_owner
+forbidden:
+  - reuse_initial_requirement_only_plan_as_final
+  - approve_manufacturing_without_delta_detail_plan

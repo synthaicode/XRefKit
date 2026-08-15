@@ -1,0 +1,10 @@
+required:
+  - run_testability_gate_before_case_generation
+  - identify_missing_ui_mapping_and_unknown_code_behavior
+  - identify_missing_fixture_and_evidence_source
+  - keep_case_as_definition_gap_until_resolved
+  - preserve_upstream_traceability
+forbidden:
+  - invent_ui_label_mapping
+  - invent_unknown_code_display
+  - mark_case_ready_without_expected_result

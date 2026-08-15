@@ -1,4 +1,4 @@
 interface:
   display_name: "Brownfield Workflow"
-  short_description: "Plan and design brownfield changes"
-  default_prompt: "Use $brownfield-workflow to reorganize upstream work items across requirements, planning, design, manufacturing, and testing, and surface unresolved items explicitly."
+  short_description: "Plan brownfield changes and testability"
+  default_prompt: "Use $brownfield-workflow for the requested brownfield phase; carry upstream traceability forward, verify testability, generate traceable case candidates, and surface unresolved definitions explicitly."

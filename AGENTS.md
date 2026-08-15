@@ -15,6 +15,13 @@ Global instructions should only control:
 
 If a required rule is missing, do not invent a project rule. Mark it as missing and suggest whether it belongs in AGENTS.md, a Skill, knowledge, or workflow definition.
 
+## GitHub publication language
+
+When creating or updating a pull request, write human-facing PR titles,
+descriptions, review comments, and status comments in English. Keep code
+identifiers, file paths, commands, status enum values, XIDs, and other
+machine-readable values unchanged.
+
 --- project-doc ---
 
 # AGENTS Startup (XRefKit)

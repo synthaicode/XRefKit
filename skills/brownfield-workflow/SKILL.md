@@ -18,10 +18,24 @@ references only when the current item needs them:
   and handoffs;
 - [Service, data, and impact investigation](references/service-data-impact.md):
   service ownership, DFD, Entity lifecycle, structure, and existing data;
+- [Existing requirement validation](references/requirements-validation.md):
+  validation of an existing Requirement's authority, freshness, consistency,
+  testability, and human decision gate;
+- [Specification reconciliation](references/specification-reconciliation.md):
+  current specification, current behavior, and new requirement comparison
+  before design approval;
+- [Post-reconciliation detailed planning](references/delta-detail-planning.md):
+  refinement of work, data, compatibility, test, evidence, and handoff plans
+  from approved specification deltas;
+- [IPA reconstruction guide mapping](references/ipa-reconstruction-guide-mapping.md):
+  mapping from the human-oriented IPA reconstruction guidance to this Skill;
 - [File-edit integrity](references/file-edit-integrity.md): encoding,
   concurrency, specification alignment, history, and new-file conformity;
 - [Change test suite](references/change-test-suite.md): scope, white-box
   structure, pre/post comparison, existing data, and regression evidence;
+- [Testability gate and AI case generation](references/testability-and-case-generation.md):
+  design-time input completeness, traceable case candidates, and definition
+  gaps before execution;
 - [Reporting and closure](references/reporting-and-closure.md): overview/detail
   reports, evidence, unknowns, decisions, and handoff.
 
@@ -42,6 +56,26 @@ references only when the current item needs them:
 - Do not create untraced work or approve human-owned requirements, design,
   release, or residual-risk decisions.
 
+## Phase-based usage
+
+Use the Skill for the phase that matches the current handoff. Carry the same
+upstream item, evidence, unknowns, owners, and decisions forward; do not restart
+the work as a new task catalogue.
+
+| Phase | Ask the Skill to do | Main output | Stop when |
+|---|---|---|---|
+| `requirements` | Validate an existing Requirement or separate purpose, current behavior, desired behavior, acceptance, scope, normal/error/boundary conditions, and unresolved decisions | Requirement validation result, traced items, and decision questions | Requirement authority, meaning, scope, acceptance, or owner is missing or conflicting |
+| `planning` | Create the initial work policy, then refine it from approved specification deltas | Initial work policy, post-reconciliation detail plan, impact scope, test inputs, gates, and handoff | Impact, data, owner, or delta-specific execution policy is unknown |
+| `design` | Reconcile current specification, current behavior, and new requirement; then define the traced structural delta and contracts | Specification reconciliation, design-to-test handoff, testability result, case candidates, and definition gaps | A material delta lacks class, evidence, protected invariant, impact, owner, or human decision |
+| `manufacturing` | Implement only approved design items while preserving file and concurrency integrity | Changed artifacts, integrity evidence, and exposed decisions | Implementation requires guessing or conflicts with the specification |
+| `testing` | Execute the approved change-focused suite, collect evidence, compare pre/post results, and classify differences | Test results, evidence, residual risks, and retest needs | Expected result, evidence, or comparison basis is not approved |
+| `closure` | Trace upstream items to results, classify unknowns, record decisions, and prepare the next handoff | Summary-first closure and residual-risk decisions | Any material unknown lacks impact, resolver, owner, or decision |
+
+For a phase-specific request, state the phase explicitly, for example:
+`Use $brownfield-workflow in planning phase to define the impact scope and
+testability inputs for <upstream_ref>.` Load the detailed reference named in
+the phase row only when needed.
+
 ## Inputs
 
 - user request and upstream work items;
@@ -49,6 +83,8 @@ references only when the current item needs them:
 - service catalog and service-interaction/data-flow Knowledge;
 - constraints, risks, decisions, and decision owners;
 - existing architecture, API, event, ERD, DDL, data-flow, or test artifacts.
+- design inputs needed to determine testability, including expected results,
+  observation sources, fixtures, and owners.
 
 If a required input is absent, record an impact-bearing `unknown` instead of
 inferring it from a namespace, folder, one call site, or current behavior.
@@ -78,22 +114,37 @@ Maintain each phase item with:
 
 Separate change purpose, evidenced current behavior, desired behavior,
 acceptance conditions, scope, normal/error/boundary conditions, assumptions,
-and unresolved decisions. Do not approve business requirements on behalf of
-the responsible human.
+and unresolved decisions. When an existing Requirement or equivalent upstream
+definition is supplied, load [existing requirement validation](references/requirements-validation.md)
+and validate its source, version, authority, owner, freshness, consistency,
+and testability before using it for design or test generation. Do not rewrite or
+approve business requirements on behalf of the responsible human.
 
 ### Planning
 
-Define impacted targets, work units, dependencies, execution order,
+Define the initial work policy from the available Requirement and current-system
+evidence: impacted targets, work units, dependencies, execution order,
 compatibility/data/release/rollback policies, tools, versions, fixtures,
 environment, test data, cleanup, result storage, risks, gates, and handoffs.
-Prepare test tools in planning; execute tests in testing.
+After specification reconciliation, load [post-reconciliation detailed planning](references/delta-detail-planning.md)
+and refine the plan from approved delta rows before manufacturing or test-case
+approval. Prepare test tools in planning; run the testability gate and generate
+traceable case candidates in planning/design; execute approved tests in testing.
 
 ### Design
 
 Define only the traced structural delta, responsibilities, API/message/DB/data
 contracts, processing/state, transaction/idempotency/concurrency,
 error/retry/timeout/rollback, compatibility/migration, observability, and
-design-to-test handoff required by upstream items.
+design-to-test handoff required by upstream items. After existing Requirement
+validation, load [specification reconciliation](references/specification-reconciliation.md)
+and compare the current specification, evidenced current behavior, and new
+requirement before approving the design delta. Record protected invariants,
+compatibility impact, downstream impact, and human decisions.
+Confirm that each affected behavior has enough target, condition, expected
+result, observation, evidence, and ownership information to define a
+reproducible test case. Load [testability gate and AI case generation](references/testability-and-case-generation.md)
+for the check and gap report.
 
 ### Manufacturing
 
@@ -104,10 +155,12 @@ Load [file-edit integrity](references/file-edit-integrity.md) before editing.
 
 ### Testing
 
-Create or refresh the test suite before the implementation change. Confirm that
-changed behavior meets the approved specification and that in-scope existing
-behavior is not unintentionally broken. Load [change test suite](references/change-test-suite.md)
-for scope, data, structure, selection, comparison, and reporting rules.
+Create or refresh the test suite before the implementation change. Confirm the
+testability gate and human decisions, then execute approved case candidates.
+Confirm that changed behavior meets the approved specification and that
+in-scope existing behavior is not unintentionally broken. Load [change test
+suite](references/change-test-suite.md) for scope, data, structure, selection,
+comparison, and reporting rules.
 
 ## Loading existing artifacts
 
