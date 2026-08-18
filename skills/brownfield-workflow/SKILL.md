@@ -153,6 +153,35 @@ uncommitted work. Stop an item as `unknown` or `blocked` if implementation
 exposes an unresolved requirement, design, compatibility, or data decision.
 Load [file-edit integrity](references/file-edit-integrity.md) before editing.
 
+Before replacement, write through an atomically replaced temporary file only
+after the revision check passes.
+
+#### Brownfield file editing integrity
+
+Before editing an existing file, record its encoding, BOM, newline convention,
+strict Unicode decoding, original bytes or hash, and approved spans. Preserve
+the encoding/BOM/newline policy and verify the `after_bytes` round trip after
+writing. This verifies encoding validity but does not hide pre-existing
+mojibake. Use a compare-and-swap revision token: if the current bytes differ,
+abort and do not overwrite concurrent work. Atomic replacement follows only
+after the semantic edit contract and `semantic_alignment` are confirmed.
+
+Treat the AI interpretation as a hypothesis, not authority; check the
+authoritative specification, Knowledge, local pattern, schema, and tests.
+When alignment is unclear, perform a bounded Historical conflict investigation
+using Git history, `log`, `show`, `diff`, and `blame`, while
+retaining current uncommitted and untracked state. Do not select the newest
+revision as authority.
+
+Apply the Uncommitted-file policy classifications
+`pre_existing_human_or_unknown`, `ai_owned_current_work`,
+`non_overlapping_changes`, and `mixed_or_overlapping`; never reset, checkout,
+clean, or stash protected work without authorization. New-file extension conformity:
+for new files, inspect same directory and same-extension peers, companion files,
+extension-specific
+rules, scope, cluster, majority, confidence, and repository-wide fallback.
+Stop on a weak margin or unresolved pattern conflict.
+
 ### Testing
 
 Create or refresh the test suite before the implementation change. Confirm the
