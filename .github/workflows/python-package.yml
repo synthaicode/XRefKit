@@ -178,14 +178,15 @@ jobs:
             clam_log="${RUNNER_TEMP}/freshclam.log"
             sudo install -d -o clamav -g clamav -m 0755 "${clam_db_dir}"
             sudo install -m 0644 /etc/clamav/freshclam.conf "${clam_conf}"
-            sudo sed -i \
-              -e '/^Example$/d' \
-              -e '/^DatabaseDirectory /d' \
-              -e '/^UpdateLogFile /d' \
-              "${clam_conf}"
+            # Keep comments/documentation from the package, but remove every
+            # active directive so distro-specific defaults cannot invalidate
+            # the temporary configuration on the hosted runner.
+            sudo sed -i -E '/^[[:space:]]*[^#[:space:]][^[:space:]]*/d' "${clam_conf}"
             printf '%s\n' \
               "DatabaseDirectory ${clam_db_dir}" \
-              "UpdateLogFile ${clam_log}" | sudo tee -a "${clam_conf}" >/dev/null
+              "UpdateLogFile ${clam_log}" \
+              "DatabaseOwner clamav" \
+              "DatabaseMirror database.clamav.net" | sudo tee -a "${clam_conf}" >/dev/null
             sudo grep -q '^DatabaseDirectory ' "${clam_conf}"
             sudo grep -q '^UpdateLogFile ' "${clam_conf}"
           sudo touch "${clam_log}"
