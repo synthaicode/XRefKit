@@ -170,27 +170,13 @@ jobs:
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install --yes clamav clamav-freshclam
-          # Use the package-provided valid config as a base, then redirect
-          # its database and log paths so parallel jobs do not contend for
-          # /var/lib/clamav or freshclam.log.
-          clam_db_dir="${RUNNER_TEMP}/clamav-db"
-          clam_conf="${RUNNER_TEMP}/freshclam.conf"
-            clam_log="${RUNNER_TEMP}/freshclam.log"
+            # Keep the config empty and pass job-local paths as command-line
+            # options so distro-specific freshclam.conf examples cannot
+            # invalidate the update or reintroduce shared database/log locks.
+            clam_db_dir="${RUNNER_TEMP}/clamav-db"
+            clam_conf="${RUNNER_TEMP}/freshclam.conf"
             sudo install -d -o clamav -g clamav -m 0755 "${clam_db_dir}"
-            sudo install -m 0644 /etc/clamav/freshclam.conf "${clam_conf}"
-            # Keep comments/documentation from the package, but remove every
-            # active directive so distro-specific defaults cannot invalidate
-            # the temporary configuration on the hosted runner.
-            sudo sed -i -E '/^[[:space:]]*[^#[:space:]][^[:space:]]*/d' "${clam_conf}"
-            printf '%s\n' \
-              "DatabaseDirectory ${clam_db_dir}" \
-              "UpdateLogFile ${clam_log}" \
-              "DatabaseOwner clamav" \
-              "DatabaseMirror database.clamav.net" | sudo tee -a "${clam_conf}" >/dev/null
-            sudo grep -q '^DatabaseDirectory ' "${clam_conf}"
-            sudo grep -q '^UpdateLogFile ' "${clam_conf}"
-          sudo touch "${clam_log}"
-          sudo chown clamav:clamav "${clam_log}"
+            sudo install -m 0644 /dev/null "${clam_conf}"
           if command -v systemctl >/dev/null 2>&1 && \
              sudo systemctl cat clamav-freshclam.service >/dev/null 2>&1; then
             sudo systemctl stop clamav-freshclam.service
@@ -201,9 +187,9 @@ jobs:
           fi
           # A failed definition update must fail this job; malware scanning
           # has no success fallback. Bound the external update to a clear
-          # failure instead of allowing a runner to stall indefinitely.
-          timeout --signal=TERM --kill-after=30s 10m \
-            sudo freshclam --config-file="${clam_conf}" --stdout --verbose
+            # failure instead of allowing a runner to stall indefinitely.
+            timeout --signal=TERM --kill-after=30s 10m \
+              sudo freshclam --config-file="${clam_conf}" --datadir="${clam_db_dir}" --stdout --verbose
       - name: Scan built artifacts with ClamAV
         shell: bash
         run: |
