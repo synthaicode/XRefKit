@@ -172,7 +172,7 @@ jobs:
           sudo apt-get install --yes clamav clamav-freshclam
             # Use the package's standard config path, removing only its
             # example marker, and pass a job-local database path explicitly.
-            clam_db_dir="${RUNNER_TEMP}/clamav-db"
+            clam_db_dir="/tmp/xrefkit-clamav-${GITHUB_RUN_ID}"
             sudo install -d -o clamav -g clamav -m 0755 "${clam_db_dir}"
             sudo sed -i -E '/^[[:space:]]*Example[[:space:]]*$/d' /etc/clamav/freshclam.conf
           if command -v systemctl >/dev/null 2>&1 && \
@@ -192,7 +192,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          clam_db_dir="${RUNNER_TEMP}/clamav-db"
+            clam_db_dir="/tmp/xrefkit-clamav-${GITHUB_RUN_ID}"
           if clamscan --help | grep -Fq -- "--fail-if-cvd-older-than"; then
             clamscan --database="${clam_db_dir}" --recursive --infected --fail-if-cvd-older-than=1 dist/
           else
