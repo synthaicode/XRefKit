@@ -170,24 +170,41 @@ jobs:
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install --yes clamav clamav-freshclam
-          # apt may start the background updater. Stop it so the required
-          # one-shot update owns the database and freshclam.log lock.
+          # Use a job-local database and config so apt's background updater
+          # cannot contend for /var/lib/clamav or freshclam.log.
+          clam_db_dir="${RUNNER_TEMP}/clamav-db"
+          clam_conf="${RUNNER_TEMP}/freshclam.conf"
+          mkdir -p "${clam_db_dir}"
+          cat > "${clam_conf}" <<EOF
+          DatabaseDirectory ${clam_db_dir}
+          DatabaseMirror database.clamav.net
+          Checks 1
+          Foreground yes
+          ScriptedUpdates yes
+          EOF
           if command -v systemctl >/dev/null 2>&1 && \
              sudo systemctl cat clamav-freshclam.service >/dev/null 2>&1; then
             sudo systemctl stop clamav-freshclam.service
           fi
+          if pgrep -x freshclam >/dev/null 2>&1; then
+            echo "::error::freshclam background updater is still running after service stop"
+            exit 1
+          fi
           # A failed definition update must fail this job; malware scanning
-          # has no success fallback.
-          sudo freshclam
+          # has no success fallback. Bound the external update to a clear
+          # failure instead of allowing a runner to stall indefinitely.
+          timeout --signal=TERM --kill-after=30s 10m \
+            sudo freshclam --config-file="${clam_conf}" --stdout --verbose
       - name: Scan built artifacts with ClamAV
         shell: bash
         run: |
           set -euo pipefail
+          clam_db_dir="${RUNNER_TEMP}/clamav-db"
           if clamscan --help | grep -Fq -- "--fail-if-cvd-older-than"; then
-            clamscan --recursive --infected --fail-if-cvd-older-than=1 dist/
+            clamscan --database="${clam_db_dir}" --recursive --infected --fail-if-cvd-older-than=1 dist/
           else
             echo "::warning::ClamAV lacks --fail-if-cvd-older-than; freshclam succeeded, using recursive infected scan."
-            clamscan --recursive --infected dist/
+            clamscan --database="${clam_db_dir}" --recursive --infected dist/
           fi
       # actions/upload-artifact v4.6.2; pinned to the release commit.
       - name: Upload artifact member manifest
