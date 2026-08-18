@@ -46,6 +46,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Judgment log usage](guides/055_judgment_log_usage.md#xid-9D64B2F18E44)
 - [Skill operating contract](core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61)
 - [Skill reporting contract](core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73)
+- [Human evaluation at run boundaries](core/contracts/082_human_evaluation_protocol.md#xid-7C4E2A91D8F0)
 
 ## Cross-Cutting Schemas And Boundaries
 

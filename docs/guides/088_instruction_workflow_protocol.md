@@ -86,3 +86,27 @@ xrefkit skill feedback --log <run-log> --kind human \
 An accepted output does not replace procedural verification, and procedural
 closure does not claim that the output is semantically correct. The two facts
 remain separately auditable.
+
+## Optional Run-Boundary Human Evaluation
+
+Handoff always returns control to the human; it does not wait for an evaluation.
+When the human issues a subsequent request, they may optionally connect it to
+the preceding run:
+
+```powershell
+xrefkit skill evaluate --log <run-log> `
+  --decision accepted `
+  --classification continuation `
+  --next-handling continue_next_step `
+  --purpose-fit "The requested purpose remains valid" `
+  --verified "OUT-001 and EVD-001" `
+  --uncertainty "none"
+```
+
+The human-confirmed classification can be `continuation`, `correction`,
+`scope_change`, `new_work`, or `needs_clarification`. An AI may propose a
+classification for the next request, but it cannot confirm it on the human's
+behalf. The record is optional and does not block a normal low-risk
+continuation. Use scoped findings for multi-target runs. If evidence or
+criteria are not versioned or snapshotted, record a comparability gap rather
+than attributing differences to the target object.

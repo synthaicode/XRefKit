@@ -261,6 +261,8 @@ deterministic `verify`, handoff, and `close`.
 Instruction-backed runs do not make the workflow protocol responsible for
 business or output quality. Human output acceptance is recorded separately
 with the human feedback record and remains distinct from procedural closure.
+An optional run-boundary human evaluation may connect this closed run to a later
+request; see [Human Evaluation At Run Boundaries](082_human_evaluation_protocol.md#xid-7C4E2A91D8F0).
 
 Each concrete work item must declare an observable completion criterion when it
 is created. If that criterion cannot yet be defined, the work item must use an

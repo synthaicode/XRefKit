@@ -28,6 +28,7 @@ from xrefkit.skillmeta import (
     resolve_os_contract,
     validate_skill_meta,
 )
+from xrefkit.models.human_evaluation import HumanEvaluation
 
 
 @dataclass
@@ -134,6 +135,13 @@ def _locked_log_update(func):
 
 
 VALID_PHASES = {"startup", "planning", "execution", "check", "quality", "closure", "handoff"}
+EVALUATION_DECISIONS = {
+    "accepted",
+    "accepted_with_conditions",
+    "correction",
+    "rejected_or_returned_to_human",
+    "needs_clarification",
+}
 VALID_PHASE_STATUSES = {"pending", "in_progress", "done", "blocked", "unknown", "escalated"}
 VALID_WORKITEM_STATUSES = {"pending", "in_progress", "done", "blocked", "unknown", "escalated"}
 VALID_ARTIFACT_STATUSES = {"pending", "in_progress", "done", "blocked", "unknown", "escalated"}
@@ -600,6 +608,11 @@ def _render_log(
 
 - status: `pending`
 - rule: record human acceptance, correction, or rejection with `xrefkit skill feedback --kind human`
+
+## Human Evaluation
+
+- status: `pending`
+- rule: optional run-boundary evaluation; control returns to the human without waiting, and a subsequent request may record a human-confirmed relationship with `xrefkit skill evaluate`
 
 ## Outcome Feedback
 
@@ -2254,6 +2267,110 @@ def update_feedback_observation(args) -> SkillRunResult:
 
 
 @_locked_log_update
+def update_human_evaluation(args) -> SkillRunResult:
+    """Record optional human evaluation after control has returned."""
+    log_path = Path(args.log).resolve()
+    text, error = _validate_observation_log(log_path)
+    if error is not None:
+        return error
+    assert text is not None
+    closure_status = _section_status(text, "Closure Gate")
+    if closure_status not in ACCEPTED_CLOSE_STATUSES:
+        return SkillRunResult(
+            ok=False,
+            skill_id=_log_skill_id(text),
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=[
+                "human evaluation requires the preceding run Closure Gate to be done or escalated; "
+                f"current={closure_status or 'missing'}"
+            ],
+            run_id=_log_field(text, "run_id"),
+        )
+
+    verified_basis = [str(value).strip() for value in getattr(args, "verified", []) if str(value).strip()]
+    remaining_uncertainty = [
+        str(value).strip() for value in getattr(args, "uncertainty", []) if str(value).strip()
+    ]
+    scoped_links: dict[str, list[str]] = {}
+    scope_errors: list[str] = []
+    for raw_link in getattr(args, "scope_link", []):
+        parts = str(raw_link).split("|", 1)
+        if len(parts) != 2 or not parts[0].strip() or not parts[1].strip():
+            scope_errors.append("--scope-link must use TARGET|LINK")
+            continue
+        scoped_links.setdefault(parts[0].strip(), []).append(parts[1].strip())
+    scoped_findings: list[dict[str, object]] = []
+    for raw_finding in getattr(args, "scope_finding", []):
+        parts = str(raw_finding).split("|", 2)
+        if len(parts) != 3 or not all(part.strip() for part in parts):
+            scope_errors.append("--scope-finding must use TARGET|DECISION|NOTE")
+            continue
+        target, decision, note = (part.strip() for part in parts)
+        if decision not in EVALUATION_DECISIONS:
+            scope_errors.append(f"invalid scoped finding decision: {decision}")
+            continue
+        scoped_findings.append({
+            "target": target,
+            "decision": decision,
+            "note": note,
+            "linked_targets": scoped_links.get(target, []),
+        })
+    if scope_errors:
+        return SkillRunResult(
+            ok=False,
+            skill_id=_log_skill_id(text),
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=scope_errors,
+            run_id=_log_field(text, "run_id"),
+        )
+    payload = {
+        "preceding_run_id": _log_field(text, "run_id"),
+        "decision": args.decision,
+        "classification": args.classification,
+        "next_handling": args.next_handling,
+        "purpose_fit": args.purpose_fit,
+        "verified_basis": verified_basis or ["none"],
+        "remaining_uncertainty": remaining_uncertainty or ["none"],
+        "carry_forward": [str(value).strip() for value in getattr(args, "carry_forward", []) if str(value).strip()],
+        "linked_targets": [str(value).strip() for value in getattr(args, "link", []) if str(value).strip()],
+        "scoped_findings": scoped_findings,
+        "proposed_classification": getattr(args, "proposed_classification", None),
+        "classification_source": "human_confirmed",
+        "reviewer": str(getattr(args, "reviewer", None) or "").strip() or None,
+        "evaluated_at": getattr(args, "evaluated_at", None),
+        "context_refs": [str(value).strip() for value in getattr(args, "context_ref", []) if str(value).strip()],
+        "comparability": getattr(args, "comparability", "not_assessed"),
+        "comparability_gaps": [str(value).strip() for value in getattr(args, "comparability_gap", []) if str(value).strip()],
+    }
+    if not payload["evaluated_at"]:
+        payload.pop("evaluated_at")
+    try:
+        evaluation = HumanEvaluation.model_validate(payload)
+    except Exception as exc:
+        return SkillRunResult(
+            ok=False,
+            skill_id=_log_skill_id(text),
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=[f"invalid human evaluation: {exc}"],
+            run_id=_log_field(text, "run_id"),
+        )
+    event = {"event": "human.evaluation", **evaluation.model_dump(mode="json", exclude_none=True)}
+    text = _append_observation_event(text, section="Human Evaluation", event=event)
+    _atomic_write_text(log_path, text)
+    return SkillRunResult(
+        ok=True,
+        skill_id=_log_skill_id(text),
+        skill_doc=None,
+        run_log=str(log_path),
+        errors=[],
+        run_id=_log_field(text, "run_id"),
+    )
+
+
+@_locked_log_update
 def update_token_usage(args) -> SkillRunResult:
     log_path = Path(args.log).resolve()
     if not log_path.exists():
@@ -2779,3 +2896,7 @@ def cmd_skill_knowledge(args) -> int:
 
 def cmd_skill_feedback(args) -> int:
     return _cmd_observation(args, update_feedback_observation, "feedback")
+
+
+def cmd_skill_evaluate(args) -> int:
+    return _cmd_observation(args, update_human_evaluation, "evaluate")
