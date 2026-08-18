@@ -175,15 +175,19 @@ jobs:
           # /var/lib/clamav or freshclam.log.
           clam_db_dir="${RUNNER_TEMP}/clamav-db"
           clam_conf="${RUNNER_TEMP}/freshclam.conf"
-          clam_log="${RUNNER_TEMP}/freshclam.log"
-          sudo install -d -o clamav -g clamav -m 0755 "${clam_db_dir}"
-          sudo install -m 0644 /etc/clamav/freshclam.conf "${clam_conf}"
-          sudo sed -i \
-            -e "s|^DatabaseDirectory .*|DatabaseDirectory ${clam_db_dir}|" \
-            -e "s|^UpdateLogFile .*|UpdateLogFile ${clam_log}|" \
-            "${clam_conf}"
-          sudo grep -q '^DatabaseDirectory ' "${clam_conf}"
-          sudo grep -q '^UpdateLogFile ' "${clam_conf}"
+            clam_log="${RUNNER_TEMP}/freshclam.log"
+            sudo install -d -o clamav -g clamav -m 0755 "${clam_db_dir}"
+            sudo install -m 0644 /etc/clamav/freshclam.conf "${clam_conf}"
+            sudo sed -i \
+              -e '/^Example$/d' \
+              -e '/^DatabaseDirectory /d' \
+              -e '/^UpdateLogFile /d' \
+              "${clam_conf}"
+            printf '%s\n' \
+              "DatabaseDirectory ${clam_db_dir}" \
+              "UpdateLogFile ${clam_log}" | sudo tee -a "${clam_conf}" >/dev/null
+            sudo grep -q '^DatabaseDirectory ' "${clam_conf}"
+            sudo grep -q '^UpdateLogFile ' "${clam_conf}"
           sudo touch "${clam_log}"
           sudo chown clamav:clamav "${clam_log}"
           if command -v systemctl >/dev/null 2>&1 && \
