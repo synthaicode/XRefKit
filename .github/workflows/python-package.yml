@@ -170,16 +170,22 @@ jobs:
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install --yes clamav clamav-freshclam
-          # Use a job-local database and config so apt's background updater
-          # cannot contend for /var/lib/clamav or freshclam.log.
+          # Use the package-provided valid config as a base, then redirect
+          # its database and log paths so parallel jobs do not contend for
+          # /var/lib/clamav or freshclam.log.
           clam_db_dir="${RUNNER_TEMP}/clamav-db"
           clam_conf="${RUNNER_TEMP}/freshclam.conf"
-          mkdir -p "${clam_db_dir}"
-          printf '%s\n' \
-            "DatabaseDirectory ${clam_db_dir}" \
-            "DatabaseMirror database.clamav.net" \
-            "Checks 1" \
-            "ScriptedUpdates yes" > "${clam_conf}"
+          clam_log="${RUNNER_TEMP}/freshclam.log"
+          sudo install -d -o clamav -g clamav -m 0755 "${clam_db_dir}"
+          sudo install -m 0644 /etc/clamav/freshclam.conf "${clam_conf}"
+          sudo sed -i \
+            -e "s|^DatabaseDirectory .*|DatabaseDirectory ${clam_db_dir}|" \
+            -e "s|^UpdateLogFile .*|UpdateLogFile ${clam_log}|" \
+            "${clam_conf}"
+          sudo grep -q '^DatabaseDirectory ' "${clam_conf}"
+          sudo grep -q '^UpdateLogFile ' "${clam_conf}"
+          sudo touch "${clam_log}"
+          sudo chown clamav:clamav "${clam_log}"
           if command -v systemctl >/dev/null 2>&1 && \
              sudo systemctl cat clamav-freshclam.service >/dev/null 2>&1; then
             sudo systemctl stop clamav-freshclam.service
