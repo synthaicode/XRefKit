@@ -139,6 +139,22 @@ If the `xrefkit` command is not available on `PATH`, use the module form:
 python -m xrefkit --help
 ```
 
+### Markdown WBS validation and rollups
+
+Keep one task per row in a Markdown table, then validate and regenerate the
+feature, phase, and feature-by-phase views without editing the source table:
+
+```powershell
+python -m xrefkit wbs validate samples/wbs.md
+python -m xrefkit wbs rollup samples/wbs.md
+python -m xrefkit wbs csv samples/wbs.md .tmp/wbs.csv
+```
+
+The validator rejects missing or extra cells, duplicate IDs, non-numeric or
+negative effort, and statuses outside `todo`, `doing`, and `done`. CSV output
+uses UTF-8 with BOM for Excel compatibility; the Markdown WBS remains the
+source of truth.
+
 To use the integrated MCP server, install the optional MCP dependencies:
 
 ```powershell

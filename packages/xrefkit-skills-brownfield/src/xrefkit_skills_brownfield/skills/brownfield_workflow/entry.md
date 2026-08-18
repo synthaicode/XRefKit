@@ -2,133 +2,42 @@
 
 Carry one brownfield change through requirements, planning, design,
 manufacturing, and testing. Preserve the upstream item as the traceability
-anchor; do not create an independent task catalogue.
+anchor and do not create untraced work.
 
-Use a Knowledge- and pattern-first loop: search applicable repository Knowledge
-before each phase judgment, compare the change with the target's existing
-patterns, and record `follows`, `adapts`, `introduces`, or `unknown`. Knowledge
-and existing implementation are evidence, not automatic business truth.
+Use Knowledge- and pattern-first execution. Search applicable Knowledge before
+each phase judgment, compare the change with the existing pattern, and record
+`follows`, `adapts`, `introduces`, or `unknown`. Existing implementation and
+Knowledge are evidence, not automatic business truth.
 
-Before requirements become design, resolve the service catalog record for the
-responsible existing service and the service-interaction/data-flow records for
-communication and database propagation. Missing or stale ownership, contract,
-or flow evidence is `unknown`; do not infer it from a namespace, folder, or one
-call site.
+Before requirements become design, resolve service ownership and the
+service-interaction/data-flow records for communication and database
+propagation. Missing or stale evidence is an impact-bearing `unknown`.
 
-For every phase, return a summary first containing the conclusion, unresolved
-items ordered by downstream impact, blockers, completed items, next handoff,
-and references to detailed evidence.
+Maintain each item with stable `id`, `upstream_ref`, `target`, phase result,
+state, evidence/decision basis, `knowledge_refs`, `pattern_decision`,
+`pattern_basis`, impact, next action, and owner. Do not use `unknown` as a bare
+label.
 
-Maintain each item with:
+Load the detailed procedure only when needed:
 
-- stable `id`;
-- `upstream_ref`;
-- target;
-- current phase result;
-- state: `done`, `unknown`, or `out_of_scope`;
-- evidence or decision basis;
-- `knowledge_refs` (XID references used for the item);
-- `pattern_decision` and `pattern_basis`;
-- `knowledge_import_results` when an existing catalog or flow artifact was supplied;
-- downstream impact;
-- next action and owner.
+- `references/phase-workflow.md`
+- `references/requirements-validation.md`
+- `references/specification-reconciliation.md`
+- `references/delta-detail-planning.md`
+- `references/ipa-reconstruction-guide-mapping.md`
+- `references/service-data-impact.md`
+- `references/file-edit-integrity.md`
+- `references/change-test-suite.md`
+- `references/testability-and-case-generation.md`
+- `references/reporting-and-closure.md`
 
-Do not use `unknown` as a bare label. State what is unknown, why it is unknown,
-what it affects, and who or what can resolve it. Do not infer missing behavior
-from the existing implementation; existing code is evidence of current
-behavior, not automatically the business requirement.
-
-Planning must produce a phase-by-phase Knowledge reuse plan covering design,
-manufacturing, and testing. Verify each Knowledge fragment's applicability and
-freshness/recheck condition. If an applicable existing pattern cannot be
-followed, record the deviation, rationale, evidence, and decision owner before
-handing the item onward.
-
-The plan must identify service ownership, affected flows, communication
-contracts, database read/write ownership, and downstream propagation for each
-in-scope item.
-
-## Scope-adjusted DFD and Entity change mapping
-
-When multiple services generate, transform, approve, retain, or consume the
-same data, create a scope-declared DFD view when it helps human review. Keep
-the view hierarchical: `Level 0` for business context, `Level 1` for service
-flows and persistence, `Level 2` for primary/supporting/derived Entities and
-ownership, and `Level 3` for change points, status transitions, approvals,
-logical deletion, audit, retry/replay, and downstream effects.
-
-Choose the lowest level required by the decision and declare `scope`,
-`included`, `excluded`, `detail_level`, and `unknowns`. Preserve stable
-`service_id`, `entity_id`, `flow_id`, and `change_point_id` links. Map each
-primary Entity's supporting and derived Entities, producing service,
-source-of-truth, permitted writers, and consumers. Replace generic update
-arrows with named change points carrying actor, trigger, before/after state,
-changed fields, business meaning, evidence, and downstream effect.
-
-Model logical deletion as lifecycle and propagation, not disappearance:
-`active -> logically_deleted -> archived -> purged`. For important status
-changes, record transition owner, human actor, approval/rejection evidence,
-audit record, emitted event, and allowed downstream processing. Keep business
-status distinct from technical processing status. If ownership, transition,
-retention, or propagation is not evidenced, record an impact-bearing `unknown`
-and resolver. Use DFD for movement, ER/Entity views for structure, state views
-for lifecycle, and sequence/process views for timing; cross-link them in the
-design-to-test handoff.
-
-When these records already exist in documents, exports, diagrams, OpenAPI/
-AsyncAPI, DDL/ERD, CMDB extracts, or analysis reports, import them before new
-discovery. Preserve the original source, search canonical XIDs, classify each
-concept as `create`, `extend`, `refresh`, `split`, `reject_duplicate`, or
-`proposal_only`, normalize into the two Knowledge schemas, attach evidence and
-freshness, and record conflicts. Apply canonical changes only when authorized;
-otherwise hand a `work/` proposal to `knowledge_ontology_management`.
-
-If the supplied input is already an XID-bearing file under `knowledge/`, use
-the canonical path fast path: verify the path boundary, resolve the XID with
-`xref show`, confirm applicability and freshness, record
-`mode: canonical_path_reuse`, and use that XID directly. Do not duplicate or
-re-register the fragment. Semantic changes go to
-`knowledge_ontology_management`; an invalid or XID-less path remains unknown.
-
-## Requirements
-
-Re-organize the request and current-state evidence into purpose, current
-behavior, desired behavior, acceptance conditions, scope, normal/error/boundary
-conditions, non-functional requirements, assumptions, and unresolved decisions.
-Do not approve human-owned business requirements.
-
-## Planning
-
-Re-organize approved requirements into impacted targets, work units,
-dependencies, execution order, compatibility/data/release/rollback policies,
-risks, stop conditions, phase gates, and verification evidence. Produce the
-work policy here. Include test tools, versions, fixtures, environment,
-dependencies, test data, cleanup, result storage, and local/CI execution. Test
-tool preparation belongs to planning; test execution belongs to testing.
-
-## Design
-
-Re-organize each requirements and planning item into only the required design
-areas: current-to-target delta, component responsibility, API/message/DB/data
-contracts, processing order and state, transaction/idempotency/concurrency,
-error/retry/timeout/rollback behavior, compatibility/migration, observability,
-and design-to-test handoff. Output decisions and explicit unknowns. Create
-detailed artifacts only for traced items; do not make testing infer scope from
-broad prose.
-
-Use the selected design Knowledge and pattern-conformity result to make the
-delta explicit. An `adapts` or `introduces` decision requires an explicit basis
-and owner; it is not implementation freedom.
-
-## Manufacturing
-
-Re-organize approved design items into implementation units for code, DB,
-migrations, configuration, integrations, tests, and build/static checks. If
-implementation exposes an unresolved requirement or design decision, stop that
-item and return it as `unknown` or `blocked`; do not decide silently in code.
-
-Implement only against the approved Knowledge and pattern basis. If hard
-evidence refutes that basis, record the assumption gap and correction handoff.
+The test procedure must declare investigation scope, existing-data investigation
+method, white-box structure-to-test mapping, pre-change test suite,
+change-impact selection, testability input completeness, AI-generated case
+candidates, definition gaps, post-change comparison, and overview/detail
+evidence. Tool preparation and the testability gate belong in planning/design;
+test execution belongs in testing. Do not generate a case by guessing a missing
+input, expected result, business rule, or evidence source.
 
 ### Brownfield file editing integrity
 
@@ -143,11 +52,11 @@ and newline policy. Disable universal-newline translation. Ambiguous encoding,
 undecodable bytes, or a requested policy change is `unknown` and requires an
 owner decision; do not guess.
 
-After saving, read raw bytes and require: exact BOM preservation; strict
-decoding with the original encoding; unchanged newline convention; unchanged
-Unicode strings outside approved change spans; strict re-encoding of the full
-edited Unicode string with the original encoding and BOM policy; and exact
-equality between those re-encoded bytes and the saved bytes.
+After saving, read raw bytes and require exact BOM preservation, strict
+decoding with the original encoding, unchanged newline convention, unchanged
+Unicode strings outside approved change spans, strict re-encoding with the
+original encoding and BOM policy, and exact equality between those re-encoded
+bytes and the saved bytes.
 
 The key round-trip assertion is:
 
@@ -155,11 +64,10 @@ The key round-trip assertion is:
 after_bytes == after_bytes.decode(original_encoding, strict).encode(original_encoding, strict)
 ```
 
-Apply BOM handling consistently around this assertion. It proves encoding
-validity, not absence of pre-existing mojibake. Detect mojibake introduced by
-the edit by strictly decoding both versions with the original encoding and
+This proves encoding validity, not absence of pre-existing mojibake. Detect
+mojibake introduced by the edit by strictly decoding both versions and
 comparing Unicode sequences, permitting differences only in approved spans.
-The handoff must include the pre-edit record, hashes or byte evidence,
+The handoff includes the pre-edit record, hashes or byte evidence,
 post-edit verification, BOM/newline results, approved spans, Unicode diff, and
 any residual detection limitation.
 
@@ -167,8 +75,8 @@ any residual detection limitation.
 
 Treat the pre-edit byte hash as a concurrency revision token. Immediately
 before writing, read the file again as raw bytes and compare its exact bytes or
-cryptographic hash with that token. If they differ, another actor—human or AI—
-has edited the file. Abort without writing, preserve the current file, and
+cryptographic hash with that token. If they differ, another actor—human or
+AI—has edited the file. Abort without writing, preserve the current file, and
 classify the item as `unknown` or `blocked` until the current content is read
 again and the intended change is rebased. Never overwrite the changed file
 with previously prepared content.
@@ -245,9 +153,9 @@ or version history; if none exists, record the evidence gap and escalate.
 
 Treat uncommitted worktree changes and untracked files as protected current
 state. Before editing, inspect the target's worktree status and diff, including
-untracked-file status. Clean commit history does not mean the target is clean.
-Never reset, checkout, clean, stash, or broadly restore the target to make it
-appear clean unless explicitly authorized.
+untracked-file status. Clean commit history does not mean that the target is
+clean. Never reset, checkout, clean, stash, or broadly restore the target to
+make it appear clean unless explicitly authorized.
 
 Classify the state before writing as one of:
 
@@ -293,18 +201,42 @@ schema check, or test. If reliable peers are absent, peers conflict without a
 decision, the extension is new, or registration is unknown, stop as `unknown`
 or create a proposal. Do not invent a convention merely because the file parses.
 
-## Testing
+## Phase-based use
 
-Re-organize the design-to-test handoff and planned test policy into executable
-tests. Cover applicable baseline, unit, integration, regression, boundary,
-negative, migration, compatibility, retry, idempotency, concurrency, and
-rollback cases. Record tool versions, context, test data, logs, raw results,
-failure classification, retest, and residual risk.
+Route the request to one phase and carry forward the same upstream reference,
+evidence, unknowns, owners, and decisions:
 
-## Closure
+- `requirements`: current/desired behavior, acceptance, scope, and decisions;
+- `planning`: impact scope, dependencies, tools, data, fixtures, gates, and
+  handoff;
+- `design`: traced structural delta, contracts, and testability/case-definition
+  check;
+- `manufacturing`: approved implementation with file and concurrency integrity;
+- `testing`: approved suite execution, evidence, pre/post comparison, and
+  residual risk;
+- `closure`: upstream trace, unknown classification, decisions, and handoff.
 
-Trace every in-scope upstream item to a result. Classify every item, attach
-evidence to completed items, give every unknown a reason/impact/action/owner,
-and record the next phase's input package and handoff conditions. Stop when
-proceeding would require guessing business behavior, structure,
-compatibility, data handling, or test acceptance.
+If the phase is not stated, infer it only from the requested deliverable and
+make the selected phase explicit in the summary. Stop when the phase requires
+an unresolved business, design, data, expected-result, or ownership decision.
+
+When an existing Requirement is supplied, validate its source, version,
+authority, owner, freshness, consistency with current evidence, and
+testability before using it as a design or test basis. Do not silently rewrite
+or approve it.
+
+In `design`, reconcile the current specification, evidenced current behavior,
+and validated new requirement. Record the delta class, protected invariants,
+compatibility/downstream impact, test impact, owner, and human decision before
+approving the design delta.
+
+After reconciliation, refine the initial work policy from the approved delta
+before manufacturing or test-case approval. Recalculate work units, data,
+compatibility, rollback, evidence, test, gates, owners, and handoffs; do not
+treat the Requirement-only plan as final.
+
+Every phase starts with a summary containing conclusion, downstream-ordered
+unknowns, blockers, completed items, next handoff, and evidence links. Before
+closure, trace every upstream item, attach evidence and Knowledge/pattern
+basis, give each unknown a resolver and owner, and stop when proceeding would
+require guessing.

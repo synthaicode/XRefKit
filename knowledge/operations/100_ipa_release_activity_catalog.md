@@ -51,6 +51,33 @@ It should at least define:
 - post-release observation and incident response
 - business-cycle and long-run timing constraints where applicable
 
+## Tag and Release Notes Rule
+
+Creating a version tag is not, by itself, completion of a release. Every
+version tag must satisfy all of the following conditions before the release is
+reported as complete:
+
+1. The tag points to the intended merge commit on `main`, not to an unmerged
+   feature branch or a local-only commit.
+2. The tag's target commit, or the tag object when an annotated tag is used, is
+   signed and is shown as `Verified` by the authoritative Git hosting service.
+   An unsigned annotated tag must not be used as a release tag.
+3. A GitHub Release exists for the exact tag name and has non-empty `Notes`
+   describing the release contents, verification status, and any known limits.
+4. Tag existence, signature verification, Release `Notes`, and package
+   publication are checked and reported as separate gates. Passing one gate
+   does not imply that the others passed.
+
+The minimum evidence for the tag and notes gates is:
+
+- the tag resolves to the intended `main` commit and is present on the remote;
+- the commit or tag signature is displayed as `Verified` on GitHub;
+- `gh release view <tag>` (or the GitHub UI) confirms the Release and its
+  non-empty `Notes`.
+
+If the GitHub Release or its `Notes` cannot be confirmed, the release remains
+incomplete or `unknown`; do not report the tag alone as a completed release.
+
 ## Trace Rule
 
 - Each release-policy decision should cite the current operational artifact, source finding, or business constraint used as its basis.

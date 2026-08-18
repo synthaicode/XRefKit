@@ -1,0 +1,5 @@
+checks:
+  - delta_maps_to_work_test_and_evidence
+  - compatibility_and_rollback_are_considered
+  - owner_and_handoff_are_explicit
+  - detailed_plan_precedes_execution
