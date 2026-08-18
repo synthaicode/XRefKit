@@ -179,7 +179,6 @@ jobs:
             "DatabaseDirectory ${clam_db_dir}" \
             "DatabaseMirror database.clamav.net" \
             "Checks 1" \
-            "Foreground yes" \
             "ScriptedUpdates yes" > "${clam_conf}"
           if command -v systemctl >/dev/null 2>&1 && \
              sudo systemctl cat clamav-freshclam.service >/dev/null 2>&1; then
