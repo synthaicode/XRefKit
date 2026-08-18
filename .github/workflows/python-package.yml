@@ -175,13 +175,12 @@ jobs:
           clam_db_dir="${RUNNER_TEMP}/clamav-db"
           clam_conf="${RUNNER_TEMP}/freshclam.conf"
           mkdir -p "${clam_db_dir}"
-          cat > "${clam_conf}" <<EOF
-          DatabaseDirectory ${clam_db_dir}
-          DatabaseMirror database.clamav.net
-          Checks 1
-          Foreground yes
-          ScriptedUpdates yes
-          EOF
+          printf '%s\n' \
+            "DatabaseDirectory ${clam_db_dir}" \
+            "DatabaseMirror database.clamav.net" \
+            "Checks 1" \
+            "Foreground yes" \
+            "ScriptedUpdates yes" > "${clam_conf}"
           if command -v systemctl >/dev/null 2>&1 && \
              sudo systemctl cat clamav-freshclam.service >/dev/null 2>&1; then
             sudo systemctl stop clamav-freshclam.service
