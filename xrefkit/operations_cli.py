@@ -471,6 +471,38 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_feedback.add_argument("--note", required=True, help="Observed feedback or outcome")
     p_skill_feedback.add_argument("--json", action="store_true", help="Emit JSON")
 
+    p_skill_evaluate = skill_sub.add_parser(
+        "evaluate",
+        help="Optionally record a human-confirmed evaluation and next-request relationship for a closed run",
+    )
+    p_skill_evaluate.add_argument("--log", required=True, help="Completed preceding run log to update")
+    p_skill_evaluate.add_argument("--decision", required=True, choices=[
+        "accepted", "accepted_with_conditions", "correction",
+        "rejected_or_returned_to_human", "needs_clarification",
+    ])
+    p_skill_evaluate.add_argument("--classification", required=True, choices=[
+        "continuation", "correction", "scope_change", "new_work", "needs_clarification",
+    ], help="Human-confirmed relationship of the subsequent request to the preceding run")
+    p_skill_evaluate.add_argument("--next-handling", required=True, choices=[
+        "continue_next_step", "repair_previous_run", "human_takeover",
+    ])
+    p_skill_evaluate.add_argument("--purpose-fit", required=True, help="Human-stated fit to the preceding purpose/intent")
+    p_skill_evaluate.add_argument("--verified", action="append", default=[], help="Verified artifact/check basis; repeatable, or use 'none'")
+    p_skill_evaluate.add_argument("--uncertainty", action="append", default=[], help="Remaining uncertainty/risk; repeatable, or use 'none'")
+    p_skill_evaluate.add_argument("--carry-forward", action="append", default=[], help="Constraint or added context for the next run; repeatable")
+    p_skill_evaluate.add_argument("--link", action="append", default=[], help="Preceding artifact, check, or evidence link; repeatable")
+    p_skill_evaluate.add_argument("--scope-finding", action="append", default=[], help="Scoped finding as TARGET|DECISION|NOTE; repeatable")
+    p_skill_evaluate.add_argument("--scope-link", action="append", default=[], help="Scoped evidence link as TARGET|LINK; repeatable")
+    p_skill_evaluate.add_argument("--proposed-classification", choices=[
+        "continuation", "correction", "scope_change", "new_work", "needs_clarification",
+    ], help="Optional AI proposal; --classification remains human-confirmed")
+    p_skill_evaluate.add_argument("--reviewer", default=None, help="Optional human reviewer identifier")
+    p_skill_evaluate.add_argument("--evaluated-at", default=None, help="Optional ISO-8601 evaluation timestamp")
+    p_skill_evaluate.add_argument("--context-ref", action="append", default=[], help="Versioned/declarative prior-run context reference; repeatable")
+    p_skill_evaluate.add_argument("--comparability", choices=["comparable", "gap", "not_assessed"], default="not_assessed")
+    p_skill_evaluate.add_argument("--comparability-gap", action="append", default=[], help="Why prior and current evidence/criteria are not comparable; repeatable")
+    p_skill_evaluate.add_argument("--json", action="store_true", help="Emit JSON")
+
     p_skill_phase = skill_sub.add_parser("phase", help="Update a Skill run log phase state")
     p_skill_phase.add_argument("--log", required=True, help="Skill run log to update")
     p_skill_phase.add_argument(
@@ -672,6 +704,10 @@ def main(argv: list[str] | None = None) -> int:
             from xrefkit.skillrun import cmd_skill_feedback
 
             return cmd_skill_feedback(args)
+        if args.skill_cmd == "evaluate":
+            from xrefkit.skillrun import cmd_skill_evaluate
+
+            return cmd_skill_evaluate(args)
         if args.skill_cmd == "phase":
             from xrefkit.skillrun import cmd_skill_phase
 

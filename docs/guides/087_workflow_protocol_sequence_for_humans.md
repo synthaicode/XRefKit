@@ -135,6 +135,30 @@ phase.
     - Closure does not by itself assert artifact content quality.
 ```
 
+## Optional Subsequent-Request Evaluation
+
+After closure, control is unconditionally returned to the human. The next
+request may be ordinary continuation without an evaluation record. If the
+human wants to connect that request to the preceding run, they may record an
+optional, human-confirmed evaluation:
+
+```powershell
+xrefkit skill evaluate --log <run-log> `
+  --decision accepted_with_conditions `
+  --classification continuation `
+  --next-handling continue_next_step `
+  --purpose-fit "Purpose still fits" `
+  --verified "OUT-001; EVD-001" `
+  --uncertainty "none"
+```
+
+The AI can propose a classification, but only the human-provided
+`--classification` is authoritative. Use scoped findings for multi-target
+runs. Include `--context-ref` and record `--comparability gap` when evidence,
+criteria, or configuration are not versioned or snapshotted. This records
+workflow evaluation, not private model reasoning, and never blocks handoff or
+low-risk continuation.
+
 ## Context Separation
 
 ```text

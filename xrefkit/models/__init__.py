@@ -11,6 +11,7 @@ from .common import (
     XidRef,
 )
 from .effective_bundle import BundleReferences, DomainKnowledgeCatalogEntry, EffectiveSkillBundle, LoadedTexts
+from .human_evaluation import HumanEvaluation, ScopedEvaluation
 from .local_manifest import IncludeRef, LocalDomainSkill, LocalManifest
 from .package_manifest import PackageManifest
 from .run_log import RunLogAggregate, RunLogEvent
@@ -38,4 +39,6 @@ __all__ = [
     "XidLoadedRef",
     "XidRef",
     "BundleReferences",
+    "HumanEvaluation",
+    "ScopedEvaluation",
 ]
