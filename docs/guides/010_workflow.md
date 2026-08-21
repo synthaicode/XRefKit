@@ -15,8 +15,10 @@ the workflow; it is not the workflow by itself.
    defined order. Do not discover startup context by recursively following
    `docs/` links or by bulk-loading `docs/000_index.md`.
 3. Identify the user's goal and decide whether the task requires a Skill. If
-   no Skill applies, use an instruction-backed workflow run and require explicit
-   completion conditions or an explicit default-condition opt-in.
+   no managed Skill applies, use an instruction-backed or `general_skill`
+   workflow run and require explicit completion conditions or an explicit
+   default-condition opt-in. Use `general_skill` when an ordinary external
+   Skill document is the procedural input.
 4. When a Skill is required, route semantically from `skills/_index.md` and the
    needed `skills/index/*` entries. Read candidate `meta.md` files only; do not
    open a candidate `SKILL.md` yet.

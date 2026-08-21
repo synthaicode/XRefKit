@@ -20,6 +20,36 @@ def test_instruction_workflow_requires_completion_conditions(tmp_path: Path) -> 
     assert not out.exists()
 
 
+def test_general_skill_workflow_records_adaptation_boundary(tmp_path: Path) -> None:
+    source = tmp_path / "external" / "SKILL.md"
+    source.parent.mkdir()
+    source.write_text("# Ordinary Skill\n\nRun a task.\n", encoding="utf-8")
+    out = tmp_path / "work" / "sessions" / "general.md"
+    assert _run(
+        tmp_path,
+        "workflow", "run", "--work-type", "general_skill",
+        "--skill-source", str(source), "--task", "Adapt the procedure",
+        "--out", str(out), "--use-default-completion-conditions",
+    ) == 0
+    text = out.read_text(encoding="utf-8")
+    assert "# Workflow Run Log" in text
+    assert "- skill_id: `general_skill`" in text
+    assert "## General Skill Intake" in text
+    assert "- governance_claim: `not_claimed`" in text
+    assert "- xrefkit_identity: `not_assigned`" in text
+    assert "caller/host supplied" in text
+
+
+def test_general_skill_workflow_rejects_missing_source(tmp_path: Path) -> None:
+    out = tmp_path / "work" / "sessions" / "general.md"
+    assert _run(
+        tmp_path, "workflow", "run", "--work-type", "general_skill",
+        "--task", "Adapt the procedure", "--out", str(out),
+        "--use-default-completion-conditions",
+    ) == 1
+    assert not out.exists()
+
+
 def test_instruction_workflow_uses_default_conditions_and_shared_protocol(tmp_path: Path) -> None:
     out = tmp_path / "work" / "sessions" / "run.md"
     assert _run(

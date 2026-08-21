@@ -616,11 +616,13 @@ def _build_parser() -> argparse.ArgumentParser:
     workflow_sub = workflow.add_subparsers(dest="workflow_cmd", required=True)
     p_workflow_run = workflow_sub.add_parser(
         "run",
-        help="Open an instruction-backed workflow run with explicit or default completion conditions",
+        help="Open an instruction- or general-Skill-backed workflow run",
     )
     p_workflow_run.add_argument("--root", default=".", help="Project root (default: .)")
+    p_workflow_run.add_argument("--work-type", choices=["instruction", "general_skill"], default="instruction", help="Protocol input type (default: instruction)")
     p_workflow_run.add_argument("--task", default=None, help="Instruction text")
     p_workflow_run.add_argument("--task-file", default=None, help="Read instruction text from a UTF-8 file")
+    p_workflow_run.add_argument("--skill-source", default=None, help="Local path for an ordinary Skill when --work-type general_skill is selected")
     p_workflow_run.add_argument("--out", default=None, help="Write workflow run log to this path")
     p_workflow_run.add_argument("--run-id", default=None, help="Caller-supplied UUID")
     p_workflow_run.add_argument(

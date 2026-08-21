@@ -2638,6 +2638,16 @@ def run_workflow_instruction(args) -> SkillRunResult:
     human acceptance decision recorded separately with ``skill feedback``.
     """
     root = Path(args.root).resolve()
+    work_type = str(getattr(args, "work_type", "instruction") or "instruction").strip()
+    skill_source = str(getattr(args, "skill_source", None) or "").strip()
+    if work_type == "general_skill":
+        if not skill_source:
+            return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=["--skill-source is required when --work-type general_skill is selected"])
+        if not Path(skill_source).expanduser().exists():
+            return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"general Skill source was not found: {skill_source}"])
+    elif work_type != "instruction":
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"unsupported workflow work type: {work_type}"])
+    run_label = "general_skill" if work_type == "general_skill" else "instruction"
     task, task_errors = _read_task(args)
     if task_errors:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=task_errors)
@@ -2663,7 +2673,7 @@ def run_workflow_instruction(args) -> SkillRunResult:
     except ValueError:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"run_id must be a UUID: {raw_run_id}"])
 
-    out_path = Path(args.out) if args.out else _default_log_path(root, "instruction")
+    out_path = Path(args.out) if args.out else _default_log_path(root, run_label)
     if not out_path.is_absolute():
         out_path = root / out_path
     sessions_dir = root / "work" / "sessions"
@@ -2676,10 +2686,10 @@ def run_workflow_instruction(args) -> SkillRunResult:
             if _log_field(existing_text, "run_id") == run_id:
                 return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"run_id is already used by an existing workflow run: {existing_log}"])
 
-    assigned_roles = _assign_runtime_roles(skill_id="instruction", execution_mode="local_default", model_tier=None)
+    assigned_roles = _assign_runtime_roles(skill_id=run_label, execution_mode="local_default", model_tier=None)
     log = _render_log(
         run_id=run_id,
-        skill_id="instruction",
+        skill_id=run_label,
         maturity="not_applicable",
         meta_path=Path("-") ,
         skill_doc=Path("-"),
@@ -2687,9 +2697,9 @@ def run_workflow_instruction(args) -> SkillRunResult:
         guard_policy="required",
         capability_layering="not_applicable",
         workflow_protocol="required",
-        capability="instruction execution",
-        tuning="generic procedural completion",
-        role_responsibilities={"executor": "execute the user instruction"},
+        capability="general Skill adaptation" if work_type == "general_skill" else "instruction execution",
+        tuning="external procedure under workflow protocol" if work_type == "general_skill" else "generic procedural completion",
+        role_responsibilities={"executor": "adapt and execute the supplied general Skill procedure" if work_type == "general_skill" else "execute the user instruction"},
         capability_refs=[],
         assigned_roles=assigned_roles,
         task=str(task),
@@ -2711,13 +2721,28 @@ def run_workflow_instruction(args) -> SkillRunResult:
         "- rule: workflow verification checks procedural records; a human confirms output quality separately",
     ] + [f"- condition: {condition.replace('`', "'")}" for condition in conditions]
     marker = "\n## Startup Inputs\n"
-    log = log.replace(marker, "\n" + "\n".join(condition_lines) + "\n" + marker, 1)
+    general_skill_lines: list[str] = []
+    if work_type == "general_skill":
+        safe_skill_source = skill_source.replace("`", "'")
+        general_skill_lines = [
+            "## General Skill Intake",
+            "",
+            "- work_type: `general_skill`",
+            f"- source: `{safe_skill_source}`",
+            "- imported_data: `the supplied procedure and its declared references only`",
+            "- adaptation_boundary: `map the procedure into protocol work items, artifacts, checks, stop conditions, and handoff`",
+            "- governance_claim: `not_claimed`",
+            "- xrefkit_identity: `not_assigned`",
+            "- caller_requirements: `purpose, authority, scope, completion criteria, evidence, and acceptance remain caller/host supplied`",
+            "- rule: `a general Skill is external input; it does not provide XRefKit XIDs, Knowledge, governance, evidence, or accountability by itself`",
+        ]
+    log = log.replace(marker, "\n" + "\n".join(condition_lines) + "\n" + ("\n" + "\n".join(general_skill_lines) if general_skill_lines else "") + "\n" + marker, 1)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with _LogFileLock(out_path.with_name(f".{out_path.name}.lock")):
         _atomic_write_text(out_path, log)
     return SkillRunResult(
         ok=True,
-        skill_id="instruction",
+        skill_id=run_label,
         skill_doc=None,
         run_log=str(out_path),
         errors=[],
@@ -2733,7 +2758,7 @@ def cmd_workflow_run(args) -> int:
     elif result.ok:
         print(f"ok: {result.run_log}")
         print(f"  run_id: {result.run_id}")
-        print("  run_type: instruction")
+        print(f"  run_type: {getattr(args, 'work_type', 'instruction')}")
         print("  next: add work items, record artifacts/evidence, verify, human-accept output, then close")
     else:
         print("fail: workflow run")

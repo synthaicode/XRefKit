@@ -7,6 +7,11 @@ XRefKit v0.4.3 extends the workflow protocol to instructions that do not have
 an applicable Skill. This does not make the instruction an implicit Skill and
 does not make the protocol responsible for judging output quality.
 
+When an ordinary Skill document exists but is not an XRefKit-managed Skill,
+use the parallel [`general_skill` work type](092_general_skill_workflow_protocol.md#xid-4D8A6C2F1B90).
+It preserves the same protocol gates while keeping source procedure,
+XRefKit-managed Skill identity, and governance evidence separate.
+
 ## Start Gate
 
 Start an instruction-backed run with:
