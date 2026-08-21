@@ -23,7 +23,7 @@ def test_instruction_workflow_requires_completion_conditions(tmp_path: Path) -> 
 def test_general_skill_workflow_records_adaptation_boundary(tmp_path: Path) -> None:
     source = tmp_path / "external" / "SKILL.md"
     source.parent.mkdir()
-    source.write_text("# Ordinary Skill\n\nRun a task.\n", encoding="utf-8")
+    source.write_text("# Ordinary Skill\n\n1. Collect the input\n2. Produce the output\n", encoding="utf-8")
     out = tmp_path / "work" / "sessions" / "general.md"
     assert _run(
         tmp_path,
@@ -38,6 +38,11 @@ def test_general_skill_workflow_records_adaptation_boundary(tmp_path: Path) -> N
     assert "- governance_claim: `not_claimed`" in text
     assert "- xrefkit_identity: `not_assigned`" in text
     assert "caller/host supplied" in text
+    assert "## General Skill Decomposition" in text
+    assert "- decomposition_candidates: `2`" in text
+    assert "WI-GS-001 status=`unknown`" in text
+    assert "WI-GS-002 status=`unknown`" in text
+    assert "completion criterion; caller/host confirmation required" in text
 
 
 def test_general_skill_workflow_rejects_missing_source(tmp_path: Path) -> None:
