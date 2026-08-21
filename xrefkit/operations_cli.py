@@ -621,6 +621,14 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Run the generic workflow protocol for an instruction without a Skill",
     )
     workflow_sub = workflow.add_subparsers(dest="workflow_cmd", required=True)
+
+    host = subparsers.add_parser("host", help="Run host-compatibility evidence checks")
+    host_sub = host.add_subparsers(dest="host_cmd", required=True)
+    p_host_precheck = host_sub.add_parser(
+        "precheck", help="Evaluate repeatable, observable Skill-routing compatibility evidence"
+    )
+    p_host_precheck.add_argument("--input", required=True, help="UTF-8 JSON pre-check input")
+    p_host_precheck.add_argument("--out", default=None, help="Optional JSON report path")
     p_workflow_run = workflow_sub.add_parser(
         "run",
         help="Open an instruction-backed workflow run with explicit or default completion conditions",
@@ -774,6 +782,11 @@ def main(argv: list[str] | None = None) -> int:
             exclude=args.exclude,
         )
         return cmd_xref(args, cfg)
+
+    if args.command == "host" and args.host_cmd == "precheck":
+        from xrefkit.host_precheck import cmd_host_precheck
+
+        return cmd_host_precheck(args)
 
     if args.command == "ctx":
         from xrefkit.ctx import cmd_ctx

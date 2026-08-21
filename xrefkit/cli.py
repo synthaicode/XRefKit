@@ -6,7 +6,7 @@ import sys
 from collections.abc import Sequence
 
 
-_OPERATIONS = {"xref", "ctx", "goal", "gate", "pack", "dashboard", "analysis", "skill", "workflow"}
+_OPERATIONS = {"xref", "ctx", "goal", "gate", "pack", "dashboard", "analysis", "skill", "workflow", "host"}
 _V2 = {"package", "show"}
 
 
@@ -20,6 +20,7 @@ def _print_help() -> None:
         "  ctx        build compact context packs\n"
         "  skill      discover, validate, run, verify, and close Skills\n"
         "  workflow   run the generic protocol for instructions without a Skill\n"
+        "  host       run host-compatibility evidence checks\n"
         "  tools      list and run XID-backed client tools\n"
         "  catalog    list and maintain Knowledge and structure catalogs\n"
         "  pack       validate and build runtime/content packs\n"
