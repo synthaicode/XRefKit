@@ -991,6 +991,11 @@ Duplicate external body.
         self.assertNotIn("workflow_protocol", context)
         self.assertNotIn("runtime_role_contract", context)
         self.assertNotIn("client_tool_distribution", context)
+        self.assertEqual(context["prompt_flow_protocol"]["version"], "1")
+        self.assertEqual(
+            context["prompt_flow_protocol"]["reconciliation"]["default"],
+            "report_only",
+        )
         routing_refs = {
             reference["id"]: reference
             for reference in context["semantic_routing_references"]
@@ -1009,6 +1014,7 @@ Duplicate external body.
         self.assertIn("startup.log_decision_xids", obligation_ids)
         self.assertIn("tools.materialize_from_mcp", obligation_ids)
         self.assertIn("context.no_duplicate_xid_body_per_session", obligation_ids)
+        self.assertIn("prompt_flow.initialize_and_reconcile", obligation_ids)
 
     def test_startup_context_rejects_duplicate_catalog_xid(self) -> None:
         write(

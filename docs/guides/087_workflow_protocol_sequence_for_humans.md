@@ -60,7 +60,7 @@ phase.
    - generates `run_id` for client/MCP correlation
 
 4a. In MCP mode, the harness binds the run before task-specific XID access.
-    - call `bind_skill_run(run_id, skill_id)`
+    - call `bind_skill_run(run_id, skill_id, flow_id, root_run_id, parent_run_id, work_item_id, node_id)` when Prompt Flow correlation applies
     - execute its returned `client_record_command` against `run_log`
     - MCP writes search and XID-resolution events to `work/mcp/xid_audit.jsonl`
     - the client log and server audit now share `run_id`, `mcp_session_id`, and

@@ -22,6 +22,21 @@ class ContextTokenTests(unittest.TestCase):
         self.assertTrue(updated.client_tools_unlocked)
         self.assertEqual("sample_skill", updated.skill_id)
 
+    def test_round_trip_preserves_prompt_flow_correlation(self) -> None:
+        codec = ContextTokenCodec("test-secret", "repo-1", ttl_seconds=60)
+        token = codec.issue(
+            startup_loaded=True,
+            flow_id="FLOW-001",
+            root_run_id="d4c0ca07-ec6c-48f9-b296-ec735323b088",
+            parent_run_id="d4c0ca07-ec6c-48f9-b296-ec735323b088",
+            work_item_id="WI-001",
+            node_id="node-001",
+        )
+        claims = codec.verify(token)
+
+        self.assertEqual("FLOW-001", claims.flow_id)
+        self.assertEqual("WI-001", claims.work_item_id)
+
     def test_tampering_and_repository_mismatch_are_rejected(self) -> None:
         codec = ContextTokenCodec("test-secret", "repo-1", ttl_seconds=60)
         token = codec.issue(startup_loaded=True)

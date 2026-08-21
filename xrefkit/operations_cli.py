@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 
 from xrefkit.xref import XrefConfig, cmd_xref
@@ -398,6 +399,11 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_run.add_argument("--task-file", default=None, help="Read task text from a UTF-8 file")
     p_skill_run.add_argument("--out", default=None, help="Write run log to this path")
     p_skill_run.add_argument("--run-id", default=None, help="Caller-supplied UUID used to correlate MCP and client logs")
+    p_skill_run.add_argument("--flow-id", default=None, help="Prompt Flow ID shared with a parent workflow")
+    p_skill_run.add_argument("--root-run-id", default=None, help="Root run ID of the Prompt Flow")
+    p_skill_run.add_argument("--parent-run-id", default=None, help="Parent run ID for delegated Skill work")
+    p_skill_run.add_argument("--work-item-id", default=None, help="Parent work item ID represented by this Skill Run")
+    p_skill_run.add_argument("--node-id", default=None, help="Prompt Flow node ID for Dashboard traceability")
     p_skill_run.add_argument(
         "--domain-knowledge-catalog",
         default=None,
@@ -430,15 +436,16 @@ def _build_parser() -> argparse.ArgumentParser:
 
     p_skill_routing = skill_sub.add_parser("routing", help="Record Skill routing candidates and selection evidence")
     p_skill_routing.add_argument("--log", required=True, help="Skill run log to update")
-    p_skill_routing.add_argument("--selected-skill", required=True, help="Selected Skill ID")
+    p_skill_routing.add_argument("--selected-skill", default=None, help="Selected Skill ID; omit when selection-mode=needs_clarification")
     p_skill_routing.add_argument("--candidate", action="append", default=[], help="Candidate Skill ID; repeatable")
     p_skill_routing.add_argument(
         "--selection-mode",
-        choices=["semantic", "explicit", "handoff", "fallback"],
+        choices=["semantic", "explicit", "handoff", "fallback", "quality_review", "needs_clarification"],
         default="semantic",
         help="Routing decision mode",
     )
     p_skill_routing.add_argument("--reason", required=True, help="Evidence-bound selection reason")
+    p_skill_routing.add_argument("--target-work-item", default=None, help="Work item receiving the routing decision")
     p_skill_routing.add_argument("--json", action="store_true", help="Emit JSON")
 
     p_skill_knowledge = skill_sub.add_parser("knowledge", help="Record Knowledge search, load, or application evidence")
@@ -623,6 +630,18 @@ def _build_parser() -> argparse.ArgumentParser:
     p_workflow_run.add_argument("--task-file", default=None, help="Read instruction text from a UTF-8 file")
     p_workflow_run.add_argument("--out", default=None, help="Write workflow run log to this path")
     p_workflow_run.add_argument("--run-id", default=None, help="Caller-supplied UUID")
+    p_workflow_run.add_argument("--flow-id", default=None, help="Prompt Flow ID; defaults to the root run ID")
+    p_workflow_run.add_argument("--root-run-id", default=None, help="Root run ID of the Prompt Flow")
+    p_workflow_run.add_argument("--parent-run-id", default=None, help="Parent run ID when this is a nested workflow")
+    p_workflow_run.add_argument("--work-item-id", default=None, help="Parent work item ID represented by this workflow")
+    p_workflow_run.add_argument("--node-id", default=None, help="Prompt Flow node ID for Dashboard traceability")
+    p_workflow_run.add_argument("--purpose", default=None, help="Prompt purpose; omitted values are recorded as unknown")
+    p_workflow_run.add_argument("--scope-in", action="append", default=[], help="In-scope boundary; repeatable")
+    p_workflow_run.add_argument("--scope-out", action="append", default=[], help="Out-of-scope boundary; repeatable")
+    p_workflow_run.add_argument("--owner", default=None, help="Accountable owner; omitted values are recorded as unknown")
+    p_workflow_run.add_argument("--authority", default=None, help="Authority or approval boundary")
+    p_workflow_run.add_argument("--expected-evidence", action="append", default=[], help="Expected evidence; repeatable")
+    p_workflow_run.add_argument("--stop-condition", action="append", default=[], help="Stop or clarification condition; repeatable")
     p_workflow_run.add_argument(
         "--completion-condition",
         action="append",
@@ -635,6 +654,105 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Use the repository's procedural completion conditions when the instruction omits them",
     )
     p_workflow_run.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_workflow_routing = workflow_sub.add_parser(
+        "routing",
+        help="Record the main AI semantic routing decision for a Prompt Flow",
+    )
+    p_workflow_routing.add_argument("--log", required=True, help="Parent Prompt Flow run log")
+    p_workflow_routing.add_argument("--selected-skill", default=None, help="Skill selected by the main AI")
+    p_workflow_routing.add_argument("--candidate", action="append", default=[], help="Candidate Skill ID; repeatable")
+    p_workflow_routing.add_argument(
+        "--selection-mode",
+        choices=["semantic", "explicit", "fallback", "needs_clarification"],
+        default="semantic",
+        help="Routing decision mode",
+    )
+    p_workflow_routing.add_argument("--reason", required=True, help="Evidence-bound routing reason")
+    p_workflow_routing.add_argument("--target-work-item", default=None, help="Work item receiving the routing decision")
+    p_workflow_routing.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_workflow_delegate = workflow_sub.add_parser(
+        "delegate",
+        help="Start a child Skill Run for one parent workflow work item",
+    )
+    p_workflow_delegate.add_argument("--root", default=".", help="Project root (default: .)")
+    p_workflow_delegate.add_argument("--parent-log", required=True, help="Parent Prompt Flow run log")
+    p_workflow_delegate.add_argument("--meta", required=True, help="Relative path to the delegated Skill meta.md")
+    p_workflow_delegate.add_argument("--task", default=None, help="Child Skill task text")
+    p_workflow_delegate.add_argument("--task-file", default=None, help="Read child task text from a UTF-8 file")
+    p_workflow_delegate.add_argument("--out", default=None, help="Write child Skill run log to this path")
+    p_workflow_delegate.add_argument("--run-id", default=None, help="Caller-supplied child run UUID")
+    p_workflow_delegate.add_argument("--work-item-id", required=True, help="Parent work item delegated to the child Skill")
+    p_workflow_delegate.add_argument("--node-id", default=None, help="Prompt Flow node ID")
+    p_workflow_delegate.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_workflow_quality = workflow_sub.add_parser(
+        "quality-review",
+        help="Record main-AI quality Skill routing and start the selected child Skill",
+    )
+    p_workflow_quality.add_argument("--root", default=".", help="Project root (default: .)")
+    p_workflow_quality.add_argument("--parent-log", required=True, help="Parent Prompt Flow run log")
+    p_workflow_quality.add_argument("--meta", required=True, help="Selected quality review Skill meta.md")
+    p_workflow_quality.add_argument("--selected-skill", required=True, help="Skill selected by the main AI")
+    p_workflow_quality.add_argument("--candidate", action="append", required=True, help="Candidate Skill ID; repeatable")
+    p_workflow_quality.add_argument("--reason", required=True, help="Evidence-bound selection reason")
+    p_workflow_quality.add_argument("--task", default=None, help="Quality review task")
+    p_workflow_quality.add_argument("--task-file", default=None, help="Read quality review task from a UTF-8 file")
+    p_workflow_quality.add_argument("--out", default=None, help="Write child Skill run log to this path")
+    p_workflow_quality.add_argument("--run-id", default=None, help="Caller-supplied child run UUID")
+    p_workflow_quality.add_argument("--work-item-id", required=True, help="Parent work item under review")
+    p_workflow_quality.add_argument("--node-id", default=None, help="Prompt Flow node ID")
+    p_workflow_quality.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_workflow_recovery = workflow_sub.add_parser(
+        "recovery",
+        help="Record a bounded recovery proposal or human-confirmed resume",
+    )
+    p_workflow_recovery.add_argument("--log", required=True, help="Prompt Flow or Skill Run log")
+    p_workflow_recovery.add_argument("--recovery-id", required=True, help="Stable recovery proposal ID")
+    p_workflow_recovery.add_argument("--status", required=True, choices=["proposed", "confirmed"], help="Proposal state")
+    p_workflow_recovery.add_argument("--resume-location", required=True, help="Where execution should resume")
+    p_workflow_recovery.add_argument("--reason", required=True, help="Why recovery is needed")
+    p_workflow_recovery.add_argument("--next-action", required=True, help="Next executable action after confirmation")
+    p_workflow_recovery.add_argument("--executable-action", default=None, help="Bounded action to execute after human confirmation")
+    p_workflow_recovery.add_argument("--owner", default=None, help="Recovery owner")
+    p_workflow_recovery.add_argument("--verification-method", default=None, help="How the resumed result will be verified")
+    p_workflow_recovery.add_argument("--maximum-attempts", type=int, default=None, help="Maximum permitted recovery attempts")
+    p_workflow_recovery.add_argument("--stop-condition", action="append", default=[], help="Recovery stop condition; repeatable")
+    p_workflow_recovery.add_argument("--reviewer", default=None, help="Human reviewer confirming the resume")
+    p_workflow_recovery.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_workflow_reconcile = workflow_sub.add_parser(
+        "reconcile",
+        help="Reconcile a parent Prompt Flow with its delegated child Skill Runs",
+    )
+    p_workflow_reconcile.add_argument("--log", required=True, help="Parent Prompt Flow run log")
+    p_workflow_reconcile.add_argument(
+        "--apply-child-status",
+        action="store_true",
+        help="Reflect closed child status on the linked parent work item; does not execute work",
+    )
+    p_workflow_reconcile.add_argument("--json", action="store_true", help="Emit JSON")
+
+    mcp = subparsers.add_parser(
+        "mcp",
+        help="Client-side MCP initialization helpers",
+    )
+    mcp_sub = mcp.add_subparsers(dest="mcp_cmd", required=True)
+    p_mcp_flow_init = mcp_sub.add_parser(
+        "flow-init",
+        help="Initialize a Prompt Flow from a saved MCP startup context",
+    )
+    p_mcp_flow_init.add_argument("--startup-context", required=True, help="Saved get_startup_context JSON")
+    prompt_group = p_mcp_flow_init.add_mutually_exclusive_group(required=True)
+    prompt_group.add_argument("--prompt", help="Prompt text; it is hashed, not stored in the audit")
+    prompt_group.add_argument("--prompt-file", help="UTF-8 file containing the prompt")
+    p_mcp_flow_init.add_argument("--cache-root", default=".xrefkit/mcp-cache", help="Client cache root")
+    p_mcp_flow_init.add_argument("--repository-fingerprint", required=True, help="MCP repository fingerprint")
+    p_mcp_flow_init.add_argument("--flow-id", default=None, help="Optional caller-supplied Flow ID")
+    p_mcp_flow_init.add_argument("--root-run-id", default=None, help="Optional root run UUID")
+    p_mcp_flow_init.add_argument("--json", action="store_true", help="Emit JSON")
 
     return parser
 
@@ -746,6 +864,46 @@ def main(argv: list[str] | None = None) -> int:
             from xrefkit.skillrun import cmd_workflow_run
 
             return cmd_workflow_run(args)
+        if args.workflow_cmd == "routing":
+            from xrefkit.skillrun import cmd_workflow_routing
+
+            return cmd_workflow_routing(args)
+        if args.workflow_cmd == "delegate":
+            from xrefkit.skillrun import cmd_workflow_delegate
+
+            return cmd_workflow_delegate(args)
+        if args.workflow_cmd == "quality-review":
+            from xrefkit.skillrun import cmd_workflow_quality_review
+
+            return cmd_workflow_quality_review(args)
+        if args.workflow_cmd == "recovery":
+            from xrefkit.skillrun import cmd_workflow_recovery
+
+            return cmd_workflow_recovery(args)
+        if args.workflow_cmd == "reconcile":
+            from xrefkit.skillrun import cmd_workflow_reconcile
+
+            return cmd_workflow_reconcile(args)
+
+    if args.command == "mcp":
+        if args.mcp_cmd == "flow-init":
+            from pathlib import Path
+
+            from xrefkit.mcp.client_flow import initialize_prompt_flow_from_file
+
+            prompt = args.prompt
+            if args.prompt_file:
+                prompt = Path(args.prompt_file).read_text(encoding="utf-8")
+            payload = initialize_prompt_flow_from_file(
+                args.startup_context,
+                prompt or "",
+                cache_root=args.cache_root,
+                repository_fingerprint=args.repository_fingerprint,
+                flow_id=args.flow_id,
+                root_run_id=args.root_run_id,
+            )
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+            return 0
 
     if args.command == "pack":
         if args.pack_cmd == "list":

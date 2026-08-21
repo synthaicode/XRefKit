@@ -14,6 +14,15 @@ server.
 
 The dashboard shows:
 
+- Prompt Flow status and parent-child execution trees across generic workflow
+  runs and delegated Skill Runs
+- Prompt Flow lifecycle state derived from recorded routing, Work Item, child,
+  reconcile, verification, and closure evidence
+- Prompt Flow details with Work Item status, completion criterion or reason,
+  reconcile status, and blockers
+- Recovery Trace with proposed and human-confirmed resume locations, reasons,
+  executable actions, owner, verification method, maximum attempts, stop
+  conditions, and reviewer; the dashboard does not execute recovery
 - Skill run status
 - closure and quality gate state
 - outputs, evidence, checks, handoffs, unknowns, risks, and judgments
@@ -34,10 +43,12 @@ the first screen and the relationship between its controls and panels.
 ```mermaid
 flowchart TB
     H["Skill Run Observation Dashboard<br/>repository root / sessions directory / JSON"]
-    N["Overview  ·  Attention  ·  Closure  ·  Evidence  ·  Handoff  ·  XID Usage  ·  Analysis  ·  Missing Information"]
+    N["Overview  ·  Prompt Flows  ·  Recovery  ·  Attention  ·  Closure  ·  Evidence  ·  Handoff  ·  XID Usage  ·  Analysis  ·  Missing Information"]
     F["Search skill, path, run ID, session, repository, or status<br/>All  ·  Blocked  ·  Open  ·  Closed  ·  Refresh"]
     M["Summary metrics<br/>Skill runs · Closed · Blocked · Open · Unknowns · Risks · Handoffs · Used XIDs · Unused XIDs"]
     O["Overview<br/>Recent Skill runs<br/>Skill | Status | Closure | Updated | Log"]
+    P["Prompt Flows<br/>One prompt -> root workflow -> work items -> child Skill Runs<br/>Flow list · execution tree · Work Item details"]
+    R["Recovery<br/>Proposal and human confirmation<br/>Resume location · reason · next action · reviewer"]
     A["Attention<br/>Runs that need action before closure<br/>Blockers"]
     C["Closure<br/>Runtime phases<br/>Closure gate · Quality gate"]
     E["Evidence<br/>Outputs · Evidence · Checks<br/>Artifact counts and recent records"]
@@ -48,6 +59,8 @@ flowchart TB
     S["Select one run<br/>All panels focus on the selected run<br/>Show all runs returns to the full list"]
 
     H --> N --> F --> M --> O
+    N --> P
+    N --> R
     N --> A
     N --> C
     N --> E
@@ -65,6 +78,8 @@ flowchart TB
 | User question | Start here | Meaning | Next action |
 | --- | --- | --- | --- |
 | “Is anything blocked?” | **Attention** | Lists runs that still need action before closure. | Open the blocker and record the missing work, evidence, or handoff. |
+| “How did one prompt flow through the system?” | **Prompt Flows** | Groups the root workflow and delegated Skill Runs by `flow_id`, including parent run, work item, status, lifecycle state, and blockers. | Follow the execution tree and inspect the linked individual Run records. |
+| “Where should a paused flow resume?” | **Recovery** | Shows each Recovery Trace proposal and human confirmation with its resume location, reason, executable action, owner, verification method, attempt limit, stop conditions, and reviewer. | Confirm the proposal with a human, then execute the separately authorized recovery command. |
 | “Can this run be considered complete?” | **Closure** | Shows runtime phase status, closure status, and quality-gate status separately. | Confirm the required phases and quality review; do not treat `verify` as quality approval. |
 | “What was actually produced?” | **Evidence** | Shows output, evidence, check, and artifact records. | Check that the important result has an evidence or output artifact. |
 | “Can another person continue this work?” | **Handoff** | Shows handoffs and the unknown/risk/judgment records that affect continuity. | Resolve or escalate open concerns before handoff/closure. |

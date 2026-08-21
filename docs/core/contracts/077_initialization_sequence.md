@@ -51,8 +51,9 @@ Markdown directly from the local filesystem.
 | 2 | MCP | `get_startup_context` | First governance-content load and source of startup `load_order`. |
 | 3 | MCP response | `load_order` | Ordered XIDs to apply before task-specific routing. |
 | 4 | MCP response | `references` | Document bodies returned for the startup XIDs. |
-| 5 | MCP | `get_document_by_xid` | Resolve only needed transferred links by XID. |
-| 6 | MCP | Skill and workflow catalog tools | Route task-specific work after initialization. |
+| 5 | MCP response | `prompt_flow_protocol` | Apply Prompt Flow identity, delegation, reconciliation, and uncertainty boundaries before task routing. |
+| 6 | MCP | `get_document_by_xid` | Resolve only needed transferred links by XID. |
+| 7 | MCP | Skill and workflow catalog tools | Route task-specific work after initialization. |
 
 The Skill catalog is a routing surface, not an execution-tool manifest:
 
@@ -62,6 +63,83 @@ The Skill catalog is a routing surface, not an execution-tool manifest:
   that Skill's tool requirements.
 - `get_skill_requirements` returns requirement metadata without procedure
   bodies; use `get_skill` when the selected procedure itself is needed.
+
+When one prompt spans multiple runs, the client initializes one Prompt Flow
+after `get_startup_context`, preserves its correlation fields, and follows the
+returned reconciliation contract before attempting parent closure.
+
+The client-side cache integration is:
+
+```python
+flow = cache.initialize_prompt_flow(startup_context, prompt_text)
+root_run_correlation = flow.correlation()
+child_run_correlation = flow.correlation(
+    parent_run_id=parent_run_id,
+    work_item_id="WI-001",
+    node_id="node-001",
+)
+```
+
+The client records `flow.initialized` locally without storing the raw prompt;
+the prompt is represented by a hash. The client does not select Skills or
+execute reconcile.
+
+For a host that saved the MCP response as `startup.json`, the repository
+client bridge is:
+
+```powershell
+python -m xrefkit mcp flow-init `
+  --startup-context startup.json `
+  --prompt "the user prompt" `
+  --cache-root .xrefkit/mcp-cache `
+  --repository-fingerprint <repository-fingerprint>
+```
+
+The JSON result supplies `root_run_correlation` for the first
+`workflow run` or `skill run`, and the returned `PromptFlowContext` supplies
+child correlation for later delegation.
+
+An MCP host binds a started Skill Run through the client adapter:
+
+```python
+binding = await flow.bind_skill_run(
+    mcp_call_tool,
+    run_id=run_id,
+    skill_id=skill_id,
+    parent_run_id=parent_run_id,
+    work_item_id="WI-001",
+    node_id="node-001",
+)
+```
+
+The adapter rejects a server response whose correlation fields do not match the
+client Flow context.
+
+For a host that invokes the repository workflow CLI, use the client builders to
+preserve the same boundary instead of reconstructing correlation arguments in
+host-specific code:
+
+```python
+run_args = flow.workflow_run_arguments(
+    task="Execute generic work",
+    parent_run_id=parent_run_id,
+    work_item_id="WI-001",
+    node_id="node-001",
+    purpose="Deliver the requested change",
+    expected_evidence=["pytest output"],
+)
+routing_args = flow.workflow_routing_arguments(
+    log="work/sessions/parent.md",
+    selected_skill="skill_a",
+    candidates=["skill_a", "skill_b"],
+    reason="The Work Item matches skill_a",
+    target_work_item="WI-001",
+)
+```
+
+These methods build and validate arguments; the host remains responsible for
+executing the command under its own authority. They do not select a Skill,
+start recovery, or close a Prompt Flow.
 
 Current MCP startup XID order observed for this repository:
 

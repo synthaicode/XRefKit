@@ -148,6 +148,27 @@ class XidDocumentCache:
             return {}
         return self.known_versions(xids)
 
+    def initialize_prompt_flow(
+        self,
+        startup_context: dict[str, Any],
+        prompt: str,
+        *,
+        flow_id: str | None = None,
+        root_run_id: str | None = None,
+    ):
+        """Initialize a Prompt Flow using this repository cache namespace."""
+        from .client_flow import PromptFlowClient
+
+        return PromptFlowClient(
+            self.cache_root,
+            self.repository_fingerprint,
+        ).initialize(
+            startup_context,
+            prompt,
+            flow_id=flow_id,
+            root_run_id=root_run_id,
+        )
+
     async def resolve_startup(
         self,
         fetch_startup: Callable[
