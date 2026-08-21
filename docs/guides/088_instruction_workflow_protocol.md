@@ -48,8 +48,106 @@ xrefkit skill verify --log <run-log>
 xrefkit skill close --log <run-log>
 ```
 
+For a Prompt Flow with delegated child Skill Runs, reconcile the parent before
+advancing its check phase and applying the existing closure gate:
+
+```powershell
+xrefkit workflow reconcile --log <parent-run-log> [--apply-child-status]
+xrefkit skill verify --log <parent-run-log>
+xrefkit skill close --log <parent-run-log>
+```
+
+`workflow reconcile` checks the recorded parent-child correlation, delegated
+child closure state, delegated child output/evidence/artifact/concern records,
+parent output/evidence/artifact/concern records, and parent work-item
+completion. By default it only
+reports findings. `--apply-child-status` explicitly reflects a closed child
+(`done` or `escalated`) onto its linked parent work item; it does not execute
+the child, perform recovery, or close the parent.
+
+When a parent has delegated child runs, `skill close --log <parent-run-log>`
+also requires a passing reconcile recorded after the latest child delegation
+and parent work-item update. This prevents a stale reconcile result from being
+used as the parent closure basis.
+
+The main AI records semantic routing on the generic parent Flow before it
+delegates a Work Item or continues with generic work:
+
+```powershell
+xrefkit workflow routing `
+  --log <parent-run-log> `
+  --selected-skill <skill-id> `
+  --candidate <skill-id> `
+  --reason "The Work Item matches the Skill responsibility" `
+  --target-work-item WI-001
+```
+
+For a generic fallback, omit `--selected-skill` and use
+`--selection-mode fallback`. When semantic routing is uncertain, omit
+`--selected-skill`, use `--selection-mode needs_clarification`, and record the
+human decision requirement. This command records and validates the main AI's
+decision; it does not perform hidden semantic selection or start a child run.
+The subsequent `workflow delegate` action remains explicit and work-item
+scoped.
+
+Recovery proposals must remain bounded and human-controlled. Record the
+executable action, owner, verification method, maximum attempts, and stop
+conditions together with the resume location and reason:
+
+```powershell
+xrefkit workflow recovery `
+  --log <run-log> `
+  --recovery-id REC-001 `
+  --status proposed `
+  --resume-location "WI-001 checkpoint" `
+  --reason "The previous executor stopped before verification" `
+  --next-action "Run the recorded verification command" `
+  --executable-action "Run verification command once" `
+  --owner recovery-owner `
+  --verification-method "Verify the recorded check passes" `
+  --maximum-attempts 2 `
+  --stop-condition "Stop after two failed attempts"
+```
+
+The dashboard records this proposal and its later human confirmation. It does
+not execute the action or create an unbounded retry loop.
+
+Continuation keeps the original `flow_id` and `root_run_id` and records the
+prior run as `parent_run_id`. A changed outcome or scope creates a new Work
+Item with `--supersedes`; unrelated work starts a new Flow instead of reusing
+the prior correlation:
+
+```powershell
+xrefkit workflow run --task "Continue the same prompt flow" `
+  --flow-id FLOW-001 --root-run-id <root-run-id> `
+  --parent-run-id <prior-run-id> --work-item-id WI-001
+
+xrefkit skill workitem --log <run-log> --item WI-002 --supersedes WI-001 `
+  --text "Revised scope" --completion-criterion "The revised scope is recorded" `
+  --status pending --role instruction:executor
+```
+
 These commands verify process records. They do not inspect the content of the
 output artifact.
+
+When the main AI selects an existing Skill for a Work Item's quality review,
+it may record the selection and start the child review run together:
+
+```powershell
+xrefkit workflow quality-review `
+  --parent-log <parent-run-log> `
+  --root . `
+  --meta skills/<review-skill>/meta.md `
+  --selected-skill <review-skill-id> `
+  --candidate <review-skill-id> `
+  --reason "The Work Item output requires this existing review capability" `
+  --task "Review the Work Item output" `
+  --work-item-id WI-001
+```
+
+This command does not perform semantic selection. The selected Skill and
+reason must come from the main AI. If selection is uncertain, record
+`needs_clarification` instead and do not start the child review.
 
 Every work item must also declare its own procedural completion criterion:
 

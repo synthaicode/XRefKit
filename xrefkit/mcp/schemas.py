@@ -291,6 +291,7 @@ class StartupContext:
     link_resolution: dict[str, str]
     load_order: list[str]
     startup_contract_pack: dict[str, Any]
+    prompt_flow_protocol: dict[str, Any]
     references: list[StartupReference]
     semantic_routing_references: list[dict[str, Any]]
     missing: list[dict[str, str]]
@@ -311,6 +312,7 @@ class StartupContext:
             "link_resolution": self.link_resolution,
             "load_order": self.load_order,
             "startup_contract_pack": self.startup_contract_pack,
+            "prompt_flow_protocol": self.prompt_flow_protocol,
             "references": [reference.to_dict() for reference in self.references],
             "semantic_routing_references": self.semantic_routing_references,
             "missing": self.missing,

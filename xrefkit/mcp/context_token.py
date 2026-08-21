@@ -24,6 +24,11 @@ class ContextClaims:
     run_id: str | None = None
     skill_id: str | None = None
     mcp_session_id: str | None = None
+    flow_id: str | None = None
+    root_run_id: str | None = None
+    parent_run_id: str | None = None
+    work_item_id: str | None = None
+    node_id: str | None = None
     expires_at: int = 0
 
     def to_dict(self) -> dict[str, Any]:
@@ -35,6 +40,11 @@ class ContextClaims:
             "run_id": self.run_id,
             "skill_id": self.skill_id,
             "mcp_session_id": self.mcp_session_id,
+            "flow_id": self.flow_id,
+            "root_run_id": self.root_run_id,
+            "parent_run_id": self.parent_run_id,
+            "work_item_id": self.work_item_id,
+            "node_id": self.node_id,
             "expires_at": self.expires_at,
         }
 
@@ -55,6 +65,11 @@ class ContextTokenCodec:
         run_id: str | None = None,
         skill_id: str | None = None,
         mcp_session_id: str | None = None,
+        flow_id: str | None = None,
+        root_run_id: str | None = None,
+        parent_run_id: str | None = None,
+        work_item_id: str | None = None,
+        node_id: str | None = None,
         context_id: str | None = None,
     ) -> str:
         claims = ContextClaims(
@@ -65,6 +80,11 @@ class ContextTokenCodec:
             run_id=run_id,
             skill_id=skill_id,
             mcp_session_id=mcp_session_id,
+            flow_id=flow_id,
+            root_run_id=root_run_id,
+            parent_run_id=parent_run_id,
+            work_item_id=work_item_id,
+            node_id=node_id,
             expires_at=int(time.time()) + self.ttl_seconds,
         )
         body = _encode(claims.to_dict())
@@ -89,7 +109,8 @@ class ContextTokenCodec:
         values.update(updates)
         values.pop("context_id", None)
         return self.issue(context_id=claims.context_id, **{k: values[k] for k in (
-            "startup_loaded", "client_tools_unlocked", "run_id", "skill_id", "mcp_session_id"
+            "startup_loaded", "client_tools_unlocked", "run_id", "skill_id", "mcp_session_id",
+            "flow_id", "root_run_id", "parent_run_id", "work_item_id", "node_id",
         )})
 
     def _signature(self, body: str) -> str:

@@ -806,6 +806,7 @@ class XRefCatalog:
             },
             load_order=[reference.xid for reference in references],
             startup_contract_pack=startup_contract_pack,
+            prompt_flow_protocol=_prompt_flow_protocol(),
             references=references,
             semantic_routing_references=_semantic_routing_references(),
             missing=missing,
@@ -850,6 +851,7 @@ def _client_instructions() -> list[str]:
         "Do not automatically load all links from startup references; use links only when the current task actually needs them.",
         "When transferred Markdown content includes links entries, resolve a needed link by calling get_document_by_xid with the link xid.",
         "Use the returned document content as the authoritative text for that XID.",
+        "If one user prompt spans multiple runs, initialize one Prompt Flow from prompt_flow_protocol before Skill routing and preserve its correlation fields through reconciliation and closure.",
         "At startup, record the XIDs used for client-side routing, policy, or context-injection decisions in a client-side audit log.",
         "For Skill entries, use skill_content as the procedure body and resolve skill_links through get_document_by_xid when needed.",
         "After python -m xrefkit skill run returns run_id and run_log, call bind_skill_run with run_id and skill_id, then execute the returned client_record_command with <run-log> replaced by run_log before task-specific XID access.",
@@ -1716,6 +1718,22 @@ def _client_obligations() -> list[ClientObligation]:
             ),
         ),
         ClientObligation(
+            id="prompt_flow.initialize_and_reconcile",
+            level="must",
+            applies_when="one user prompt spans a generic workflow and one or more Skill Runs",
+            statement=(
+                "Initialize one Prompt Flow with flow_id and root_run_id, preserve parent_run_id, "
+                "work_item_id, and node_id for child runs, and reconcile child closure before parent closure. "
+                "Use explicit status projection only after deterministic correlation and terminal-status checks; "
+                "do not execute work or recovery through reconciliation."
+            ),
+            enforcement_owner="client",
+            verification=(
+                "Prompt Flow run records contain the correlation fields, child_run.started and flow.reconciled "
+                "events, and parent closure is attempted only after every work item is done or escalated"
+            ),
+        ),
+        ClientObligation(
             id="tools.no_download_before_skill_selection",
             level="must",
             applies_when="client considers fetching client-side tool distribution",
@@ -1801,6 +1819,44 @@ def _client_obligations() -> list[ClientObligation]:
             verification="Prompt assembly maintains a session-visible XID index and records injected_xids, reused_xids, content_hash values, visibility status, and reuse reasons for each model turn.",
         ),
     ]
+
+
+def _prompt_flow_protocol() -> dict[str, object]:
+    return {
+        "version": "1",
+        "activation": "one user prompt spans a generic workflow and one or more Skill Runs",
+        "initialization": {
+            "owner": "main_ai_orchestrator",
+            "fields": ["flow_id", "root_run_id"],
+            "rule": "create one Prompt Flow root for the prompt and preserve its identity across related runs",
+        },
+        "child_delegation": {
+            "owner": "main_ai_orchestrator",
+            "required_fields": ["flow_id", "root_run_id", "parent_run_id", "work_item_id", "node_id"],
+            "rule": "launch a child Skill only for a declared parent work item",
+        },
+        "reconciliation": {
+            "default": "report_only",
+            "projection_operation": "xrefkit workflow reconcile --apply-child-status",
+            "allowed_child_statuses": ["done", "escalated"],
+            "preconditions": [
+                "flow_id matches",
+                "parent_run_id matches",
+                "work_item_id exists",
+                "child Closure Gate is terminal",
+            ],
+            "does_not_do": ["execute_work", "execute_recovery", "perform_quality_review", "close_parent"],
+        },
+        "uncertainty": {
+            "when": ["semantic routing is uncertain", "work-item mapping is uncertain", "correlation is invalid"],
+            "action": "do_not_project_status_and_request_human_confirmation",
+        },
+        "completion": {
+            "parent_work_item_statuses": ["done", "escalated"],
+            "required_gates": ["verify", "close"],
+        },
+        "audit_events": ["child_run.started", "flow.child_status_applied", "flow.reconciled"],
+    }
 
 
 def _semantic_routing_references() -> list[dict[str, object]]:

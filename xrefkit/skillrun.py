@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 import functools
 import os
@@ -450,6 +451,11 @@ def _default_log_path(root: Path, skill_id: str) -> Path:
 def _render_log(
     *,
     run_id: str,
+    flow_id: str | None,
+    root_run_id: str | None,
+    parent_run_id: str | None,
+    work_item_id: str | None,
+    node_id: str | None,
     skill_id: str,
     maturity: str,
     meta_path: Path,
@@ -539,9 +545,19 @@ def _render_log(
         )
     else:
         requirement_lines = "- none declared"
+    flow_lines = "\n".join(
+        [
+            f"- flow_id: `{flow_id or run_id}`",
+            f"- root_run_id: `{root_run_id or run_id}`",
+            f"- parent_run_id: `{parent_run_id or '-'}`",
+            f"- work_item_id: `{work_item_id or '-'}`",
+            f"- node_id: `{node_id or '-'}`",
+        ]
+    )
     return f"""# Skill Run Log
 
 - run_id: `{run_id}`
+{flow_lines}
 - mcp_session_id: `-`
 - repository_fingerprint: `-`
 - date: `{date.today().isoformat()}`
@@ -1866,6 +1882,35 @@ def close_skill_run(args) -> SkillRunResult:
         if status not in ACCEPTED_CLOSE_STATUSES:
             errors.append(f"{section} must be done or escalated before closure; current={status or 'missing'}")
 
+    flow_events = _observation_events(text)
+    child_event_indexes = [
+        index for index, event in enumerate(flow_events)
+        if event.get("event") == "child_run.started"
+    ]
+    if child_event_indexes:
+        reconcile_indexes = [
+            index for index, event in enumerate(flow_events)
+            if event.get("event") == "flow.reconciled"
+        ]
+        latest_reconcile_index = reconcile_indexes[-1] if reconcile_indexes else -1
+        latest_reconcile = flow_events[latest_reconcile_index] if latest_reconcile_index >= 0 else {}
+        if latest_reconcile.get("status") != "pass":
+            errors.append(
+                "Prompt Flow parent requires a passing workflow reconcile before closure"
+            )
+        elif any(index > latest_reconcile_index for index in child_event_indexes):
+            errors.append(
+                "Prompt Flow parent has a child delegation recorded after the latest reconcile"
+            )
+        elif any(
+            index > latest_reconcile_index
+            and str(event.get("phase", "")).startswith("workitem:")
+            for index, event in enumerate(flow_events)
+        ):
+            errors.append(
+                "Prompt Flow parent has a work-item change recorded after the latest reconcile"
+            )
+
     executor = _assigned_role(text, "executor")
     checker = _assigned_role(text, "checker")
     handoff_owner = _assigned_role(text, "handoff_owner")
@@ -2107,19 +2152,20 @@ def update_skill_routing(args) -> SkillRunResult:
     if error is not None:
         return error
     assert text is not None
-    selected_skill = str(args.selected_skill).strip()
+    selected_skill = str(args.selected_skill or "").strip()
     candidates = [str(value).strip() for value in args.candidate if str(value).strip()]
     reason = str(args.reason).strip()
-    if not selected_skill or not candidates or not reason:
+    selection_mode = str(args.selection_mode)
+    if not candidates or not reason or (selection_mode != "needs_clarification" and not selected_skill):
         return SkillRunResult(
             ok=False,
             skill_id=_log_skill_id(text),
             skill_doc=None,
             run_log=str(log_path),
-            errors=["selected_skill, at least one candidate, and reason are required"],
+            errors=["selected_skill (unless needs_clarification), at least one candidate, and reason are required"],
             run_id=_log_field(text, "run_id"),
         )
-    if selected_skill not in candidates:
+    if selected_skill and selected_skill not in candidates:
         return SkillRunResult(
             ok=False,
             skill_id=_log_skill_id(text),
@@ -2128,7 +2174,7 @@ def update_skill_routing(args) -> SkillRunResult:
             errors=["selected_skill must be present in candidates"],
             run_id=_log_field(text, "run_id"),
         )
-    if selected_skill != _log_skill_id(text):
+    if selection_mode not in {"quality_review", "needs_clarification"} and selected_skill != _log_skill_id(text):
         return SkillRunResult(
             ok=False,
             skill_id=_log_skill_id(text),
@@ -2142,11 +2188,13 @@ def update_skill_routing(args) -> SkillRunResult:
         section="Skill Routing Trace",
         event={
             "event": "skill.routed",
-            "selected_skill": selected_skill,
-            "selection_mode": str(args.selection_mode),
+            "selected_skill": selected_skill or None,
+            "selection_mode": selection_mode,
             "candidate_source": "recorded",
             "candidates": candidates,
             "reason": reason,
+            "target_work_item": str(args.target_work_item or "").strip() or None,
+            "status": "needs_clarification" if selection_mode == "needs_clarification" else "selected",
         },
     )
     _atomic_write_text(log_path, text)
@@ -2631,6 +2679,11 @@ def run_skill(args) -> SkillRunResult:
                 )
     log = _render_log(
         run_id=run_id,
+        flow_id=getattr(args, "flow_id", None),
+        root_run_id=getattr(args, "root_run_id", None),
+        parent_run_id=getattr(args, "parent_run_id", None),
+        work_item_id=getattr(args, "work_item_id", None),
+        node_id=getattr(args, "node_id", None),
         skill_id=skill_id,
         maturity=maturity,
         meta_path=meta_path.relative_to(root),
@@ -2736,6 +2789,11 @@ def run_workflow_instruction(args) -> SkillRunResult:
     assigned_roles = _assign_runtime_roles(skill_id=run_label, execution_mode="local_default", model_tier=None)
     log = _render_log(
         run_id=run_id,
+        flow_id=getattr(args, "flow_id", None) or run_id,
+        root_run_id=getattr(args, "root_run_id", None) or run_id,
+        parent_run_id=getattr(args, "parent_run_id", None),
+        work_item_id=getattr(args, "work_item_id", None),
+        node_id=getattr(args, "node_id", None),
         skill_id=run_label,
         maturity="not_applicable",
         meta_path=Path("-") ,
@@ -2767,6 +2825,19 @@ def run_workflow_instruction(args) -> SkillRunResult:
         "- quality_policy: `human_acceptance`",
         "- rule: workflow verification checks procedural records; a human confirms output quality separately",
     ] + [f"- condition: {condition.replace('`', "'")}" for condition in conditions]
+    intake_values = {
+        "purpose": getattr(args, "purpose", None),
+        "scope_in": "; ".join(str(value).strip() for value in getattr(args, "scope_in", []) if str(value).strip()),
+        "scope_out": "; ".join(str(value).strip() for value in getattr(args, "scope_out", []) if str(value).strip()),
+        "owner": getattr(args, "owner", None),
+        "authority": getattr(args, "authority", None),
+        "expected_evidence": "; ".join(str(value).strip() for value in getattr(args, "expected_evidence", []) if str(value).strip()),
+        "stop_conditions": "; ".join(str(value).strip() for value in getattr(args, "stop_condition", []) if str(value).strip()),
+    }
+    intake_lines = ["## Minimum Intake", ""]
+    for name, value in intake_values.items():
+        safe_value = str(value or "unknown").replace("`", "'")
+        intake_lines.append(f"- {name}: `{safe_value}`")
     marker = "\n## Startup Inputs\n"
     general_skill_lines: list[str] = []
     if work_type == "general_skill":
@@ -2820,6 +2891,8 @@ def run_workflow_instruction(args) -> SkillRunResult:
             "## General Skill Intake\n",
             1,
         )
+    else:
+        log = log.replace(marker, "\n" + "\n".join(condition_lines) + "\n" + "\n".join(intake_lines) + "\n" + marker, 1)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with _LogFileLock(out_path.with_name(f".{out_path.name}.lock")):
         _atomic_write_text(out_path, log)
@@ -2832,6 +2905,402 @@ def run_workflow_instruction(args) -> SkillRunResult:
         assigned_roles=assigned_roles,
         run_id=run_id,
     )
+
+
+def run_workflow_delegate(args) -> SkillRunResult:
+    """Start a child Skill Run while preserving the parent Prompt Flow identity."""
+    parent_log = Path(args.parent_log).resolve()
+    parent_text, error = _validate_observation_log(parent_log)
+    if error is not None:
+        return error
+    assert parent_text is not None
+    parent_run_id = _log_field(parent_text, "run_id")
+    flow_id = _log_field(parent_text, "flow_id") or parent_run_id
+    root_run_id = _log_field(parent_text, "root_run_id") or parent_run_id
+    if not parent_run_id or not flow_id or not root_run_id:
+        return SkillRunResult(
+            ok=False,
+            skill_id=None,
+            skill_doc=None,
+            run_log=str(parent_log),
+            errors=["parent log must contain run_id, flow_id, and root_run_id"],
+        )
+    child_args = argparse.Namespace(**vars(args))
+    child_args.parent_run_id = parent_run_id
+    child_args.flow_id = flow_id
+    child_args.root_run_id = root_run_id
+    child_args.meta = str(args.meta)
+    child_args.work_item_id = str(args.work_item_id).strip()
+    child_result = run_skill(child_args)
+    if not child_result.ok:
+        return child_result
+    with _LogFileLock(parent_log.with_name(f".{parent_log.name}.lock")):
+        current = parent_log.read_text(encoding="utf-8")
+        current = _append_observation_event(
+            current,
+            section="Prompt Flow Trace",
+            event={
+                "event": "child_run.started",
+                "flow_id": flow_id,
+                "root_run_id": root_run_id,
+                "parent_run_id": parent_run_id,
+                "child_run_id": child_result.run_id,
+                "work_item_id": child_args.work_item_id,
+                "skill_id": child_result.skill_id,
+                "child_log": child_result.run_log,
+            },
+        )
+        _atomic_write_text(parent_log, current)
+    return child_result
+
+
+def run_workflow_quality_review(args) -> SkillRunResult:
+    """Record main-AI quality routing, then start the selected review Skill."""
+    selected_skill = str(args.selected_skill or "").strip()
+    candidates = [str(value).strip() for value in args.candidate if str(value).strip()]
+    if not selected_skill or selected_skill not in candidates:
+        return SkillRunResult(
+            ok=False,
+            skill_id=None,
+            skill_doc=None,
+            run_log=str(Path(args.parent_log).resolve()),
+            errors=["selected quality review Skill must be present in --candidate"],
+        )
+    meta_path = (Path(args.root).resolve() / str(args.meta)).resolve()
+    if not meta_path.exists():
+        return SkillRunResult(
+            ok=False,
+            skill_id=None,
+            skill_doc=None,
+            run_log=str(Path(args.parent_log).resolve()),
+            errors=[f"quality review meta not found: {meta_path}"],
+        )
+    parsed_meta = _parse_meta_lines(meta_path.read_text(encoding="utf-8"))
+    if str(parsed_meta.get("skill_id") or "").strip() != selected_skill:
+        return SkillRunResult(
+            ok=False,
+            skill_id=None,
+            skill_doc=None,
+            run_log=str(Path(args.parent_log).resolve()),
+            errors=["selected quality review Skill does not match --meta skill_id"],
+        )
+    routing = update_skill_routing(
+        argparse.Namespace(
+            log=args.parent_log,
+            selected_skill=selected_skill,
+            candidate=candidates,
+            selection_mode="quality_review",
+            reason=args.reason,
+            target_work_item=args.work_item_id,
+        )
+    )
+    if not routing.ok:
+        return routing
+    return run_workflow_delegate(args)
+
+
+def cmd_workflow_delegate(args) -> int:
+    result = run_workflow_delegate(args)
+    if args.json:
+        print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+    elif result.ok:
+        print(f"ok: {result.run_log}")
+        print(f"  run_id: {result.run_id}")
+        print(f"  skill_id: {result.skill_id}")
+        print("  parent_flow: recorded")
+    else:
+        print("fail: workflow delegate")
+        for error in result.errors:
+            print(f"  error: {error}")
+    return 0 if result.ok else 1
+
+
+def cmd_workflow_quality_review(args) -> int:
+    result = run_workflow_quality_review(args)
+    if args.json:
+        print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+    elif result.ok:
+        print(f"ok: {result.run_log}")
+        print(f"  run_id: {result.run_id}")
+        print(f"  skill_id: {result.skill_id}")
+        print("  quality_review: routed_and_started")
+    else:
+        print("fail: workflow quality-review")
+        for error in result.errors:
+            print(f"  error: {error}")
+    return 0 if result.ok else 1
+
+
+@_locked_log_update
+def record_workflow_recovery(args) -> SkillRunResult:
+    log_path = Path(args.log).resolve()
+    text, error = _validate_observation_log(log_path)
+    if error is not None:
+        return error
+    assert text is not None
+    status = str(args.status)
+    reviewer = str(args.reviewer or "").strip() or None
+    if status == "confirmed" and not reviewer:
+        return SkillRunResult(
+            ok=False,
+            skill_id=_log_skill_id(text),
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=["--reviewer is required when recovery status is confirmed"],
+            run_id=_log_field(text, "run_id"),
+        )
+    maximum_attempts = getattr(args, "maximum_attempts", None)
+    if maximum_attempts is not None and maximum_attempts < 1:
+        return SkillRunResult(
+            ok=False,
+            skill_id=_log_skill_id(text),
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=["--maximum-attempts must be greater than zero"],
+            run_id=_log_field(text, "run_id"),
+        )
+    stop_conditions = [
+        str(value).strip()
+        for value in getattr(args, "stop_condition", [])
+        if str(value).strip()
+    ]
+    event = {
+        "event": "workflow.recovery",
+        "recovery_id": str(args.recovery_id),
+        "status": status,
+        "flow_id": _log_field(text, "flow_id") or _log_field(text, "run_id"),
+        "run_id": _log_field(text, "run_id"),
+        "resume_location": str(args.resume_location),
+        "reason": str(args.reason),
+        "next_action": str(args.next_action),
+        "executable_action": str(getattr(args, "executable_action", None) or args.next_action),
+        "owner": str(getattr(args, "owner", None) or "unknown"),
+        "verification_method": str(getattr(args, "verification_method", None) or "unknown"),
+        "maximum_attempts": maximum_attempts if maximum_attempts is not None else "unknown",
+        "stop_conditions": stop_conditions or ["unknown"],
+        "reviewer": reviewer,
+    }
+    text = _append_observation_event(text, section="Recovery Trace", event=event)
+    _atomic_write_text(log_path, text)
+    return SkillRunResult(
+        ok=True,
+        skill_id=_log_skill_id(text),
+        skill_doc=None,
+        run_log=str(log_path),
+        errors=[],
+        run_id=_log_field(text, "run_id"),
+    )
+
+
+@_locked_log_update
+def update_workflow_routing(args) -> SkillRunResult:
+    """Record the main AI's semantic routing decision for a Prompt Flow."""
+    log_path = Path(args.log).resolve()
+    text, error = _validate_observation_log(log_path)
+    if error is not None:
+        return error
+    assert text is not None
+    selected_skill = str(args.selected_skill or "").strip() or None
+    candidates = [str(value).strip() for value in args.candidate if str(value).strip()]
+    reason = str(args.reason).strip()
+    selection_mode = str(args.selection_mode)
+    if not reason:
+        return SkillRunResult(
+            ok=False,
+            skill_id=_log_skill_id(text),
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=["routing reason is required"],
+            run_id=_log_field(text, "run_id"),
+        )
+    if selection_mode == "needs_clarification" and selected_skill:
+        return SkillRunResult(
+            ok=False,
+            skill_id=_log_skill_id(text),
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=["selected_skill must be omitted when selection_mode=needs_clarification"],
+            run_id=_log_field(text, "run_id"),
+        )
+    if selection_mode == "fallback" and selected_skill:
+        return SkillRunResult(
+            ok=False,
+            skill_id=_log_skill_id(text),
+            skill_doc=None,
+            run_log=str(log_path),
+            errors=["selected_skill must be omitted when selection_mode=fallback"],
+            run_id=_log_field(text, "run_id"),
+        )
+    if selection_mode not in {"needs_clarification", "fallback"}:
+        if not selected_skill:
+            return SkillRunResult(
+                ok=False,
+                skill_id=_log_skill_id(text),
+                skill_doc=None,
+                run_log=str(log_path),
+                errors=["selected_skill is required for a routed Skill decision"],
+                run_id=_log_field(text, "run_id"),
+            )
+        if selected_skill not in candidates:
+            return SkillRunResult(
+                ok=False,
+                skill_id=_log_skill_id(text),
+                skill_doc=None,
+                run_log=str(log_path),
+                errors=["selected_skill must be present in candidates"],
+                run_id=_log_field(text, "run_id"),
+            )
+    event = {
+        "event": "flow.routed",
+        "flow_id": _log_field(text, "flow_id") or _log_field(text, "run_id"),
+        "root_run_id": _log_field(text, "root_run_id") or _log_field(text, "run_id"),
+        "selected_skill": selected_skill,
+        "selection_mode": selection_mode,
+        "candidate_source": "main_ai",
+        "candidates": candidates,
+        "reason": reason,
+        "target_work_item": str(args.target_work_item or "").strip() or None,
+        "status": "needs_clarification" if selection_mode == "needs_clarification" else selection_mode,
+    }
+    text = _append_observation_event(text, section="Prompt Flow Trace", event=event)
+    _atomic_write_text(log_path, text)
+    return SkillRunResult(
+        ok=True,
+        skill_id=_log_skill_id(text),
+        skill_doc=None,
+        run_log=str(log_path),
+        errors=[],
+        run_id=_log_field(text, "run_id"),
+    )
+
+
+def cmd_workflow_recovery(args) -> int:
+    result = record_workflow_recovery(args)
+    if args.json:
+        print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+    elif result.ok:
+        print(f"ok: {result.run_log}")
+        print(f"  recovery_id: {args.recovery_id}")
+        print(f"  status: {args.status}")
+        print("  execution: human-controlled")
+    else:
+        print("fail: workflow recovery")
+        for error in result.errors:
+            print(f"  error: {error}")
+    return 0 if result.ok else 1
+
+
+@_locked_log_update
+def reconcile_workflow(args) -> SkillRunResult:
+    log_path = Path(args.log).resolve()
+    text, error = _validate_observation_log(log_path)
+    if error is not None:
+        return error
+    assert text is not None
+    findings: list[str] = []
+    parent_run_id = _log_field(text, "run_id")
+    flow_id = _log_field(text, "flow_id") or parent_run_id
+    work_items = _parse_work_items(text)
+    work_item_by_id = {item["item_id"]: item for item in work_items}
+    status_updates: list[dict[str, str]] = []
+    events = [event for event in _observation_events(text) if event.get("event") == "child_run.started"]
+    seen_work_items: set[str] = set()
+    for event in events:
+        child_run_id = str(event.get("child_run_id") or "")
+        work_item_id = str(event.get("work_item_id") or "")
+        child_log_value = str(event.get("child_log") or "")
+        if not child_run_id or not child_log_value:
+            findings.append("child_run.started is missing child_run_id or child_log")
+            continue
+        if work_item_id:
+            seen_work_items.add(work_item_id)
+            if work_item_id not in work_item_by_id:
+                findings.append(f"child run {child_run_id} references unknown work item {work_item_id}")
+        child_log = Path(child_log_value).resolve()
+        if not child_log.exists():
+            findings.append(f"child run {child_run_id} log not found: {child_log}")
+            continue
+        child_text = child_log.read_text(encoding="utf-8")
+        correlation_ok = True
+        if _log_field(child_text, "flow_id") != flow_id:
+            findings.append(f"child run {child_run_id} flow_id does not match parent flow {flow_id}")
+            correlation_ok = False
+        if _log_field(child_text, "parent_run_id") != parent_run_id:
+            findings.append(f"child run {child_run_id} parent_run_id does not match {parent_run_id}")
+            correlation_ok = False
+        child_closure = _section_status(child_text, "Closure Gate")
+        if child_closure not in ACCEPTED_CLOSE_STATUSES:
+            findings.append(f"child run {child_run_id} is not closed or escalated: {child_closure or 'missing'}")
+        child_record_errors, _, _, _, _ = _progression_record_errors(child_text)
+        for record_error in child_record_errors:
+            findings.append(f"child run {child_run_id}: {record_error}")
+        if child_record_errors:
+            correlation_ok = False
+        if child_closure in ACCEPTED_CLOSE_STATUSES and correlation_ok and work_item_id in work_item_by_id and getattr(args, "apply_child_status", False):
+            item = work_item_by_id[work_item_id]
+            if item["status"] != child_closure:
+                item["status"] = child_closure
+                status_updates.append(
+                    {
+                        "work_item_id": work_item_id,
+                        "child_run_id": child_run_id,
+                        "status": child_closure,
+                    }
+                )
+    if status_updates:
+        text = _replace_concrete_work_items_section(text, work_items)
+        text = _append_observation_event(
+            text,
+            section="Prompt Flow Trace",
+            event={
+                "event": "flow.child_status_applied",
+                "flow_id": flow_id,
+                "parent_run_id": parent_run_id,
+                "updates": status_updates,
+            },
+        )
+    parent_record_errors, _, _, _, _ = _progression_record_errors(text)
+    for record_error in parent_record_errors:
+        if record_error not in findings:
+            findings.append(f"parent run {parent_run_id}: {record_error}")
+    for item in work_items:
+        if item["status"] not in ACCEPTED_CLOSE_STATUSES:
+            findings.append(f"work item {item['item_id']} is not done or escalated: {item['status']}")
+    event = {
+        "event": "flow.reconciled",
+        "flow_id": flow_id,
+        "parent_run_id": parent_run_id,
+        "status": "blocked" if findings else "pass",
+        "work_item_count": len(work_items),
+        "child_run_count": len(events),
+        "child_status_updates": status_updates,
+        "findings": findings,
+    }
+    text = _append_observation_event(text, section="Prompt Flow Trace", event=event)
+    _atomic_write_text(log_path, text)
+    return SkillRunResult(
+        ok=not findings,
+        skill_id=_log_skill_id(text),
+        skill_doc=None,
+        run_log=str(log_path),
+        errors=findings,
+        run_id=parent_run_id,
+        work_items=work_items,
+    )
+
+
+def cmd_workflow_reconcile(args) -> int:
+    result = reconcile_workflow(args)
+    if args.json:
+        print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+    elif result.ok:
+        print(f"ok: {result.run_log}")
+        print("  reconcile: pass")
+    else:
+        print("fail: workflow reconcile")
+        for error in result.errors:
+            print(f"  finding: {error}")
+    return 0 if result.ok else 1
 
 
 def cmd_workflow_run(args) -> int:
@@ -2996,6 +3465,10 @@ def cmd_skill_correlate(args) -> int:
 
 def cmd_skill_routing(args) -> int:
     return _cmd_observation(args, update_skill_routing, "routing")
+
+
+def cmd_workflow_routing(args) -> int:
+    return _cmd_observation(args, update_workflow_routing, "workflow routing")
 
 
 def cmd_skill_knowledge(args) -> int:

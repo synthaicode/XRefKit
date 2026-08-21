@@ -215,6 +215,26 @@ class ServerXidQueryLogTests(unittest.TestCase):
             self.assertEqual("8A666C1FD121", entry["xid"])
             self.assertEqual("hash-1", entry["content_hash"])
 
+    def test_flow_correlation_is_carried_into_mcp_audit_binding(self) -> None:
+        class Session:
+            pass
+
+        registry = SessionRunRegistry()
+        binding = registry.bind(
+            Session(),
+            run_id="d4c0ca07-ec6c-48f9-b296-ec735323b088",
+            repository_fingerprint="repo-1",
+            skill_id="sample_skill",
+            flow_id="FLOW-001",
+            root_run_id="d4c0ca07-ec6c-48f9-b296-ec735323b088",
+            parent_run_id="d4c0ca07-ec6c-48f9-b296-ec735323b088",
+            work_item_id="WI-001",
+            node_id="node-001",
+        )
+
+        self.assertEqual("FLOW-001", binding.to_dict()["flow_id"])
+        self.assertEqual("WI-001", binding.to_dict()["work_item_id"])
+
     def test_audit_binding_fields_cannot_be_overridden(self) -> None:
         with TemporaryDirectory() as temp_dir:
             audit = McpAuditLog(Path(temp_dir) / "xid_audit.jsonl")

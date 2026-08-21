@@ -6,7 +6,7 @@ import sys
 from collections.abc import Sequence
 
 
-_OPERATIONS = {"xref", "ctx", "goal", "gate", "pack", "dashboard", "analysis", "skill", "workflow"}
+_OPERATIONS = {"xref", "ctx", "goal", "gate", "pack", "dashboard", "analysis", "skill", "workflow", "host"}
 _V2 = {"package", "show"}
 
 
@@ -20,6 +20,7 @@ def _print_help() -> None:
         "  ctx        build compact context packs\n"
         "  skill      discover, validate, run, verify, and close Skills\n"
         "  workflow   run the generic protocol for instructions without a Skill\n"
+        "  host       run host-compatibility evidence checks\n"
         "  tools      list and run XID-backed client tools\n"
         "  catalog    list and maintain Knowledge and structure catalogs\n"
         "  pack       validate and build runtime/content packs\n"
@@ -27,7 +28,7 @@ def _print_help() -> None:
         "  goal       manage desired-state Goals and continuation state\n"
         "  dashboard  inspect runtime state\n"
         "  analysis   generate proposal-only observation reports\n"
-        "  mcp        start the integrated MCP server\n"
+        "  mcp        start the MCP server or initialize a client Prompt Flow\n"
         "  skills     synchronize released Skill and Knowledge bundles\n"
         "  package    inspect installed Skill packages\n"
         "  show       show effective Skill bundles"
@@ -69,6 +70,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         from .catalog_cli import main as catalog_main
 
         return catalog_main(args[1:])
+    if command == "mcp" and len(args) > 1 and args[1] == "flow-init":
+        from .operations_cli import main as operations_main
+
+        return operations_main(args)
     if command == "mcp":
         from .mcp import main as mcp_main
 
