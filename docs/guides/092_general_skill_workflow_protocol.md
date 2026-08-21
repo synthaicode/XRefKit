@@ -23,6 +23,12 @@ artifacts, checks, stop conditions, bounded recovery, and human handoff. It
 does not assign XRefKit XIDs, create Knowledge, infer authority, or claim that
 the source already carries governance or accountability.
 
+At run creation, the adapter extracts numbered steps, task bullets, or section
+headings as reviewable candidate work items. Candidates are recorded as
+`unknown` because a generic document cannot supply an observable completion
+criterion safely. The caller or host confirms, edits, supersedes, or escalates
+each candidate before execution; extraction is not semantic approval.
+
 The caller or host must supply and record the purpose, authority, scope,
 observable completion criteria, expected evidence, acceptance decision, and
 stop conditions. If one of these is not known, record an explicit unknown or
