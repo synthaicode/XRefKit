@@ -241,6 +241,149 @@ class DashboardTests(unittest.TestCase):
             self.assertEqual(1, payload["summary"]["runs"])
             self.assertEqual("sample_skill", payload["runs"][0]["skill_id"])
 
+    def test_dashboard_exposes_recovery_trace(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            run_log = self._write_closed_run(root)
+            common = [
+                "workflow",
+                "recovery",
+                "--log",
+                str(run_log),
+                "--recovery-id",
+                "REC-001",
+                "--resume-location",
+                "after reconcile",
+                "--reason",
+                "child status was not yet projected",
+                "--next-action",
+                "confirm and rerun reconcile",
+            ]
+            self._run_main([*common, "--status", "proposed"])
+            self._run_main([*common, "--status", "confirmed", "--reviewer", "human@example.test"])
+
+            payload = build_payload(root, root / "work" / "sessions")
+            self.assertEqual(2, payload["summary"]["recoveries"])
+            self.assertEqual(
+                ["proposed", "confirmed"],
+                [item["status"] for item in payload["recoveries"]],
+            )
+            html = _html_page(payload)
+            self.assertIn('data-panel="recovery"', html)
+            self.assertIn('id="recovery"', html)
+            self.assertIn("Resume location", html)
+            self.assertIn("after reconcile", html)
+            self.assertIn("human@example.test", html)
+            self.assertIn("Executable action", html)
+            self.assertIn("Verification", html)
+            self.assertIn("Max attempts", html)
+
+    def test_dashboard_aggregates_runs_by_prompt_flow(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            first = root / "work" / "sessions" / "root.md"
+            second = root / "work" / "sessions" / "child.md"
+            for out, run_id, parent, work_item in (
+                (first, "11111111-1111-4111-8111-111111111111", None, None),
+                (second, "22222222-2222-4222-8222-222222222222", "11111111-1111-4111-8111-111111111111", "WI-002"),
+            ):
+                args = [
+                    "workflow", "run", "--task", "Flow node", "--out", str(out),
+                    "--run-id", run_id, "--flow-id", "FLOW-001",
+                    "--root-run-id", "11111111-1111-4111-8111-111111111111",
+                    "--use-default-completion-conditions",
+                ]
+                if parent:
+                    args.extend(["--parent-run-id", parent, "--work-item-id", work_item])
+                self._run_main(args)
+
+            payload = build_payload(root, root / "work" / "sessions")
+            assert payload["summary"]["flows"] == 1
+            flow = payload["flows"][0]
+            assert flow["flow_id"] == "FLOW-001"
+            assert flow["root_run_id"] == "11111111-1111-4111-8111-111111111111"
+            assert flow["state"] == "blocked"
+            assert set(flow["run_ids"]) == {
+                "11111111-1111-4111-8111-111111111111",
+                "22222222-2222-4222-8222-222222222222",
+            }
+            child = next(run for run in payload["runs"] if run["run_id"] == "22222222-2222-4222-8222-222222222222")
+            assert child["parent_run_id"] == "11111111-1111-4111-8111-111111111111"
+            assert child["work_item_id"] == "WI-002"
+
+    def test_workflow_delegate_starts_child_skill_and_records_parent_flow_trace(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_valid_skill(root)
+            parent = root / "work" / "sessions" / "parent.md"
+            child = root / "work" / "sessions" / "child.md"
+            self._run_main([
+                "workflow", "run", "--task", "Delegate one item", "--out", str(parent),
+                "--run-id", "11111111-1111-4111-8111-111111111111",
+                "--flow-id", "FLOW-002", "--use-default-completion-conditions",
+            ])
+            self._run_main([
+                "workflow", "delegate", "--root", str(root), "--parent-log", str(parent), "--meta", "skills/sample/meta.md",
+                "--task", "Execute delegated item", "--out", str(child),
+                "--run-id", "22222222-2222-4222-8222-222222222222", "--work-item-id", "WI-002",
+            ])
+            parent_text = parent.read_text(encoding="utf-8")
+            child_text = child.read_text(encoding="utf-8")
+            assert '"event":"child_run.started"' in parent_text
+            assert "- flow_id: `FLOW-002`" in child_text
+            assert "- parent_run_id: `11111111-1111-4111-8111-111111111111`" in child_text
+            assert "- work_item_id: `WI-002`" in child_text
+
+    def test_prompt_flow_supports_multiple_delegated_work_items(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_valid_skill(root)
+            parent = root / "work" / "sessions" / "parent.md"
+            children = [root / "work" / "sessions" / "child-a.md", root / "work" / "sessions" / "child-b.md"]
+            self._run_main([
+                "workflow", "run", "--task", "Mixed prompt", "--out", str(parent),
+                "--run-id", "11111111-1111-4111-8111-111111111111", "--flow-id", "FLOW-MULTI",
+                "--use-default-completion-conditions",
+            ])
+            for index, child in enumerate(children, start=1):
+                self._run_main([
+                    "workflow", "delegate", "--root", str(root), "--parent-log", str(parent),
+                    "--meta", "skills/sample/meta.md", "--task", f"Execute item {index}",
+                    "--out", str(child), "--run-id", f"{index + 1:08d}-2222-4222-8222-222222222222",
+                    "--work-item-id", f"WI-00{index}",
+                ])
+
+            payload = build_payload(root, root / "work" / "sessions")
+            flow = next(flow for flow in payload["flows"] if flow["flow_id"] == "FLOW-MULTI")
+            assert len(flow["run_ids"]) == 3
+            parent_run = next(run for run in flow["runs"] if run["run_id"] == "11111111-1111-4111-8111-111111111111")
+            assert len([event for event in parent_run["observation_events"] if event.get("event") == "child_run.started"]) == 2
+            assert {run["work_item_id"] for run in flow["runs"] if run["parent_run_id"]} == {"WI-001", "WI-002"}
+
+    def test_quality_review_routes_selected_skill_and_starts_child(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_valid_skill(root)
+            parent = root / "work" / "sessions" / "parent.md"
+            child = root / "work" / "sessions" / "quality.md"
+            self._run_main([
+                "workflow", "run", "--task", "Review flow", "--out", str(parent),
+                "--run-id", "11111111-1111-4111-8111-111111111111",
+                "--flow-id", "FLOW-QUALITY", "--use-default-completion-conditions",
+            ])
+            self._run_main([
+                "workflow", "quality-review", "--root", str(root), "--parent-log", str(parent),
+                "--meta", "skills/sample/meta.md", "--selected-skill", "sample_skill",
+                "--candidate", "sample_skill", "--reason", "The output requires the selected review capability",
+                "--task", "Review the output", "--out", str(child), "--work-item-id", "WI-001",
+            ])
+            parent_text = parent.read_text(encoding="utf-8")
+            child_text = child.read_text(encoding="utf-8")
+            assert '"selection_mode":"quality_review"' in parent_text
+            assert '"event":"child_run.started"' in parent_text
+            assert "- flow_id: `FLOW-QUALITY`" in child_text
+            assert "- work_item_id: `WI-001`" in child_text
+
     def test_dashboard_clears_missing_information_when_observability_is_recorded(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -403,6 +546,7 @@ class DashboardTests(unittest.TestCase):
             html = _html_page(build_payload(root, root / "work" / "sessions"))
 
             self.assertIn('data-panel="overview"', html)
+            self.assertIn('data-panel="flows"', html)
             self.assertIn('data-panel="attention"', html)
             self.assertIn('data-panel="closure"', html)
             self.assertIn('data-panel="evidence"', html)
@@ -411,6 +555,15 @@ class DashboardTests(unittest.TestCase):
             self.assertIn('data-panel="analysis"', html)
             self.assertIn('data-panel="missing-information"', html)
             self.assertIn('id="overview"', html)
+            self.assertIn('id="flows"', html)
+            self.assertIn("Execution tree", html)
+            self.assertIn("Flow details", html)
+            self.assertIn("Work Item", html)
+            self.assertIn("Minimum intake", html)
+            self.assertIn("State", html)
+            self.assertIn("Execution records", html)
+            self.assertIn("Activity", html)
+            self.assertIn("Evidence and concerns", html)
             self.assertIn('id="attention"', html)
             self.assertIn('id="closure"', html)
             self.assertIn('id="evidence"', html)

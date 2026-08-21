@@ -61,14 +61,24 @@ class SessionRunBinding:
     mcp_session_id: str
     repository_fingerprint: str
     skill_id: str
+    flow_id: str | None = None
+    root_run_id: str | None = None
+    parent_run_id: str | None = None
+    work_item_id: str | None = None
+    node_id: str | None = None
 
     def to_dict(self) -> dict[str, str]:
-        return {
+        result = {
             "run_id": self.run_id,
             "mcp_session_id": self.mcp_session_id,
             "repository_fingerprint": self.repository_fingerprint,
             "skill_id": self.skill_id,
         }
+        for key in ("flow_id", "root_run_id", "parent_run_id", "work_item_id", "node_id"):
+            value = getattr(self, key)
+            if value:
+                result[key] = value
+        return result
 
 
 class SessionRunRegistry:
@@ -83,6 +93,11 @@ class SessionRunRegistry:
         run_id: str,
         repository_fingerprint: str,
         skill_id: str,
+        flow_id: str | None = None,
+        root_run_id: str | None = None,
+        parent_run_id: str | None = None,
+        work_item_id: str | None = None,
+        node_id: str | None = None,
     ) -> SessionRunBinding:
         if session is None:
             raise ValueError("MCP session is required for Skill Run binding")
@@ -96,11 +111,24 @@ class SessionRunRegistry:
             raise ValueError("skill_id is required")
         if not normalized_fingerprint:
             raise ValueError("repository_fingerprint is required")
+        normalized_flow_id = str(flow_id).strip() if flow_id else None
+        normalized_root_run_id = _optional_uuid(root_run_id, "root_run_id")
+        normalized_parent_run_id = _optional_uuid(parent_run_id, "parent_run_id")
+        normalized_work_item_id = str(work_item_id).strip() if work_item_id else None
+        normalized_node_id = str(node_id).strip() if node_id else None
         with self._lock:
             current = self._bindings.get(session)
             if current is not None:
-                requested = (normalized_run_id, normalized_fingerprint, normalized_skill_id)
-                existing = (current.run_id, current.repository_fingerprint, current.skill_id)
+                requested = (
+                    normalized_run_id, normalized_fingerprint, normalized_skill_id,
+                    normalized_flow_id, normalized_root_run_id, normalized_parent_run_id,
+                    normalized_work_item_id, normalized_node_id,
+                )
+                existing = (
+                    current.run_id, current.repository_fingerprint, current.skill_id,
+                    current.flow_id, current.root_run_id, current.parent_run_id,
+                    current.work_item_id, current.node_id,
+                )
                 if requested != existing:
                     raise ValueError(
                         "MCP session is already bound to a different Skill Run; end the current run before binding another"
@@ -112,6 +140,11 @@ class SessionRunRegistry:
                 mcp_session_id=mcp_session_id,
                 repository_fingerprint=normalized_fingerprint,
                 skill_id=normalized_skill_id,
+                flow_id=normalized_flow_id,
+                root_run_id=normalized_root_run_id,
+                parent_run_id=normalized_parent_run_id,
+                work_item_id=normalized_work_item_id,
+                node_id=normalized_node_id,
             )
             self._bindings[session] = binding
             return binding
@@ -137,6 +170,15 @@ class SessionRunRegistry:
             return None
         with self._lock:
             return self._bindings.get(session)
+
+
+def _optional_uuid(value: str | None, field: str) -> str | None:
+    if value is None or not str(value).strip():
+        return None
+    try:
+        return str(uuid.UUID(str(value)))
+    except ValueError as exc:
+        raise ValueError(f"{field} must be a UUID: {value}") from exc
 
 
 class McpAuditLog:

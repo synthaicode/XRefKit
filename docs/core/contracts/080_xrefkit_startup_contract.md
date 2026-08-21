@@ -78,6 +78,9 @@ same governance contract:
 - `get_repository_identity` is an optional content-free cache preflight.
 - `get_startup_context` returns the MCP startup payload.
 - `startup_contract_pack.body` is the MCP model-facing compressed startup text.
+- `prompt_flow_protocol` is the MCP initialization contract for one prompt
+  spanning generic workflow and delegated Skill Runs. It defines correlation,
+  reconciliation, explicit status projection, and uncertainty boundaries.
 - `get_document_by_xid` resolves needed linked XIDs.
 - `get_skill` transfers selected Skill content.
 - After `xrefkit skill run` creates `run_id`, `bind_skill_run` binds that ID to

@@ -17,12 +17,12 @@ STARTUP_CONTRACT_PACK_XID = "D4E8A1C63B57"
 # reports the pack as stale when they diverge, so a hand-maintained copy can
 # no longer drift silently.
 EMBEDDED_BASED_ON_HASHES = {
-    "0B5C58B5E5B2": "9e344cd72d76da091f4d9d04f1439975ed7eaf8fcb2558a8784c23b4f055d1a8",
+    "0B5C58B5E5B2": "8cb20f071fe988d8ef552dcf83db0470ba02ce0d4fc5efb9257091f4a9980515",
     "5A1C8E4D2F90": "7419271f829b1e16fd41030d8d6ed4c1f193cc40506cac58f0a496ec518d87f2",
-    "6C0B62D6366A": "3843072e7bdc6a27a435975432cde850ab53a08bc9033011999e22dd71db800c",
+    "6C0B62D6366A": "a49541d1d93598ecf8042b331aa826417dde285e9a8f5026c78e7a35d87119b4",
     "8A666C1FD121": "34f8d7b18462e5320a54c4a259090bfe118fc23b666c4866714bc5adbd7d4e94",
     "A7F3C92D4E11": "5732f45b041b60ec643ae4ff2c94dcc2e15376cb77f12b39dc2dafbf3614a0a4",
-    "4A423E72D2ED": "7e34f23b0e407a35d53bdcb59efcce1bb2f127dbd008d2f5a82bc5c79021e49c",
+    "4A423E72D2ED": "75fa96411be95fcc5657ce1d13fee204c1d8e43ab789ca4ac6e79aef2d25654a",
 }
 
 BASED_ON_LINE_RE = re.compile(
@@ -73,7 +73,7 @@ Sources:
 - Skill execution MUST start with:
   python -m xrefkit skill run --meta <path-to-meta.md> --task "<task>" --json
 - Do not open or execute SKILL.md until skill run succeeds. Preserve returned run_log and open SKILL.md only from returned skill_doc.
-- In MCP mode, call bind_skill_run with the returned run_id and skill_id, then execute its client_record_command against run_log before task-specific XID access. This correlates MCP audit events and the client Skill Run without returning audit bodies to the model.
+- In MCP mode, call bind_skill_run with the returned run_id, skill_id, and Prompt Flow correlation fields (`flow_id`, `root_run_id`, `parent_run_id`, `work_item_id`, `node_id` when applicable), then execute its client_record_command against run_log before task-specific XID access. This correlates MCP audit events and the client Skill Run without returning audit bodies to the model.
 - Treat MCP `xid.resolved` as server resolution, not proof of model-context loading. Record actual loading with `xrefkit skill knowledge --action load` and judgment/artifact use with `--action apply`.
 - During Skill-backed work, record:
   - work items with: python -m xrefkit skill workitem --log <run-log> --item <id> --status <status> --role <assigned-role>
@@ -98,6 +98,10 @@ Sources:
 - After rename/move/split/merge or reference edits, run link validation/fix.
 - After edits, run:
   python -m xrefkit xref fix
+- Initialize one Prompt Flow per user prompt that may span runs: preserve `flow_id` and `root_run_id`; child runs also preserve `parent_run_id`, `work_item_id`, and `node_id` when applicable.
+- The main AI or orchestrator owns semantic Skill routing and child Skill launch. If routing or work-item mapping is uncertain, stop and request human confirmation.
+- Reconcile parent and child records before parent closure. Reconcile is report-only by default; explicit status projection may reflect a verified child `done` or `escalated` state onto its linked parent work item, but never executes work or recovery.
+- A Prompt Flow is complete only when every work item is `done` or `escalated` and the normal `verify` and `close` gates pass.
 - For structured edits such as XML, JSON, YAML, run deterministic parser validation; for XML/JSON use the structured-format checklist when applicable.
 - When adding XML entries, preserve existing semantic grouping; do not append blindly.
 - Preserve existing file format, character encoding, and encoding form unless an intentional change is required.

@@ -22,12 +22,12 @@ as stale to every client when they diverge.
 ## Based On
 
 - pack_version: 1
-- 0B5C58B5E5B2: `7007d3199876f05bd9e855680d122945a86ce646eb30d61f17f1d18f27cf612c`
+- 0B5C58B5E5B2: `8cb20f071fe988d8ef552dcf83db0470ba02ce0d4fc5efb9257091f4a9980515`
 - 5A1C8E4D2F90: `f6e9bad07a66f4e11a5e94224bdbbacc17bccf83e4306caf4c157a3d9d74a12f`
-- 6C0B62D6366A: `1de7a79f6fbfef2f7521e942abc74c9baca462d1a650deed042c3253baea5af4`
+- 6C0B62D6366A: `a49541d1d93598ecf8042b331aa826417dde285e9a8f5026c78e7a35d87119b4`
 - 8A666C1FD121: `ff3f5e3b7b83a738edb5e99195a79e664db33a514e7a8d1fe0129e6787f994a2`
 - A7F3C92D4E11: `5732f45b041b60ec643ae4ff2c94dcc2e15376cb77f12b39dc2dafbf3614a0a4`
-- 4A423E72D2ED: `7e34f23b0e407a35d53bdcb59efcce1bb2f127dbd008d2f5a82bc5c79021e49c`
+- 4A423E72D2ED: `75fa96411be95fcc5657ce1d13fee204c1d8e43ab789ca4ac6e79aef2d25654a`
 
 Sources:
 
@@ -56,6 +56,7 @@ Sources:
 - Skill execution MUST start with:
   python -m xrefkit skill run --meta <path-to-meta.md> --task "<task>" --json
 - Do not open or execute SKILL.md until skill run succeeds. Preserve returned run_log and open SKILL.md only from returned skill_doc.
+- When binding a Skill Run through MCP, pass Prompt Flow correlation fields (`flow_id`, `root_run_id`, `parent_run_id`, `work_item_id`, and `node_id` when applicable) to `bind_skill_run` so server audit records join the client and run logs.
 - During Skill-backed work, record:
   - work items with: python -m xrefkit skill workitem --log <run-log> --item <id> --status <status> --role <assigned-role>
   - outputs/evidence with: python -m xrefkit skill artifact --log <run-log> --artifact <id> --kind <kind> --target <target> --status <status> --role <assigned-role>
@@ -80,6 +81,10 @@ Sources:
 - After rename/move/split/merge or reference edits, run link validation/fix.
 - After edits, run:
   python -m xrefkit xref fix
+- Initialize one Prompt Flow per user prompt that may span runs: preserve `flow_id` and `root_run_id`; child runs also preserve `parent_run_id`, `work_item_id`, and `node_id` when applicable.
+- The main AI or orchestrator owns semantic Skill routing and child Skill launch. If routing or work-item mapping is uncertain, stop and request human confirmation.
+- Reconcile parent and child records before parent closure. Reconcile is report-only by default; explicit status projection may reflect a verified child `done` or `escalated` state onto its linked parent work item, but never executes work or recovery.
+- A Prompt Flow is complete only when every work item is `done` or `escalated` and the normal `verify` and `close` gates pass.
 - For structured edits such as XML, JSON, YAML, run deterministic parser validation; for XML/JSON use the structured-format checklist when applicable.
 - When adding XML entries, preserve existing semantic grouping; do not append blindly.
 - Preserve existing file format, character encoding, and encoding form unless an intentional change is required.

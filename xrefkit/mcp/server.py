@@ -117,6 +117,11 @@ def _binding_for(ctx: Any, run_registry: SessionRunRegistry) -> SessionRunBindin
             mcp_session_id=claims.mcp_session_id,
             repository_fingerprint=claims.repository_fingerprint,
             skill_id=claims.skill_id,
+            flow_id=claims.flow_id,
+            root_run_id=claims.root_run_id,
+            parent_run_id=claims.parent_run_id,
+            work_item_id=claims.work_item_id,
+            node_id=claims.node_id,
         )
     return run_registry.current(_session_of(ctx))
 
@@ -287,7 +292,16 @@ def main(argv: list[str] | None = None) -> int:
         return catalog.get_repository_identity()
 
     @app.tool()
-    def bind_skill_run(ctx: Context, run_id: str, skill_id: str) -> dict[str, Any]:
+    def bind_skill_run(
+        ctx: Context,
+        run_id: str,
+        skill_id: str,
+        flow_id: str | None = None,
+        root_run_id: str | None = None,
+        parent_run_id: str | None = None,
+        work_item_id: str | None = None,
+        node_id: str | None = None,
+    ) -> dict[str, Any]:
         _require_startup_loaded(ctx, "bind_skill_run")
         claims = _context_claims(ctx)
         if claims is not None:
@@ -297,11 +311,30 @@ def main(argv: list[str] | None = None) -> int:
                 raise ValueError(f"run_id must be a UUID: {run_id}") from exc
             if claims.run_id and claims.run_id != normalized_run_id:
                 raise ValueError("context_id is already bound to a different Skill Run")
+            requested_flow = flow_id or claims.flow_id
+            requested_root = root_run_id or claims.root_run_id
+            requested_parent = parent_run_id or claims.parent_run_id
+            requested_item = work_item_id or claims.work_item_id
+            requested_node = node_id or claims.node_id
+            for field, requested, existing in (
+                ("flow_id", requested_flow, claims.flow_id),
+                ("root_run_id", requested_root, claims.root_run_id),
+                ("parent_run_id", requested_parent, claims.parent_run_id),
+                ("work_item_id", requested_item, claims.work_item_id),
+                ("node_id", requested_node, claims.node_id),
+            ):
+                if existing and requested != existing:
+                    raise ValueError(f"context_id is already bound to a different {field}")
             binding = SessionRunBinding(
                 run_id=normalized_run_id,
                 mcp_session_id=claims.mcp_session_id or claims.context_id,
                 repository_fingerprint=catalog.repository_fingerprint,
                 skill_id=skill_id,
+                flow_id=requested_flow,
+                root_run_id=requested_root,
+                parent_run_id=requested_parent,
+                work_item_id=requested_item,
+                node_id=requested_node,
             )
         else:
             binding = run_registry.bind(
@@ -309,6 +342,11 @@ def main(argv: list[str] | None = None) -> int:
                 run_id=run_id,
                 repository_fingerprint=catalog.repository_fingerprint,
                 skill_id=skill_id,
+                flow_id=flow_id,
+                root_run_id=root_run_id,
+                parent_run_id=parent_run_id,
+                work_item_id=work_item_id,
+                node_id=node_id,
             )
         audit_log.append("run.bound", binding=binding, tool="bind_skill_run")
         result = {
@@ -327,6 +365,11 @@ def main(argv: list[str] | None = None) -> int:
                 run_id=binding.run_id,
                 skill_id=binding.skill_id,
                 mcp_session_id=binding.mcp_session_id,
+                flow_id=binding.flow_id,
+                root_run_id=binding.root_run_id,
+                parent_run_id=binding.parent_run_id,
+                work_item_id=binding.work_item_id,
+                node_id=binding.node_id,
             )
         return result
 

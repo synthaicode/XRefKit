@@ -2,6 +2,12 @@
 
 from .catalog import XRefCatalog
 from .client_cache import DocumentCacheProtocolError, XidDocumentCache
+from .client_flow import (
+    PromptFlowClient,
+    PromptFlowContext,
+    PromptFlowProtocolError,
+    initialize_prompt_flow_from_file,
+)
 from .context_registry import PromptContextAssembler, SessionXidContextRegistry
 
 __version__ = "0.1.5"
@@ -27,6 +33,10 @@ def main(argv: list[str] | None = None) -> int:
 
 __all__ = [
     "DocumentCacheProtocolError",
+    "PromptFlowClient",
+    "PromptFlowContext",
+    "PromptFlowProtocolError",
+    "initialize_prompt_flow_from_file",
     "PromptContextAssembler",
     "SessionXidContextRegistry",
     "XRefCatalog",

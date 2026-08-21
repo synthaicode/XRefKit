@@ -82,6 +82,11 @@ class DashboardRun:
     mtime: str
     skill_id: str
     run_id: str | None
+    flow_id: str
+    root_run_id: str | None
+    parent_run_id: str | None
+    work_item_id: str | None
+    node_id: str | None
     mcp_session_id: str | None
     repository_fingerprint: str | None
     status: str
@@ -105,6 +110,7 @@ class DashboardRun:
     observation_events: list[dict[str, object]]
     mcp_events: list[dict[str, object]]
     missing_information: list[dict[str, str]]
+    intake: dict[str, str]
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -113,6 +119,11 @@ class DashboardRun:
             "mtime": self.mtime,
             "skill_id": self.skill_id,
             "run_id": self.run_id,
+            "flow_id": self.flow_id,
+            "root_run_id": self.root_run_id,
+            "parent_run_id": self.parent_run_id,
+            "work_item_id": self.work_item_id,
+            "node_id": self.node_id,
             "mcp_session_id": self.mcp_session_id,
             "repository_fingerprint": self.repository_fingerprint,
             "status": self.status,
@@ -136,11 +147,12 @@ class DashboardRun:
             "observation_events": self.observation_events,
             "mcp_events": self.mcp_events,
             "missing_information": self.missing_information,
+            "intake": self.intake,
         }
 
 
 def _is_skill_run_log(text: str) -> bool:
-    return text.lstrip().startswith("# Skill Run Log") or (
+    return text.lstrip().startswith(("# Skill Run Log", "# Workflow Run Log")) or (
         "- skill_id: `" in text and "## Skill Load Gate" in text and "## Closure Gate" in text
     )
 
@@ -393,7 +405,10 @@ def _parse_one_run(
     }
 
     blockers: list[str] = []
-    if "## Skill Load Gate\n\n- status: `opened_by_xrefkit_skill_run`" not in text:
+    if not (
+        "## Skill Load Gate\n\n- status: `opened_by_xrefkit_skill_run`" in text
+        or "## Run Load Gate\n\n- status: `opened_by_xrefkit_workflow_run`" in text
+    ):
         blockers.append("missing Skill Load Gate")
     for phase in ("execution", "check", "handoff"):
         status = sections.get(phase, "pending")
@@ -434,6 +449,11 @@ def _parse_one_run(
     available_xids = _domain_available_xids(text)
     selected_xids = _domain_selected_xids(text)
     run_id = _field_value(text, "run_id")
+    flow_id = _field_value(text, "flow_id") or run_id or path.name
+    root_run_id = _field_value(text, "root_run_id")
+    parent_run_id = _field_value(text, "parent_run_id")
+    work_item_id = _field_value(text, "work_item_id")
+    node_id = _field_value(text, "node_id")
     skill_id = _log_skill_id(text) or "unknown"
     observation_events = _observation_events(text)
     mcp_session_id = _field_value(text, "mcp_session_id")
@@ -486,6 +506,10 @@ def _parse_one_run(
         observation_events=observation_events,
         mcp_events=mcp_events,
     )
+    intake = {
+        name: _field_value(text, name) or "unknown"
+        for name in ("purpose", "scope_in", "scope_out", "owner", "authority", "expected_evidence", "stop_conditions")
+    }
     stat = path.stat()
     mtime = datetime.fromtimestamp(stat.st_mtime).isoformat(timespec="seconds")
     return DashboardRun(
@@ -494,6 +518,11 @@ def _parse_one_run(
         mtime=mtime,
         skill_id=skill_id,
         run_id=run_id,
+        flow_id=flow_id,
+        root_run_id=root_run_id,
+        parent_run_id=parent_run_id,
+        work_item_id=work_item_id,
+        node_id=node_id,
         mcp_session_id=mcp_session_id,
         repository_fingerprint=repository_fingerprint,
         status=_status_from_blockers(blockers, closure_status),
@@ -517,6 +546,7 @@ def _parse_one_run(
         observation_events=observation_events,
         mcp_events=mcp_events,
         missing_information=missing_information,
+        intake=intake,
     )
 
 
@@ -539,6 +569,122 @@ def collect_runs(
             runs.append(run)
     runs.sort(key=lambda item: item.mtime, reverse=True)
     return runs
+
+
+def _flow_status(runs: list[DashboardRun]) -> str:
+    if any(run.status == "blocked" for run in runs):
+        return "blocked"
+    if any(run.status == "open" for run in runs):
+        return "open"
+    if runs and all(run.status == "closed" for run in runs):
+        return "closed"
+    return "unknown"
+
+
+def _flow_state(
+    runs: list[DashboardRun],
+    work_items: list[dict[str, str]],
+    reconcile_event: dict[str, object] | None,
+    blockers: list[str],
+) -> str:
+    """Derive only from recorded lifecycle evidence; never infer hidden intent."""
+    if blockers or (reconcile_event and reconcile_event.get("status") == "blocked"):
+        return "blocked"
+    events = [event for run in runs for event in run.observation_events]
+    if any(event.get("event") == "flow.routed" and event.get("status") == "needs_clarification" for event in events):
+        return "needs_clarification"
+    if runs and all(run.status == "closed" for run in runs):
+        return "closed"
+    has_child = any(run.parent_run_id for run in runs) or any(
+        event.get("event") == "child_run.started" for event in events
+    )
+    if has_child:
+        child_runs = [run for run in runs if run.parent_run_id]
+        if any(run.status != "closed" for run in child_runs):
+            return "waiting_for_child"
+        if reconcile_event is None:
+            return "reconciling"
+        if reconcile_event.get("status") == "pass":
+            return "verifying"
+    if any(event.get("event") == "flow.routed" for event in events):
+        return "executing" if work_items else "routing"
+    return "planning" if work_items else "intake"
+
+
+def collect_flows(runs: list[DashboardRun]) -> list[dict[str, object]]:
+    grouped: dict[str, list[DashboardRun]] = {}
+    for run in runs:
+        grouped.setdefault(run.flow_id, []).append(run)
+    flows: list[dict[str, object]] = []
+    for flow_id, flow_runs in grouped.items():
+        flow_runs.sort(key=lambda item: item.mtime, reverse=True)
+        root = next((run for run in flow_runs if run.run_id == run.root_run_id), flow_runs[-1])
+        work_items = [item for run in flow_runs for item in run.work_items]
+        blockers = sorted({blocker for run in flow_runs for blocker in run.blockers})
+        reconcile_events = [
+            event
+            for run in flow_runs
+            for event in run.observation_events
+            if event.get("event") == "flow.reconciled"
+        ]
+        recoveries = [
+            {
+                **event,
+                "flow_id": event.get("flow_id") or flow_id,
+                "run_id": event.get("run_id") or run.run_id,
+                "skill_id": run.skill_id,
+                "run_path": run.path,
+            }
+            for run in flow_runs
+            for event in run.observation_events
+            if event.get("event") == "workflow.recovery"
+        ]
+        recoveries.sort(key=lambda item: str(item.get("timestamp") or ""))
+        latest_reconcile = reconcile_events[-1] if reconcile_events else None
+        flow_status = _flow_status(flow_runs)
+        if isinstance(latest_reconcile, dict) and latest_reconcile.get("status") == "blocked":
+            flow_status = "blocked"
+            blockers.extend(str(item) for item in latest_reconcile.get("findings", []) if item)
+        flow_state = _flow_state(flow_runs, work_items, latest_reconcile, blockers)
+        flows.append(
+            {
+                "flow_id": flow_id,
+                "root_run_id": root.run_id,
+                "prompt": root.name,
+                "intake": root.intake,
+                "status": flow_status,
+                "state": flow_state,
+                "run_ids": [run.run_id for run in flow_runs if run.run_id],
+                "runs": [run.to_dict() for run in flow_runs],
+                "skills": sorted({run.skill_id for run in flow_runs}),
+                "work_items": work_items,
+                "recoveries": recoveries,
+                "blockers": blockers,
+                "reconcile_status": latest_reconcile.get("status") if isinstance(latest_reconcile, dict) else "not_run",
+                "last_updated": flow_runs[0].mtime,
+            }
+        )
+    flows.sort(key=lambda item: str(item["last_updated"]), reverse=True)
+    return flows
+
+
+def collect_recoveries(runs: list[DashboardRun]) -> list[dict[str, object]]:
+    recoveries: list[dict[str, object]] = []
+    for run in runs:
+        for event in run.observation_events:
+            if event.get("event") != "workflow.recovery":
+                continue
+            recoveries.append(
+                {
+                    **event,
+                    "flow_id": event.get("flow_id") or run.flow_id,
+                    "run_id": event.get("run_id") or run.run_id,
+                    "skill_id": run.skill_id,
+                    "run_path": run.path,
+                }
+            )
+    recoveries.sort(key=lambda item: str(item.get("timestamp") or ""), reverse=True)
+    return recoveries
 
 
 def _summary(runs: list[DashboardRun]) -> dict[str, int]:
@@ -614,6 +760,225 @@ def _missing_information_ranking(runs: list[DashboardRun]) -> list[dict[str, obj
     return rows
 
 
+def _flow_rows(flows: object) -> str:
+    if not isinstance(flows, list) or not flows:
+        return "<tr><td colspan='9'>No Prompt Flows found.</td></tr>"
+    rows: list[str] = []
+    for flow in flows:
+        if not isinstance(flow, dict):
+            continue
+        skills = ", ".join(str(skill) for skill in flow.get("skills", []))
+        runs = flow.get("runs", [])
+        run_count = len(runs) if isinstance(runs, list) else 0
+        work_items = flow.get("work_items", [])
+        work_count = len(work_items) if isinstance(work_items, list) else 0
+        blockers = flow.get("blockers", [])
+        blocker_text = ", ".join(str(item) for item in blockers) if isinstance(blockers, list) else ""
+        rows.append(
+            "<tr>"
+            f"<td><code>{html.escape(str(flow.get('flow_id', '-')))}</code></td>"
+            f"<td><span class='status status-{html.escape(str(flow.get('status', 'unknown')))}'>{html.escape(str(flow.get('status', 'unknown')))}</span></td>"
+            f"<td>{html.escape(str(flow.get('state', 'intake')))}</td>"
+            f"<td>{run_count}</td><td>{work_count}</td>"
+            f"<td>{html.escape(skills or '-')}</td>"
+            f"<td>{html.escape(str(flow.get('reconcile_status', 'not_run')))}</td>"
+            f"<td>{html.escape(blocker_text or '-')}</td>"
+            f"<td>{html.escape(str(flow.get('last_updated', '-')))}</td>"
+            "</tr>"
+        )
+    return "\n".join(rows) or "<tr><td colspan='9'>No Prompt Flows found.</td></tr>"
+
+
+def _flow_tree(flows: object) -> str:
+    if not isinstance(flows, list) or not flows:
+        return "<section class='empty'>No Prompt Flow execution trees found.</section>"
+    cards: list[str] = []
+    for flow in flows:
+        if not isinstance(flow, dict):
+            continue
+        runs = flow.get("runs", [])
+        if not isinstance(runs, list):
+            runs = []
+        intake = flow.get("intake", {})
+        if not isinstance(intake, dict):
+            intake = {}
+        run_rows = []
+        for run in runs:
+            if not isinstance(run, dict):
+                continue
+            parent = run.get("parent_run_id") or "root"
+            run_rows.append(
+                "<li>"
+                f"<code>{html.escape(str(run.get('run_id') or '-'))}</code> "
+                f"<strong>{html.escape(str(run.get('skill_id') or '-'))}</strong> "
+                f"status={html.escape(str(run.get('status') or '-'))} "
+                f"parent={html.escape(str(parent))} "
+                f"work_item={html.escape(str(run.get('work_item_id') or '-'))} "
+                f"<small>{html.escape(str(run.get('mtime') or '-'))}</small>"
+                "</li>"
+            )
+        cards.append(
+            f"<details><summary><code>{html.escape(str(flow.get('flow_id') or '-'))}</code> "
+            f"status={html.escape(str(flow.get('status') or '-'))} "
+            f"state={html.escape(str(flow.get('state') or 'intake'))}</summary>"
+            f"<ul>{''.join(run_rows) or '<li>No runs.</li>'}</ul></details>"
+        )
+    return "\n".join(cards) or "<section class='empty'>No Prompt Flow execution trees found.</section>"
+
+
+def _flow_details(flows: object) -> str:
+    if not isinstance(flows, list) or not flows:
+        return "<section class='empty'>No Prompt Flow details found.</section>"
+    cards: list[str] = []
+    for flow in flows:
+        if not isinstance(flow, dict):
+            continue
+        items = flow.get("work_items", [])
+        if not isinstance(items, list):
+            items = []
+        runs = flow.get("runs", [])
+        if not isinstance(runs, list):
+            runs = []
+        intake = flow.get("intake", {})
+        if not isinstance(intake, dict):
+            intake = {}
+        rows: list[str] = []
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            rows.append(
+                "<tr>"
+                f"<td><code>{html.escape(str(item.get('item_id') or '-'))}</code></td>"
+                f"<td>{html.escape(str(item.get('text') or '-'))}</td>"
+                f"<td>{html.escape(str(item.get('status') or '-'))}</td>"
+                f"<td>{html.escape(str(item.get('criterion') or item.get('reason') or '-'))}</td>"
+                "</tr>"
+            )
+        run_rows: list[str] = []
+        activity_items: list[str] = []
+        record_items: list[str] = []
+        for run in runs:
+            if not isinstance(run, dict):
+                continue
+            run_id = str(run.get("run_id") or "-")
+            artifacts = run.get("artifacts", [])
+            concerns = run.get("concerns", [])
+            counts = run.get("counts", {})
+            run_rows.append(
+                "<tr>"
+                f"<td><code>{html.escape(run_id)}</code></td>"
+                f"<td>{html.escape(str(run.get('skill_id') or '-'))}</td>"
+                f"<td>{html.escape(str(run.get('status') or '-'))}</td>"
+                f"<td>{html.escape(str(run.get('parent_run_id') or 'root'))}</td>"
+                f"<td>{html.escape(str(run.get('work_item_id') or '-'))}</td>"
+                f"<td>{html.escape(str(run.get('node_id') or '-'))}</td>"
+                f"<td>{html.escape(str(counts.get('outputs', 0) if isinstance(counts, dict) else 0))}/"
+                f"{html.escape(str(counts.get('evidence', 0) if isinstance(counts, dict) else 0))}/"
+                f"{html.escape(str(counts.get('checks', 0) if isinstance(counts, dict) else 0))}</td>"
+                f"<td>{html.escape(str(counts.get('unknowns', 0) if isinstance(counts, dict) else 0))}/"
+                f"{html.escape(str(counts.get('risks', 0) if isinstance(counts, dict) else 0))}/"
+                f"{html.escape(str(counts.get('judgments', 0) if isinstance(counts, dict) else 0))}</td>"
+                "</tr>"
+            )
+            if isinstance(artifacts, list):
+                for artifact in artifacts:
+                    if isinstance(artifact, dict):
+                        record_items.append(
+                            f"<li><strong>{html.escape(str(artifact.get('kind') or '-'))}</strong> "
+                            f"{html.escape(str(artifact.get('artifact_id') or '-'))}: "
+                            f"{html.escape(str(artifact.get('status') or '-'))} — "
+                            f"{html.escape(str(artifact.get('target') or artifact.get('note') or '-'))}</li>"
+                        )
+            if isinstance(concerns, list):
+                for concern in concerns:
+                    if isinstance(concern, dict):
+                        record_items.append(
+                            f"<li><strong>{html.escape(str(concern.get('kind') or '-'))}</strong> "
+                            f"{html.escape(str(concern.get('concern_id') or '-'))}: "
+                            f"{html.escape(str(concern.get('status') or '-'))} — "
+                            f"{html.escape(str(concern.get('note') or concern.get('reason') or '-'))}</li>"
+                        )
+            events = run.get("observation_events", [])
+            if isinstance(events, list):
+                for event in events:
+                    if not isinstance(event, dict):
+                        continue
+                    event_name = str(event.get("event") or "-")
+                    details = event.get("selected_skill") or event.get("recovery_id") or event.get("status") or ""
+                    activity_items.append(
+                        f"<li><code>{html.escape(run_id)}</code> "
+                        f"<strong>{html.escape(event_name)}</strong> "
+                        f"{html.escape(str(details))}</li>"
+                    )
+        blockers = flow.get("blockers", [])
+        blocker_text = "; ".join(str(item) for item in blockers) if isinstance(blockers, list) else ""
+        recoveries = flow.get("recoveries", [])
+        if not isinstance(recoveries, list):
+            recoveries = []
+        recovery_text = "; ".join(
+            f"{item.get('recovery_id') or '-'}:{item.get('status') or '-'}"
+            for item in recoveries
+            if isinstance(item, dict)
+        )
+        cards.append(
+            "<details class='flow-detail'>"
+            f"<summary><code>{html.escape(str(flow.get('flow_id') or '-'))}</code> "
+            f"prompt={html.escape(str(flow.get('prompt') or '-'))} "
+            f"state={html.escape(str(flow.get('state') or 'intake'))} "
+            f"reconcile={html.escape(str(flow.get('reconcile_status') or 'not_run'))}</summary>"
+            f"<p>root_run_id: <code>{html.escape(str(flow.get('root_run_id') or '-'))}</code></p>"
+            "<h4>Minimum intake</h4>"
+            "<table class='table'><thead><tr><th>Field</th><th>Recorded value</th></tr></thead><tbody>"
+            + "".join(
+                f"<tr><td>{html.escape(str(name))}</td><td>{html.escape(str(intake.get(name) or 'unknown'))}</td></tr>"
+                for name in ("purpose", "scope_in", "scope_out", "owner", "authority", "expected_evidence", "stop_conditions")
+            )
+            + "</tbody></table>"
+            "<table class='table'><thead><tr><th>Work Item</th><th>Task</th><th>Status</th><th>Criterion / Reason</th></tr></thead>"
+            f"<tbody>{''.join(rows) or '<tr><td colspan=\"4\">No Work Items.</td></tr>'}</tbody></table>"
+            "<h4>Execution records</h4>"
+            "<table class='table'><thead><tr><th>Run</th><th>Skill</th><th>Status</th><th>Parent</th><th>Work Item</th><th>Node</th><th>Output / Evidence / Checks</th><th>Unknown / Risk / Judgment</th></tr></thead>"
+            f"<tbody>{''.join(run_rows) or '<tr><td colspan=\"8\">No execution records.</td></tr>'}</tbody></table>"
+            "<h4>Activity</h4>"
+            f"<ul>{''.join(activity_items) or '<li>No activity events.</li>'}</ul>"
+            "<h4>Evidence and concerns</h4>"
+            f"<ul>{''.join(record_items) or '<li>No output, evidence, check, unknown, risk, or judgment records.</li>'}</ul>"
+            f"<p><strong>Blockers:</strong> {html.escape(blocker_text or '-')}</p>"
+            f"<p><strong>Recovery:</strong> {html.escape(recovery_text or '-')}</p>"
+            "</details>"
+        )
+    return "\n".join(cards) or "<section class='empty'>No Prompt Flow details found.</section>"
+
+
+def _recovery_rows(recoveries: object) -> str:
+    if not isinstance(recoveries, list) or not recoveries:
+        return "<tr><td colspan='14'>No Recovery Trace records found.</td></tr>"
+    rows: list[str] = []
+    for recovery in recoveries:
+        if not isinstance(recovery, dict):
+            continue
+        status = str(recovery.get("status") or "unknown")
+        rows.append(
+            "<tr>"
+            f"<td><code>{html.escape(str(recovery.get('recovery_id') or '-'))}</code></td>"
+            f"<td><span class='status status-{html.escape(status)}'>{html.escape(status)}</span></td>"
+            f"<td><code>{html.escape(str(recovery.get('flow_id') or '-'))}</code></td>"
+            f"<td><code>{html.escape(str(recovery.get('run_id') or '-'))}</code></td>"
+            f"<td>{html.escape(str(recovery.get('resume_location') or '-'))}</td>"
+            f"<td>{html.escape(str(recovery.get('reason') or '-'))}</td>"
+            f"<td>{html.escape(str(recovery.get('next_action') or '-'))}</td>"
+            f"<td>{html.escape(str(recovery.get('executable_action') or '-'))}</td>"
+            f"<td>{html.escape(str(recovery.get('owner') or 'unknown'))}</td>"
+            f"<td>{html.escape(str(recovery.get('verification_method') or 'unknown'))}</td>"
+            f"<td>{html.escape(str(recovery.get('maximum_attempts') or 'unknown'))}</td>"
+            f"<td>{html.escape('; '.join(str(item) for item in recovery.get('stop_conditions', [])) if isinstance(recovery.get('stop_conditions'), list) else str(recovery.get('stop_conditions') or 'unknown'))}</td>"
+            f"<td>{html.escape(str(recovery.get('reviewer') or '-'))}</td>"
+            f"<td>{html.escape(str(recovery.get('run_path') or '-'))}</td>"
+            "</tr>"
+        )
+    return "\n".join(rows) or "<tr><td colspan='14'>No Recovery Trace records found.</td></tr>"
+
+
 def build_payload(
     root: Path,
     sessions_dir: Path,
@@ -622,15 +987,22 @@ def build_payload(
     audit_path = (mcp_audit_log or (root / "work" / "mcp" / "xid_audit.jsonl")).resolve()
     mcp_events_by_run, audit_errors = _load_mcp_audit(audit_path)
     runs = collect_runs(root, sessions_dir, mcp_events_by_run, audit_errors)
+    flows = collect_flows(runs)
+    recoveries = collect_recoveries(runs)
+    summary = _summary(runs)
+    summary["flows"] = len(flows)
+    summary["recoveries"] = len(recoveries)
     payload: dict[str, object] = {
         "root": str(root.resolve()),
         "sessions_dir": str(sessions_dir.resolve()),
         "mcp_audit_log": str(audit_path),
         "audit_errors": audit_errors,
-        "summary": _summary(runs),
+        "summary": summary,
         "unused_xid_ranking": _unused_xid_ranking(runs),
         "missing_information_ranking": _missing_information_ranking(runs),
         "runs": [run.to_dict() for run in runs],
+        "flows": flows,
+        "recoveries": recoveries,
     }
     payload["boundary_analysis"] = analyze_dashboard_payload(
         payload,
@@ -653,6 +1025,7 @@ def _json_response(handler: BaseHTTPRequestHandler, payload: object, status: int
 def _html_page(payload: dict[str, object]) -> str:
     summary = payload["summary"]
     runs = payload["runs"]
+    flows = payload.get("flows", [])
     assert isinstance(summary, dict)
     assert isinstance(runs, list)
     boundary_analysis = payload.get("boundary_analysis")
@@ -671,6 +1044,8 @@ def _html_page(payload: dict[str, object]) -> str:
         f"<div class='metric'><span>{html.escape(str(label))}</span><strong>{value}</strong></div>"
         for label, value in [
             ("Skill runs", summary["runs"]),
+            ("Prompt Flows", summary.get("flows", 0)),
+            ("Recoveries", summary.get("recoveries", 0)),
             ("Closed", summary["closed"]),
             ("Blocked", summary["blocked"]),
             ("Open", summary["open"]),
@@ -684,6 +1059,10 @@ def _html_page(payload: dict[str, object]) -> str:
         ]
     )
     overview_rows = "\n".join(_overview_row(run) for run in runs)
+    flow_rows = _flow_rows(flows)
+    flow_tree = _flow_tree(flows)
+    flow_details = _flow_details(flows)
+    recovery_rows = _recovery_rows(payload.get("recoveries", []))
     attention_rows = "\n".join(_attention_card(run) for run in runs if isinstance(run, dict) and run.get("status") == "blocked")
     closure_rows = "\n".join(_closure_card(run) for run in runs)
     evidence_rows = "\n".join(_evidence_card(run) for run in runs if _has_observed_records(run))
@@ -785,7 +1164,8 @@ def _html_page(payload: dict[str, object]) -> str:
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin: 0 0 18px;
+      align-items: center;
+      margin: 0 0 20px;
     }}
     .tab {{
       appearance: none;
@@ -821,7 +1201,7 @@ def _html_page(payload: dict[str, object]) -> str:
       font: inherit;
       padding: 9px 12px;
     }}
-    .status-filters {{ display: flex; flex-wrap: wrap; gap: 6px; }}
+    .status-filters {{ display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }}
     .status-filter, .refresh-button, .clear-selection {{
       min-height: 42px;
       border: 1px solid var(--line);
@@ -835,6 +1215,7 @@ def _html_page(payload: dict[str, object]) -> str:
     .status-filter.active {{ border-color: var(--blue); color: var(--blue); background: #eaf1fb; font-weight: 700; }}
     .refresh-button {{ color: white; background: var(--blue); border-color: var(--blue); font-weight: 700; }}
     .refresh-button:disabled {{ cursor: wait; opacity: .7; }}
+    .refresh-button, .status-filter {{ white-space: nowrap; }}
     .selection-bar {{ display: none; align-items: center; gap: 10px; margin: 0 0 16px; color: var(--muted); }}
     .selection-bar.active {{ display: flex; }}
     .result-count {{ margin: -8px 0 16px; color: var(--muted); font-size: 13px; }}
@@ -920,11 +1301,30 @@ def _html_page(payload: dict[str, object]) -> str:
     ul {{ margin: 8px 0 0; padding-left: 20px; }}
     li {{ margin: 3px 0; }}
     .empty {{ background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 24px; color: var(--muted); }}
-    @media (max-width: 780px) {{
+    @media (max-width: 900px) {{
       header, main {{ padding-left: 16px; padding-right: 16px; }}
       .grid {{ grid-template-columns: 1fr; }}
       .analysis-grid {{ grid-template-columns: 1fr; }}
-      .controls {{ grid-template-columns: 1fr; }}
+      .controls {{
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+          "search search"
+          "status refresh";
+        gap: 8px;
+      }}
+      .search {{ grid-area: search; }}
+      .status-filters {{ grid-area: status; }}
+      .refresh-button {{ grid-area: refresh; }}
+    }}
+    @media (max-width: 560px) {{
+      .controls {{
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "search"
+          "status"
+          "refresh";
+      }}
+      .refresh-button {{ width: 100%; }}
     }}
   </style>
 </head>
@@ -936,6 +1336,8 @@ def _html_page(payload: dict[str, object]) -> str:
   <main>
     <nav class="tabs" aria-label="Dashboard categories">
       <button class="tab active" data-panel="overview">Overview</button>
+      <button class="tab" data-panel="flows">Prompt Flows</button>
+      <button class="tab" data-panel="recovery">Recovery</button>
       <button class="tab" data-panel="attention">Attention</button>
       <button class="tab" data-panel="closure">Closure</button>
       <button class="tab" data-panel="evidence">Evidence</button>
@@ -965,9 +1367,25 @@ def _html_page(payload: dict[str, object]) -> str:
         <tbody>{overview_rows}</tbody>
       </table>
     </section>
+    <section id="flows" class="panel">
+      <p class="category-note">One prompt-rooted flow across generic workflow runs and delegated Skill Runs.</p>
+      <table class="table">
+        <thead><tr><th>Flow</th><th>Status</th><th>State</th><th>Runs</th><th>Work items</th><th>Skills</th><th>Reconcile</th><th>Blockers</th><th>Updated</th></tr></thead>
+        <tbody>{flow_rows}</tbody>
+      </table>
+      <div class="box"><h3>Execution tree</h3>{flow_tree}</div>
+      <div class="box"><h3>Flow details</h3>{flow_details}</div>
+    </section>
     <section id="attention" class="panel">
       <p class="category-note">Runs that need action before they can be treated as closed.</p>
       {attention_rows}
+    </section>
+    <section id="recovery" class="panel">
+      <p class="category-note">Recovery proposals and human confirmations. The dashboard records the proposed resume point; it does not execute recovery.</p>
+      <table class="table">
+        <thead><tr><th>Recovery ID</th><th>Status</th><th>Flow</th><th>Run</th><th>Resume location</th><th>Reason</th><th>Next action</th><th>Executable action</th><th>Owner</th><th>Verification</th><th>Max attempts</th><th>Stop conditions</th><th>Reviewer</th><th>Log</th></tr></thead>
+        <tbody>{recovery_rows}</tbody>
+      </table>
     </section>
     <section id="closure" class="panel">
       <p class="category-note">Runtime phase, closure gate, and quality gate state.</p>
