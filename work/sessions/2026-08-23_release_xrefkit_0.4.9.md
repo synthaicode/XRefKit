@@ -21,3 +21,22 @@ None.
 ### Open
 Remote commit, tag, GitHub Actions, GitHub Release, PyPI visibility, and clean
 installation remain to be verified after publication.
+
+## 2026-08-23: Release validation correction
+
+### Event
+The pull request workflow found that `xrefkit.__version__` remained `0.4.8`
+while package metadata was `0.4.9`. The package metadata and runtime version
+are now aligned at `0.4.9`.
+
+### Decision
+Update the runtime version before rerunning the release gates.
+
+### Human Stated Reason
+The human authorized proceeding with the `0.4.9` publication.
+
+### Deferred
+None.
+
+### Open
+The corrected commit must pass the remote checks before merge and tagging.
