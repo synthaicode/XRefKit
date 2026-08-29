@@ -1571,7 +1571,8 @@ def _client_tool_distribution(root: Path) -> ClientToolDistribution:
 
 
 def _xrefkit_runtime_version(root: Path) -> str:
-    init_path = root / "xrefkit" / "__init__.py"
+    runtime_root = _runtime_source_root(root)
+    init_path = runtime_root / "__init__.py"
     if not init_path.exists():
         return "0.0.0"
     match = XREFKIT_RUNTIME_VERSION_RE.search(read_text(init_path))
@@ -1637,7 +1638,7 @@ def _xrefkit_runtime_distribution(root: Path) -> ClientToolDistribution:
 
 
 def _xrefkit_runtime_files(root: Path) -> list[ClientToolFile]:
-    runtime_root = root / "xrefkit"
+    runtime_root = _runtime_source_root(root)
     if not runtime_root.exists():
         return []
     distributable_suffixes = {".py", ".json", ".yaml", ".yml", ".md"}
@@ -1651,7 +1652,7 @@ def _xrefkit_runtime_files(root: Path) -> list[ClientToolFile]:
 
     result: list[ClientToolFile] = []
     for path in paths:
-        rel = relative_to_repo(path, root)
+        rel = "xrefkit/" + path.relative_to(runtime_root).as_posix()
         text = read_text(path)
         kind = _client_tool_kind(path)
         result.append(
@@ -1667,6 +1668,14 @@ def _xrefkit_runtime_files(root: Path) -> list[ClientToolFile]:
             )
         )
     return result
+
+
+def _runtime_source_root(root: Path) -> Path:
+    """Select repository runtime when present, otherwise this MCP package."""
+    repository_runtime = root / "xrefkit"
+    if (repository_runtime / "__init__.py").is_file():
+        return repository_runtime
+    return Path(__file__).resolve().parent.parent
 
 
 def _xrefkit_runtime_pip_package(root: Path) -> ClientToolPipPackage:
