@@ -47,6 +47,7 @@ class SkillRunResult:
     handoff_sources: list[dict[str, str]] | None = None
     domain_knowledge: dict[str, object] | None = None
     run_id: str | None = None
+    decision_trace_checkpoint: dict[str, object] | None = None
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -63,6 +64,7 @@ class SkillRunResult:
             "handoff_sources": self.handoff_sources or [],
             "domain_knowledge": self.domain_knowledge or {},
             "run_id": self.run_id,
+            "decision_trace_checkpoint": self.decision_trace_checkpoint or {},
         }
 
 
@@ -404,6 +406,40 @@ def _default_log_path(root: Path, skill_id: str) -> Path:
         index += 1
 
 
+def _start_decision_trace_checkpoint(
+    *, root: Path, run_id: str, purpose: str, work_item_id: str | None,
+    out_path: Path | None = None, root_was_default: bool = False
+) -> tuple[dict[str, object] | None, str | None]:
+    from xrefkit.decision_trace import _checkpoint, _git
+
+    try:
+        if root_was_default and out_path is not None and out_path.is_absolute() and not out_path.is_relative_to(root):
+            return {"status": "unavailable", "reason": "run output is outside the implicit project root"}, None
+        if not (root / ".git").exists():
+            return {"status": "unavailable", "reason": "root is not a Git worktree"}, None
+        try:
+            _git(root, "rev-parse", "--git-dir")
+        except ValueError as exc:
+            if "not a git repository" in str(exc).lower():
+                return {"status": "unavailable", "reason": "root is not a Git worktree"}, None
+            raise
+        checkpoint = _checkpoint(
+            root,
+            argparse.Namespace(
+                checkpoint_id=f"CP-RUN-{run_id}",
+                checkpoint_type="before-ai-run",
+                purpose=purpose,
+                work_item_id=work_item_id,
+                run_id=run_id,
+                context_policy="current-only",
+                tag=None,
+            ),
+        )
+    except (OSError, ValueError) as exc:
+        return None, f"automatic AI-work checkpoint failed: {exc}"
+    return checkpoint, None
+
+
 def _render_log(
     *,
     run_id: str,
@@ -430,6 +466,7 @@ def _render_log(
     handoff_sources: list[dict[str, str]],
     model_tier: str | None,
     domain_knowledge: dict[str, object],
+    decision_trace_checkpoint: dict[str, object] | None = None,
 ) -> str:
     tier_label = model_tier or "unset"
     quality_policy = "required" if model_tier in QUALITY_REQUIRED_TIERS else "optional"
@@ -501,6 +538,24 @@ def _render_log(
         )
     else:
         requirement_lines = "- none declared"
+    if decision_trace_checkpoint and decision_trace_checkpoint.get("status") != "unavailable":
+        checkpoint_lines = [
+            "## AI Decision Trace Checkpoint",
+            "",
+            "- status: `created`",
+            f"- checkpoint_id: `{decision_trace_checkpoint.get('checkpoint', {}).get('checkpoint_id', '-')}`",
+            f"- tag: `{decision_trace_checkpoint.get('tag', '-')}`",
+            f"- manifest: `{decision_trace_checkpoint.get('manifest', '-')}`",
+            "- rule: this checkpoint was created automatically before AI work",
+        ]
+    else:
+        checkpoint_lines = [
+            "## AI Decision Trace Checkpoint",
+            "",
+            f"- status: `{(decision_trace_checkpoint or {}).get('status', 'not_created')}`",
+            f"- reason: `{(decision_trace_checkpoint or {}).get('reason', '-')}`",
+        ]
+    checkpoint_section = "\n".join(checkpoint_lines)
     flow_lines = "\n".join(
         [
             f"- flow_id: `{flow_id or run_id}`",
@@ -524,6 +579,8 @@ def _render_log(
 - task: {task}
 - report_language: `user_language`
 - language_rule: `human-facing report prose follows the user's language; runtime keys, status enums, IDs, paths, and commands remain stable`
+
+{checkpoint_section}
 
 ## Skill Load Gate
 
@@ -2633,6 +2690,23 @@ def run_skill(args) -> SkillRunResult:
                     run_log=None,
                     errors=[f"run_id is already used by an existing Skill Run: {existing_log}"],
                 )
+    checkpoint, checkpoint_error = _start_decision_trace_checkpoint(
+        root=root,
+        run_id=run_id,
+        purpose=f"before AI Skill run {skill_id}",
+        work_item_id=getattr(args, "work_item_id", None),
+        out_path=out_path,
+        root_was_default=str(getattr(args, "root", ".")) == ".",
+    )
+    if checkpoint_error:
+        return SkillRunResult(
+            ok=False,
+            skill_id=skill_id,
+            skill_doc=str(skill_doc_path),
+            run_log=None,
+            errors=[checkpoint_error],
+            run_id=run_id,
+        )
     log = _render_log(
         run_id=run_id,
         flow_id=getattr(args, "flow_id", None),
@@ -2658,6 +2732,7 @@ def run_skill(args) -> SkillRunResult:
         handoff_sources=validated_handoff_sources,
         model_tier=model_tier,
         domain_knowledge=domain_knowledge,
+        decision_trace_checkpoint=checkpoint,
     )
     with _LogFileLock(out_path.with_name(f".{out_path.name}.lock")):
         _atomic_write_text(out_path, log)
@@ -2672,6 +2747,7 @@ def run_skill(args) -> SkillRunResult:
         handoff_sources=validated_handoff_sources,
         domain_knowledge=domain_knowledge,
         run_id=run_id,
+        decision_trace_checkpoint=checkpoint,
     )
 
 
@@ -2729,6 +2805,24 @@ def run_workflow_instruction(args) -> SkillRunResult:
             if _log_field(existing_text, "run_id") == run_id:
                 return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"run_id is already used by an existing workflow run: {existing_log}"])
 
+    checkpoint, checkpoint_error = _start_decision_trace_checkpoint(
+        root=root,
+        run_id=run_id,
+        purpose=f"before AI workflow run {run_id}",
+        work_item_id=getattr(args, "work_item_id", None),
+        out_path=out_path,
+        root_was_default=str(getattr(args, "root", ".")) == ".",
+    )
+    if checkpoint_error:
+        return SkillRunResult(
+            ok=False,
+            skill_id="instruction",
+            skill_doc=None,
+            run_log=None,
+            errors=[checkpoint_error],
+            run_id=run_id,
+        )
+
     assigned_roles = _assign_runtime_roles(skill_id="instruction", execution_mode="local_default", model_tier=None)
     log = _render_log(
         run_id=run_id,
@@ -2755,6 +2849,7 @@ def run_workflow_instruction(args) -> SkillRunResult:
         handoff_sources=[],
         model_tier=None,
         domain_knowledge={"available": [], "selected": {}, "requirements": []},
+        decision_trace_checkpoint=checkpoint,
     )
     log = log.replace("# Skill Run Log", "# Workflow Run Log", 1)
     log = log.replace("## Skill Load Gate", "## Run Load Gate", 1)
@@ -2794,6 +2889,7 @@ def run_workflow_instruction(args) -> SkillRunResult:
         errors=[],
         assigned_roles=assigned_roles,
         run_id=run_id,
+        decision_trace_checkpoint=checkpoint,
     )
 
 

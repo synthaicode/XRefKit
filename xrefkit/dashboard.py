@@ -760,6 +760,53 @@ def _missing_information_ranking(runs: list[DashboardRun]) -> list[dict[str, obj
     return rows
 
 
+def _decision_trace_payload(root: Path) -> dict[str, object]:
+    try:
+        from xrefkit.decision_trace import _graph, _impact_group, _read_events, _validate
+
+        events = _read_events(root)
+        groups: dict[str, int] = {}
+        for event in events:
+            group = _impact_group(event)
+            groups[group] = groups.get(group, 0) + 1
+        return {
+            "events": events,
+            "graph": _graph(root),
+            "validation": _validate(root),
+            "summary": {"events": len(events), "groups": dict(sorted(groups.items()))},
+        }
+    except (OSError, ValueError) as exc:
+        return {
+            "events": [],
+            "graph": "flowchart TD\n    empty[\"No decision-trace events\"]",
+            "validation": {"valid": False, "event_count": 0, "issues": [str(exc)]},
+            "summary": {"events": 0, "groups": {}},
+        }
+
+
+def _decision_trace_rows(trace: object) -> str:
+    if not isinstance(trace, dict):
+        return "<tr><td colspan='6'>No decision-trace records found.</td></tr>"
+    events = trace.get("events", [])
+    if not isinstance(events, list) or not events:
+        return "<tr><td colspan='6'>No decision-trace records found.</td></tr>"
+    rows: list[str] = []
+    for event in events:
+        if not isinstance(event, dict):
+            continue
+        rows.append(
+            "<tr>"
+            f"<td><code>{html.escape(str(event.get('event_id') or '-'))}</code></td>"
+            f"<td>{html.escape(str(event.get('event_type') or '-'))}</td>"
+            f"<td>{html.escape(str(event.get('status') or '-'))}</td>"
+            f"<td>{html.escape(str(event.get('resolution') or '-'))}</td>"
+            f"<td>{html.escape(str(event.get('branch') or '-'))}</td>"
+            f"<td>{html.escape(str(event.get('reason') or '-'))}</td>"
+            "</tr>"
+        )
+    return "\n".join(rows) or "<tr><td colspan='6'>No decision-trace records found.</td></tr>"
+
+
 def _flow_rows(flows: object) -> str:
     if not isinstance(flows, list) or not flows:
         return "<tr><td colspan='9'>No Prompt Flows found.</td></tr>"
@@ -989,6 +1036,7 @@ def build_payload(
     runs = collect_runs(root, sessions_dir, mcp_events_by_run, audit_errors)
     flows = collect_flows(runs)
     recoveries = collect_recoveries(runs)
+    decision_trace = _decision_trace_payload(root)
     summary = _summary(runs)
     summary["flows"] = len(flows)
     summary["recoveries"] = len(recoveries)
@@ -1003,6 +1051,7 @@ def build_payload(
         "runs": [run.to_dict() for run in runs],
         "flows": flows,
         "recoveries": recoveries,
+        "decision_trace": decision_trace,
     }
     payload["boundary_analysis"] = analyze_dashboard_payload(
         payload,
@@ -1026,8 +1075,10 @@ def _html_page(payload: dict[str, object]) -> str:
     summary = payload["summary"]
     runs = payload["runs"]
     flows = payload.get("flows", [])
+    decision_trace = payload.get("decision_trace", {})
     assert isinstance(summary, dict)
     assert isinstance(runs, list)
+    assert isinstance(decision_trace, dict)
     boundary_analysis = payload.get("boundary_analysis")
     if not isinstance(boundary_analysis, dict):
         boundary_analysis = {}
@@ -1070,6 +1121,26 @@ def _html_page(payload: dict[str, object]) -> str:
     xid_rows = "\n".join(_xid_usage_card(run) for run in runs if _has_xid_records(run))
     unused_xid_rows = _unused_xid_ranking_table(payload.get("unused_xid_ranking", []))
     missing_information_rows = _missing_information_ranking_table(payload.get("missing_information_ranking", []))
+    decision_trace_summary = decision_trace.get("summary", {})
+    if not isinstance(decision_trace_summary, dict):
+        decision_trace_summary = {}
+    decision_trace_rows = _decision_trace_rows(decision_trace)
+    decision_trace_groups = decision_trace_summary.get("groups", {})
+    if not isinstance(decision_trace_groups, dict):
+        decision_trace_groups = {}
+    decision_trace_group_rows = "".join(
+        f"<tr><td>{html.escape(str(group))}</td><td>{html.escape(str(count))}</td></tr>"
+        for group, count in sorted(decision_trace_groups.items())
+    ) or "<tr><td colspan='2'>No impact groups found.</td></tr>"
+    decision_trace_validation = decision_trace.get("validation", {})
+    if not isinstance(decision_trace_validation, dict):
+        decision_trace_validation = {}
+    decision_trace_issues = decision_trace_validation.get("issues", [])
+    if not isinstance(decision_trace_issues, list):
+        decision_trace_issues = []
+    decision_trace_issue_html = "" if not decision_trace_issues else "<ul>" + "".join(
+        f"<li>{html.escape(str(issue))}</li>" for issue in decision_trace_issues[:10]
+    ) + "</ul>"
     missing_information_cards = "\n".join(
         _missing_information_card(run)
         for run in runs
@@ -1345,6 +1416,7 @@ def _html_page(payload: dict[str, object]) -> str:
       <button class="tab" data-panel="xids">XID Usage</button>
       <button class="tab" data-panel="analysis">Analysis</button>
       <button class="tab" data-panel="missing-information">Missing Information</button>
+      <button class="tab" data-panel="decision-trace">Decision Trace</button>
     </nav>
     <section class="controls" aria-label="Skill run filters">
       <input id="run-search" class="search" type="search" placeholder="Search skill, path, run ID, session, repository, or status" aria-label="Search Skill runs">
@@ -1412,6 +1484,17 @@ def _html_page(payload: dict[str, object]) -> str:
         <div class="kv">{analysis_correlation_pills}</div>
       </div>
       {analysis_proposal_rows}
+    </section>
+    <section id="decision-trace" class="panel">
+      <p class="category-note">AI decision-trace events, provisional resolutions, branches, and the current dependency graph. This panel observes records; it does not execute adoption or return operations.</p>
+      <section class="metrics"><div class="metric"><span>Trace events</span><strong>{html.escape(str(decision_trace_summary.get('events', 0)))}</strong></div><div class="metric"><span>Validation</span><strong>{html.escape(str(decision_trace_validation.get('valid', False)))}</strong></div></section>
+      <table class="table">
+        <thead><tr><th>Event</th><th>Type</th><th>Status</th><th>Resolution</th><th>Branch</th><th>Reason</th></tr></thead>
+        <tbody>{decision_trace_rows}</tbody>
+      </table>
+      <div class="box"><h3>Impact groups</h3><table class="table"><thead><tr><th>Group</th><th>Events</th></tr></thead><tbody>{decision_trace_group_rows}</tbody></table></div>
+      <div class="box"><h3>Dependency graph (Mermaid)</h3><pre>{html.escape(str(decision_trace.get('graph') or ''))}</pre></div>
+      {decision_trace_issue_html}
     </section>
     <section id="missing-information" class="panel">
       <p class="category-note">Information required to correlate Skill execution, MCP access, Knowledge application, and downstream feedback.</p>

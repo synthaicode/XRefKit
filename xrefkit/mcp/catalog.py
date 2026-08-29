@@ -772,6 +772,7 @@ class XRefCatalog:
                     "tool contracts",
                     "closure contracts",
                     "unknown protocol",
+                    "AI Decision Trace Protocol",
                 ],
                 "forbidden_client_shortcuts": [
                     "Do not read XRefKit governance Markdown directly from the client filesystem when this MCP server is configured.",
@@ -785,6 +786,7 @@ class XRefCatalog:
                     "startup": "get_startup_context",
                     "xid_link_resolution": "get_document_by_xid",
                     "skill_content": "get_skill",
+                    "decision_trace_runtime": "get_xrefkit_runtime_bundle",
                 },
             },
             context_injection_policy=_context_injection_policy(),
@@ -855,6 +857,7 @@ def _client_instructions() -> list[str]:
         "At startup, record the XIDs used for client-side routing, policy, or context-injection decisions in a client-side audit log.",
         "For Skill entries, use skill_content as the procedure body and resolve skill_links through get_document_by_xid when needed.",
         "After python -m xrefkit skill run returns run_id and run_log, call bind_skill_run with run_id and skill_id, then execute the returned client_record_command with <run-log> replaced by run_log before task-specific XID access.",
+        "AI Decision Trace Protocol is standard for every Skill Run and instruction-backed workflow run: use the client-side xrefkit runtime's trace checkpoint/event/impact/return operations, keep work provisional until human evaluation, and do not treat MCP server-side audit records as a substitute for the decision-trace ledger.",
         "MCP xid.resolved audit events prove server resolution only. After a body is actually injected into model context, record knowledge load with xrefkit skill knowledge --action load; after it supports a judgment or artifact, record --action apply.",
         "Keep client-side XID document cache entries only when cache_policy.cache_recommended is true.",
         "Fetch client-side tool manifests or packages only after a selected Skill declares client-side required_tools.",
@@ -1961,6 +1964,15 @@ def _sum_text_sizes(sizes: list[dict[str, int]]) -> dict[str, int]:
 def _workflow_protocol() -> dict[str, object]:
     return {
         "source": "xrefkit.mcp",
+        "decision_trace_protocol": {
+            "status": "standard",
+            "contract_xid": "22164A51A745",
+            "guide_xid": "88830262A85D",
+            "execution_location": "client_side_xrefkit_runtime",
+            "required_for": ["skill_run", "instruction_backed_workflow_run"],
+            "human_gate": "adoption_rejection_readoption_return_execution",
+            "default_state_until_human_evaluation": "provisional",
+        },
         "routing": {
             "selection_basis": [
                 "user intent",

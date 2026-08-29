@@ -412,29 +412,62 @@ def _print_result(result: ConversionResult | BatchConversionResult, *, as_json: 
     return 0 if result.ok else 1
 
 
-def cmd_skill_import(args: argparse.Namespace) -> int:
-    repo_root = Path(args.root)
-    if args.batch:
-        result = convert_skill_tree(
-            source_root=Path(args.source_dir),
-            repo_root=repo_root,
-            skill_id_prefix=args.skill_id_prefix,
-            target_skill_root=Path(args.target_skill_root) if args.target_skill_root else None,
-            target_knowledge_dir=Path(args.target_knowledge_dir) if args.target_knowledge_dir else None,
-            dry_run=bool(args.dry_run),
-        )
+def _print_import_error(message: str, *, as_json: bool) -> int:
+    """Render expected import-input failures without exposing implementation details."""
+    if as_json:
+        print(json.dumps({"ok": False, "error": {"code": "invalid_input", "message": message}}, ensure_ascii=False))
     else:
-        if not args.skill_id:
-            raise SystemExit("--skill-id is required unless --batch is used")
-        result = convert_skill(
-            source_dir=Path(args.source_dir),
-            repo_root=repo_root,
-            skill_id=args.skill_id,
-            target_skill_dir=Path(args.target_skill_dir) if args.target_skill_dir else None,
-            target_knowledge_dir=Path(args.target_knowledge_dir) if args.target_knowledge_dir else None,
-            source_skill_doc=args.source_skill_doc,
-            dry_run=bool(args.dry_run),
-        )
+        print(f"xrefkit skill import: error: {message}", file=sys.stderr)
+    return 2
+
+
+def _import_error_message(exc: Exception, *, batch: bool) -> str:
+    if isinstance(exc, FileNotFoundError):
+        detail = str(exc)
+        if batch and "batch source root must contain skills/:" in detail:
+            return "batch source root must contain a skills/ directory"
+        if "skill doc not found:" in detail:
+            return "could not find SKILL.md or README.md in the source Skill directory"
+        if "source skill directory not found:" in detail:
+            return "source Skill directory was not found"
+        if not batch:
+            return "could not find SKILL.md or README.md in the source Skill directory"
+        return "required source file was not found"
+    if isinstance(exc, NotADirectoryError):
+        return "source path must be a directory"
+    if isinstance(exc, PermissionError):
+        return "source or target path is not accessible"
+    if isinstance(exc, UnicodeError):
+        return "source file is not valid UTF-8"
+    return "invalid Skill import input"
+
+
+def cmd_skill_import(args: argparse.Namespace) -> int:
+    try:
+        repo_root = Path(args.root)
+        if args.batch:
+            result = convert_skill_tree(
+                source_root=Path(args.source_dir),
+                repo_root=repo_root,
+                skill_id_prefix=args.skill_id_prefix,
+                target_skill_root=Path(args.target_skill_root) if args.target_skill_root else None,
+                target_knowledge_dir=Path(args.target_knowledge_dir) if args.target_knowledge_dir else None,
+                dry_run=bool(args.dry_run),
+            )
+        else:
+            if not args.skill_id:
+                raise SystemExit("--skill-id is required unless --batch is used")
+            result = convert_skill(
+                source_dir=Path(args.source_dir),
+                repo_root=repo_root,
+                skill_id=args.skill_id,
+                target_skill_dir=Path(args.target_skill_dir) if args.target_skill_dir else None,
+                target_knowledge_dir=Path(args.target_knowledge_dir) if args.target_knowledge_dir else None,
+                source_skill_doc=args.source_skill_doc,
+                dry_run=bool(args.dry_run),
+            )
+    except (FileNotFoundError, NotADirectoryError, PermissionError, UnicodeError, ValueError) as exc:
+        return _print_import_error(_import_error_message(exc, batch=bool(args.batch)), as_json=bool(args.json))
     return _print_result(result, as_json=bool(args.json))
 
 

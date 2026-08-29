@@ -1,0 +1,4 @@
+case_id: dotnet.change_analysis.basic-boundary
+must_not:
+  - decide implementation policy from the structure alone
+  - claim the call path is the complete system impact

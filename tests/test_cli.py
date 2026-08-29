@@ -1464,6 +1464,63 @@ class CliTests(unittest.TestCase):
             self.assertIn("## Closure Gate\n\n- status: `done`", text)
             self.assertIn("`closure` -> `done` role=`closure_gate`: closure gate accepted completed run", text)
 
+    def test_skill_import_invalid_batch_input_returns_safe_json_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "repo"
+            source = Path(tmp) / "not-a-batch"
+            source.mkdir()
+
+            stdout = io.StringIO()
+            stderr = io.StringIO()
+            with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+                exit_code = main(
+                    [
+                        "skill",
+                        "import",
+                        str(source),
+                        "--root",
+                        str(root),
+                        "--batch",
+                        "--json",
+                    ]
+                )
+
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(2, exit_code)
+            self.assertFalse(payload["ok"])
+            self.assertEqual("invalid_input", payload["error"]["code"])
+            self.assertEqual("batch source root must contain a skills/ directory", payload["error"]["message"])
+            self.assertNotIn(str(root), stdout.getvalue())
+            self.assertNotIn(str(source), stdout.getvalue())
+            self.assertEqual("", stderr.getvalue())
+
+    def test_skill_import_missing_document_returns_safe_text_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "repo"
+            source = Path(tmp) / "empty-skill"
+            source.mkdir()
+
+            stdout = io.StringIO()
+            stderr = io.StringIO()
+            with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+                exit_code = main(
+                    [
+                        "skill",
+                        "import",
+                        str(source),
+                        "--root",
+                        str(root),
+                        "--skill-id",
+                        "legacy_review",
+                    ]
+                )
+
+            self.assertEqual(2, exit_code)
+            self.assertEqual("", stdout.getvalue())
+            self.assertIn("could not find SKILL.md or README.md in the source Skill directory", stderr.getvalue())
+            self.assertNotIn(str(root), stderr.getvalue())
+            self.assertNotIn(str(source), stderr.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

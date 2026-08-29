@@ -628,3 +628,33 @@ class DashboardTests(unittest.TestCase):
             self.assertIn("&lt;script&gt;alert(1)&lt;/script&gt;", html)
             self.assertIn("&lt;script&gt;alert(2)&lt;/script&gt;", html)
             self.assertNotIn("<script>alert(1)", html)
+
+    def test_dashboard_includes_decision_trace_panel_and_records(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger = root / "work" / "decision-trace" / "events.jsonl"
+            ledger.parent.mkdir(parents=True, exist_ok=True)
+            ledger.write_text(
+                json.dumps({
+                    "recorded_by": "ai_protocol",
+                    "event_id": "DEC-001",
+                    "event_type": "decision-change",
+                    "status": "provisional",
+                    "resolution": None,
+                    "reason": "try Y",
+                    "depends_on": [],
+                    "branch": "hypothesis/decision-Y",
+                }) + "\n",
+                encoding="utf-8",
+            )
+            payload = build_payload(root, root / "work" / "sessions")
+            html = _html_page(payload)
+
+            self.assertEqual(payload["decision_trace"]["summary"]["events"], 1)
+            self.assertEqual(payload["decision_trace"]["summary"]["groups"], {"decision": 1})
+            self.assertIn('data-panel="decision-trace"', html)
+            self.assertIn('id="decision-trace"', html)
+            self.assertIn("DEC-001", html)
+            self.assertIn("hypothesis/decision-Y", html)
+            self.assertIn("Dependency graph (Mermaid)", html)
+            self.assertIn("Impact groups", html)
