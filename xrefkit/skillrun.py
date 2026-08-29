@@ -238,6 +238,50 @@ def _read_task(args) -> tuple[str | None, list[str]]:
     return None, ["missing --task or --task-file"]
 
 
+def _load_general_skill_source(source: str) -> tuple[Path | None, str | None, list[str]]:
+    path = Path(source).expanduser()
+    if path.is_dir():
+        for name in ("SKILL.md", "skill.md", "README.md", "readme.md"):
+            candidate = path / name
+            if candidate.is_file():
+                path = candidate
+                break
+        else:
+            return None, None, [f"general Skill directory has no SKILL.md or README.md: {path}"]
+    if not path.is_file():
+        return None, None, [f"general Skill source is not a file: {path}"]
+    try:
+        return path, path.read_text(encoding="utf-8"), []
+    except (OSError, UnicodeError) as exc:
+        return None, None, [f"could not read general Skill source: {exc}"]
+
+
+def _decompose_general_skill(source_text: str) -> list[str]:
+    """Extract procedure candidates without claiming their completion criteria."""
+    headings = [
+        match.group(1).strip()
+        for match in re.finditer(r"^#{2,6}\s+(.+?)\s*$", source_text, re.MULTILINE)
+    ]
+    numbered = [
+        match.group(1).strip()
+        for match in re.finditer(r"^\s*\d+[.)]\s+(.+?)\s*$", source_text, re.MULTILINE)
+    ]
+    bullets = [
+        match.group(1).strip()
+        for match in re.finditer(r"^\s*[-*]\s+(.+?)\s*$", source_text, re.MULTILINE)
+    ]
+    candidates = numbered or bullets or headings
+    seen: set[str] = set()
+    result: list[str] = []
+    for candidate in candidates:
+        candidate = re.sub(r"\s+", " ", candidate).strip()
+        if not candidate or candidate.startswith("[") or candidate in seen:
+            continue
+        seen.add(candidate)
+        result.append(candidate)
+    return result[:50]
+
+
 def _parse_semicolon_fields(value: str) -> dict[str, str]:
     fields: dict[str, str] = {}
     for raw_field in value.split(";"):
@@ -2767,6 +2811,19 @@ def run_workflow_instruction(args) -> SkillRunResult:
     human acceptance decision recorded separately with ``skill feedback``.
     """
     root = Path(args.root).resolve()
+    work_type = str(getattr(args, "work_type", "instruction") or "instruction").strip()
+    skill_source = str(getattr(args, "skill_source", None) or "").strip()
+    source_path: Path | None = None
+    source_text: str | None = None
+    if work_type == "general_skill":
+        if not skill_source:
+            return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=["--skill-source is required when --work-type general_skill is selected"])
+        source_path, source_text, source_errors = _load_general_skill_source(skill_source)
+        if source_errors:
+            return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=source_errors)
+    elif work_type != "instruction":
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"unsupported workflow work type: {work_type}"])
+    run_label = "general_skill" if work_type == "general_skill" else "instruction"
     task, task_errors = _read_task(args)
     if task_errors:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=task_errors)
@@ -2792,7 +2849,7 @@ def run_workflow_instruction(args) -> SkillRunResult:
     except ValueError:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"run_id must be a UUID: {raw_run_id}"])
 
-    out_path = Path(args.out) if args.out else _default_log_path(root, "instruction")
+    out_path = Path(args.out) if args.out else _default_log_path(root, run_label)
     if not out_path.is_absolute():
         out_path = root / out_path
     sessions_dir = root / "work" / "sessions"
@@ -2823,7 +2880,7 @@ def run_workflow_instruction(args) -> SkillRunResult:
             run_id=run_id,
         )
 
-    assigned_roles = _assign_runtime_roles(skill_id="instruction", execution_mode="local_default", model_tier=None)
+    assigned_roles = _assign_runtime_roles(skill_id=run_label, execution_mode="local_default", model_tier=None)
     log = _render_log(
         run_id=run_id,
         flow_id=getattr(args, "flow_id", None) or run_id,
@@ -2831,7 +2888,7 @@ def run_workflow_instruction(args) -> SkillRunResult:
         parent_run_id=getattr(args, "parent_run_id", None),
         work_item_id=getattr(args, "work_item_id", None),
         node_id=getattr(args, "node_id", None),
-        skill_id="instruction",
+        skill_id=run_label,
         maturity="not_applicable",
         meta_path=Path("-") ,
         skill_doc=Path("-"),
@@ -2839,9 +2896,9 @@ def run_workflow_instruction(args) -> SkillRunResult:
         guard_policy="required",
         capability_layering="not_applicable",
         workflow_protocol="required",
-        capability="instruction execution",
-        tuning="generic procedural completion",
-        role_responsibilities={"executor": "execute the user instruction"},
+        capability="general Skill adaptation" if work_type == "general_skill" else "instruction execution",
+        tuning="external procedure under workflow protocol" if work_type == "general_skill" else "generic procedural completion",
+        role_responsibilities={"executor": "adapt and execute the supplied general Skill procedure" if work_type == "general_skill" else "execute the user instruction"},
         capability_refs=[],
         assigned_roles=assigned_roles,
         task=str(task),
@@ -2877,13 +2934,66 @@ def run_workflow_instruction(args) -> SkillRunResult:
         safe_value = str(value or "unknown").replace("`", "'")
         intake_lines.append(f"- {name}: `{safe_value}`")
     marker = "\n## Startup Inputs\n"
-    log = log.replace(marker, "\n" + "\n".join(condition_lines) + "\n" + "\n".join(intake_lines) + "\n" + marker, 1)
+    general_skill_lines: list[str] = []
+    if work_type == "general_skill":
+        safe_skill_source = skill_source.replace("`", "'")
+        candidates = _decompose_general_skill(source_text or "")
+        general_skill_lines = [
+            "## General Skill Intake",
+            "",
+            "- work_type: `general_skill`",
+            f"- source: `{safe_skill_source}`",
+            "- imported_data: `the supplied procedure and its declared references only`",
+            "- adaptation_boundary: `map the procedure into protocol work items, artifacts, checks, stop conditions, and handoff`",
+            "- governance_claim: `not_claimed`",
+            "- xrefkit_identity: `not_assigned`",
+            "- caller_requirements: `purpose, authority, scope, completion criteria, evidence, and acceptance remain caller/host supplied`",
+            "- rule: `a general Skill is external input; it does not provide XRefKit XIDs, Knowledge, governance, evidence, or accountability by itself`",
+            f"- decomposition_candidates: `{len(candidates)}`",
+            "- decomposition_status: `candidate work items require caller/host completion-criterion confirmation before execution`",
+        ]
+    log = log.replace(marker, "\n" + "\n".join(condition_lines) + "\n" + ("\n" + "\n".join(general_skill_lines) if general_skill_lines else "") + "\n" + marker, 1)
+    if work_type == "general_skill":
+        candidates = _decompose_general_skill(source_text or "")
+        work_items = [
+            {
+                "item_id": f"WI-GS-{index:03d}",
+                "status": "unknown",
+                "role": "general_skill:executor",
+                "criterion": "",
+                "reason": "source procedure does not declare an observable completion criterion; caller/host confirmation required",
+                "supersedes": "",
+                "text": f"Candidate from external Skill: {candidate}",
+            }
+            for index, candidate in enumerate(candidates, start=1)
+        ]
+        if not work_items:
+            work_items = [{
+                "item_id": "WI-GS-INTAKE",
+                "status": "unknown",
+                "role": "general_skill:executor",
+                "criterion": "",
+                "reason": "source contains no decomposable procedure step; caller/host must define the work",
+                "supersedes": "",
+                "text": "Define the procedure work items from the supplied general Skill",
+            }]
+        log = _replace_concrete_work_items_section(log, work_items)
+        log = log.replace(
+            "\n## General Skill Intake\n",
+            "\n## General Skill Decomposition\n\n"
+            "- source_document: `" + str(source_path).replace("`", "'") + "`\n"
+            "- rule: `candidates are not executable until completion criteria are confirmed`\n\n"
+            "## General Skill Intake\n",
+            1,
+        )
+    else:
+        log = log.replace(marker, "\n" + "\n".join(condition_lines) + "\n" + "\n".join(intake_lines) + "\n" + marker, 1)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with _LogFileLock(out_path.with_name(f".{out_path.name}.lock")):
         _atomic_write_text(out_path, log)
     return SkillRunResult(
         ok=True,
-        skill_id="instruction",
+        skill_id=run_label,
         skill_doc=None,
         run_log=str(out_path),
         errors=[],
@@ -3296,7 +3406,7 @@ def cmd_workflow_run(args) -> int:
     elif result.ok:
         print(f"ok: {result.run_log}")
         print(f"  run_id: {result.run_id}")
-        print("  run_type: instruction")
+        print(f"  run_type: {getattr(args, 'work_type', 'instruction')}")
         print("  next: add work items, record artifacts/evidence, verify, human-accept output, then close")
     else:
         print("fail: workflow run")

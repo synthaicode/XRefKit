@@ -806,7 +806,6 @@ def _decision_trace_rows(trace: object) -> str:
         )
     return "\n".join(rows) or "<tr><td colspan='6'>No decision-trace records found.</td></tr>"
 
-
 def _flow_rows(flows: object) -> str:
     if not isinstance(flows, list) or not flows:
         return "<tr><td colspan='9'>No Prompt Flows found.</td></tr>"
