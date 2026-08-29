@@ -43,6 +43,7 @@ from .schemas import (
 )
 from .startup_contract_pack import (
     EMBEDDED_BASED_ON_HASHES,
+    EMBEDDED_STARTUP_SOURCE_PATHS,
     STARTUP_CONTRACT_PACK_XID,
     normalize_pack_body,
     normalized_startup_contract_pack_body,
@@ -691,6 +692,13 @@ class XRefCatalog:
                 known_version,
                 self.repository_fingerprint,
             )
+        embedded = _embedded_startup_document(xid)
+        if embedded is not None:
+            return _conditional_document_response(
+                embedded,
+                known_version,
+                self.repository_fingerprint,
+            )
         raise KeyError(f"document xid not found: {xid}")
 
     def get_startup_context(
@@ -703,17 +711,31 @@ class XRefCatalog:
         managed_documents = _managed_markdown_by_xid(self.repo_root, self.ownership)
         for expected_xid, layer in STARTUP_REFERENCE_DEFINITIONS:
             resolved = managed_documents.get(expected_xid)
+            embedded = False
             if resolved is None:
-                missing.append(
-                    {
-                        "xid": expected_xid,
-                        "reason": "startup reference XID not found",
-                    }
-                )
-                continue
-            path, text = resolved
-            rel_path = relative_to_repo(path, self.repo_root)
-            document = _xref_document(path, self.repo_root, text)
+                embedded_document = _embedded_startup_document(expected_xid)
+                if embedded_document is None:
+                    missing.append(
+                        {
+                            "xid": expected_xid,
+                            "reason": "startup reference XID not found",
+                        }
+                    )
+                    continue
+                embedded = True
+                text = embedded_document.content
+            else:
+                path, text = resolved
+            rel_path = (
+                f"xrefkit/resources/base/startup_sources/{EMBEDDED_STARTUP_SOURCE_PATHS[expected_xid]}"
+                if embedded
+                else relative_to_repo(path, self.repo_root)
+            )
+            document = (
+                _embedded_startup_document(expected_xid)
+                if embedded
+                else _xref_document(path, self.repo_root, text)
+            )
             known_version = known_document_versions.get(expected_xid)
             not_modified = known_version == document.content_hash
             cache_status = (
@@ -1040,6 +1062,26 @@ def _managed_markdown_by_xid(root: Path, ownership: Ownership | None = None) -> 
                 )
             documents[xid] = (path, text)
     return documents
+
+
+def _embedded_startup_document(xid: str) -> XRefDocument | None:
+    filename = EMBEDDED_STARTUP_SOURCE_PATHS.get(xid)
+    if filename is None:
+        return None
+    path = Path(__file__).resolve().parent.parent / "resources" / "base" / "startup_sources" / filename
+    if not path.is_file():
+        return None
+    text = read_text(path)
+    content = markdown_xid_only_text(text)
+    return XRefDocument(
+        xid=xid,
+        title=first_heading(text, path.stem),
+        path=f"xrefkit/resources/base/startup_sources/{filename}",
+        summary=first_paragraph(text),
+        content=content,
+        links=markdown_xid_link_targets(text),
+        content_hash=stable_hash(content),
+    )
 
 
 def _managed_markdown_matches_by_xid(

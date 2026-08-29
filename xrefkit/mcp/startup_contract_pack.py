@@ -11,18 +11,30 @@ import re
 # repositories that do not carry the pack document yet.
 STARTUP_CONTRACT_PACK_XID = "D4E8A1C63B57"
 
+# The startup sources are core XRefKit content, not client-repository content.
+# They are packaged so an MCP server can start while --repo points at a
+# consumer repository that has no XRefKit governance tree.
+EMBEDDED_STARTUP_SOURCE_PATHS = {
+    "0B5C58B5E5B2": "000_agent_entry.md",
+    "5A1C8E4D2F90": "017_base_and_xref_layering.md",
+    "6C0B62D6366A": "011_startup_xref_routing.md",
+    "8A666C1FD121": "016_uncertainty_protocol.md",
+    "A7F3C92D4E11": "053_context_direction_security_guard.md",
+    "4A423E72D2ED": "015_shared_memory_operations.md",
+}
+
 # The live source hashes the embedded fallback body below was written
 # against (stable_hash of the xid-normalized source documents). The server
 # compares these with the live hashes on every get_startup_context call and
 # reports the pack as stale when they diverge, so a hand-maintained copy can
 # no longer drift silently.
 EMBEDDED_BASED_ON_HASHES = {
-    "0B5C58B5E5B2": "8cb20f071fe988d8ef552dcf83db0470ba02ce0d4fc5efb9257091f4a9980515",
-    "5A1C8E4D2F90": "7419271f829b1e16fd41030d8d6ed4c1f193cc40506cac58f0a496ec518d87f2",
-    "6C0B62D6366A": "a49541d1d93598ecf8042b331aa826417dde285e9a8f5026c78e7a35d87119b4",
-    "8A666C1FD121": "34f8d7b18462e5320a54c4a259090bfe118fc23b666c4866714bc5adbd7d4e94",
-    "A7F3C92D4E11": "5732f45b041b60ec643ae4ff2c94dcc2e15376cb77f12b39dc2dafbf3614a0a4",
-    "4A423E72D2ED": "75fa96411be95fcc5657ce1d13fee204c1d8e43ab789ca4ac6e79aef2d25654a",
+    "0B5C58B5E5B2": "2ce3b2fff46200aef3d929811ff9ddfc90aec4b195a986b19ec57180d85b4a56",
+    "5A1C8E4D2F90": "af55e7d1705704563db948d47c0fe1201523d4f327157ed40030cf429d238f60",
+    "6C0B62D6366A": "19263a65785aecf19aca1bf584d1f91c8cb909967de1f9b447d0a0498ccf7947",
+    "8A666C1FD121": "d03931f9892b6af13cd2b0fa7bc2112e06ed5a7f04bea6b9bd530594b516c4d0",
+    "A7F3C92D4E11": "ede477b451acc9c543c312e7b3ea3ae5f10292f458150bc2ea5b80c9fea7d0b9",
+    "4A423E72D2ED": "0bbdccc47ec51269809ea3010a55ac0a459e5815282286510b67f2ae37b9bffc",
 }
 
 BASED_ON_LINE_RE = re.compile(
