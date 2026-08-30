@@ -108,6 +108,15 @@ enabled = [
 `distribution name`（pip で指定する名前）と `package_id`（XRefKit が有効化
 に使う名前）は異なる。値は各 Package の `package_manifest.yaml` で確認する。
 
+MCP サーバーを起動する場合は、サーバーが使用する Python 環境に
+インストールされた `xrefkit.skill_packages` entry point を自動発見し、
+Package の Skill を `list_skills` と `rank_skills_for_purpose` の semantic
+routing 対象へ登録する。MCP の ranking へ登録するためだけに Skill ファイルを
+リポジトリへ展開したり、`--enabled-package` を追加したりする必要はない。
+Package のバイト列はインストール先から読み込まれ、ランキング結果には
+`package_id` と Package provenance が付く。MCP サーバーの Python 環境と、
+Package をインストールした Python 環境が異なる場合は発見されない。
+
 ## Batch Regression をフォルダへ展開する場合
 
 通常の Package 利用では不要。folder-based MCP が Skill ファイルを必要と

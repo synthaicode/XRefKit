@@ -106,9 +106,15 @@ class SkillCatalogEntry:
     knowledge_slots: list[dict[str, Any]] = field(default_factory=list)
     missing: list[str] = field(default_factory=list)
     zone_metadata: dict[str, Any] = field(default_factory=dict)
+    # Package-provided Skills are cataloged without materializing them into
+    # the workspace. Keep their origin visible to clients while retaining the
+    # same routing shape as repository Skills.
+    package_id: str | None = None
+    source_root: str = field(default="", repr=False, compare=False)
 
     def to_dict(self, *, include_tools: bool = True) -> dict[str, Any]:
         data = asdict(self)
+        data.pop("source_root", None)
         data["closure_contract"] = self.closure_contract.to_dict()
         if not include_tools:
             # Tool requirements are useful after a Skill has been selected,

@@ -243,7 +243,14 @@ def main(argv: list[str] | None = None) -> int:
     except ValueError as exc:
         parser.error(str(exc))
 
-    catalog = XRefCatalog.build(Path(args.repo), args.domain_knowledge_root)
+    # Installed Skill Packages are MCP routing inputs. The repository catalog
+    # API remains opt-in for callers that need a repository-only snapshot, but
+    # a live MCP server must discover the packages installed in its interpreter.
+    catalog = XRefCatalog.build(
+        Path(args.repo),
+        args.domain_knowledge_root,
+        discover_packages=True,
+    )
     global _CONTEXT_CODEC
     _CONTEXT_CODEC = ContextTokenCodec(
         context_secret or os.urandom(32).hex(),

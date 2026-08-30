@@ -9,6 +9,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .contracts import builtin_tool_contracts
+from ..discovery import discover_skill_packages, DiscoveredSkillPackage
+from ..loaders import load_skill_definition
 from .ownership import Ownership, load_ownership, validate_ownership
 from .repository import (
     first_heading,
@@ -220,12 +222,14 @@ class XRefCatalog:
     tools: list[ToolContract]
     ownership: Ownership | None = None
     domain_knowledge_roots: tuple[Path, ...] = ()
+    discovered_packages: tuple[DiscoveredSkillPackage, ...] = ()
 
     @classmethod
     def build(
         cls,
         repo_root: str | Path,
         domain_knowledge_roots: list[str | Path] | tuple[str | Path, ...] | None = None,
+        discover_packages: bool = False,
     ) -> "XRefCatalog":
         root = Path(repo_root).resolve()
         if not root.exists():
@@ -246,6 +250,7 @@ class XRefCatalog:
             tools=builtin_tool_contracts(),
             ownership=ownership,
             domain_knowledge_roots=external_roots,
+            discovered_packages=tuple(discover_skill_packages()) if discover_packages else (),
         )
 
     # knowledge, skills, and catalog_version are rebuilt from the live
@@ -261,13 +266,20 @@ class XRefCatalog:
 
     @property
     def skills(self) -> list[SkillCatalogEntry]:
-        return _build_skills(self.repo_root, self.ownership)
+        entries = _build_skills(self.repo_root, self.ownership)
+        for package in self.discovered_packages:
+            entries.extend(_build_package_skills(package))
+        return entries
 
     @property
     def catalog_version(self) -> str:
         version_basis = "\n".join(
             [entry.content_hash for entry in self.knowledge]
             + [entry.skill_id + entry.summary for entry in self.skills]
+            + [
+                f"{package.package_id}{package.version}"
+                for package in self.discovered_packages
+            ]
             + [tool.tool_id + tool.version for tool in self.tools]
             + ([self.ownership.content_hash] if self.ownership else [])
         )
@@ -383,10 +395,21 @@ class XRefCatalog:
             return result
 
         documents: list[dict] = []
+        source_root = Path(entry.source_root) if entry.source_root else self.repo_root
         for relative_path in [entry.meta_path, entry.path]:
-            path = self.repo_root / relative_path
+            path = source_root / relative_path
             text = read_text(path)
-            document = _xref_document(path, self.repo_root, text)
+            document = _xref_document(path, source_root, text)
+            if entry.source_root:
+                document = XRefDocument(
+                    xid=document.xid,
+                    title=document.title,
+                    path=f"package:{entry.package_id}/{relative_path}",
+                    summary=document.summary,
+                    content=document.content,
+                    links=document.links,
+                    content_hash=document.content_hash,
+                )
             documents.append(
                 _conditional_document_response(
                     document,
@@ -1296,11 +1319,22 @@ def _skill_document_versions(
     repository_fingerprint: str,
 ) -> list[dict]:
     versions: list[dict] = []
+    source_root = Path(entry.source_root) if entry.source_root else root
     for relative_path, text in [
         (entry.meta_path, entry.meta_content),
         (entry.path, entry.skill_content),
     ]:
-        document = _xref_document(root / relative_path, root, text)
+        document = _xref_document(source_root / relative_path, source_root, text)
+        if entry.source_root:
+            document = XRefDocument(
+                xid=document.xid,
+                title=document.title,
+                path=f"package:{entry.package_id}/{relative_path}",
+                summary=document.summary,
+                content=document.content,
+                links=document.links,
+                content_hash=document.content_hash,
+            )
         versions.append(
             {
                 "xid": document.xid,
@@ -1509,6 +1543,76 @@ def _build_skills(root: Path, ownership: Ownership | None = None) -> list[SkillC
     entries: list[SkillCatalogEntry] = []
     for meta_path in _content_files(root, ownership, "skills", "meta.md"):
         entries.append(_build_skill_entry(root, ownership, meta_path))
+    return entries
+
+
+def _build_package_skills(package: DiscoveredSkillPackage) -> list[SkillCatalogEntry]:
+    """Project installed Skill Packages into the MCP routing catalog.
+
+    Package assets remain in their installed distribution. This is catalog
+    registration only; execution and content retrieval still use the package
+    source root and the normal Skill selection gate.
+    """
+    entries: list[SkillCatalogEntry] = []
+    manifest = package.manifest
+    for provided in manifest.provides.skills:
+        skill_path = package.package_root / provided.path
+        skill = load_skill_definition(skill_path)
+        entry_path = package.package_root / skill.entry.path
+        entry_text = read_text(entry_path) if entry_path.exists() else ""
+        summary = first_paragraph(entry_text) or f"Package Skill {skill.skill_id}"
+        rel_skill = skill_path.relative_to(package.package_root).as_posix()
+        rel_entry = skill.entry.path.replace("\\", "/")
+        required_knowledge = [
+            {"xid": xid, "required": True, "reason": "package declaration"}
+            for xid in skill.required_knowledge
+        ]
+        entries.append(
+            SkillCatalogEntry(
+                skill_id=skill.skill_id,
+                title=first_heading(entry_text, skill.skill_id),
+                summary=summary,
+                maturity="package",
+                intent=[skill.skill_id, package.package_id, provided.id],
+                target_artifacts=list(skill.required_outputs),
+                applies_when=[skill.skill_id, package.package_id, provided.id],
+                not_for=list(skill.must_not),
+                required_knowledge=required_knowledge,
+                required_tools=[],
+                inputs=[],
+                outputs=list(skill.required_outputs),
+                closure_contract=ClosureContract(
+                    closure_conditions=[],
+                    exit_enum=["completed", "blocked", "needs_input"],
+                    handoff_policy="package contract; explicit handoff required",
+                    worklist_policy="required",
+                ),
+                meta_content=read_text(skill_path),
+                meta_links=markdown_xid_link_targets(entry_text),
+                skill_content=entry_text,
+                skill_links=markdown_xid_links(entry_text),
+                path=rel_entry,
+                meta_path=rel_skill,
+                context_size=_skill_context_size(
+                    read_text(skill_path),
+                    entry_text,
+                    list(skill.required_outputs),
+                    ClosureContract([], ["completed", "blocked", "needs_input"], "package contract; explicit handoff required", "required"),
+                ),
+                responsibility=skill.role or "package Skill execution",
+                preconditions=[],
+                knowledge_slots=[],
+                missing=[],
+                zone_metadata={
+                    "source": "installed_skill_package",
+                    "package_id": package.package_id,
+                    "package_version": package.version,
+                    "entry_point": package.entry_point_name,
+                },
+                package_id=package.package_id,
+                source_root=str(package.package_root),
+            )
+        )
     return entries
 
 
