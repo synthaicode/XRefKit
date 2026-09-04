@@ -117,6 +117,10 @@ Current family paths:
   - summary: produce implementation-ready brownfield database design artifacts from approved planning inputs and current source-structure findings
   - meta: `skills/db_design/meta.md`
   - skill_doc: `skills/db_design/SKILL.md`
+- `design-reader-understanding`:
+  - summary: design the order and expression by which readers move from prior knowledge to understanding, judgment, and action in explanatory materials
+  - meta: `skills/design-reader-understanding/meta.md`
+  - skill_doc: `skills/design-reader-understanding/SKILL.md`
 - `design_flow`:
   - summary: execute design business activity through reusable solution-design capability
   - meta: `skills/design_flow/meta.md`
