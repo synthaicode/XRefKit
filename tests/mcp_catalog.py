@@ -988,7 +988,13 @@ Duplicate external body.
         self.assertEqual(first_link["resolver_tool"], "get_document_by_xid")
         self.assertEqual(first_link["resolver_argument"], "xid")
         self.assertNotIn("workflows", context)
-        self.assertNotIn("workflow_protocol", context)
+        self.assertEqual(context["workflow_protocol"]["version"], "1")
+        self.assertEqual(context["workflow_protocol"]["phase_order"][0], "startup")
+        self.assertEqual(context["reporting_protocol"]["contract_xid"], "6B2D9F4A1C73")
+        self.assertEqual(
+            context["initial_protocol_selection"]["selected"],
+            ["workflow", "reporting"],
+        )
         self.assertNotIn("runtime_role_contract", context)
         self.assertNotIn("client_tool_distribution", context)
         self.assertEqual(context["prompt_flow_protocol"]["version"], "1")
@@ -1015,6 +1021,16 @@ Duplicate external body.
         self.assertIn("tools.materialize_from_mcp", obligation_ids)
         self.assertIn("context.no_duplicate_xid_body_per_session", obligation_ids)
         self.assertIn("prompt_flow.initialize_and_reconcile", obligation_ids)
+
+    def test_startup_context_selects_initial_protocols(self) -> None:
+        context = XRefCatalog.build(self.repo).get_startup_context(initial_protocols=["workflow"])
+
+        self.assertIsNotNone(context["workflow_protocol"])
+        self.assertIsNone(context["reporting_protocol"])
+        self.assertEqual(context["initial_protocol_selection"]["selected"], ["workflow"])
+
+        with self.assertRaisesRegex(ValueError, "initial_protocols"):
+            XRefCatalog.build(self.repo).get_startup_context(initial_protocols=["unknown"])
 
     def test_startup_context_rejects_duplicate_catalog_xid(self) -> None:
         write(

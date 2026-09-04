@@ -55,6 +55,12 @@ Markdown directly from the local filesystem.
 | 6 | MCP | `get_document_by_xid` | Resolve only needed transferred links by XID. |
 | 7 | MCP | Skill and workflow catalog tools | Route task-specific work after initialization. |
 
+The MCP server may be started with one or more repeatable
+`--initial-protocol workflow|reporting` parameters. When omitted, both
+protocols are included in `get_startup_context`. The response exposes the
+selected protocol bodies as `workflow_protocol` and `reporting_protocol`, plus
+`initial_protocol_selection`; an unselected protocol is returned as `null`.
+
 The Skill catalog is a routing surface, not an execution-tool manifest:
 
 - `list_skills` and `rank_skills_for_purpose` do not carry each candidate's

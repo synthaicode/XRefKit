@@ -298,6 +298,9 @@ class StartupContext:
     load_order: list[str]
     startup_contract_pack: dict[str, Any]
     prompt_flow_protocol: dict[str, Any]
+    workflow_protocol: dict[str, Any] | None
+    reporting_protocol: dict[str, Any] | None
+    initial_protocol_selection: dict[str, Any]
     references: list[StartupReference]
     semantic_routing_references: list[dict[str, Any]]
     missing: list[dict[str, str]]
@@ -319,6 +322,9 @@ class StartupContext:
             "load_order": self.load_order,
             "startup_contract_pack": self.startup_contract_pack,
             "prompt_flow_protocol": self.prompt_flow_protocol,
+            "workflow_protocol": self.workflow_protocol,
+            "reporting_protocol": self.reporting_protocol,
+            "initial_protocol_selection": self.initial_protocol_selection,
             "references": [reference.to_dict() for reference in self.references],
             "semantic_routing_references": self.semantic_routing_references,
             "missing": self.missing,
