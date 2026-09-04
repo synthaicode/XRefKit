@@ -12,6 +12,21 @@ from .contracts import builtin_tool_contracts
 from ..discovery import discover_skill_packages, DiscoveredSkillPackage
 from ..loaders import load_skill_definition
 from .ownership import Ownership, load_ownership, validate_ownership
+from .skill_edits import (
+    active_edit,
+    deactivate_edit,
+    export_edit,
+    list_edits,
+    prepare_edit,
+    _local_path,
+)
+from .knowledge_edits import (
+    create_local_knowledge,
+    deactivate_local_knowledge,
+    export_local_knowledge,
+    list_local_knowledge,
+    local_files as local_knowledge_files,
+)
 from .repository import (
     first_heading,
     first_paragraph,
@@ -269,13 +284,121 @@ class XRefCatalog:
         entries = _build_skills(self.repo_root, self.ownership)
         for package in self.discovered_packages:
             entries.extend(_build_package_skills(package))
-        return entries
+        return self._apply_skill_edits(entries)
+
+    def _apply_skill_edits(self, entries: list[SkillCatalogEntry]) -> list[SkillCatalogEntry]:
+        """Replace explicitly registered source entries with local overlays."""
+        result = list(entries)
+        for record in list_edits(self.repo_root):
+            if not record.get("active") or not record.get("overlay_exists"):
+                continue
+            skill_id = str(record["skill_id"])
+            package_id = record.get("source_package_id")
+            candidates = [
+                index
+                for index, entry in enumerate(result)
+                if entry.skill_id == skill_id and entry.package_id == package_id
+            ]
+            if len(candidates) != 1:
+                continue
+            overlay_meta = _local_path(self.repo_root, record["overlay_meta_path"])
+            replacement = _build_skill_entry(self.repo_root, self.ownership, overlay_meta)
+            metadata = dict(replacement.zone_metadata)
+            metadata.update(
+                {
+                    "local_edit": True,
+                    "edit_source_kind": record.get("source_kind"),
+                    "edit_source_package_id": package_id,
+                    "edit_source_meta_path": record.get("source_meta_path"),
+                    "edit_source_skill_path": record.get("source_skill_path"),
+                    "edit_registry_path": ".xrefkit/skill-edits.json",
+                }
+            )
+            original = result[candidates[0]]
+            result[candidates[0]] = SkillCatalogEntry(
+                **{
+                    **replacement.__dict__,
+                    "package_id": original.package_id,
+                    "zone_metadata": metadata,
+                }
+            )
+        return result
+
+    def prepare_skill_edit(self, skill_id: str, package_id: str | None = None) -> dict:
+        existing = active_edit(self.repo_root, skill_id)
+        if existing is not None:
+            if package_id is not None and existing.get("source_package_id") != package_id:
+                raise ValueError(
+                    f"Skill {skill_id!r} already has an edit for package "
+                    f"{existing.get('source_package_id')!r}"
+                )
+            return {
+                **existing,
+                "overlay_meta_hash": stable_hash(
+                    read_text(self.repo_root / str(existing["overlay_meta_path"]))
+                ),
+                "overlay_skill_hash": stable_hash(
+                    read_text(self.repo_root / str(existing["overlay_skill_path"]))
+                ),
+                "created": False,
+                "already_exists": True,
+            }
+        candidates = [entry for entry in self.skills if entry.skill_id == skill_id]
+        if package_id is not None:
+            candidates = [entry for entry in candidates if entry.package_id == package_id]
+        if len(candidates) != 1:
+            raise ValueError(
+                f"skill edit source is ambiguous for {skill_id!r}; "
+                "provide package_id when multiple sources are available"
+            )
+        return prepare_edit(self.repo_root, candidates[0])
+
+    def list_skill_edits(self) -> list[dict]:
+        return list_edits(self.repo_root)
+
+    def export_skill_edit(self, skill_id: str, write_patch: bool = False) -> dict:
+        record = active_edit(self.repo_root, skill_id)
+        if record is None:
+            raise KeyError(f"active local Skill edit not found: {skill_id}")
+        return export_edit(self.repo_root, record, write_patch=write_patch)
+
+    def deactivate_skill_edit(self, skill_id: str) -> dict:
+        return deactivate_edit(self.repo_root, skill_id)
+
+    def create_local_knowledge(
+        self,
+        xid: str,
+        content: str,
+        filename: str | None = None,
+        domain: str | None = None,
+    ) -> dict:
+        return create_local_knowledge(
+            self.repo_root,
+            xid=xid,
+            content=content,
+            filename=filename,
+            domain=domain,
+        )
+
+    def list_local_knowledge(self) -> list[dict]:
+        return list_local_knowledge(self.repo_root)
+
+    def export_local_knowledge(self, xid: str, write_patch: bool = False) -> dict:
+        return export_local_knowledge(self.repo_root, xid, write_patch=write_patch)
+
+    def deactivate_local_knowledge(self, xid: str) -> dict:
+        return deactivate_local_knowledge(self.repo_root, xid)
 
     @property
     def catalog_version(self) -> str:
         version_basis = "\n".join(
             [entry.content_hash for entry in self.knowledge]
-            + [entry.skill_id + entry.summary for entry in self.skills]
+            + [
+                entry.skill_id
+                + entry.summary
+                + stable_hash(entry.meta_content + "\n" + entry.skill_content)
+                for entry in self.skills
+            ]
             + [
                 f"{package.package_id}{package.version}"
                 for package in self.discovered_packages
@@ -298,6 +421,9 @@ class XRefCatalog:
                 if not first_xid(text):
                     continue
                 entries.append((_external_knowledge_entry(root, path, text), text))
+        for _xid, path in local_knowledge_files(self.repo_root):
+            text = read_text(path)
+            entries.append((_knowledge_entry(self.repo_root, self.ownership, path, text), text))
         return entries
 
     def get_repository_identity(self) -> dict[str, str]:
@@ -697,6 +823,36 @@ class XRefCatalog:
     ) -> dict:
         matches = _managed_markdown_matches_by_xid(self.repo_root, self.ownership, xid)
         matches.extend(_external_markdown_matches_by_xid(self.domain_knowledge_roots, xid))
+        matches.extend(
+            (path, read_text(path))
+            for local_xid, path in local_knowledge_files(self.repo_root)
+            if local_xid == xid
+        )
+        # An active local edit is an explicit overlay of its source document.
+        # Suppress only the corresponding source path; unrelated documents
+        # declaring the same XID remain a conflict.
+        overlay_matches: list[tuple[Path, str]] = []
+        overlay_source_paths: set[Path] = set()
+        for edit in list_edits(self.repo_root):
+            if not edit.get("active") or not edit.get("overlay_exists"):
+                continue
+            for key in ("overlay_meta_path", "overlay_skill_path"):
+                path = _local_path(self.repo_root, edit.get(key, ""))
+                if path.exists():
+                    text = read_text(path)
+                    if first_xid(text) == xid:
+                        overlay_matches.append((path, text))
+            source_root = Path(str(edit.get("source_root") or self.repo_root))
+            for key in ("source_meta_path", "source_skill_path"):
+                source = source_root / str(edit.get(key, ""))
+                overlay_source_paths.add(source.resolve())
+        if overlay_matches:
+            matches = [
+                (path, text)
+                for path, text in matches
+                if path.resolve() not in overlay_source_paths
+            ]
+            matches.extend(overlay_matches)
         if len(matches) > 1:
             return {
                 "ok": False,
@@ -907,6 +1063,11 @@ def _client_instructions() -> list[str]:
         "Keep client-side XID document cache entries only when cache_policy.cache_recommended is true.",
         "Fetch client-side tool manifests or packages only after a selected Skill declares client-side required_tools.",
         "Send cached content_hash values as known_version or known_document_versions; when cache_status is not_modified, use the locally hash-validated body instead of downloading it again.",
+        "When the user explicitly asks to improve a Skill, call prepare_skill_edit; it creates a project-local overlay without overwriting an existing edit and records source provenance.",
+        "After prepare_skill_edit, route and resolve the Skill normally; the active local overlay is selected automatically and preserves the source XIDs.",
+        "Use list_skill_edits to inspect local overlays and export_skill_edit to produce an upstream diff. Deactivate only after the upstream provider has adopted and MCP distribution has been verified.",
+        "When the user explicitly asks to add a new Knowledge document, call create_local_knowledge with an XID-bearing Markdown body; it remains project-local until exported and adopted upstream.",
+        "Use list_local_knowledge to inspect local additions and export_local_knowledge to produce an upstream addition patch. Deactivate only after the distributed XID can be resolved from MCP.",
     ]
 
 
