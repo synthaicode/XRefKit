@@ -883,6 +883,7 @@ class XRefCatalog:
     def get_startup_context(
         self,
         known_document_versions: dict[str, str] | None = None,
+        initial_protocols: list[str] | None = None,
     ) -> dict:
         known_document_versions = known_document_versions or {}
         references: list[StartupReference] = []
@@ -958,6 +959,7 @@ class XRefCatalog:
                 "the live sources with get_document_by_xid, and escalate to "
                 "the repository maintainers to regenerate the pack.",
             ]
+        selected_protocols = _normalize_initial_protocols(initial_protocols)
         return StartupContext(
             catalog_version=self.catalog_version,
             repository_identity=self.get_repository_identity(),
@@ -1010,6 +1012,17 @@ class XRefCatalog:
             load_order=[reference.xid for reference in references],
             startup_contract_pack=startup_contract_pack,
             prompt_flow_protocol=_prompt_flow_protocol(),
+            workflow_protocol=(
+                _workflow_protocol() if "workflow" in selected_protocols else None
+            ),
+            reporting_protocol=(
+                _reporting_protocol() if "reporting" in selected_protocols else None
+            ),
+            initial_protocol_selection={
+                "available": ["workflow", "reporting"],
+                "selected": selected_protocols,
+                "default": ["workflow", "reporting"],
+            },
             references=references,
             semantic_routing_references=_semantic_routing_references(),
             missing=missing,
@@ -2279,6 +2292,7 @@ def _sum_text_sizes(sizes: list[dict[str, int]]) -> dict[str, int]:
 
 def _workflow_protocol() -> dict[str, object]:
     return {
+        "version": "1",
         "source": "xrefkit.mcp",
         "decision_trace_protocol": {
             "status": "standard",
@@ -2327,6 +2341,60 @@ def _workflow_protocol() -> dict[str, object]:
             "task-specific evidence sufficiency judgment",
         ],
     }
+
+
+def _reporting_protocol() -> dict[str, object]:
+    return {
+        "version": "1",
+        "source": "xrefkit.mcp",
+        "contract_xid": "6B2D9F4A1C73",
+        "activation": "every human-facing Skill or workflow report",
+        "required_sections": [
+            "Report",
+            "Status",
+            "Reason",
+            "Result",
+            "Evidence",
+            "Open Items",
+            "Handoff",
+        ],
+        "japanese_sections": [
+            "報告",
+            "結論",
+            "状態",
+            "理由",
+            "確認したこと",
+            "残っている課題",
+            "次にすること",
+        ],
+        "status_values": ["done", "partial", "blocked", "escalated"],
+        "profiles": [
+            "summary_first",
+            "gate_verdict",
+            "checklist_verdict",
+            "phase_summary",
+            "artifact_traceability",
+        ],
+        "rules": [
+            "summary_first",
+            "preserve evidence and open items",
+            "keep workflow status separate from domain gate verdict",
+            "do not use done to hide unresolved unknowns, risks, or handoff conditions",
+        ],
+    }
+
+
+def _normalize_initial_protocols(initial_protocols: list[str] | None) -> list[str]:
+    if initial_protocols is None:
+        return ["workflow", "reporting"]
+    selected = list(dict.fromkeys(initial_protocols))
+    invalid = [item for item in selected if item not in {"workflow", "reporting"}]
+    if invalid:
+        raise ValueError(
+            "initial_protocols must contain only workflow or reporting: "
+            + ", ".join(invalid)
+        )
+    return selected
 
 
 def _context_injection_policy() -> dict[str, object]:

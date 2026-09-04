@@ -212,6 +212,14 @@ def main(argv: list[str] | None = None) -> int:
         help="External XID-addressable domain knowledge root. Can be repeated.",
     )
     parser.add_argument(
+        "--initial-protocol",
+        choices=["workflow", "reporting"],
+        action="append",
+        dest="initial_protocols",
+        default=None,
+        help="Initial protocol to include in get_startup_context. Can be repeated; defaults to workflow and reporting.",
+    )
+    parser.add_argument(
         "--audit-log",
         type=Path,
         default=None,
@@ -398,7 +406,10 @@ def main(argv: list[str] | None = None) -> int:
         ctx: Context,
         known_document_versions: dict[str, str] | None = None,
     ) -> dict[str, Any]:
-        result = catalog.get_startup_context(known_document_versions)
+        result = catalog.get_startup_context(
+            known_document_versions,
+            initial_protocols=args.initial_protocols,
+        )
         for xid in result.get("load_order", []):
             _log_xid_query("get_startup_context", xid)
         _mark_startup_loaded(ctx)
