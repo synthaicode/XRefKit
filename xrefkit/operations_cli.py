@@ -204,6 +204,10 @@ def _build_parser() -> argparse.ArgumentParser:
     p_goal_wake_show.add_argument("--goal", required=True, help="Stable goal id")
     p_goal_wake_show.add_argument("--json", action="store_true", help="Emit JSON")
 
+    from xrefkit.decision_trace import add_trace_parser
+
+    add_trace_parser(subparsers)
+
     gate = subparsers.add_parser(
         "gate",
         help="Agent diff review gate: deterministic, machine-only diff-content checks before CI",
@@ -949,6 +953,11 @@ def main(argv: list[str] | None = None) -> int:
         from xrefkit.goalstate import cmd_goal
 
         return cmd_goal(args)
+
+    if args.command == "trace":
+        from xrefkit.decision_trace import cmd_trace
+
+        return cmd_trace(args)
 
     parser.print_help()
     return 2

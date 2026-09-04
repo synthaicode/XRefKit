@@ -9,7 +9,24 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .contracts import builtin_tool_contracts
+from ..discovery import discover_skill_packages, DiscoveredSkillPackage
+from ..loaders import load_skill_definition
 from .ownership import Ownership, load_ownership, validate_ownership
+from .skill_edits import (
+    active_edit,
+    deactivate_edit,
+    export_edit,
+    list_edits,
+    prepare_edit,
+    _local_path,
+)
+from .knowledge_edits import (
+    create_local_knowledge,
+    deactivate_local_knowledge,
+    export_local_knowledge,
+    list_local_knowledge,
+    local_files as local_knowledge_files,
+)
 from .repository import (
     first_heading,
     first_paragraph,
@@ -43,6 +60,7 @@ from .schemas import (
 )
 from .startup_contract_pack import (
     EMBEDDED_BASED_ON_HASHES,
+    EMBEDDED_STARTUP_SOURCE_PATHS,
     STARTUP_CONTRACT_PACK_XID,
     normalize_pack_body,
     normalized_startup_contract_pack_body,
@@ -219,12 +237,14 @@ class XRefCatalog:
     tools: list[ToolContract]
     ownership: Ownership | None = None
     domain_knowledge_roots: tuple[Path, ...] = ()
+    discovered_packages: tuple[DiscoveredSkillPackage, ...] = ()
 
     @classmethod
     def build(
         cls,
         repo_root: str | Path,
         domain_knowledge_roots: list[str | Path] | tuple[str | Path, ...] | None = None,
+        discover_packages: bool = False,
     ) -> "XRefCatalog":
         root = Path(repo_root).resolve()
         if not root.exists():
@@ -245,6 +265,7 @@ class XRefCatalog:
             tools=builtin_tool_contracts(),
             ownership=ownership,
             domain_knowledge_roots=external_roots,
+            discovered_packages=tuple(discover_skill_packages()) if discover_packages else (),
         )
 
     # knowledge, skills, and catalog_version are rebuilt from the live
@@ -260,13 +281,128 @@ class XRefCatalog:
 
     @property
     def skills(self) -> list[SkillCatalogEntry]:
-        return _build_skills(self.repo_root, self.ownership)
+        entries = _build_skills(self.repo_root, self.ownership)
+        for package in self.discovered_packages:
+            entries.extend(_build_package_skills(package))
+        return self._apply_skill_edits(entries)
+
+    def _apply_skill_edits(self, entries: list[SkillCatalogEntry]) -> list[SkillCatalogEntry]:
+        """Replace explicitly registered source entries with local overlays."""
+        result = list(entries)
+        for record in list_edits(self.repo_root):
+            if not record.get("active") or not record.get("overlay_exists"):
+                continue
+            skill_id = str(record["skill_id"])
+            package_id = record.get("source_package_id")
+            candidates = [
+                index
+                for index, entry in enumerate(result)
+                if entry.skill_id == skill_id and entry.package_id == package_id
+            ]
+            if len(candidates) != 1:
+                continue
+            overlay_meta = _local_path(self.repo_root, record["overlay_meta_path"])
+            replacement = _build_skill_entry(self.repo_root, self.ownership, overlay_meta)
+            metadata = dict(replacement.zone_metadata)
+            metadata.update(
+                {
+                    "local_edit": True,
+                    "edit_source_kind": record.get("source_kind"),
+                    "edit_source_package_id": package_id,
+                    "edit_source_meta_path": record.get("source_meta_path"),
+                    "edit_source_skill_path": record.get("source_skill_path"),
+                    "edit_registry_path": ".xrefkit/skill-edits.json",
+                }
+            )
+            original = result[candidates[0]]
+            result[candidates[0]] = SkillCatalogEntry(
+                **{
+                    **replacement.__dict__,
+                    "package_id": original.package_id,
+                    "zone_metadata": metadata,
+                }
+            )
+        return result
+
+    def prepare_skill_edit(self, skill_id: str, package_id: str | None = None) -> dict:
+        existing = active_edit(self.repo_root, skill_id)
+        if existing is not None:
+            if package_id is not None and existing.get("source_package_id") != package_id:
+                raise ValueError(
+                    f"Skill {skill_id!r} already has an edit for package "
+                    f"{existing.get('source_package_id')!r}"
+                )
+            return {
+                **existing,
+                "overlay_meta_hash": stable_hash(
+                    read_text(self.repo_root / str(existing["overlay_meta_path"]))
+                ),
+                "overlay_skill_hash": stable_hash(
+                    read_text(self.repo_root / str(existing["overlay_skill_path"]))
+                ),
+                "created": False,
+                "already_exists": True,
+            }
+        candidates = [entry for entry in self.skills if entry.skill_id == skill_id]
+        if package_id is not None:
+            candidates = [entry for entry in candidates if entry.package_id == package_id]
+        if len(candidates) != 1:
+            raise ValueError(
+                f"skill edit source is ambiguous for {skill_id!r}; "
+                "provide package_id when multiple sources are available"
+            )
+        return prepare_edit(self.repo_root, candidates[0])
+
+    def list_skill_edits(self) -> list[dict]:
+        return list_edits(self.repo_root)
+
+    def export_skill_edit(self, skill_id: str, write_patch: bool = False) -> dict:
+        record = active_edit(self.repo_root, skill_id)
+        if record is None:
+            raise KeyError(f"active local Skill edit not found: {skill_id}")
+        return export_edit(self.repo_root, record, write_patch=write_patch)
+
+    def deactivate_skill_edit(self, skill_id: str) -> dict:
+        return deactivate_edit(self.repo_root, skill_id)
+
+    def create_local_knowledge(
+        self,
+        xid: str,
+        content: str,
+        filename: str | None = None,
+        domain: str | None = None,
+    ) -> dict:
+        return create_local_knowledge(
+            self.repo_root,
+            xid=xid,
+            content=content,
+            filename=filename,
+            domain=domain,
+        )
+
+    def list_local_knowledge(self) -> list[dict]:
+        return list_local_knowledge(self.repo_root)
+
+    def export_local_knowledge(self, xid: str, write_patch: bool = False) -> dict:
+        return export_local_knowledge(self.repo_root, xid, write_patch=write_patch)
+
+    def deactivate_local_knowledge(self, xid: str) -> dict:
+        return deactivate_local_knowledge(self.repo_root, xid)
 
     @property
     def catalog_version(self) -> str:
         version_basis = "\n".join(
             [entry.content_hash for entry in self.knowledge]
-            + [entry.skill_id + entry.summary for entry in self.skills]
+            + [
+                entry.skill_id
+                + entry.summary
+                + stable_hash(entry.meta_content + "\n" + entry.skill_content)
+                for entry in self.skills
+            ]
+            + [
+                f"{package.package_id}{package.version}"
+                for package in self.discovered_packages
+            ]
             + [tool.tool_id + tool.version for tool in self.tools]
             + ([self.ownership.content_hash] if self.ownership else [])
         )
@@ -285,6 +421,9 @@ class XRefCatalog:
                 if not first_xid(text):
                     continue
                 entries.append((_external_knowledge_entry(root, path, text), text))
+        for _xid, path in local_knowledge_files(self.repo_root):
+            text = read_text(path)
+            entries.append((_knowledge_entry(self.repo_root, self.ownership, path, text), text))
         return entries
 
     def get_repository_identity(self) -> dict[str, str]:
@@ -382,10 +521,21 @@ class XRefCatalog:
             return result
 
         documents: list[dict] = []
+        source_root = Path(entry.source_root) if entry.source_root else self.repo_root
         for relative_path in [entry.meta_path, entry.path]:
-            path = self.repo_root / relative_path
+            path = source_root / relative_path
             text = read_text(path)
-            document = _xref_document(path, self.repo_root, text)
+            document = _xref_document(path, source_root, text)
+            if entry.source_root:
+                document = XRefDocument(
+                    xid=document.xid,
+                    title=document.title,
+                    path=f"package:{entry.package_id}/{relative_path}",
+                    summary=document.summary,
+                    content=document.content,
+                    links=document.links,
+                    content_hash=document.content_hash,
+                )
             documents.append(
                 _conditional_document_response(
                     document,
@@ -673,6 +823,36 @@ class XRefCatalog:
     ) -> dict:
         matches = _managed_markdown_matches_by_xid(self.repo_root, self.ownership, xid)
         matches.extend(_external_markdown_matches_by_xid(self.domain_knowledge_roots, xid))
+        matches.extend(
+            (path, read_text(path))
+            for local_xid, path in local_knowledge_files(self.repo_root)
+            if local_xid == xid
+        )
+        # An active local edit is an explicit overlay of its source document.
+        # Suppress only the corresponding source path; unrelated documents
+        # declaring the same XID remain a conflict.
+        overlay_matches: list[tuple[Path, str]] = []
+        overlay_source_paths: set[Path] = set()
+        for edit in list_edits(self.repo_root):
+            if not edit.get("active") or not edit.get("overlay_exists"):
+                continue
+            for key in ("overlay_meta_path", "overlay_skill_path"):
+                path = _local_path(self.repo_root, edit.get(key, ""))
+                if path.exists():
+                    text = read_text(path)
+                    if first_xid(text) == xid:
+                        overlay_matches.append((path, text))
+            source_root = Path(str(edit.get("source_root") or self.repo_root))
+            for key in ("source_meta_path", "source_skill_path"):
+                source = source_root / str(edit.get(key, ""))
+                overlay_source_paths.add(source.resolve())
+        if overlay_matches:
+            matches = [
+                (path, text)
+                for path, text in matches
+                if path.resolve() not in overlay_source_paths
+            ]
+            matches.extend(overlay_matches)
         if len(matches) > 1:
             return {
                 "ok": False,
@@ -691,6 +871,13 @@ class XRefCatalog:
                 known_version,
                 self.repository_fingerprint,
             )
+        embedded = _embedded_startup_document(xid)
+        if embedded is not None:
+            return _conditional_document_response(
+                embedded,
+                known_version,
+                self.repository_fingerprint,
+            )
         raise KeyError(f"document xid not found: {xid}")
 
     def get_startup_context(
@@ -703,17 +890,31 @@ class XRefCatalog:
         managed_documents = _managed_markdown_by_xid(self.repo_root, self.ownership)
         for expected_xid, layer in STARTUP_REFERENCE_DEFINITIONS:
             resolved = managed_documents.get(expected_xid)
+            embedded = False
             if resolved is None:
-                missing.append(
-                    {
-                        "xid": expected_xid,
-                        "reason": "startup reference XID not found",
-                    }
-                )
-                continue
-            path, text = resolved
-            rel_path = relative_to_repo(path, self.repo_root)
-            document = _xref_document(path, self.repo_root, text)
+                embedded_document = _embedded_startup_document(expected_xid)
+                if embedded_document is None:
+                    missing.append(
+                        {
+                            "xid": expected_xid,
+                            "reason": "startup reference XID not found",
+                        }
+                    )
+                    continue
+                embedded = True
+                text = embedded_document.content
+            else:
+                path, text = resolved
+            rel_path = (
+                f"xrefkit/resources/base/startup_sources/{EMBEDDED_STARTUP_SOURCE_PATHS[expected_xid]}"
+                if embedded
+                else relative_to_repo(path, self.repo_root)
+            )
+            document = (
+                _embedded_startup_document(expected_xid)
+                if embedded
+                else _xref_document(path, self.repo_root, text)
+            )
             known_version = known_document_versions.get(expected_xid)
             not_modified = known_version == document.content_hash
             cache_status = (
@@ -772,6 +973,7 @@ class XRefCatalog:
                     "tool contracts",
                     "closure contracts",
                     "unknown protocol",
+                    "AI Decision Trace Protocol",
                 ],
                 "forbidden_client_shortcuts": [
                     "Do not read XRefKit governance Markdown directly from the client filesystem when this MCP server is configured.",
@@ -785,6 +987,7 @@ class XRefCatalog:
                     "startup": "get_startup_context",
                     "xid_link_resolution": "get_document_by_xid",
                     "skill_content": "get_skill",
+                    "decision_trace_runtime": "get_xrefkit_runtime_bundle",
                 },
             },
             context_injection_policy=_context_injection_policy(),
@@ -855,10 +1058,16 @@ def _client_instructions() -> list[str]:
         "At startup, record the XIDs used for client-side routing, policy, or context-injection decisions in a client-side audit log.",
         "For Skill entries, use skill_content as the procedure body and resolve skill_links through get_document_by_xid when needed.",
         "After python -m xrefkit skill run returns run_id and run_log, call bind_skill_run with run_id and skill_id, then execute the returned client_record_command with <run-log> replaced by run_log before task-specific XID access.",
+        "AI Decision Trace Protocol is standard for every Skill Run and instruction-backed workflow run: use the client-side xrefkit runtime's trace checkpoint/event/impact/return operations, keep work provisional until human evaluation, and do not treat MCP server-side audit records as a substitute for the decision-trace ledger.",
         "MCP xid.resolved audit events prove server resolution only. After a body is actually injected into model context, record knowledge load with xrefkit skill knowledge --action load; after it supports a judgment or artifact, record --action apply.",
         "Keep client-side XID document cache entries only when cache_policy.cache_recommended is true.",
         "Fetch client-side tool manifests or packages only after a selected Skill declares client-side required_tools.",
         "Send cached content_hash values as known_version or known_document_versions; when cache_status is not_modified, use the locally hash-validated body instead of downloading it again.",
+        "When the user explicitly asks to improve a Skill, call prepare_skill_edit; it creates a project-local overlay without overwriting an existing edit and records source provenance.",
+        "After prepare_skill_edit, route and resolve the Skill normally; the active local overlay is selected automatically and preserves the source XIDs.",
+        "Use list_skill_edits to inspect local overlays and export_skill_edit to produce an upstream diff. Deactivate only after the upstream provider has adopted and MCP distribution has been verified.",
+        "When the user explicitly asks to add a new Knowledge document, call create_local_knowledge with an XID-bearing Markdown body; it remains project-local until exported and adopted upstream.",
+        "Use list_local_knowledge to inspect local additions and export_local_knowledge to produce an upstream addition patch. Deactivate only after the distributed XID can be resolved from MCP.",
     ]
 
 
@@ -1037,6 +1246,26 @@ def _managed_markdown_by_xid(root: Path, ownership: Ownership | None = None) -> 
                 )
             documents[xid] = (path, text)
     return documents
+
+
+def _embedded_startup_document(xid: str) -> XRefDocument | None:
+    filename = EMBEDDED_STARTUP_SOURCE_PATHS.get(xid)
+    if filename is None:
+        return None
+    path = Path(__file__).resolve().parent.parent / "resources" / "base" / "startup_sources" / filename
+    if not path.is_file():
+        return None
+    text = read_text(path)
+    content = markdown_xid_only_text(text)
+    return XRefDocument(
+        xid=xid,
+        title=first_heading(text, path.stem),
+        path=f"xrefkit/resources/base/startup_sources/{filename}",
+        summary=first_paragraph(text),
+        content=content,
+        links=markdown_xid_link_targets(text),
+        content_hash=stable_hash(content),
+    )
 
 
 def _managed_markdown_matches_by_xid(
@@ -1251,11 +1480,22 @@ def _skill_document_versions(
     repository_fingerprint: str,
 ) -> list[dict]:
     versions: list[dict] = []
+    source_root = Path(entry.source_root) if entry.source_root else root
     for relative_path, text in [
         (entry.meta_path, entry.meta_content),
         (entry.path, entry.skill_content),
     ]:
-        document = _xref_document(root / relative_path, root, text)
+        document = _xref_document(source_root / relative_path, source_root, text)
+        if entry.source_root:
+            document = XRefDocument(
+                xid=document.xid,
+                title=document.title,
+                path=f"package:{entry.package_id}/{relative_path}",
+                summary=document.summary,
+                content=document.content,
+                links=document.links,
+                content_hash=document.content_hash,
+            )
         versions.append(
             {
                 "xid": document.xid,
@@ -1467,6 +1707,76 @@ def _build_skills(root: Path, ownership: Ownership | None = None) -> list[SkillC
     return entries
 
 
+def _build_package_skills(package: DiscoveredSkillPackage) -> list[SkillCatalogEntry]:
+    """Project installed Skill Packages into the MCP routing catalog.
+
+    Package assets remain in their installed distribution. This is catalog
+    registration only; execution and content retrieval still use the package
+    source root and the normal Skill selection gate.
+    """
+    entries: list[SkillCatalogEntry] = []
+    manifest = package.manifest
+    for provided in manifest.provides.skills:
+        skill_path = package.package_root / provided.path
+        skill = load_skill_definition(skill_path)
+        entry_path = package.package_root / skill.entry.path
+        entry_text = read_text(entry_path) if entry_path.exists() else ""
+        summary = first_paragraph(entry_text) or f"Package Skill {skill.skill_id}"
+        rel_skill = skill_path.relative_to(package.package_root).as_posix()
+        rel_entry = skill.entry.path.replace("\\", "/")
+        required_knowledge = [
+            {"xid": xid, "required": True, "reason": "package declaration"}
+            for xid in skill.required_knowledge
+        ]
+        entries.append(
+            SkillCatalogEntry(
+                skill_id=skill.skill_id,
+                title=first_heading(entry_text, skill.skill_id),
+                summary=summary,
+                maturity="package",
+                intent=[skill.skill_id, package.package_id, provided.id],
+                target_artifacts=list(skill.required_outputs),
+                applies_when=[skill.skill_id, package.package_id, provided.id],
+                not_for=list(skill.must_not),
+                required_knowledge=required_knowledge,
+                required_tools=[],
+                inputs=[],
+                outputs=list(skill.required_outputs),
+                closure_contract=ClosureContract(
+                    closure_conditions=[],
+                    exit_enum=["completed", "blocked", "needs_input"],
+                    handoff_policy="package contract; explicit handoff required",
+                    worklist_policy="required",
+                ),
+                meta_content=read_text(skill_path),
+                meta_links=markdown_xid_link_targets(entry_text),
+                skill_content=entry_text,
+                skill_links=markdown_xid_links(entry_text),
+                path=rel_entry,
+                meta_path=rel_skill,
+                context_size=_skill_context_size(
+                    read_text(skill_path),
+                    entry_text,
+                    list(skill.required_outputs),
+                    ClosureContract([], ["completed", "blocked", "needs_input"], "package contract; explicit handoff required", "required"),
+                ),
+                responsibility=skill.role or "package Skill execution",
+                preconditions=[],
+                knowledge_slots=[],
+                missing=[],
+                zone_metadata={
+                    "source": "installed_skill_package",
+                    "package_id": package.package_id,
+                    "package_version": package.version,
+                    "entry_point": package.entry_point_name,
+                },
+                package_id=package.package_id,
+                source_root=str(package.package_root),
+            )
+        )
+    return entries
+
+
 def _client_tool_distribution(root: Path) -> ClientToolDistribution:
     package_versions = {
         CLIENT_TOOL_PACKAGE_ID: CLIENT_TOOL_PACKAGE_VERSION,
@@ -1526,7 +1836,8 @@ def _client_tool_distribution(root: Path) -> ClientToolDistribution:
 
 
 def _xrefkit_runtime_version(root: Path) -> str:
-    init_path = root / "xrefkit" / "__init__.py"
+    runtime_root = _runtime_source_root(root)
+    init_path = runtime_root / "__init__.py"
     if not init_path.exists():
         return "0.0.0"
     match = XREFKIT_RUNTIME_VERSION_RE.search(read_text(init_path))
@@ -1592,7 +1903,7 @@ def _xrefkit_runtime_distribution(root: Path) -> ClientToolDistribution:
 
 
 def _xrefkit_runtime_files(root: Path) -> list[ClientToolFile]:
-    runtime_root = root / "xrefkit"
+    runtime_root = _runtime_source_root(root)
     if not runtime_root.exists():
         return []
     distributable_suffixes = {".py", ".json", ".yaml", ".yml", ".md"}
@@ -1606,7 +1917,7 @@ def _xrefkit_runtime_files(root: Path) -> list[ClientToolFile]:
 
     result: list[ClientToolFile] = []
     for path in paths:
-        rel = relative_to_repo(path, root)
+        rel = "xrefkit/" + path.relative_to(runtime_root).as_posix()
         text = read_text(path)
         kind = _client_tool_kind(path)
         result.append(
@@ -1622,6 +1933,14 @@ def _xrefkit_runtime_files(root: Path) -> list[ClientToolFile]:
             )
         )
     return result
+
+
+def _runtime_source_root(root: Path) -> Path:
+    """Select repository runtime when present, otherwise this MCP package."""
+    repository_runtime = root / "xrefkit"
+    if (repository_runtime / "__init__.py").is_file():
+        return repository_runtime
+    return Path(__file__).resolve().parent.parent
 
 
 def _xrefkit_runtime_pip_package(root: Path) -> ClientToolPipPackage:
@@ -1961,6 +2280,15 @@ def _sum_text_sizes(sizes: list[dict[str, int]]) -> dict[str, int]:
 def _workflow_protocol() -> dict[str, object]:
     return {
         "source": "xrefkit.mcp",
+        "decision_trace_protocol": {
+            "status": "standard",
+            "contract_xid": "22164A51A745",
+            "guide_xid": "88830262A85D",
+            "execution_location": "client_side_xrefkit_runtime",
+            "required_for": ["skill_run", "instruction_backed_workflow_run"],
+            "human_gate": "adoption_rejection_readoption_return_execution",
+            "default_state_until_human_evaluation": "provisional",
+        },
         "routing": {
             "selection_basis": [
                 "user intent",

@@ -3,12 +3,24 @@ from pathlib import Path
 import yaml
 
 import xrefkit_skills_brownfield
+from xrefkit.workspace import build_registry
 
 
 def test_package_root_contains_manifest_and_skill():
     root = xrefkit_skills_brownfield.package_root()
     assert (root / "package_manifest.yaml").is_file()
     assert (root / "skills" / "brownfield_workflow.skill.yaml").is_file()
+
+
+def test_manifest_declares_xrefkit_core_protocol_and_loads():
+    root = xrefkit_skills_brownfield.package_root()
+    manifest_path = root / "package_manifest.yaml"
+    manifest = yaml.safe_load(manifest_path.read_text())
+
+    assert manifest["requires"]["xrefkit_core"] == ">=2.0.0 <3.0.0"
+    registry = build_registry(package_manifests=[manifest_path])
+
+    assert registry.packages.require("xrefkit.skills.brownfield")
 
 
 def test_evaluation_manifest_references_existing_cases():

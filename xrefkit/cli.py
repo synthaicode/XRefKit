@@ -6,7 +6,7 @@ import sys
 from collections.abc import Sequence
 
 
-_OPERATIONS = {"xref", "ctx", "goal", "gate", "pack", "dashboard", "analysis", "skill", "workflow", "host"}
+_OPERATIONS = {"xref", "ctx", "goal", "gate", "pack", "dashboard", "analysis", "skill", "workflow", "host", "trace"}
 _V2 = {"package", "show"}
 
 
@@ -28,6 +28,7 @@ def _print_help() -> None:
         "  goal       manage desired-state Goals and continuation state\n"
         "  dashboard  inspect runtime state\n"
         "  analysis   generate proposal-only observation reports\n"
+        "  trace      AI protocol adapter for decision changes and Git checkpoints\n"
         "  mcp        start the MCP server or initialize a client Prompt Flow\n"
         "  skills     synchronize released Skill and Knowledge bundles\n"
         "  package    inspect installed Skill packages\n"

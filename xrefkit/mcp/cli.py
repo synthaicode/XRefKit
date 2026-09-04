@@ -76,6 +76,42 @@ def main(argv: list[str] | None = None) -> int:
     add_repo_arguments(skill)
     skill.add_argument("--skill-id", required=True)
 
+    prepare_edit = sub.add_parser("prepare-skill-edit", help="copy a Skill into a local editable overlay")
+    add_repo_arguments(prepare_edit)
+    prepare_edit.add_argument("--skill-id", required=True)
+    prepare_edit.add_argument("--package-id")
+
+    edits = sub.add_parser("list-skill-edits", help="list local Skill edit overlays")
+    add_repo_arguments(edits)
+
+    export_edit = sub.add_parser("export-skill-edit", help="produce an upstream diff for a local Skill edit")
+    add_repo_arguments(export_edit)
+    export_edit.add_argument("--skill-id", required=True)
+    export_edit.add_argument("--write-patch", action="store_true")
+
+    deactivate_edit = sub.add_parser("deactivate-skill-edit", help="stop using a local Skill edit")
+    add_repo_arguments(deactivate_edit)
+    deactivate_edit.add_argument("--skill-id", required=True)
+
+    create_knowledge = sub.add_parser("create-local-knowledge", help="create a project-local Knowledge document")
+    add_repo_arguments(create_knowledge)
+    create_knowledge.add_argument("--xid", required=True)
+    create_knowledge.add_argument("--content-file", required=True)
+    create_knowledge.add_argument("--filename")
+    create_knowledge.add_argument("--domain")
+
+    local_knowledge = sub.add_parser("list-local-knowledge", help="list local Knowledge additions")
+    add_repo_arguments(local_knowledge)
+
+    export_knowledge = sub.add_parser("export-local-knowledge", help="produce an upstream diff for local Knowledge")
+    add_repo_arguments(export_knowledge)
+    export_knowledge.add_argument("--xid", required=True)
+    export_knowledge.add_argument("--write-patch", action="store_true")
+
+    deactivate_knowledge = sub.add_parser("deactivate-local-knowledge", help="stop using local Knowledge")
+    add_repo_arguments(deactivate_knowledge)
+    deactivate_knowledge.add_argument("--xid", required=True)
+
     rank = sub.add_parser("rank-skills", help="rank Skill candidates for a purpose")
     add_repo_arguments(rank)
     rank.add_argument("--purpose", required=True)
@@ -107,7 +143,11 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     args = parser.parse_args(argv)
-    model = XRefCatalog.build(Path(args.repo), args.domain_knowledge_root)
+    model = XRefCatalog.build(
+        Path(args.repo),
+        args.domain_knowledge_root,
+        discover_packages=args.command == "prepare-skill-edit",
+    )
 
     if args.command == "catalog":
         payload = {
@@ -147,6 +187,23 @@ def main(argv: list[str] | None = None) -> int:
         payload = model.list_skills(args.limit, args.include_content)
     elif args.command == "get-skill":
         payload = model.get_skill(args.skill_id)
+    elif args.command == "prepare-skill-edit":
+        payload = model.prepare_skill_edit(args.skill_id, args.package_id)
+    elif args.command == "list-skill-edits":
+        payload = model.list_skill_edits()
+    elif args.command == "export-skill-edit":
+        payload = model.export_skill_edit(args.skill_id, args.write_patch)
+    elif args.command == "deactivate-skill-edit":
+        payload = model.deactivate_skill_edit(args.skill_id)
+    elif args.command == "create-local-knowledge":
+        content = Path(args.content_file).read_text(encoding="utf-8")
+        payload = model.create_local_knowledge(args.xid, content, args.filename, args.domain)
+    elif args.command == "list-local-knowledge":
+        payload = model.list_local_knowledge()
+    elif args.command == "export-local-knowledge":
+        payload = model.export_local_knowledge(args.xid, args.write_patch)
+    elif args.command == "deactivate-local-knowledge":
+        payload = model.deactivate_local_knowledge(args.xid)
     elif args.command == "rank-skills":
         payload = model.rank_skills_for_purpose(args.purpose, args.limit)
     elif args.command == "tool-contracts":

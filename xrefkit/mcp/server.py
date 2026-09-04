@@ -243,7 +243,14 @@ def main(argv: list[str] | None = None) -> int:
     except ValueError as exc:
         parser.error(str(exc))
 
-    catalog = XRefCatalog.build(Path(args.repo), args.domain_knowledge_root)
+    # Installed Skill Packages are MCP routing inputs. The repository catalog
+    # API remains opt-in for callers that need a repository-only snapshot, but
+    # a live MCP server must discover the packages installed in its interpreter.
+    catalog = XRefCatalog.build(
+        Path(args.repo),
+        args.domain_knowledge_root,
+        discover_packages=True,
+    )
     global _CONTEXT_CODEC
     _CONTEXT_CODEC = ContextTokenCodec(
         context_secret or os.urandom(32).hex(),
@@ -588,6 +595,85 @@ def main(argv: list[str] | None = None) -> int:
                 client_tools_unlocked=True,
             )
         return response
+
+    @app.tool()
+    def prepare_skill_edit(
+        ctx: Context,
+        skill_id: str,
+        package_id: str | None = None,
+    ) -> dict[str, Any]:
+        """Materialize a selected Skill as a project-local editable overlay."""
+        _require_startup_loaded(ctx, "prepare_skill_edit")
+        result = catalog.prepare_skill_edit(skill_id, package_id)
+        binding = _binding_for(ctx, run_registry)
+        if binding is not None:
+            audit_log.append(
+                "skill.edit_prepared",
+                binding=binding,
+                tool="prepare_skill_edit",
+                skill_id=skill_id,
+                source_package_id=package_id,
+            )
+        return _with_control_reminder(result)
+
+    @app.tool()
+    def list_skill_edits(ctx: Context) -> list[dict[str, Any]]:
+        """List project-local Skill overlays and their provenance."""
+        _require_startup_loaded(ctx, "list_skill_edits")
+        return catalog.list_skill_edits()
+
+    @app.tool()
+    def export_skill_edit(
+        ctx: Context,
+        skill_id: str,
+        write_patch: bool = False,
+    ) -> dict[str, Any]:
+        """Return an upstream-ready diff for an active local Skill edit."""
+        _require_startup_loaded(ctx, "export_skill_edit")
+        result = catalog.export_skill_edit(skill_id, write_patch)
+        return _with_control_reminder(result)
+
+    @app.tool()
+    def deactivate_skill_edit(ctx: Context, skill_id: str) -> dict[str, Any]:
+        """Stop routing to a local edit while preserving its files."""
+        _require_startup_loaded(ctx, "deactivate_skill_edit")
+        result = catalog.deactivate_skill_edit(skill_id)
+        return _with_control_reminder(result)
+
+    @app.tool()
+    def create_local_knowledge(
+        ctx: Context,
+        xid: str,
+        content: str,
+        filename: str | None = None,
+        domain: str | None = None,
+    ) -> dict[str, Any]:
+        """Create a project-local XID-addressable Knowledge document."""
+        _require_startup_loaded(ctx, "create_local_knowledge")
+        result = catalog.create_local_knowledge(xid, content, filename, domain)
+        return _with_control_reminder(result)
+
+    @app.tool()
+    def list_local_knowledge(ctx: Context) -> list[dict[str, Any]]:
+        """List project-local Knowledge additions and their provenance."""
+        _require_startup_loaded(ctx, "list_local_knowledge")
+        return catalog.list_local_knowledge()
+
+    @app.tool()
+    def export_local_knowledge(
+        ctx: Context,
+        xid: str,
+        write_patch: bool = False,
+    ) -> dict[str, Any]:
+        """Return an upstream-ready diff for a new local Knowledge document."""
+        _require_startup_loaded(ctx, "export_local_knowledge")
+        return _with_control_reminder(catalog.export_local_knowledge(xid, write_patch))
+
+    @app.tool()
+    def deactivate_local_knowledge(ctx: Context, xid: str) -> dict[str, Any]:
+        """Stop routing to a local Knowledge addition while preserving it."""
+        _require_startup_loaded(ctx, "deactivate_local_knowledge")
+        return _with_control_reminder(catalog.deactivate_local_knowledge(xid))
 
     @app.tool()
     def resolve_skill_knowledge(ctx: Context, skill_id: str) -> dict[str, Any]:

@@ -16,6 +16,7 @@ def startup_get_contract() -> dict:
         "protocols": [
             "unknown_protocol",
             "workflow_protocol",
+            "ai_decision_trace_protocol",
             "context_direction_security_guard",
             "startup_xref_routing",
             "xrefkit_startup_contract",
