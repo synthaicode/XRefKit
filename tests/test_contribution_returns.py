@@ -11,6 +11,8 @@ import pytest
 
 from xrefkit.mcp.audit import SessionRunBinding
 from xrefkit.mcp.contribution_returns import (
+    MAX_EVIDENCE_ROWS,
+    MAX_METADATA_BYTES,
     export_contribution_return,
     list_contribution_returns,
     submit_contribution_return,
@@ -91,6 +93,100 @@ def test_changed_retry_and_invalid_input_leave_original_unchanged(tmp_path: Path
             files=[file("../rule.md", content)],
         )
     assert len(list_contribution_returns(tmp_path)) == 1
+
+
+@pytest.mark.parametrize(
+    "unsafe_path",
+    ["tools/check.py:stream", "CON", "tools/NUL.txt", "tools/check.py.", "tools/check.py "],
+)
+def test_windows_alias_paths_are_rejected(tmp_path: Path, unsafe_path: str) -> None:
+    content = "<!-- xid: LOCAL123 -->\n\n# Local rule\n"
+    with pytest.raises(ValueError, match="unsafe contribution path"):
+        submit_contribution_return(
+            tmp_path, binding=binding(), source_snapshot=source(),
+            contribution_id=str(uuid.uuid4()), kind="knowledge", title="Local",
+            summary="Review", files=[file(unsafe_path, content)],
+            knowledge={"xid": "LOCAL123"},
+        )
+
+
+def test_case_alias_paths_are_rejected(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="duplicate contribution path"):
+        submit_contribution_return(
+            tmp_path, binding=binding(), source_snapshot=source(),
+            contribution_id=str(uuid.uuid4()), kind="deterministic_tool", title="Tool",
+            summary="Review", files=[file("tools/A.py", "a"), file("TOOLS/a.PY", "b")],
+            deterministic_tool={
+                "runtime": "python", "entrypoint": "tools/A.py",
+                "input_contract": {}, "output_contract": {},
+                "verification_evidence": [{"kind": "test", "command": "x", "result": "pass"}],
+            },
+        )
+
+
+def test_metadata_limits_are_enforced_before_persistence(tmp_path: Path) -> None:
+    content = "<!-- xid: LOCAL123 -->\n\n# Local rule\n"
+    with pytest.raises(ValueError, match="summary exceeds byte limit"):
+        submit_contribution_return(
+            tmp_path, binding=binding(), source_snapshot=source(),
+            contribution_id=str(uuid.uuid4()), kind="knowledge", title="Local",
+            summary="x" * (MAX_METADATA_BYTES + 1), files=[file("rule.md", content)],
+            knowledge={"xid": "LOCAL123"},
+        )
+    assert list_contribution_returns(tmp_path) == []
+
+
+def test_evidence_row_limit_is_enforced(tmp_path: Path) -> None:
+    evidence = [
+        {"kind": "test", "command": "x", "result": "pass"}
+        for _ in range(MAX_EVIDENCE_ROWS + 1)
+    ]
+    with pytest.raises(ValueError, match="evidence exceeds row limit"):
+        submit_contribution_return(
+            tmp_path, binding=binding(), source_snapshot=source(),
+            contribution_id=str(uuid.uuid4()), kind="deterministic_tool", title="Tool",
+            summary="Review", files=[file("tools/check.py", "pass\n")],
+            deterministic_tool={
+                "runtime": "python", "entrypoint": "tools/check.py",
+                "input_contract": {}, "output_contract": {},
+                "verification_evidence": evidence,
+            },
+        )
+
+
+def test_contract_metadata_total_and_depth_are_bounded(tmp_path: Path) -> None:
+    common = dict(
+        binding=binding(), source_snapshot=source(), kind="deterministic_tool",
+        title="Tool", summary="Review", files=[file("tools/check.py", "pass\n")],
+    )
+    base_tool = {
+        "runtime": "python", "entrypoint": "tools/check.py", "output_contract": {},
+        "verification_evidence": [{"kind": "test", "command": "x", "result": "pass"}],
+    }
+    with pytest.raises(ValueError, match="exceeds byte limit"):
+        submit_contribution_return(
+            tmp_path, contribution_id=str(uuid.uuid4()), **common,
+            deterministic_tool={**base_tool, "input_contract": {"description": "x" * MAX_METADATA_BYTES}},
+        )
+    with pytest.raises(ValueError, match="metadata exceeds byte limit"):
+        submit_contribution_return(
+            tmp_path, contribution_id=str(uuid.uuid4()), **common,
+            deterministic_tool={
+                **base_tool,
+                "input_contract": {f"field{index}": "x" * 60_000 for index in range(5)},
+            },
+        )
+    nested: dict[str, object] = {}
+    cursor = nested
+    for _ in range(20):
+        child: dict[str, object] = {}
+        cursor["child"] = child
+        cursor = child
+    with pytest.raises(ValueError, match="JSON depth limit"):
+        submit_contribution_return(
+            tmp_path, contribution_id=str(uuid.uuid4()), **common,
+            deterministic_tool={**base_tool, "input_contract": nested},
+        )
 
 
 def test_deterministic_tool_requires_contract_evidence_and_is_not_executed(tmp_path: Path) -> None:

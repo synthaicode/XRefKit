@@ -41,7 +41,7 @@ MCP が提供する文書とローカル Knowledge の横断は、利用側の X
 
 編集ファイルの更新と、実行中の Skill Run への採用は分ける。実行途中に黙って内容を切り替えず、採用時は再検証と使用版の記録を行う。
 
-MCP 提供の Skill を使った後にローカルで作成した Knowledge または決定論ツールを戻す場合は、Skill Run を `bind_skill_run` で関連付けたまま `get_contribution_return_contract` を取得し、`submit_contribution_return` を呼ぶ。要求には UUID、UTF-8 の本文と SHA-256、実際に使った Skill 本文のハッシュ、利用した Knowledge の XID とハッシュを含める。受信側 MCP は現在の配布内容と照合し、`.xrefkit/contribution-returns/` に `pending_review` として保存する。
+MCP 提供の Skill を使った後にローカルで作成した Knowledge または決定論ツールを戻す場合は、Skill Run を `bind_skill_run` で関連付けたまま `get_contribution_return_contract` を取得し、`submit_contribution_return` を呼ぶ。要求には UUID、UTF-8 の本文と SHA-256、実際に使った Skill 本文のハッシュ、利用した Knowledge の XID とハッシュを含める。受信側 MCP は現在の配布内容と照合し、`.xrefkit/contribution-returns/` に `pending_review` として保存する。契約が返すファイル数・本文量・metadata量・JSON深度の上限を登録前に適用し、streamable HTTPでは要求本文にも上限を設ける。Windowsで別名やADSになり得るpathも拒否する。
 
 返却物は `list_contribution_returns` で本文なしに確認し、`export_contribution_return` でレビュー用の完全な bundle を取得する。登録・出力時には決定論ツールを実行せず、Knowledge catalog や `get_client_tool_*` に追加しない。レビュー、正規資産への採用、公開、有効化は別の管理された処理とする。
 

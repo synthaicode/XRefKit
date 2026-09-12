@@ -13,6 +13,7 @@ from typing import Any
 from . import __version__
 from .audit import McpAuditLog, SessionRunBinding, SessionRunRegistry
 from .catalog import XRefCatalog
+from .contribution_returns import MAX_NETWORK_REQUEST_BYTES
 from .gateway import evaluate_feedback, gateway_contract, prepare_gateway, route_gateway
 from .context_token import CONTEXT_META_KEY, ContextClaims, ContextTokenCodec
 from .dist import DIST_ROUTE_PATH, ArtifactDistribution, add_dist_routes
@@ -22,6 +23,7 @@ from xrefkit.structure_catalog import list_targets as list_structure_targets
 from xrefkit.structure_catalog import load_catalog as load_structure_catalog
 
 SERVER_VERSION = __version__
+DEFAULT_MAX_REQUEST_BODY_BYTES = MAX_NETWORK_REQUEST_BYTES
 LOGGER = logging.getLogger(__name__)
 
 # Sessions that have called get_startup_context at least once. Keyed by the
@@ -225,6 +227,12 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         default=None,
         help="Structured MCP audit JSONL path. Defaults to <repo>/work/mcp/xid_audit.jsonl.",
+    )
+    parser.add_argument(
+        "--max-request-body-bytes",
+        type=int,
+        default=DEFAULT_MAX_REQUEST_BODY_BYTES,
+        help="Maximum streamable-HTTP request body size (default: 8 MiB).",
     )
     args = parser.parse_args(argv)
     if args.stateless_http and args.transport != "streamable-http":
@@ -899,6 +907,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.ssl_keyfile,
                 dist,
                 dist_base_url,
+                args.max_request_body_bytes,
             )
         else:
             app.run(transport=args.transport)
@@ -1066,6 +1075,7 @@ def _run_streamable_http(
     ssl_keyfile: Path | None = None,
     dist: Any = None,
     dist_base_url: str = "",
+    max_request_body_bytes: int = DEFAULT_MAX_REQUEST_BODY_BYTES,
 ) -> None:
     if sys.platform == "win32":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -1077,6 +1087,7 @@ def _run_streamable_http(
         starlette_app = app.streamable_http_app()
         if dist is not None:
             add_dist_routes(starlette_app, dist, dist_base_url)
+        _add_request_size_limit_middleware(starlette_app, max_request_body_bytes)
         _add_streamable_http_probe_middleware(starlette_app, http_path)
         config = uvicorn.Config(
             starlette_app,
@@ -1090,6 +1101,59 @@ def _run_streamable_http(
         await server.serve()
 
     anyio.run(serve)
+
+
+def _add_request_size_limit_middleware(starlette_app: Any, max_bytes: int) -> None:
+    from starlette.responses import JSONResponse
+
+    if max_bytes <= 0:
+        raise ValueError("max request body bytes must be positive")
+
+    class RequestSizeLimitMiddleware:
+        def __init__(self, app: Any) -> None:
+            self.app = app
+
+        async def __call__(self, scope: dict[str, Any], receive: Any, send: Any) -> None:
+            if scope.get("type") != "http":
+                await self.app(scope, receive, send)
+                return
+            headers = _decode_headers(scope.get("headers", []))
+            content_length = headers.get("content-length")
+            if content_length is not None:
+                try:
+                    if int(content_length) > max_bytes:
+                        await JSONResponse({"error": "request_body_too_large"}, status_code=413)(
+                            scope, receive, send
+                        )
+                        return
+                except ValueError:
+                    await JSONResponse({"error": "invalid_content_length"}, status_code=400)(
+                        scope, receive, send
+                    )
+                    return
+            consumed = 0
+
+            async def limited_receive() -> dict[str, Any]:
+                nonlocal consumed
+                message = await receive()
+                if message.get("type") == "http.request":
+                    consumed += len(message.get("body", b""))
+                    if consumed > max_bytes:
+                        raise _RequestBodyTooLarge
+                return message
+
+            try:
+                await self.app(scope, limited_receive, send)
+            except _RequestBodyTooLarge:
+                await JSONResponse({"error": "request_body_too_large"}, status_code=413)(
+                    scope, receive, send
+                )
+
+    starlette_app.add_middleware(RequestSizeLimitMiddleware)
+
+
+class _RequestBodyTooLarge(Exception):
+    pass
 
 
 def _add_streamable_http_probe_middleware(starlette_app: Any, http_path: str) -> None:

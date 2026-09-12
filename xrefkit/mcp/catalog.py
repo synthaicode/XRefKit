@@ -28,6 +28,7 @@ from .knowledge_edits import (
     local_files as local_knowledge_files,
 )
 from .contribution_returns import (
+    MAX_KNOWLEDGE_VERSIONS,
     contribution_return_contract,
     export_contribution_return,
     list_contribution_returns,
@@ -428,12 +429,18 @@ class XRefCatalog:
             package_version = package.version if package else None
         resolved_knowledge = []
         seen: set[str] = set()
+        if knowledge_versions is not None and not isinstance(knowledge_versions, list):
+            raise ValueError("knowledge_versions must be an array")
+        if len(knowledge_versions or []) > MAX_KNOWLEDGE_VERSIONS:
+            raise ValueError(
+                f"knowledge_versions exceeds limit {MAX_KNOWLEDGE_VERSIONS}"
+            )
         for raw in knowledge_versions or []:
             if not isinstance(raw, dict):
                 raise ValueError("knowledge_versions rows must be objects")
             xid = str(raw.get("xid", "")).strip()
             content_hash = str(raw.get("content_hash", "")).strip()
-            if not xid or xid in seen:
+            if not xid or len(xid) > 256 or xid in seen:
                 raise ValueError("knowledge_versions requires unique non-empty XIDs")
             seen.add(xid)
             current, _content = self._knowledge_by_xid(xid)

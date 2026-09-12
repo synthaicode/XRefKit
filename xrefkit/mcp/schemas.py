@@ -30,7 +30,7 @@ class ToolContract:
             allowed.add("repo_write")
         if self.execution_location == "server" and self.side_effects not in allowed:
             raise ValueError(
-                f"server tool {self.tool_id!r} may declare only side_effects='none' or 'audit_write'"
+                f"server tool {self.tool_id!r} may declare only side_effects in {sorted(allowed)}"
             )
 
     def to_dict(self) -> dict[str, Any]:
@@ -341,7 +341,11 @@ def _json_schema_object(schema: dict[str, Any]) -> dict[str, Any]:
     properties: dict[str, Any] = {}
     required: list[str] = []
     for name, descriptor in schema.items():
-        optional = isinstance(descriptor, str) and descriptor.endswith("?")
+        optional = (
+            isinstance(descriptor, str) and descriptor.endswith("?")
+        ) or (
+            isinstance(descriptor, dict) and descriptor.get("x-optional") is True
+        )
         if not optional:
             required.append(name)
         properties[name] = _json_schema_for_descriptor(descriptor)
@@ -357,7 +361,7 @@ def _json_schema_object(schema: dict[str, Any]) -> dict[str, Any]:
 
 def _json_schema_for_descriptor(descriptor: Any) -> dict[str, Any]:
     if isinstance(descriptor, dict):
-        return descriptor
+        return {key: value for key, value in descriptor.items() if key != "x-optional"}
     if not isinstance(descriptor, str):
         return {"description": str(descriptor)}
     base = descriptor.removesuffix("?")

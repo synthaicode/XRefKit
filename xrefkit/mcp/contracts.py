@@ -267,12 +267,14 @@ def builtin_tool_contracts() -> list[ToolContract]:
             input_schema={
                 "contribution_id": "uuid",
                 "kind": "knowledge|deterministic_tool",
-                "title": "string",
-                "summary": "string",
-                "files": "array",
-                "skill_content_hash": "sha256",
+                "title": {"type": "string", "maxLength": 256},
+                "summary": {"type": "string", "maxLength": 4096},
+                "files": {"type": "array", "minItems": 1, "maxItems": 64},
+                "skill_content_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
                 "package_id": "string?",
-                "knowledge_versions": "array?",
+                "knowledge_versions": {
+                    "type": ["array", "null"], "maxItems": 128, "x-optional": True
+                },
                 "knowledge": "object?",
                 "deterministic_tool": "object?",
             },

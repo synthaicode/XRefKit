@@ -21,7 +21,25 @@ ALLOWED_KINDS = {"knowledge", "deterministic_tool"}
 MAX_FILES = 64
 MAX_FILE_BYTES = 1024 * 1024
 MAX_TOTAL_BYTES = 5 * 1024 * 1024
+MAX_METADATA_BYTES = 256 * 1024
+MAX_TITLE_BYTES = 256
+MAX_SUMMARY_BYTES = 4096
+MAX_RUNTIME_BYTES = 256
+MAX_EVIDENCE_ROWS = 64
+MAX_EVIDENCE_TEXT_BYTES = 4096
+MAX_KNOWLEDGE_VERSIONS = 128
+MAX_JSON_DEPTH = 16
+MAX_JSON_NODES = 4096
+MAX_JSON_STRING_BYTES = 64 * 1024
+MAX_JSON_KEY_BYTES = 1024
+MAX_PATH_BYTES = 1024
+MAX_NETWORK_REQUEST_BYTES = 8 * 1024 * 1024
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
+WINDOWS_RESERVED_NAMES = {
+    "CON", "PRN", "AUX", "NUL",
+    *(f"COM{number}" for number in range(1, 10)),
+    *(f"LPT{number}" for number in range(1, 10)),
+}
 
 
 def contribution_return_contract() -> dict[str, Any]:
@@ -34,6 +52,19 @@ def contribution_return_contract() -> dict[str, Any]:
             "max_files": MAX_FILES,
             "max_file_bytes": MAX_FILE_BYTES,
             "max_total_bytes": MAX_TOTAL_BYTES,
+            "max_metadata_bytes": MAX_METADATA_BYTES,
+            "max_title_bytes": MAX_TITLE_BYTES,
+            "max_summary_bytes": MAX_SUMMARY_BYTES,
+            "max_runtime_bytes": MAX_RUNTIME_BYTES,
+            "max_evidence_rows": MAX_EVIDENCE_ROWS,
+            "max_evidence_text_bytes": MAX_EVIDENCE_TEXT_BYTES,
+            "max_knowledge_versions": MAX_KNOWLEDGE_VERSIONS,
+            "max_json_depth": MAX_JSON_DEPTH,
+            "max_json_nodes": MAX_JSON_NODES,
+            "max_json_string_bytes": MAX_JSON_STRING_BYTES,
+            "max_json_key_bytes": MAX_JSON_KEY_BYTES,
+            "max_path_bytes": MAX_PATH_BYTES,
+            "max_network_request_bytes": MAX_NETWORK_REQUEST_BYTES,
         },
         "file_schema": {
             "path": "safe relative POSIX path",
@@ -83,8 +114,8 @@ def submit_contribution_return(
     normalized_kind = str(kind).strip()
     if normalized_kind not in ALLOWED_KINDS:
         raise ValueError(f"unsupported contribution kind: {kind}")
-    normalized_title = _required_text(title, "title")
-    normalized_summary = _required_text(summary, "summary")
+    normalized_title = _required_text(title, "title", MAX_TITLE_BYTES)
+    normalized_summary = _required_text(summary, "summary", MAX_SUMMARY_BYTES)
     kind_metadata = _validate_kind_metadata(
         normalized_kind, normalized_files, knowledge, deterministic_tool
     )
@@ -98,6 +129,17 @@ def submit_contribution_return(
         "source": source_snapshot,
         "binding": binding.to_dict(),
     }
+    metadata_payload = {
+        **payload,
+        "files": [
+            {key: item[key] for key in ("path", "content_hash", "byte_count")}
+            for item in normalized_files
+        ],
+    }
+    _validate_json_shape(metadata_payload)
+    metadata_bytes = len(_canonical_json(metadata_payload))
+    if metadata_bytes > MAX_METADATA_BYTES:
+        raise ValueError(f"contribution metadata exceeds byte limit {MAX_METADATA_BYTES}")
     payload_hash = _canonical_hash(payload)
     store = root.resolve() / STORE_RELATIVE
     store.mkdir(parents=True, exist_ok=True)
@@ -192,9 +234,10 @@ def _validate_files(files: object) -> list[dict[str, Any]]:
         if not isinstance(raw, dict):
             raise ValueError("each file must be an object")
         path = _safe_path(raw.get("path"))
-        if path in seen:
+        path_key = path.casefold()
+        if path_key in seen:
             raise ValueError(f"duplicate contribution path: {path}")
-        seen.add(path)
+        seen.add(path_key)
         content = raw.get("content")
         if not isinstance(content, str):
             raise ValueError(f"file content must be UTF-8 text: {path}")
@@ -233,7 +276,9 @@ def _validate_kind_metadata(
         return {"xid": xid}
     if knowledge is not None or not isinstance(deterministic_tool, dict):
         raise ValueError("deterministic_tool metadata is required only for deterministic_tool contributions")
-    runtime = _required_text(deterministic_tool.get("runtime"), "deterministic_tool.runtime")
+    runtime = _required_text(
+        deterministic_tool.get("runtime"), "deterministic_tool.runtime", MAX_RUNTIME_BYTES
+    )
     entrypoint = _safe_path(deterministic_tool.get("entrypoint"))
     if entrypoint not in {item["path"] for item in files}:
         raise ValueError("deterministic_tool.entrypoint must name a submitted file")
@@ -244,14 +289,22 @@ def _validate_kind_metadata(
     evidence = deterministic_tool.get("verification_evidence")
     if not isinstance(evidence, list) or not evidence:
         raise ValueError("deterministic tool verification_evidence must be non-empty")
+    if len(evidence) > MAX_EVIDENCE_ROWS:
+        raise ValueError(f"verification evidence exceeds row limit {MAX_EVIDENCE_ROWS}")
     normalized_evidence = []
     for row in evidence:
         if not isinstance(row, dict):
             raise ValueError("verification evidence rows must be objects")
         item = {
-            "kind": _required_text(row.get("kind"), "verification_evidence.kind"),
-            "command": _required_text(row.get("command"), "verification_evidence.command"),
-            "result": _required_text(row.get("result"), "verification_evidence.result"),
+            "kind": _required_text(
+                row.get("kind"), "verification_evidence.kind", MAX_EVIDENCE_TEXT_BYTES
+            ),
+            "command": _required_text(
+                row.get("command"), "verification_evidence.command", MAX_EVIDENCE_TEXT_BYTES
+            ),
+            "result": _required_text(
+                row.get("result"), "verification_evidence.result", MAX_EVIDENCE_TEXT_BYTES
+            ),
         }
         if row.get("content_hash") is not None:
             value = str(row["content_hash"])
@@ -270,21 +323,37 @@ def _validate_kind_metadata(
 
 def _safe_path(value: object) -> str:
     raw = str(value or "")
-    if not raw or "\\" in raw or "\0" in raw or re.match(r"^[A-Za-z]:", raw):
+    if len(raw) > MAX_PATH_BYTES or len(raw.encode("utf-8")) > MAX_PATH_BYTES:
+        raise ValueError(f"contribution path exceeds byte limit {MAX_PATH_BYTES}")
+    if (
+        not raw
+        or "\\" in raw
+        or "\0" in raw
+        or any(character in raw for character in '<>:"|?*')
+        or any(ord(character) < 32 for character in raw)
+        or re.match(r"^[A-Za-z]:", raw)
+    ):
         raise ValueError(f"unsafe contribution path: {raw!r}")
     path = PurePosixPath(raw)
     if path.is_absolute() or any(part in {"", ".", ".."} for part in path.parts):
         raise ValueError(f"unsafe contribution path: {raw!r}")
+    for part in path.parts:
+        if part.endswith((".", " ")) or part.split(".", 1)[0].upper() in WINDOWS_RESERVED_NAMES:
+            raise ValueError(f"unsafe contribution path: {raw!r}")
     normalized = path.as_posix()
     if normalized != raw:
         raise ValueError(f"contribution path must be normalized POSIX form: {raw!r}")
     return normalized
 
 
-def _required_text(value: object, field: str) -> str:
+def _required_text(value: object, field: str, max_bytes: int | None = None) -> str:
     text = str(value or "").strip()
     if not text:
         raise ValueError(f"{field} is required")
+    if max_bytes is not None and (
+        len(text) > max_bytes or len(text.encode("utf-8")) > max_bytes
+    ):
+        raise ValueError(f"{field} exceeds byte limit {max_bytes}")
     return text
 
 
@@ -300,8 +369,54 @@ def _sha256(content: str) -> str:
 
 
 def _canonical_hash(payload: dict[str, Any]) -> str:
-    encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    return hashlib.sha256(encoded).hexdigest()
+    return hashlib.sha256(_canonical_json(payload)).hexdigest()
+
+
+def _canonical_json(payload: object) -> bytes:
+    return json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode(
+        "utf-8"
+    )
+
+
+def _validate_json_shape(value: object) -> None:
+    stack: list[tuple[object, int]] = [(value, 1)]
+    nodes = 0
+    text_bytes = 0
+    while stack:
+        current, depth = stack.pop()
+        nodes += 1
+        if nodes > MAX_JSON_NODES:
+            raise ValueError(f"contribution metadata exceeds JSON node limit {MAX_JSON_NODES}")
+        if depth > MAX_JSON_DEPTH:
+            raise ValueError(f"contribution metadata exceeds JSON depth limit {MAX_JSON_DEPTH}")
+        if isinstance(current, dict):
+            for key, child in current.items():
+                if not isinstance(key, str):
+                    raise ValueError("contribution metadata object keys must be strings")
+                if len(key) > MAX_JSON_KEY_BYTES:
+                    raise ValueError(f"contribution metadata key exceeds byte limit {MAX_JSON_KEY_BYTES}")
+                encoded_key_bytes = len(key.encode("utf-8"))
+                if encoded_key_bytes > MAX_JSON_KEY_BYTES:
+                    raise ValueError(f"contribution metadata key exceeds byte limit {MAX_JSON_KEY_BYTES}")
+                text_bytes += encoded_key_bytes
+                stack.append((child, depth + 1))
+        elif isinstance(current, list):
+            stack.extend((child, depth + 1) for child in current)
+        elif isinstance(current, str):
+            if len(current) > MAX_JSON_STRING_BYTES:
+                raise ValueError(
+                    f"contribution metadata string exceeds byte limit {MAX_JSON_STRING_BYTES}"
+                )
+            encoded_string_bytes = len(current.encode("utf-8"))
+            if encoded_string_bytes > MAX_JSON_STRING_BYTES:
+                raise ValueError(
+                    f"contribution metadata string exceeds byte limit {MAX_JSON_STRING_BYTES}"
+                )
+            text_bytes += encoded_string_bytes
+        elif current is not None and not isinstance(current, (str, int, float, bool)):
+            raise ValueError("contribution metadata must contain only JSON values")
+        if text_bytes > MAX_METADATA_BYTES:
+            raise ValueError(f"contribution metadata exceeds byte limit {MAX_METADATA_BYTES}")
 
 
 def _write_fsynced(path: Path, content: str) -> None:

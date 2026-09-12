@@ -1285,6 +1285,14 @@ flow_id: sample
             "known_version",
             contracts["xref.get_document_by_xid"]["input_json_schema"]["required"],
         )
+        contribution_schema = contracts["xref.submit_contribution_return"][
+            "input_json_schema"
+        ]
+        self.assertEqual(contribution_schema["properties"]["files"]["maxItems"], 64)
+        self.assertEqual(
+            contribution_schema["properties"]["knowledge_versions"]["maxItems"], 128
+        )
+        self.assertNotIn("knowledge_versions", contribution_schema["required"])
 
 
 if __name__ == "__main__":
