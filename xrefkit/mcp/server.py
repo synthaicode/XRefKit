@@ -715,6 +715,99 @@ def main(argv: list[str] | None = None) -> int:
         return _with_control_reminder(catalog.deactivate_local_knowledge(xid))
 
     @app.tool()
+    def get_contribution_return_contract(ctx: Context) -> dict[str, Any]:
+        """Describe the inert MCP return inbox and its validation limits."""
+        _require_startup_loaded(ctx, "get_contribution_return_contract")
+        return catalog.get_contribution_return_contract()
+
+    @app.tool()
+    def submit_contribution_return(
+        ctx: Context,
+        contribution_id: str,
+        kind: str,
+        title: str,
+        summary: str,
+        files: list[dict[str, Any]],
+        skill_content_hash: str,
+        package_id: str | None = None,
+        knowledge_versions: list[dict[str, str]] | None = None,
+        knowledge: dict[str, Any] | None = None,
+        deterministic_tool: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Store a local contribution as pending review without activating it."""
+        _require_startup_loaded(ctx, "submit_contribution_return")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError(
+                "XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before submit_contribution_return"
+            )
+        if binding.repository_fingerprint != catalog.repository_fingerprint:
+            raise ValueError("active Skill Run repository does not match the receiving MCP workspace")
+        source_snapshot = catalog.contribution_source_snapshot(
+            skill_id=binding.skill_id,
+            package_id=package_id,
+            skill_content_hash=skill_content_hash,
+            knowledge_versions=knowledge_versions,
+            provider_version=SERVER_VERSION,
+        )
+        result = catalog.submit_contribution_return(
+            binding=binding,
+            source_snapshot=source_snapshot,
+            contribution_id=contribution_id,
+            kind=kind,
+            title=title,
+            summary=summary,
+            files=files,
+            knowledge=knowledge,
+            deterministic_tool=deterministic_tool,
+        )
+        try:
+            audit_log.append(
+                "contribution.return_submitted",
+                binding=binding,
+                tool="submit_contribution_return",
+                contribution_id=result["contribution_id"],
+                contribution_kind=result["kind"],
+                payload_hash=result["payload_hash"],
+                created=result["created"],
+                idempotent_replay=result["idempotent_replay"],
+            )
+            result["audit_status"] = "recorded"
+        except OSError as exc:
+            LOGGER.error("contribution return audit failed: %s", exc)
+            result["audit_status"] = "failed"
+        return result
+
+    @app.tool()
+    def list_contribution_returns(ctx: Context) -> list[dict[str, Any]]:
+        """List pending-review contribution metadata without file bodies."""
+        _require_startup_loaded(ctx, "list_contribution_returns")
+        return catalog.list_contribution_returns()
+
+    @app.tool()
+    def export_contribution_return(ctx: Context, contribution_id: str) -> dict[str, Any]:
+        """Export a complete inert review bundle without activating it."""
+        _require_startup_loaded(ctx, "export_contribution_return")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError(
+                "XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before export_contribution_return"
+            )
+        result = catalog.export_contribution_return(contribution_id)
+        try:
+            audit_log.append(
+                "contribution.return_exported",
+                binding=binding,
+                tool="export_contribution_return",
+                contribution_id=contribution_id,
+            )
+            result["audit_status"] = "recorded"
+        except OSError as exc:
+            LOGGER.error("contribution return export audit failed: %s", exc)
+            result["audit_status"] = "failed"
+        return result
+
+    @app.tool()
     def resolve_skill_knowledge(ctx: Context, skill_id: str) -> dict[str, Any]:
         _require_startup_loaded(ctx, "resolve_skill_knowledge")
         return _with_control_reminder(catalog.resolve_skill_knowledge(skill_id))

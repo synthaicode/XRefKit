@@ -6,6 +6,7 @@ from typing import Any, Literal
 
 ExecutionLocation = Literal["server", "client"]
 SideEffects = Literal["none", "audit_write", "repo_write", "external_write", "unknown"]
+SERVER_REPO_WRITE_ALLOWLIST = {"xref.submit_contribution_return"}
 ResponseEnvelope = Literal["direct_object", "mcp_result_array"]
 
 
@@ -24,7 +25,10 @@ class ToolContract:
     response_envelope: ResponseEnvelope = "direct_object"
 
     def validate(self) -> None:
-        if self.execution_location == "server" and self.side_effects not in {"none", "audit_write"}:
+        allowed = {"none", "audit_write"}
+        if self.tool_id in SERVER_REPO_WRITE_ALLOWLIST:
+            allowed.add("repo_write")
+        if self.execution_location == "server" and self.side_effects not in allowed:
             raise ValueError(
                 f"server tool {self.tool_id!r} may declare only side_effects='none' or 'audit_write'"
             )

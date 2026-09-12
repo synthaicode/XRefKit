@@ -184,7 +184,16 @@ if __name__ == "__main__":
                 },
             ],
         )
-        self.assertTrue(all(tool.side_effects in {"none", "audit_write"} for tool in catalog.tools))
+        repo_writers = {
+            tool.tool_id for tool in catalog.tools if tool.side_effects == "repo_write"
+        }
+        self.assertEqual(repo_writers, {"xref.submit_contribution_return"})
+        self.assertTrue(
+            all(
+                tool.side_effects in {"none", "audit_write", "repo_write"}
+                for tool in catalog.tools
+            )
+        )
         self.assertTrue(
             all(tool.to_dict()["input_json_schema"]["type"] == "object" for tool in catalog.tools)
         )

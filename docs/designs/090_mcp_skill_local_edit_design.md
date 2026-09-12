@@ -41,6 +41,10 @@ MCP が提供する文書とローカル Knowledge の横断は、利用側の X
 
 編集ファイルの更新と、実行中の Skill Run への採用は分ける。実行途中に黙って内容を切り替えず、採用時は再検証と使用版の記録を行う。
 
+MCP 提供の Skill を使った後にローカルで作成した Knowledge または決定論ツールを戻す場合は、Skill Run を `bind_skill_run` で関連付けたまま `get_contribution_return_contract` を取得し、`submit_contribution_return` を呼ぶ。要求には UUID、UTF-8 の本文と SHA-256、実際に使った Skill 本文のハッシュ、利用した Knowledge の XID とハッシュを含める。受信側 MCP は現在の配布内容と照合し、`.xrefkit/contribution-returns/` に `pending_review` として保存する。
+
+返却物は `list_contribution_returns` で本文なしに確認し、`export_contribution_return` でレビュー用の完全な bundle を取得する。登録・出力時には決定論ツールを実行せず、Knowledge catalog や `get_client_tool_*` に追加しない。レビュー、正規資産への採用、公開、有効化は別の管理された処理とする。
+
 ## 実装入口
 
 MCP tools:
@@ -53,6 +57,10 @@ MCP tools:
 - `list_local_knowledge()`
 - `export_local_knowledge(xid, write_patch?)`
 - `deactivate_local_knowledge(xid)`
+- `get_contribution_return_contract()`
+- `submit_contribution_return(contribution_id, kind, title, summary, files, skill_content_hash, package_id?, knowledge_versions?, knowledge?, deterministic_tool?)`
+- `list_contribution_returns()`
+- `export_contribution_return(contribution_id)`
 
 CLI:
 
@@ -65,7 +73,7 @@ CLI:
 
 ## 実装範囲と未実装
 
-段階1として、ローカル編集版の取得・登録・自動選択、編集版の XID 解決、Skill の一覧・差分出力・無効化、新規ローカル Knowledge の作成・一覧・XID 解決・追加差分出力・無効化を実装した。`tests/mcp_catalog.py` と `tests/test_skill_edits.py` の合計 52 件が成功している。
+段階1として、ローカル編集版の取得・登録・自動選択、編集版の XID 解決、Skill の一覧・差分出力・無効化、新規ローカル Knowledge の作成・一覧・XID 解決・追加差分出力・無効化を実装した。さらに、MCP Skill Run に由来を結び付けた Knowledge／決定論ツールのレビュー待ち返却を実装した。
 
 自動三者マージ、任意の MCP 間をまたぐクライアント側 XID Federation、配布元への PR／公開、公開確認後の自動無効化は未実装である。これらは元版・編集版・現在の配布版の競合解決、権限、公開範囲を定義してから追加する。
 

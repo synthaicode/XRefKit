@@ -27,6 +27,12 @@ from .knowledge_edits import (
     list_local_knowledge,
     local_files as local_knowledge_files,
 )
+from .contribution_returns import (
+    contribution_return_contract,
+    export_contribution_return,
+    list_contribution_returns,
+    submit_contribution_return,
+)
 from .repository import (
     first_heading,
     first_paragraph,
@@ -389,6 +395,70 @@ class XRefCatalog:
 
     def deactivate_local_knowledge(self, xid: str) -> dict:
         return deactivate_local_knowledge(self.repo_root, xid)
+
+    def get_contribution_return_contract(self) -> dict:
+        return contribution_return_contract()
+
+    def contribution_source_snapshot(
+        self,
+        *,
+        skill_id: str,
+        package_id: str | None,
+        skill_content_hash: str,
+        knowledge_versions: list[dict] | None,
+        provider_version: str,
+    ) -> dict:
+        candidates = [entry for entry in self.skills if entry.skill_id == skill_id]
+        if package_id is not None:
+            candidates = [entry for entry in candidates if entry.package_id == package_id]
+        if len(candidates) != 1:
+            raise ValueError(
+                f"Skill source is ambiguous for {skill_id!r}; provide package_id when needed"
+            )
+        entry = candidates[0]
+        current_skill_hash = stable_hash(entry.skill_content)
+        if skill_content_hash != current_skill_hash:
+            raise ValueError("skill_content_hash does not match the current MCP Skill body")
+        package_version = None
+        if entry.package_id:
+            package = next(
+                (item for item in self.discovered_packages if item.package_id == entry.package_id),
+                None,
+            )
+            package_version = package.version if package else None
+        resolved_knowledge = []
+        seen: set[str] = set()
+        for raw in knowledge_versions or []:
+            if not isinstance(raw, dict):
+                raise ValueError("knowledge_versions rows must be objects")
+            xid = str(raw.get("xid", "")).strip()
+            content_hash = str(raw.get("content_hash", "")).strip()
+            if not xid or xid in seen:
+                raise ValueError("knowledge_versions requires unique non-empty XIDs")
+            seen.add(xid)
+            current, _content = self._knowledge_by_xid(xid)
+            if content_hash != current.content_hash:
+                raise ValueError(f"Knowledge content_hash does not match current MCP body: {xid}")
+            resolved_knowledge.append({"xid": xid, "content_hash": content_hash})
+        return {
+            "provider_id": "xrefkit-mcp",
+            "provider_version": provider_version,
+            "package_id": entry.package_id,
+            "package_version": package_version,
+            "skill_id": entry.skill_id,
+            "skill_content_hash": current_skill_hash,
+            "knowledge_versions": sorted(resolved_knowledge, key=lambda item: item["xid"]),
+            "verification": "matched_current_catalog",
+        }
+
+    def submit_contribution_return(self, **kwargs: object) -> dict:
+        return submit_contribution_return(self.repo_root, **kwargs)  # type: ignore[arg-type]
+
+    def list_contribution_returns(self) -> list[dict]:
+        return list_contribution_returns(self.repo_root)
+
+    def export_contribution_return(self, contribution_id: str) -> dict:
+        return export_contribution_return(self.repo_root, contribution_id)
 
     @property
     def catalog_version(self) -> str:
@@ -1084,6 +1154,7 @@ def _client_instructions() -> list[str]:
         "Use list_skill_edits to inspect local overlays and export_skill_edit to produce an upstream diff. Deactivate only after the upstream provider has adopted and MCP distribution has been verified.",
         "When the user explicitly asks to add a new Knowledge document, call create_local_knowledge with an XID-bearing Markdown body; it remains project-local until exported and adopted upstream.",
         "Use list_local_knowledge to inspect local additions and export_local_knowledge to produce an upstream addition patch. Deactivate only after the distributed XID can be resolved from MCP.",
+        "After using an MCP-provided Skill, use get_contribution_return_contract and submit_contribution_return to return locally authored Knowledge or deterministic tool definitions as inert pending_review material. Send the exact Skill and Knowledge content hashes used; submission never activates or publishes the contribution.",
     ]
 
 
