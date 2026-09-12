@@ -18,6 +18,7 @@ def _print_help() -> None:
         "  xref       manage XIDs and references\n"
         "  wbs        validate and summarize a Markdown WBS\n"
         "  ctx        build compact context packs\n"
+        "  gateway    prepare inputs, route model work, and evaluate retry feedback\n"
         "  skill      discover, validate, run, verify, and close Skills\n"
         "  workflow   run the generic protocol for instructions without a Skill\n"
         "  host       run host-compatibility evidence checks\n"
@@ -43,6 +44,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
 
     command = args[0]
+    if command == "gateway":
+        from .gateway import main as gateway_main
+
+        return gateway_main(args[1:])
     if command == "pack" and len(args) > 1 and args[1] in {"build-base", "verify-base"}:
         from .contracts import main as contracts_main
 
