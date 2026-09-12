@@ -58,6 +58,7 @@ from .schemas import (
     ToolContract,
     XRefDocument,
 )
+from .gateway import gateway_contract
 from .startup_contract_pack import (
     EMBEDDED_BASED_ON_HASHES,
     EMBEDDED_STARTUP_SOURCE_PATHS,
@@ -1012,6 +1013,7 @@ class XRefCatalog:
             load_order=[reference.xid for reference in references],
             startup_contract_pack=startup_contract_pack,
             prompt_flow_protocol=_prompt_flow_protocol(),
+            instruction_gateway=gateway_contract(),
             workflow_protocol=(
                 _workflow_protocol() if "workflow" in selected_protocols else None
             ),
@@ -1061,6 +1063,7 @@ def _client_instructions() -> list[str]:
         "Fetch core_runtime_distribution (get_xrefkit_runtime_bundle or get_xrefkit_runtime_pip_package) immediately after this call, unconditionally. Unlike client_tool_download, this is not gated behind Skill selection: Skill execution requires python -m xrefkit skill run right after a Skill is chosen.",
         "Materialize and apply startup references in load_order before routing task-specific work. Applying a reference means enforcing its operational contract in the client runtime; it does not require injecting the full document body into the model prompt unless context_injection_policy requires it.",
         "MCP-only mode is active: treat this MCP response as the source of truth for XRefKit governance content.",
+        "After base startup, use instruction_gateway for each new instruction or correction before model-work dispatch. Call get_instruction_gateway_contract for schemas, then prepare_instruction_gateway and route_instruction_gateway; preserve existing Prompt Flow initialization and workflow gates.",
         "Do not read XRefKit governance Markdown from the client filesystem while MCP-only mode is active.",
         "Do not assume referenced Markdown files exist on the client filesystem.",
         "Treat path-like metadata such as meta_path, skill_doc, path, or path#xid text as server-side identity or diagnostic metadata only; do not open it through the client filesystem for governance content.",
@@ -2125,6 +2128,14 @@ def _client_obligations() -> list[ClientObligation]:
             statement="Record the startup XIDs used for client-side routing, policy, or context-injection decisions in a client-side audit log.",
             enforcement_owner="client",
             verification="client startup audit log contains repository_fingerprint, load_order_xids, startup_contract_pack_source_xids, reference_xids, and client_decision_xids",
+        ),
+        ClientObligation(
+            id="gateway.route_incoming_instruction",
+            level="must",
+            applies_when="an instruction or correction requires model-work dispatch after base startup",
+            statement="Use instruction_gateway before dispatch; retain the request revision, environment, assessment and policy, and execute selected work under the existing workflow protocol.",
+            enforcement_owner="client",
+            verification="client retains a ready routing result and separately records the observed host model; unknown scope or capability is not dispatched",
         ),
         ClientObligation(
             id="tools.materialize_from_mcp",

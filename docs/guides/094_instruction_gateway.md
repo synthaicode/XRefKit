@@ -28,6 +28,42 @@ start with `dispatch_status: not_dispatched`. Live host execution is unverified.
 
 ## First run
 
+### MCP entry (preferred when MCP is configured)
+
+`get_startup_context` includes `instruction_gateway` regardless of optional
+workflow/reporting initial-protocol selection. Apply base startup first, then
+use these tools for each incoming instruction before workflow execution:
+
+1. `get_instruction_gateway_contract`: procedure and strict schemas.
+2. `prepare_instruction_gateway(request)`: receive instruction, environment,
+   revision and source snapshots; return an incomplete assessment.
+3. `route_instruction_gateway(assessment, policy, current_sources)`: choose
+   eligible models from the completed assessment and fresh client snapshots.
+4. `evaluate_instruction_feedback(feedback)`: evaluate repeat instructions and
+   explicit acceptance after execution.
+
+These tools require startup, but deliberately do not require `bind_skill_run`:
+the selection must be available before the execution it selects. Existing
+Prompt Flow correlation and Skill loading gates remain in effect. The startup
+instructions tell clients to enter here; this does not intercept every host
+chat request or add a new mandatory gate to existing bind/run operations.
+
+Profile files remain owned by the client environment. Their paths are opaque
+references to the MCP server; it never opens them. Clients supply SHA-256/byte
+snapshots of the material they read, including Skill metadata obtained through
+MCP, and refresh those snapshots before routing. Server-side equality checks
+use one instruction snapshot computed from the exact instruction string encoded
+as UTF-8 without a BOM; the server checks its hash and byte count. Other snapshots
+remain client-reported. Snapshot equality checks
+detect reported changes; they do not prove that the client re-read the files.
+MCP output therefore says `source_verification: client_reported_snapshot`,
+not local-file verification. No profile contents are persisted on the server.
+
+The routing engine itself does not call a provider. After a ready result, the
+client host invokes the chosen model under the existing execution protocol.
+
+### Local CLI entry
+
 Store the current instruction in a UTF-8 file. Supply the existing profile paths;
 the gateway makes no assumption about their storage provider or internal schema.
 Do not pass a Skill body before the normal runtime loading gate permits it.

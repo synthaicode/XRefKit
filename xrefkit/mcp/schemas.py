@@ -304,6 +304,7 @@ class StartupContext:
     references: list[StartupReference]
     semantic_routing_references: list[dict[str, Any]]
     missing: list[dict[str, str]]
+    instruction_gateway: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -322,6 +323,7 @@ class StartupContext:
             "load_order": self.load_order,
             "startup_contract_pack": self.startup_contract_pack,
             "prompt_flow_protocol": self.prompt_flow_protocol,
+            "instruction_gateway": self.instruction_gateway,
             "workflow_protocol": self.workflow_protocol,
             "reporting_protocol": self.reporting_protocol,
             "initial_protocol_selection": self.initial_protocol_selection,

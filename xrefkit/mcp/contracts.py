@@ -248,6 +248,18 @@ def builtin_tool_contracts() -> list[ToolContract]:
             required_when="Client initialization must compare installed client-side tool package versions with the server manifest.",
         ),
     ]
+    for name, inputs, purpose in (
+        ("get_instruction_gateway_contract", {}, "Read gateway procedure and schemas after base startup."),
+        ("prepare_instruction_gateway", {"request": "object"}, "Receive an instruction before workflow execution."),
+        ("route_instruction_gateway", {"assessment": "object", "policy": "object", "current_sources": "array"},
+         "Select eligible models from client-reported current evidence before dispatch."),
+        ("evaluate_instruction_feedback", {"feedback": "object"}, "Evaluate explicit retry and acceptance feedback."),
+    ):
+        contracts.append(ToolContract(
+            tool_id=f"xref.{name}", provider="xrefkit-mcp", version="1",
+            execution_location="server", side_effects="none", input_schema=inputs,
+            output_schema={"result": "object"}, requires_workspace=False, required_when=purpose,
+        ))
     for contract in contracts:
         contract.validate()
     return contracts

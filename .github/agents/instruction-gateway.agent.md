@@ -9,6 +9,16 @@ opt-in instruction entry point, not a replacement for workflow governance.
 Use a parent model whose host cost tier permits every intended delegate.
 Do not infer model competence or cost tier from its name.
 
+When XRefKit MCP is configured, use `get_startup_context` first and apply its
+`instruction_gateway` contract. Obtain schemas from
+`get_instruction_gateway_contract`, then use `prepare_instruction_gateway`,
+`route_instruction_gateway`, and `evaluate_instruction_feedback` in place of
+the local gateway CLI below. These tools require startup but no Skill Run
+binding. Resolve Skill metadata through MCP. Read the active environment's
+profile through its existing client mechanism; pass source snapshots, never
+ask the server to open client paths. Refresh snapshots before routing. The
+local CLI procedure below is only for repository-native/non-MCP operation.
+
 1. Receive the current instruction and identify its goal and scope revision.
    Route semantically to a Skill using the existing catalog. Read metadata;
    do not open a Skill body before its normal runtime envelope succeeds.

@@ -13,6 +13,7 @@ from typing import Any
 from . import __version__
 from .audit import McpAuditLog, SessionRunBinding, SessionRunRegistry
 from .catalog import XRefCatalog
+from .gateway import evaluate_feedback, gateway_contract, prepare_gateway, route_gateway
 from .context_token import CONTEXT_META_KEY, ContextClaims, ContextTokenCodec
 from .dist import DIST_ROUTE_PATH, ArtifactDistribution, add_dist_routes
 from xrefkit.structure_catalog import get_entry as get_structure_entry
@@ -422,6 +423,33 @@ def main(argv: list[str] | None = None) -> int:
         if dist is not None:
             result = _with_artifact_distribution(result, dist, dist_base_url)
         return result
+
+    @app.tool()
+    def get_instruction_gateway_contract(ctx: Context) -> dict[str, Any]:
+        """Get pre-workflow gateway instructions and strict request schemas after startup."""
+        _require_startup_loaded(ctx, "get_instruction_gateway_contract")
+        return gateway_contract(include_schemas=True)
+
+    @app.tool()
+    def prepare_instruction_gateway(ctx: Context, request: dict[str, Any]) -> dict[str, Any]:
+        """Receive each instruction with client-owned profile/source snapshots before workflow execution."""
+        _require_startup_loaded(ctx, "prepare_instruction_gateway")
+        return _with_control_reminder(prepare_gateway(request))
+
+    @app.tool()
+    def route_instruction_gateway(
+        ctx: Context, assessment: dict[str, Any], policy: dict[str, Any],
+        current_sources: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        """Select eligible models without opening client paths or dispatching; no Skill Run binding needed."""
+        _require_startup_loaded(ctx, "route_instruction_gateway")
+        return _with_control_reminder(route_gateway(assessment, policy, current_sources))
+
+    @app.tool()
+    def evaluate_instruction_feedback(ctx: Context, feedback: dict[str, Any]) -> dict[str, Any]:
+        """Evaluate explicit acceptance and repeated-instruction feedback without inferring user preferences."""
+        _require_startup_loaded(ctx, "evaluate_instruction_feedback")
+        return _with_control_reminder(evaluate_feedback(feedback))
 
     @app.tool()
     def list_knowledge_catalog(limit: int | None = None) -> list[dict[str, Any]]:

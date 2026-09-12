@@ -26,7 +26,7 @@ class Source(Record):
     id: Text
     kind: Literal["instruction", "skill", "profile", "data"]
     path: Text
-    sha256: Text
+    sha256: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
     bytes: Count
 
 
@@ -141,19 +141,33 @@ def snapshot(path: Path, kind: str, source_id: str) -> dict:
             "sha256": digest.hexdigest(), "bytes": size}
 
 
-def route(assessment: Assessment, policy: Policy) -> dict:
+def route(assessment: Assessment, policy: Policy, *, current_sources: list[Source] | None = None) -> dict:
     """Filter by capability, per-axis limits and host tier; never invent scores."""
     issues = list(assessment.unresolved or [])
     if assessment.environment != policy.environment:
         issues.append("assessment and model policy belong to different environments")
     if assessment.unresolved is None:
         issues.append("scope and instruction conflicts have not been assessed")
-    for source in assessment.sources:
-        actual = snapshot(Path(source.path), source.kind, source.id)
-        if actual["sha256"] != source.sha256 or actual["bytes"] != source.bytes:
-            issues.append(f"source changed: {source.id}; reassess this revision")
-        if source.kind == "instruction" and Path(source.path).read_text(encoding="utf-8-sig") != assessment.instruction:
-            issues.append(f"instruction does not match source: {source.id}")
+    if current_sources is not None:
+        # Remote MCP source paths belong to the client, never the server.
+        expected = {s.id: s.model_dump() for s in assessment.sources}
+        current = {s.id: s.model_dump() for s in current_sources}
+        if len(current) != len(current_sources) or current != expected:
+            issues.append("client source snapshot changed; reassess this revision")
+        instruction_bytes = assessment.instruction.encode("utf-8")
+        instruction_sources = [s for s in assessment.sources if s.kind == "instruction"]
+        if len(instruction_sources) != 1 or any(
+            s.sha256 != hashlib.sha256(instruction_bytes).hexdigest()
+            or s.bytes != len(instruction_bytes) for s in instruction_sources
+        ):
+            issues.append("instruction does not match its canonical UTF-8 client snapshot")
+    else:
+        for source in assessment.sources:
+            actual = snapshot(Path(source.path), source.kind, source.id)
+            if actual["sha256"] != source.sha256 or actual["bytes"] != source.bytes:
+                issues.append(f"source changed: {source.id}; reassess this revision")
+            if source.kind == "instruction" and Path(source.path).read_text(encoding="utf-8-sig") != assessment.instruction:
+                issues.append(f"instruction does not match source: {source.id}")
     decisions = []
     for step in assessment.steps:
         if step.kind == "deterministic":
@@ -193,6 +207,7 @@ def route(assessment: Assessment, policy: Policy) -> dict:
             "policy_version": policy.version, "issues": issues, "decisions": decisions,
             "assessment": assessment.model_dump(), "policy": policy.model_dump(),
             "dispatch_status": "not_dispatched",
+            "source_verification": "client_reported_snapshot" if current_sources is not None else "local_files",
             "workflow_rule": "Start the existing workflow/Skill envelope before executing any step; preserve all gates."}
 
 
