@@ -121,16 +121,30 @@ Calibrate limits and priorities using same-input, same-rubric experiments,
 including orthogonal arrays, scoped edits and repeated corrections. A reference
 is an evidence pointer; the CLI does not validate the underlying benchmark.
 
-The `vscode_copilot` host policy requires `parent_cost_tier`. Reject candidates
-above it. These host cost ranks are supplied by the operator and are independent
-of Skill `model_tier`; no existing quality requirement is relaxed by routing.
+The `vscode_copilot` host policy requires `parent_cost_tier` and
+`parent_model_id`, which identify the conversation model and evaluated rank
+reported by the host policy. Candidates above that tier cannot be dispatched.
+These host cost ranks are supplied by the operator and are independent of Skill
+`model_tier`; no existing quality requirement is relaxed by routing.
+
+When every model step has an intrinsically eligible candidate, but
+one or more are blocked only by the current parent tier, routing returns
+`conversation_upgrade_required`. The accompanying proposal contains the current
+conversation model/tier, minimum tier that makes at least one evaluated worker
+callable for every blocked step, affected steps, worker evidence references and
+the exact request revision to reroute. It remains `proposal_only`; the gateway
+does not switch the conversation or dispatch work. The client presents it to the
+user, waits for the host-side model selection, refreshes source snapshots and
+the environment policy, and reruns routing. If capabilities, measurements,
+scope, evidence or environment are unresolved, status remains `needs_assessment`
+instead of implying that a more expensive conversation model would solve it.
 
 ```powershell
 python -m xrefkit gateway route --assessment work/assessment-001.json --policy work/model-policy.json --out work/route-001.json
 ```
 
-Exit 0 means ready, 1 means reassessment/eligible model is needed, and 2 means
-invalid input or I/O failure. Outputs are created exclusively: use a new file
+Exit 0 means ready, 1 means reassessment or a conversation-model upgrade is
+needed, and 2 means invalid input or I/O failure. Outputs are created exclusively: use a new file
 for each revision. Missing files fail explicitly; changed source hashes invalidate
 the assessment. A route contains the full assessment, policy and rejection
 reasons, allowing a worker to retain scope and a reviewer to replay the choice.

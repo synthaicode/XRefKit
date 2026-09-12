@@ -31,6 +31,7 @@ def request_and_policy(tmp_path):
                        "metrics": {axis: {"value": 1, "basis": "estimated", "evidence": refs}
                                    for axis in AXES}}]}
     policy = {"version": "trial-1", "host": "vscode_copilot", "parent_cost_tier": 3,
+              "parent_model_id": "gateway-parent",
               "environment": "vscode:test",
               "candidates": [
                   {"id": "cheap", "priority": 0, "cost_tier": 1,
@@ -55,15 +56,13 @@ def test_capability_excludes_cheapest_and_leaves_tools_unassigned(request_and_po
     assert result["dispatch_status"] == "not_dispatched"
 
 
-@pytest.mark.parametrize("problem", ["unknown", "scope", "parent", "capacity", "stale", "instruction"])
+@pytest.mark.parametrize("problem", ["unknown", "scope", "capacity", "stale", "instruction"])
 def test_routing_cannot_hide_missing_or_changed_requirements(request_and_policy, problem):
     assessment, policy = request_and_policy
     if problem == "unknown":
         assessment["steps"][1]["metrics"]["scope_changes"].update(value=None, basis="unknown")
     elif problem == "scope":
         assessment["unresolved"] = None
-    elif problem == "parent":
-        policy["parent_cost_tier"] = 1
     elif problem == "capacity":
         policy["candidates"][1]["max_input_bytes"] = 1
     elif problem == "instruction":
@@ -72,6 +71,75 @@ def test_routing_cannot_hide_missing_or_changed_requirements(request_and_policy,
         from pathlib import Path
         Path(assessment["sources"][2]["path"]).write_text("changed preference", encoding="utf-8")
     assert run_pair((assessment, policy))["status"] == "needs_assessment"
+
+
+def test_parent_tier_block_returns_conversation_upgrade_proposal(request_and_policy):
+    assessment, policy = request_and_policy
+    policy["parent_cost_tier"] = 1
+    result = run_pair((assessment, policy))
+    assert result["status"] == "conversation_upgrade_required"
+    assert result["dispatch_status"] == "not_dispatched"
+    assert result["conversation_upgrade"] == {
+        "proposal_only": True,
+        "action": "user_selects_conversation_model",
+        "current_conversation_model": "gateway-parent",
+        "current_cost_tier": 1,
+        "required_minimum_tier": 3,
+        "affected_steps": ["interpret"],
+        "workers_callable_after_upgrade": [{
+            "step_id": "interpret", "model": "capable", "cost_tier": 3,
+            "evaluation_ref": "fixture-array"}],
+        "reason": "evaluated workers satisfy task requirements but exceed the current conversation cost tier",
+        "resume": {"request_id": "request-1", "revision": 0,
+                   "tool": "route_instruction_gateway",
+                   "rule": "select a conversation model at or above required_minimum_tier, refresh source snapshots, update the environment policy, and rerun routing"},
+    }
+
+
+def test_upgrade_tier_covers_every_blocked_step(request_and_policy):
+    assessment, policy = copy.deepcopy(request_and_policy)
+    assessment["steps"].append({
+        **copy.deepcopy(assessment["steps"][1]), "id": "deep-review",
+        "depends_on": ["interpret"], "capabilities": ["deep_review"]})
+    policy["candidates"].append({
+        "id": "reviewer", "priority": 0, "cost_tier": 4,
+        "capabilities": ["deep_review"], "limits": dict.fromkeys(AXES, 10),
+        "evaluation_ref": "fixture-review", "max_input_bytes": 10000})
+    policy["parent_cost_tier"] = 1
+    result = run_pair((assessment, policy))
+    assert result["status"] == "conversation_upgrade_required"
+    assert result["conversation_upgrade"]["required_minimum_tier"] == 4
+    assert {row["step_id"] for row in result["conversation_upgrade"]["workers_callable_after_upgrade"]} == {
+        "interpret", "deep-review"}
+
+
+def test_upgrade_is_not_proposed_when_capability_is_missing(request_and_policy):
+    assessment, policy = request_and_policy
+    policy["parent_cost_tier"] = 0
+    for candidate in policy["candidates"]:
+        candidate["capabilities"] = []
+    result = run_pair((assessment, policy))
+    assert result["status"] == "needs_assessment"
+    assert result["conversation_upgrade"] is None
+
+
+def test_copilot_policy_requires_current_conversation_model(request_and_policy):
+    _, policy = request_and_policy
+    policy["parent_model_id"] = None
+    with pytest.raises(ValidationError, match="parent_model_id"):
+        Policy.model_validate(policy)
+
+
+def test_upgrade_cli_is_nonready(request_and_policy, tmp_path, capsys):
+    assessment, policy = request_and_policy
+    policy["parent_cost_tier"] = 1
+    assessment_path = tmp_path / "assessment.json"
+    policy_path = tmp_path / "policy.json"
+    assessment_path.write_text(json.dumps(assessment), encoding="utf-8")
+    policy_path.write_text(json.dumps(policy), encoding="utf-8")
+    assert main(["gateway", "route", "--assessment", str(assessment_path),
+                 "--policy", str(policy_path)]) == 1
+    assert json.loads(capsys.readouterr().out)["status"] == "conversation_upgrade_required"
 
 
 @pytest.mark.parametrize("problem", ["cycle", "reference", "typo", "negative", "unknown_zero"])

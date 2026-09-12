@@ -118,13 +118,16 @@ class Policy(Record):
     version: Text
     environment: Text
     host: Literal["generic", "vscode_copilot"]
+    parent_model_id: Text | None = None
     parent_cost_tier: Count | None = None
     candidates: list[Candidate] = Field(min_length=1)
 
     @model_validator(mode="after")
     def valid_host(self):
-        if self.host == "vscode_copilot" and self.parent_cost_tier is None:
-            raise ValueError("Copilot policy requires parent_cost_tier")
+        if self.host == "vscode_copilot" and (
+            self.parent_model_id is None or self.parent_cost_tier is None
+        ):
+            raise ValueError("Copilot policy requires parent_model_id and parent_cost_tier")
         if len({c.id for c in self.candidates}) != len(self.candidates):
             raise ValueError("duplicate model IDs")
         return self
@@ -169,6 +172,8 @@ def route(assessment: Assessment, policy: Policy, *, current_sources: list[Sourc
             if source.kind == "instruction" and Path(source.path).read_text(encoding="utf-8-sig") != assessment.instruction:
                 issues.append(f"instruction does not match source: {source.id}")
     decisions = []
+    upgrade_options: dict[str, list[Candidate]] = {}
+    model_step_without_route = False
     for step in assessment.steps:
         if step.kind == "deterministic":
             decisions.append({"step_id": step.id, "kind": step.kind, "tool_ref": step.tool_ref})
@@ -176,37 +181,80 @@ def route(assessment: Assessment, policy: Policy, *, current_sources: list[Sourc
         unknown = [axis for axis, metric in step.metrics.items() if metric.value is None]
         rejected = {}
         eligible = []
+        blocked_only_by_parent = []
         for candidate in policy.candidates:
-            reasons = []
+            intrinsic_reasons = []
             if sum(s.bytes for s in assessment.sources) > candidate.max_input_bytes:
-                reasons.append("exceeds evaluated input byte limit")
+                intrinsic_reasons.append("exceeds evaluated input byte limit")
             missing = sorted(set(step.capabilities) - set(candidate.capabilities))
             if missing:
-                reasons.append("missing capabilities: " + ", ".join(missing))
+                intrinsic_reasons.append("missing capabilities: " + ", ".join(missing))
             if unknown:
-                reasons.append("unknown complexity: " + ", ".join(sorted(unknown)))
+                intrinsic_reasons.append("unknown complexity: " + ", ".join(sorted(unknown)))
             for axis, metric in step.metrics.items():
                 if metric.value is not None and metric.value > candidate.limits[axis]:
-                    reasons.append(f"exceeds {axis}")
-            if (policy.host == "vscode_copilot"
-                    and candidate.cost_tier > policy.parent_cost_tier):
+                    intrinsic_reasons.append(f"exceeds {axis}")
+            parent_blocked = (
+                not intrinsic_reasons
+                and policy.host == "vscode_copilot"
+                and candidate.cost_tier > policy.parent_cost_tier
+            )
+            reasons = list(intrinsic_reasons)
+            if parent_blocked:
                 reasons.append("exceeds Copilot parent cost tier")
+                blocked_only_by_parent.append(candidate)
             if reasons:
                 rejected[candidate.id] = reasons
             else:
                 eligible.append(candidate)
         chosen = min(eligible, key=lambda c: (c.priority, c.id)) if eligible and not issues else None
+        if not eligible:
+            if blocked_only_by_parent:
+                upgrade_options[step.id] = blocked_only_by_parent
+            else:
+                model_step_without_route = True
         decisions.append({"step_id": step.id, "kind": step.kind,
                           "model": chosen.id if chosen else None,
                           "evaluation_ref": chosen.evaluation_ref if chosen else None,
                           "rejected": rejected})
-    ready = not issues and all(d["kind"] == "deterministic" or d["model"] for d in decisions)
-    return {"schema_version": 1, "status": "ready" if ready else "needs_assessment",
+    upgrade = None
+    if not issues and not model_step_without_route and upgrade_options:
+        required_tier = max(min(c.cost_tier for c in candidates)
+                            for candidates in upgrade_options.values())
+        workers = []
+        for step_id, candidates in upgrade_options.items():
+            callable_at_tier = [c for c in candidates if c.cost_tier <= required_tier]
+            selected = min(callable_at_tier, key=lambda c: (c.priority, c.id))
+            workers.append({"step_id": step_id, "model": selected.id,
+                            "cost_tier": selected.cost_tier,
+                            "evaluation_ref": selected.evaluation_ref})
+        upgrade = {
+            "proposal_only": True,
+            "action": "user_selects_conversation_model",
+            "current_conversation_model": policy.parent_model_id,
+            "current_cost_tier": policy.parent_cost_tier,
+            "required_minimum_tier": required_tier,
+            "affected_steps": sorted(upgrade_options),
+            "workers_callable_after_upgrade": workers,
+            "reason": "evaluated workers satisfy task requirements but exceed the current conversation cost tier",
+            "resume": {"request_id": assessment.request_id,
+                       "revision": assessment.revision,
+                       "tool": "route_instruction_gateway",
+                       "rule": "select a conversation model at or above required_minimum_tier, refresh source snapshots, update the environment policy, and rerun routing"},
+        }
+    if issues or model_step_without_route:
+        status = "needs_assessment"
+    elif upgrade is not None:
+        status = "conversation_upgrade_required"
+    else:
+        status = "ready"
+    return {"schema_version": 1, "status": status,
             "request_id": assessment.request_id, "revision": assessment.revision,
             "environment": assessment.environment,
             "policy_version": policy.version, "issues": issues, "decisions": decisions,
             "assessment": assessment.model_dump(), "policy": policy.model_dump(),
             "dispatch_status": "not_dispatched",
+            "conversation_upgrade": upgrade,
             "source_verification": "client_reported_snapshot" if current_sources is not None else "local_files",
             "workflow_rule": "Start the existing workflow/Skill envelope before executing any step; preserve all gates."}
 
@@ -354,7 +402,9 @@ def main(argv=None) -> int:
                 handle.write(payload)
         else:
             print(payload, end="")
-        return 0 if result.get("status") != "needs_assessment" else 1
+        return 1 if result.get("status") in {
+            "needs_assessment", "conversation_upgrade_required"
+        } else 0
     except (OSError, ValueError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False), file=sys.stderr)
         return 2

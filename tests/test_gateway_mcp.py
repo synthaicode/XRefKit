@@ -42,6 +42,15 @@ def test_contract_and_prepare_preserve_unassessed_state(request_and_policy):
         "request", "assessment", "policy", "feedback", "source"}
 
 
+def test_upgrade_proposal_is_returned_over_mcp_boundary(request_and_policy):
+    assessment, policy = remote_pair(request_and_policy)
+    policy["parent_cost_tier"] = 1
+    result = route_gateway(assessment, policy, assessment["sources"])
+    assert result["status"] == "conversation_upgrade_required"
+    assert result["conversation_upgrade"]["required_minimum_tier"] == 3
+    assert result["conversation_upgrade"]["proposal_only"] is True
+
+
 def test_gateway_over_real_mcp_stdio_before_run_binding(request_and_policy, tmp_path):
     anyio = pytest.importorskip("anyio")
     pytest.importorskip("mcp")
@@ -85,6 +94,14 @@ def test_gateway_over_real_mcp_stdio_before_run_binding(request_and_policy, tmp_
                 assert not routed.isError
                 assert routed.structuredContent["decisions"][1]["model"] == "capable"
                 assert routed.structuredContent["source_verification"] == "client_reported_snapshot"
+                upgrade_policy = copy.deepcopy(policy)
+                upgrade_policy["parent_cost_tier"] = 1
+                upgrade = await session.call_tool("route_instruction_gateway", {
+                    "assessment": assessment, "policy": upgrade_policy,
+                    "current_sources": assessment["sources"]})
+                assert not upgrade.isError
+                assert upgrade.structuredContent["status"] == "conversation_upgrade_required"
+                assert upgrade.structuredContent["conversation_upgrade"]["required_minimum_tier"] == 3
                 feedback = await session.call_tool("evaluate_instruction_feedback", {"feedback": {
                     "version": 1, "cost_unit": "USD", "attempts": [{
                         "id": "a", "goal_id": "g", "scope_revision": 0, "model": "capable",

@@ -44,8 +44,17 @@ local CLI procedure below is only for repository-native/non-MCP operation.
    Require orthogonal-array interpretation and incremental-scope capabilities
    when the actual task needs them, not merely when keywords occur.
 5. Obtain an evaluated model policy for this host. Use `gateway schema policy`.
+   Record the current conversation model as `parent_model_id` and its evaluated
+   host rank as `parent_cost_tier`. These are environment policy facts, not
+   Skill `model_tier` values.
    Run `gateway route`. A non-ready result is not dispatch authorization.
    Resolve missing assessment or report the unavailable capability to the user.
+   When it returns `conversation_upgrade_required`, present its reason,
+   `required_minimum_tier`, affected steps and callable workers. Ask the user
+   to select a qualifying conversation model in the host. Do not claim the
+   model changed and do not dispatch. After the user changes it, refresh the
+   source snapshots and policy, then rerun the same request revision from the
+   indicated route tool. A new user requirement creates a new revision.
 6. For each ready model step, invoke a subagent with the exact selected model.
    Pass request ID, revision, routing result, instruction scope, applicable
    profile evidence, dependencies, expected outputs and existing run/Flow IDs.
