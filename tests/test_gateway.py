@@ -27,6 +27,7 @@ def request_and_policy(tmp_path):
                        "scope": "section A", "evidence": refs, "tool_ref": "existing-counter"},
                       {"id": "interpret", "kind": "model", "task": "Compare",
                        "scope": "section A only", "evidence": refs, "depends_on": ["count"],
+                       "execution_kind": "implementation",
                        "capabilities": ["orthogonal_array", "incremental_scope"],
                        "metrics": {axis: {"value": 1, "basis": "estimated", "evidence": refs}
                                    for axis in AXES}}]}
@@ -53,7 +54,36 @@ def test_capability_excludes_cheapest_and_leaves_tools_unassigned(request_and_po
     assert result["status"] == "ready"
     assert result["decisions"][0] == {"step_id": "count", "kind": "deterministic", "tool_ref": "existing-counter"}
     assert result["decisions"][1]["model"] == "capable"
+    assert result["dispatch_status"] == "subagent_dispatch_required"
+    assert result["subagent_dispatches"] == [{
+        "step_id": "interpret",
+        "parent_model": "gateway-parent",
+        "selected_model": "capable",
+        "agent_role": "implementation_subagent",
+        "rationale": "The step is classified as implementation and the evaluated policy selected capable; the parent remains the gateway/coordinator.",
+        "parent_execution": "prohibited",
+        "dispatch_owner": "client_host",
+    }]
+
+
+def test_analysis_does_not_require_implementation_subagent_dispatch(request_and_policy):
+    assessment, policy = request_and_policy
+    assessment["steps"][1]["execution_kind"] = "analysis"
+    result = run_pair((assessment, policy))
+    assert result["status"] == "ready"
     assert result["dispatch_status"] == "not_dispatched"
+    assert result["subagent_dispatches"] == []
+
+
+def test_implementation_requires_recorded_parent_model(request_and_policy):
+    assessment, policy = request_and_policy
+    policy["host"] = "generic"
+    policy["parent_model_id"] = None
+    policy["parent_cost_tier"] = None
+    result = run_pair((assessment, policy))
+    assert result["status"] == "needs_assessment"
+    assert "parent_model_id is required before implementation subagent dispatch" in result["issues"]
+    assert result["subagent_dispatches"] == []
 
 
 @pytest.mark.parametrize("problem", ["unknown", "scope", "capacity", "stale", "instruction"])
@@ -142,7 +172,7 @@ def test_upgrade_cli_is_nonready(request_and_policy, tmp_path, capsys):
     assert json.loads(capsys.readouterr().out)["status"] == "conversation_upgrade_required"
 
 
-@pytest.mark.parametrize("problem", ["cycle", "reference", "typo", "negative", "unknown_zero"])
+@pytest.mark.parametrize("problem", ["cycle", "reference", "typo", "negative", "unknown_zero", "missing_execution_kind"])
 def test_assessment_rejects_invalid_boundaries(request_and_policy, problem):
     assessment, _ = request_and_policy
     step = assessment["steps"][1]
@@ -154,6 +184,8 @@ def test_assessment_rejects_invalid_boundaries(request_and_policy, problem):
         step["metrics"]["scope_change"] = step["metrics"].pop("scope_changes")
     elif problem == "negative":
         step["metrics"]["scope_changes"]["value"] = -1
+    elif problem == "missing_execution_kind":
+        step.pop("execution_kind")
     else:
         step["metrics"]["scope_changes"].update(value=0, basis="unknown")
     with pytest.raises(ValidationError):
@@ -234,6 +266,11 @@ def test_schema_and_feedback_cli(tmp_path, capsys):
     assert main(["gateway", "schema", "assessment"]) == 0
     schema = json.loads(capsys.readouterr().out)
     assert schema["additionalProperties"] is False
+    assert main(["gateway", "schema", "dispatch_plan"]) == 0
+    dispatch_schema = json.loads(capsys.readouterr().out)
+    assert set(dispatch_schema["required"]) == {
+        "step_id", "parent_model", "selected_model", "agent_role", "rationale",
+        "parent_execution", "dispatch_owner"}
     source = tmp_path / "feedback.json"
     source.write_text(json.dumps({"version": 1, "cost_unit": "USD", "attempts": [attempt()]}), encoding="utf-8")
     assert main(["gateway", "evaluate", "--feedback", str(source)]) == 0

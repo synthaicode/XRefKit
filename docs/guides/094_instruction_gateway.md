@@ -13,7 +13,8 @@ deterministic work from interpretation; business execution remains inside the
 `xrefkit gateway prepare` snapshots explicitly supplied existing files without
 changing them. `route` validates an evidence-bearing assessment and filters an
 operator-supplied evaluated model policy. `evaluate` measures explicit feedback.
-`schema assessment|policy|feedback` prints the exact strict JSON schemas.
+`schema assessment|policy|feedback|dispatch_plan` prints the exact strict JSON
+schemas.
 
 Semantic extraction is performed by the gateway agent, not a keyword counter.
 The Python boundary deterministically validates and selects from that assessment;
@@ -23,8 +24,10 @@ No universal complexity score, real model ranking, or price table is built in.
 The optional `.github/agents/instruction-gateway.agent.md` is the VS Code
 Copilot entry point. Select it and a suitable parent model in the UI. Installing
 the file does not force all other chat entry points through the gateway. Model
-dispatch is performed by the host agent, not by this CLI; route records always
-start with `dispatch_status: not_dispatched`. Live host execution is unverified.
+dispatch is performed by the host agent, not by this CLI. An implementation
+route returns `dispatch_status: subagent_dispatch_required` and an explicit
+`subagent_dispatches` plan; a route without implementation work returns
+`dispatch_status: not_dispatched`. Live host execution is unverified.
 
 ## First run
 
@@ -92,7 +95,8 @@ also remain supported when the host has already resolved the provider location.
 Automatic discovery of the active VS Code profile is a host integration task.
 
 Deterministic steps require `tool_ref` and have no model requirements. They are
-not executed by the gateway. Model steps require capability names and all axes:
+not executed by the gateway. Model steps require `execution_kind` (`analysis`
+or `implementation`), capability names, and all axes:
 
 | Axis | Counting convention |
 |---|---|
@@ -126,6 +130,17 @@ The `vscode_copilot` host policy requires `parent_cost_tier` and
 reported by the host policy. Candidates above that tier cannot be dispatched.
 These host cost ranks are supplied by the operator and are independent of Skill
 `model_tier`; no existing quality requirement is relaxed by routing.
+
+For every ready `implementation` model step, routing emits one
+`subagent_dispatches` record with `parent_model`, `selected_model`,
+`agent_role: implementation_subagent`, `rationale`, and
+`parent_execution: prohibited`. The parent conversation remains the gateway and
+coordinator: it must create a separate subagent using the exact
+`selected_model`, then record the observed model identity separately. A missing
+`parent_model_id` prevents an implementation route from becoming ready. This
+contract selects the worker model; it does not claim that the host performed
+the dispatch. `analysis` steps do not receive this implementation-only
+restriction.
 
 When every model step has an intrinsically eligible candidate, but
 one or more are blocked only by the current parent tier, routing returns
@@ -177,9 +192,10 @@ The evaluator does not silently retrain or rewrite policy/profile files.
 
 ## Validation and remaining integration
 
-Tests cover capability exclusion, host limits, scope/measurement unknowns, stale
-profiles, instruction mismatches, dependency integrity, feedback attribution,
-and CLI file preservation. Actual Copilot models, profile provider discovery,
+Tests cover capability exclusion, host limits, implementation-subagent dispatch
+plans, parent-execution prohibition, scope/measurement unknowns, stale profiles,
+instruction mismatches, dependency integrity, feedback attribution, and CLI file
+preservation. Actual Copilot models, profile provider discovery,
 automatic mandatory entry enforcement, and production routing calibration are
 not established by those tests. Supply the existing profile location and actual
 evaluated host policy to exercise that integration.

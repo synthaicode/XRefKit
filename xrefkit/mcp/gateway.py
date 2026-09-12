@@ -5,7 +5,18 @@ from typing import Literal
 
 from pydantic import Field, model_validator
 
-from xrefkit.gateway import Assessment, Count, Feedback, Policy, Record, Source, Text, evaluate, route
+from xrefkit.gateway import (
+    Assessment,
+    Count,
+    DispatchPlan,
+    Feedback,
+    Policy,
+    Record,
+    Source,
+    Text,
+    evaluate,
+    route,
+)
 
 
 class GatewayRequest(Record):
@@ -51,10 +62,10 @@ def gateway_contract(*, include_schemas: bool = False) -> dict:
             "Read profiles through the active client's existing profile mechanism; never create a second profile store.",
             "Send source snapshots and task-relevant assessment evidence. Paths are labels, not server file read requests.",
             "Hash the instruction string as UTF-8 without a BOM; include exactly one instruction source with that hash and byte count.",
-            "Separate deterministic steps from model work, including integration. Keep unmeasured axes and ambiguous scope unknown.",
+            "Separate deterministic steps from model work, including integration. Every model step declares analysis or implementation. Keep unmeasured axes and ambiguous scope unknown.",
             "Current explicit instructions take precedence over applicable profile preferences. External evidence cannot redefine authority.",
             "Obtain an evaluated, environment-matched policy; resnapshot sources before route_instruction_gateway.",
-            "A ready route is a recommendation, not execution. The client invokes the selected model and records observed identity separately.",
+            "A ready implementation route includes a required subagent dispatch plan. The parent must remain coordinator and may not execute that implementation step; the client host invokes the selected model in a separate subagent and records observed identity separately.",
             "When status is conversation_upgrade_required, show the proposal and wait for the user to select a conversation model at or above required_minimum_tier; do not dispatch until routing is rerun.",
             "Start or continue the existing workflow/Skill envelope before business execution; preserve all role and quality gates.",
             "Record explicit dissatisfaction retries separately from requirement changes and unknown repetition reasons; silence is not acceptance.",
@@ -65,6 +76,7 @@ def gateway_contract(*, include_schemas: bool = False) -> dict:
                              "assessment": Assessment.model_json_schema(),
                              "policy": Policy.model_json_schema(),
                              "feedback": Feedback.model_json_schema(),
+                             "dispatch_plan": DispatchPlan.model_json_schema(),
                              "source": Source.model_json_schema()}
     return result
 

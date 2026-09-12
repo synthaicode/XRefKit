@@ -50,6 +50,7 @@ class Measurement(Record):
 class Step(Record):
     id: Text
     kind: Literal["deterministic", "model"]
+    execution_kind: Literal["analysis", "implementation"] | None = None
     task: Text
     scope: Text
     evidence: list[Evidence] = Field(min_length=1)
@@ -61,10 +62,17 @@ class Step(Record):
     @model_validator(mode="after")
     def execution_boundary(self):
         if self.kind == "deterministic":
-            if not self.tool_ref or self.capabilities or self.metrics:
+            if self.execution_kind is not None or not self.tool_ref or self.capabilities or self.metrics:
                 raise ValueError("deterministic steps require tool_ref and no model requirements")
-        elif self.tool_ref or not self.capabilities or set(self.metrics) != AXES:
-            raise ValueError("model steps require capabilities and every complexity axis, with no tool_ref")
+        elif (
+            self.execution_kind is None
+            or self.tool_ref
+            or not self.capabilities
+            or set(self.metrics) != AXES
+        ):
+            raise ValueError(
+                "model steps require execution_kind, capabilities and every complexity axis, with no tool_ref"
+            )
         return self
 
 
@@ -133,6 +141,16 @@ class Policy(Record):
         return self
 
 
+class DispatchPlan(Record):
+    step_id: Text
+    parent_model: Text
+    selected_model: Text
+    agent_role: Literal["implementation_subagent"]
+    rationale: Text
+    parent_execution: Literal["prohibited"]
+    dispatch_owner: Literal["client_host"]
+
+
 def snapshot(path: Path, kind: str, source_id: str) -> dict:
     digest = hashlib.sha256()
     size = 0
@@ -151,6 +169,8 @@ def route(assessment: Assessment, policy: Policy, *, current_sources: list[Sourc
         issues.append("assessment and model policy belong to different environments")
     if assessment.unresolved is None:
         issues.append("scope and instruction conflicts have not been assessed")
+    if any(step.execution_kind == "implementation" for step in assessment.steps) and not policy.parent_model_id:
+        issues.append("parent_model_id is required before implementation subagent dispatch")
     if current_sources is not None:
         # Remote MCP source paths belong to the client, never the server.
         expected = {s.id: s.model_dump() for s in assessment.sources}
@@ -172,6 +192,7 @@ def route(assessment: Assessment, policy: Policy, *, current_sources: list[Sourc
             if source.kind == "instruction" and Path(source.path).read_text(encoding="utf-8-sig") != assessment.instruction:
                 issues.append(f"instruction does not match source: {source.id}")
     decisions = []
+    dispatches: list[DispatchPlan] = []
     upgrade_options: dict[str, list[Candidate]] = {}
     model_step_without_route = False
     for step in assessment.steps:
@@ -217,6 +238,19 @@ def route(assessment: Assessment, policy: Policy, *, current_sources: list[Sourc
                           "model": chosen.id if chosen else None,
                           "evaluation_ref": chosen.evaluation_ref if chosen else None,
                           "rejected": rejected})
+        if chosen is not None and step.execution_kind == "implementation":
+            dispatches.append(DispatchPlan(
+                step_id=step.id,
+                parent_model=policy.parent_model_id,
+                selected_model=chosen.id,
+                agent_role="implementation_subagent",
+                rationale=(
+                    "The step is classified as implementation and the evaluated policy selected "
+                    f"{chosen.id}; the parent remains the gateway/coordinator."
+                ),
+                parent_execution="prohibited",
+                dispatch_owner="client_host",
+            ))
     upgrade = None
     if not issues and not model_step_without_route and upgrade_options:
         required_tier = max(min(c.cost_tier for c in candidates)
@@ -253,7 +287,8 @@ def route(assessment: Assessment, policy: Policy, *, current_sources: list[Sourc
             "environment": assessment.environment,
             "policy_version": policy.version, "issues": issues, "decisions": decisions,
             "assessment": assessment.model_dump(), "policy": policy.model_dump(),
-            "dispatch_status": "not_dispatched",
+            "dispatch_status": "subagent_dispatch_required" if dispatches else "not_dispatched",
+            "subagent_dispatches": [dispatch.model_dump() for dispatch in dispatches],
             "conversation_upgrade": upgrade,
             "source_verification": "client_reported_snapshot" if current_sources is not None else "local_files",
             "workflow_rule": "Start the existing workflow/Skill envelope before executing any step; preserve all gates."}
@@ -363,14 +398,15 @@ def main(argv=None) -> int:
     feedback = sub.add_parser("evaluate")
     feedback.add_argument("--feedback", type=Path, required=True)
     schema = sub.add_parser("schema", help="Print the strict JSON schema for gateway records")
-    schema.add_argument("kind", choices=["assessment", "policy", "feedback"])
+    schema.add_argument("kind", choices=["assessment", "policy", "feedback", "dispatch_plan"])
     for command in (prepare, routing, feedback):
         command.add_argument("--out", type=Path)
     args = parser.parse_args(argv)
     try:
         if args.command == "schema":
             print(json.dumps({"assessment": Assessment, "policy": Policy,
-                              "feedback": Feedback}[args.kind].model_json_schema(), indent=2))
+                              "feedback": Feedback,
+                              "dispatch_plan": DispatchPlan}[args.kind].model_json_schema(), indent=2))
             return 0
         if args.command == "prepare":
             if args.revision < 0:

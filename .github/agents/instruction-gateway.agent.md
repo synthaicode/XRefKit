@@ -38,7 +38,9 @@ local CLI procedure below is only for repository-native/non-MCP operation.
    Skill-body assessment until the workflow has started and reassess there.
 4. Produce an assessment with evidence locators and explicit scope for each
    step. Separate deterministic tool work from model interpretation, including
-   integration of results. Measure constraints, branch/dependency depth,
+   integration of results. Every model step MUST declare `execution_kind` as
+   `analysis` or `implementation`; do not treat an implementation as analysis
+   to retain parent execution. Measure constraints, branch/dependency depth,
    cross-source links, scope changes and integration links. Use `unknown`
    with a null value when unmeasured; never turn missing information into zero.
    Require orthogonal-array interpretation and incremental-scope capabilities
@@ -55,7 +57,13 @@ local CLI procedure below is only for repository-native/non-MCP operation.
    model changed and do not dispatch. After the user changes it, refresh the
    source snapshots and policy, then rerun the same request revision from the
    indicated route tool. A new user requirement creates a new revision.
-6. For each ready model step, invoke a subagent with the exact selected model.
+6. For each ready `implementation` model step, require the returned
+   `subagent_dispatches` plan. Invoke a separate subagent with its exact
+   `selected_model`; the parent is the gateway/coordinator and MUST NOT execute
+   that step when `parent_execution` is `prohibited`. Record the plan's
+   `parent_model`, `selected_model`, `agent_role`, and `rationale` with the
+   observed host model evidence. For ready `analysis` model steps, follow the
+   existing host delegation policy.
    Pass request ID, revision, routing result, instruction scope, applicable
    profile evidence, dependencies, expected outputs and existing run/Flow IDs.
    Tell the worker to start the existing Skill/workflow envelope (or continue

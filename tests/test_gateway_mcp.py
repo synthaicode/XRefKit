@@ -21,7 +21,8 @@ def test_remote_paths_are_never_opened(request_and_policy):
     result = route_gateway(assessment, policy, assessment["sources"])
     assert result["status"] == "ready"
     assert result["source_verification"] == "client_reported_snapshot"
-    assert result["dispatch_status"] == "not_dispatched"
+    assert result["dispatch_status"] == "subagent_dispatch_required"
+    assert result["subagent_dispatches"][0]["parent_execution"] == "prohibited"
     assert route_gateway(assessment, policy, [])["status"] == "needs_assessment"
     changed = copy.deepcopy(assessment["sources"])
     changed[-1]["sha256"] = "0" * 64
@@ -39,7 +40,7 @@ def test_contract_and_prepare_preserve_unassessed_state(request_and_policy):
     assert gateway_contract()["requires_run_binding"] is False
     assert "schemas" not in gateway_contract()
     assert set(gateway_contract(include_schemas=True)["schemas"]) == {
-        "request", "assessment", "policy", "feedback", "source"}
+        "request", "assessment", "policy", "feedback", "source", "dispatch_plan"}
 
 
 def test_upgrade_proposal_is_returned_over_mcp_boundary(request_and_policy):
@@ -93,6 +94,8 @@ def test_gateway_over_real_mcp_stdio_before_run_binding(request_and_policy, tmp_
                     "assessment": assessment, "policy": policy, "current_sources": assessment["sources"]})
                 assert not routed.isError
                 assert routed.structuredContent["decisions"][1]["model"] == "capable"
+                assert routed.structuredContent["subagent_dispatches"][0]["selected_model"] == "capable"
+                assert routed.structuredContent["subagent_dispatches"][0]["parent_execution"] == "prohibited"
                 assert routed.structuredContent["source_verification"] == "client_reported_snapshot"
                 upgrade_policy = copy.deepcopy(policy)
                 upgrade_policy["parent_cost_tier"] = 1
