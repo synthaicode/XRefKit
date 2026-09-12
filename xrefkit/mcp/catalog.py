@@ -29,11 +29,14 @@ from .knowledge_edits import (
 )
 from .contribution_returns import (
     MAX_KNOWLEDGE_VERSIONS,
+    adopt_contribution_return,
     contribution_return_contract,
     export_contribution_return,
     list_contribution_returns,
+    review_contribution_return,
     submit_contribution_return,
 )
+from .contribution_adoption import CanonicalAdoptionTransport, HumanApprovalVerifier
 from .repository import (
     first_heading,
     first_paragraph,
@@ -461,11 +464,57 @@ class XRefCatalog:
     def submit_contribution_return(self, **kwargs: object) -> dict:
         return submit_contribution_return(self.repo_root, **kwargs)  # type: ignore[arg-type]
 
-    def list_contribution_returns(self) -> list[dict]:
-        return list_contribution_returns(self.repo_root)
+    def list_contribution_returns(
+        self, approval_verifier: HumanApprovalVerifier | None = None
+    ) -> list[dict]:
+        return list_contribution_returns(self.repo_root, approval_verifier)
 
-    def export_contribution_return(self, contribution_id: str) -> dict:
-        return export_contribution_return(self.repo_root, contribution_id)
+    def export_contribution_return(
+        self,
+        contribution_id: str,
+        approval_verifier: HumanApprovalVerifier | None = None,
+    ) -> dict:
+        return export_contribution_return(
+            self.repo_root, contribution_id, approval_verifier
+        )
+
+    def review_contribution_return(self, **kwargs: object) -> dict:
+        return review_contribution_return(
+            self.repo_root,
+            ownership=self.ownership,
+            existing_knowledge_xids=self._known_xids(),
+            **kwargs,
+        )  # type: ignore[arg-type]
+
+    def adopt_contribution_return(
+        self,
+        *,
+        transport: CanonicalAdoptionTransport,
+        **kwargs: object,
+    ) -> dict:
+        return adopt_contribution_return(
+            self.repo_root,
+            transport=transport,
+            ownership=self.ownership,
+            existing_knowledge_xids=self._known_xids(),
+            existing_knowledge_xid_locations=self._known_xid_locations(),
+            **kwargs,
+        )  # type: ignore[arg-type]
+
+    def _known_xids(self) -> set[str]:
+        return set(self._known_xid_locations())
+
+    def _known_xid_locations(self) -> dict[str, set[str]]:
+        result: dict[str, set[str]] = {}
+        for entry in self.knowledge:
+            result.setdefault(entry.xid, set()).add(entry.path)
+        for path in _managed_markdown_files(self.repo_root, self.ownership):
+            xid = first_xid(read_text(path))
+            if xid:
+                result.setdefault(xid, set()).add(
+                    path.resolve().relative_to(self.repo_root).as_posix()
+                )
+        return result
 
     @property
     def catalog_version(self) -> str:

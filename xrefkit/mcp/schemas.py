@@ -6,7 +6,11 @@ from typing import Any, Literal
 
 ExecutionLocation = Literal["server", "client"]
 SideEffects = Literal["none", "audit_write", "repo_write", "external_write", "unknown"]
-SERVER_REPO_WRITE_ALLOWLIST = {"xref.submit_contribution_return"}
+SERVER_REPO_WRITE_ALLOWLIST = {
+    "xref.submit_contribution_return",
+    "xref.review_contribution_return",
+    "xref.adopt_contribution_return",
+}
 ResponseEnvelope = Literal["direct_object", "mcp_result_array"]
 
 

@@ -14,6 +14,12 @@ from . import __version__
 from .audit import McpAuditLog, SessionRunBinding, SessionRunRegistry
 from .catalog import XRefCatalog
 from .contribution_returns import MAX_NETWORK_REQUEST_BYTES
+from .contribution_adoption import (
+    CanonicalAdoptionTransport,
+    HmacHumanApprovalVerifier,
+    LocalCanonicalAdoptionTransport,
+    WebDavCanonicalAdoptionTransport,
+)
 from .gateway import evaluate_feedback, gateway_contract, prepare_gateway, route_gateway
 from .context_token import CONTEXT_META_KEY, ContextClaims, ContextTokenCodec
 from .dist import DIST_ROUTE_PATH, ArtifactDistribution, add_dist_routes
@@ -234,6 +240,24 @@ def main(argv: list[str] | None = None) -> int:
         default=DEFAULT_MAX_REQUEST_BODY_BYTES,
         help="Maximum streamable-HTTP request body size (default: 8 MiB).",
     )
+    parser.add_argument(
+        "--contribution-adoption-transport",
+        choices=["local", "webdav"],
+        default="local",
+        help="Server-owned canonical contribution adoption transport.",
+    )
+    parser.add_argument(
+        "--webdav-staging-url",
+        help="WebDAV staging collection URL; defaults to XREFKIT_ADOPTION_WEBDAV_STAGING_URL.",
+    )
+    parser.add_argument(
+        "--webdav-canonical-url",
+        help="WebDAV canonical repository URL; defaults to XREFKIT_ADOPTION_WEBDAV_CANONICAL_URL.",
+    )
+    parser.add_argument(
+        "--contribution-approval-secret",
+        help="Trusted approval-assertion HMAC secret; defaults to XREFKIT_CONTRIBUTION_APPROVAL_SECRET.",
+    )
     args = parser.parse_args(argv)
     if args.stateless_http and args.transport != "streamable-http":
         parser.error("--stateless-http requires --transport streamable-http")
@@ -275,6 +299,23 @@ def main(argv: list[str] | None = None) -> int:
     )
     audit_log = McpAuditLog(args.audit_log or (Path(args.repo) / "work" / "mcp" / "xid_audit.jsonl"))
     run_registry = SessionRunRegistry()
+    adoption_transport: CanonicalAdoptionTransport
+    if args.contribution_adoption_transport == "webdav":
+        try:
+            adoption_transport = WebDavCanonicalAdoptionTransport.from_environment(
+                staging_base_url=args.webdav_staging_url,
+                canonical_base_url=args.webdav_canonical_url,
+            )
+        except ValueError as exc:
+            parser.error(str(exc))
+    else:
+        adoption_transport = LocalCanonicalAdoptionTransport()
+    approval_secret = args.contribution_approval_secret or os.environ.get(
+        "XREFKIT_CONTRIBUTION_APPROVAL_SECRET"
+    )
+    approval_verifier = (
+        HmacHumanApprovalVerifier(approval_secret) if approval_secret else None
+    )
 
     # Artifact distribution runs only on the network transport: executable
     # artifacts are served as plain HTTP downloads next to the MCP endpoint
@@ -741,6 +782,7 @@ def main(argv: list[str] | None = None) -> int:
         knowledge_versions: list[dict[str, str]] | None = None,
         knowledge: dict[str, Any] | None = None,
         deterministic_tool: dict[str, Any] | None = None,
+        proposed_target_path: str | None = None,
     ) -> dict[str, Any]:
         """Store a local contribution as pending review without activating it."""
         _require_startup_loaded(ctx, "submit_contribution_return")
@@ -768,6 +810,7 @@ def main(argv: list[str] | None = None) -> int:
             files=files,
             knowledge=knowledge,
             deterministic_tool=deterministic_tool,
+            proposed_target_path=proposed_target_path,
         )
         try:
             audit_log.append(
@@ -790,7 +833,7 @@ def main(argv: list[str] | None = None) -> int:
     def list_contribution_returns(ctx: Context) -> list[dict[str, Any]]:
         """List pending-review contribution metadata without file bodies."""
         _require_startup_loaded(ctx, "list_contribution_returns")
-        return catalog.list_contribution_returns()
+        return catalog.list_contribution_returns(approval_verifier)
 
     @app.tool()
     def export_contribution_return(ctx: Context, contribution_id: str) -> dict[str, Any]:
@@ -801,7 +844,7 @@ def main(argv: list[str] | None = None) -> int:
             raise RuntimeError(
                 "XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before export_contribution_return"
             )
-        result = catalog.export_contribution_return(contribution_id)
+        result = catalog.export_contribution_return(contribution_id, approval_verifier)
         try:
             audit_log.append(
                 "contribution.return_exported",
@@ -812,6 +855,97 @@ def main(argv: list[str] | None = None) -> int:
             result["audit_status"] = "recorded"
         except OSError as exc:
             LOGGER.error("contribution return export audit failed: %s", exc)
+            result["audit_status"] = "failed"
+        return result
+
+    @app.tool()
+    def review_contribution_return(
+        ctx: Context,
+        contribution_id: str,
+        decision_id: str,
+        decision: str,
+        reviewer: str,
+        decision_evidence: str,
+        approval_assertion: str,
+        approved_target_path: str | None = None,
+    ) -> dict[str, Any]:
+        """Record one explicit human review decision without canonical mutation."""
+        _require_startup_loaded(ctx, "review_contribution_return")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError(
+                "XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before review_contribution_return"
+            )
+        result = catalog.review_contribution_return(
+            contribution_id=contribution_id,
+            decision_id=decision_id,
+            decision=decision,
+            reviewer=reviewer,
+            decision_evidence=decision_evidence,
+            approval_assertion=approval_assertion,
+            approved_target_path=approved_target_path,
+            approval_verifier=approval_verifier,
+        )
+        try:
+            audit_log.append(
+                "contribution.review_decided",
+                binding=binding,
+                tool="review_contribution_return",
+                contribution_id=contribution_id,
+                decision_id=result["decision_id"],
+                decision=result["decision"],
+                reviewer=result["reviewer"],
+                payload_hash=result["payload_hash"],
+                review_binding_hash=result["review_binding_hash"],
+                created=result["created"],
+            )
+            result["audit_status"] = "recorded"
+        except OSError as exc:
+            LOGGER.error("contribution review audit failed: %s", exc)
+            result["audit_status"] = "failed"
+        return result
+
+    @app.tool()
+    def adopt_contribution_return(
+        ctx: Context,
+        contribution_id: str,
+        adoption_id: str,
+        reviewer: str,
+        decision_evidence: str,
+        approval_token: str,
+    ) -> dict[str, Any]:
+        """Promote one human-accepted contribution through the server transport."""
+        _require_startup_loaded(ctx, "adopt_contribution_return")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError(
+                "XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before adopt_contribution_return"
+            )
+        result = catalog.adopt_contribution_return(
+            transport=adoption_transport,
+            approval_verifier=approval_verifier,
+            contribution_id=contribution_id,
+            adoption_id=adoption_id,
+            reviewer=reviewer,
+            decision_evidence=decision_evidence,
+            approval_token=approval_token,
+        )
+        try:
+            audit_log.append(
+                "contribution.adopted",
+                binding=binding,
+                tool="adopt_contribution_return",
+                contribution_id=contribution_id,
+                adoption_id=result["adoption_id"],
+                payload_hash=result["payload_hash"],
+                review_binding_hash=result["review_binding_hash"],
+                canonical_target=result["canonical_target"],
+                transport=result["transport"]["transport"],
+                created=result["created"],
+            )
+            result["audit_status"] = "recorded"
+        except OSError as exc:
+            LOGGER.error("contribution adoption audit failed: %s", exc)
             result["audit_status"] = "failed"
         return result
 

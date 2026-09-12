@@ -187,7 +187,14 @@ if __name__ == "__main__":
         repo_writers = {
             tool.tool_id for tool in catalog.tools if tool.side_effects == "repo_write"
         }
-        self.assertEqual(repo_writers, {"xref.submit_contribution_return"})
+        self.assertEqual(
+            repo_writers,
+            {
+                "xref.submit_contribution_return",
+                "xref.review_contribution_return",
+                "xref.adopt_contribution_return",
+            },
+        )
         self.assertTrue(
             all(
                 tool.side_effects in {"none", "audit_write", "repo_write"}
@@ -1292,6 +1299,13 @@ flow_id: sample
         self.assertEqual(
             contribution_schema["properties"]["knowledge_versions"]["maxItems"], 128
         )
+        self.assertIn("proposed_target_path", contribution_schema["properties"])
+        review_schema = contracts["xref.review_contribution_return"]["input_json_schema"]
+        self.assertIn("decision_id", review_schema["required"])
+        self.assertIn("reviewer", review_schema["required"])
+        self.assertIn("approval_assertion", review_schema["required"])
+        adoption_schema = contracts["xref.adopt_contribution_return"]["input_json_schema"]
+        self.assertIn("approval_token", adoption_schema["required"])
         self.assertNotIn("knowledge_versions", contribution_schema["required"])
 
 

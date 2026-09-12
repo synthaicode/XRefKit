@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import shutil
 import sys
 import tempfile
+import urllib.error
+import urllib.parse
 import uuid
 from pathlib import Path
 
@@ -13,10 +16,41 @@ from xrefkit.mcp.audit import SessionRunBinding
 from xrefkit.mcp.contribution_returns import (
     MAX_EVIDENCE_ROWS,
     MAX_METADATA_BYTES,
+    adopt_contribution_return,
     export_contribution_return,
     list_contribution_returns,
+    review_contribution_return,
     submit_contribution_return,
 )
+from xrefkit.mcp.catalog import XRefCatalog
+from xrefkit.mcp.contribution_adoption import (
+    AdoptionFile,
+    HmacHumanApprovalVerifier,
+    LocalCanonicalAdoptionTransport,
+    WebDavCanonicalAdoptionTransport,
+    issue_hmac_approval_assertion,
+)
+
+
+OWNERSHIP = """zones:
+  - id: kernel-code
+    owner: base
+    paths:
+      - tools/
+    catalog: false
+    distribution: true
+    base_sync: true
+    shadowing: false
+  - id: kernel-content
+    owner: base
+    paths:
+      - knowledge/
+    catalog: true
+    distribution: true
+    base_sync: true
+    shadowing: false
+"""
+APPROVAL_SECRET = "test-human-approval-secret-32-bytes-minimum"
 
 
 def binding() -> SessionRunBinding:
@@ -47,6 +81,106 @@ def file(path: str, content: str) -> dict:
         "content": content,
         "content_hash": hashlib.sha256(content.encode("utf-8")).hexdigest(),
     }
+
+
+def adoption_repo(tmp_path: Path) -> Path:
+    (tmp_path / "ownership.yaml").write_text(OWNERSHIP, encoding="utf-8")
+    return tmp_path
+
+
+def pending_knowledge(root: Path, *, target: str = "knowledge/adopted.md") -> tuple[str, str]:
+    contribution_id = str(uuid.uuid4())
+    content = "<!-- xid: ADOPT123 -->\n\n# Adopted rule\n\nBody.\n"
+    submit_contribution_return(
+        root,
+        binding=binding(),
+        source_snapshot=source(),
+        contribution_id=contribution_id,
+        kind="knowledge",
+        title="Adopted rule",
+        summary="Review this rule",
+        files=[file("rule.md", content)],
+        knowledge={"xid": "ADOPT123"},
+        proposed_target_path=target,
+    )
+    return contribution_id, content
+
+
+def approval_assertion(
+    root: Path,
+    contribution_id: str,
+    *,
+    decision_id: str,
+    decision: str,
+    reviewer: str,
+    approved_target_path: str | None,
+) -> str:
+    manifest = json.loads(
+        (
+            root
+            / ".xrefkit"
+            / "contribution-returns"
+            / contribution_id
+            / "manifest.json"
+        ).read_text(encoding="utf-8")
+    )
+    proposed = manifest.get("proposed_target_path")
+    path_hash = lambda value: (
+        hashlib.sha256(str(value).encode("utf-8")).hexdigest()
+        if value is not None
+        else None
+    )
+    return issue_hmac_approval_assertion(
+        APPROVAL_SECRET,
+        {
+            "assertion_id": str(uuid.uuid4()),
+            "contribution_id": contribution_id,
+            "decision_id": decision_id,
+            "decision": decision,
+            "reviewer": reviewer,
+            "payload_hash": manifest["payload_hash"],
+            "proposed_target_path": proposed,
+            "proposed_target_path_hash": path_hash(proposed),
+            "approved_target_path": approved_target_path,
+            "approved_target_path_hash": path_hash(approved_target_path),
+        },
+    )
+
+
+def approval_verifier() -> HmacHumanApprovalVerifier:
+    return HmacHumanApprovalVerifier(APPROVAL_SECRET)
+
+
+def signed_review(
+    root: Path,
+    *,
+    contribution_id: str,
+    decision_id: str,
+    decision: str,
+    reviewer: str,
+    decision_evidence: str,
+    approved_target_path: str | None = None,
+    **kwargs,
+) -> dict:
+    return review_contribution_return(
+        root,
+        contribution_id=contribution_id,
+        decision_id=decision_id,
+        decision=decision,
+        reviewer=reviewer,
+        decision_evidence=decision_evidence,
+        approved_target_path=approved_target_path,
+        approval_assertion=approval_assertion(
+            root,
+            contribution_id,
+            decision_id=decision_id,
+            decision=decision,
+            reviewer=reviewer,
+            approved_target_path=approved_target_path,
+        ),
+        approval_verifier=approval_verifier(),
+        **kwargs,
+    )
 
 
 def test_knowledge_submission_is_inert_idempotent_and_exportable(tmp_path: Path) -> None:
@@ -209,6 +343,608 @@ def test_deterministic_tool_requires_contract_evidence_and_is_not_executed(tmp_p
     assert result["status"] == "pending_review"
 
 
+def test_human_review_then_local_adoption_is_catalog_visible_and_auditable(
+    tmp_path: Path,
+) -> None:
+    root = adoption_repo(tmp_path)
+    contribution_id, content = pending_knowledge(root)
+    manifest_path = root / ".xrefkit" / "contribution-returns" / contribution_id / "manifest.json"
+    original_manifest = manifest_path.read_bytes()
+
+    decision_id = str(uuid.uuid4())
+    review_arguments = {
+        "root": root,
+        "contribution_id": contribution_id,
+        "decision_id": decision_id,
+        "decision": "accepted",
+        "reviewer": "human:alice@example.test",
+        "decision_evidence": "Reviewed wording, scope, XID, and canonical ownership.",
+        "approved_target_path": "knowledge/adopted.md",
+    }
+    review_arguments["approval_assertion"] = approval_assertion(
+        root,
+        contribution_id,
+        decision_id=decision_id,
+        decision="accepted",
+        reviewer="human:alice@example.test",
+        approved_target_path="knowledge/adopted.md",
+    )
+    review_arguments["approval_verifier"] = approval_verifier()
+    review = review_contribution_return(**review_arguments)
+    review_replay = review_contribution_return(**review_arguments)
+    assert review["approval_token"]
+    assert review_replay["idempotent_replay"] is True
+    assert review_replay["approval_token"] is None
+    assert review["payload_hash"]
+    assert review["proposed_target_path_hash"] == hashlib.sha256(
+        b"knowledge/adopted.md"
+    ).hexdigest()
+    assert not (root / "knowledge" / "adopted.md").exists()
+    assert XRefCatalog.build(root).list_knowledge_catalog() == []
+
+    adoption_id = str(uuid.uuid4())
+    adoption_arguments = {
+        "root": root,
+        "contribution_id": contribution_id,
+        "adoption_id": adoption_id,
+        "reviewer": "human:alice@example.test",
+        "decision_evidence": "Approve server-side canonical move.",
+        "approval_token": review["approval_token"],
+    }
+    adopted = adopt_contribution_return(**adoption_arguments, approval_verifier=approval_verifier())
+    replayed = adopt_contribution_return(**adoption_arguments, approval_verifier=approval_verifier())
+
+    assert (root / "knowledge" / "adopted.md").read_text(encoding="utf-8") == content
+    assert manifest_path.read_bytes() == original_manifest
+    assert adopted["status"] == "adopted"
+    assert adopted["publication"] == "not_performed"
+    assert adopted["distribution"] == "not_performed"
+    assert adopted["live_verification"] == "not_performed"
+    assert adopted["tool_execution_performed"] is False
+    assert replayed["idempotent_replay"] is True
+    assert {entry["xid"] for entry in XRefCatalog.build(root).list_knowledge_catalog()} == {
+        "ADOPT123"
+    }
+    listed = list_contribution_returns(root, approval_verifier())[0]
+    assert listed["status"] == "adopted"
+    assert listed["adoption"]["canonical_target"] == "knowledge/adopted.md"
+    exported = export_contribution_return(root, contribution_id, approval_verifier())
+    assert exported["adoption_performed"] is True
+    assert [event["event"] for event in exported["review_bundle"]["events"]] == [
+        "review_decided",
+        "adoption_prepared",
+        "adopted",
+    ]
+
+
+def test_review_requires_trusted_assertion_and_accepted_target(tmp_path: Path) -> None:
+    root = adoption_repo(tmp_path)
+    contribution_id, _content = pending_knowledge(root)
+    common = {
+        "contribution_id": contribution_id,
+        "decision_id": str(uuid.uuid4()),
+        "decision": "accepted",
+        "reviewer": "human:reviewer",
+        "decision_evidence": "Reviewed.",
+    }
+    with pytest.raises(ValueError, match="approved_target_path is required"):
+        review_contribution_return(
+            root,
+            **common,
+            approval_assertion="invalid",
+            approval_verifier=approval_verifier(),
+        )
+    with pytest.raises(RuntimeError, match="trusted human approval verifier"):
+        review_contribution_return(
+            root,
+            **common,
+            approved_target_path="knowledge/adopted.md",
+            approval_assertion="invalid",
+        )
+    with pytest.raises(ValueError, match="assertion"):
+        review_contribution_return(
+            root,
+            **common,
+            approved_target_path="knowledge/adopted.md",
+            approval_assertion="invalid",
+            approval_verifier=approval_verifier(),
+        )
+
+
+def test_manifest_and_signed_event_tampering_fail_closed(tmp_path: Path) -> None:
+    root = adoption_repo(tmp_path)
+    contribution_id, _content = pending_knowledge(root)
+    review = signed_review(
+        root,
+        contribution_id=contribution_id,
+        decision_id=str(uuid.uuid4()),
+        decision="accepted",
+        reviewer="human:reviewer",
+        decision_evidence="Reviewed.",
+        approved_target_path="knowledge/adopted.md",
+    )
+    record = root / ".xrefkit" / "contribution-returns" / contribution_id
+    review_path = record / "events" / "review.json"
+    original_review = review_path.read_bytes()
+    signed = json.loads(review_path.read_text(encoding="utf-8"))
+    signed["decision_evidence"] = "tampered"
+    review_path.write_text(json.dumps(signed), encoding="utf-8")
+    with pytest.raises(ValueError, match="signature"):
+        list_contribution_returns(root, approval_verifier())
+    review_path.write_bytes(original_review)
+    manifest_path = record / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["source"]["provider_version"] = "tampered"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="payload hash"):
+        adopt_contribution_return(
+            root,
+            contribution_id=contribution_id,
+            adoption_id=str(uuid.uuid4()),
+            reviewer="human:reviewer",
+            decision_evidence="Adopt.",
+            approval_token=review["approval_token"],
+            approval_verifier=approval_verifier(),
+        )
+
+
+def test_adoption_rescans_repository_xids_after_review(tmp_path: Path) -> None:
+    root = adoption_repo(tmp_path)
+    contribution_id, _content = pending_knowledge(root)
+    review = signed_review(
+        root,
+        contribution_id=contribution_id,
+        decision_id=str(uuid.uuid4()),
+        decision="accepted",
+        reviewer="human:reviewer",
+        decision_evidence="Reviewed.",
+        approved_target_path="knowledge/adopted.md",
+    )
+    existing = root / "knowledge" / "won-race.md"
+    existing.parent.mkdir()
+    existing.write_text("<!-- xid: ADOPT123 -->\n\n# Existing\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="XID already exists"):
+        adopt_contribution_return(
+            root,
+            contribution_id=contribution_id,
+            adoption_id=str(uuid.uuid4()),
+            reviewer="human:reviewer",
+            decision_evidence="Adopt.",
+            approval_token=review["approval_token"],
+            approval_verifier=approval_verifier(),
+            existing_knowledge_xids=set(),
+        )
+
+
+def test_adoption_recovery_rejects_a_parallel_duplicate_xid(tmp_path: Path) -> None:
+    root = adoption_repo(tmp_path)
+    contribution_id, _content = pending_knowledge(root)
+    review = signed_review(
+        root,
+        contribution_id=contribution_id,
+        decision_id=str(uuid.uuid4()),
+        decision="accepted",
+        reviewer="human:reviewer",
+        decision_evidence="Reviewed.",
+        approved_target_path="knowledge/adopted.md",
+    )
+
+    class InterruptAfterMove:
+        name = LocalCanonicalAdoptionTransport.name
+        def adopt(self, **kwargs):
+            result = LocalCanonicalAdoptionTransport().adopt(**kwargs)
+            raise RuntimeError(f"interrupt after move: {result['target_paths']}")
+
+    adoption_id = str(uuid.uuid4())
+    arguments = dict(
+        root=root,
+        contribution_id=contribution_id,
+        adoption_id=adoption_id,
+        reviewer="human:reviewer",
+        decision_evidence="Adopt.",
+        approval_token=review["approval_token"],
+        approval_verifier=approval_verifier(),
+    )
+    with pytest.raises(RuntimeError, match="interrupt after move"):
+        adopt_contribution_return(**arguments, transport=InterruptAfterMove())
+    with pytest.raises(ValueError, match="XID already exists"):
+        adopt_contribution_return(
+            **arguments,
+            transport=LocalCanonicalAdoptionTransport(),
+            existing_knowledge_xids={"ADOPT123"},
+        )
+    duplicate = root / "knowledge" / "parallel.md"
+    duplicate.write_text("<!-- xid: ADOPT123 -->\n\n# Parallel\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="XID already exists"):
+        adopt_contribution_return(
+            **arguments, transport=LocalCanonicalAdoptionTransport()
+        )
+
+
+def test_rejected_contribution_cannot_be_adopted(tmp_path: Path) -> None:
+    root = adoption_repo(tmp_path)
+    contribution_id, _content = pending_knowledge(root)
+    review = signed_review(
+        root,
+        contribution_id=contribution_id,
+        decision_id=str(uuid.uuid4()),
+        decision="rejected",
+        reviewer="human:reviewer",
+        decision_evidence="The rule duplicates an existing policy.",
+    )
+    assert review["approval_token"] is None
+    with pytest.raises(ValueError, match="only an accepted contribution"):
+        adopt_contribution_return(
+            root,
+            contribution_id=contribution_id,
+            adoption_id=str(uuid.uuid4()),
+            reviewer="human:reviewer",
+            decision_evidence="Must remain rejected.",
+            approval_token="not-valid",
+            approval_verifier=approval_verifier(),
+        )
+    assert list_contribution_returns(root, approval_verifier())[0]["status"] == "rejected"
+    assert not (root / "knowledge" / "adopted.md").exists()
+
+
+@pytest.mark.parametrize(
+    "target",
+    ["../knowledge/escape.md", "docs/not-knowledge.md", "tools/not-knowledge.md"],
+)
+def test_review_rejects_unsafe_or_noncanonical_knowledge_target(
+    tmp_path: Path, target: str
+) -> None:
+    root = adoption_repo(tmp_path)
+    contribution_id, _content = pending_knowledge(root)
+    with pytest.raises(ValueError, match="unsafe|canonical knowledge|ownership zone"):
+            signed_review(
+            root,
+            contribution_id=contribution_id,
+            decision_id=str(uuid.uuid4()),
+            decision="accepted",
+            reviewer="human:reviewer",
+            decision_evidence="Target review.",
+            approved_target_path=target,
+        )
+
+
+def test_adoption_never_overwrites_a_canonical_collision(tmp_path: Path) -> None:
+    root = adoption_repo(tmp_path)
+    contribution_id, _content = pending_knowledge(root)
+    review = signed_review(
+        root,
+        contribution_id=contribution_id,
+        decision_id=str(uuid.uuid4()),
+        decision="accepted",
+        reviewer="human:reviewer",
+        decision_evidence="Accept target.",
+        approved_target_path="knowledge/adopted.md",
+    )
+    target = root / "knowledge" / "adopted.md"
+    target.parent.mkdir()
+    target.write_text("existing\n", encoding="utf-8")
+    with pytest.raises(FileExistsError, match="already exists"):
+        adopt_contribution_return(
+            root,
+            contribution_id=contribution_id,
+            adoption_id=str(uuid.uuid4()),
+            reviewer="human:reviewer",
+            decision_evidence="Move accepted content.",
+            approval_token=review["approval_token"],
+            approval_verifier=approval_verifier(),
+        )
+    assert target.read_text(encoding="utf-8") == "existing\n"
+
+
+def test_existing_knowledge_xid_blocks_review(tmp_path: Path) -> None:
+    root = adoption_repo(tmp_path)
+    contribution_id, _content = pending_knowledge(root)
+    with pytest.raises(ValueError, match="XID already exists"):
+        signed_review(
+            root,
+            contribution_id=contribution_id,
+            decision_id=str(uuid.uuid4()),
+            decision="accepted",
+            reviewer="human:reviewer",
+            decision_evidence="Accept target.",
+            approved_target_path="knowledge/adopted.md",
+            existing_knowledge_xids={"ADOPT123"},
+        )
+
+
+def test_review_binding_tamper_and_wrong_token_block_adoption(tmp_path: Path) -> None:
+    root = adoption_repo(tmp_path)
+    contribution_id, _content = pending_knowledge(root)
+    review = signed_review(
+        root,
+        contribution_id=contribution_id,
+        decision_id=str(uuid.uuid4()),
+        decision="accepted",
+        reviewer="human:reviewer",
+        decision_evidence="Accept target.",
+        approved_target_path="knowledge/adopted.md",
+    )
+    with pytest.raises(ValueError, match="approval_token"):
+        adopt_contribution_return(
+            root,
+            contribution_id=contribution_id,
+            adoption_id=str(uuid.uuid4()),
+            reviewer="human:reviewer",
+            decision_evidence="Adopt.",
+            approval_token="wrong-token",
+            approval_verifier=approval_verifier(),
+        )
+    review_path = root / ".xrefkit" / "contribution-returns" / contribution_id / "events" / "review.json"
+    tampered = json.loads(review_path.read_text(encoding="utf-8"))
+    tampered["proposed_target_path"] = "knowledge/changed.md"
+    review_path.write_text(json.dumps(tampered), encoding="utf-8")
+    with pytest.raises(ValueError, match="signature|proposed_target_path"):
+        adopt_contribution_return(
+            root,
+            contribution_id=contribution_id,
+            adoption_id=str(uuid.uuid4()),
+            reviewer="human:reviewer",
+            decision_evidence="Adopt.",
+            approval_token=review["approval_token"],
+            approval_verifier=approval_verifier(),
+        )
+
+
+def test_deterministic_tool_is_published_as_one_directory_and_never_executed(
+    tmp_path: Path,
+) -> None:
+    root = adoption_repo(tmp_path)
+    contribution_id = str(uuid.uuid4())
+    marker = root / "executed.txt"
+    program = f"from pathlib import Path\nPath({str(marker)!r}).write_text('ran')\n"
+    submit_contribution_return(
+        root,
+        binding=binding(),
+        source_snapshot=source(),
+        contribution_id=contribution_id,
+        kind="deterministic_tool",
+        title="Returned checker",
+        summary="Review this checker",
+        files=[file("check.py", program), file("README.md", "# Checker\n")],
+        deterministic_tool={
+            "runtime": "python>=3.11",
+            "entrypoint": "check.py",
+            "input_contract": {"type": "object"},
+            "output_contract": {"type": "object"},
+            "verification_evidence": [
+                {"kind": "test", "command": "pytest", "result": "passed"}
+            ],
+        },
+        proposed_target_path="tools/returned-checker",
+    )
+    review = signed_review(
+        root,
+        contribution_id=contribution_id,
+        decision_id=str(uuid.uuid4()),
+        decision="accepted",
+        reviewer="human:reviewer",
+        decision_evidence="Contracts and evidence reviewed.",
+        approved_target_path="tools/returned-checker",
+    )
+    adopted = adopt_contribution_return(
+        root,
+        contribution_id=contribution_id,
+        adoption_id=str(uuid.uuid4()),
+        reviewer="human:reviewer",
+        decision_evidence="Approve complete tool directory move.",
+        approval_token=review["approval_token"],
+        approval_verifier=approval_verifier(),
+    )
+    assert {item["path"] for item in adopted["canonical_files"]} == {
+        "tools/returned-checker/README.md",
+        "tools/returned-checker/check.py",
+    }
+    assert (root / "tools" / "returned-checker" / "check.py").is_file()
+    assert not marker.exists()
+
+
+def test_webdav_adoption_uses_separate_credentials_etag_and_no_overwrite(
+    tmp_path: Path,
+) -> None:
+    calls = []
+
+    class Response:
+        def __init__(self, status: int, *, headers: dict | None = None, body: bytes = b""):
+            self.status = status
+            self.headers = headers or {}
+            self._body = body
+
+        def read(self) -> bytes:
+            return self._body
+
+        def close(self) -> None:
+            pass
+
+    def opener(request, timeout):
+        calls.append(request)
+        method = request.get_method()
+        if method == "HEAD" and request.full_url.startswith("https://dav.test/canonical/"):
+            raise urllib.error.HTTPError(request.full_url, 404, "missing", {}, None)
+        if method == "HEAD":
+            return Response(200, headers={"ETag": '"staged-v1"'})
+        if method == "GET":
+            return Response(200, body=content.encode("utf-8"))
+        return Response(201)
+
+    adapter = WebDavCanonicalAdoptionTransport(
+        staging_base_url="https://dav.test/staging",
+        canonical_base_url="https://dav.test/canonical",
+        staging_username="stage-user",
+        staging_password="stage-secret",
+        adoption_username="adopt-user",
+        adoption_password="adopt-secret",
+        opener=opener,
+    )
+    content = "<!-- xid: WEB123 -->\n\n# WebDAV\n"
+    result = adapter.adopt(
+        root=tmp_path,
+        record_dir=tmp_path,
+        contribution_id=str(uuid.uuid4()),
+        adoption_id=str(uuid.uuid4()),
+        kind="knowledge",
+        target_path="knowledge/webdav.md",
+        files=[
+            AdoptionFile(
+                bundle_path="source.md",
+                content=content,
+                content_hash=hashlib.sha256(content.encode()).hexdigest(),
+            )
+        ],
+        recovery_allowed=False,
+    )
+
+    move = next(request for request in calls if request.get_method() == "MOVE")
+    put = next(request for request in calls if request.get_method() == "PUT")
+    assert move.get_header("If-match") == '"staged-v1"'
+    assert move.get_header("Overwrite") == "F"
+    assert move.get_header("Destination") == "https://dav.test/canonical/knowledge/webdav.md"
+    assert move.get_header("Authorization") != put.get_header("Authorization")
+    assert put.get_header("If-none-match") == "*"
+    assert result["transport"] == "webdav_conditional_move"
+    assert result["source_etag"] == '"staged-v1"'
+
+
+def test_local_tool_recovery_rejects_extra_tree_entries(tmp_path: Path) -> None:
+    target = tmp_path / "tools" / "returned"
+    target.mkdir(parents=True)
+    content = "print('ok')\n"
+    (target / "check.py").write_text(content, encoding="utf-8")
+    (target / "extra").mkdir()
+    with pytest.raises(FileExistsError, match="already exists"):
+        LocalCanonicalAdoptionTransport().adopt(
+            root=tmp_path,
+            record_dir=tmp_path,
+            contribution_id=str(uuid.uuid4()),
+            adoption_id=str(uuid.uuid4()),
+            kind="deterministic_tool",
+            target_path="tools/returned",
+            files=[AdoptionFile(
+                bundle_path="check.py",
+                content=content,
+                content_hash=hashlib.sha256(content.encode()).hexdigest(),
+            )],
+            recovery_allowed=True,
+        )
+
+
+def test_webdav_tool_get_verifies_complete_tree_before_conditional_directory_move(
+    tmp_path: Path,
+) -> None:
+    calls = []
+    uploaded: dict[str, bytes] = {}
+    files = [
+        AdoptionFile("check.py", "print('ok')\n", hashlib.sha256(b"print('ok')\n").hexdigest()),
+        AdoptionFile("nested/config.json", "{}\n", hashlib.sha256(b"{}\n").hexdigest()),
+    ]
+
+    class Response:
+        def __init__(self, status: int, *, headers: dict | None = None, body: bytes = b""):
+            self.status, self.headers, self._body = status, headers or {}, body
+        def read(self) -> bytes:
+            return self._body
+        def close(self) -> None:
+            pass
+
+    def opener(request, timeout):
+        calls.append(request)
+        method, url = request.get_method(), request.full_url
+        if method == "HEAD" and url.startswith("https://dav.test/canonical/"):
+            raise urllib.error.HTTPError(url, 404, "missing", {}, None)
+        if method == "PUT":
+            uploaded[url] = request.data
+            return Response(201)
+        if method == "GET":
+            return Response(200, body=uploaded[url])
+        if method == "PROPFIND":
+            base = urllib.parse.urlsplit(url).path.rstrip("/")
+            body = f'''<D:multistatus xmlns:D="DAV:">
+              <D:response><D:href>{base}/</D:href><D:propstat><D:prop><D:resourcetype><D:collection/></D:resourcetype></D:prop></D:propstat></D:response>
+              <D:response><D:href>{base}/check.py</D:href></D:response>
+              <D:response><D:href>{base}/nested/</D:href><D:propstat><D:prop><D:resourcetype><D:collection/></D:resourcetype></D:prop></D:propstat></D:response>
+              <D:response><D:href>{base}/nested/config.json</D:href></D:response>
+            </D:multistatus>'''.encode()
+            return Response(207, body=body)
+        if method == "HEAD":
+            return Response(200, headers={"ETag": '"tool-tree-v1"'})
+        return Response(201)
+
+    adapter = WebDavCanonicalAdoptionTransport(
+        staging_base_url="https://dav.test/staging",
+        canonical_base_url="https://dav.test/canonical",
+        staging_username="stage-user", staging_password="stage-secret",
+        adoption_username="adopt-user", adoption_password="adopt-secret",
+        opener=opener,
+    )
+    result = adapter.adopt(
+        root=tmp_path, record_dir=tmp_path,
+        contribution_id=str(uuid.uuid4()), adoption_id=str(uuid.uuid4()),
+        kind="deterministic_tool", target_path="tools/returned",
+        files=files, recovery_allowed=False,
+    )
+    move_index = next(i for i, call in enumerate(calls) if call.get_method() == "MOVE")
+    get_indexes = [i for i, call in enumerate(calls) if call.get_method() == "GET"]
+    assert len(get_indexes) == len(files) and max(get_indexes) < move_index
+    move = calls[move_index]
+    assert move.get_header("If-match") == '"tool-tree-v1"'
+    assert move.get_header("Overwrite") == "F"
+    assert move.get_header("Destination") == "https://dav.test/canonical/tools/returned"
+    assert result["target_paths"] == [
+        "tools/returned/check.py", "tools/returned/nested/config.json"
+    ]
+
+
+def test_webdav_recovery_rejects_extra_canonical_collection_entry(tmp_path: Path) -> None:
+    content = "print('ok')\n"
+    item = AdoptionFile(
+        "check.py", content, hashlib.sha256(content.encode()).hexdigest()
+    )
+
+    class Response:
+        headers: dict = {}
+        def __init__(self, body: bytes = b"", status: int = 200) -> None:
+            self._body = body
+            self.status = status
+        def read(self) -> bytes:
+            return self._body
+        def close(self) -> None:
+            pass
+
+    def opener(request, timeout):
+        method, url = request.get_method(), request.full_url
+        if method == "PROPFIND":
+            base = urllib.parse.urlsplit(url).path.rstrip("/")
+            return Response(f'''<D:multistatus xmlns:D="DAV:">
+              <D:response><D:href>{base}/</D:href><D:propstat><D:prop><D:resourcetype><D:collection/></D:resourcetype></D:prop></D:propstat></D:response>
+              <D:response><D:href>{base}/check.py</D:href></D:response>
+              <D:response><D:href>{base}/extra/</D:href><D:propstat><D:prop><D:resourcetype><D:collection/></D:resourcetype></D:prop></D:propstat></D:response>
+            </D:multistatus>'''.encode(), status=207)
+        if method == "HEAD" and url.startswith("https://dav.test/canonical/"):
+            return Response()
+        if method == "GET":
+            return Response(content.encode())
+        raise AssertionError(f"unexpected request after recovery collision: {method} {url}")
+
+    adapter = WebDavCanonicalAdoptionTransport(
+        staging_base_url="https://dav.test/staging",
+        canonical_base_url="https://dav.test/canonical",
+        staging_username="stage-user", staging_password="stage-secret",
+        adoption_username="adopt-user", adoption_password="adopt-secret",
+        opener=opener,
+    )
+    with pytest.raises(FileExistsError, match="already exists"):
+        adapter.adopt(
+            root=tmp_path, record_dir=tmp_path,
+            contribution_id=str(uuid.uuid4()), adoption_id=str(uuid.uuid4()),
+            kind="deterministic_tool", target_path="tools/returned",
+            files=[item], recovery_allowed=True,
+        )
+
+
 def test_contribution_return_over_real_mcp_stdio(tmp_path: Path) -> None:
     anyio = pytest.importorskip("anyio")
     pytest.importorskip("mcp")
@@ -217,6 +953,9 @@ def test_contribution_return_over_real_mcp_stdio(tmp_path: Path) -> None:
 
     root = Path(__file__).resolve().parents[1]
     contribution_id = str(uuid.uuid4())
+    xid = f"RETURN{uuid.uuid4().hex[:12].upper()}"
+    target_rel = f"knowledge/mcp-adoption-test-{uuid.uuid4().hex}.md"
+    adopted_path = root / target_rel
     record_dir = root / ".xrefkit" / "contribution-returns" / contribution_id
 
     async def scenario(errlog) -> None:
@@ -224,7 +963,8 @@ def test_contribution_return_over_real_mcp_stdio(tmp_path: Path) -> None:
             command=sys.executable,
             cwd=str(root),
             args=["-m", "xrefkit.mcp.server", "--repo", str(root),
-                  "--audit-log", str(tmp_path / "audit.jsonl")],
+                  "--audit-log", str(tmp_path / "audit.jsonl"),
+                  "--contribution-approval-secret", APPROVAL_SECRET],
         )
         async with stdio_client(parameters, errlog=errlog) as (read, write):
             async with ClientSession(read, write) as session:
@@ -234,7 +974,7 @@ def test_contribution_return_over_real_mcp_stdio(tmp_path: Path) -> None:
                 rejected = await session.call_tool("submit_contribution_return", {
                     "contribution_id": contribution_id, "kind": "knowledge",
                     "title": "Returned", "summary": "Review", "files": [],
-                    "skill_content_hash": "0" * 64, "knowledge": {"xid": "RETURN123"}})
+                    "skill_content_hash": "0" * 64, "knowledge": {"xid": xid}})
                 assert rejected.isError
                 assert "XREFKIT_SKILL_RUN_REQUIRED" in rejected.content[0].text
 
@@ -248,7 +988,7 @@ def test_contribution_return_over_real_mcp_stdio(tmp_path: Path) -> None:
                 assert not bound.isError
                 contract = await session.call_tool("get_contribution_return_contract", {})
                 assert contract.structuredContent["status"] == "pending_review"
-                body = "<!-- xid: RETURN123 -->\n\n# Returned Knowledge\n\nBody.\n"
+                body = f"<!-- xid: {xid} -->\n\n# Returned Knowledge\n\nBody.\n"
                 args = {
                     "contribution_id": contribution_id,
                     "kind": "knowledge",
@@ -257,7 +997,8 @@ def test_contribution_return_over_real_mcp_stdio(tmp_path: Path) -> None:
                     "files": [file("knowledge/returned.md", body)],
                     "skill_content_hash": skill_hash,
                     "knowledge_versions": [],
-                    "knowledge": {"xid": "RETURN123"},
+                    "knowledge": {"xid": xid},
+                    "proposed_target_path": target_rel,
                 }
                 stale_source = await session.call_tool(
                     "submit_contribution_return", {**args, "skill_content_hash": "0" * 64}
@@ -277,14 +1018,59 @@ def test_contribution_return_over_real_mcp_stdio(tmp_path: Path) -> None:
                 )
                 assert exported.structuredContent["activation_performed"] is False
                 knowledge = await session.call_tool("list_knowledge_catalog", {})
-                assert "RETURN123" not in {
+                assert xid not in {
+                    row["xid"] for row in knowledge.structuredContent["result"]
+                }
+                decision_id = str(uuid.uuid4())
+                reviewed = await session.call_tool(
+                    "review_contribution_return",
+                    {
+                        "contribution_id": contribution_id,
+                        "decision_id": decision_id,
+                        "decision": "accepted",
+                        "reviewer": "human:mcp-integration-test",
+                        "decision_evidence": "Integration fixture approval.",
+                        "approved_target_path": target_rel,
+                        "approval_assertion": approval_assertion(
+                            root,
+                            contribution_id,
+                            decision_id=decision_id,
+                            decision="accepted",
+                            reviewer="human:mcp-integration-test",
+                            approved_target_path=target_rel,
+                        ),
+                    },
+                )
+                assert not reviewed.isError
+                token = reviewed.structuredContent["approval_token"]
+                adopted = await session.call_tool(
+                    "adopt_contribution_return",
+                    {
+                        "contribution_id": contribution_id,
+                        "adoption_id": str(uuid.uuid4()),
+                        "reviewer": "human:mcp-integration-test",
+                        "decision_evidence": "Move the reviewed fixture.",
+                        "approval_token": token,
+                    },
+                )
+                assert not adopted.isError
+                assert adopted.structuredContent["status"] == "adopted"
+                knowledge = await session.call_tool("list_knowledge_catalog", {})
+                assert xid in {
                     row["xid"] for row in knowledge.structuredContent["result"]
                 }
 
     try:
         with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as errlog:
             anyio.run(scenario, errlog)
+        audit_events = [
+            json.loads(line)["event_type"]
+            for line in (tmp_path / "audit.jsonl").read_text(encoding="utf-8").splitlines()
+        ]
+        assert "contribution.review_decided" in audit_events
+        assert "contribution.adopted" in audit_events
     finally:
+        adopted_path.unlink(missing_ok=True)
         shutil.rmtree(record_dir, ignore_errors=True)
         inbox = record_dir.parent
         for lock_file in (inbox / "inbox.lock", inbox / "inbox.lock.lock"):
