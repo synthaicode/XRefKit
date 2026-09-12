@@ -81,7 +81,7 @@ def _git(root: Path, *args: str) -> str:
     if result.returncode:
         detail = result.stderr.strip() or result.stdout.strip() or "git command failed"
         raise ValueError(detail)
-    return result.stdout.strip()
+    return result.stdout.rstrip("\r\n")
 
 
 def _has_non_trace_changes(root: Path) -> bool:
@@ -239,7 +239,7 @@ def _checkpoint(root: Path, args: argparse.Namespace) -> dict[str, Any]:
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     try:
         relative_manifest = str(manifest_path.relative_to(root))
-        _git(root, "add", "--", relative_manifest)
+        _git(root, "add", "--force", "--", relative_manifest)
         _git(root, "commit", "--only", "-m", f"checkpoint: {args.checkpoint_id}", "--", relative_manifest)
         commit = _git(root, "rev-parse", "HEAD")
         _git(root, "tag", "-a", tag, commit, "-m", json.dumps(manifest, ensure_ascii=False))

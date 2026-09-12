@@ -51,7 +51,8 @@ def test_checkpoint_commits_manifest_and_creates_tag(tmp_path):
     git("config", "user.email", "test@example.invalid")
     git("config", "user.name", "Decision Trace Test")
     (tmp_path / "README.md").write_text("base\n", encoding="utf-8")
-    git("add", "README.md")
+    (tmp_path / ".gitignore").write_text("work/*\n", encoding="utf-8")
+    git("add", "README.md", ".gitignore")
     git("commit", "-m", "initial")
 
     assert main([
