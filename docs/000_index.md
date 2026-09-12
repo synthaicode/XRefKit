@@ -78,6 +78,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Knowledge observation and improvement platform design](designs/088_knowledge_observation_and_improvement_platform_design.md#xid-32B512763C78)
 - [Copilot trace Skill boundary analysis design](designs/089_copilot_trace_skill_boundary_analysis_design.md#xid-B6E4A91C7D2F)
 - [MCP Skill local edit design](designs/090_mcp_skill_local_edit_design.md#xid-A4C7E2D91B60)
+- [MCP contribution return adoption usage guide](guides/095_mcp_contribution_return_adoption.md#xid-0E5C778EB6AF)
 - [AI Decision Trace Protocol guide](guides/092_ai_decision_trace_protocol_for_ai.md#xid-88830262A85D)
 
 ## Common links
