@@ -49,6 +49,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Skill reporting contract](core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73)
 - [Human evaluation at run boundaries](core/contracts/082_human_evaluation_protocol.md#xid-7C4E2A91D8F0)
 - [AI Decision Trace Protocol](core/contracts/093_ai_decision_trace_protocol.md#xid-22164A51A745)
+- [Work-item model routing contract](core/contracts/110_work_item_model_routing.md#xid-F2C91B7E4A60)
 
 ## Cross-Cutting Schemas And Boundaries
 
@@ -80,6 +81,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [MCP Skill local edit design](designs/090_mcp_skill_local_edit_design.md#xid-A4C7E2D91B60)
 - [MCP contribution return adoption usage guide](guides/095_mcp_contribution_return_adoption.md#xid-0E5C778EB6AF)
 - [AI Decision Trace Protocol guide](guides/092_ai_decision_trace_protocol_for_ai.md#xid-88830262A85D)
+- [Instruction gateway guide](guides/094_instruction_gateway.md#xid-E7A2C6109F43)
 
 ## Common links
 

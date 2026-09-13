@@ -6,7 +6,13 @@ from pathlib import Path
 import pytest
 
 from test_gateway import request_and_policy
-from xrefkit.mcp.gateway import gateway_contract, prepare_gateway, route_gateway
+from xrefkit.mcp.gateway import (
+    gateway_contract,
+    initialize_gateway_workflow,
+    prepare_gateway,
+    route_gateway,
+    route_gateway_work_items,
+)
 
 
 def remote_pair(pair):
@@ -40,7 +46,17 @@ def test_contract_and_prepare_preserve_unassessed_state(request_and_policy):
     assert gateway_contract()["requires_run_binding"] is False
     assert "schemas" not in gateway_contract()
     assert set(gateway_contract(include_schemas=True)["schemas"]) == {
-        "request", "assessment", "policy", "feedback", "source", "dispatch_plan"}
+        "request", "assessment", "policy", "feedback", "source", "dispatch_plan",
+        "authorization", "workflow_state", "work_item_result", "work_item_dispatch"}
+
+
+def test_work_item_state_routes_only_pending_nodes_over_wrapper(request_and_policy):
+    assessment, policy = remote_pair(request_and_policy)
+    state = initialize_gateway_workflow(assessment)["workflow_state"]
+    routed = route_gateway_work_items(assessment, policy, state, assessment["sources"])
+    assert routed["status"] == "ready"
+    assert routed["workflow_state"]["items"][0]["status"] == "in_progress"
+    assert routed["workflow_state"]["items"][1]["status"] == "pending"
 
 
 def test_upgrade_proposal_is_returned_over_mcp_boundary(request_and_policy):
@@ -71,7 +87,9 @@ def test_gateway_over_real_mcp_stdio_before_run_binding(request_and_policy, tmp_
                 await session.initialize()
                 names = {tool.name for tool in (await session.list_tools()).tools}
                 assert {"prepare_instruction_gateway", "route_instruction_gateway",
-                        "get_instruction_gateway_contract", "evaluate_instruction_feedback"} <= names
+                        "get_instruction_gateway_contract", "evaluate_instruction_feedback",
+                        "initialize_instruction_workflow", "route_instruction_work_items",
+                        "record_instruction_work_item_result"} <= names
                 rejected = await session.call_tool("get_instruction_gateway_contract", {})
                 assert rejected.isError
                 assert "XREFKIT_STARTUP_REQUIRED" in rejected.content[0].text
@@ -83,6 +101,8 @@ def test_gateway_over_real_mcp_stdio_before_run_binding(request_and_policy, tmp_
                 contracts = await session.call_tool("list_tool_contracts", {})
                 assert not contracts.isError
                 assert "xref.route_instruction_gateway" in {
+                    item["tool_id"] for item in contracts.structuredContent["result"]}
+                assert "xref.route_instruction_work_items" in {
                     item["tool_id"] for item in contracts.structuredContent["result"]}
                 contract = await session.call_tool("get_instruction_gateway_contract", {})
                 assert not contract.isError
@@ -97,6 +117,43 @@ def test_gateway_over_real_mcp_stdio_before_run_binding(request_and_policy, tmp_
                 assert routed.structuredContent["subagent_dispatches"][0]["selected_model"] == "capable"
                 assert routed.structuredContent["subagent_dispatches"][0]["parent_execution"] == "prohibited"
                 assert routed.structuredContent["source_verification"] == "client_reported_snapshot"
+                initialized = await session.call_tool("initialize_instruction_workflow", {
+                    "assessment": assessment})
+                assert not initialized.isError
+                item_route = await session.call_tool("route_instruction_work_items", {
+                    "assessment": assessment,
+                    "policy": policy,
+                    "workflow_state": initialized.structuredContent["workflow_state"],
+                    "current_sources": assessment["sources"],
+                })
+                assert not item_route.isError
+                assert item_route.structuredContent["workflow_state"]["items"][0]["status"] == "in_progress"
+                count_item = item_route.structuredContent["workflow_state"]["items"][0]
+                recorded = await session.call_tool("record_instruction_work_item_result", {
+                    "assessment": assessment,
+                    "workflow_state": item_route.structuredContent["workflow_state"],
+                    "result": {
+                        "version": 1,
+                        "request_id": assessment["request_id"],
+                        "assessment_revision": assessment["revision"],
+                        "step_id": count_item["step_id"],
+                        "node_id": count_item["node_id"],
+                        "route_id": count_item["assignment"]["route_id"],
+                        "route_revision": count_item["assignment"]["route_revision"],
+                        "outcome": "succeeded",
+                        "route_evidence": "tool/count-1",
+                        "evidence": [{"ref": "tool/count-1", "summary": "count completed"}],
+                    },
+                })
+                assert not recorded.isError
+                next_route = await session.call_tool("route_instruction_work_items", {
+                    "assessment": assessment,
+                    "policy": policy,
+                    "workflow_state": recorded.structuredContent["workflow_state"],
+                    "current_sources": assessment["sources"],
+                })
+                assert not next_route.isError
+                assert next_route.structuredContent["subagent_dispatches"][0]["selected_model"] == "capable"
                 upgrade_policy = copy.deepcopy(policy)
                 upgrade_policy["parent_cost_tier"] = 1
                 upgrade = await session.call_tool("route_instruction_gateway", {

@@ -12,9 +12,10 @@ deterministic work from interpretation; business execution remains inside the
 
 `xrefkit gateway prepare` snapshots explicitly supplied existing files without
 changing them. `route` validates an evidence-bearing assessment and filters an
-operator-supplied evaluated model policy. `evaluate` measures explicit feedback.
-`schema assessment|policy|feedback|dispatch_plan` prints the exact strict JSON
-schemas.
+operator-supplied evaluated model policy. `workflow-init`, `workflow-route`, and
+`workflow-result` continue that decision per pending workflow node. `evaluate`
+measures explicit feedback. `schema` prints the exact strict JSON schemas,
+including workflow state, work-item result, authorization, and dispatch records.
 
 Semantic extraction is performed by the gateway agent, not a keyword counter.
 The Python boundary deterministically validates and selects from that assessment;
@@ -24,9 +25,9 @@ No universal complexity score, real model ranking, or price table is built in.
 The optional `.github/agents/instruction-gateway.agent.md` is the VS Code
 Copilot entry point. Select it and a suitable parent model in the UI. Installing
 the file does not force all other chat entry points through the gateway. Model
-dispatch is performed by the host agent, not by this CLI. An implementation
-route returns `dispatch_status: subagent_dispatch_required` and an explicit
-`subagent_dispatches` plan; a route without implementation work returns
+dispatch is performed by the host agent, not by this CLI. An implementation or
+operational route returns `dispatch_status: subagent_dispatch_required` and an explicit
+`subagent_dispatches` plan; a route without delegated work returns
 `dispatch_status: not_dispatched`. Live host execution is unverified.
 
 ## First run
@@ -44,6 +45,17 @@ use these tools for each incoming instruction before workflow execution:
    eligible models from the completed assessment and fresh client snapshots.
 4. `evaluate_instruction_feedback(feedback)`: evaluate repeat instructions and
    explicit acceptance after execution.
+
+For workflow execution, continue with:
+
+1. `initialize_instruction_workflow(assessment, previous_state?)`.
+2. `route_instruction_work_items(assessment, policy, workflow_state, current_sources)`.
+3. Execute only active assignments and host-ready dispatches.
+4. `record_instruction_work_item_result(assessment, workflow_state, result)`.
+5. Persist the returned state and repeat from step 2.
+
+The strict lifecycle and failure rules are defined by the
+[work-item model routing contract](../core/contracts/110_work_item_model_routing.md#xid-F2C91B7E4A60).
 
 These tools require startup, but deliberately do not require `bind_skill_run`:
 the selection must be available before the execution it selects. Existing
@@ -95,8 +107,11 @@ also remain supported when the host has already resolved the provider location.
 Automatic discovery of the active VS Code profile is a host integration task.
 
 Deterministic steps require `tool_ref` and have no model requirements. They are
-not executed by the gateway. Model steps require `execution_kind` (`analysis`
-or `implementation`), capability names, and all axes:
+not executed by the gateway. Model steps require `execution_kind` (`analysis`,
+`implementation`, or `operation`), capability names, and all axes. Use
+`operation` for operational work that still needs model judgment, including PR
+composition or CI/release-result interpretation. Keep a command deterministic
+when its behavior is already fixed and no judgment is needed.
 
 | Axis | Counting convention |
 |---|---|
@@ -119,8 +134,10 @@ capability is needed. Gatekeeper extraction quality needs its own evaluation.
 
 Each candidate supplies an exact host model `id`, `cost_tier`, `priority`,
 `capabilities`, per-axis `limits`, `max_input_bytes`, and `evaluation_ref`.
-Lower `priority` wins among eligible models; tied priorities use ID order for
-replayability. This is explicit policy, not an inferred cost/quality score.
+`selection_strategy: priority` is the default and preserves the original rule:
+lower priority wins, then ID order. A policy may explicitly select
+`lowest_cost_eligible`; that chooses lower cost tier, then priority and ID.
+The strategy is explicit policy, not an inferred cost/quality score.
 Calibrate limits and priorities using same-input, same-rubric experiments,
 including orthogonal arrays, scoped edits and repeated corrections. A reference
 is an evidence pointer; the CLI does not validate the underlying benchmark.
@@ -131,15 +148,15 @@ reported by the host policy. Candidates above that tier cannot be dispatched.
 These host cost ranks are supplied by the operator and are independent of Skill
 `model_tier`; no existing quality requirement is relaxed by routing.
 
-For every ready `implementation` model step, routing emits one
+For every ready `implementation` or `operation` model work item, routing emits one
 `subagent_dispatches` record with `parent_model`, `selected_model`,
-`agent_role: implementation_subagent`, `rationale`, and
+an `implementation_subagent` or `operational_subagent` role, `rationale`, and
 `parent_execution: prohibited`. The parent conversation remains the gateway and
 coordinator: it must create a separate subagent using the exact
 `selected_model`, then record the observed model identity separately. A missing
-`parent_model_id` prevents an implementation route from becoming ready. This
+`parent_model_id` prevents an implementation or operational route from becoming ready. This
 contract selects the worker model; it does not claim that the host performed
-the dispatch. `analysis` steps do not receive this implementation-only
+the dispatch. `analysis` steps do not receive this delegated-execution
 restriction.
 
 When every model step has an intrinsically eligible candidate, but
@@ -166,6 +183,36 @@ reasons, allowing a worker to retain scope and a reviewer to replay the choice.
 Recheck before dispatch after any change. Request ID/revision do not replace the
 workflow's Flow/run IDs; carry both when starting or continuing the existing
 runtime. This release supplies the handoff contract, not automatic runtime binding.
+
+## Per-work-item routing and re-entry
+
+The initial route remains available for compatibility. For executable workflows,
+initialize a `WorkflowState` and use the returned state as the next re-entry
+token. Routing considers only dependency-ready `pending` nodes. It records an
+assignment as `in_progress`; repeated routing with that returned state cannot
+dispatch it again. A `done` node stays done. Reopening it requires a newer
+assessment revision and explicit `scope_change` reason, affected steps, and
+evidence.
+
+```powershell
+python -m xrefkit gateway workflow-init --assessment work/assessment-001.json --out work/state-001.json
+python -m xrefkit gateway workflow-route --assessment work/assessment-001.json --policy work/model-policy.json --state work/state-001.json --out work/route-001.json
+python -m xrefkit gateway workflow-result --assessment work/assessment-001.json --state work/active-state-001.json --result work/result-001.json --out work/state-002.json
+```
+
+External writes carry a separate authorization record containing action, exact
+scope, status, and evidence. Model selection ignores authorization. A missing
+authorization can therefore return the same selected low-cost model while
+preventing assignment and host dispatch until authorization is refreshed.
+
+A known transient failure can request an exact deterministic tool retry. It does
+not raise model tier. An unexpected tool, CI, security, or dependency failure
+can request model rerouting only with classification evidence, revised diagnosis
+or fix scope, an additional capability, complete evidence-bearing measurements,
+and a minimum tier above the failed route. Successful recovery records the
+observed model and resolution evidence. The next routine node is evaluated from
+its own requirements, so an explicit lowest-cost policy can return to the low
+worker for merge, release coordination, or registry verification.
 
 ## Repeated instructions and acceptance
 

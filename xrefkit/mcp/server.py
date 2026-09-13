@@ -26,7 +26,15 @@ from .inbound_uploads import (
     InboundUploadManager,
     add_inbound_webdav_routes,
 )
-from .gateway import evaluate_feedback, gateway_contract, prepare_gateway, route_gateway
+from .gateway import (
+    evaluate_feedback,
+    gateway_contract,
+    initialize_gateway_workflow,
+    prepare_gateway,
+    record_gateway_work_item_result,
+    route_gateway,
+    route_gateway_work_items,
+)
 from .context_token import CONTEXT_META_KEY, ContextClaims, ContextTokenCodec
 from .dist import DIST_ROUTE_PATH, ArtifactDistribution, add_dist_routes
 from xrefkit.structure_catalog import get_entry as get_structure_entry
@@ -535,6 +543,43 @@ def main(argv: list[str] | None = None) -> int:
         """Select eligible models without opening client paths or dispatching; no Skill Run binding needed."""
         _require_startup_loaded(ctx, "route_instruction_gateway")
         return _with_control_reminder(route_gateway(assessment, policy, current_sources))
+
+    @app.tool()
+    def initialize_instruction_workflow(
+        ctx: Context,
+        assessment: dict[str, Any],
+        previous_state: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Create or explicitly re-enter per-work-item state after instruction assessment."""
+        _require_startup_loaded(ctx, "initialize_instruction_workflow")
+        return _with_control_reminder(initialize_gateway_workflow(assessment, previous_state))
+
+    @app.tool()
+    def route_instruction_work_items(
+        ctx: Context,
+        assessment: dict[str, Any],
+        policy: dict[str, Any],
+        workflow_state: dict[str, Any],
+        current_sources: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        """Route dependency-ready pending nodes and return the next workflow re-entry state."""
+        _require_startup_loaded(ctx, "route_instruction_work_items")
+        return _with_control_reminder(route_gateway_work_items(
+            assessment, policy, workflow_state, current_sources
+        ))
+
+    @app.tool()
+    def record_instruction_work_item_result(
+        ctx: Context,
+        assessment: dict[str, Any],
+        workflow_state: dict[str, Any],
+        result: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Record observed model/tool evidence and return state for the next pending route."""
+        _require_startup_loaded(ctx, "record_instruction_work_item_result")
+        return _with_control_reminder(record_gateway_work_item_result(
+            assessment, workflow_state, result
+        ))
 
     @app.tool()
     def evaluate_instruction_feedback(ctx: Context, feedback: dict[str, Any]) -> dict[str, Any]:
