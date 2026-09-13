@@ -700,7 +700,14 @@ def _check_candidate(root: Path, meta_path: Path, candidate: str, target: str) -
             "--root", str(root), "--meta", relative_temp,
             "--level", target, "--json",
         ]
-        process = subprocess.run(command, capture_output=True, text=True, check=False)
+        process = subprocess.run(
+            command,
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=60,
+        )
         try:
             payload = json.loads(process.stdout)
             result = payload[0]
@@ -726,9 +733,11 @@ def _check_candidate(root: Path, meta_path: Path, candidate: str, target: str) -
 
 def _committed_file_hash(root: Path, rel: str) -> str | None:
     proc = subprocess.run(
-        ["git", "-C", str(root), "show", f"HEAD:{rel}"],
+        ["git", "-C", str(root), "--no-pager", "show", f"HEAD:{rel}"],
+        stdin=subprocess.DEVNULL,
         capture_output=True,
         check=False,
+        timeout=30,
     )
     if proc.returncode != 0:
         return None
@@ -738,8 +747,10 @@ def _committed_file_hash(root: Path, rel: str) -> str | None:
 def _file_matches_head(root: Path, rel: str) -> bool:
     proc = subprocess.run(
         ["git", "-C", str(root), "diff", "--quiet", "--no-ext-diff", "HEAD", "--", rel],
+        stdin=subprocess.DEVNULL,
         capture_output=True,
         check=False,
+        timeout=30,
     )
     return proc.returncode == 0
 

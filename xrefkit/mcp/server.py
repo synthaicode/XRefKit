@@ -5,6 +5,8 @@ import asyncio
 import logging
 import os
 import sys
+import threading
+import time
 import uuid
 import weakref
 from pathlib import Path
@@ -18,7 +20,11 @@ from .contribution_adoption import (
     CanonicalAdoptionTransport,
     HmacHumanApprovalVerifier,
     LocalCanonicalAdoptionTransport,
-    WebDavCanonicalAdoptionTransport,
+)
+from .inbound_uploads import (
+    DEFAULT_TTL_SECONDS,
+    InboundUploadManager,
+    add_inbound_webdav_routes,
 )
 from .gateway import evaluate_feedback, gateway_contract, prepare_gateway, route_gateway
 from .context_token import CONTEXT_META_KEY, ContextClaims, ContextTokenCodec
@@ -244,21 +250,60 @@ def main(argv: list[str] | None = None) -> int:
         "--contribution-adoption-transport",
         choices=["local", "webdav"],
         default="local",
-        help="Server-owned canonical contribution adoption transport.",
+        help="Canonical adoption transport. Only local is supported; webdav is a migration error.",
     )
     parser.add_argument(
         "--webdav-staging-url",
-        help="WebDAV staging collection URL; defaults to XREFKIT_ADOPTION_WEBDAV_STAGING_URL.",
+        help="Deprecated outbound WebDAV option; specifying it is a migration error.",
     )
     parser.add_argument(
         "--webdav-canonical-url",
-        help="WebDAV canonical repository URL; defaults to XREFKIT_ADOPTION_WEBDAV_CANONICAL_URL.",
+        help="Deprecated outbound WebDAV option; use MCP-owned inbound upload sessions.",
+    )
+    parser.add_argument(
+        "--enable-inbound-webdav",
+        action="store_true",
+        help="Enable MCP-owned scoped WebDAV upload sessions.",
+    )
+    parser.add_argument(
+        "--inbound-webdav-host",
+        default="127.0.0.1",
+        help="Host for the stdio companion listener; defaults to loopback.",
+    )
+    parser.add_argument(
+        "--inbound-webdav-port",
+        type=int,
+        help="Port for the stdio companion listener. Streamable HTTP uses the MCP port.",
+    )
+    parser.add_argument(
+        "--inbound-webdav-public-base-url",
+        help="Advertised base URL without credentials, query, or fragment.",
+    )
+    parser.add_argument(
+        "--inbound-webdav-session-seconds",
+        type=int,
+        default=DEFAULT_TTL_SECONDS,
+        help="Default upload-session lifetime in seconds (30-3600).",
     )
     parser.add_argument(
         "--contribution-approval-secret",
         help="Trusted approval-assertion HMAC secret; defaults to XREFKIT_CONTRIBUTION_APPROVAL_SECRET.",
     )
     args = parser.parse_args(argv)
+    legacy_webdav_env = sorted(
+        name for name in os.environ if name.startswith("XREFKIT_ADOPTION_WEBDAV_")
+    )
+    if (
+        args.contribution_adoption_transport == "webdav"
+        or args.webdav_staging_url
+        or args.webdav_canonical_url
+        or legacy_webdav_env
+    ):
+        parser.error(
+            "external WebDAV canonical adoption is no longer supported. "
+            "Use --enable-inbound-webdav for client-to-MCP staging; reviewed "
+            "canonical adoption remains local and atomic."
+        )
     if args.stateless_http and args.transport != "streamable-http":
         parser.error("--stateless-http requires --transport streamable-http")
     context_secret = args.context_secret or os.environ.get("XREFKIT_CONTEXT_SECRET")
@@ -299,23 +344,20 @@ def main(argv: list[str] | None = None) -> int:
     )
     audit_log = McpAuditLog(args.audit_log or (Path(args.repo) / "work" / "mcp" / "xid_audit.jsonl"))
     run_registry = SessionRunRegistry()
-    adoption_transport: CanonicalAdoptionTransport
-    if args.contribution_adoption_transport == "webdav":
-        try:
-            adoption_transport = WebDavCanonicalAdoptionTransport.from_environment(
-                staging_base_url=args.webdav_staging_url,
-                canonical_base_url=args.webdav_canonical_url,
-            )
-        except ValueError as exc:
-            parser.error(str(exc))
-    else:
-        adoption_transport = LocalCanonicalAdoptionTransport()
+    adoption_transport: CanonicalAdoptionTransport = LocalCanonicalAdoptionTransport()
     approval_secret = args.contribution_approval_secret or os.environ.get(
         "XREFKIT_CONTRIBUTION_APPROVAL_SECRET"
     )
     approval_verifier = (
         HmacHumanApprovalVerifier(approval_secret) if approval_secret else None
     )
+
+    upload_manager: InboundUploadManager | None = None
+    if args.enable_inbound_webdav:
+        try:
+            upload_manager = _build_inbound_upload_manager(args, Path(args.repo))
+        except ValueError as exc:
+            parser.error(str(exc))
 
     # Artifact distribution runs only on the network transport: executable
     # artifacts are served as plain HTTP downloads next to the MCP endpoint
@@ -767,7 +809,128 @@ def main(argv: list[str] | None = None) -> int:
     def get_contribution_return_contract(ctx: Context) -> dict[str, Any]:
         """Describe the inert MCP return inbox and its validation limits."""
         _require_startup_loaded(ctx, "get_contribution_return_contract")
-        return catalog.get_contribution_return_contract()
+        result = catalog.get_contribution_return_contract()
+        result["preferred_transfer"] = {
+            "mode": "mcp_owned_inbound_webdav",
+            "issue_tool": "create_contribution_upload_session",
+            "seal_tool": "seal_contribution_upload",
+            "enabled": upload_manager is not None,
+            "canonical_adoption": "local_atomic_only",
+        }
+        return result
+
+    @app.tool()
+    def create_contribution_upload_session(
+        ctx: Context,
+        expires_in_seconds: int | None = None,
+    ) -> dict[str, Any]:
+        """Issue one scoped, expiring credential for inert inbound WebDAV staging."""
+        _require_startup_loaded(ctx, "create_contribution_upload_session")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError(
+                "XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before create_contribution_upload_session"
+            )
+        if upload_manager is None:
+            raise RuntimeError(
+                "XREFKIT_INBOUND_WEBDAV_DISABLED: start the MCP server with "
+                "--enable-inbound-webdav and a reachable listener configuration"
+            )
+        result = upload_manager.issue(
+            binding=binding,
+            expires_in_seconds=expires_in_seconds,
+        )
+        audit_log.append(
+            "contribution.upload_session_created",
+            binding=binding,
+            tool="create_contribution_upload_session",
+            upload_id=result["upload_id"],
+            expires_at=result["expires_at"],
+        )
+        result["audit_status"] = "recorded"
+        return result
+
+    @app.tool()
+    def seal_contribution_upload(
+        ctx: Context,
+        upload_id: str,
+        contribution_id: str,
+        kind: str,
+        title: str,
+        summary: str,
+        expected_files: list[dict[str, Any]],
+        skill_content_hash: str,
+        package_id: str | None = None,
+        knowledge_versions: list[dict[str, str]] | None = None,
+        knowledge: dict[str, Any] | None = None,
+        deterministic_tool: dict[str, Any] | None = None,
+        skill_observation: dict[str, Any] | None = None,
+        proposed_target_path: str | None = None,
+    ) -> dict[str, Any]:
+        """Freeze and verify one inbound upload, then create an inert review record."""
+        _require_startup_loaded(ctx, "seal_contribution_upload")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError(
+                "XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before seal_contribution_upload"
+            )
+        if upload_manager is None:
+            raise RuntimeError("XREFKIT_INBOUND_WEBDAV_DISABLED: upload listener is not enabled")
+        source_snapshot = catalog.contribution_source_snapshot(
+            skill_id=binding.skill_id,
+            package_id=package_id,
+            skill_content_hash=skill_content_hash,
+            knowledge_versions=knowledge_versions,
+            provider_version=SERVER_VERSION,
+        )
+        request_basis = {
+            "contribution_id": contribution_id,
+            "kind": kind,
+            "title": title,
+            "summary": summary,
+            "skill_content_hash": skill_content_hash,
+            "package_id": package_id,
+            "knowledge_versions": knowledge_versions,
+            "knowledge": knowledge,
+            "deterministic_tool": deterministic_tool,
+            "skill_observation": skill_observation,
+            "proposed_target_path": proposed_target_path,
+            "source_snapshot": source_snapshot,
+        }
+
+        def submit(files: list[dict[str, Any]]) -> dict[str, Any]:
+            return catalog.submit_contribution_return(
+                binding=binding,
+                source_snapshot=source_snapshot,
+                contribution_id=contribution_id,
+                kind=kind,
+                title=title,
+                summary=summary,
+                files=files,
+                knowledge=knowledge,
+                deterministic_tool=deterministic_tool,
+                skill_observation=skill_observation,
+                proposed_target_path=proposed_target_path,
+            )
+
+        result = upload_manager.seal(
+            binding=binding,
+            upload_id=upload_id,
+            expected_files=expected_files,
+            submit=submit,
+            request_basis=request_basis,
+        )
+        audit_log.append(
+            "contribution.upload_sealed",
+            binding=binding,
+            tool="seal_contribution_upload",
+            upload_id=upload_id,
+            contribution_id=contribution_id,
+            payload_hash=result["payload_hash"],
+            idempotent_replay=result["seal_idempotent_replay"],
+        )
+        result["audit_status"] = "recorded"
+        return result
 
     @app.tool()
     def submit_contribution_return(
@@ -1166,6 +1329,7 @@ def main(argv: list[str] | None = None) -> int:
     def check_xrefkit_runtime_version(installed: dict[str, str] | None = None) -> dict[str, Any]:
         return catalog.check_xrefkit_runtime_version(installed)
 
+    inbound_companion: _InboundCompanion | None = None
     try:
         if args.transport == "streamable-http":
             _run_streamable_http(
@@ -1179,8 +1343,16 @@ def main(argv: list[str] | None = None) -> int:
                 dist,
                 dist_base_url,
                 args.max_request_body_bytes,
+                upload_manager,
             )
         else:
+            if upload_manager is not None:
+                inbound_companion = _start_inbound_companion(
+                    upload_manager,
+                    args.inbound_webdav_host,
+                    args.inbound_webdav_port,
+                    args.log_level,
+                )
             app.run(transport=args.transport)
     except KeyboardInterrupt:
         # Ctrl+C is the expected operator action for stopping a foreground
@@ -1188,6 +1360,9 @@ def main(argv: list[str] | None = None) -> int:
         # after Uvicorn has already completed its graceful shutdown; do not
         # print a traceback for that normal lifecycle event.
         return 0
+    finally:
+        if inbound_companion is not None:
+            inbound_companion.stop()
     return 0
 
 
@@ -1347,6 +1522,7 @@ def _run_streamable_http(
     dist: Any = None,
     dist_base_url: str = "",
     max_request_body_bytes: int = DEFAULT_MAX_REQUEST_BODY_BYTES,
+    upload_manager: InboundUploadManager | None = None,
 ) -> None:
     if sys.platform == "win32":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -1358,6 +1534,8 @@ def _run_streamable_http(
         starlette_app = app.streamable_http_app()
         if dist is not None:
             add_dist_routes(starlette_app, dist, dist_base_url)
+        if upload_manager is not None:
+            add_inbound_webdav_routes(starlette_app, upload_manager)
         _add_request_size_limit_middleware(starlette_app, max_request_body_bytes)
         _add_streamable_http_probe_middleware(starlette_app, http_path)
         config = uvicorn.Config(
@@ -1372,6 +1550,130 @@ def _run_streamable_http(
         await server.serve()
 
     anyio.run(serve)
+
+
+class _InboundCompanion:
+    def __init__(self, server: Any, thread: threading.Thread) -> None:
+        self.server = server
+        self.thread = thread
+
+    def stop(self) -> None:
+        self.server.should_exit = True
+        self.thread.join(timeout=10)
+        if self.thread.is_alive():
+            self.server.force_exit = True
+            self.thread.join(timeout=5)
+
+
+def _start_inbound_companion(
+    manager: InboundUploadManager,
+    host: str,
+    port: int | None,
+    log_level: str,
+) -> _InboundCompanion:
+    if port is None:
+        raise RuntimeError("stdio inbound WebDAV requires --inbound-webdav-port")
+    import uvicorn
+    from starlette.applications import Starlette
+
+    starlette_app = Starlette()
+    add_inbound_webdav_routes(starlette_app, manager)
+    config = uvicorn.Config(
+        starlette_app,
+        host=host,
+        port=port,
+        log_level=log_level.lower(),
+        access_log=False,
+    )
+    server = uvicorn.Server(config)
+    thread = threading.Thread(target=server.run, name="xrefkit-inbound-webdav", daemon=True)
+    thread.start()
+    deadline = time.monotonic() + 10
+    while not server.started and thread.is_alive() and time.monotonic() < deadline:
+        time.sleep(0.02)
+    if not server.started:
+        server.should_exit = True
+        thread.join(timeout=5)
+        raise RuntimeError("inbound WebDAV companion listener failed to start")
+    return _InboundCompanion(server, thread)
+
+
+def _build_inbound_upload_manager(args: Any, repo: Path) -> InboundUploadManager:
+    loopback = {"127.0.0.1", "::1", "localhost"}
+    if args.transport == "streamable-http":
+        if args.inbound_webdav_port is not None and args.inbound_webdav_port != args.port:
+            raise ValueError(
+                "streamable-http inbound WebDAV shares the MCP port; omit "
+                "--inbound-webdav-port or set it to --port"
+            )
+        scheme = "https" if args.ssl_certfile else "http"
+        generated_base = _inbound_listener_base(scheme, args.host, args.port)
+        if args.host not in loopback and args.ssl_certfile is None:
+            raise ValueError(
+                "non-loopback inbound WebDAV requires TLS"
+            )
+        if args.host not in loopback and not args.inbound_webdav_public_base_url:
+            raise ValueError(
+                "non-loopback inbound WebDAV requires an explicit public base URL matching the TLS listener"
+            )
+        public_base = _validated_inbound_public_base(
+            args.inbound_webdav_public_base_url,
+            generated_base,
+        )
+        listener = {
+            "mode": "shared_streamable_http_app",
+            "host": args.host,
+            "port": args.port,
+            "route": "/webdav/uploads/{upload_id}",
+            "process_lifecycle": "same MCP HTTP server",
+        }
+    elif args.transport == "stdio":
+        if args.inbound_webdav_port is None or not 1 <= args.inbound_webdav_port <= 65535:
+            raise ValueError("stdio inbound WebDAV requires --inbound-webdav-port 1..65535")
+        if args.inbound_webdav_host not in loopback:
+            raise ValueError(
+                "stdio inbound WebDAV companion is loopback-only; use streamable-http with TLS for remote clients"
+            )
+        generated_base = _inbound_listener_base(
+            "http", args.inbound_webdav_host, args.inbound_webdav_port
+        )
+        public_base = _validated_inbound_public_base(
+            args.inbound_webdav_public_base_url,
+            generated_base,
+        )
+        listener = {
+            "mode": "same_process_stdio_companion",
+            "host": args.inbound_webdav_host,
+            "port": args.inbound_webdav_port,
+            "route": "/webdav/uploads/{upload_id}",
+            "process_lifecycle": "starts before stdio MCP requests and stops on stdio EOF",
+        }
+    else:
+        raise ValueError(
+            "inbound WebDAV is unsupported with SSE; use stdio companion or streamable-http"
+        )
+    return InboundUploadManager(
+        repo,
+        public_base_url=public_base,
+        listener=listener,
+        default_ttl_seconds=args.inbound_webdav_session_seconds,
+    )
+
+
+def _validated_inbound_public_base(configured: str | None, generated: str) -> str:
+    if configured is None:
+        return generated
+    if configured.rstrip("/").casefold() != generated.casefold():
+        raise ValueError(
+            "--inbound-webdav-public-base-url must exactly match the MCP-owned listener "
+            f"address: {generated}"
+        )
+    return generated
+
+
+def _inbound_listener_base(scheme: str, host: str, port: int) -> str:
+    rendered_host = f"[{host}]" if ":" in host and not host.startswith("[") else host
+    return f"{scheme}://{rendered_host}:{port}"
 
 
 def _add_request_size_limit_middleware(starlette_app: Any, max_bytes: int) -> None:

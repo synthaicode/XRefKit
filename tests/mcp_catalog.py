@@ -190,6 +190,8 @@ if __name__ == "__main__":
         self.assertEqual(
             repo_writers,
             {
+                "xref.create_contribution_upload_session",
+                "xref.seal_contribution_upload",
                 "xref.submit_contribution_return",
                 "xref.review_contribution_return",
                 "xref.adopt_contribution_return",
@@ -1305,6 +1307,10 @@ flow_id: sample
         )
         self.assertIn("proposed_target_path", contribution_schema["properties"])
         self.assertIn("skill_observation", contribution_schema["properties"])
+        upload_schema = contracts["xref.create_contribution_upload_session"]["input_json_schema"]
+        self.assertIn("expires_in_seconds", upload_schema["properties"])
+        seal_schema = contracts["xref.seal_contribution_upload"]["input_json_schema"]
+        self.assertEqual(seal_schema["properties"]["expected_files"]["maxItems"], 64)
         review_schema = contracts["xref.review_contribution_return"]["input_json_schema"]
         self.assertIn("decision_id", review_schema["required"])
         self.assertIn("reviewer", review_schema["required"])

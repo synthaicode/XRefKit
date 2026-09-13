@@ -155,7 +155,7 @@ assertion = issue_hmac_approval_assertion(
 ```
 
 secret はMCPサーバーとtrusted adapterだけに渡し、AI prompt、MCP tool入力、返却manifest、audit、
-WebDAV URL、repositoryへ保存しない。実行環境のsecret managerまたは同等の既存資格情報管理を
+upload URL、repositoryへ保存しない。実行環境のsecret managerまたは同等の既存資格情報管理を
 使用し、client AIへ環境変数を公開しない。secretをrotationすると、旧secretで署名された既存eventを
 現verifierで読めなくなるため、未完了recordの完了または移行方針を決めてから切り替える。
 
@@ -167,48 +167,72 @@ tokenをadoption完了まで一時的なsecretとして保持し、logや会話�
 
 ### サーバー設定
 
-local adapterは既定値であり、追加のtransport指定は不要である。WebDAVを使う場合は、MCPサーバー
-processに次を設定する。
+canonical adoptionは常にlocal atomic transportを使う。返却本文をinbound WebDAVで受信する場合は、
+MCPサーバーprocessに次を設定する。
 
 ```powershell
 $env:XREFKIT_CONTRIBUTION_APPROVAL_SECRET = '<secret-managerから注入>'
-$env:XREFKIT_ADOPTION_WEBDAV_STAGING_URL = 'https://dav.example.invalid/xrefkit-staging'
-$env:XREFKIT_ADOPTION_WEBDAV_CANONICAL_URL = 'https://dav.example.invalid/xrefkit-canonical'
-$env:XREFKIT_ADOPTION_WEBDAV_STAGING_USERNAME = '<staging-user>'
-$env:XREFKIT_ADOPTION_WEBDAV_STAGING_PASSWORD = '<staging-password>'
-$env:XREFKIT_ADOPTION_WEBDAV_USERNAME = '<adoption-user>'
-$env:XREFKIT_ADOPTION_WEBDAV_PASSWORD = '<adoption-password>'
-
-python -m xrefkit.mcp.server --repo C:/path/to/XRefKit --contribution-adoption-transport webdav
+python -m xrefkit.mcp.server --repo C:/path/to/XRefKit `
+  --transport stdio `
+  --enable-inbound-webdav `
+  --inbound-webdav-port 8765
 ```
 
-URLだけは次の引数でも指定できる。引数は対応する環境変数より優先される。
+stdioでは同じMCP processがloopback companion listenerを起動する。listenerはstdio request受付前に
+bindされ、stdio EOFまたはprocess終了時に停止する。`--inbound-webdav-port`は必須である。
+`create_contribution_upload_session`応答の`listener`にhost、port、route、process lifecycleが入る。
 
-- `--webdav-staging-url`
-- `--webdav-canonical-url`
+streamable-httpではMCPと同じASGI app、host、portにupload routeを追加する。
+non-loopbackで有効にする場合はTLSと明示的なHTTPS `--inbound-webdav-public-base-url`が必須である。
+このURLは実際のlistenerのscheme、host、portと完全一致しなければ起動を拒否する。任意のproxy先URLを
+upload先として信用しない。stdio companionはloopback専用で、SSEではinbound receiverを有効化できない。
 
 approval secretも `--contribution-approval-secret` で指定できるが、process command lineにsecretを
-残さない運用では `XREFKIT_CONTRIBUTION_APPROVAL_SECRET` を使用する。WebDAV transportを選択した
-状態でURLまたは資格情報が欠けている場合はサーバー起動が失敗し、local adapterへfallbackしない。
-URLはabsolute HTTP(S) URLとし、credential、query、fragmentを埋め込まない。
+残さない運用では `XREFKIT_CONTRIBUTION_APPROVAL_SECRET` を使用する。upload tokenはsessionごとに
+生成され、MCP応答で1回だけ返る。tokenはURL/queryに含めず、serverはSHA-256だけを保存する。
 
-WebDAV serverには次のmethodと条件付き処理が必要である。
+upload endpointが許可するmethodは`OPTIONS`、`MKCOL`、`PUT`、`HEAD`、`PROPFIND`だけである。
+`PUT`には`If-None-Match: *`が必要で、上書きを許可しない。`GET`、`MOVE`、`COPY`、`DELETE`は拒否する。
+endpointは`/webdav/uploads/<upload_id>`だけを公開するため、同じtokenでcanonical pathへアクセスできない。
 
-| credential | 対象 | 必要なmethod / 条件 |
-|---|---|---|
-| staging | staging root以下 | `MKCOL`, `PUT`, `GET`, `HEAD`, `PROPFIND` (`Depth: infinity`) |
-| adoption | canonical rootとMOVE元 | canonicalの`HEAD`, recovery時の`GET`/`PROPFIND`, stagingからcanonicalへのserver-side `MOVE` |
+旧`--contribution-adoption-transport webdav`、`--webdav-staging-url`、`--webdav-canonical-url`、
+`XREFKIT_ADOPTION_WEBDAV_*`を指定したサーバーは、inbound方式への移行案内を示して起動を拒否する。
+外部WebDAVからlocalへ黙ってfallbackしない。
 
-staging credentialにcanonical rootへの `PUT` または `MOVE` 権限を与えない。adoption credentialは
-MCP server processだけが保持する。`MOVE` は `Destination`、staging resourceの `ETag`を使う
-`If-Match`、`Overwrite: F` を付ける。WebDAV serverは同じ操作でstaging URLからcanonical URLへ
-server-side MOVEでき、collectionの `ETag` と `Depth: infinity` の `PROPFIND`を提供する必要がある。
-
-### 1. 契約取得と返却
+### 1. 契約取得、upload session、seal
 
 最初に `get_contribution_return_contract({})` を呼び、現在の schema、limits、orderingを確認する。
-その後、bind済みsessionで `submit_contribution_return` を呼ぶ。以下はKnowledgeの具体例である。
-UUIDとhashは実値に置き換える。
+その後、bind済みsessionで `create_contribution_upload_session` を呼ぶ。返された`webdav_url`と
+`bearer_token`を会話本文やlogへ転記せず、HTTP clientへ直接渡す。必要なcollectionを`MKCOL`し、
+各fileを`If-None-Match: *`付き`PUT`で送る。upload後は本文を含めず、次のように
+`seal_contribution_upload`を呼ぶ。UUIDとhashは実値に置き換える。
+
+```json
+{
+  "upload_id": "<create_contribution_upload_sessionで発行したUUID>",
+  "contribution_id": "8dba5ca7-83c8-44be-8cc0-d3ed662933e4",
+  "kind": "knowledge",
+  "title": "Learned operations rule",
+  "summary": "Validated local operating rule",
+  "expected_files": [
+    {"path": "rule.md", "content_hash": "<SHA-256>", "byte_count": 123}
+  ],
+  "skill_content_hash": "<利用Skill本文のSHA-256>",
+  "knowledge": {"xid": "<XID>"},
+  "proposed_target_path": "knowledge/operations/client-learned-rule.md"
+}
+```
+
+seal開始時にtokenは失効し、staging treeはHTTP routeから到達不能なfrozen treeへ原子的に移される。
+serverはextra/missing path、case/Unicode衝突、hash、byte count、UTF-8、file/byte quota、Skill/run binding、
+expiryを検証した後だけ`pending_review`を作る。同じseal requestの再送はidempotentだが、別payload、
+別`contribution_id`、期限切れ、seal後のuploadは拒否される。
+受信中のbytesはdurable reservationとしてglobal quotaへ加算してから書き込み、失敗時にpartial fileと
+reservationを解放する。file数に加えてcollection数もsession応答の`limits`で制限する。期限切れsessionは
+次のsession発行またはupload受付時にstaging本文とreservationを回収する。seal中のprocess停止後は、同じ
+request hashと`files`/`frozen`/`sealed.json`の一意な状態だけを再開し、曖昧な組合せは拒否する。
+
+本文をMCP JSONに含める次の`submit_contribution_return`形式は移行期間の互換経路である。
 
 ```json
 {
@@ -368,9 +392,9 @@ ownership、target衝突を再検証する。成功応答では次を確認す�
     }
   ],
   "transport": {
-    "transport": "webdav_conditional_move",
-    "precondition": "If-Match and Overwrite:F",
-    "source_etag": "<staging resource ETag>",
+    "transport": "local_atomic_move",
+    "precondition": "exclusive_hard_link",
+    "source_etag": "<返却fileのSHA-256>",
     "recovered": false
   },
   "publication": "not_performed",
@@ -383,7 +407,7 @@ ownership、target衝突を再検証する。成功応答では次を確認す�
 }
 ```
 
-local adapterの場合、`transport.transport` は `local_atomic_move` になる。Knowledgeはstaging fileから
+`transport.transport` は `local_atomic_move` になる。Knowledgeはstaging fileから
 exclusive hard linkで公開し、決定論ツールはfsync済みtreeをplatformのno-overwrite atomic directory
 renameで公開する。対応するatomic primitiveがないplatformでは停止する。
 
@@ -393,6 +417,8 @@ renameで公開する。対応するatomic primitiveがないplatformでは停�
 `--audit-log <path>` で変更できる。代表eventは次のとおりである。
 
 - `contribution.return_submitted`
+- `contribution.upload_session_created`
+- `contribution.upload_sealed`
 - `contribution.return_exported`
 - `contribution.review_decided`
 - `contribution.adopted`
@@ -410,13 +436,14 @@ recordの現在状態は `list_contribution_returns`、本文と署名済みeven
 | current Skill/Knowledge hash不一致 | 使用版と現在配布版を確認する。hashを作り替えて通さず、必要なら新しい返却として再作成する |
 | approval verifier未設定、assertion不一致・期限切れ | trusted adapterとMCP serverのsecret、claim、時刻を確認し、新しいassertionを発行する |
 | target ownership不一致、XID重複、target既存 | 正式配置を停止する。ownershipまたは既存資産を人間が確認し、新しい `contribution_id` とreviewで別targetを審査する |
-| WebDAV staging hash/tree不一致 | staging collectionの余分なentry、欠落、内容改変を調査する。MCP serverは一致しないtreeをMOVEしない |
-| staging resourceにETagがない | WebDAV server設定を修正する。無条件MOVEへ切り替えない |
+| upload tree/hash不一致 | scoped stagingの余分なentry、欠落、内容改変を確認する。sessionは`invalid`になり、別sessionで返却し直す |
+| upload token期限切れ・seal済み | 旧tokenを再使用せず、新しいupload sessionを発行する |
+| `XREFKIT_INBOUND_WEBDAV_DISABLED` | MCPを`--enable-inbound-webdav`と有効なlistener設定で再起動する |
 | `adoption_pending` | 同じ `adoption_id`、`approval_token`、reviewer、evidenceでadoptionを再実行する |
 | canonical targetが既に存在する | prepared eventがあり、全target path、tree、hashが完全一致する場合だけrecovery成功になる。余分なentryやhash差異があれば衝突として停止する |
 | approval token紛失 | token再発行toolはない。旧recordのadoptionを続けず、必要なら新しい `contribution_id` で返却し、人間のreviewからやり直す |
 
-`adoption-prepared.json` はremote/local mutationより前に作られる。その後に通信断やprocess停止が
+`adoption-prepared.json` はlocal mutationより前に作られる。その後にprocess停止が
 起きた場合、再実行はこのprepared eventを根拠にcanonical targetを照合する。完全一致した既存targetは
 `recovered: true` として完了できる。部分一致、extra file、異なるhashは成功に読み替えない。
 
@@ -457,19 +484,25 @@ downgrade、skip、same-state、`deprecated`は別の人間governance processへ
 `skill.maturity_applied`が追記される。apply成功後もpublication、distribution、live verificationは
 別状態である。
 
-## 未解決・未検証
+## 検証済み範囲と未解決
 
-- 実WebDAV製品への接続、authentication、ACL、collection ETag、`Depth: infinity`、条件付き
-  server-side `MOVE` の相互運用は未検証である。現在の検証はfixtureによる。
+- fresh stdio MCP processと同process loopback companionを使い、実TCPで`OPTIONS`、`PUT`、`HEAD`、
+  `PROPFIND`、seal、署名review、local adoption、observation commit、maturity assessment/proposal/review/apply、
+  `xrefkit skill check --level stable`まで完走した。
+- wrong token、`GET`/`MOVE`、encoded path escape、post-seal `PUT`はlive endpointで拒否を確認した。
+- streamable-http共有ASGI routeはtest済みだが、non-loopback TLS環境はlive未検証である。
 - trusted UI/identity adapterの製品実装、secret manager連携、secret rotation手順はこの実装に
   含まれない。repositoryにはHMAC verifierとissuer helperがある。
-- WebDAV server製品ごとのlock、quota、retention、staging cleanup、backup、障害監視は運用環境で
-  定義する必要がある。
+- expired/invalid staging本文とorphan reservationは次回のsession発行またはupload受付時に回収する。
+  長期retention、backup、障害監視は運用環境で定義する必要がある。
+- crash後に再送されない`sealing` sessionのoperator GC policyは未実装である。正当な同一sealの再開に
+  必要なため、自動期限切れへ読み替えない。
+- wildcard bind、public DNS alias、reverse proxyの別URLは許可しない。remote production構成を
+  必要とする場合は、listener identityとTLS終端のtrust境界を別設計として審査する。
 - adoption後のpublication、distribution、live verificationの自動連携は実装されていない。
 
-本番導入前に専用のtest repositoryと非本番WebDAV rootを用意し、Knowledge 1ファイルと
-決定論ツール1directoryについて、正常系、既存target、通信中断後recovery、余分なcollection entry、
-ETag欠落、権限拒否を確認する。結果がない環境のlive対応状態は `unknown` として扱う。
+本番導入前に専用のtest repositoryでKnowledge 1ファイルと決定論ツール1directoryについて、正常系、
+既存target、process中断後recovery、余分なentry、期限切れ、quota、権限拒否を確認する。
 
 ## 関連
 

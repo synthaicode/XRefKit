@@ -3,7 +3,7 @@
 
 # MCP Skill のローカル編集と配布元への還元
 
-状態: ローカル編集、返却、署名付きreview、local/WebDAV正式資産化を実装済み。自動三者マージ等は設計提案。
+状態: ローカル編集、MCP所有のinbound WebDAV返却、署名付きreview、local正式資産化を実装済み。自動三者マージ等は設計提案。
 作成日: 2026-09-05
 
 ## 目的
@@ -41,7 +41,9 @@ MCP が提供する文書とローカル Knowledge の横断は、利用側の X
 
 編集ファイルの更新と、実行中の Skill Run への採用は分ける。実行途中に黙って内容を切り替えず、採用時は再検証と使用版の記録を行う。
 
-MCP 提供の Skill を使った後にローカルで作成した Knowledge または決定論ツールを戻す場合は、Skill Run を `bind_skill_run` で関連付けたまま `get_contribution_return_contract` を取得し、`submit_contribution_return` を呼ぶ。要求には UUID、UTF-8 の本文と SHA-256、実際に使った Skill 本文のハッシュ、利用した Knowledge の XID とハッシュを含める。AI は `proposed_target_path` を提示できるが、これは候補であって採用権限ではない。受信側 MCP は現在の配布内容と照合し、`.xrefkit/contribution-returns/` の staging collection に `pending_review` として保存する。契約が返すファイル数・本文量・metadata量・JSON深度の上限を登録前に適用し、streamable HTTPでは要求本文にも上限を設ける。Windowsで別名やADSになり得るpathも拒否する。
+MCP 提供の Skill を使った後にローカルで作成した Knowledge、決定論ツール、またはSkill観察を戻す場合は、Skill Run を `bind_skill_run` で関連付けたまま `get_contribution_return_contract` を取得する。続いて `create_contribution_upload_session` が短命な `upload_id`、MCP所有WebDAV URL、1回だけ表示するBearer tokenを発行する。clientはそのupload collectionにだけ`MKCOL`/`PUT`できる。tokenはURLやqueryに含めず、serverはhashだけを保存する。
+
+upload後、clientは本文を再送せず、`seal_contribution_upload`へexpected path、SHA-256、byte countと返却metadataを渡す。MCPは同じSkill Run binding、期限、file/collection/in-flight global quota、完全なtree、hash、UTF-8を検証する。受信byteはdurable reservationをglobal lock内で確保してから書き、失敗時はpartial fileとreservationを解放する。期限切れstagingは決定論的に回収する。seal開始時にtokenを失効し、staging treeをHTTPから到達不能なfrozen treeへ原子的に移してから、`.xrefkit/contribution-returns/` の `pending_review` recordへ変換する。process停止後は同じrequest hashと一意なfreeze状態だけを再開する。extra/missing file、改変、再利用、期限切れ、競合seal、曖昧なrecovery状態、symlink/reparse pointはfail closedとする。AI の `proposed_target_path` は候補であって採用権限ではない。本文をMCP JSONへ含める旧`submit_contribution_return`は移行期間の互換経路に限る。
 
 返却物は `list_contribution_returns` で本文なしに確認し、`export_contribution_return` でレビュー用の完全な bundle を取得する。登録・出力時には決定論ツールを実行せず、Knowledge catalog や `get_client_tool_*` に追加しない。
 
@@ -49,7 +51,7 @@ MCP 提供の Skill を使った後にローカルで作成した Knowledge ま�
 
 Knowledge の target は `ownership.yaml` 上で `catalog: true` の `knowledge/` または pack の `knowledge/` 配下に限り、既存 XID と target path の衝突を拒否する。決定論ツールは `kernel-code` zone の `tools/` 配下に新規directoryとして置き、全fileを一つのdirectory/collectionとして移す。正式資産化中にツールを実行しない。
 
-local transport は fsync 済み staging file/tree を no-overwrite の atomic file publication または directory rename で配置し、対応するatomic primitiveがないplatformでは停止する。WebDAV transport は staging 用資格情報で operation collection を作り、全staged fileを `GET` してSHA-256とcollection treeの完全一致を確認した後、server-side adoption資格情報でcollection ETagを指定したdirectory `MOVE` を `If-Match` と `Overwrite: F` 付きで実行する。WebDAV URL・username・passwordはserver config/environmentだけに置き、MCP responseやcontribution recordへ書かない。client/AIのWebDAV権限はstaging collectionに限定し、canonical rootへ `PUT` できる権限を与えない。
+正式資産化はlocal transportだけを使用し、fsync 済み staging file/tree を no-overwrite の atomic file publication または directory rename で配置する。対応するatomic primitiveがないplatformでは停止する。WebDAV endpointにはupload collection以外のrouteが存在せず、client tokenではcanonical repositoryへ`PUT`、`MOVE`、`COPY`、`DELETE`できない。外部WebDAV server、外部canonical URL、adoption credentialは要件に含めない。
 
 レビュー、正式資産化、公開、配布、live verificationは別状態である。adoption event は canonical path、content hash、transport precondition、元の `contribution_id` とreview bindingを残すが、publication、distribution、live verificationは `not_performed` のままにする。
 
@@ -66,22 +68,26 @@ MCP tools:
 - `export_local_knowledge(xid, write_patch?)`
 - `deactivate_local_knowledge(xid)`
 - `get_contribution_return_contract()`
+- `create_contribution_upload_session(expires_in_seconds?)`
+- `seal_contribution_upload(upload_id, contribution_id, kind, title, summary, expected_files, skill_content_hash, ...)`
 - `submit_contribution_return(contribution_id, kind, title, summary, files, skill_content_hash, package_id?, knowledge_versions?, knowledge?, deterministic_tool?)`
 - `list_contribution_returns()`
 - `export_contribution_return(contribution_id)`
 - `review_contribution_return(contribution_id, decision_id, decision, reviewer, decision_evidence, approval_assertion, approved_target_path?)`
 - `adopt_contribution_return(contribution_id, adoption_id, reviewer, decision_evidence, approval_token)`
 
-Server configuration for WebDAV adoption:
+Server configuration for inbound WebDAV:
 
-- `--contribution-adoption-transport webdav`
-- `--webdav-staging-url` or `XREFKIT_ADOPTION_WEBDAV_STAGING_URL`
-- `--webdav-canonical-url` or `XREFKIT_ADOPTION_WEBDAV_CANONICAL_URL`
-- `XREFKIT_ADOPTION_WEBDAV_STAGING_USERNAME`
-- `XREFKIT_ADOPTION_WEBDAV_STAGING_PASSWORD`
-- `XREFKIT_ADOPTION_WEBDAV_USERNAME`
-- `XREFKIT_ADOPTION_WEBDAV_PASSWORD`
+- `--enable-inbound-webdav`
+- `--inbound-webdav-host`（stdio companionはloopbackのみ）
+- `--inbound-webdav-port`（stdioで必須。streamable-httpはMCP portを共有）
+- `--inbound-webdav-public-base-url`
+- `--inbound-webdav-session-seconds`
 - `XREFKIT_CONTRIBUTION_APPROVAL_SECRET`（trusted assertion verificationとevent signing。32 UTF-8 bytes以上）
+
+旧`--contribution-adoption-transport webdav`、`--webdav-staging-url`、`--webdav-canonical-url`、`XREFKIT_ADOPTION_WEBDAV_*`は誤方向のoutbound設定であり、指定時は移行案内付きで起動を拒否する。
+
+stdio companionは実listenerから生成したloopback URLだけを発行する。streamable-httpのnon-loopback listenerはTLSを必須とし、明示URLも実際のscheme、host、portとの完全一致を要求する。SSE transportではinbound receiverを有効化しない。
 
 CLI:
 
@@ -94,9 +100,11 @@ CLI:
 
 ## 実装範囲と未実装
 
-段階1として、ローカル編集版の取得・登録・自動選択、編集版の XID 解決、Skill の一覧・差分出力・無効化、新規ローカル Knowledge の作成・一覧・XID 解決・追加差分出力・無効化を実装した。さらに、MCP Skill Run に由来を結び付けた Knowledge／決定論ツールのレビュー待ち返却、署名付き human review、local または WebDAV transport による正式資産化を実装した。
+段階1として、ローカル編集版の取得・登録・自動選択、編集版の XID 解決、Skill の一覧・差分出力・無効化、新規ローカル Knowledge の作成・一覧・XID 解決・追加差分出力・無効化を実装した。さらに、MCP Skill Run に由来を結び付けた Knowledge／決定論ツール／Skill観察のinbound WebDAV返却、署名付き human review、local transportによる正式資産化を実装した。
 
 自動三者マージ、任意の MCP 間をまたぐクライアント側 XID Federation、配布元への PR／公開、公開確認後の自動無効化は未実装である。これらは元版・編集版・現在の配布版の競合解決、権限、公開範囲を定義してから追加する。
+
+crash後にclientから同一sealが再送されない`sealing` sessionのoperator GC policyは未実装である。wildcard bind、public DNS alias、reverse proxyの別URLも現契約では許可せず、必要な場合はlistener identityとTLS終端のtrust境界を別途定義する。
 
 ## 関連契約
 

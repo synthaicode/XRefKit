@@ -5,8 +5,6 @@ import json
 import shutil
 import sys
 import tempfile
-import urllib.error
-import urllib.parse
 import uuid
 from pathlib import Path
 
@@ -27,7 +25,6 @@ from xrefkit.mcp.contribution_adoption import (
     AdoptionFile,
     HmacHumanApprovalVerifier,
     LocalCanonicalAdoptionTransport,
-    WebDavCanonicalAdoptionTransport,
     issue_hmac_approval_assertion,
 )
 
@@ -743,72 +740,6 @@ def test_deterministic_tool_is_published_as_one_directory_and_never_executed(
     assert not marker.exists()
 
 
-def test_webdav_adoption_uses_separate_credentials_etag_and_no_overwrite(
-    tmp_path: Path,
-) -> None:
-    calls = []
-
-    class Response:
-        def __init__(self, status: int, *, headers: dict | None = None, body: bytes = b""):
-            self.status = status
-            self.headers = headers or {}
-            self._body = body
-
-        def read(self) -> bytes:
-            return self._body
-
-        def close(self) -> None:
-            pass
-
-    def opener(request, timeout):
-        calls.append(request)
-        method = request.get_method()
-        if method == "HEAD" and request.full_url.startswith("https://dav.test/canonical/"):
-            raise urllib.error.HTTPError(request.full_url, 404, "missing", {}, None)
-        if method == "HEAD":
-            return Response(200, headers={"ETag": '"staged-v1"'})
-        if method == "GET":
-            return Response(200, body=content.encode("utf-8"))
-        return Response(201)
-
-    adapter = WebDavCanonicalAdoptionTransport(
-        staging_base_url="https://dav.test/staging",
-        canonical_base_url="https://dav.test/canonical",
-        staging_username="stage-user",
-        staging_password="stage-secret",
-        adoption_username="adopt-user",
-        adoption_password="adopt-secret",
-        opener=opener,
-    )
-    content = "<!-- xid: WEB123 -->\n\n# WebDAV\n"
-    result = adapter.adopt(
-        root=tmp_path,
-        record_dir=tmp_path,
-        contribution_id=str(uuid.uuid4()),
-        adoption_id=str(uuid.uuid4()),
-        kind="knowledge",
-        target_path="knowledge/webdav.md",
-        files=[
-            AdoptionFile(
-                bundle_path="source.md",
-                content=content,
-                content_hash=hashlib.sha256(content.encode()).hexdigest(),
-            )
-        ],
-        recovery_allowed=False,
-    )
-
-    move = next(request for request in calls if request.get_method() == "MOVE")
-    put = next(request for request in calls if request.get_method() == "PUT")
-    assert move.get_header("If-match") == '"staged-v1"'
-    assert move.get_header("Overwrite") == "F"
-    assert move.get_header("Destination") == "https://dav.test/canonical/knowledge/webdav.md"
-    assert move.get_header("Authorization") != put.get_header("Authorization")
-    assert put.get_header("If-none-match") == "*"
-    assert result["transport"] == "webdav_conditional_move"
-    assert result["source_etag"] == '"staged-v1"'
-
-
 def test_local_tool_recovery_rejects_extra_tree_entries(tmp_path: Path) -> None:
     target = tmp_path / "tools" / "returned"
     target.mkdir(parents=True)
@@ -829,119 +760,6 @@ def test_local_tool_recovery_rejects_extra_tree_entries(tmp_path: Path) -> None:
                 content_hash=hashlib.sha256(content.encode()).hexdigest(),
             )],
             recovery_allowed=True,
-        )
-
-
-def test_webdav_tool_get_verifies_complete_tree_before_conditional_directory_move(
-    tmp_path: Path,
-) -> None:
-    calls = []
-    uploaded: dict[str, bytes] = {}
-    files = [
-        AdoptionFile("check.py", "print('ok')\n", hashlib.sha256(b"print('ok')\n").hexdigest()),
-        AdoptionFile("nested/config.json", "{}\n", hashlib.sha256(b"{}\n").hexdigest()),
-    ]
-
-    class Response:
-        def __init__(self, status: int, *, headers: dict | None = None, body: bytes = b""):
-            self.status, self.headers, self._body = status, headers or {}, body
-        def read(self) -> bytes:
-            return self._body
-        def close(self) -> None:
-            pass
-
-    def opener(request, timeout):
-        calls.append(request)
-        method, url = request.get_method(), request.full_url
-        if method == "HEAD" and url.startswith("https://dav.test/canonical/"):
-            raise urllib.error.HTTPError(url, 404, "missing", {}, None)
-        if method == "PUT":
-            uploaded[url] = request.data
-            return Response(201)
-        if method == "GET":
-            return Response(200, body=uploaded[url])
-        if method == "PROPFIND":
-            base = urllib.parse.urlsplit(url).path.rstrip("/")
-            body = f'''<D:multistatus xmlns:D="DAV:">
-              <D:response><D:href>{base}/</D:href><D:propstat><D:prop><D:resourcetype><D:collection/></D:resourcetype></D:prop></D:propstat></D:response>
-              <D:response><D:href>{base}/check.py</D:href></D:response>
-              <D:response><D:href>{base}/nested/</D:href><D:propstat><D:prop><D:resourcetype><D:collection/></D:resourcetype></D:prop></D:propstat></D:response>
-              <D:response><D:href>{base}/nested/config.json</D:href></D:response>
-            </D:multistatus>'''.encode()
-            return Response(207, body=body)
-        if method == "HEAD":
-            return Response(200, headers={"ETag": '"tool-tree-v1"'})
-        return Response(201)
-
-    adapter = WebDavCanonicalAdoptionTransport(
-        staging_base_url="https://dav.test/staging",
-        canonical_base_url="https://dav.test/canonical",
-        staging_username="stage-user", staging_password="stage-secret",
-        adoption_username="adopt-user", adoption_password="adopt-secret",
-        opener=opener,
-    )
-    result = adapter.adopt(
-        root=tmp_path, record_dir=tmp_path,
-        contribution_id=str(uuid.uuid4()), adoption_id=str(uuid.uuid4()),
-        kind="deterministic_tool", target_path="tools/returned",
-        files=files, recovery_allowed=False,
-    )
-    move_index = next(i for i, call in enumerate(calls) if call.get_method() == "MOVE")
-    get_indexes = [i for i, call in enumerate(calls) if call.get_method() == "GET"]
-    assert len(get_indexes) == len(files) and max(get_indexes) < move_index
-    move = calls[move_index]
-    assert move.get_header("If-match") == '"tool-tree-v1"'
-    assert move.get_header("Overwrite") == "F"
-    assert move.get_header("Destination") == "https://dav.test/canonical/tools/returned"
-    assert result["target_paths"] == [
-        "tools/returned/check.py", "tools/returned/nested/config.json"
-    ]
-
-
-def test_webdav_recovery_rejects_extra_canonical_collection_entry(tmp_path: Path) -> None:
-    content = "print('ok')\n"
-    item = AdoptionFile(
-        "check.py", content, hashlib.sha256(content.encode()).hexdigest()
-    )
-
-    class Response:
-        headers: dict = {}
-        def __init__(self, body: bytes = b"", status: int = 200) -> None:
-            self._body = body
-            self.status = status
-        def read(self) -> bytes:
-            return self._body
-        def close(self) -> None:
-            pass
-
-    def opener(request, timeout):
-        method, url = request.get_method(), request.full_url
-        if method == "PROPFIND":
-            base = urllib.parse.urlsplit(url).path.rstrip("/")
-            return Response(f'''<D:multistatus xmlns:D="DAV:">
-              <D:response><D:href>{base}/</D:href><D:propstat><D:prop><D:resourcetype><D:collection/></D:resourcetype></D:prop></D:propstat></D:response>
-              <D:response><D:href>{base}/check.py</D:href></D:response>
-              <D:response><D:href>{base}/extra/</D:href><D:propstat><D:prop><D:resourcetype><D:collection/></D:resourcetype></D:prop></D:propstat></D:response>
-            </D:multistatus>'''.encode(), status=207)
-        if method == "HEAD" and url.startswith("https://dav.test/canonical/"):
-            return Response()
-        if method == "GET":
-            return Response(content.encode())
-        raise AssertionError(f"unexpected request after recovery collision: {method} {url}")
-
-    adapter = WebDavCanonicalAdoptionTransport(
-        staging_base_url="https://dav.test/staging",
-        canonical_base_url="https://dav.test/canonical",
-        staging_username="stage-user", staging_password="stage-secret",
-        adoption_username="adopt-user", adoption_password="adopt-secret",
-        opener=opener,
-    )
-    with pytest.raises(FileExistsError, match="already exists"):
-        adapter.adopt(
-            root=tmp_path, record_dir=tmp_path,
-            contribution_id=str(uuid.uuid4()), adoption_id=str(uuid.uuid4()),
-            kind="deterministic_tool", target_path="tools/returned",
-            files=[item], recovery_allowed=True,
         )
 
 
@@ -1083,7 +901,11 @@ def test_contribution_return_over_real_mcp_stdio(tmp_path: Path) -> None:
         adopted_path.unlink(missing_ok=True)
         shutil.rmtree(record_dir, ignore_errors=True)
         inbox = record_dir.parent
-        for lock_file in (inbox / "inbox.lock", inbox / "inbox.lock.lock"):
+        for lock_file in (
+            inbox / "inbox.lock",
+            inbox / "inbox.lock.lock",
+            inbox / "canonical-adoption.lock",
+        ):
             lock_file.unlink(missing_ok=True)
         try:
             inbox.rmdir()

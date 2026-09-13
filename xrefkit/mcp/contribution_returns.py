@@ -86,8 +86,15 @@ def contribution_return_contract() -> dict[str, Any]:
         },
         "file_schema": {
             "path": "safe relative POSIX path",
-            "content": "UTF-8 text",
+            "content": "UTF-8 text; accepted inline only by the deprecated compatibility path",
             "content_hash": "lowercase SHA-256 hex of UTF-8 content",
+        },
+        "transfer_modes": {
+            "preferred": "MCP-owned inbound WebDAV upload session followed by seal_contribution_upload",
+            "inline_compatibility": "submit_contribution_return remains available during migration",
+            "token": "scoped to one upload and Skill Run, expiring, returned once, hash-only at rest, revoked before freeze",
+            "webdav_methods": "OPTIONS, MKCOL, PUT, HEAD, and PROPFIND on the upload collection only; GET, MOVE, COPY, and DELETE are denied",
+            "seal": "atomically freezes the exact tree, verifies path/hash/byte_count/UTF-8/quota, then creates pending_review",
         },
         "knowledge_schema": {"xid": "string", "files": "exactly one Markdown file"},
         "deterministic_tool_schema": {
@@ -136,16 +143,17 @@ def contribution_return_contract() -> dict[str, Any]:
             "collision": "never overwrite an existing canonical target",
         },
         "adoption_transport": {
-            "local": "atomic file publication or directory move",
-            "webdav": "server-side conditional MOVE with ETag, If-Match, and Overwrite:F",
-            "credentials": "server configuration only; never returned to the MCP client",
+            "canonical": "repository-local atomic file publication or directory move only",
+            "webdav": "inbound staging transport only; it has no canonical route or adoption authority",
         },
         "ordering": [
             "get_startup_context",
             "get_skill or get_skill_requirements",
             "bind_skill_run",
             "get_contribution_return_contract",
-            "submit_contribution_return",
+            "create_contribution_upload_session",
+            "WebDAV MKCOL/PUT into the scoped inert staging collection",
+            "seal_contribution_upload",
             "list_contribution_returns or export_contribution_return",
             "review_contribution_return (explicit human decision)",
             "adopt_contribution_return (accepted records only)",

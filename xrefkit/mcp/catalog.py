@@ -1249,7 +1249,7 @@ def _client_instructions() -> list[str]:
         "When the user explicitly asks to add a new Knowledge document, call create_local_knowledge with an XID-bearing Markdown body; it remains project-local until exported and adopted upstream.",
         "Use list_local_knowledge to inspect local additions and export_local_knowledge to produce an upstream addition patch. Deactivate only after the distributed XID can be resolved from MCP.",
         "After using an MCP-provided Skill, use get_contribution_return_contract and submit_contribution_return to return locally authored Knowledge, deterministic tool definitions, or Skill observations as inert pending_review material. Send exact content hashes; submission never activates, publishes, or changes Skill maturity.",
-        "For Skill observations, adopt the evidence under observations/, commit it to Git, then use assess_skill_maturity, propose_skill_maturity, review_skill_maturity_proposal, and apply_skill_maturity_proposal. Client proposals and WebDAV transport have no maturity authority.",
+        "For Skill observations, seal the MCP-owned inbound WebDAV upload, adopt the reviewed evidence under observations/, commit it to Git, then use assess_skill_maturity, propose_skill_maturity, review_skill_maturity_proposal, and apply_skill_maturity_proposal. Client proposals and inbound upload transport have no maturity authority.",
     ]
 
 
