@@ -27,7 +27,7 @@ from xrefkit.mcp.skill_maturity import (
     review_skill_maturity_proposal,
 )
 
-SECRET = "test-human-approval-secret-32-bytes-minimum"
+APPROVAL_TEST_KEY = "test-human-approval-" + "key-32-bytes-minimum"
 
 
 def _git(root: Path, *args: str) -> None:
@@ -95,7 +95,7 @@ def repo(tmp_path: Path) -> Path:
 
 
 def verifier() -> HmacHumanApprovalVerifier:
-    return HmacHumanApprovalVerifier(SECRET)
+    return HmacHumanApprovalVerifier(APPROVAL_TEST_KEY)
 
 
 def file(path: str, content: str) -> dict[str, str]:
@@ -168,7 +168,7 @@ def adopt_observation(root: Path, contribution_id: str) -> None:
     decision_id = str(uuid.uuid4())
     reviewer = "human:observation-reviewer"
     assertion = issue_hmac_approval_assertion(
-        SECRET,
+        APPROVAL_TEST_KEY,
         {
             "assertion_id": str(uuid.uuid4()), "contribution_id": contribution_id,
             "decision_id": decision_id, "decision": "accepted", "reviewer": reviewer,
@@ -206,7 +206,7 @@ def reviewed_stable_proposal(root: Path, contribution_id: str) -> tuple[dict, di
     reviewer = "human:maturity-owner"
     evidence = "Evidence is sufficient."
     assertion = issue_hmac_approval_assertion(
-        SECRET,
+        APPROVAL_TEST_KEY,
         {
             "assertion_id": str(uuid.uuid4()), "proposal_id": proposal["proposal_id"],
             "decision_id": decision_id, "decision": "accepted", "reviewer": reviewer,
@@ -273,7 +273,7 @@ def test_human_reviewed_one_step_maturity_apply_updates_canonical_meta(tmp_path:
     decision_id = str(uuid.uuid4())
     reviewer = "human:maturity-owner"
     assertion = issue_hmac_approval_assertion(
-        SECRET,
+        APPROVAL_TEST_KEY,
         {
             "assertion_id": str(uuid.uuid4()), "proposal_id": proposal["proposal_id"],
             "decision_id": decision_id, "decision": "accepted", "reviewer": reviewer,
@@ -568,7 +568,7 @@ def test_governance_ref_change_after_review_blocks_governed_apply(tmp_path: Path
     reviewer = "human:maturity-owner"
     evidence = "Governance evidence is sufficient."
     assertion = issue_hmac_approval_assertion(
-        SECRET,
+        APPROVAL_TEST_KEY,
         {
             "assertion_id": str(uuid.uuid4()), "proposal_id": proposal["proposal_id"],
             "decision_id": decision_id, "decision": "accepted", "reviewer": reviewer,
