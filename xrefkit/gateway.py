@@ -48,11 +48,32 @@ class AuthorizationRecord(Record):
         return self
 
 
-class ScopeChange(Record):
-    previous_revision: Count
-    affected_steps: list[Text] = Field(min_length=1)
+class RemovedStep(Record):
+    step_id: Text
+    node_id: Text
+    definition_sha256: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
+    prior_status: Literal["pending", "done", "blocked", "escalated"]
     reason: Text
     evidence: list[Evidence] = Field(min_length=1)
+    authorization: AuthorizationRecord | None = None
+
+
+class ScopeChange(Record):
+    previous_revision: Count
+    affected_steps: list[Text] = Field(default_factory=list)
+    removed_steps: list[RemovedStep] = Field(default_factory=list)
+    reason: Text
+    evidence: list[Evidence] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def changed_work_exists(self):
+        if not self.affected_steps and not self.removed_steps:
+            raise ValueError("scope change requires affected_steps or removed_steps")
+        if len(set(self.affected_steps)) != len(self.affected_steps):
+            raise ValueError("scope change contains duplicate affected step IDs")
+        if len({item.step_id for item in self.removed_steps}) != len(self.removed_steps):
+            raise ValueError("scope change contains duplicate removed step tombstones")
+        return self
 
 
 class Measurement(Record):
@@ -138,7 +159,18 @@ class Assessment(Record):
                 raise ValueError("scope change must refer to an earlier assessment revision")
             if not set(self.scope_change.affected_steps) <= seen:
                 raise ValueError("scope change references an unknown step")
-            if any(e.source_id not in source_ids for e in self.scope_change.evidence):
+            removed_ids = {item.step_id for item in self.scope_change.removed_steps}
+            if removed_ids & seen:
+                raise ValueError("removed step tombstones cannot reference current steps")
+            scope_refs = self.scope_change.evidence + [
+                evidence
+                for removed in self.scope_change.removed_steps
+                for evidence in (
+                    removed.evidence
+                    + (removed.authorization.evidence if removed.authorization else [])
+                )
+            ]
+            if any(e.source_id not in source_ids for e in scope_refs):
                 raise ValueError("scope change evidence references an unknown source")
         return self
 
@@ -298,6 +330,7 @@ class WorkItemState(Record):
     definition_sha256: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
     status: Literal["pending", "in_progress", "done", "blocked", "escalated"]
     route_revision: Count = 0
+    authorization: AuthorizationRecord | None = None
     assignment: ActiveAssignment | None = None
     reroute_requirement: FailureReport | None = None
     observations: list[RouteObservation] = Field(default_factory=list)
@@ -316,6 +349,24 @@ class WorkItemState(Record):
         return self
 
 
+class RetiredWorkItem(Record):
+    removed_in_revision: Count
+    tombstone: RemovedStep
+    item: WorkItemState
+
+    @model_validator(mode="after")
+    def matches_tombstone(self):
+        if (
+            self.item.step_id != self.tombstone.step_id
+            or self.item.node_id != self.tombstone.node_id
+            or self.item.definition_sha256 != self.tombstone.definition_sha256
+            or self.item.status != self.tombstone.prior_status
+            or self.item.authorization != self.tombstone.authorization
+        ):
+            raise ValueError("retired work item does not match its tombstone")
+        return self
+
+
 class WorkflowState(Record):
     version: Literal[1]
     request_id: Text
@@ -323,6 +374,7 @@ class WorkflowState(Record):
     assessment_sha256: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
     environment: Text
     items: list[WorkItemState] = Field(min_length=1)
+    retired_items: list[RetiredWorkItem] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def unique_items(self):
@@ -330,6 +382,13 @@ class WorkflowState(Record):
             raise ValueError("workflow state contains duplicate work item IDs")
         if len({item.node_id for item in self.items}) != len(self.items):
             raise ValueError("workflow state contains duplicate node IDs")
+        retired_ids = [item.item.step_id for item in self.retired_items]
+        if len(set(retired_ids)) != len(retired_ids):
+            raise ValueError("workflow state contains duplicate retired work item IDs")
+        if set(retired_ids) & {item.step_id for item in self.items}:
+            raise ValueError("active and retired work item IDs cannot overlap")
+        if sum(item.status == "in_progress" for item in self.items) > 1:
+            raise ValueError("stateless workflow state permits at most one active assignment")
         return self
 
 
@@ -426,9 +485,19 @@ def route(assessment: Assessment, policy: Policy, *, current_sources: list[Sourc
     dispatches: list[DispatchPlan] = []
     upgrade_options: dict[str, list[Candidate]] = {}
     model_step_without_route = False
+    authorization_required_steps: list[str] = []
+    selection_key = ((lambda candidate: (candidate.cost_tier, candidate.priority, candidate.id))
+                     if policy.selection_strategy == "lowest_cost_eligible"
+                     else (lambda candidate: (candidate.priority, candidate.id)))
     for step in assessment.steps:
         if step.kind == "deterministic":
-            decisions.append({"step_id": step.id, "kind": step.kind, "tool_ref": step.tool_ref})
+            decision = {"step_id": step.id, "kind": step.kind, "tool_ref": step.tool_ref}
+            if step.authorization is not None:
+                decision["authorization"] = step.authorization.model_dump()
+                decision["execution_authorized"] = step.authorization.status == "authorized"
+                if step.authorization.status == "required":
+                    authorization_required_steps.append(step.id)
+            decisions.append(decision)
             continue
         unknown = [axis for axis, metric in step.metrics.items() if metric.value is None]
         rejected = {}
@@ -459,20 +528,24 @@ def route(assessment: Assessment, policy: Policy, *, current_sources: list[Sourc
                 rejected[candidate.id] = reasons
             else:
                 eligible.append(candidate)
-        selection_key = ((lambda c: (c.cost_tier, c.priority, c.id))
-                         if policy.selection_strategy == "lowest_cost_eligible"
-                         else (lambda c: (c.priority, c.id)))
         chosen = min(eligible, key=selection_key) if eligible and not issues else None
         if not eligible:
             if blocked_only_by_parent:
                 upgrade_options[step.id] = blocked_only_by_parent
             else:
                 model_step_without_route = True
-        decisions.append({"step_id": step.id, "kind": step.kind,
-                          "model": chosen.id if chosen else None,
-                          "evaluation_ref": chosen.evaluation_ref if chosen else None,
-                          "rejected": rejected})
-        if chosen is not None and step.execution_kind in {"implementation", "operation"}:
+        decision = {"step_id": step.id, "kind": step.kind,
+                    "model": chosen.id if chosen else None,
+                    "evaluation_ref": chosen.evaluation_ref if chosen else None,
+                    "rejected": rejected}
+        if step.authorization is not None:
+            decision["authorization"] = step.authorization.model_dump()
+            decision["execution_authorized"] = step.authorization.status == "authorized"
+            if step.authorization.status == "required":
+                authorization_required_steps.append(step.id)
+        decisions.append(decision)
+        if (chosen is not None and step.execution_kind in {"implementation", "operation"}
+                and (step.authorization is None or step.authorization.status == "authorized")):
             role = ("implementation_subagent" if step.execution_kind == "implementation"
                     else "operational_subagent")
             dispatches.append(DispatchPlan(
@@ -494,7 +567,7 @@ def route(assessment: Assessment, policy: Policy, *, current_sources: list[Sourc
         workers = []
         for step_id, candidates in upgrade_options.items():
             callable_at_tier = [c for c in candidates if c.cost_tier <= required_tier]
-            selected = min(callable_at_tier, key=lambda c: (c.priority, c.id))
+            selected = min(callable_at_tier, key=selection_key)
             workers.append({"step_id": step_id, "model": selected.id,
                             "cost_tier": selected.cost_tier,
                             "evaluation_ref": selected.evaluation_ref})
@@ -516,6 +589,8 @@ def route(assessment: Assessment, policy: Policy, *, current_sources: list[Sourc
         status = "needs_assessment"
     elif upgrade is not None:
         status = "conversation_upgrade_required"
+    elif authorization_required_steps:
+        status = "authorization_required"
     else:
         status = "ready"
     return {"schema_version": 1, "status": status,
@@ -523,8 +598,11 @@ def route(assessment: Assessment, policy: Policy, *, current_sources: list[Sourc
             "environment": assessment.environment,
             "policy_version": policy.version, "issues": issues, "decisions": decisions,
             "assessment": assessment.model_dump(), "policy": policy.model_dump(),
-            "dispatch_status": "subagent_dispatch_required" if dispatches else "not_dispatched",
+            "dispatch_status": ("subagent_dispatch_required" if dispatches
+                                else ("authorization_required" if authorization_required_steps
+                                      else "not_dispatched")),
             "subagent_dispatches": [dispatch.model_dump() for dispatch in dispatches],
+            "authorization_required_steps": authorization_required_steps,
             "conversation_upgrade": upgrade,
             "source_verification": "client_reported_snapshot" if current_sources is not None else "local_files",
             "workflow_rule": "Start the existing workflow/Skill envelope before executing any step; preserve all gates."}
@@ -559,7 +637,9 @@ def initialize_workflow(
             node_id=step.node_id or step.id,
             definition_sha256=step_hashes[step.id],
             status="pending",
+            authorization=step.authorization,
         ) for step in assessment.steps]
+        retired_items: list[RetiredWorkItem] = []
         mode = "initialized"
     else:
         if assessment.request_id != previous_state.request_id:
@@ -587,6 +667,27 @@ def initialize_workflow(
                 raise ValueError("every changed or added work item must be named by scope_change")
         if any(item.status == "in_progress" for item in previous_state.items):
             raise ValueError("workflow re-entry cannot replace an in-progress assignment")
+        removed_ids = previous_ids - current_ids
+        tombstones = ({removed.step_id: removed for removed in scope_change.removed_steps}
+                      if scope_change is not None else {})
+        if set(tombstones) != removed_ids:
+            raise ValueError("removed work items require one exact scope_change tombstone each")
+        retired_items = [item.model_copy(deep=True) for item in previous_state.retired_items]
+        for step_id in sorted(removed_ids):
+            prior = previous[step_id]
+            tombstone = tombstones[step_id]
+            if (
+                tombstone.node_id != prior.node_id
+                or tombstone.definition_sha256 != prior.definition_sha256
+                or tombstone.prior_status != prior.status
+                or tombstone.authorization != prior.authorization
+            ):
+                raise ValueError("removed work item tombstone does not match prior state")
+            retired_items.append(RetiredWorkItem(
+                removed_in_revision=assessment.revision,
+                tombstone=tombstone,
+                item=prior.model_copy(deep=True),
+            ))
         items = []
         for step in assessment.steps:
             prior = previous.get(step.id)
@@ -596,6 +697,7 @@ def initialize_workflow(
                     node_id=step.node_id or step.id,
                     definition_sha256=step_hashes[step.id],
                     status="pending",
+                    authorization=step.authorization,
                 ))
                 continue
             if step.id in affected:
@@ -605,6 +707,7 @@ def initialize_workflow(
                     definition_sha256=step_hashes[step.id],
                     status="pending",
                     route_revision=prior.route_revision + 1,
+                    authorization=step.authorization,
                     observations=prior.observations,
                     failure_history=prior.failure_history,
                     completion_evidence=prior.completion_evidence,
@@ -615,7 +718,9 @@ def initialize_workflow(
                     raise ValueError("changed work item is missing from scope_change")
                 if (step.node_id or step.id) != prior.node_id:
                     raise ValueError("node identity changes require an affected scope_change entry")
-                items.append(prior.model_copy(deep=True))
+                carried = prior.model_copy(deep=True)
+                carried.authorization = step.authorization
+                items.append(carried)
         mode = "reentered"
     state = WorkflowState(
         version=1,
@@ -624,6 +729,7 @@ def initialize_workflow(
         assessment_sha256=_assessment_hash(assessment),
         environment=assessment.environment,
         items=items,
+        retired_items=retired_items,
     )
     return {
         "schema_version": 1,
@@ -646,9 +752,10 @@ def _validate_workflow_state(assessment: Assessment, state: WorkflowState) -> No
         raise ValueError("workflow state environment does not match assessment")
     if state.assessment_sha256 != _assessment_hash(assessment):
         raise ValueError("workflow state assessment snapshot is stale")
-    expected = [(step.id, step.node_id or step.id, _step_definition_hash(step))
+    expected = [(step.id, step.node_id or step.id, _step_definition_hash(step), step.authorization)
                 for step in assessment.steps]
-    actual = [(item.step_id, item.node_id, item.definition_sha256) for item in state.items]
+    actual = [(item.step_id, item.node_id, item.definition_sha256, item.authorization)
+              for item in state.items]
     if expected != actual:
         raise ValueError("workflow state work items do not match assessment order and definitions")
 
@@ -717,11 +824,15 @@ def route_work_items(
     issues = _source_issues(assessment, policy, current_sources)
     steps = {step.id: step for step in assessment.steps}
     items = {item.step_id: item for item in state.items}
-    ready = [
+    active_assignment_exists = any(item.status == "in_progress" for item in state.items)
+    dependency_ready = [
         item for item in state.items
         if item.status == "pending"
         and all(items[dependency].status == "done" for dependency in steps[item.step_id].depends_on)
-    ]
+    ] if not active_assignment_exists else []
+    # This API is stateless and returns whole-state replacements. Route one node
+    # at a time so two results cannot race and erase each other's state.
+    ready = dependency_ready[:1]
     if any(steps[item.step_id].execution_kind in {"implementation", "operation"}
            or (item.reroute_requirement is not None
                and item.reroute_requirement.disposition == "model_reroute"
@@ -747,8 +858,13 @@ def route_work_items(
                               "state": item.status, "dispatch": "not_pending"})
             continue
         if item not in ready:
+            wait_reason = (
+                "waiting_active_result" if active_assignment_exists
+                else ("waiting_serial_turn" if item in dependency_ready
+                      else "waiting_dependencies")
+            )
             decisions.append({"work_item_id": item.step_id, "node_id": item.node_id,
-                              "state": "pending", "dispatch": "waiting_dependencies"})
+                              "state": "pending", "dispatch": wait_reason})
             continue
         requirement = item.reroute_requirement
         authorization = step.authorization
@@ -953,6 +1069,8 @@ def route_work_items(
             status = "workflow_complete"
         elif any(item.status in {"blocked", "escalated"} for item in state.items):
             status = "workflow_blocked"
+        elif active_assignment_exists:
+            status = "waiting_active_result"
         else:
             status = "waiting_dependencies"
     return {
@@ -1170,6 +1288,13 @@ def evaluate(feedback: Feedback) -> dict:
             "acceptance_by_scope": acceptance, "feedback": feedback.model_dump()}
 
 
+def _load_workflow_state(path: Path) -> WorkflowState:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if isinstance(value, dict) and "workflow_state" in value:
+        value = value["workflow_state"]
+    return WorkflowState.model_validate(value)
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="xrefkit gateway")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -1242,7 +1367,7 @@ def main(argv=None) -> int:
             result = route(Assessment.model_validate_json(args.assessment.read_bytes()),
                            Policy.model_validate_json(args.policy.read_bytes()))
         elif args.command == "workflow-init":
-            previous = (WorkflowState.model_validate_json(args.previous_state.read_bytes())
+            previous = (_load_workflow_state(args.previous_state)
                         if args.previous_state else None)
             result = initialize_workflow(
                 Assessment.model_validate_json(args.assessment.read_bytes()),
@@ -1252,12 +1377,12 @@ def main(argv=None) -> int:
             result = route_work_items(
                 Assessment.model_validate_json(args.assessment.read_bytes()),
                 Policy.model_validate_json(args.policy.read_bytes()),
-                WorkflowState.model_validate_json(args.state.read_bytes()),
+                _load_workflow_state(args.state),
             )
         elif args.command == "workflow-result":
             result = record_work_item_result(
                 Assessment.model_validate_json(args.assessment.read_bytes()),
-                WorkflowState.model_validate_json(args.state.read_bytes()),
+                _load_workflow_state(args.state),
                 WorkItemResult.model_validate_json(args.result.read_bytes()),
             )
         else:

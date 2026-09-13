@@ -66,9 +66,13 @@ local CLI procedure below is only for repository-native/non-MCP operation.
    source snapshots and policy, then rerun the same request revision from the
    indicated route tool. A new user requirement creates a new revision.
 6. Initialize `WorkflowState`, then route only dependency-ready `pending` nodes.
-   Persist every state returned by routing and result recording. Never dispatch
+   Accept at most one active assignment from each route call, persist its result,
+   then route the next node; the stateless whole-state API does not provide
+   parallel compare-and-swap. Persist every state returned by routing and result
+   recording. Never dispatch
    `in_progress` or completed nodes. Reopen completed work only under a newer
-   assessment revision with explicit `scope_change` evidence.
+   assessment revision with explicit `scope_change` evidence. Removing a node
+   requires a matching `removed_steps` tombstone and retained retired history.
    For each ready `implementation` or `operation` model step, require the returned
    `subagent_dispatches` plan. Invoke a separate subagent with its exact
    `selected_model`; the parent is the gateway/coordinator and MUST NOT execute

@@ -337,6 +337,94 @@ def test_authorization_gates_execution_without_changing_low_model(release_flow):
     assert state_from(result).items[0].status == "pending"
 
 
+def test_stateless_route_activates_only_one_independent_node(release_flow):
+    assessment, policy = release_flow
+    parallel_ready = assessment.model_copy(deep=True)
+    parallel_ready.steps[2].depends_on = []
+    state = state_from(initialize_workflow(parallel_ready))
+    routed = route_work_items(parallel_ready, policy, state)
+    active = [item for item in state_from(routed).items if item.status == "in_progress"]
+    assert [item.step_id for item in active] == ["pr"]
+    merge = next(row for row in routed["decisions"] if row["work_item_id"] == "merge")
+    assert merge["dispatch"] == "waiting_serial_turn"
+    assert len(routed["subagent_dispatches"]) == 1
+
+    repeated = route_work_items(parallel_ready, policy, state_from(routed))
+    repeated_state = state_from(repeated)
+    assert repeated["status"] == "waiting_active_result"
+    assert repeated["subagent_dispatches"] == []
+    assert [item.step_id for item in repeated_state.items
+            if item.status == "in_progress"] == ["pr"]
+    merge = next(row for row in repeated["decisions"] if row["work_item_id"] == "merge")
+    assert merge["dispatch"] == "waiting_active_result"
+
+    state = state_from(succeed(parallel_ready, state_from(routed), observed_model="low"))
+    next_route = route_work_items(parallel_ready, policy, state)
+    assert next(item for item in state_from(next_route).items
+                if item.status == "in_progress").step_id == "ci"
+    state = state_from(succeed(parallel_ready, state_from(next_route)))
+    merge_route = route_work_items(parallel_ready, policy, state)
+    assert merge_route["subagent_dispatches"][0]["work_item_id"] == "merge"
+
+
+def test_removed_node_requires_tombstone_and_preserves_history(release_flow):
+    assessment, policy = release_flow
+    state = state_from(initialize_workflow(assessment))
+    while not all(item.status == "done" for item in state.items):
+        routed = route_work_items(assessment, policy, state)
+        state = state_from(routed)
+        active = next(item for item in state.items if item.status == "in_progress")
+        state = state_from(succeed(
+            assessment,
+            state,
+            observed_model=(active.assignment.selected_model
+                            if active.assignment.kind == "model" else None),
+        ))
+    registry = next(item for item in state.items if item.step_id == "registry")
+    without_registry = assessment.model_dump()
+    without_registry["revision"] = 1
+    without_registry["steps"] = [
+        step for step in without_registry["steps"] if step["id"] != "registry"
+    ]
+    with pytest.raises(ValueError, match="scope_change"):
+        initialize_workflow(Assessment.model_validate(without_registry), previous_state=state)
+
+    without_registry["scope_change"] = {
+        "previous_revision": 0,
+        "affected_steps": ["tag"],
+        "removed_steps": [],
+        "reason": "incomplete removal declaration",
+        "evidence": [{"source_id": "instruction", "locator": "line 1"}],
+    }
+    with pytest.raises(ValueError, match="tombstone"):
+        initialize_workflow(Assessment.model_validate(without_registry), previous_state=state)
+
+    without_registry["scope_change"] = {
+        "previous_revision": 0,
+        "affected_steps": [],
+        "removed_steps": [{
+            "step_id": registry.step_id,
+            "node_id": registry.node_id,
+            "definition_sha256": registry.definition_sha256,
+            "prior_status": registry.status,
+            "reason": "registry interpretation is no longer in this request",
+            "evidence": [{"source_id": "instruction", "locator": "line 1"}],
+            "authorization": (registry.authorization.model_dump()
+                              if registry.authorization else None),
+        }],
+        "reason": "remove registry interpretation from the revised scope",
+        "evidence": [{"source_id": "instruction", "locator": "line 1"}],
+    }
+    revised = Assessment.model_validate(without_registry)
+    reentered = state_from(initialize_workflow(revised, previous_state=state))
+    assert {item.step_id for item in reentered.items} == {"pr", "ci", "merge", "tag"}
+    assert len(reentered.retired_items) == 1
+    retired = reentered.retired_items[0]
+    assert retired.tombstone.step_id == "registry"
+    assert retired.item.observations == registry.observations
+    assert retired.item.completion_evidence == registry.completion_evidence
+
+
 def test_completed_node_is_not_redispatched_and_reopen_requires_evidenced_revision(release_flow):
     assessment, policy = release_flow
     state = state_from(initialize_workflow(assessment))
@@ -392,11 +480,28 @@ def test_default_policy_keeps_priority_semantics(release_flow):
     assert result["subagent_dispatches"][0]["selected_model"] == "high"
 
 
+def test_workflow_preserves_no_candidate_and_parent_upgrade_states(release_flow):
+    assessment, policy = release_flow
+    state = state_from(initialize_workflow(assessment))
+    unavailable = policy.model_copy(deep=True)
+    for candidate in unavailable.candidates:
+        candidate.capabilities = []
+    assert route_work_items(assessment, unavailable, state)["status"] == "needs_assessment"
+
+    parent_limited = policy.model_copy(deep=True)
+    parent_limited.host = "vscode_copilot"
+    parent_limited.parent_cost_tier = 0
+    upgraded = route_work_items(assessment, parent_limited, state)
+    assert upgraded["status"] == "conversation_upgrade_required"
+    assert upgraded["conversation_upgrade"]["required_minimum_tier"] == 1
+    assert upgraded["conversation_upgrade"]["workers_callable_after_upgrade"][0]["model"] == "low"
+    assert upgraded["workflow_state"] == state.model_dump()
+
+
 def test_workflow_cli_schema_init_and_route(release_flow, tmp_path, capsys):
     assessment, policy = release_flow
     assessment_path = tmp_path / "assessment.json"
     policy_path = tmp_path / "policy.json"
-    state_path = tmp_path / "state.json"
     assessment_path.write_text(assessment.model_dump_json(), encoding="utf-8")
     policy_path.write_text(policy.model_dump_json(), encoding="utf-8")
 
@@ -406,12 +511,32 @@ def test_workflow_cli_schema_init_and_route(release_flow, tmp_path, capsys):
         "gateway", "workflow-init", "--assessment", str(assessment_path),
         "--out", str(tmp_path / "initialized.json"),
     ]) == 0
-    initialized = json.loads((tmp_path / "initialized.json").read_text(encoding="utf-8"))
-    state_path.write_text(json.dumps(initialized["workflow_state"]), encoding="utf-8")
     assert main([
         "gateway", "workflow-route", "--assessment", str(assessment_path),
-        "--policy", str(policy_path), "--state", str(state_path),
+        "--policy", str(policy_path), "--state", str(tmp_path / "initialized.json"),
         "--out", str(tmp_path / "routed.json"),
     ]) == 0
     routed = json.loads((tmp_path / "routed.json").read_text(encoding="utf-8"))
     assert routed["subagent_dispatches"][0]["selected_model"] == "low"
+    active = routed["workflow_state"]["items"][0]
+    result_path = tmp_path / "result.json"
+    result_path.write_text(json.dumps({
+        "version": 1,
+        "request_id": assessment.request_id,
+        "assessment_revision": assessment.revision,
+        "step_id": active["step_id"],
+        "node_id": active["node_id"],
+        "route_id": active["assignment"]["route_id"],
+        "route_revision": active["assignment"]["route_revision"],
+        "outcome": "succeeded",
+        "observed_model": "low",
+        "route_evidence": "host/cli-route",
+        "evidence": [evidence("host/cli-route")],
+    }), encoding="utf-8")
+    assert main([
+        "gateway", "workflow-result", "--assessment", str(assessment_path),
+        "--state", str(tmp_path / "routed.json"), "--result", str(result_path),
+        "--out", str(tmp_path / "recorded.json"),
+    ]) == 0
+    recorded = json.loads((tmp_path / "recorded.json").read_text(encoding="utf-8"))
+    assert recorded["work_item_status"] == "done"

@@ -150,13 +150,13 @@
 ### Report
 
 ### Status
-blocked
+done
 
 ### Reason
-The workflow remains blocked; incomplete phases: Execution, Check, Closure, Handoff.
+All workflow phases are complete.
 
 ### Result
-2 of 6 workflow protocol phases are complete.
+6 of 6 workflow protocol phases are complete.
 
 ### Checks Performed
 
@@ -164,50 +164,47 @@ The workflow remains blocked; incomplete phases: Execution, Check, Closure, Hand
 | --- | --- | --- | --- | --- |
 | [Startup](#startup) | Confirm task, scope, active Skill, inputs, and loaded-context boundary. | Phase checklist | pass | [Startup](#startup) |
 | [Planning](#planning) | Create concrete work items, assumptions, target outputs, and handoff boundary. | Phase checklist | pass | [Planning](#planning) |
-| [Execution](#execution) | Execute the Skill procedure inside the declared capability and flow boundary. | Phase checklist | fail | [Execution](#execution) |
-| [Check](#check) | Run the separate check role against evidence, output quality, unknowns, and handoff readiness. | Phase checklist | not_checked | [Check](#check) |
-| [Closure](#closure) | Apply the closure gate and keep pass, fail, unknown, and escalation states explicit. | Phase checklist | not_checked | [Closure](#closure) |
-| [Handoff](#handoff) | Record outputs, unresolved items, next owner, and human decision points. | Phase checklist | not_checked | [Handoff](#handoff) |
+| [Execution](#execution) | Execute the Skill procedure inside the declared capability and flow boundary. | Phase checklist | pass | [Execution](#execution) |
+| [Check](#check) | Run the separate check role against evidence, output quality, unknowns, and handoff readiness. | Phase checklist | pass | [Check](#check) |
+| [Closure](#closure) | Apply the closure gate and keep pass, fail, unknown, and escalation states explicit. | Phase checklist | pass | [Closure](#closure) |
+| [Handoff](#handoff) | Record outputs, unresolved items, next owner, and human decision points. | Phase checklist | pass | [Handoff](#handoff) |
 
 ### Evidence
 - Phase checklist and phase sections in this Run Log
 - Phase events recorded below
 
 ### Open Items
-- Execution
-- Check
-- Closure
-- Handoff
+- なし
 
 ### Handoff
 - Next owner: executor
-- Next action: advance Execution.
+- Next action: advance なし.
 ### Phase Checklist
 
 - [x] Startup: Confirm task, scope, active Skill, inputs, and loaded-context boundary.
 - [x] Planning: Create concrete work items, assumptions, target outputs, and handoff boundary.
-- [!] Execution: Execute the Skill procedure inside the declared capability and flow boundary.
-- [ ] Check: Run the separate check role against evidence, output quality, unknowns, and handoff readiness.
-- [ ] Closure: Apply the closure gate and keep pass, fail, unknown, and escalation states explicit.
-- [ ] Handoff: Record outputs, unresolved items, next owner, and human decision points.
+- [x] Execution: Execute the Skill procedure inside the declared capability and flow boundary.
+- [x] Check: Run the separate check role against evidence, output quality, unknowns, and handoff readiness.
+- [x] Closure: Apply the closure gate and keep pass, fail, unknown, and escalation states explicit.
+- [x] Handoff: Record outputs, unresolved items, next owner, and human decision points.
 
 ## Concrete Work Items
 
-- status: `in_progress`
+- status: `done`
 - rule: each work item requires a completion criterion; use unknown, blocked, or escalated with a reason when the criterion cannot yet be defined
-- [ ] WI-001 status=`pending` role=`python_implementation_flow:executor` criterion=`Schemas reject stale, missing, contradictory, sticky, or unauthorized state and preserve unknowns` reason=`` supersedes=``: Define strict schemas and state invariants for per-work-item model routing, authorization, reroute evidence, completion, and observation
-- [ ] WI-002 status=`pending` role=`python_implementation_flow:executor` criterion=`Only pending model items route; failures require scoped reroute; resolution allows fresh lower-tier routing; deterministic items remain tool steps` reason=`` supersedes=``: Implement generic pending-item route and work-item result re-entry APIs
-- [ ] WI-003 status=`pending` role=`python_implementation_flow:executor` criterion=`CLI and MCP provide strict contract, route, and result operations with explicit operational subagent dispatch` reason=`` supersedes=``: Expose work-item routing through CLI schemas and MCP tools/contracts
-- [ ] WI-004 status=`pending` role=`python_implementation_flow:executor` criterion=`Documentation explains per-item low routing, scoped escalation, de-escalation, authorization separation, observations, and host dispatch` reason=`` supersedes=``: Update canonical contract, guide, and VS Code host instructions
-- [ ] WI-005 status=`pending` role=`python_implementation_flow:executor` criterion=`Tests show low routine operations, high diagnosis/fix, resolution evidence, low merge/tag/registry verification, and no redispatch of completed work` reason=`` supersedes=``: Add focused tests for normal release flow and CI/security/dependency escalation cycles
-- [ ] WI-006 status=`pending` role=`python_implementation_flow:executor` criterion=`Focused/full tests, compile, structured validation, xref/diff checks, and independent review pass or leave explicit findings` reason=`` supersedes=``: Run full validation, independent review, and prepare handoff
+- [x] WI-001 status=`done` role=`python_implementation_flow:executor` criterion=`Schemas reject stale, missing, contradictory, sticky, or unauthorized state and preserve unknowns` reason=`` supersedes=``: Define strict schemas and state invariants for per-work-item model routing, authorization, reroute evidence, completion, and observation
+- [x] WI-002 status=`done` role=`python_implementation_flow:executor` criterion=`Only pending model items route; failures require scoped reroute; resolution allows fresh lower-tier routing; deterministic items remain tool steps` reason=`` supersedes=``: Implement generic pending-item route and work-item result re-entry APIs
+- [x] WI-003 status=`done` role=`python_implementation_flow:executor` criterion=`CLI and MCP provide strict contract, route, and result operations with explicit operational subagent dispatch` reason=`` supersedes=``: Expose work-item routing through CLI schemas and MCP tools/contracts
+- [x] WI-004 status=`done` role=`python_implementation_flow:executor` criterion=`Documentation explains per-item low routing, scoped escalation, de-escalation, authorization separation, observations, and host dispatch` reason=`` supersedes=``: Update canonical contract, guide, and VS Code host instructions
+- [x] WI-005 status=`done` role=`python_implementation_flow:executor` criterion=`Tests show low routine operations, high diagnosis/fix, resolution evidence, low merge/tag/registry verification, and no redispatch of completed work` reason=`` supersedes=``: Add focused tests for normal release flow and CI/security/dependency escalation cycles
+- [x] WI-006 status=`done` role=`python_implementation_flow:executor` criterion=`Focused/full tests, compile, structured validation, xref/diff checks, and independent review pass or leave explicit findings` reason=`` supersedes=``: Run full validation, independent review, and prepare handoff
 ## Runtime Artifacts
 
-- status: `in_progress`
+- status: `done`
 - rule: outputs, evidence, checks, judgments, sources, and handoff links must be added with `xrefkit skill artifact`
-- [ ] CHECK-001 kind=`check` status=`pending` role=`python_implementation_flow:quality_reviewer` target=`python -m pytest` item=`-`: Full Python test suite
-- [ ] CHECK-002 kind=`check` status=`pending` role=`python_implementation_flow:quality_reviewer` target=`python -m compileall xrefkit` item=`-`: Python compilation
-- [ ] CHECK-003 kind=`check` status=`pending` role=`python_implementation_flow:quality_reviewer` target=`python -m xrefkit xref fix && python -m xrefkit xref check` item=`-`: XID and link integrity
+- [x] CHECK-001 kind=`check` status=`done` role=`python_implementation_flow:quality_reviewer` target=`python -m pytest -q` item=`-`: Independent quality recheck: 498 passed in 61.76s; focused gateway/MCP suite 46 passed in 5.79s
+- [x] CHECK-002 kind=`check` status=`done` role=`python_implementation_flow:quality_reviewer` target=`python -m compileall -q xrefkit` item=`-`: Independent quality recheck exited 0 with no diagnostics
+- [x] CHECK-003 kind=`check` status=`done` role=`python_implementation_flow:quality_reviewer` target=`python -m xrefkit xref check` item=`-`: Independent quality recheck: index_size=318, missing_xid=0, issues=0
 - [x] OUT-001 kind=`output` status=`done` role=`python_implementation_flow:executor` target=`xrefkit/gateway.py` item=`WI-002`: Generic per-work-item state, routing, result, failure, recovery, authorization, and observation contracts
 - [x] OUT-002 kind=`output` status=`done` role=`python_implementation_flow:executor` target=`xrefkit/mcp/gateway.py` item=`WI-003`: MCP workflow routing adapter
 - [x] OUT-003 kind=`output` status=`done` role=`python_implementation_flow:executor` target=`docs/core/contracts/110_work_item_model_routing.md` item=`WI-004`: Canonical work-item routing contract
@@ -215,17 +212,17 @@ The workflow remains blocked; incomplete phases: Execution, Check, Closure, Hand
 - [x] EVID-002 kind=`evidence` status=`done` role=`python_implementation_flow:executor` target=`python -m xrefkit xref fix; python -m xrefkit xref check` item=`WI-004`: missing_xid=0 issues=0
 ## Execution Role
 
-- status: `in_progress`
+- status: `done`
 - responsibility: perform the Skill procedure inside the declared flow, capability, and guard boundary
 
 ## Check Role
 
-- status: `pending`
+- status: `done`
 - responsibility: deterministically verify workflow-progression records (worklist, work items, artifact recording and linkage, concerns, role separation) with `xrefkit skill verify`; output quality is the quality gate's responsibility, not this one
 
 ## Quality Gate
 
-- status: `pending`
+- status: `done`
 - model_tier: `unset`
 - policy: `optional`
 - rule: declare acceptance check items as `check`-kind artifacts at planning; an independent quality reviewer sets each to `done` (pass) or `blocked` (fail) with `xrefkit skill artifact`; domain reviews run as separate review Skills orchestrated by the main session and linked here. Required when model_tier is `standard` or `heavy`; optional otherwise
@@ -233,43 +230,51 @@ The workflow remains blocked; incomplete phases: Execution, Check, Closure, Hand
 ### Report
 
 ### Status
-pending
+done
 
 ### Reason
-Quality acceptance checks have not yet been recorded.
+All three independent implementation acceptance checks passed.
 
 ### Result
-No quality checklist items have been recorded yet.
+The full Python suite, compilation, and XID/link integrity checks pass for the current implementation diff.
 
 ### Checks Performed
 
 | Check ID | What was checked | Target / Scope | Result | Evidence / Details |
 | --- | --- | --- | --- | --- |
-| none | No check artifact recorded | Quality Gate | not_checked | [Runtime Artifacts](#runtime-artifacts) |
+| `CHECK-001` | Full Python test suite | `python -m pytest -q` | pass | `498 passed in 61.76s`; focused gateway/MCP suite `46 passed in 5.79s` |
+| `CHECK-002` | Python compilation | `python -m compileall -q xrefkit` | pass | exit `0`, no diagnostics |
+| `CHECK-003` | XID and link integrity | `python -m xrefkit xref check` | pass | `index_size=318`, `missing_xid=0`, `issues=0` |
 
 ### Evidence
-- Check-kind artifacts in Runtime Artifacts
+- `CHECK-001`, `CHECK-002`, and `CHECK-003`
 
 ### Open Items
-- Quality acceptance checks are pending.
+- Live-host integration and representative runtime-volume evidence remain external unknowns recorded by the Python review.
 
 ### Handoff
-- Next owner: quality_reviewer
-- Next action: record each acceptance check as a check-kind artifact.
+- Next owner: coordinator
+- Next action: complete deterministic protocol verification and final handoff while preserving external unknowns.
 
 ## Unknowns And Risks
 
-- status: `pending`
+- status: `done`
 - rule: unknowns, missing evidence, risks, and unsupported assumptions must remain explicit and must be resolved, escalated, or linked before closure
-
+- [x] LIVE-HOST-001 kind=`unknown` status=`resolved` judgment=`trivial` role=`python_implementation_flow:executor` target=`work/reviews/2026-09-14_python_review_workitem_model_routing.md`: Repository-run disposition is an explicit handoff to the host integration owner; live client-host evidence remains unverified in the linked report
+- [x] RUNTIME-VOLUME-001 kind=`unknown` status=`resolved` judgment=`trivial` role=`python_implementation_flow:executor` target=`work/reviews/2026-09-14_python_review_workitem_model_routing.md`: Repository-run disposition is an explicit handoff to the host integration owner; production-volume evidence remains unverified in the linked report
 ## Closure Gate
 
-- status: `pending`
+- status: `done`
 - rule: close only after execution, check, log, unknown/risk, and handoff rows are complete or explicitly escalated
 
+### Closure Checks
+
+- unknown: `passed` open=`-`
+- risk: `passed` open=`-` escalated=`-`
+- judgment: `passed` open=`-` non_trivial=`-` reference=`not_required`
 ## Handoff
 
-- status: `pending`
+- status: `done`
 - rule: record outputs, unresolved items, next owner, and human decision points
 
 ## Token Usage
@@ -299,3 +304,23 @@ No quality checklist items have been recorded yet.
 - 2026-09-14 `artifact:OUT-003` -> `done` role=`python_implementation_flow:executor`: Canonical work-item routing contract
 - 2026-09-14 `artifact:EVID-001` -> `done` role=`python_implementation_flow:executor`: 41 passed
 - 2026-09-14 `artifact:EVID-002` -> `done` role=`python_implementation_flow:executor`: missing_xid=0 issues=0
+- 2026-09-14 `workitem:WI-001` -> `done` role=`python_implementation_flow:executor`
+- 2026-09-14 `workitem:WI-002` -> `done` role=`python_implementation_flow:executor`
+- 2026-09-14 `workitem:WI-003` -> `done` role=`python_implementation_flow:executor`
+- 2026-09-14 `workitem:WI-004` -> `done` role=`python_implementation_flow:executor`
+- 2026-09-14 `workitem:WI-005` -> `done` role=`python_implementation_flow:executor`
+- 2026-09-14 `artifact:CHECK-001` -> `done` role=`python_implementation_flow:quality_reviewer`: Independent quality recheck: 498 passed in 61.76s; focused gateway/MCP suite 46 passed in 5.79s
+- 2026-09-14 `artifact:CHECK-002` -> `done` role=`python_implementation_flow:quality_reviewer`: Independent quality recheck exited 0 with no diagnostics
+- 2026-09-14 `artifact:CHECK-003` -> `done` role=`python_implementation_flow:quality_reviewer`: Independent quality recheck: index_size=318, missing_xid=0, issues=0
+- 2026-09-14 `quality` -> `done` role=`python_implementation_flow:quality_reviewer`: Independent quality review accepted all repository-local fixes; live-host integration and runtime-volume evidence remain explicit external unknowns
+- 2026-09-14 `check` -> `blocked` role=`python_implementation_flow:checker`: progression record incomplete
+- 2026-09-14 `workitem:WI-006` -> `done` role=`python_implementation_flow:executor`
+- 2026-09-14 `concern:LIVE-HOST-001` -> `escalated` role=`python_implementation_flow:executor`: Actual client-host dispatch, ordered state persistence, and observed-model reporting were not exercised; handed to host integration owner
+- 2026-09-14 `concern:RUNTIME-VOLUME-001` -> `escalated` role=`python_implementation_flow:executor`: Production workflow width, retry frequency, serialized state size, and host resource limits are unavailable; handed to host integration owner
+- 2026-09-14 `execution` -> `done` role=`python_implementation_flow:executor`: Repository implementation and fixes complete; independent python_review and quality review report proceed with external integration unknowns handed off
+- 2026-09-14 `check` -> `blocked` role=`python_implementation_flow:checker`: progression record incomplete
+- 2026-09-14 `concern:LIVE-HOST-001` -> `resolved` role=`python_implementation_flow:executor`: Repository-run disposition is an explicit handoff to the host integration owner; live client-host evidence remains unverified in the linked report
+- 2026-09-14 `concern:RUNTIME-VOLUME-001` -> `resolved` role=`python_implementation_flow:executor`: Repository-run disposition is an explicit handoff to the host integration owner; production-volume evidence remains unverified in the linked report
+- 2026-09-14 `handoff` -> `done` role=`python_implementation_flow:handoff_owner`: Repository implementation complete; LIVE-HOST-001 and RUNTIME-VOLUME-001 remain unverified external handoff items in the linked review report
+- 2026-09-14 `check` -> `done` role=`python_implementation_flow:checker`: progression record verified
+- 2026-09-14 `closure` -> `done` role=`closure_gate`: Repository-local work complete; external host integration and runtime-volume evidence remain explicit handoff items

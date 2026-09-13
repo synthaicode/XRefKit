@@ -189,10 +189,18 @@ runtime. This release supplies the handoff contract, not automatic runtime bindi
 The initial route remains available for compatibility. For executable workflows,
 initialize a `WorkflowState` and use the returned state as the next re-entry
 token. Routing considers only dependency-ready `pending` nodes. It records an
-assignment as `in_progress`; repeated routing with that returned state cannot
+at most one assignment as `in_progress` per call; record its result before
+routing the next node. This serial boundary prevents lost updates because the
+local and MCP APIs are stateless and return whole-state replacements. Repeated
+routing with that returned state cannot
 dispatch it again. A `done` node stays done. Reopening it requires a newer
 assessment revision and explicit `scope_change` reason, affected steps, and
 evidence.
+
+Removing a node also requires a `removed_steps` tombstone matching its prior ID,
+node, definition hash, status, and authorization. The returned state retains the
+removed item and its route, failure, resolution, and completion history under
+`retired_items`.
 
 ```powershell
 python -m xrefkit gateway workflow-init --assessment work/assessment-001.json --out work/state-001.json
@@ -239,10 +247,12 @@ The evaluator does not silently retrain or rewrite policy/profile files.
 
 ## Validation and remaining integration
 
-Tests cover capability exclusion, host limits, implementation-subagent dispatch
-plans, parent-execution prohibition, scope/measurement unknowns, stale profiles,
-instruction mismatches, dependency integrity, feedback attribution, and CLI file
-preservation. Actual Copilot models, profile provider discovery,
+Tests cover capability exclusion, host limits, implementation and operational
+subagent dispatch plans, parent-execution prohibition, scope/measurement unknowns,
+stale profiles, instruction mismatches, dependency integrity, pending-only state,
+authorization separation, deterministic retry, failure escalation, resolution,
+de-escalation, feedback attribution, CLI re-entry, and real MCP stdio calls.
+Actual Copilot models, profile provider discovery,
 automatic mandatory entry enforcement, and production routing calibration are
 not established by those tests. Supply the existing profile location and actual
 evaluated host policy to exercise that integration.

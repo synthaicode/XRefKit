@@ -16,13 +16,21 @@ stable `step_id`, `node_id`, definition hash, status, route revision, active
 assignment, observations, failures, and completion or resolution evidence.
 
 Only `pending` work whose dependencies are `done` is routable. Routing changes
-an authorized assignment to `in_progress`. `in_progress`, `done`, `blocked`,
+at most one authorized assignment to `in_progress` per call. The state API is
+stateless and returns whole-state replacements, so serial result application is
+the concurrency boundary: record that result before routing the next node.
+`in_progress`, `done`, `blocked`,
 and `escalated` items are not dispatched again. A completed node can become
 pending only through `initialize_instruction_workflow` with:
 
 - a newer assessment revision;
 - an explicit `scope_change` naming the affected step;
 - evidence and a reason for that scope change.
+
+Removing a node requires a `removed_steps` tombstone with the prior step ID,
+node ID, definition hash, status, authorization snapshot, reason, and evidence.
+The previous item, observations, failures, and completion evidence remain in
+`WorkflowState.retired_items`. A revision cannot silently discard that history.
 
 Changing authorization does not redefine work-item complexity. Changed task,
 scope, dependency, capability, metric, tool, or node definitions do.
@@ -66,7 +74,8 @@ Authorization never participates in the candidate tier or capability score.
 An authorized low-cost worker may perform an authorized PR or release operation.
 If authorization is required, the gateway may still report the selected model,
 but it does not create an active assignment or dispatch. The host must refresh
-the authorization record before execution.
+the authorization record before execution. This gate applies to both the
+initial compatibility route and the per-work-item route.
 
 ## Failure and recovery boundary
 

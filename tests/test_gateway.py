@@ -75,6 +75,23 @@ def test_analysis_does_not_require_implementation_subagent_dispatch(request_and_
     assert result["subagent_dispatches"] == []
 
 
+def test_legacy_route_never_dispatches_an_unauthorized_external_action(request_and_policy):
+    assessment, policy = request_and_policy
+    assessment["steps"][1]["authorization"] = {
+        "action": "create pull request",
+        "scope": "one reviewed branch",
+        "status": "required",
+        "evidence": [],
+    }
+    result = run_pair((assessment, policy))
+    assert result["status"] == "authorization_required"
+    assert result["decisions"][1]["model"] == "capable"
+    assert result["decisions"][1]["execution_authorized"] is False
+    assert result["authorization_required_steps"] == ["interpret"]
+    assert result["dispatch_status"] == "authorization_required"
+    assert result["subagent_dispatches"] == []
+
+
 def test_implementation_requires_recorded_parent_model(request_and_policy):
     assessment, policy = request_and_policy
     policy["host"] = "generic"
@@ -141,6 +158,34 @@ def test_upgrade_tier_covers_every_blocked_step(request_and_policy):
     assert result["conversation_upgrade"]["required_minimum_tier"] == 4
     assert {row["step_id"] for row in result["conversation_upgrade"]["workers_callable_after_upgrade"]} == {
         "interpret", "deep-review"}
+
+
+def test_lowest_cost_upgrade_preview_matches_post_upgrade_worker_order(request_and_policy):
+    assessment, policy = copy.deepcopy(request_and_policy)
+    policy["selection_strategy"] = "lowest_cost_eligible"
+    policy["parent_cost_tier"] = 1
+    policy["candidates"][0].update({
+        "cost_tier": 2,
+        "priority": 9,
+        "capabilities": ["incremental_scope", "orthogonal_array"],
+    })
+    policy["candidates"][1]["priority"] = 0
+    assessment["steps"].append({
+        **copy.deepcopy(assessment["steps"][1]),
+        "id": "deep-review",
+        "depends_on": ["interpret"],
+        "capabilities": ["deep_review"],
+    })
+    policy["candidates"][1]["capabilities"].append("deep_review")
+    result = run_pair((assessment, policy))
+    assert result["status"] == "conversation_upgrade_required"
+    assert result["conversation_upgrade"]["required_minimum_tier"] == 3
+    assert result["conversation_upgrade"]["workers_callable_after_upgrade"] == [
+        {"step_id": "interpret", "model": "cheap", "cost_tier": 2,
+         "evaluation_ref": "fixture-small"},
+        {"step_id": "deep-review", "model": "capable", "cost_tier": 3,
+         "evaluation_ref": "fixture-array"},
+    ]
 
 
 def test_upgrade_is_not_proposed_when_capability_is_missing(request_and_policy):
