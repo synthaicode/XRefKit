@@ -51,7 +51,7 @@ def app_for(upload_manager: InboundUploadManager):
 
 
 def test_scoped_webdav_upload_freezes_and_seals_exact_tree(tmp_path: Path) -> None:
-    from starlette.testclient import TestClient
+    TestClient = pytest.importorskip("starlette.testclient").TestClient
 
     active = binding()
     upload_manager = manager(tmp_path)
@@ -106,7 +106,7 @@ def test_scoped_webdav_upload_freezes_and_seals_exact_tree(tmp_path: Path) -> No
 
 
 def test_seal_rejects_extra_or_hash_mismatched_tree_terminally(tmp_path: Path) -> None:
-    from starlette.testclient import TestClient
+    TestClient = pytest.importorskip("starlette.testclient").TestClient
 
     active = binding()
     upload_manager = manager(tmp_path)
@@ -137,7 +137,7 @@ def test_seal_rejects_extra_or_hash_mismatched_tree_terminally(tmp_path: Path) -
 
 
 def test_seal_rejects_content_hash_mismatch(tmp_path: Path) -> None:
-    from starlette.testclient import TestClient
+    TestClient = pytest.importorskip("starlette.testclient").TestClient
 
     active = binding()
     upload_manager = manager(tmp_path)
@@ -164,7 +164,7 @@ def test_seal_rejects_content_hash_mismatch(tmp_path: Path) -> None:
 
 
 def test_streaming_quota_failure_removes_partial_file(tmp_path: Path) -> None:
-    from starlette.testclient import TestClient
+    TestClient = pytest.importorskip("starlette.testclient").TestClient
 
     active = binding()
     upload_manager = manager(tmp_path)
@@ -278,7 +278,7 @@ def test_expired_session_cleanup_reclaims_staging(tmp_path: Path) -> None:
 
 
 def test_collection_quota_is_enforced(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    from starlette.testclient import TestClient
+    TestClient = pytest.importorskip("starlette.testclient").TestClient
 
     monkeypatch.setattr(inbound_module, "MAX_COLLECTIONS", 1)
     upload_manager = manager(tmp_path)
@@ -381,8 +381,8 @@ def test_sse_inbound_listener_is_rejected(tmp_path: Path) -> None:
 
 
 def test_streamable_mcp_and_inbound_routes_share_one_asgi_app(tmp_path: Path) -> None:
-    from mcp.server.fastmcp import FastMCP
-    from starlette.testclient import TestClient
+    FastMCP = pytest.importorskip("mcp.server.fastmcp").FastMCP
+    TestClient = pytest.importorskip("starlette.testclient").TestClient
 
     upload_manager = manager(tmp_path)
     issued = upload_manager.issue(binding=binding())
@@ -419,7 +419,7 @@ def test_upload_expiry_auth_and_binding_fail_closed(tmp_path: Path) -> None:
 
 
 def test_concurrent_same_seal_has_one_submit_and_idempotent_replay(tmp_path: Path) -> None:
-    from starlette.testclient import TestClient
+    TestClient = pytest.importorskip("starlette.testclient").TestClient
 
     active = binding()
     upload_manager = manager(tmp_path)
