@@ -27,6 +27,23 @@ from .knowledge_edits import (
     list_local_knowledge,
     local_files as local_knowledge_files,
 )
+from .contribution_returns import (
+    MAX_KNOWLEDGE_VERSIONS,
+    adopt_contribution_return,
+    contribution_return_contract,
+    export_contribution_return,
+    list_contribution_returns,
+    review_contribution_return,
+    submit_contribution_return,
+)
+from .contribution_adoption import CanonicalAdoptionTransport, HumanApprovalVerifier
+from .skill_maturity import (
+    apply_skill_maturity_proposal,
+    assess_skill_maturity,
+    maturity_return_contract,
+    propose_skill_maturity,
+    review_skill_maturity_proposal,
+)
 from .repository import (
     first_heading,
     first_paragraph,
@@ -58,6 +75,7 @@ from .schemas import (
     ToolContract,
     XRefDocument,
 )
+from .gateway import gateway_contract
 from .startup_contract_pack import (
     EMBEDDED_BASED_ON_HASHES,
     EMBEDDED_STARTUP_SOURCE_PATHS,
@@ -388,6 +406,153 @@ class XRefCatalog:
 
     def deactivate_local_knowledge(self, xid: str) -> dict:
         return deactivate_local_knowledge(self.repo_root, xid)
+
+    def get_contribution_return_contract(self) -> dict:
+        return {
+            **contribution_return_contract(),
+            "skill_maturity_flow": maturity_return_contract(),
+        }
+
+    def contribution_source_snapshot(
+        self,
+        *,
+        skill_id: str,
+        package_id: str | None,
+        skill_content_hash: str,
+        knowledge_versions: list[dict] | None,
+        provider_version: str,
+    ) -> dict:
+        candidates = [entry for entry in self.skills if entry.skill_id == skill_id]
+        if package_id is not None:
+            candidates = [entry for entry in candidates if entry.package_id == package_id]
+        if len(candidates) != 1:
+            raise ValueError(
+                f"Skill source is ambiguous for {skill_id!r}; provide package_id when needed"
+            )
+        entry = candidates[0]
+        current_skill_hash = stable_hash(entry.skill_content)
+        if skill_content_hash != current_skill_hash:
+            raise ValueError("skill_content_hash does not match the current MCP Skill body")
+        package_version = None
+        if entry.package_id:
+            package = next(
+                (item for item in self.discovered_packages if item.package_id == entry.package_id),
+                None,
+            )
+            package_version = package.version if package else None
+        resolved_knowledge = []
+        seen: set[str] = set()
+        if knowledge_versions is not None and not isinstance(knowledge_versions, list):
+            raise ValueError("knowledge_versions must be an array")
+        if len(knowledge_versions or []) > MAX_KNOWLEDGE_VERSIONS:
+            raise ValueError(
+                f"knowledge_versions exceeds limit {MAX_KNOWLEDGE_VERSIONS}"
+            )
+        for raw in knowledge_versions or []:
+            if not isinstance(raw, dict):
+                raise ValueError("knowledge_versions rows must be objects")
+            xid = str(raw.get("xid", "")).strip()
+            content_hash = str(raw.get("content_hash", "")).strip()
+            if not xid or len(xid) > 256 or xid in seen:
+                raise ValueError("knowledge_versions requires unique non-empty XIDs")
+            seen.add(xid)
+            current, _content = self._knowledge_by_xid(xid)
+            if content_hash != current.content_hash:
+                raise ValueError(f"Knowledge content_hash does not match current MCP body: {xid}")
+            resolved_knowledge.append({"xid": xid, "content_hash": content_hash})
+        return {
+            "provider_id": "xrefkit-mcp",
+            "provider_version": provider_version,
+            "package_id": entry.package_id,
+            "package_version": package_version,
+            "skill_id": entry.skill_id,
+            "skill_maturity": entry.maturity,
+            "skill_content_hash": current_skill_hash,
+            "knowledge_versions": sorted(resolved_knowledge, key=lambda item: item["xid"]),
+            "verification": "matched_current_catalog",
+        }
+
+    def submit_contribution_return(self, **kwargs: object) -> dict:
+        return submit_contribution_return(self.repo_root, **kwargs)  # type: ignore[arg-type]
+
+    def list_contribution_returns(
+        self, approval_verifier: HumanApprovalVerifier | None = None
+    ) -> list[dict]:
+        return list_contribution_returns(self.repo_root, approval_verifier)
+
+    def export_contribution_return(
+        self,
+        contribution_id: str,
+        approval_verifier: HumanApprovalVerifier | None = None,
+    ) -> dict:
+        return export_contribution_return(
+            self.repo_root, contribution_id, approval_verifier
+        )
+
+    def review_contribution_return(self, **kwargs: object) -> dict:
+        return review_contribution_return(
+            self.repo_root,
+            ownership=self.ownership,
+            existing_knowledge_xids=self._known_xids(),
+            **kwargs,
+        )  # type: ignore[arg-type]
+
+    def adopt_contribution_return(
+        self,
+        *,
+        transport: CanonicalAdoptionTransport,
+        **kwargs: object,
+    ) -> dict:
+        return adopt_contribution_return(
+            self.repo_root,
+            transport=transport,
+            ownership=self.ownership,
+            existing_knowledge_xids=self._known_xids(),
+            existing_knowledge_xid_locations=self._known_xid_locations(),
+            **kwargs,
+        )  # type: ignore[arg-type]
+
+    def assess_skill_maturity(self, **kwargs: object) -> dict:
+        return assess_skill_maturity(
+            self.repo_root,
+            ownership=self.ownership,
+            **kwargs,
+        )  # type: ignore[arg-type]
+
+    def propose_skill_maturity(self, **kwargs: object) -> dict:
+        return propose_skill_maturity(
+            self.repo_root,
+            ownership=self.ownership,
+            **kwargs,
+        )  # type: ignore[arg-type]
+
+    def review_skill_maturity_proposal(self, **kwargs: object) -> dict:
+        return review_skill_maturity_proposal(
+            self.repo_root,
+            **kwargs,
+        )  # type: ignore[arg-type]
+
+    def apply_skill_maturity_proposal(self, **kwargs: object) -> dict:
+        return apply_skill_maturity_proposal(
+            self.repo_root,
+            ownership=self.ownership,
+            **kwargs,
+        )  # type: ignore[arg-type]
+
+    def _known_xids(self) -> set[str]:
+        return set(self._known_xid_locations())
+
+    def _known_xid_locations(self) -> dict[str, set[str]]:
+        result: dict[str, set[str]] = {}
+        for entry in self.knowledge:
+            result.setdefault(entry.xid, set()).add(entry.path)
+        for path in _managed_markdown_files(self.repo_root, self.ownership):
+            xid = first_xid(read_text(path))
+            if xid:
+                result.setdefault(xid, set()).add(
+                    path.resolve().relative_to(self.repo_root).as_posix()
+                )
+        return result
 
     @property
     def catalog_version(self) -> str:
@@ -883,6 +1048,7 @@ class XRefCatalog:
     def get_startup_context(
         self,
         known_document_versions: dict[str, str] | None = None,
+        initial_protocols: list[str] | None = None,
     ) -> dict:
         known_document_versions = known_document_versions or {}
         references: list[StartupReference] = []
@@ -958,6 +1124,7 @@ class XRefCatalog:
                 "the live sources with get_document_by_xid, and escalate to "
                 "the repository maintainers to regenerate the pack.",
             ]
+        selected_protocols = _normalize_initial_protocols(initial_protocols)
         return StartupContext(
             catalog_version=self.catalog_version,
             repository_identity=self.get_repository_identity(),
@@ -1010,6 +1177,18 @@ class XRefCatalog:
             load_order=[reference.xid for reference in references],
             startup_contract_pack=startup_contract_pack,
             prompt_flow_protocol=_prompt_flow_protocol(),
+            instruction_gateway=gateway_contract(),
+            workflow_protocol=(
+                _workflow_protocol() if "workflow" in selected_protocols else None
+            ),
+            reporting_protocol=(
+                _reporting_protocol() if "reporting" in selected_protocols else None
+            ),
+            initial_protocol_selection={
+                "available": ["workflow", "reporting"],
+                "selected": selected_protocols,
+                "default": ["workflow", "reporting"],
+            },
             references=references,
             semantic_routing_references=_semantic_routing_references(),
             missing=missing,
@@ -1048,6 +1227,7 @@ def _client_instructions() -> list[str]:
         "Fetch core_runtime_distribution (get_xrefkit_runtime_bundle or get_xrefkit_runtime_pip_package) immediately after this call, unconditionally. Unlike client_tool_download, this is not gated behind Skill selection: Skill execution requires python -m xrefkit skill run right after a Skill is chosen.",
         "Materialize and apply startup references in load_order before routing task-specific work. Applying a reference means enforcing its operational contract in the client runtime; it does not require injecting the full document body into the model prompt unless context_injection_policy requires it.",
         "MCP-only mode is active: treat this MCP response as the source of truth for XRefKit governance content.",
+        "After base startup, use instruction_gateway for each new instruction or correction before model-work dispatch. Call get_instruction_gateway_contract for schemas, then prepare_instruction_gateway and route_instruction_gateway; implementation routes require the returned separate-subagent plan and prohibit parent execution. Preserve existing Prompt Flow initialization and workflow gates.",
         "Do not read XRefKit governance Markdown from the client filesystem while MCP-only mode is active.",
         "Do not assume referenced Markdown files exist on the client filesystem.",
         "Treat path-like metadata such as meta_path, skill_doc, path, or path#xid text as server-side identity or diagnostic metadata only; do not open it through the client filesystem for governance content.",
@@ -1068,6 +1248,8 @@ def _client_instructions() -> list[str]:
         "Use list_skill_edits to inspect local overlays and export_skill_edit to produce an upstream diff. Deactivate only after the upstream provider has adopted and MCP distribution has been verified.",
         "When the user explicitly asks to add a new Knowledge document, call create_local_knowledge with an XID-bearing Markdown body; it remains project-local until exported and adopted upstream.",
         "Use list_local_knowledge to inspect local additions and export_local_knowledge to produce an upstream addition patch. Deactivate only after the distributed XID can be resolved from MCP.",
+        "After using an MCP-provided Skill, use get_contribution_return_contract and submit_contribution_return to return locally authored Knowledge, deterministic tool definitions, or Skill observations as inert pending_review material. Send exact content hashes; submission never activates, publishes, or changes Skill maturity.",
+        "For Skill observations, seal the MCP-owned inbound WebDAV upload, adopt the reviewed evidence under observations/, commit it to Git, then use assess_skill_maturity, propose_skill_maturity, review_skill_maturity_proposal, and apply_skill_maturity_proposal. Client proposals and inbound upload transport have no maturity authority.",
     ]
 
 
@@ -2114,6 +2296,14 @@ def _client_obligations() -> list[ClientObligation]:
             verification="client startup audit log contains repository_fingerprint, load_order_xids, startup_contract_pack_source_xids, reference_xids, and client_decision_xids",
         ),
         ClientObligation(
+            id="gateway.route_incoming_instruction",
+            level="must",
+            applies_when="an instruction or correction requires model-work dispatch after base startup",
+            statement="Use instruction_gateway before dispatch; retain the request revision, environment, assessment and policy. For implementation, dispatch only a separate subagent using the selected model and keep the parent as coordinator under the existing workflow protocol.",
+            enforcement_owner="client",
+            verification="client retains a ready routing result, its implementation subagent plan when applicable, and separately records the observed host model; unknown scope or capability is not dispatched",
+        ),
+        ClientObligation(
             id="tools.materialize_from_mcp",
             level="must",
             applies_when="client executes XRefKit-distributed tools",
@@ -2279,6 +2469,7 @@ def _sum_text_sizes(sizes: list[dict[str, int]]) -> dict[str, int]:
 
 def _workflow_protocol() -> dict[str, object]:
     return {
+        "version": "1",
         "source": "xrefkit.mcp",
         "decision_trace_protocol": {
             "status": "standard",
@@ -2327,6 +2518,60 @@ def _workflow_protocol() -> dict[str, object]:
             "task-specific evidence sufficiency judgment",
         ],
     }
+
+
+def _reporting_protocol() -> dict[str, object]:
+    return {
+        "version": "1",
+        "source": "xrefkit.mcp",
+        "contract_xid": "6B2D9F4A1C73",
+        "activation": "every human-facing Skill or workflow report",
+        "required_sections": [
+            "Report",
+            "Status",
+            "Reason",
+            "Result",
+            "Evidence",
+            "Open Items",
+            "Handoff",
+        ],
+        "japanese_sections": [
+            "報告",
+            "結論",
+            "状態",
+            "理由",
+            "確認したこと",
+            "残っている課題",
+            "次にすること",
+        ],
+        "status_values": ["done", "partial", "blocked", "escalated"],
+        "profiles": [
+            "summary_first",
+            "gate_verdict",
+            "checklist_verdict",
+            "phase_summary",
+            "artifact_traceability",
+        ],
+        "rules": [
+            "summary_first",
+            "preserve evidence and open items",
+            "keep workflow status separate from domain gate verdict",
+            "do not use done to hide unresolved unknowns, risks, or handoff conditions",
+        ],
+    }
+
+
+def _normalize_initial_protocols(initial_protocols: list[str] | None) -> list[str]:
+    if initial_protocols is None:
+        return ["workflow", "reporting"]
+    selected = list(dict.fromkeys(initial_protocols))
+    invalid = [item for item in selected if item not in {"workflow", "reporting"}]
+    if invalid:
+        raise ValueError(
+            "initial_protocols must contain only workflow or reporting: "
+            + ", ".join(invalid)
+        )
+    return selected
 
 
 def _context_injection_policy() -> dict[str, object]:

@@ -72,6 +72,12 @@ Sources:
 
 ## Workflow and XRef routing
 
+The live `get_startup_context` response also exposes the selected
+`workflow_protocol` and `reporting_protocol` blocks. The MCP server startup
+parameter `--initial-protocol workflow` or `--initial-protocol reporting` can
+limit the initial protocol bodies; when omitted, both are selected. The
+selection metadata is returned in `initial_protocol_selection`.
+
 - Orchestration is semantic routing over the Skill catalog from user intent,
   using each Skill's meta triad and the generic workflow protocol.
 - When a Skill needs domain knowledge, search and load only the needed fragment:

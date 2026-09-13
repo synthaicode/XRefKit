@@ -4,7 +4,26 @@ import subprocess
 import uuid
 
 from xrefkit.decision_trace import main
+from xrefkit.decision_trace import _has_non_trace_changes
 from xrefkit.skillrun import run_workflow_instruction
+
+
+def test_tracked_trace_modification_retains_porcelain_leading_space(tmp_path):
+    def git(*args):
+        return subprocess.run(["git", *args], cwd=tmp_path, check=True, capture_output=True)
+
+    git("init")
+    git("config", "user.email", "test@example.invalid")
+    git("config", "user.name", "Decision Trace Test")
+    trace = tmp_path / "work" / "decision-trace" / "events.jsonl"
+    trace.parent.mkdir(parents=True)
+    trace.write_text("initial\n", encoding="utf-8")
+    git("add", ".")
+    git("commit", "-m", "initial")
+    trace.write_text("changed\n", encoding="utf-8")
+    assert not _has_non_trace_changes(tmp_path)
+    (tmp_path / "source.py").write_text("changed\n", encoding="utf-8")
+    assert _has_non_trace_changes(tmp_path)
 
 
 def test_event_impact_and_graph(tmp_path, capsys):
@@ -51,7 +70,8 @@ def test_checkpoint_commits_manifest_and_creates_tag(tmp_path):
     git("config", "user.email", "test@example.invalid")
     git("config", "user.name", "Decision Trace Test")
     (tmp_path / "README.md").write_text("base\n", encoding="utf-8")
-    git("add", "README.md")
+    (tmp_path / ".gitignore").write_text("work/*\n", encoding="utf-8")
+    git("add", "README.md", ".gitignore")
     git("commit", "-m", "initial")
 
     assert main([

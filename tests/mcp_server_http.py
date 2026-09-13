@@ -7,6 +7,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from xrefkit.mcp.server import (
+    _add_request_size_limit_middleware,
     SERVER_VERSION,
     _endpoint_info,
     _log_xid_query,
@@ -30,6 +31,25 @@ def _append_audit_events(path: str, run_id: str) -> None:
 
 
 class StreamableHttpProbeTests(unittest.TestCase):
+    def test_request_size_middleware_rejects_oversized_body(self) -> None:
+        try:
+            from starlette.applications import Starlette
+            from starlette.responses import JSONResponse
+            from starlette.routing import Route
+            from starlette.testclient import TestClient
+        except ImportError as exc:
+            self.skipTest(f"HTTP test dependencies unavailable: {exc}")
+
+        async def endpoint(request):
+            return JSONResponse({"size": len(await request.body())})
+
+        app = Starlette(routes=[Route("/mcp", endpoint, methods=["POST"])])
+        _add_request_size_limit_middleware(app, 4)
+        with TestClient(app) as client:
+            response = client.post("/mcp", content=b"12345")
+        self.assertEqual(response.status_code, 413)
+        self.assertEqual(response.json()["error"], "request_body_too_large")
+
     def test_executable_distribution_requires_out_of_band_trust_id(self) -> None:
         with self.assertRaisesRegex(ValueError, "distribution-trust-id"):
             _validate_distribution_configuration(

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xrefkit"
-version = "0.4.15"
+version = "0.4.16"
 description = "Portable XID, Skill, Knowledge, workflow, and MCP runtime for XRefKit"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-mcp = ["mcp>=1.0.0", "uvicorn>=0.30"]
+mcp = ["mcp>=1.0.0,<2", "uvicorn>=0.30"]
 test = ["pytest>=8.0.0"]
 
 [project.scripts]
