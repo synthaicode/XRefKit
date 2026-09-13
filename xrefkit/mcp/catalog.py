@@ -37,6 +37,13 @@ from .contribution_returns import (
     submit_contribution_return,
 )
 from .contribution_adoption import CanonicalAdoptionTransport, HumanApprovalVerifier
+from .skill_maturity import (
+    apply_skill_maturity_proposal,
+    assess_skill_maturity,
+    maturity_return_contract,
+    propose_skill_maturity,
+    review_skill_maturity_proposal,
+)
 from .repository import (
     first_heading,
     first_paragraph,
@@ -401,7 +408,10 @@ class XRefCatalog:
         return deactivate_local_knowledge(self.repo_root, xid)
 
     def get_contribution_return_contract(self) -> dict:
-        return contribution_return_contract()
+        return {
+            **contribution_return_contract(),
+            "skill_maturity_flow": maturity_return_contract(),
+        }
 
     def contribution_source_snapshot(
         self,
@@ -456,6 +466,7 @@ class XRefCatalog:
             "package_id": entry.package_id,
             "package_version": package_version,
             "skill_id": entry.skill_id,
+            "skill_maturity": entry.maturity,
             "skill_content_hash": current_skill_hash,
             "knowledge_versions": sorted(resolved_knowledge, key=lambda item: item["xid"]),
             "verification": "matched_current_catalog",
@@ -498,6 +509,33 @@ class XRefCatalog:
             ownership=self.ownership,
             existing_knowledge_xids=self._known_xids(),
             existing_knowledge_xid_locations=self._known_xid_locations(),
+            **kwargs,
+        )  # type: ignore[arg-type]
+
+    def assess_skill_maturity(self, **kwargs: object) -> dict:
+        return assess_skill_maturity(
+            self.repo_root,
+            ownership=self.ownership,
+            **kwargs,
+        )  # type: ignore[arg-type]
+
+    def propose_skill_maturity(self, **kwargs: object) -> dict:
+        return propose_skill_maturity(
+            self.repo_root,
+            ownership=self.ownership,
+            **kwargs,
+        )  # type: ignore[arg-type]
+
+    def review_skill_maturity_proposal(self, **kwargs: object) -> dict:
+        return review_skill_maturity_proposal(
+            self.repo_root,
+            **kwargs,
+        )  # type: ignore[arg-type]
+
+    def apply_skill_maturity_proposal(self, **kwargs: object) -> dict:
+        return apply_skill_maturity_proposal(
+            self.repo_root,
+            ownership=self.ownership,
             **kwargs,
         )  # type: ignore[arg-type]
 
@@ -1210,7 +1248,8 @@ def _client_instructions() -> list[str]:
         "Use list_skill_edits to inspect local overlays and export_skill_edit to produce an upstream diff. Deactivate only after the upstream provider has adopted and MCP distribution has been verified.",
         "When the user explicitly asks to add a new Knowledge document, call create_local_knowledge with an XID-bearing Markdown body; it remains project-local until exported and adopted upstream.",
         "Use list_local_knowledge to inspect local additions and export_local_knowledge to produce an upstream addition patch. Deactivate only after the distributed XID can be resolved from MCP.",
-        "After using an MCP-provided Skill, use get_contribution_return_contract and submit_contribution_return to return locally authored Knowledge or deterministic tool definitions as inert pending_review material. Send the exact Skill and Knowledge content hashes used; submission never activates or publishes the contribution.",
+        "After using an MCP-provided Skill, use get_contribution_return_contract and submit_contribution_return to return locally authored Knowledge, deterministic tool definitions, or Skill observations as inert pending_review material. Send exact content hashes; submission never activates, publishes, or changes Skill maturity.",
+        "For Skill observations, adopt the evidence under observations/, commit it to Git, then use assess_skill_maturity, propose_skill_maturity, review_skill_maturity_proposal, and apply_skill_maturity_proposal. Client proposals and WebDAV transport have no maturity authority.",
     ]
 
 

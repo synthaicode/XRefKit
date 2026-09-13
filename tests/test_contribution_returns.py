@@ -971,6 +971,16 @@ def test_contribution_return_over_real_mcp_stdio(tmp_path: Path) -> None:
                 await session.initialize()
                 startup = await session.call_tool("get_startup_context", {})
                 assert not startup.isError
+                rejected_maturity = await session.call_tool(
+                    "assess_skill_maturity",
+                    {
+                        "assessment_id": str(uuid.uuid4()),
+                        "skill_id": "python_review",
+                        "observation_contribution_ids": [str(uuid.uuid4())],
+                    },
+                )
+                assert rejected_maturity.isError
+                assert "XREFKIT_SKILL_RUN_REQUIRED" in rejected_maturity.content[0].text
                 rejected = await session.call_tool("submit_contribution_return", {
                     "contribution_id": contribution_id, "kind": "knowledge",
                     "title": "Returned", "summary": "Review", "files": [],

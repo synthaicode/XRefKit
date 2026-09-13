@@ -141,12 +141,12 @@ class LocalCanonicalAdoptionTransport:
             shutil.rmtree(staging)
         staging.mkdir()
         try:
-            if kind == "knowledge":
+            if _is_single_file_kind(kind):
                 target = _inside(repo, target_path)
                 if target.exists():
                     return _recover_or_collide(
                         repo,
-                        "knowledge",
+                        kind,
                         target_path,
                         files,
                         recovery_allowed=recovery_allowed,
@@ -278,7 +278,7 @@ class WebDavCanonicalAdoptionTransport:
         self._ensure_collection(contribution_url)
         operation_url = _url_join(contribution_url, adoption_id)
         self._ensure_collection(operation_url)
-        if kind == "knowledge":
+        if _is_single_file_kind(kind):
             source_url = _url_join(operation_url, "payload")
             self._put(
                 source_url,
@@ -506,7 +506,7 @@ def _recover_or_collide(
 ) -> dict[str, Any]:
     targets = _target_paths(target_path, files)
     expected_paths = {_inside(root, value) for value in targets}
-    if kind == "knowledge":
+    if _is_single_file_kind(kind):
         actual_paths = {_inside(root, target_path)} if _inside(root, target_path).is_file() else set()
         exact_tree = actual_paths == expected_paths
     else:
@@ -577,8 +577,12 @@ def _target_paths(target_path: str, files: list[AdoptionFile]) -> list[str]:
 def _target_urls(
     base_url: str, kind: str, target_path: str, files: list[AdoptionFile]
 ) -> list[tuple[str, str]]:
-    paths = [target_path] if kind == "knowledge" else _target_paths(target_path, files)
+    paths = [target_path] if _is_single_file_kind(kind) else _target_paths(target_path, files)
     return [(path, _url_join(base_url, path)) for path in paths]
+
+
+def _is_single_file_kind(kind: str) -> bool:
+    return kind in {"knowledge", "skill_observation"}
 
 
 def _tree_etag(files: list[AdoptionFile]) -> str:

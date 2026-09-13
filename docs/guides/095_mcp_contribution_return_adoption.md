@@ -13,10 +13,11 @@ Knowledge または決定論ツールを返却し、人間の判断を経て XRe
 
 ### 目的と境界
 
-このフローが扱うのは、次の二種類の返却物である。
+このフローが扱うのは、次の三種類の返却物である。
 
 - `knowledge`: XID を持つ UTF-8 Markdown 1ファイル
 - `deterministic_tool`: runtime、entrypoint、入出力契約、検証証跡を持つ完全なディレクトリ
+- `skill_observation`: MCP Skillの実利用・評価を記録したUTF-8 Markdown 1ファイル
 
 クライアント AI は返却時に `proposed_target_path` を指定できる。これは配置候補を示す
 evidence であり、採用権限ではない。人間が trusted UI または identity adapter で内容と
@@ -60,10 +61,18 @@ Windows reserved name、alternate data stream になり得る表現は拒否さ�
 | `knowledge` | `packs/<pack-id>/knowledge/<relative-path>.md` | 対象 ownership zone の `catalog: true` が必要 |
 | `knowledge` | `packs/local/<pack-id>/knowledge/<relative-path>.md` | 対象 ownership zone の `catalog: true` が必要 |
 | `deterministic_tool` | `tools/<new-directory>` | target は `tools/` 配下の新規directoryで、zone は `id: kernel-code`、`owner: base`、`distribution: true` が必要。返却fileはこのdirectory内へ配置される |
+| `skill_observation` | `observations/<record>.md` | `id: records`、`owner: operational`、`distribution: false` のzoneに限る。配置後の成熟度変更は行わない |
 
 Knowledge は既存 canonical target と既存 catalog XID の衝突を許可しない。決定論ツールは
 全ファイルを一つの directory/collection として移し、配置中にも実行しない。どちらも既存
 target を上書きしない。
+
+`skill_observation`には、`skill_id`、実際に使用した`skill_content_hash`と任意の
+`skill_version`、利用時`maturity_at_use`、bind済み`run_id`、`client_id`、
+`execution_environment`、`model_id`、`outcome`、`retry_count`、
+`evaluation_evidence`、`ambiguities`、任意の`human_evaluation`と
+`proposed_maturity`を指定する。識別子と本文量には契約上限があり、prompt本文、credential、token、
+secret、未知fieldは返却しない。`proposed_maturity`はクライアントAIの提案であり、権限を持たない。
 
 ## 仕組み
 
@@ -272,6 +281,33 @@ UUIDとhashは実値に置き換える。
 }
 ```
 
+Skill観察のmetadata例は次のとおりである。観察本文にはsecretやprompt本文を含めず、利用結果と
+検証可能な参照だけを記録する。
+
+```json
+{
+  "kind": "skill_observation",
+  "files": [{"path": "observation.md", "content": "# Skill observation\n...", "content_hash": "<SHA-256>"}],
+  "skill_observation": {
+    "skill_id": "python_review",
+    "skill_content_hash": "<実際に使用したSkill本文のSHA-256>",
+    "skill_version": "0.4.16",
+    "maturity_at_use": "trial",
+    "run_id": "<bind済みrun UUID>",
+    "client_id": "vscode-client-01",
+    "execution_environment": "windows-vscode",
+    "model_id": "gpt-model-id",
+    "outcome": "success",
+    "retry_count": 1,
+    "evaluation_evidence": [{"evidence_id": "run-log-01", "kind": "run-log", "reference": "client audit reference", "content_hash": "<SHA-256>"}],
+    "ambiguities": ["適用範囲の確認が一度必要だった"],
+    "human_evaluation": {"evaluation_id": "eval-01", "evaluator": "human-reviewer", "result": "accepted", "evidence": "結果を確認した"},
+    "proposed_maturity": "stable"
+  },
+  "proposed_target_path": "observations/2026-09-13_python_review_client_run.md"
+}
+```
+
 ### 2. 一覧、export、人間review
 
 `list_contribution_returns({})` は本文を含まないinbox metadataを返す。reviewerは候補を選び、
@@ -390,6 +426,36 @@ adoptionは受信repositoryのcanonical pathへ内容を配置するところま
 XID索引更新、repository check、commit、pull request、merge、package/release publication、distribution、
 MCP server更新、別clientからのlive取得確認は、それぞれの既存workflowで実行し、個別に証拠を残す。
 adoption eventだけを根拠に公開済み、配布済み、live利用可能と報告しない。
+
+### Skill成熟度の再評価
+
+`skill_observation`のadoption直後には成熟度を変更しない。まず`observations/`の新規recordを
+reviewしてcommitし、`HEAD`から同じhashを取得できる状態にする。その後、bind済みMCP sessionで
+次の順に実行する。
+
+1. `assess_skill_maturity`: adoptedかつcommittedな観察を複数指定し、client/environment/model、
+   success/failure、retry、ambiguity、人間評価を集約する。同一または過去適用済みのrun/evidence、
+   stale Skill hash、利用時maturity不一致は拒否される。
+2. `propose_skill_maturity`: `assessment_id`と一段先の`target_maturity`を指定する。candidate
+   `meta.md`に対するtarget level checkが失敗したproposalはacceptできない。`governed`ではcommittedな
+   `governance_refs`も必要である。
+3. `review_skill_maturity_proposal`: trusted adapterが人間へassessment、差分、check結果を表示し、
+   `proposal_id`、proposal hash、Skill、target、candidate meta hash、decision evidence hashを含む別のHMAC assertionを発行する。
+   accepted時のone-time tokenはこの応答でのみ返る。
+4. `apply_skill_maturity_proposal`: tokenを渡す。サーバーはcanonical Skill、全hash、観察のcommit状態、
+   未使用性、遷移、target level checkを再検証してから`maturity`、`observation_refs`、承認済み
+   `governance_refs`を更新する。`governance_refs`のcommitted content hashもproposalに署名付きで
+   固定され、apply時に再検証される。`maturity`とlegacy `status`が重複する`meta.md`は停止する。
+
+対象は一意に解決できるrepository-owned canonical Skill (`skills/**`またはshared
+`packs/*/skills/**`)に限る。packageだけに存在するSkill、external Skill、local overlay、
+`packs/local/**`、重複identityは停止する。許可遷移は`draft -> trial -> stable -> governed`の一段だけで、
+downgrade、skip、same-state、`deprecated`は別の人間governance processへ渡す。
+
+成熟度eventは`.xrefkit/skill-maturity/`に署名付きで保存され、structured auditには
+`skill.maturity_assessed`、`skill.maturity_proposed`、`skill.maturity_review_decided`、
+`skill.maturity_applied`が追記される。apply成功後もpublication、distribution、live verificationは
+別状態である。
 
 ## 未解決・未検証
 

@@ -782,6 +782,7 @@ def main(argv: list[str] | None = None) -> int:
         knowledge_versions: list[dict[str, str]] | None = None,
         knowledge: dict[str, Any] | None = None,
         deterministic_tool: dict[str, Any] | None = None,
+        skill_observation: dict[str, Any] | None = None,
         proposed_target_path: str | None = None,
     ) -> dict[str, Any]:
         """Store a local contribution as pending review without activating it."""
@@ -810,6 +811,7 @@ def main(argv: list[str] | None = None) -> int:
             files=files,
             knowledge=knowledge,
             deterministic_tool=deterministic_tool,
+            skill_observation=skill_observation,
             proposed_target_path=proposed_target_path,
         )
         try:
@@ -946,6 +948,141 @@ def main(argv: list[str] | None = None) -> int:
             result["audit_status"] = "recorded"
         except OSError as exc:
             LOGGER.error("contribution adoption audit failed: %s", exc)
+            result["audit_status"] = "failed"
+        return result
+
+    @app.tool()
+    def assess_skill_maturity(
+        ctx: Context,
+        assessment_id: str,
+        skill_id: str,
+        observation_contribution_ids: list[str],
+    ) -> dict[str, Any]:
+        """Aggregate committed adopted observations without proposing a maturity."""
+        _require_startup_loaded(ctx, "assess_skill_maturity")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError("XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before assess_skill_maturity")
+        if approval_verifier is None:
+            raise RuntimeError("trusted human approval verifier is not configured")
+        result = catalog.assess_skill_maturity(
+            assessment_id=assessment_id,
+            skill_id=skill_id,
+            observation_contribution_ids=observation_contribution_ids,
+            approval_verifier=approval_verifier,
+        )
+        try:
+            audit_log.append(
+                "skill.maturity_assessed", binding=binding, tool="assess_skill_maturity",
+                assessment_id=result["assessment_id"], skill_id=result["skill_id"],
+                observation_count=result["aggregation"]["observation_count"],
+                event_hash=result["event_hash"],
+            )
+            result["audit_status"] = "recorded"
+        except OSError as exc:
+            LOGGER.error("Skill maturity assessment audit failed: %s", exc)
+            result["audit_status"] = "failed"
+        return result
+
+    @app.tool()
+    def propose_skill_maturity(
+        ctx: Context,
+        proposal_id: str,
+        assessment_id: str,
+        target_maturity: str,
+        governance_refs: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """Create a non-authoritative maturity proposal and run its deterministic gate."""
+        _require_startup_loaded(ctx, "propose_skill_maturity")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError("XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before propose_skill_maturity")
+        if approval_verifier is None:
+            raise RuntimeError("trusted human approval verifier is not configured")
+        result = catalog.propose_skill_maturity(
+            proposal_id=proposal_id, assessment_id=assessment_id,
+            target_maturity=target_maturity, governance_refs=governance_refs,
+            approval_verifier=approval_verifier,
+        )
+        try:
+            audit_log.append(
+                "skill.maturity_proposed", binding=binding, tool="propose_skill_maturity",
+                proposal_id=result["proposal_id"], skill_id=result["skill_id"],
+                target_maturity=result["target_maturity"], readiness=result["readiness"],
+                event_hash=result["event_hash"],
+            )
+            result["audit_status"] = "recorded"
+        except OSError as exc:
+            LOGGER.error("Skill maturity proposal audit failed: %s", exc)
+            result["audit_status"] = "failed"
+        return result
+
+    @app.tool()
+    def review_skill_maturity_proposal(
+        ctx: Context,
+        proposal_id: str,
+        decision_id: str,
+        decision: str,
+        reviewer: str,
+        decision_evidence: str,
+        approval_assertion: str,
+    ) -> dict[str, Any]:
+        """Record a signed human maturity decision without mutating meta.md."""
+        _require_startup_loaded(ctx, "review_skill_maturity_proposal")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError("XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before review_skill_maturity_proposal")
+        if approval_verifier is None:
+            raise RuntimeError("trusted human approval verifier is not configured")
+        result = catalog.review_skill_maturity_proposal(
+            proposal_id=proposal_id, decision_id=decision_id, decision=decision,
+            reviewer=reviewer, decision_evidence=decision_evidence,
+            approval_assertion=approval_assertion, approval_verifier=approval_verifier,
+        )
+        try:
+            audit_log.append(
+                "skill.maturity_review_decided", binding=binding,
+                tool="review_skill_maturity_proposal", proposal_id=result["proposal_id"],
+                decision_id=result["decision_id"], decision=result["decision"],
+                reviewer=result["reviewer"], review_binding_hash=result["review_binding_hash"],
+            )
+            result["audit_status"] = "recorded"
+        except OSError as exc:
+            LOGGER.error("Skill maturity review audit failed: %s", exc)
+            result["audit_status"] = "failed"
+        return result
+
+    @app.tool()
+    def apply_skill_maturity_proposal(
+        ctx: Context,
+        proposal_id: str,
+        apply_id: str,
+        reviewer: str,
+        decision_evidence: str,
+        approval_token: str,
+    ) -> dict[str, Any]:
+        """Apply one human-accepted, revalidated maturity proposal to canonical meta.md."""
+        _require_startup_loaded(ctx, "apply_skill_maturity_proposal")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError("XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before apply_skill_maturity_proposal")
+        if approval_verifier is None:
+            raise RuntimeError("trusted human approval verifier is not configured")
+        result = catalog.apply_skill_maturity_proposal(
+            proposal_id=proposal_id, apply_id=apply_id, reviewer=reviewer,
+            decision_evidence=decision_evidence, approval_token=approval_token,
+            approval_verifier=approval_verifier,
+        )
+        try:
+            audit_log.append(
+                "skill.maturity_applied", binding=binding, tool="apply_skill_maturity_proposal",
+                proposal_id=result["proposal_id"], apply_id=result["apply_id"],
+                skill_id=result["skill_id"], maturity=result["maturity"],
+                meta_content_hash=result["meta_content_hash"],
+            )
+            result["audit_status"] = "recorded"
+        except OSError as exc:
+            LOGGER.error("Skill maturity apply audit failed: %s", exc)
             result["audit_status"] = "failed"
         return result
 

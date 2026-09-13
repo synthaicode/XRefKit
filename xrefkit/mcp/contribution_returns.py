@@ -1,4 +1,4 @@
-"""Inert MCP inbox for locally authored Knowledge and deterministic tools."""
+"""Inert MCP inbox for Knowledge, deterministic tools, and Skill observations."""
 
 from __future__ import annotations
 
@@ -28,7 +28,10 @@ REVIEW_SCHEMA = "xrefkit.contribution_review/v1"
 ADOPTION_PREPARED_SCHEMA = "xrefkit.contribution_adoption_prepared/v1"
 ADOPTION_SCHEMA = "xrefkit.contribution_adoption/v1"
 STORE_RELATIVE = Path(".xrefkit") / "contribution-returns"
-ALLOWED_KINDS = {"knowledge", "deterministic_tool"}
+ALLOWED_KINDS = {"knowledge", "deterministic_tool", "skill_observation"}
+VALID_MATURITIES = {"draft", "trial", "stable", "governed", "deprecated"}
+VALID_OBSERVATION_OUTCOMES = {"success", "failure"}
+VALID_HUMAN_EVALUATIONS = {"accepted", "rejected", "needs_revision"}
 MAX_FILES = 64
 MAX_FILE_BYTES = 1024 * 1024
 MAX_TOTAL_BYTES = 5 * 1024 * 1024
@@ -36,6 +39,8 @@ MAX_METADATA_BYTES = 256 * 1024
 MAX_TITLE_BYTES = 256
 MAX_SUMMARY_BYTES = 4096
 MAX_RUNTIME_BYTES = 256
+MAX_IDENTIFIER_BYTES = 256
+MAX_OBSERVATION_RETRIES = 1000
 MAX_EVIDENCE_ROWS = 64
 MAX_EVIDENCE_TEXT_BYTES = 4096
 MAX_KNOWLEDGE_VERSIONS = 128
@@ -92,6 +97,24 @@ def contribution_return_contract() -> dict[str, Any]:
             "output_contract": "object",
             "verification_evidence": "non-empty array of {kind, command, result, content_hash?}",
         },
+        "skill_observation_schema": {
+            "skill_id": "selected MCP Skill identity",
+            "skill_content_hash": "exact selected Skill SHA-256",
+            "skill_version": "optional package/source version used",
+            "maturity_at_use": "draft|trial|stable|governed|deprecated",
+            "run_id": "bound Skill Run UUID",
+            "client_id": "bounded non-secret client installation identifier",
+            "execution_environment": "bounded non-secret environment identifier",
+            "model_id": "bounded non-secret model identifier",
+            "outcome": "success|failure",
+            "retry_count": f"integer from 0 through {MAX_OBSERVATION_RETRIES}",
+            "evaluation_evidence": "non-empty array of evidence identity/reference/hash rows",
+            "ambiguities": "array of bounded observations; empty is allowed",
+            "human_evaluation": "optional explicit human evaluation record",
+            "proposed_maturity": "optional client proposal without authority",
+            "sensitive_data": "prompt bodies, credentials, tokens, secrets, and secret-bearing fields are prohibited",
+            "files": "exactly one inert Markdown observation",
+        },
         "source_schema": {
             "skill_content_hash": "current selected Skill SHA-256",
             "knowledge_versions": "array of {xid, content_hash} actually used",
@@ -109,6 +132,7 @@ def contribution_return_contract() -> dict[str, Any]:
             "proposal": "proposed_target_path is AI-supplied evidence only, never authority",
             "knowledge": "one Markdown file under a catalog-enabled knowledge family",
             "deterministic_tool": "one complete directory below tools/ in the kernel-code ownership zone",
+            "skill_observation": "one Markdown record under observations/; transport grants no maturity authority",
             "collision": "never overwrite an existing canonical target",
         },
         "adoption_transport": {
@@ -125,6 +149,8 @@ def contribution_return_contract() -> dict[str, Any]:
             "list_contribution_returns or export_contribution_return",
             "review_contribution_return (explicit human decision)",
             "adopt_contribution_return (accepted records only)",
+            "commit the adopted observation so Git tracks it",
+            "assess, propose, review, and apply maturity as a separate human-approved flow",
         ],
         "activation": "never automatic; adoption is explicit and does not execute tools",
         "later_lifecycle": {
@@ -148,6 +174,7 @@ def submit_contribution_return(
     proposed_target_path: str | None = None,
     knowledge: dict[str, Any] | None = None,
     deterministic_tool: dict[str, Any] | None = None,
+    skill_observation: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     normalized_id = _uuid(contribution_id)
     normalized_files = _validate_files(files)
@@ -157,8 +184,14 @@ def submit_contribution_return(
     normalized_title = _required_text(title, "title", MAX_TITLE_BYTES)
     normalized_summary = _required_text(summary, "summary", MAX_SUMMARY_BYTES)
     kind_metadata = _validate_kind_metadata(
-        normalized_kind, normalized_files, knowledge, deterministic_tool
+        normalized_kind,
+        normalized_files,
+        knowledge,
+        deterministic_tool,
+        skill_observation,
     )
+    if normalized_kind == "skill_observation":
+        _validate_skill_observation_source(kind_metadata, source_snapshot, binding)
     normalized_proposed_target = (
         _safe_path(proposed_target_path) if proposed_target_path is not None else None
     )
@@ -622,9 +655,10 @@ def _validate_kind_metadata(
     files: list[dict[str, Any]],
     knowledge: dict[str, Any] | None,
     deterministic_tool: dict[str, Any] | None,
+    skill_observation: dict[str, Any] | None,
 ) -> dict[str, Any]:
     if kind == "knowledge":
-        if deterministic_tool is not None or not isinstance(knowledge, dict):
+        if deterministic_tool is not None or skill_observation is not None or not isinstance(knowledge, dict):
             raise ValueError("knowledge metadata is required only for knowledge contributions")
         if len(files) != 1 or not files[0]["path"].lower().endswith(".md"):
             raise ValueError("Knowledge contribution requires exactly one Markdown file")
@@ -632,7 +666,13 @@ def _validate_kind_metadata(
         if first_xid(files[0]["content"]) != xid:
             raise ValueError("Knowledge XID must match the first XID marker")
         return {"xid": xid}
-    if knowledge is not None or not isinstance(deterministic_tool, dict):
+    if kind == "skill_observation":
+        if knowledge is not None or deterministic_tool is not None or not isinstance(skill_observation, dict):
+            raise ValueError("skill_observation metadata is required only for skill_observation contributions")
+        if len(files) != 1 or not files[0]["path"].lower().endswith(".md"):
+            raise ValueError("Skill observation requires exactly one Markdown file")
+        return _validate_skill_observation_metadata(skill_observation)
+    if knowledge is not None or skill_observation is not None or not isinstance(deterministic_tool, dict):
         raise ValueError("deterministic_tool metadata is required only for deterministic_tool contributions")
     runtime = _required_text(
         deterministic_tool.get("runtime"), "deterministic_tool.runtime", MAX_RUNTIME_BYTES
@@ -677,6 +717,143 @@ def _validate_kind_metadata(
         "output_contract": output_contract,
         "verification_evidence": normalized_evidence,
     }
+
+
+def _validate_skill_observation_metadata(raw: dict[str, Any]) -> dict[str, Any]:
+    allowed = {
+        "skill_id", "skill_content_hash", "skill_version", "maturity_at_use",
+        "run_id", "client_id", "execution_environment", "model_id", "outcome",
+        "retry_count", "evaluation_evidence", "ambiguities", "human_evaluation",
+        "proposed_maturity",
+    }
+    unknown = sorted(set(raw).difference(allowed))
+    if unknown:
+        raise ValueError(f"skill_observation contains unsupported or sensitive fields: {unknown}")
+    result: dict[str, Any] = {
+        "skill_id": _safe_identifier(raw.get("skill_id"), "skill_observation.skill_id"),
+        "skill_content_hash": _sha256_value(
+            raw.get("skill_content_hash"), "skill_observation.skill_content_hash"
+        ),
+        "maturity_at_use": _maturity(raw.get("maturity_at_use"), "maturity_at_use"),
+        "run_id": _uuid(raw.get("run_id"), "skill_observation.run_id"),
+        "client_id": _safe_identifier(raw.get("client_id"), "skill_observation.client_id"),
+        "execution_environment": _safe_identifier(
+            raw.get("execution_environment"), "skill_observation.execution_environment"
+        ),
+        "model_id": _safe_identifier(raw.get("model_id"), "skill_observation.model_id"),
+    }
+    outcome = str(raw.get("outcome") or "").strip().lower()
+    if outcome not in VALID_OBSERVATION_OUTCOMES:
+        raise ValueError("skill_observation.outcome must be success or failure")
+    result["outcome"] = outcome
+    retry_count = raw.get("retry_count")
+    if isinstance(retry_count, bool) or not isinstance(retry_count, int) or not 0 <= retry_count <= MAX_OBSERVATION_RETRIES:
+        raise ValueError(
+            f"skill_observation.retry_count must be an integer from 0 through {MAX_OBSERVATION_RETRIES}"
+        )
+    result["retry_count"] = retry_count
+    version = raw.get("skill_version")
+    result["skill_version"] = (
+        _safe_identifier(version, "skill_observation.skill_version")
+        if version is not None else None
+    )
+    evidence = raw.get("evaluation_evidence")
+    if not isinstance(evidence, list) or not evidence:
+        raise ValueError("skill_observation.evaluation_evidence must be a non-empty array")
+    if len(evidence) > MAX_EVIDENCE_ROWS:
+        raise ValueError(f"skill_observation evidence exceeds row limit {MAX_EVIDENCE_ROWS}")
+    normalized_evidence: list[dict[str, Any]] = []
+    evidence_ids: set[str] = set()
+    for row in evidence:
+        if not isinstance(row, dict) or set(row).difference({"evidence_id", "kind", "reference", "content_hash"}):
+            raise ValueError("skill_observation evidence rows contain unsupported fields")
+        item = {
+            "evidence_id": _safe_identifier(row.get("evidence_id"), "evaluation_evidence.evidence_id"),
+            "kind": _safe_identifier(row.get("kind"), "evaluation_evidence.kind"),
+            "reference": _required_text(
+                row.get("reference"), "evaluation_evidence.reference", MAX_EVIDENCE_TEXT_BYTES
+            ),
+        }
+        if item["evidence_id"] in evidence_ids:
+            raise ValueError("skill_observation evidence_id values must be unique")
+        evidence_ids.add(item["evidence_id"])
+        if row.get("content_hash") is not None:
+            item["content_hash"] = _sha256_value(
+                row.get("content_hash"), "evaluation_evidence.content_hash"
+            )
+        normalized_evidence.append(item)
+    result["evaluation_evidence"] = normalized_evidence
+    ambiguities = raw.get("ambiguities", [])
+    if not isinstance(ambiguities, list) or len(ambiguities) > MAX_EVIDENCE_ROWS:
+        raise ValueError("skill_observation.ambiguities must be a bounded array")
+    result["ambiguities"] = [
+        _required_text(item, "skill_observation.ambiguities", MAX_EVIDENCE_TEXT_BYTES)
+        for item in ambiguities
+    ]
+    human = raw.get("human_evaluation")
+    if human is not None:
+        if not isinstance(human, dict) or set(human).difference(
+            {"evaluation_id", "evaluator", "result", "evidence"}
+        ):
+            raise ValueError("skill_observation.human_evaluation contains unsupported fields")
+        human_result = str(human.get("result") or "").strip().lower()
+        if human_result not in VALID_HUMAN_EVALUATIONS:
+            raise ValueError("human_evaluation.result is invalid")
+        result["human_evaluation"] = {
+            "evaluation_id": _safe_identifier(human.get("evaluation_id"), "human_evaluation.evaluation_id"),
+            "evaluator": _safe_identifier(human.get("evaluator"), "human_evaluation.evaluator"),
+            "result": human_result,
+            "evidence": _required_text(
+                human.get("evidence"), "human_evaluation.evidence", MAX_EVIDENCE_TEXT_BYTES
+            ),
+        }
+    else:
+        result["human_evaluation"] = None
+    proposed = raw.get("proposed_maturity")
+    result["proposed_maturity"] = (
+        _maturity(proposed, "proposed_maturity") if proposed is not None else None
+    )
+    return result
+
+
+def _validate_skill_observation_source(
+    metadata: dict[str, Any], source: dict[str, Any], binding: SessionRunBinding
+) -> None:
+    if metadata["skill_id"] != source.get("skill_id") or metadata["skill_id"] != binding.skill_id:
+        raise ValueError("skill_observation.skill_id must match the bound MCP Skill")
+    if metadata["skill_content_hash"] != source.get("skill_content_hash"):
+        raise ValueError("skill_observation.skill_content_hash must match the verified MCP Skill body")
+    if source.get("skill_maturity") is not None and metadata["maturity_at_use"] != source.get("skill_maturity"):
+        raise ValueError("skill_observation.maturity_at_use must match the verified MCP Skill maturity")
+    if metadata["run_id"] != binding.run_id:
+        raise ValueError("skill_observation.run_id must match the bound Skill Run")
+    source_version = source.get("package_version")
+    if metadata.get("skill_version") is not None and source_version is not None and metadata["skill_version"] != source_version:
+        raise ValueError("skill_observation.skill_version does not match the verified MCP package version")
+
+
+def _safe_identifier(value: object, field: str) -> str:
+    text = _required_text(value, field, MAX_IDENTIFIER_BYTES)
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:/@+ -]*", text):
+        raise ValueError(f"{field} must be a bounded identifier without prompt or secret content")
+    sensitive = ("secret", "password", "credential", "bearer ", "api_key", "api-key")
+    if any(marker in text.casefold() for marker in sensitive):
+        raise ValueError(f"{field} must not contain credentials or secrets")
+    return text
+
+
+def _sha256_value(value: object, field: str) -> str:
+    text = str(value or "")
+    if not SHA256_RE.fullmatch(text):
+        raise ValueError(f"{field} must be lowercase SHA-256")
+    return text
+
+
+def _maturity(value: object, field: str) -> str:
+    text = str(value or "").strip().lower()
+    if text not in VALID_MATURITIES:
+        raise ValueError(f"skill_observation.{field} has an invalid maturity")
+    return text
 
 
 def _safe_path(value: object) -> str:
@@ -1089,6 +1266,12 @@ def _validate_canonical_target(
             )
             if not prepared_target_matches:
                 raise ValueError(f"Knowledge XID already exists in the canonical catalog: {xid}")
+        return normalized
+    if kind == "skill_observation":
+        if len(parts) < 2 or parts[0] != "observations" or not normalized.lower().endswith(".md"):
+            raise ValueError("Skill observation target must be a Markdown file below observations/")
+        if zone.id != "records" or zone.owner != "operational" or zone.distribution:
+            raise ValueError("Skill observation target is not permitted by records ownership")
         return normalized
     if len(parts) < 2 or parts[0] != "tools":
         raise ValueError("deterministic tool target must be a new directory below tools/")

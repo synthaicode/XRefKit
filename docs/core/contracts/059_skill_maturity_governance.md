@@ -194,6 +194,58 @@ runtime fields themselves must be explicit before the Skill is load-ready.
 7. Add governance and audit basis through `governance_refs`.
 8. Promote to `governed` only after the stricter check passes.
 
+## MCP Observation Return And Promotion
+
+An MCP client cannot change provider-side `maturity` directly. After using an
+MCP-provided Skill, it may return one inert `skill_observation` contribution
+containing the exact selected Skill hash, bound `run_id`, maturity at use,
+bounded client/environment/model identifiers, outcome, retry count, evidence
+identities, ambiguities, optional human evaluation, and an optional
+`proposed_maturity`. Prompt bodies, credentials, tokens, secrets, and unknown
+metadata fields are rejected.
+
+`proposed_maturity` is evidence only. WebDAV or the local adoption adapter may
+transport the reviewed Markdown record only to `observations/`; neither has
+maturity authority. Evidence adoption and maturity mutation are separate human
+decisions:
+
+```text
+submit/review/adopt skill_observation
+  -> commit the observations/ record to Git
+  -> assess_skill_maturity
+  -> propose_skill_maturity
+  -> review_skill_maturity_proposal
+  -> apply_skill_maturity_proposal
+```
+
+Assessment starts only after every selected adopted observation exists in
+`HEAD` with the adopted hash. This prevents an uncommitted WebDAV/local arrival
+from becoming promotion evidence in the same operation. Assessment aggregates
+multiple clients, environments, models, outcomes, retries, ambiguities, and
+human evaluations. It rejects duplicate or previously consumed `run_id`,
+`evidence_id`, and evidence `content_hash` values. This contract does not invent
+a minimum sample count; the signed human review decides whether the reported
+diversity is sufficient.
+
+The promotion tools resolve exactly one repository-owned canonical Skill under
+`skills/` or shared `packs/*/skills/`. Package-only, external, `packs/local/`,
+local-overlay, missing, and ambiguous identities fail closed. The current
+canonical Skill body, maturity, `meta.md`, committed observation hashes, and
+proposal hashes are checked again immediately before mutation. For a
+`governed` proposal, each `governance_ref` and its committed content hash are
+sealed into the proposal and checked again before apply. A canonical
+`meta.md` with duplicate `maturity` / legacy `status` fields is rejected.
+
+Only one-step promotion is supported: `draft -> trial -> stable -> governed`.
+Same-state changes, skipped levels, downgrade, deprecation, and restoration
+from `deprecated` require a separate governance process. The proposal runs the
+equivalent of `xrefkit skill check --level <target>` against the candidate
+`meta.md`; apply repeats that deterministic check. An accepted proposal also
+requires a new signed human assertion and one-time apply token. Successful
+apply updates `maturity`, `observation_refs`, and approved `governance_refs` in
+canonical `meta.md`, while publication, distribution, and live verification
+remain `not_performed`.
+
 ## Draft Template
 
 ```md

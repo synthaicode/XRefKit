@@ -10,6 +10,10 @@ SERVER_REPO_WRITE_ALLOWLIST = {
     "xref.submit_contribution_return",
     "xref.review_contribution_return",
     "xref.adopt_contribution_return",
+    "xref.assess_skill_maturity",
+    "xref.propose_skill_maturity",
+    "xref.review_skill_maturity_proposal",
+    "xref.apply_skill_maturity_proposal",
 }
 ResponseEnvelope = Literal["direct_object", "mcp_result_array"]
 
