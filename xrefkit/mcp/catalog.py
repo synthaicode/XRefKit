@@ -2299,9 +2299,9 @@ def _client_obligations() -> list[ClientObligation]:
             id="gateway.route_incoming_instruction",
             level="must",
             applies_when="an instruction or correction requires model-work dispatch after base startup",
-            statement="Use instruction_gateway before dispatch; adapt each concrete Skill work item with explicit measurements and environment mappings; retain the request revision, environment, assessment, policy, and latest per-work-item state. Route each pending node independently. Dispatch implementation and operational work, plus host-supported subagent_preferred or subagent_required analysis work, only through the selected subagent and keep the parent as coordinator under the existing workflow protocol.",
+            statement="Use instruction_gateway before dispatch; adapt each concrete Skill work item with explicit model requirements, measurements, and environment-owned candidate evidence. Retain the request revision, environment, assessment, policy, and latest per-work-item state. Route each pending node independently. Dispatch implementation and operational work, plus host-supported subagent_preferred or subagent_required analysis work, only through the selected subagent and keep the parent as coordinator under the existing workflow protocol.",
             enforcement_owner="client",
-            verification="client retains the latest workflow state, ready adapter and routing results, applicable subagent plan, observed host model and route evidence; completed nodes are not redispatched and unknown scope, measurement, or mapping is not dispatched",
+            verification="client retains the latest workflow state, ready adapter and routing results, applicable subagent plan, observed host model and route evidence; completed nodes are not redispatched and unknown scope, measurement, work-item requirement, or candidate evidence is not dispatched",
         ),
         ClientObligation(
             id="tools.materialize_from_mcp",

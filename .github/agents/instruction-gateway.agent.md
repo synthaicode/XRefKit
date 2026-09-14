@@ -55,9 +55,11 @@ local CLI procedure below is only for repository-native/non-MCP operation.
    adding it to the assessment. Use the MCP
    `adapt_skill_work_item_for_gateway` tool or local `gateway skill-adapt`
    command. Supply the work item's execution kind, dependencies, capability
-   inputs, and all six measurements explicitly; never extract them from Skill
-   prose. Require the environment policy's exact capability and model-tier
-   mappings. Keep missing mappings or measurements `unknown` and stop routing.
+   inputs, evidence-bearing `model_requirements`, and all six measurements
+   explicitly; never extract them from Skill prose. Skill capability and
+   model-tier are governance semantics, not model-selection inputs. Require
+   evaluated candidate evidence in the environment policy. Keep missing work
+   item requirements or measurements `unknown` and stop routing.
 6. Obtain an evaluated model policy for this host. Use `gateway schema policy`.
    Record the current conversation model as `parent_model_id` and its evaluated
    host rank as `parent_cost_tier`. These are environment policy facts, not
