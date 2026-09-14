@@ -488,16 +488,26 @@ still uses the assigned `checker` role, which must differ from the `executor`
 role, so execution/check role separation remains a machine-checked invariant.
 
 Skill metadata may also declare an optional `model_tier` field
-(`light` / `standard` / `heavy`) that selects the model class for the
-execution phase. `light` and `standard` skills are dispatched to the
-tier-matched executor subagents (`.claude/agents/skill-executor-light.md`,
-`.claude/agents/skill-executor-standard.md`); `heavy` and untiered skills run
-on the main-context model. The check phase is workflow-progression
-verification and is advanced deterministically by `xrefkit skill verify`, not by a
-model, whatever the executor tier; domain-level quality review belongs to
-review-oriented Skills, not to the check phase. `model_tier` is a cost-control
-knob for the executor side only — it never relaxes deterministic check
-verification, role separation, or any closure condition.
+(`light` / `standard` / `heavy`). It controls the Skill quality gate described
+above. It never identifies, filters, ranks, or otherwise constrains a concrete
+model, and has no repository-wide mapping to gateway `cost_tier`. The gateway
+selects a model for each concrete work item only after that item supplies its
+own evidence-bearing `model_requirements`, `execution_kind`, and values for all
+six complexity axes. Skill `capability` and work-item capability inputs retain
+their task/domain meaning; neither is converted into a model requirement.
+Missing work-item requirements and `unknown` measurements stop routing.
+
+`execution_mode`, not `model_tier`, controls executor placement.
+`subagent_preferred` and `subagent_required` are carried by the Skill-to-gateway
+adapter onto each model work item. An `analysis` work item receives a host-ready
+SubAgent dispatch when the environment policy explicitly supports analysis
+dispatch; `subagent_required` stops when the host cannot provide it, while
+`subagent_preferred` may use the current context under the declared host policy.
+Existing `implementation` and `operation` gateway work items continue to require
+SubAgent dispatch. The check phase remains deterministic `xrefkit skill verify`
+whatever executor placement is selected; domain-level quality review belongs to
+review-oriented Skills, not to the check phase. Neither routing choice relaxes
+role separation or any closure condition.
 
 This boundary is concrete about artifacts: progression closure verifies that
 output and evidence artifacts are *recorded, linked, and status-complete* in
