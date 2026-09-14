@@ -489,12 +489,13 @@ role, so execution/check role separation remains a machine-checked invariant.
 
 Skill metadata may also declare an optional `model_tier` field
 (`light` / `standard` / `heavy`). It controls the Skill quality gate described
-above and may be used as an executor cost/capability hint only through an
-explicit, versioned environment-policy mapping. It never identifies a concrete
-model and has no repository-wide mapping to gateway `cost_tier`. The gateway
-selects a model for each concrete work item after that item supplies its own
-`execution_kind`, capability inputs, and evidence-bearing values for all six
-complexity axes. Missing mappings and `unknown` measurements stop routing.
+above. It never identifies, filters, ranks, or otherwise constrains a concrete
+model, and has no repository-wide mapping to gateway `cost_tier`. The gateway
+selects a model for each concrete work item only after that item supplies its
+own evidence-bearing `model_requirements`, `execution_kind`, and values for all
+six complexity axes. Skill `capability` and work-item capability inputs retain
+their task/domain meaning; neither is converted into a model requirement.
+Missing work-item requirements and `unknown` measurements stop routing.
 
 `execution_mode`, not `model_tier`, controls executor placement.
 `subagent_preferred` and `subagent_required` are carried by the Skill-to-gateway

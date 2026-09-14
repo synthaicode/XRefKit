@@ -421,7 +421,7 @@ def builtin_tool_contracts() -> list[ToolContract]:
         ("route_instruction_gateway", {"assessment": "object", "policy": "object", "current_sources": "array"},
          "Select eligible models from client-reported current evidence before dispatch."),
         ("adapt_skill_work_item_for_gateway", {"request": "object", "policy": "object"},
-         "Convert one concrete Skill work item to a gateway Step using versioned environment mappings."),
+         "Convert one concrete Skill work item to a gateway Step using explicit work-item requirements and evaluated environment evidence."),
         ("initialize_instruction_workflow", {"assessment": "object", "previous_state": "object?"},
          "Create or explicitly re-enter per-work-item routing state."),
         ("route_instruction_work_items", {"assessment": "object", "policy": "object", "workflow_state": "object", "current_sources": "array"},

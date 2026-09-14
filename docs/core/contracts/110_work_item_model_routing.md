@@ -40,23 +40,25 @@ scope, dependency, capability, metric, tool, or node definitions do.
 Adapter version 1 converts exactly one concrete Skill work item into one
 gateway `Step`. The input carries a load-ready Skill execution profile and an
 explicit work item. A model work item must provide `execution_kind`, Skill
-capability inputs, and evidence-bearing values for all six complexity axes. A
-deterministic work item must provide `tool_ref` and no model requirements. This
-is the machine-readable decomposition boundary: the adapter never extracts
+capability inputs, evidence-bearing `model_requirements`, and values for all
+six complexity axes. A deterministic work item must provide `tool_ref` and no
+model requirements. This is the machine-readable decomposition boundary: the adapter never extracts
 steps, dependencies, metrics, or execution kind from `SKILL.md` prose.
 
-The matched `Policy` owns a versioned `skill_adapter` block. Its
-`capability_map` converts exact Skill capability values to evaluated gateway
-candidate capabilities. Its `model_tier_map` records the environment-specific
-minimum cost tier and additional capabilities, including an explicit `untiered`
-entry where needed. Every mapping carries an `evaluation_ref`. Skill
-`model_tier` remains the Skill quality-gate classification; it constrains model
-routing only when the current environment policy explicitly maps it. A mapping
-whose `minimum_cost_tier` is `null` is unresolved rather than an unconstrained
-tier. Missing Skill capability, missing mapping, mismatched environment, an
-unresolved minimum cost tier, or an `unknown` measurement returns
-`needs_assessment` with `step: null` and must not route. This applies to both
-model and deterministic work items.
+Skill `capability`, `tuning`, `responsibility`, and `model_tier` describe the
+Skill and retain their normal governance meaning. They have no direct relation
+to a model and are never converted into candidate capabilities, cost tiers, or
+model ranking. `model_requirements` belongs to exactly one concrete work item:
+it names only evaluated candidate-requirement labels, an optional minimum cost
+tier, and evidence for why that work item needs them. The environment `Policy`
+owns candidate limits, input limits, candidate labels, cost tiers, and
+`evaluation_ref` evidence. Eligibility is determined only by the explicit work
+item requirements, all six measurements, total input bytes, and that
+environment-owned candidate evidence. A missing work-item requirement,
+mismatched environment, or `unknown` measurement returns `needs_assessment`
+with `step: null` and must not route. This applies to both model and
+deterministic work items. A legacy `skill_adapter` policy block may be accepted
+for compatibility, but it is ignored for model selection.
 
 `execution_mode` is copied to model Steps. `local_default` permits analysis in
 the current executor context. `subagent_preferred` emits an analysis SubAgent
@@ -80,7 +82,8 @@ placement metadata.
 The repository contains no built-in model price table or competence claim.
 Candidate tiers, limits, capabilities, and evaluation references remain
 operator-supplied policy evidence. Skill `model_tier` continues to govern Skill
-quality gates and is not replaced by gateway `cost_tier`.
+quality gates and is not replaced by, mapped to, or compared with gateway
+`cost_tier`.
 
 Every `implementation` or `operation` model assignment returns an explicit
 subagent dispatch plan. An `analysis` assignment also returns one when its Skill

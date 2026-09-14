@@ -55,7 +55,7 @@ class GatewayRequest(Record):
 
 def gateway_contract(*, include_schemas: bool = False) -> dict:
     result = {
-        "version": 3,
+        "version": 4,
         "entry_tool": "prepare_instruction_gateway",
         "contract_tool": "get_instruction_gateway_contract",
         "route_tool": "route_instruction_gateway",
@@ -74,8 +74,8 @@ def gateway_contract(*, include_schemas: bool = False) -> dict:
             "For each new instruction or correction, use prepare_instruction_gateway before model-work dispatch.",
             "Apply base startup first; preserve any required Prompt Flow initialization and correlation.",
             "Resolve Skill metadata through MCP, not client filesystem governance paths. Do not open a Skill body before its runtime gate.",
-            "Adapt each concrete Skill work item separately. Supply execution kind and evidence-bearing values for all six axes; never infer them from Skill prose.",
-            "Treat Skill capability and model_tier mappings as versioned environment policy. Missing mappings and unknown measurements stop routing.",
+            "Adapt each concrete Skill work item separately. Supply execution kind, evidence-bearing model_requirements, and values for all six axes; never infer them from Skill prose.",
+            "Treat Skill capability, tuning, responsibility, and model_tier as task governance semantics, not model-selection inputs. Candidate eligibility comes from explicit work-item requirements and evaluated environment policy evidence.",
             "Read profiles through the active client's existing profile mechanism; never create a second profile store.",
             "Send source snapshots and task-relevant assessment evidence. Paths are labels, not server file read requests.",
             "Hash the instruction string as UTF-8 without a BOM; include exactly one instruction source with that hash and byte count.",

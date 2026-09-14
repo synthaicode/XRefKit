@@ -156,6 +156,11 @@ def test_gateway_over_real_mcp_stdio_before_run_binding(request_and_policy, tmp_
                                 for axis in ("constraints", "branch_depth", "dependency_depth",
                                              "cross_source_links", "scope_changes", "integration_links")
                             },
+                            "model_requirements": {
+                                "required_candidate_capabilities": ["orthogonal_array"],
+                                "minimum_cost_tier": 3,
+                                "evidence": refs,
+                            },
                         },
                     },
                     "policy": adapter_policy,
@@ -163,6 +168,8 @@ def test_gateway_over_real_mcp_stdio_before_run_binding(request_and_policy, tmp_
                 assert not adapted.isError
                 assert adapted.structuredContent["status"] == "ready"
                 assert adapted.structuredContent["step"]["execution_mode"] == "subagent_preferred"
+                assert adapted.structuredContent["step"]["capabilities"] == ["orthogonal_array"]
+                assert adapted.structuredContent["step"]["minimum_cost_tier"] == 3
                 prepared = await session.call_tool("prepare_instruction_gateway", {"request": request})
                 assert not prepared.isError
                 assert prepared.structuredContent["status"] == "needs_assessment"

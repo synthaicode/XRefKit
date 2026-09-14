@@ -111,30 +111,36 @@ After the Skill runtime envelope has produced concrete work items, adapt each
 model or deterministic item separately. The adapter request names the
 load-ready Skill profile and one work item. It does not accept a Skill body as a
 substitute for decomposition. Supply `execution_kind`, dependencies, capability
-inputs, and all six evidence-bearing measurements explicitly for model work;
-supply only `tool_ref` for deterministic work.
+inputs, evidence-bearing `model_requirements`, and all six measurements explicitly for model work;
+supply `tool_ref` and no `model_requirements` for deterministic work. Capability
+inputs may be retained for task/domain semantics in either kind of work item.
 
 ```powershell
 python -m xrefkit gateway skill-adapt --request work/skill-item-001.json --policy work/model-policy.json --out work/step-001.json
 ```
 
-The policy's version-1 `skill_adapter.capability_map` maps exact Skill
-capability values to evaluated gateway capabilities. Its
-`skill_adapter.model_tier_map` maps `light`, `standard`, `heavy`, or `untiered`
-to an explicit environment-specific minimum cost tier and optional capability
-hints. Each mapping needs an `evaluation_ref` and a known
-`minimum_cost_tier`; `null` remains `needs_assessment`. There is no built-in
-conversion from Skill `model_tier` to gateway `cost_tier`; a missing mapping
-remains `needs_assessment`. Every non-ready adapter response returns
-`step: null`, so it cannot be added to an Assessment for routing. The same
-policy lists host-supported
+`capability`, `tuning`, `responsibility`, and `model_tier` identify or govern a
+Skill. They do not map to, filter, rank, or select a model. For each concrete
+model work item, supply `model_requirements` with the candidate-requirement
+labels actually needed, an optional minimum cost tier, and evidence for those
+requirements. The environment policy supplies evaluated candidate labels,
+limits, input-byte limits, cost tiers, and `evaluation_ref` evidence. Eligibility
+comes only from that work-item requirement, the six measurements, input size,
+and the environment-owned candidate evidence. Missing `model_requirements`, a
+mismatched environment, or an `unknown` axis remains `needs_assessment`.
+Every non-ready adapter response returns `step: null`, so it cannot be added to
+an Assessment for routing. A legacy `skill_adapter` mapping block may remain in
+an existing policy for compatibility, but the gateway ignores it for selection.
+The same policy lists host-supported
 `subagent_execution_kinds`. Keep `analysis` absent unless that host can perform
 the requested SubAgent dispatch; keep `implementation` and `operation` present
 because their existing mandatory dispatch behavior is unchanged.
 
 Deterministic steps require `tool_ref` and have no model requirements. They are
 not executed by the gateway. Model steps require `execution_kind` (`analysis`,
-`implementation`, or `operation`), capability names, and all axes. Use
+`implementation`, or `operation`), `model_requirements`, and all axes. Skill
+capability names may remain as task/domain context, but are never model
+requirements. Use
 `operation` for operational work that still needs model judgment, including PR
 composition or CI/release-result interpretation. Keep a command deterministic
 when its behavior is already fixed and no judgment is needed.
@@ -151,10 +157,12 @@ when its behavior is already fixed and no judgment is needed.
 Each measurement has `value`, `basis` (`measured`, `estimated`, `unknown`) and
 evidence. Unknown uses null and prevents model selection. Byte count is measured
 from files and conservatively summed across all supplied sources. It is not a
-token count or a proof of context-window fit. Capability names are policy-owned;
-examples include `orthogonal_array_interpretation`, `incremental_scope`, and
-`image_table_reading`. The presence of a table alone does not establish which
-capability is needed. Gatekeeper extraction quality needs its own evaluation.
+token count or a proof of context-window fit. Candidate-requirement labels are
+owned by the evaluated environment policy; examples include
+`orthogonal_array_interpretation`, `incremental_scope`, and
+`image_table_reading`. They must be justified in the concrete work item's
+`model_requirements`; the presence of a table alone does not establish a model
+requirement. Gatekeeper extraction quality needs its own evaluation.
 
 ## Evaluated policy and routing
 

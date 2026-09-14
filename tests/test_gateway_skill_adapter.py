@@ -43,6 +43,11 @@ def _adapter_request(assessment: dict) -> dict:
                 axis: {"value": 1, "basis": "measured", "evidence": refs}
                 for axis in AXES
             },
+            "model_requirements": {
+                "required_candidate_capabilities": ["orthogonal_array"],
+                "minimum_cost_tier": 3,
+                "evidence": refs,
+            },
         },
     }
 
@@ -50,32 +55,28 @@ def _adapter_request(assessment: dict) -> dict:
 def _adapter_policy(policy: dict) -> dict:
     configured = copy.deepcopy(policy)
     configured["subagent_execution_kinds"] = ["analysis", "implementation", "operation"]
+    # A legacy map may still be present in an environment profile.  The adapter
+    # accepts it for compatibility but must not use it to select a model.
     configured["skill_adapter"] = {
         "version": 1,
         "capability_map": {
             "software_development": {
-                "required_capabilities": ["software_review"],
+                "required_capabilities": ["unrelated_legacy_value"],
                 "evaluation_ref": "host-eval/capability/software-review",
             }
         },
         "model_tier_map": {
             "standard": {
-                "minimum_cost_tier": 2,
-                "required_capabilities": ["standard_quality"],
+                "minimum_cost_tier": 99,
+                "required_capabilities": ["unrelated_legacy_value"],
                 "evaluation_ref": "host-eval/tier/standard",
             }
         },
     }
-    configured["candidates"][0]["capabilities"].extend(
-        ["software_review", "standard_quality"]
-    )
-    configured["candidates"][1]["capabilities"].extend(
-        ["software_review", "standard_quality"]
-    )
     return configured
 
 
-def test_adapter_maps_one_concrete_work_item_and_analysis_dispatches(request_and_policy):
+def test_adapter_uses_explicit_work_item_requirements_and_analysis_dispatches(request_and_policy):
     assessment, raw_policy = request_and_policy
     request = _adapter_request(assessment)
     policy = Policy.model_validate(_adapter_policy(raw_policy))
@@ -84,8 +85,8 @@ def test_adapter_maps_one_concrete_work_item_and_analysis_dispatches(request_and
 
     assert adapted["status"] == "ready"
     assert adapted["adapter_version"] == 1
-    assert adapted["step"]["capabilities"] == ["software_review", "standard_quality"]
-    assert adapted["step"]["minimum_cost_tier"] == 2
+    assert adapted["step"]["capabilities"] == ["orthogonal_array"]
+    assert adapted["step"]["minimum_cost_tier"] == 3
     assert adapted["step"]["execution_mode"] == "subagent_preferred"
     assessment["steps"] = [adapted["step"]]
     routed = route(Assessment.model_validate(assessment), policy)
@@ -100,20 +101,16 @@ def test_adapter_maps_one_concrete_work_item_and_analysis_dispatches(request_and
     assert work_route["subagent_dispatches"][0]["agent_role"] == "analysis_subagent"
 
 
-def test_adapter_keeps_unknown_measurement_and_missing_mapping_nonready(request_and_policy):
+def test_adapter_keeps_unknown_measurement_nonready(request_and_policy):
     assessment, raw_policy = request_and_policy
     request = _adapter_request(assessment)
     request["work_item"]["metrics"]["constraints"].update(value=None, basis="unknown")
-    policy_data = _adapter_policy(raw_policy)
-    del policy_data["skill_adapter"]["capability_map"]["software_development"]
-
     result = adapt_skill_work_item(
-        SkillAdapterRequest.model_validate(request), Policy.model_validate(policy_data)
+        SkillAdapterRequest.model_validate(request), Policy.model_validate(_adapter_policy(raw_policy))
     )
 
     assert result["status"] == "needs_assessment"
     assert "unknown complexity: constraints" in result["issues"]
-    assert any("no capability mapping" in issue for issue in result["issues"])
     assert result["step"] is None
 
 
@@ -121,10 +118,7 @@ def test_adapter_keeps_unknown_measurement_and_missing_mapping_nonready(request_
     "cause",
     [
         "environment_mismatch",
-        "missing_adapter",
-        "missing_capability_mapping",
-        "missing_tier_mapping",
-        "unknown_tier_minimum",
+        "missing_model_requirements",
         "unknown_measurement",
         "required_analysis_unsupported",
     ],
@@ -136,14 +130,8 @@ def test_nonready_model_adapter_result_never_exposes_a_step(request_and_policy, 
 
     if cause == "environment_mismatch":
         request["environment"] = "vscode:other"
-    elif cause == "missing_adapter":
-        policy_data["skill_adapter"] = None
-    elif cause == "missing_capability_mapping":
-        del policy_data["skill_adapter"]["capability_map"]["software_development"]
-    elif cause == "missing_tier_mapping":
-        del policy_data["skill_adapter"]["model_tier_map"]["standard"]
-    elif cause == "unknown_tier_minimum":
-        policy_data["skill_adapter"]["model_tier_map"]["standard"]["minimum_cost_tier"] = None
+    elif cause == "missing_model_requirements":
+        request["work_item"].pop("model_requirements")
     elif cause == "unknown_measurement":
         request["work_item"]["metrics"]["constraints"].update(value=None, basis="unknown")
     elif cause == "required_analysis_unsupported":
@@ -196,7 +184,7 @@ def test_required_analysis_stops_when_host_policy_cannot_dispatch(request_and_po
     ]
 
 
-def test_deterministic_skill_work_item_needs_no_model_mapping(request_and_policy):
+def test_deterministic_skill_work_item_needs_no_model_requirements(request_and_policy):
     assessment, raw_policy = request_and_policy
     request = _adapter_request(assessment)
     request["work_item"] = {
@@ -205,6 +193,7 @@ def test_deterministic_skill_work_item_needs_no_model_mapping(request_and_policy
         "task": "Run deterministic check",
         "scope": "one run log",
         "evidence": [{"source_id": "skill", "locator": "meta"}],
+        "capability_inputs": ["run_log_verification"],
         "tool_ref": "python -m xrefkit skill verify --log run.md",
     }
 
@@ -214,7 +203,42 @@ def test_deterministic_skill_work_item_needs_no_model_mapping(request_and_policy
 
     assert result["status"] == "ready"
     assert result["step"]["kind"] == "deterministic"
-    assert result["mapping_evidence"] == []
+    assert result["eligibility_evidence"] == []
+    assert result["skill_semantics"]["work_item_capability_inputs"] == ["run_log_verification"]
+
+
+def test_skill_capability_and_model_tier_cannot_select_or_rank_a_model(request_and_policy):
+    assessment, raw_policy = request_and_policy
+    request = _adapter_request(assessment)
+    policy = Policy.model_validate(_adapter_policy(raw_policy))
+
+    first = adapt_skill_work_item(SkillAdapterRequest.model_validate(request), policy)
+    request["skill"].update(capability="business_intake", model_tier="heavy")
+    request["work_item"]["capability_inputs"] = ["unrelated_domain_concept"]
+    policy_without_legacy_mapping = _adapter_policy(raw_policy)
+    policy_without_legacy_mapping["skill_adapter"] = None
+    second = adapt_skill_work_item(
+        SkillAdapterRequest.model_validate(request),
+        Policy.model_validate(policy_without_legacy_mapping),
+    )
+
+    assert first["status"] == second["status"] == "ready"
+    assert first["step"] == second["step"]
+    assert first["skill_semantics"] != second["skill_semantics"]
+
+
+def test_skill_capability_alone_cannot_produce_a_route(request_and_policy):
+    assessment, raw_policy = request_and_policy
+    request = _adapter_request(assessment)
+    request["work_item"].pop("model_requirements")
+
+    result = adapt_skill_work_item(
+        SkillAdapterRequest.model_validate(request), Policy.model_validate(_adapter_policy(raw_policy))
+    )
+
+    assert result["status"] == "needs_assessment"
+    assert result["step"] is None
+    assert result["issues"] == ["model work item is missing explicit model_requirements"]
 
 
 def test_default_adapter_fields_accept_pre_adapter_workflow_hashes(request_and_policy):

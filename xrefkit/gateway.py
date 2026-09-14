@@ -105,7 +105,10 @@ class SkillGatewayWorkItem(Record):
     scope: Text
     evidence: list[Evidence] = Field(min_length=1)
     depends_on: list[Text] = Field(default_factory=list)
+    # These are task/domain descriptors retained in the adapter result. They
+    # are never converted into candidate-model requirements.
     capability_inputs: list[Text] = Field(default_factory=list)
+    model_requirements: "WorkItemModelRequirements | None" = None
     metrics: dict[str, Measurement] = Field(default_factory=dict)
     tool_ref: Text | None = None
     node_id: Text | None = None
@@ -114,9 +117,10 @@ class SkillGatewayWorkItem(Record):
     @model_validator(mode="after")
     def execution_boundary(self):
         if self.kind == "deterministic":
-            if self.execution_kind is not None or not self.tool_ref or self.capability_inputs or self.metrics:
+            if (self.execution_kind is not None or not self.tool_ref
+                    or self.model_requirements is not None or self.metrics):
                 raise ValueError(
-                    "deterministic Skill work items require tool_ref and no model requirements"
+                    "deterministic Skill work items require tool_ref and no model_requirements"
                 )
         elif (
             self.execution_kind is None
@@ -129,30 +133,29 @@ class SkillGatewayWorkItem(Record):
         return self
 
 
-class SkillCapabilityMapping(Record):
-    required_capabilities: list[Text] = Field(min_length=1)
-    evaluation_ref: Text
+class WorkItemModelRequirements(Record):
+    """Explicit model-selection requirements for one concrete work item.
 
+    `capability` in Skill metadata is domain identity.  These requirement labels
+    are instead predicates evaluated against environment-owned candidate
+    evidence, and must be supplied with evidence for this work item.
+    """
 
-class SkillModelTierMapping(Record):
+    required_candidate_capabilities: list[Text] = Field(default_factory=list)
     minimum_cost_tier: Count | None
-    required_capabilities: list[Text] = Field(default_factory=list)
-    evaluation_ref: Text
+    evidence: list[Evidence] = Field(min_length=1)
 
 
-class SkillAdapterPolicy(Record):
+class SkillAdapterPolicy(BaseModel):
+    """Deprecated compatibility envelope for pre-v2 Skill adapter policies.
+
+    Version-1 `capability_map` and `model_tier_map` values are intentionally
+    accepted as opaque legacy data.  They are not used for routing because a
+    Skill capability or model tier cannot select or rank a model.
+    """
+
+    model_config = ConfigDict(extra="allow", strict=True)
     version: Literal[1]
-    capability_map: dict[str, SkillCapabilityMapping]
-    model_tier_map: dict[str, SkillModelTierMapping]
-
-    @model_validator(mode="after")
-    def mapping_keys(self):
-        valid_tiers = {"light", "standard", "heavy", "untiered"}
-        if any(not key.strip() for key in self.capability_map):
-            raise ValueError("Skill capability mapping keys must be non-empty")
-        if not set(self.model_tier_map) <= valid_tiers:
-            raise ValueError("Skill model tier mapping keys must be light, standard, heavy, or untiered")
-        return self
 
 
 class SkillAdapterRequest(Record):
@@ -548,7 +551,6 @@ def adapt_skill_work_item(request: SkillAdapterRequest, policy: Policy) -> dict:
     issues: list[str] = []
     if request.environment != policy.environment:
         issues.append("Skill work item and model policy belong to different environments")
-    adapter = policy.skill_adapter
 
     item = request.work_item
     if item.kind == "deterministic":
@@ -571,52 +573,20 @@ def adapt_skill_work_item(request: SkillAdapterRequest, policy: Policy) -> dict:
             "policy_version": policy.version,
             "issues": issues,
             "step": step.model_dump() if not issues else None,
+            "eligibility_evidence": [],
+            # Kept as an empty compatibility field. No Skill-to-model mapping
+            # is performed by this adapter.
             "mapping_evidence": [],
+            "skill_semantics": {
+                "capability": request.skill.capability,
+                "work_item_capability_inputs": item.capability_inputs,
+                "model_tier": request.skill.model_tier,
+            },
         }
 
-    if adapter is None:
-        issues.append("environment policy has no versioned Skill adapter mapping")
-
-    capability_inputs = [request.skill.capability, *item.capability_inputs]
-    capability_inputs = list(dict.fromkeys(value for value in capability_inputs if value))
-    if request.skill.capability is None:
-        issues.append("Skill capability is unknown; tuning and responsibility are not substitutes")
-
-    mapped_capabilities: list[str] = []
-    mapping_evidence: list[dict[str, object]] = []
-    if adapter is not None:
-        for capability in capability_inputs:
-            mapping = adapter.capability_map.get(capability)
-            if mapping is None:
-                issues.append(f"environment policy has no capability mapping for Skill value: {capability}")
-                continue
-            mapped_capabilities.extend(mapping.required_capabilities)
-            mapping_evidence.append({
-                "kind": "capability",
-                "input": capability,
-                "required_capabilities": mapping.required_capabilities,
-                "evaluation_ref": mapping.evaluation_ref,
-            })
-
-    tier_key = request.skill.model_tier or "untiered"
-    tier_mapping = adapter.model_tier_map.get(tier_key) if adapter is not None else None
-    minimum_cost_tier = None
-    if tier_mapping is None:
-        issues.append(f"environment policy has no model_tier mapping for Skill value: {tier_key}")
-    else:
-        minimum_cost_tier = tier_mapping.minimum_cost_tier
-        if minimum_cost_tier is None:
-            issues.append(
-                f"environment policy has unknown minimum_cost_tier for Skill model_tier: {tier_key}"
-            )
-        mapped_capabilities.extend(tier_mapping.required_capabilities)
-        mapping_evidence.append({
-            "kind": "model_tier",
-            "input": tier_key,
-            "minimum_cost_tier": minimum_cost_tier,
-            "required_capabilities": tier_mapping.required_capabilities,
-            "evaluation_ref": tier_mapping.evaluation_ref,
-        })
+    requirements = item.model_requirements
+    if requirements is None:
+        issues.append("model work item is missing explicit model_requirements")
 
     unknown_axes = sorted(axis for axis, value in item.metrics.items() if value.value is None)
     if unknown_axes:
@@ -630,8 +600,19 @@ def adapt_skill_work_item(request: SkillAdapterRequest, policy: Policy) -> dict:
         )
 
     step = None
-    mapped_capabilities = list(dict.fromkeys(mapped_capabilities))
-    if mapped_capabilities and not issues:
+    eligibility_evidence: list[dict[str, object]] = []
+    if requirements is not None:
+        required_capabilities = list(dict.fromkeys(requirements.required_candidate_capabilities))
+        eligibility_evidence.append({
+            "kind": "work_item_model_requirements",
+            "required_candidate_capabilities": required_capabilities,
+            "minimum_cost_tier": requirements.minimum_cost_tier,
+            "evidence": [row.model_dump() for row in requirements.evidence],
+        })
+    else:
+        required_capabilities = []
+
+    if requirements is not None and not issues:
         step = Step(
             id=item.id,
             kind=item.kind,
@@ -640,16 +621,13 @@ def adapt_skill_work_item(request: SkillAdapterRequest, policy: Policy) -> dict:
             scope=item.scope,
             evidence=item.evidence,
             depends_on=item.depends_on,
-            capabilities=mapped_capabilities,
+            capabilities=required_capabilities,
             metrics=item.metrics,
             execution_mode=request.skill.execution_mode,
-            minimum_cost_tier=minimum_cost_tier,
+            minimum_cost_tier=requirements.minimum_cost_tier,
             node_id=item.node_id,
             authorization=item.authorization,
         ).model_dump()
-    elif not issues:
-        issues.append("environment mappings produced no gateway capabilities")
-
     return {
         "schema_version": 1,
         "adapter_version": request.version,
@@ -658,7 +636,13 @@ def adapt_skill_work_item(request: SkillAdapterRequest, policy: Policy) -> dict:
         "policy_version": policy.version,
         "issues": issues,
         "step": step,
-        "mapping_evidence": mapping_evidence,
+        "eligibility_evidence": eligibility_evidence,
+        "mapping_evidence": [],
+        "skill_semantics": {
+            "capability": request.skill.capability,
+            "work_item_capability_inputs": item.capability_inputs,
+            "model_tier": request.skill.model_tier,
+        },
     }
 
 
@@ -765,7 +749,7 @@ def route(assessment: Assessment, policy: Policy, *, current_sources: list[Sourc
             if unknown:
                 intrinsic_reasons.append("unknown complexity: " + ", ".join(sorted(unknown)))
             if step.minimum_cost_tier is not None and candidate.cost_tier < step.minimum_cost_tier:
-                intrinsic_reasons.append("below Skill adapter minimum cost tier")
+                intrinsic_reasons.append("below explicit work item minimum cost tier")
             for axis, metric in step.metrics.items():
                 if metric.value is not None and metric.value > candidate.limits[axis]:
                     intrinsic_reasons.append(f"exceeds {axis}")
@@ -1240,7 +1224,7 @@ def route_work_items(
                 reasons.append("below failure escalation minimum cost tier")
             if (requirement is None and step.minimum_cost_tier is not None
                     and candidate.cost_tier < step.minimum_cost_tier):
-                reasons.append("below Skill adapter minimum cost tier")
+                reasons.append("below explicit work item minimum cost tier")
             for axis, metric in metrics.items():
                 if metric.value is not None and metric.value > candidate.limits[axis]:
                     reasons.append(f"exceeds {axis}")
