@@ -35,6 +35,38 @@ The previous item, observations, failures, and completion evidence remain in
 Changing authorization does not redefine work-item complexity. Changed task,
 scope, dependency, capability, metric, tool, or node definitions do.
 
+## Skill work-item adapter boundary
+
+Adapter version 1 converts exactly one concrete Skill work item into one
+gateway `Step`. The input carries a load-ready Skill execution profile and an
+explicit work item. A model work item must provide `execution_kind`, Skill
+capability inputs, and evidence-bearing values for all six complexity axes. A
+deterministic work item must provide `tool_ref` and no model requirements. This
+is the machine-readable decomposition boundary: the adapter never extracts
+steps, dependencies, metrics, or execution kind from `SKILL.md` prose.
+
+The matched `Policy` owns a versioned `skill_adapter` block. Its
+`capability_map` converts exact Skill capability values to evaluated gateway
+candidate capabilities. Its `model_tier_map` records the environment-specific
+minimum cost tier and additional capabilities, including an explicit `untiered`
+entry where needed. Every mapping carries an `evaluation_ref`. Skill
+`model_tier` remains the Skill quality-gate classification; it constrains model
+routing only when the current environment policy explicitly maps it. A mapping
+whose `minimum_cost_tier` is `null` is unresolved rather than an unconstrained
+tier. Missing Skill capability, missing mapping, mismatched environment, an
+unresolved minimum cost tier, or an `unknown` measurement returns
+`needs_assessment` with `step: null` and must not route. This applies to both
+model and deterministic work items.
+
+`execution_mode` is copied to model Steps. `local_default` permits analysis in
+the current executor context. `subagent_preferred` emits an analysis SubAgent
+dispatch when the host policy lists `analysis` in
+`subagent_execution_kinds`; otherwise current-context execution remains
+permitted. `subagent_required` requires that host support and stops routing when
+it is absent. Host policies always retain `implementation` and `operation` in
+this list for backward-compatible mandatory dispatch. Deterministic Steps never acquire a model dispatch from Skill
+placement metadata.
+
 ## Selection boundary
 
 `Policy.selection_strategy` is explicit:
@@ -51,8 +83,10 @@ operator-supplied policy evidence. Skill `model_tier` continues to govern Skill
 quality gates and is not replaced by gateway `cost_tier`.
 
 Every `implementation` or `operation` model assignment returns an explicit
-subagent dispatch plan. The client host performs the dispatch. The parent
-remains the gateway and coordinator and does not execute that assigned work.
+subagent dispatch plan. An `analysis` assignment also returns one when its Skill
+Step declares `subagent_preferred` or `subagent_required` and the host policy
+supports analysis dispatch. The client host performs the dispatch. The parent
+remains the gateway and coordinator and does not execute dispatched work.
 Operational work includes model judgment for activities such as PR composition,
 CI interpretation, merge coordination, tag or release coordination, registry
 interpretation, and clean-install result interpretation.
@@ -119,15 +153,19 @@ observations remain unknown. They do not authorize automatic policy rewriting.
 
 ## Generic API sequence
 
-1. Prepare and complete the normal instruction `Assessment`.
-2. Initialize or explicitly re-enter `WorkflowState`.
-3. Call `route_instruction_work_items` with the latest state and fresh sources.
-4. Execute only returned active assignments and host-ready subagent dispatches.
-5. Call `record_instruction_work_item_result` with observed identity and evidence.
-6. Persist the returned state and repeat from step 3 until complete or escalated.
+1. Prepare the normal instruction sources and load the selected Skill envelope.
+2. For each concrete Skill work item, call the version-1 adapter with explicit
+   decomposition evidence and the environment-matched `Policy`.
+3. Add every ready returned `Step` to the instruction `Assessment`; retain every
+   non-ready adapter issue as `unresolved`.
+4. Initialize or explicitly re-enter `WorkflowState`.
+5. Call `route_instruction_work_items` with the latest state and fresh sources.
+6. Execute only returned active assignments and host-ready subagent dispatches.
+7. Call `record_instruction_work_item_result` with observed identity and evidence.
+8. Persist the returned state and repeat from step 5 until complete or escalated.
 
-The local equivalents are `xrefkit gateway workflow-init`, `workflow-route`,
-and `workflow-result`.
+The local adapter is `xrefkit gateway skill-adapt`; the remaining local
+equivalents are `workflow-init`, `workflow-route`, and `workflow-result`.
 
 ## Related
 

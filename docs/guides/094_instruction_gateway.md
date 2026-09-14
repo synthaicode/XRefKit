@@ -87,6 +87,7 @@ Do not pass a Skill body before the normal runtime loading gate permits it.
 python -m xrefkit gateway prepare --request-id request-001 --environment vscode:work --instruction-file work/instruction.txt --skill-file skills/python_implementation_flow/meta.md --profile-root C:/path/to/active-vscode-profile --profile-file preferences.md --input-file work/input.csv --out work/request-001.json
 python -m xrefkit gateway schema assessment
 python -m xrefkit gateway schema policy
+python -m xrefkit gateway schema skill_adapter_request
 ```
 
 The prepared document intentionally contains `steps: []` and `unresolved: null`.
@@ -105,6 +106,31 @@ including resolved symlinks. No default AppData path, cross-host fallback, profi
 copy, or alternate persistence store is created. Explicit absolute file references
 also remain supported when the host has already resolved the provider location.
 Automatic discovery of the active VS Code profile is a host integration task.
+
+After the Skill runtime envelope has produced concrete work items, adapt each
+model or deterministic item separately. The adapter request names the
+load-ready Skill profile and one work item. It does not accept a Skill body as a
+substitute for decomposition. Supply `execution_kind`, dependencies, capability
+inputs, and all six evidence-bearing measurements explicitly for model work;
+supply only `tool_ref` for deterministic work.
+
+```powershell
+python -m xrefkit gateway skill-adapt --request work/skill-item-001.json --policy work/model-policy.json --out work/step-001.json
+```
+
+The policy's version-1 `skill_adapter.capability_map` maps exact Skill
+capability values to evaluated gateway capabilities. Its
+`skill_adapter.model_tier_map` maps `light`, `standard`, `heavy`, or `untiered`
+to an explicit environment-specific minimum cost tier and optional capability
+hints. Each mapping needs an `evaluation_ref` and a known
+`minimum_cost_tier`; `null` remains `needs_assessment`. There is no built-in
+conversion from Skill `model_tier` to gateway `cost_tier`; a missing mapping
+remains `needs_assessment`. Every non-ready adapter response returns
+`step: null`, so it cannot be added to an Assessment for routing. The same
+policy lists host-supported
+`subagent_execution_kinds`. Keep `analysis` absent unless that host can perform
+the requested SubAgent dispatch; keep `implementation` and `operation` present
+because their existing mandatory dispatch behavior is unchanged.
 
 Deterministic steps require `tool_ref` and have no model requirements. They are
 not executed by the gateway. Model steps require `execution_kind` (`analysis`,
@@ -156,8 +182,11 @@ coordinator: it must create a separate subagent using the exact
 `selected_model`, then record the observed model identity separately. A missing
 `parent_model_id` prevents an implementation or operational route from becoming ready. This
 contract selects the worker model; it does not claim that the host performed
-the dispatch. `analysis` steps do not receive this delegated-execution
-restriction.
+the dispatch. Adapted `analysis` Steps also emit an `analysis_subagent` dispatch
+when the Skill declares `subagent_preferred` or `subagent_required` and the host
+policy includes `analysis` in `subagent_execution_kinds`. Required analysis
+dispatch stops when the host does not support it; preferred analysis may remain
+in the current executor context.
 
 When every model step has an intrinsically eligible candidate, but
 one or more are blocked only by the current parent tier, routing returns

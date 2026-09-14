@@ -13,11 +13,15 @@ from xrefkit.gateway import (
     Feedback,
     Policy,
     Record,
+    SkillAdapterPolicy,
+    SkillAdapterRequest,
+    SkillGatewayWorkItem,
     Source,
     Text,
     WorkflowState,
     WorkItemDispatchPlan,
     WorkItemResult,
+    adapt_skill_work_item,
     evaluate,
     initialize_workflow,
     record_work_item_result,
@@ -51,10 +55,11 @@ class GatewayRequest(Record):
 
 def gateway_contract(*, include_schemas: bool = False) -> dict:
     result = {
-        "version": 2,
+        "version": 3,
         "entry_tool": "prepare_instruction_gateway",
         "contract_tool": "get_instruction_gateway_contract",
         "route_tool": "route_instruction_gateway",
+        "skill_adapter_tool": "adapt_skill_work_item_for_gateway",
         "feedback_tool": "evaluate_instruction_feedback",
         "workflow_initialize_tool": "initialize_instruction_workflow",
         "work_item_route_tool": "route_instruction_work_items",
@@ -69,6 +74,8 @@ def gateway_contract(*, include_schemas: bool = False) -> dict:
             "For each new instruction or correction, use prepare_instruction_gateway before model-work dispatch.",
             "Apply base startup first; preserve any required Prompt Flow initialization and correlation.",
             "Resolve Skill metadata through MCP, not client filesystem governance paths. Do not open a Skill body before its runtime gate.",
+            "Adapt each concrete Skill work item separately. Supply execution kind and evidence-bearing values for all six axes; never infer them from Skill prose.",
+            "Treat Skill capability and model_tier mappings as versioned environment policy. Missing mappings and unknown measurements stop routing.",
             "Read profiles through the active client's existing profile mechanism; never create a second profile store.",
             "Send source snapshots and task-relevant assessment evidence. Paths are labels, not server file read requests.",
             "Hash the instruction string as UTF-8 without a BOM; include exactly one instruction source with that hash and byte count.",
@@ -78,7 +85,7 @@ def gateway_contract(*, include_schemas: bool = False) -> dict:
             "Initialize workflow state, then route at most one dependency-ready pending work item. Record its result before routing the next node because this stateless whole-state API does not provide parallel compare-and-swap.",
             "Persist every returned state; completed nodes are not redispatched. Removal requires an exact scope-change tombstone and preserves the prior item under retired_items.",
             "Use selection_strategy=lowest_cost_eligible only in a policy that explicitly requires cheapest eligible routing; default priority semantics remain unchanged.",
-            "Ready implementation and operational routes include required subagent dispatch plans. The parent remains coordinator and may not execute those steps; the client host invokes the selected model and records observed identity and route evidence.",
+            "Ready implementation and operational routes include required subagent dispatch plans. Analysis routes do too when the adapted Skill requests subagent_preferred or subagent_required and the host policy supports analysis dispatch. The parent remains coordinator and may not execute dispatched steps; the client host invokes the selected model and records observed identity and route evidence.",
             "External-action authorization is an independent action/scope/status/evidence record. It gates initial and work-item dispatch but never raises or lowers model tier.",
             "A known transient deterministic retry remains a tool step. Unexpected tool, CI, security, or dependency failures may reroute only with failure evidence, revised scope, additional capabilities, complete measurements, and a higher minimum tier.",
             "After evidence-backed failure resolution, route later routine work from its own requirements; never inherit the recovery model or tier.",
@@ -97,6 +104,9 @@ def gateway_contract(*, include_schemas: bool = False) -> dict:
                              "workflow_state": WorkflowState.model_json_schema(),
                              "work_item_result": WorkItemResult.model_json_schema(),
                              "work_item_dispatch": WorkItemDispatchPlan.model_json_schema(),
+                             "skill_adapter_request": SkillAdapterRequest.model_json_schema(),
+                             "skill_adapter_policy": SkillAdapterPolicy.model_json_schema(),
+                             "skill_gateway_work_item": SkillGatewayWorkItem.model_json_schema(),
                              "source": Source.model_json_schema()}
     return result
 
@@ -112,6 +122,13 @@ def prepare_gateway(request: dict) -> dict:
 def route_gateway(assessment: dict, policy: dict, current_sources: list[dict]) -> dict:
     return route(Assessment.model_validate(assessment), Policy.model_validate(policy),
                  current_sources=[Source.model_validate(s) for s in current_sources])
+
+
+def adapt_gateway_skill_work_item(request: dict, policy: dict) -> dict:
+    return adapt_skill_work_item(
+        SkillAdapterRequest.model_validate(request),
+        Policy.model_validate(policy),
+    )
 
 
 def initialize_gateway_workflow(assessment: dict, previous_state: dict | None = None) -> dict:

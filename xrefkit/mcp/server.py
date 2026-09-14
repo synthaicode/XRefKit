@@ -27,6 +27,7 @@ from .inbound_uploads import (
     add_inbound_webdav_routes,
 )
 from .gateway import (
+    adapt_gateway_skill_work_item,
     evaluate_feedback,
     gateway_contract,
     initialize_gateway_workflow,
@@ -543,6 +544,16 @@ def main(argv: list[str] | None = None) -> int:
         """Select eligible models without opening client paths or dispatching; no Skill Run binding needed."""
         _require_startup_loaded(ctx, "route_instruction_gateway")
         return _with_control_reminder(route_gateway(assessment, policy, current_sources))
+
+    @app.tool()
+    def adapt_skill_work_item_for_gateway(
+        ctx: Context,
+        request: dict[str, Any],
+        policy: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Adapt one explicit Skill work item without inferring metrics or host policy."""
+        _require_startup_loaded(ctx, "adapt_skill_work_item_for_gateway")
+        return _with_control_reminder(adapt_gateway_skill_work_item(request, policy))
 
     @app.tool()
     def initialize_instruction_workflow(

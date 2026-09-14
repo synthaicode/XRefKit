@@ -88,6 +88,86 @@ class Measurement(Record):
         return self
 
 
+class SkillExecutionProfile(Record):
+    source_id: Text
+    skill_id: Text
+    maturity: Literal["trial", "stable", "governed"]
+    capability: Text | None = None
+    execution_mode: Literal["local_default", "subagent_preferred", "subagent_required"]
+    model_tier: Literal["light", "standard", "heavy"] | None = None
+
+
+class SkillGatewayWorkItem(Record):
+    id: Text
+    kind: Literal["deterministic", "model"]
+    execution_kind: Literal["analysis", "implementation", "operation"] | None = None
+    task: Text
+    scope: Text
+    evidence: list[Evidence] = Field(min_length=1)
+    depends_on: list[Text] = Field(default_factory=list)
+    capability_inputs: list[Text] = Field(default_factory=list)
+    metrics: dict[str, Measurement] = Field(default_factory=dict)
+    tool_ref: Text | None = None
+    node_id: Text | None = None
+    authorization: AuthorizationRecord | None = None
+
+    @model_validator(mode="after")
+    def execution_boundary(self):
+        if self.kind == "deterministic":
+            if self.execution_kind is not None or not self.tool_ref or self.capability_inputs or self.metrics:
+                raise ValueError(
+                    "deterministic Skill work items require tool_ref and no model requirements"
+                )
+        elif (
+            self.execution_kind is None
+            or self.tool_ref
+            or set(self.metrics) != AXES
+        ):
+            raise ValueError(
+                "model Skill work items require execution_kind and every complexity axis, with no tool_ref"
+            )
+        return self
+
+
+class SkillCapabilityMapping(Record):
+    required_capabilities: list[Text] = Field(min_length=1)
+    evaluation_ref: Text
+
+
+class SkillModelTierMapping(Record):
+    minimum_cost_tier: Count | None
+    required_capabilities: list[Text] = Field(default_factory=list)
+    evaluation_ref: Text
+
+
+class SkillAdapterPolicy(Record):
+    version: Literal[1]
+    capability_map: dict[str, SkillCapabilityMapping]
+    model_tier_map: dict[str, SkillModelTierMapping]
+
+    @model_validator(mode="after")
+    def mapping_keys(self):
+        valid_tiers = {"light", "standard", "heavy", "untiered"}
+        if any(not key.strip() for key in self.capability_map):
+            raise ValueError("Skill capability mapping keys must be non-empty")
+        if not set(self.model_tier_map) <= valid_tiers:
+            raise ValueError("Skill model tier mapping keys must be light, standard, heavy, or untiered")
+        return self
+
+
+class SkillAdapterRequest(Record):
+    version: Literal[1]
+    environment: Text
+    skill: SkillExecutionProfile
+    work_item: SkillGatewayWorkItem
+
+    @model_validator(mode="after")
+    def skill_evidence(self):
+        if not any(row.source_id == self.skill.source_id for row in self.work_item.evidence):
+            raise ValueError("Skill work item evidence must reference the Skill metadata source")
+        return self
+
+
 class Step(Record):
     id: Text
     kind: Literal["deterministic", "model"]
@@ -98,6 +178,8 @@ class Step(Record):
     depends_on: list[Text] = Field(default_factory=list)
     capabilities: list[Text] = Field(default_factory=list)
     metrics: dict[str, Measurement] = Field(default_factory=dict)
+    execution_mode: Literal["local_default", "subagent_preferred", "subagent_required"] = "local_default"
+    minimum_cost_tier: Count | None = None
     tool_ref: Text | None = None
     node_id: Text | None = None
     authorization: AuthorizationRecord | None = None
@@ -105,7 +187,9 @@ class Step(Record):
     @model_validator(mode="after")
     def execution_boundary(self):
         if self.kind == "deterministic":
-            if self.execution_kind is not None or not self.tool_ref or self.capabilities or self.metrics:
+            if (self.execution_kind is not None or not self.tool_ref or self.capabilities
+                    or self.metrics or self.execution_mode != "local_default"
+                    or self.minimum_cost_tier is not None):
                 raise ValueError("deterministic steps require tool_ref and no model requirements")
         elif (
             self.execution_kind is None
@@ -198,6 +282,10 @@ class Policy(Record):
     parent_model_id: Text | None = None
     parent_cost_tier: Count | None = None
     selection_strategy: Literal["priority", "lowest_cost_eligible"] = "priority"
+    subagent_execution_kinds: list[
+        Literal["analysis", "implementation", "operation"]
+    ] = Field(default_factory=lambda: ["implementation", "operation"])
+    skill_adapter: SkillAdapterPolicy | None = None
     candidates: list[Candidate] = Field(min_length=1)
 
     @model_validator(mode="after")
@@ -208,6 +296,12 @@ class Policy(Record):
             raise ValueError("Copilot policy requires parent_model_id and parent_cost_tier")
         if len({c.id for c in self.candidates}) != len(self.candidates):
             raise ValueError("duplicate model IDs")
+        if len(set(self.subagent_execution_kinds)) != len(self.subagent_execution_kinds):
+            raise ValueError("duplicate subagent execution kinds")
+        if not {"implementation", "operation"} <= set(self.subagent_execution_kinds):
+            raise ValueError(
+                "host policy must retain implementation and operation subagent dispatch"
+            )
         return self
 
 
@@ -215,7 +309,7 @@ class DispatchPlan(Record):
     step_id: Text
     parent_model: Text
     selected_model: Text
-    agent_role: Literal["implementation_subagent", "operational_subagent"]
+    agent_role: Literal["analysis_subagent", "implementation_subagent", "operational_subagent"]
     rationale: Text
     parent_execution: Literal["prohibited"]
     dispatch_owner: Literal["client_host"]
@@ -428,7 +522,7 @@ class WorkItemDispatchPlan(Record):
     parent_model: Text
     selected_model: Text
     selected_cost_tier: Count
-    agent_role: Literal["implementation_subagent", "operational_subagent"]
+    agent_role: Literal["analysis_subagent", "implementation_subagent", "operational_subagent"]
     task: Text
     scope: Text
     rationale: Text
@@ -449,6 +543,147 @@ def snapshot(path: Path, kind: str, source_id: str) -> dict:
             "sha256": digest.hexdigest(), "bytes": size}
 
 
+def adapt_skill_work_item(request: SkillAdapterRequest, policy: Policy) -> dict:
+    """Convert one explicit Skill work item into a gateway Step without prose inference."""
+    issues: list[str] = []
+    if request.environment != policy.environment:
+        issues.append("Skill work item and model policy belong to different environments")
+    adapter = policy.skill_adapter
+
+    item = request.work_item
+    if item.kind == "deterministic":
+        step = Step(
+            id=item.id,
+            kind=item.kind,
+            task=item.task,
+            scope=item.scope,
+            evidence=item.evidence,
+            depends_on=item.depends_on,
+            tool_ref=item.tool_ref,
+            node_id=item.node_id,
+            authorization=item.authorization,
+        )
+        return {
+            "schema_version": 1,
+            "adapter_version": request.version,
+            "status": "ready" if not issues else "needs_assessment",
+            "environment": request.environment,
+            "policy_version": policy.version,
+            "issues": issues,
+            "step": step.model_dump() if not issues else None,
+            "mapping_evidence": [],
+        }
+
+    if adapter is None:
+        issues.append("environment policy has no versioned Skill adapter mapping")
+
+    capability_inputs = [request.skill.capability, *item.capability_inputs]
+    capability_inputs = list(dict.fromkeys(value for value in capability_inputs if value))
+    if request.skill.capability is None:
+        issues.append("Skill capability is unknown; tuning and responsibility are not substitutes")
+
+    mapped_capabilities: list[str] = []
+    mapping_evidence: list[dict[str, object]] = []
+    if adapter is not None:
+        for capability in capability_inputs:
+            mapping = adapter.capability_map.get(capability)
+            if mapping is None:
+                issues.append(f"environment policy has no capability mapping for Skill value: {capability}")
+                continue
+            mapped_capabilities.extend(mapping.required_capabilities)
+            mapping_evidence.append({
+                "kind": "capability",
+                "input": capability,
+                "required_capabilities": mapping.required_capabilities,
+                "evaluation_ref": mapping.evaluation_ref,
+            })
+
+    tier_key = request.skill.model_tier or "untiered"
+    tier_mapping = adapter.model_tier_map.get(tier_key) if adapter is not None else None
+    minimum_cost_tier = None
+    if tier_mapping is None:
+        issues.append(f"environment policy has no model_tier mapping for Skill value: {tier_key}")
+    else:
+        minimum_cost_tier = tier_mapping.minimum_cost_tier
+        if minimum_cost_tier is None:
+            issues.append(
+                f"environment policy has unknown minimum_cost_tier for Skill model_tier: {tier_key}"
+            )
+        mapped_capabilities.extend(tier_mapping.required_capabilities)
+        mapping_evidence.append({
+            "kind": "model_tier",
+            "input": tier_key,
+            "minimum_cost_tier": minimum_cost_tier,
+            "required_capabilities": tier_mapping.required_capabilities,
+            "evaluation_ref": tier_mapping.evaluation_ref,
+        })
+
+    unknown_axes = sorted(axis for axis, value in item.metrics.items() if value.value is None)
+    if unknown_axes:
+        issues.append("unknown complexity: " + ", ".join(unknown_axes))
+    if (
+        request.skill.execution_mode == "subagent_required"
+        and item.execution_kind not in policy.subagent_execution_kinds
+    ):
+        issues.append(
+            f"host policy does not support required {item.execution_kind} subagent dispatch"
+        )
+
+    step = None
+    mapped_capabilities = list(dict.fromkeys(mapped_capabilities))
+    if mapped_capabilities and not issues:
+        step = Step(
+            id=item.id,
+            kind=item.kind,
+            execution_kind=item.execution_kind,
+            task=item.task,
+            scope=item.scope,
+            evidence=item.evidence,
+            depends_on=item.depends_on,
+            capabilities=mapped_capabilities,
+            metrics=item.metrics,
+            execution_mode=request.skill.execution_mode,
+            minimum_cost_tier=minimum_cost_tier,
+            node_id=item.node_id,
+            authorization=item.authorization,
+        ).model_dump()
+    elif not issues:
+        issues.append("environment mappings produced no gateway capabilities")
+
+    return {
+        "schema_version": 1,
+        "adapter_version": request.version,
+        "status": "ready" if not issues else "needs_assessment",
+        "environment": request.environment,
+        "policy_version": policy.version,
+        "issues": issues,
+        "step": step,
+        "mapping_evidence": mapping_evidence,
+    }
+
+
+def _subagent_role(execution_kind: str) -> str:
+    return {
+        "analysis": "analysis_subagent",
+        "implementation": "implementation_subagent",
+        "operation": "operational_subagent",
+    }[execution_kind]
+
+
+def _subagent_requested_for(execution_kind: str | None, execution_mode: str, policy: Policy) -> bool:
+    if execution_kind in {"implementation", "operation"}:
+        return True
+    return (
+        execution_kind == "analysis"
+        and execution_mode in {"subagent_preferred", "subagent_required"}
+        and "analysis" in policy.subagent_execution_kinds
+    )
+
+
+def _subagent_requested(step: Step, policy: Policy) -> bool:
+    return _subagent_requested_for(step.execution_kind, step.execution_mode, policy)
+
+
 def route(assessment: Assessment, policy: Policy, *, current_sources: list[Source] | None = None) -> dict:
     """Filter by capability, per-axis limits and host tier; never invent scores."""
     issues = list(assessment.unresolved or [])
@@ -456,11 +691,28 @@ def route(assessment: Assessment, policy: Policy, *, current_sources: list[Sourc
         issues.append("assessment and model policy belong to different environments")
     if assessment.unresolved is None:
         issues.append("scope and instruction conflicts have not been assessed")
+    unsupported_required = [
+        step.id for step in assessment.steps
+        if step.kind == "model"
+        and step.execution_mode == "subagent_required"
+        and step.execution_kind not in policy.subagent_execution_kinds
+    ]
+    if unsupported_required:
+        issues.append(
+            "host policy cannot dispatch required subagent work: "
+            + ", ".join(unsupported_required)
+        )
     if not policy.parent_model_id:
-        if any(step.execution_kind == "implementation" for step in assessment.steps):
+        requested = [
+            step for step in assessment.steps
+            if step.kind == "model" and _subagent_requested(step, policy)
+        ]
+        if any(step.execution_kind == "implementation" for step in requested):
             issues.append("parent_model_id is required before implementation subagent dispatch")
-        elif any(step.execution_kind == "operation" for step in assessment.steps):
+        elif any(step.execution_kind == "operation" for step in requested):
             issues.append("parent_model_id is required before operational subagent dispatch")
+        elif requested:
+            issues.append("parent_model_id is required before analysis subagent dispatch")
     if current_sources is not None:
         # Remote MCP source paths belong to the client, never the server.
         expected = {s.id: s.model_dump() for s in assessment.sources}
@@ -512,6 +764,8 @@ def route(assessment: Assessment, policy: Policy, *, current_sources: list[Sourc
                 intrinsic_reasons.append("missing capabilities: " + ", ".join(missing))
             if unknown:
                 intrinsic_reasons.append("unknown complexity: " + ", ".join(sorted(unknown)))
+            if step.minimum_cost_tier is not None and candidate.cost_tier < step.minimum_cost_tier:
+                intrinsic_reasons.append("below Skill adapter minimum cost tier")
             for axis, metric in step.metrics.items():
                 if metric.value is not None and metric.value > candidate.limits[axis]:
                     intrinsic_reasons.append(f"exceeds {axis}")
@@ -544,15 +798,13 @@ def route(assessment: Assessment, policy: Policy, *, current_sources: list[Sourc
             if step.authorization.status == "required":
                 authorization_required_steps.append(step.id)
         decisions.append(decision)
-        if (chosen is not None and step.execution_kind in {"implementation", "operation"}
+        if (chosen is not None and _subagent_requested(step, policy)
                 and (step.authorization is None or step.authorization.status == "authorized")):
-            role = ("implementation_subagent" if step.execution_kind == "implementation"
-                    else "operational_subagent")
             dispatches.append(DispatchPlan(
                 step_id=step.id,
                 parent_model=policy.parent_model_id,
                 selected_model=chosen.id,
-                agent_role=role,
+                agent_role=_subagent_role(step.execution_kind),
                 rationale=(
                     f"The step is classified as {step.execution_kind} and the evaluated policy selected "
                     f"{chosen.id}; the parent remains the gateway/coordinator."
@@ -614,14 +866,30 @@ def _stable_hash(value: object) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def _step_hash_payload(step: Step, *, include_authorization: bool) -> dict:
+    excluded = set() if include_authorization else {"authorization"}
+    payload = step.model_dump(exclude=excluded)
+    # Preserve hashes created by adapter version 0 for ordinary Steps. New
+    # routing fields participate only when they carry non-default semantics.
+    if step.execution_mode == "local_default":
+        payload.pop("execution_mode", None)
+    if step.minimum_cost_tier is None:
+        payload.pop("minimum_cost_tier", None)
+    return payload
+
+
 def _assessment_hash(assessment: Assessment) -> str:
-    return _stable_hash(assessment.model_dump())
+    payload = assessment.model_dump()
+    payload["steps"] = [
+        _step_hash_payload(step, include_authorization=True)
+        for step in assessment.steps
+    ]
+    return _stable_hash(payload)
 
 
 def _step_definition_hash(step: Step) -> str:
     # Authorization may be refreshed without redefining the work itself.
-    definition = step.model_dump(exclude={"authorization"})
-    return _stable_hash(definition)
+    return _stable_hash(_step_hash_payload(step, include_authorization=False))
 
 
 def initialize_workflow(
@@ -833,12 +1101,39 @@ def route_work_items(
     # This API is stateless and returns whole-state replacements. Route one node
     # at a time so two results cannot race and erase each other's state.
     ready = dependency_ready[:1]
-    if any(steps[item.step_id].execution_kind in {"implementation", "operation"}
-           or (item.reroute_requirement is not None
-               and item.reroute_requirement.disposition == "model_reroute"
-               and item.reroute_requirement.recovery_execution_kind == "implementation")
-           for item in ready) and not policy.parent_model_id:
-        issues.append("parent_model_id is required before implementation or operational subagent dispatch")
+    for item in ready:
+        step = steps[item.step_id]
+        if (
+            step.kind == "model"
+            and step.execution_mode == "subagent_required"
+            and (
+                item.reroute_requirement.recovery_execution_kind
+                if item.reroute_requirement is not None
+                and item.reroute_requirement.disposition == "model_reroute"
+                else step.execution_kind
+            ) not in policy.subagent_execution_kinds
+        ):
+            issues.append(
+                f"host policy cannot dispatch required subagent work: {step.id}"
+            )
+    if any(
+        (
+            item.reroute_requirement is None
+            and steps[item.step_id].kind == "model"
+            and _subagent_requested(steps[item.step_id], policy)
+        )
+        or (
+            item.reroute_requirement is not None
+            and item.reroute_requirement.disposition == "model_reroute"
+            and _subagent_requested_for(
+                item.reroute_requirement.recovery_execution_kind,
+                steps[item.step_id].execution_mode,
+                policy,
+            )
+        )
+        for item in ready
+    ) and not policy.parent_model_id:
+        issues.append("parent_model_id is required before subagent dispatch")
 
     total_bytes = sum(source.bytes for source in assessment.sources)
     decisions: list[dict] = []
@@ -943,6 +1238,9 @@ def route_work_items(
                 reasons.append("unknown complexity: " + ", ".join(sorted(unknown)))
             if minimum_tier is not None and candidate.cost_tier < minimum_tier:
                 reasons.append("below failure escalation minimum cost tier")
+            if (requirement is None and step.minimum_cost_tier is not None
+                    and candidate.cost_tier < step.minimum_cost_tier):
+                reasons.append("below Skill adapter minimum cost tier")
             for axis, metric in metrics.items():
                 if metric.value is not None and metric.value > candidate.limits[axis]:
                     reasons.append(f"exceeds {axis}")
@@ -995,7 +1293,7 @@ def route_work_items(
             )
             if authorized:
                 proposals.append((item, assignment, step, chosen))
-                if execution_kind in {"implementation", "operation"}:
+                if _subagent_requested_for(execution_kind, step.execution_mode, policy):
                     dispatch_proposals.append((item, assignment, step, chosen))
             else:
                 authorization_blocked = True
@@ -1039,8 +1337,6 @@ def route_work_items(
             target.status = "in_progress"
             target.assignment = assignment
         for original, assignment, step, candidate in dispatch_proposals:
-            role = ("implementation_subagent" if assignment.execution_kind == "implementation"
-                    else "operational_subagent")
             dispatches.append(WorkItemDispatchPlan(
                 work_item_id=original.step_id,
                 node_id=original.node_id,
@@ -1049,7 +1345,7 @@ def route_work_items(
                 parent_model=policy.parent_model_id,
                 selected_model=candidate.id,
                 selected_cost_tier=candidate.cost_tier,
-                agent_role=role,
+                agent_role=_subagent_role(assignment.execution_kind),
                 task=assignment.task,
                 scope=assignment.scope,
                 rationale=(
@@ -1312,6 +1608,11 @@ def main(argv=None) -> int:
     routing = sub.add_parser("route")
     routing.add_argument("--assessment", type=Path, required=True)
     routing.add_argument("--policy", type=Path, required=True)
+    skill_adapt = sub.add_parser(
+        "skill-adapt", help="Adapt one explicit Skill work item into a gateway Step"
+    )
+    skill_adapt.add_argument("--request", type=Path, required=True)
+    skill_adapt.add_argument("--policy", type=Path, required=True)
     workflow_init = sub.add_parser("workflow-init")
     workflow_init.add_argument("--assessment", type=Path, required=True)
     workflow_init.add_argument("--previous-state", type=Path)
@@ -1329,8 +1630,11 @@ def main(argv=None) -> int:
     schema.add_argument("kind", choices=[
         "assessment", "policy", "feedback", "dispatch_plan", "authorization",
         "workflow_state", "work_item_result", "work_item_dispatch",
+        "skill_adapter_request", "skill_adapter_policy", "skill_gateway_work_item",
     ])
-    for command in (prepare, routing, workflow_init, workflow_route, workflow_result, feedback):
+    for command in (
+        prepare, routing, skill_adapt, workflow_init, workflow_route, workflow_result, feedback
+    ):
         command.add_argument("--out", type=Path)
     args = parser.parse_args(argv)
     try:
@@ -1342,6 +1646,9 @@ def main(argv=None) -> int:
                               "workflow_state": WorkflowState,
                               "work_item_result": WorkItemResult,
                               "work_item_dispatch": WorkItemDispatchPlan,
+                              "skill_adapter_request": SkillAdapterRequest,
+                              "skill_adapter_policy": SkillAdapterPolicy,
+                              "skill_gateway_work_item": SkillGatewayWorkItem,
                               }[args.kind].model_json_schema(), indent=2))
             return 0
         if args.command == "prepare":
@@ -1363,6 +1670,11 @@ def main(argv=None) -> int:
                       "environment": args.environment,
                       "instruction": args.instruction_file.read_text(encoding="utf-8-sig"),
                       "sources": sources, "unresolved": None, "steps": []}
+        elif args.command == "skill-adapt":
+            result = adapt_skill_work_item(
+                SkillAdapterRequest.model_validate_json(args.request.read_bytes()),
+                Policy.model_validate_json(args.policy.read_bytes()),
+            )
         elif args.command == "route":
             result = route(Assessment.model_validate_json(args.assessment.read_bytes()),
                            Policy.model_validate_json(args.policy.read_bytes()))

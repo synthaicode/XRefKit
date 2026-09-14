@@ -47,7 +47,8 @@ def test_contract_and_prepare_preserve_unassessed_state(request_and_policy):
     assert "schemas" not in gateway_contract()
     assert set(gateway_contract(include_schemas=True)["schemas"]) == {
         "request", "assessment", "policy", "feedback", "source", "dispatch_plan",
-        "authorization", "workflow_state", "work_item_result", "work_item_dispatch"}
+        "authorization", "workflow_state", "work_item_result", "work_item_dispatch",
+        "skill_adapter_request", "skill_adapter_policy", "skill_gateway_work_item"}
 
 
 def test_work_item_state_routes_only_pending_nodes_over_wrapper(request_and_policy):
@@ -87,6 +88,7 @@ def test_gateway_over_real_mcp_stdio_before_run_binding(request_and_policy, tmp_
                 await session.initialize()
                 names = {tool.name for tool in (await session.list_tools()).tools}
                 assert {"prepare_instruction_gateway", "route_instruction_gateway",
+                        "adapt_skill_work_item_for_gateway",
                         "get_instruction_gateway_contract", "evaluate_instruction_feedback",
                         "initialize_instruction_workflow", "route_instruction_work_items",
                         "record_instruction_work_item_result"} <= names
@@ -104,9 +106,63 @@ def test_gateway_over_real_mcp_stdio_before_run_binding(request_and_policy, tmp_
                     item["tool_id"] for item in contracts.structuredContent["result"]}
                 assert "xref.route_instruction_work_items" in {
                     item["tool_id"] for item in contracts.structuredContent["result"]}
+                assert "xref.adapt_skill_work_item_for_gateway" in {
+                    item["tool_id"] for item in contracts.structuredContent["result"]}
                 contract = await session.call_tool("get_instruction_gateway_contract", {})
                 assert not contract.isError
                 assert "schemas" in contract.structuredContent
+                adapter_policy = copy.deepcopy(policy)
+                adapter_policy["subagent_execution_kinds"] = [
+                    "analysis", "implementation", "operation"
+                ]
+                adapter_policy["skill_adapter"] = {
+                    "version": 1,
+                    "capability_map": {
+                        "software_development": {
+                            "required_capabilities": ["incremental_scope"],
+                            "evaluation_ref": "fixture-skill-capability",
+                        }
+                    },
+                    "model_tier_map": {
+                        "standard": {
+                            "minimum_cost_tier": 1,
+                            "required_capabilities": [],
+                            "evaluation_ref": "fixture-skill-tier",
+                        }
+                    },
+                }
+                refs = [{"source_id": "skill", "locator": "meta"}]
+                adapted = await session.call_tool("adapt_skill_work_item_for_gateway", {
+                    "request": {
+                        "version": 1,
+                        "environment": assessment["environment"],
+                        "skill": {
+                            "source_id": "skill",
+                            "skill_id": "python_review",
+                            "maturity": "trial",
+                            "capability": "software_development",
+                            "execution_mode": "subagent_preferred",
+                            "model_tier": "standard",
+                        },
+                        "work_item": {
+                            "id": "review",
+                            "kind": "model",
+                            "execution_kind": "analysis",
+                            "task": "Review source",
+                            "scope": "fixture",
+                            "evidence": refs,
+                            "metrics": {
+                                axis: {"value": 1, "basis": "measured", "evidence": refs}
+                                for axis in ("constraints", "branch_depth", "dependency_depth",
+                                             "cross_source_links", "scope_changes", "integration_links")
+                            },
+                        },
+                    },
+                    "policy": adapter_policy,
+                })
+                assert not adapted.isError
+                assert adapted.structuredContent["status"] == "ready"
+                assert adapted.structuredContent["step"]["execution_mode"] == "subagent_preferred"
                 prepared = await session.call_tool("prepare_instruction_gateway", {"request": request})
                 assert not prepared.isError
                 assert prepared.structuredContent["status"] == "needs_assessment"

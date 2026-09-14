@@ -12,7 +12,8 @@ Do not infer model competence or cost tier from its name.
 When XRefKit MCP is configured, use `get_startup_context` first and apply its
 `instruction_gateway` contract. Obtain schemas from
 `get_instruction_gateway_contract`, then use `prepare_instruction_gateway`,
-`route_instruction_gateway`, `initialize_instruction_workflow`,
+`adapt_skill_work_item_for_gateway`, `route_instruction_gateway`,
+`initialize_instruction_workflow`,
 `route_instruction_work_items`, `record_instruction_work_item_result`, and
 `evaluate_instruction_feedback` in place of the local gateway CLI below. These
 tools require startup but no Skill Run
@@ -50,7 +51,14 @@ local CLI procedure below is only for repository-native/non-MCP operation.
    with a null value when unmeasured; never turn missing information into zero.
    Require orthogonal-array interpretation and incremental-scope capabilities
    when the actual task needs them, not merely when keywords occur.
-5. Obtain an evaluated model policy for this host. Use `gateway schema policy`.
+5. Convert each concrete Skill work item through the versioned adapter before
+   adding it to the assessment. Use the MCP
+   `adapt_skill_work_item_for_gateway` tool or local `gateway skill-adapt`
+   command. Supply the work item's execution kind, dependencies, capability
+   inputs, and all six measurements explicitly; never extract them from Skill
+   prose. Require the environment policy's exact capability and model-tier
+   mappings. Keep missing mappings or measurements `unknown` and stop routing.
+6. Obtain an evaluated model policy for this host. Use `gateway schema policy`.
    Record the current conversation model as `parent_model_id` and its evaluated
    host rank as `parent_cost_tier`. These are environment policy facts, not
    Skill `model_tier` values.
@@ -65,7 +73,7 @@ local CLI procedure below is only for repository-native/non-MCP operation.
    model changed and do not dispatch. After the user changes it, refresh the
    source snapshots and policy, then rerun the same request revision from the
    indicated route tool. A new user requirement creates a new revision.
-6. Initialize `WorkflowState`, then route only dependency-ready `pending` nodes.
+7. Initialize `WorkflowState`, then route only dependency-ready `pending` nodes.
    Accept at most one active assignment from each route call, persist its result,
    then route the next node; the stateless whole-state API does not provide
    parallel compare-and-swap. Persist every state returned by routing and result
@@ -79,22 +87,24 @@ local CLI procedure below is only for repository-native/non-MCP operation.
    that step when `parent_execution` is `prohibited`. Record the plan's
    `parent_model`, `selected_model`, `agent_role`, and `rationale` with the
    observed host model evidence. The same dispatch rule applies to operational
-   release work; low-cost workers may execute authorized operations. For ready
-   `analysis` model steps, follow the
-   existing host delegation policy.
+   release work; low-cost workers may execute authorized operations. For adapted
+   `analysis` model steps, use the returned `analysis_subagent` dispatch when
+   Skill `execution_mode` is `subagent_preferred` or `subagent_required` and
+   the environment policy declares host support. A required-but-unsupported
+   dispatch remains `needs_assessment`.
    Pass request ID, revision, routing result, instruction scope, applicable
    profile evidence, dependencies, expected outputs and existing run/Flow IDs.
    Tell the worker to start the existing Skill/workflow envelope (or continue
    the identified active run) before executing business work. Preserve role
    separation, checks, quality gates and closure; do not lower model_tier to
    bypass review. Deterministic steps also execute inside workflow management.
-7. Record external-action authorization independently with action, exact scope,
+8. Record external-action authorization independently with action, exact scope,
    status, and evidence. Authorization gates execution; it never changes model
    capability or cost tier. Host dispatch may fail or choose a fallback. Record
    the observed model and route evidence separately; never label a routing
    recommendation as executed. Reassess changed sources before dispatch. Keep
    unknown actual models explicit.
-8. For a known transient failure, use an evidence-backed deterministic retry
+9. For a known transient failure, use an evidence-backed deterministic retry
    and do not escalate model tier. For unexpected tool, CI, security, or
    dependency failure, record failure evidence, revised diagnosis/fix scope,
    an additional capability, all complexity metrics, and a higher minimum tier
@@ -102,7 +112,7 @@ local CLI procedure below is only for repository-native/non-MCP operation.
    and route each following routine node fresh. Never inherit the recovery model
    or tier. If no eligible candidate exists, preserve `needs_assessment` or
    `conversation_upgrade_required`.
-9. Receive repeated instructions at the gateway. Preserve confirmed effective
+10. Receive repeated instructions at the gateway. Preserve confirmed effective
    instructions and scope in the next invocation; subagents do not retain the
    previous invocation. Classify dissatisfaction only from evidence, distinguish
    requirement changes and unknown reasons, and use `gateway evaluate` for
