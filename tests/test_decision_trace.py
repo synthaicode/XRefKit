@@ -327,4 +327,3 @@ def test_checkpoint_only_adds_generated_manifest_when_work_is_ignored(tmp_path):
     assert "checkpoint: CP-1" in git("log", "-1", "--pretty=%s").stdout
 
     assert git("ls-files", "work/private.txt").stdout.strip() == ""
-
