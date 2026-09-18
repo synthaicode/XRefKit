@@ -749,6 +749,14 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_workflow_reconcile.add_argument("--json", action="store_true", help="Emit JSON")
 
+    p_subagent_read = workflow_sub.add_parser(
+        "subagent-read", help="Read bounded startup material for an opened local workflow/Skill run",
+    )
+    p_subagent_read.add_argument("--root", default=".")
+    p_subagent_read.add_argument("--log", required=True)
+    p_subagent_read.add_argument("--binding", required=True, help="UTF-8 JSON execution binding")
+    p_subagent_read.add_argument("--json", action="store_true", help="Output is always JSON")
+
     mcp = subparsers.add_parser(
         "mcp",
         help="Client-side MCP initialization helpers",
@@ -879,6 +887,10 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_skill(args)
 
     if args.command == "workflow":
+        if args.workflow_cmd == "subagent-read":
+            from xrefkit.subagent_startup import cmd_subagent_read
+
+            return cmd_subagent_read(args)
         if args.workflow_cmd == "run":
             from xrefkit.skillrun import cmd_workflow_run
 
