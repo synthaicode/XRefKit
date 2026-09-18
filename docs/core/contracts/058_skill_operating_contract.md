@@ -212,12 +212,20 @@ treated as ready for that maturity.
 Operational Skill use must start through the runtime-envelope command:
 
 ```powershell
-python -m xrefkit skill run --meta skills/<skill>/meta.md --task "task text"
+python -m xrefkit skill run `
+  --definition skills/<skill>/SKILL.v1.md `
+  --task "task text" `
+  --capability "<instruction-derived capability>" `
+  --tuning "<instruction-derived tuning>" `
+  --responsibility "<instruction-derived responsibility>" `
+  --execution-mode subagent_required
 ```
 
-This command is the Skill load gate for `trial`, `stable`, and `governed`
-Skills. It validates the Skill metadata at runtime-open level, confirms that
-the referenced `SKILL.md` file exists, then writes a session log containing:
+This command is the canonical SkillDefinition v1 load gate for `trial`,
+`stable`, and `governed` definitions. It validates the definition at
+runtime-open level, confirms that the method file exists, and writes a session
+log containing the instruction-derived runtime binding. Legacy split Skills
+continue to use `--meta skills/<skill>/meta.md` with the same runtime envelope.
 
 - the active Skill
 - the resolved `skill_doc` path that may be opened next
@@ -243,7 +251,14 @@ When work starts from a prior Skill handoff, the receiving startup must name
 the source run log explicitly:
 
 ```powershell
-python -m xrefkit skill run --meta skills/<skill>/meta.md --task "task text" --handoff-source-log work/sessions/<source-run-log>.md
+python -m xrefkit skill run `
+  --definition skills/<skill>/SKILL.v1.md `
+  --task "task text" `
+  --capability "<instruction-derived capability>" `
+  --tuning "<instruction-derived tuning>" `
+  --responsibility "<instruction-derived responsibility>" `
+  --execution-mode subagent_required `
+  --handoff-source-log work/sessions/<source-run-log>.md
 ```
 
 The receiving startup must not continue from that handoff unless the source run
@@ -294,8 +309,8 @@ The generated log also contains a `Concrete Work Items` section. Add or update
 task-specific work items with:
 
 ```powershell
-python -m xrefkit skill workitem --log work/sessions/<run-log>.md --item WI-001 --text "implement the concrete change" --status pending --role "<skill_id>:executor"
-python -m xrefkit skill workitem --log work/sessions/<run-log>.md --item WI-001 --status done --role "<skill_id>:executor"
+python -m xrefkit skill workitem --log work/sessions/<run-log>.md --item WI-001 --text "implement the concrete change" --completion-criterion "the concrete change is implemented and checked" --status pending --role "<skill_id>:executor"
+python -m xrefkit skill workitem --log work/sessions/<run-log>.md --item WI-001 --completion-criterion "the concrete change is implemented and checked" --status done --role "<skill_id>:executor"
 ```
 
 Supported work-item statuses are the same runtime status set:
@@ -442,16 +457,20 @@ asks "is the output acceptable." The two are kept apart on purpose: the check
 phase is deterministic and never judges output content, so output acceptance
 needs its own owner.
 
-Quality check items are recorded as `check`-kind artifacts. Declare them at
-planning with `status: pending`; an independent quality reviewer sets each to
-`done` (pass), `blocked` (fail), or `na` (not applicable to this run). An
+Determine applicability before creating quality check artifacts and record the
+applicability decision in planning evidence. Applicable check items are
+recorded as `check`-kind artifacts with `status: pending`; an independent
+quality reviewer sets each to `done` (pass) or `blocked` (fail). A pending
+artifact renders as `not_checked` and prevents quality completion. The current
+artifact status schema has no `na` value, so an inapplicable candidate must not
+be created as a check artifact. An
 acceptance check item is a criterion the output must meet; a domain-review
 check item names a review-oriented Skill (for example `csharp_review`) whose
 own run vouches for the output; a tool-type check item runs a deterministic
-tool. Tool checks are content-conditional, not uniform: a skill declares it can
-apply one by referencing the capability (for example `CAP-QA-011` for the
-Roslyn analyzer), and a per-run content probe decides whether it applies or is
-`na`. Because a subagent cannot start another subagent, the quality reviewer
+tool. Tool checks are content-conditional, not uniform: a Skill declares that
+one may apply by referencing the capability (for example `CAP-QA-011` for the
+Roslyn analyzer), and a per-run content probe decides applicability before the
+artifact is created. Because a subagent cannot start another subagent, the quality reviewer
 subagent performs generic acceptance verification and runs deterministic tools
 itself, while the main session orchestrates any domain-review Skill runs and
 links their verdicts back as `check` artifacts.
@@ -498,7 +517,7 @@ check phase to `done`, or to `blocked` with the failing condition named. It
 reads the recorded process only — it does not open artifact targets, judge
 content, or assess output quality.
 
-`xrefkit skill run` assigns `checker_context: deterministic_fm_verification`
+`xrefkit skill run` assigns `checker_context: deterministic_xrefkit_verification`
 regardless of `execution_mode`, which governs the executor side only.
 Deterministic code is context-independent by construction: it cannot be biased
 by the producer's context and cannot be argued into a pass, so it satisfies the

@@ -294,10 +294,13 @@ python -m xrefkit skills sync --bundle csharp --dry-run --json
 ```
 
 同期は配布物をrepositoryへ登録する操作であり、management upload、staging、seal、
-review、adoptionではない。legacy discovery対象はMCP再起動後に読み直される。
+review、adoptionそのものではない。legacy discovery対象はMCP再起動後に読み直される。
 SkillDefinition v1は、同期されたという理由だけではactiveにならず、検証後に
 `--skill-definition`と必要な`--skill-governance`で明示有効化する。このcheckoutには
-management upload transportとadoption実装は含まれていない。
+admin profile向けのMCP-owned management upload、staging、seal、review、adoption、
+maturity操作も実装されているが、これらはbundle同期から独立した管理境界である。
+uploadまたはadoptionだけでactive catalogへの切替、production publication、品質受入れ、
+live verificationが完了したとは扱わない。
 
 ## 更新
 

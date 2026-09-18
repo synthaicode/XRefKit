@@ -196,11 +196,13 @@ explicit governance linkage:
 ```md
 - governance_refs:
   - `../../docs/<governance-doc>.md#xid-...`
-  - `../../work/<promotion-or-review-record>.md`
+  - `../../docs/core/contracts/<promotion-or-review-record>.md#xid-...`
 ```
 
-`governance_refs` should point to the policy, approval, audit basis, or review
-record that justifies governed status.
+`governance_refs` should point to a committed repository file containing the
+policy, approval, audit basis, or review record that justifies governed status.
+Local `work/` records must be promoted to a tracked location before they are
+used as governance references.
 
 ## Check Modes
 

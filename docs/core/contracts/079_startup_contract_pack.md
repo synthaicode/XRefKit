@@ -23,8 +23,8 @@ as stale to every client when they diverge.
 
 - pack_version: 1
 - 0B5C58B5E5B2: `8cb20f071fe988d8ef552dcf83db0470ba02ce0d4fc5efb9257091f4a9980515`
-- 5A1C8E4D2F90: `f6e9bad07a66f4e11a5e94224bdbbacc17bccf83e4306caf4c157a3d9d74a12f`
-- 6C0B62D6366A: `a49541d1d93598ecf8042b331aa826417dde285e9a8f5026c78e7a35d87119b4`
+- 5A1C8E4D2F90: `99f8a3ae139e1bbe6d8a7153fb59f37665ae98b93057ec9b3446563ae590ba7e`
+- 6C0B62D6366A: `4ee06b70eb432c6f93b0d089de71aee3fbde8d7af6c1656ba925779cdd4cb5c2`
 - 8A666C1FD121: `ff3f5e3b7b83a738edb5e99195a79e664db33a514e7a8d1fe0129e6787f994a2`
 - A7F3C92D4E11: `5732f45b041b60ec643ae4ff2c94dcc2e15376cb77f12b39dc2dafbf3614a0a4`
 - 4A423E72D2ED: `75fa96411be95fcc5657ce1d13fee204c1d8e43ab789ca4ac6e79aef2d25654a`
@@ -52,10 +52,12 @@ Sources:
 ## Protocol boundary and runtime routing
 
 The live `get_startup_context` response returns `prompt_flow_protocol`,
-`workflow_protocol`, and the selected `reporting_protocol` as separate response
-blocks. Each protocol owns its correlation, orchestration, reporting,
-verification, closure, and applicability details; this startup body does not
-duplicate those procedures.
+`workflow_protocol`, and `reporting_protocol` as separate response blocks.
+Each selected protocol has a body; each excluded protocol body is `null`.
+The effective selection is recorded in `initial_protocol_selection`. Each
+protocol owns its correlation, orchestration, reporting, verification,
+closure, and applicability details; this startup body does not duplicate
+those procedures.
 
 - Route dynamically from the active Skill catalog and the current instruction.
   The selected method and instruction determine the runtime

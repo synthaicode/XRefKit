@@ -45,10 +45,13 @@ six complexity axes. A deterministic work item must provide `tool_ref` and no
 model requirements. This is the machine-readable decomposition boundary: the adapter never extracts
 steps, dependencies, metrics, or execution kind from `SKILL.md` prose.
 
-Skill `capability`, `tuning`, `responsibility`, and `model_tier` describe the
-Skill and retain their normal governance meaning. They have no direct relation
-to a model and are never converted into candidate capabilities, cost tiers, or
-model ranking. `model_requirements` belongs to exactly one concrete work item:
+SkillDefinition metadata describes the reusable method and its criteria.
+Runtime `capability`, `tuning`, and `responsibility` are derived from the
+current instruction and recorded on the concrete work item binding;
+`model_tier` remains a legacy split Skill quality-gate field and is not
+SkillDefinition v1 metadata. These fields have no direct
+relation to a model and are never converted into candidate capabilities, cost
+tiers, or model ranking. `model_requirements` belongs to exactly one concrete work item:
 it names only evaluated candidate-requirement labels, an optional minimum cost
 tier, and evidence for why that work item needs them. The environment `Policy`
 owns candidate limits, input limits, candidate labels, cost tiers, and

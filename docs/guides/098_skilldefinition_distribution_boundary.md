@@ -33,13 +33,19 @@ flowchart LR
 
 ## Management upload
 
-このrepository checkoutにはmanagement portのupload transport、staging、seal、review、
-adoption実装が含まれていない。local overlayとlocal Knowledgeの管理toolは存在するが、
-SkillDefinition uploadの代替ではない。このため、ここで保証できるのはparser、package discovery、
-明示`--skill-definition`有効化までである。
+このrepository checkoutにはadmin profile向けのmanagement upload transport、staging、
+seal、review、adoption、maturity操作が実装されている。MCP-owned inbound WebDAVは
+候補bytesをactive catalog外へstagingし、`seal_contribution_upload`、明示的な人の
+review、`adopt_contribution_return`、maturity assessment/proposal/review/applyを
+順に分離する。reader profileには管理操作を公開しない。
 
-外部または後続実装が管理uploadを提供する場合、既存のclient protocol選択とupload transportを
-維持し、次の境界を追加する。
+これらの操作で保証されるのは、各状態遷移とhash・承認・所有境界の記録である。
+upload、validation、adoption、execution、production publication、live verificationは
+別の観測状態であり、uploadやadoptionだけでactive catalogの既定sourceを切り替えたり、
+品質受入れを完了したりしない。
+
+この実装を利用する管理側は、既存のclient protocol選択とupload transportを維持し、
+次の境界を確認する。
 
 1. uploadしたraw UTF-8 bytesをactive catalog外へstagingする。
 2. 同じbytesをSkillDefinition parserへ渡し、XIDとraw bytes SHA-256を記録する。
@@ -47,5 +53,5 @@ SkillDefinition uploadの代替ではない。このため、ここで保証で�
 4. adoption時に承認対象のpath、XID、hashを明示有効化境界へ渡す。
 5. reader側からstaged候補や管理操作を見せない。
 
-upload、validation、adoption、executionは別の観測状態である。欠けた状態を推定で補わず、
-外部管理面の実装とlive検証が必要な場合は`unknown`または未実装としてhandoffする。
+欠けた状態を推定で補わず、外部identity、secret manager、production publication、
+長期運用のlive検証が必要な場合は`unknown`または未検証としてhandoffする。

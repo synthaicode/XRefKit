@@ -94,10 +94,10 @@ phase.
      field; it does not become SkillDefinition v1 metadata.
 
 6. Main AI / harness records concrete work items.
-   python -m xrefkit skill workitem --log <run-log> --item WI-001 --text "<work>" --status pending --role "<skill>:executor"
+   python -m xrefkit skill workitem --log <run-log> --item WI-001 --text "<work>" --completion-criterion "<observable condition>" --status pending --role "<skill>:executor"
 
 7. Executor completes work items and records status.
-   python -m xrefkit skill workitem --log <run-log> --item WI-001 --status done --role "<skill>:executor"
+   python -m xrefkit skill workitem --log <run-log> --item WI-001 --completion-criterion "<observable condition>" --status done --role "<skill>:executor"
 
 8. Main AI / harness records outputs and evidence.
    python -m xrefkit skill artifact --log <run-log> --artifact OUT-001 --kind output --target "<path>" --item WI-001 --status done --role "<skill>:executor"

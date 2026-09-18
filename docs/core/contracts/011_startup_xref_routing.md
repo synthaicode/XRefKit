@@ -32,7 +32,10 @@ is not part of the mandatory startup read path.
   `docs/core/models/017_base_and_xref_layering.md#xid-5A1C8E4D2F90`.
 - Manage skill definitions and domain knowledge as separate files.
 - Treat domain knowledge in `knowledge/` as shared/common.
-- A Skill's capability/tuning/responsibility is its meta identity and the routing vocabulary.
+- A canonical SkillDefinition supplies the reusable method and routing metadata;
+  `capability`, `tuning`, and `responsibility` are derived from the current
+  instruction and recorded in the runtime ExecutionBinding. Legacy split
+  Skills retain their `meta.md` fields for compatibility.
 - When updating repository documents, apply the document update policy in
   `docs/policies/074_document_update_policy.md#xid-B1D42A6F90C3`: target
   documents describe the latest authoritative state; prior document states stay
@@ -44,13 +47,15 @@ is not part of the mandatory startup read path.
 - For business-intake requests where structure is still incomplete, prefer learning-first routing:
   - first `business_learning_interview`
   - then `business_intake_scoping` only after the business unit becomes scope-ready
-- Treat direct `--meta <path>` selection as an execution detail after routing, not as the normal human-facing routing method.
+- Treat direct `--definition <path>` selection as an execution detail after
+  semantic routing for canonical SkillDefinition v1. Direct `--meta <path>`
+  remains the legacy split-Skill compatibility route.
 - When a task uses a Skill, start it through the runtime envelope defined in
   `docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`
   before opening or executing `SKILL.md`.
 - Route to the target Skill by semantic routing from user intent and the Skill
-  catalog (capability/tuning/responsibility triad); there is no separate
-  capability-routing model.
+  catalog. After selection, derive the runtime capability/tuning/responsibility
+  binding from the instruction; there is no separate capability-routing model.
 - When a task or skill needs domain knowledge, route via:
   - `python -m xrefkit xref search "<query>"`
   - `python -m xrefkit xref show <XID>`

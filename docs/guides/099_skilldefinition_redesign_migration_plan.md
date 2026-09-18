@@ -35,8 +35,11 @@ SkillDefinitionに残す。初期化で供給されるWorkflow、Reporting、Log
    subagent execution、check、escalation、handoffを一つのrun chainで確認する。
 4. **Distribution** — package manifestがone-document pathを指せるようにし、raw hashを保持する。
    legacy YAML packageは移行対象として形式を明示する。
-5. **Management adoption** — upload、validation、staging、seal/review、adoptionを別状態にする。
-   このcheckoutに実装がない場合は、所有serviceへhandoffしてlive検証する。
+5. **Management adoption** — upload、validation、staging、seal/review、adoption、
+   maturity assessment/proposal/review/applyを別状態として観測する。このcheckoutには
+   admin profile向けのMCP-owned uploadとadoption経路があるため、repository実装の
+   state transitionを検証する。外部identity、secret manager、production publication、
+   長期運用のlive検証は所有serviceまたは運用環境へhandoffする。
 6. **Docs and bulk conversion** — canonical docsを新モデルへ揃え、代表runの観測後に変換単位を決める。
    最後にlegacy meta validatorとsplit sourceを廃止する。
 
@@ -84,7 +87,8 @@ Lunaなどのlow-level modelへ渡すwork itemは、一つの判断境界と決�
 - parser/catalog/runtime間でdefinition XIDとraw bytes SHA-256が一致する。
 - Knowledge activation未評価を不要扱いせず、`unresolved`として保持する。
 - legacyとv1の形式がcatalogで判別でき、同じactive Skillを二重routingしない。
-- reader/admin protocol selectionとmanagement upload transportを回帰させない。
+- reader/admin protocol selectionとmanagement upload、staging、seal、review、adoption、
+  maturity transportを回帰させない。
 - human adoption前のcandidateをproduction active sourceとして扱わない。
 - docsのXID checkと関連testが通る。
 

@@ -35,9 +35,9 @@ available.
 | 7 | `docs/core/contracts/053_context_direction_security_guard.md#xid-A7F3C92D4E11` | Context-direction security guard. |
 | 8 | `docs/core/contracts/015_shared_memory_operations.md#xid-4A423E72D2ED` | Shared memory and event-log operations. |
 | 9 | `skills/_index.md` and needed `skills/index/*` files | Skill routing catalog, only when a Skill must be routed. |
-| 10 | Selected Skill `meta.md` | Runtime metadata and operating envelope inputs. |
-| 11 | `python -m xrefkit skill run --meta <path-to-meta.md> --task "<task>" --json` | Create the runtime envelope before opening the procedure. |
-| 12 | Returned `skill_doc` | Open the selected `SKILL.md` only after the runtime envelope exists. |
+| 10 | Selected SkillDefinition `SKILL.v1.md` | Canonical method, criteria, and Knowledge needs. A legacy split Skill uses `meta.md` and `SKILL.md`. |
+| 11 | `python -m xrefkit skill run --definition <path-to-SKILL.v1.md> --task "<task>" --capability "<instruction-derived capability>" --tuning "<instruction-derived tuning>" --responsibility "<instruction-derived responsibility>" --execution-mode subagent_required --json` | Create the canonical runtime envelope before opening the procedure. Legacy split Skills use `--meta`. |
+| 12 | Returned `skill_doc` | Open the selected procedure only after the runtime envelope exists. |
 | 13 | Selected workflow / knowledge XIDs | Load only the fragments required by the current task. |
 
 ## MCP Client Mode
@@ -51,7 +51,7 @@ Markdown directly from the local filesystem.
 | 2 | MCP | `get_startup_context` | First governance-content load and source of startup `load_order`. |
 | 3 | MCP response | `load_order` | Ordered XIDs to apply before task-specific routing. |
 | 4 | MCP response | `references` | Document bodies returned for the startup XIDs. |
-| 5 | MCP response | `prompt_flow_protocol` | Apply Prompt Flow identity, delegation, reconciliation, and uncertainty boundaries before task routing. |
+| 5 | MCP response | Selected protocol bodies | Apply each selected protocol before task routing; an excluded `prompt_flow_protocol`, `workflow_protocol`, or `reporting_protocol` is returned as `null`. |
 | 6 | MCP | `get_document_by_xid` | Resolve only needed transferred links by XID. |
 | 7 | MCP | Skill and workflow catalog tools | Route task-specific work after initialization. |
 

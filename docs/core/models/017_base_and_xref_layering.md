@@ -37,7 +37,10 @@ Typical contents:
 - XID as the primary key
 - `xref search/show/rewrite/check/fix`
 - `knowledge/` as shared domain fragments
-- `skills/` as executable procedure carrying the capability/tuning/responsibility identity
+- `skills/` as executable SkillDefinition procedures; runtime
+  `capability`/`tuning`/`responsibility` values are derived from the current
+  instruction and carried by ExecutionBinding. Legacy split Skills may retain
+  those fields in `meta.md` during migration.
 
 These rules are about how XRefKit routes knowledge and keeps references durable.
 

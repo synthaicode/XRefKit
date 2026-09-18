@@ -8,7 +8,9 @@ state into the current repository structure.
 
 The target is not blind copy.
 The target is to preserve the old operational intent while rebuilding it into
-the current split model and runtime envelope.
+the current one-document `skill_definition_v1` model and runtime envelope.
+The legacy split form remains a compatibility source during migration; it is
+not the canonical target for new authoring.
 
 ## Scope
 
@@ -26,33 +28,42 @@ Do not treat the old artifact as already current-ready.
 Migrate it in two phases:
 
 1. analyze the old structure and create a migration report
-2. rebuild the result into the current split model
+2. rebuild the result into the current one-document SkillDefinition model
 
 ## Current Target Model
 
-The current target model separates:
+The current target model uses one canonical SkillDefinition document for the
+reusable method and keeps shared facts and runtime control in their owning
+layers:
 
-- `flows/`
-  - machine-readable workflow control
-- `docs/`
-  - human-readable workflow and guidance
-- `skills/<skill_id>/SKILL.md`
-  - execution procedure
-- `skills/<skill_id>/meta.md`
-  - load gate and runtime envelope
+- `skills/<skill_id>/SKILL.v1.md`
+  - one-document SkillDefinition with method, applicability, inputs, outputs,
+    criteria, Knowledge needs, and Skill-specific boundaries
 - `knowledge/`
-  - factual rules, evidence, and domain references
+  - factual rules, evidence, and domain references resolved by XID on demand
+- `docs/` and `flows/`
+  - human guidance and machine-readable workflow control where applicable
+- Workflow Protocol and runtime binding
+  - common phases, roles, logging, closure, and instruction-derived runtime
+    fields such as `capability`, `tuning`, `responsibility`, and `execution_mode`
+
+Existing `skills/<skill_id>/meta.md` plus `SKILL.md` pairs are
+`legacy_split_v1` compatibility inputs. Keep them readable until their
+replacement has been explicitly adopted.
 
 ## Migration Direction
 
 When reading an old Flow / Skill:
 
-- old execution procedure stays closest to `skills/<skill_id>/SKILL.md`
+- old execution procedure becomes the method in
+  `skills/<skill_id>/SKILL.v1.md`
 - old factual and domain blocks move to `knowledge/`
 - old workflow explanation moves to `docs/`
 - old workflow control definitions move to `flows/` when a machine-readable form
   exists or can be reconstructed safely
-- old ad hoc runtime assumptions become explicit fields in `meta.md`
+- old ad hoc runtime assumptions become explicit runtime binding fields or
+  Workflow Protocol records; do not copy them into the v1 method as fixed
+  Skill identity
 
 ## Minimum Migration Output
 
@@ -62,7 +73,7 @@ Every migration should produce:
 - target skill id
 - source artifact inventory
 - old-to-new mapping table
-- current `meta.md` scaffold
+- current `SKILL.v1.md` scaffold
 - unresolved migration gaps
 
 ## Minimum Migration Questions
@@ -94,14 +105,19 @@ Reasons:
 
 1. collect the old Flow / Skill folder
 2. inventory `SKILL.md`, `meta.md`, flow docs, YAML, and nearby domain files
-3. generate a migration report and current `meta` scaffold
+3. generate a migration report and a `SKILL.v1.md` scaffold; retain the old
+   `meta.md` and `SKILL.md` as compatibility evidence
 4. split facts from procedure
 5. rebuild target files under current `skills/`, `docs/`, `flows/`, and
    `knowledge/`
-6. remove `checker`, `quality_reviewer`, and `handoff_owner` from
-   `role_responsibilities`; keep only the Skill-specific `executor` entry
+6. remove common `checker`, `quality_reviewer`, and `handoff_owner` role prose
+   from the v1 document; Workflow Protocol owns those roles, while
+   Skill-specific executor boundaries remain in the method
 7. validate with `python -m xrefkit xref fix`
-8. validate the new target with `python -m xrefkit skill check --level trial`
+8. validate the v1 document with
+   `python -m xrefkit skill definition-check --path <SKILL.v1.md> --json`,
+   then run it explicitly with
+   `python -m xrefkit skill run --definition <SKILL.v1.md> ... --json`
 
 ## Related
 

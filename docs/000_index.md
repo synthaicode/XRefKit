@@ -20,7 +20,9 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Business learning interview guide](packs/business-intake/061_business_learning_interview_guide.md#xid-D2A41E8C7B51)
 - [Legacy Flow Skill migration guide](guides/062_legacy_flow_skill_migration_guide.md#xid-E3B7D5A18C62)
 - [XRefKit and Skill Package first registration](guides/089_xrefkit_package_first_registration.md#xid-4F8C2A7D1E90)
+- [Skill bundle synchronization](guides/090_skill_bundle_sync.md#xid-8D7F2A6C4B10)
 - [Brownfield Workflow usage for humans](guides/091_brownfield_workflow_usage_for_humans.md#xid-D6A4C9E2F817)
+- [Host compatibility pre-check](core/contracts/109_host_compatibility_precheck.md#xid-9D6F3A1C7B42)
 - [Language policy (AI canonical docs + human language trees)](policies/030_language_policy.md#xid-72FB974C8236)
 
 ## Base Control And Repository Rules
@@ -36,6 +38,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Startup contract pack (MCP compressed startup body)](core/contracts/079_startup_contract_pack.md#xid-D4E8A1C63B57)
 - [Work record types](reference/019_work_record_types.md#xid-4F8C21B7D4A2)
 - [Document update policy](policies/074_document_update_policy.md#xid-B1D42A6F90C3)
+- [Project quality baseline](reference/056_project_quality_baseline.md#xid-1C4B72D5E901)
 
 ## XRefKit Routing And Authoring
 
@@ -60,6 +63,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 
 - [Operating models, usage guides, and design pages](reference/022_operating_models_guides_and_designs.md#xid-9C4E2A71D583)
 - [Page naming conventions](reference/023_page_naming_conventions.md#xid-7B2D4E6A1C90)
+- [Architecture Decision Records](adr/README.md#xid-57A5C40F725B)
 
 ## Workflow And Organization Model
 
