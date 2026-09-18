@@ -32,8 +32,8 @@ far that clarification has actually progressed.
   through `maturity` or `status`.
 - For SkillDefinition v1, keep maturity and promotion evidence in the derived
   catalog/governance record. Do not add runtime routing fields to the definition
-  header. The v1 promotion schema is still pending; `definition_v1` identifies
-  the format and does not mean `stable`.
+  header. `skill_definition_v1` identifies the format and does not mean
+  `stable`; a definition without a governance record is `unassessed`.
 
 ## Maturity Levels
 
@@ -51,6 +51,45 @@ This section documents the enforced `legacy_split_v1` validator. New
 one-document definitions follow
 [SkillDefinition v1](096_skill_definition_contract.md#xid-E6A19D4B72C3), with
 runtime fields recorded by ExecutionBinding rather than the definition.
+
+## SkillDefinition v1 Governance Record
+
+Maturity for a one-document definition is supplied explicitly through a
+separate JSON record. The record is not auto-discovered and does not alter the
+definition bytes. It is bound to `skill_id`, definition XID, and raw definition
+SHA-256, so editing the method invalidates the prior assessment.
+
+```json
+{
+  "schema_version": 1,
+  "skill_id": "sample_skill",
+  "definition_xid": "ABCDEF123456",
+  "definition_content_hash": "<64 lowercase hex characters>",
+  "maturity": "trial",
+  "observation_refs": ["observations/sample-run.md"],
+  "governance_refs": [],
+  "promotion": {
+    "decision": "approved",
+    "target_maturity": "trial",
+    "authority": "human:owner",
+    "decided_at": "2026-09-18T12:00:00+09:00",
+    "basis_refs": ["observations/sample-run.md"]
+  }
+}
+```
+
+The record uses the same maturity enum as legacy Skills. `trial`, `stable`, and
+`governed` require observations; `governed` also requires governance refs.
+`promotion.decision` is `not_requested`, `approved`, or `rejected`. Approved and
+rejected decisions require a named authority, timestamp, and basis. Production
+source adoption remains a separate human decision.
+
+```powershell
+python -m xrefkit skill definition-check `
+  --path skills/<skill>/SKILL.md `
+  --governance governance/skills/<skill>.json `
+  --json
+```
 
 ### Draft Minimum
 

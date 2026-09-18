@@ -171,6 +171,8 @@ xrefkit mcp serve --repo C:\path\to\XRefKit --transport stdio
 | `--context-secret <secret>` | `XREFKIT_CONTEXT_SECRET` | context token 用 HMAC secret |
 | `--distribution-trust-id <id>` | none | executable distribution の trust identity |
 | `--domain-knowledge-root <path>` | none | 外部 XID knowledge root; repeatable |
+| `--skill-definition <path>` | none | 明示有効化するone-document SkillDefinition; repeatable |
+| `--skill-governance <path>` | none | definitionに対応する外部maturity/promotion record; repeatable |
 | `--initial-protocol workflow` | both | `workflow_protocol` を初期連携 |
 | `--initial-protocol reporting` | both | `reporting_protocol` を初期連携 |
 | `--audit-log <path>` | `<repo>\work\mcp\xid_audit.jsonl` | MCP audit JSONL の出力先 |

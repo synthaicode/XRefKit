@@ -85,7 +85,8 @@ def test_definition_run_records_dynamic_routing_and_exact_revision(tmp_path):
     definition, log = _open_run(tmp_path)
     text = log.read_text(encoding="utf-8")
     digest = hashlib.sha256(definition.read_bytes()).hexdigest()
-    assert "- maturity: `definition_v1`" in text
+    assert "- maturity: `unassessed`" in text
+    assert "- definition_format: `skill_definition_v1`" in text
     assert "- meta: `-`" in text
     assert "- skill_doc: `skills/definition_sample/SKILL.md`" in text
     assert "- definition_xid: `ABCDEF123456`" in text
@@ -126,3 +127,63 @@ def test_definition_run_requires_complete_runtime_routing(tmp_path):
     )
     assert code == 1
     assert "--execution-mode" in output
+
+
+def test_definition_run_records_external_maturity_governance(tmp_path):
+    definition = tmp_path / "SKILL.md"
+    definition.write_text(_definition(), encoding="utf-8")
+    governance = tmp_path / "governance.json"
+    governance.write_text(json.dumps({
+        "schema_version": 1,
+        "skill_id": "definition_sample",
+        "definition_xid": "ABCDEF123456",
+        "definition_content_hash": hashlib.sha256(definition.read_bytes()).hexdigest(),
+        "maturity": "trial",
+        "observation_refs": ["observations/sample.md"],
+        "governance_refs": [],
+        "promotion": {
+            "decision": "approved",
+            "target_maturity": "trial",
+            "authority": "human:owner",
+            "decided_at": "2026-09-18T12:00:00+09:00",
+            "basis_refs": ["observations/sample.md"],
+        },
+    }), encoding="utf-8")
+    log = tmp_path / "work" / "governed-run.md"
+    code, output = command(
+        "skill", "run", "--root", str(tmp_path), "--definition", "SKILL.md",
+        "--governance", "governance.json", "--task", "Inspect",
+        "--capability", "analysis", "--tuning", "bounded",
+        "--responsibility", "report", "--execution-mode", "subagent_required",
+        "--out", str(log), "--json",
+    )
+    assert code == 0, output
+    text = log.read_text(encoding="utf-8")
+    assert "- maturity: `trial`" in text
+    assert "- definition_governance_path: `governance.json`" in text
+    assert "- definition_promotion_decision: `approved`" in text
+
+
+def test_definition_run_rejects_draft_governance(tmp_path):
+    definition = tmp_path / "SKILL.md"
+    definition.write_text(_definition(), encoding="utf-8")
+    governance = tmp_path / "governance.json"
+    governance.write_text(json.dumps({
+        "schema_version": 1,
+        "skill_id": "definition_sample",
+        "definition_xid": "ABCDEF123456",
+        "definition_content_hash": hashlib.sha256(definition.read_bytes()).hexdigest(),
+        "maturity": "draft",
+        "observation_refs": [],
+        "governance_refs": [],
+        "promotion": {"decision": "not_requested", "target_maturity": None,
+                      "authority": None, "decided_at": None, "basis_refs": []},
+    }), encoding="utf-8")
+    code, output = command(
+        "skill", "run", "--root", str(tmp_path), "--definition", "SKILL.md",
+        "--governance", "governance.json", "--task", "Inspect",
+        "--capability", "analysis", "--tuning", "bounded",
+        "--responsibility", "report", "--execution-mode", "subagent_required", "--json",
+    )
+    assert code == 1
+    assert "draft skills are not load-ready" in output

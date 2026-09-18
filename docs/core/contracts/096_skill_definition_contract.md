@@ -98,8 +98,13 @@ python -m xrefkit skill run `
 
 `--definition`と`--meta`は排他的である。定義形式にはrouting結果を保存せず、
 `capability` / `tuning` / `responsibility` / `execution_mode`を実行開始時に必須入力として
-run logへ固定する。run logの`maturity: definition_v1`は形式識別であり、`stable`への
-品質昇格を表さない。`meta: -`とし、同じ`SKILL.md`を唯一の実行本文として参照する。
+run logへ固定する。形式は`definition_format: skill_definition_v1`で識別する。
+外部governance recordがなければ`maturity: unassessed`とし、`stable`への品質昇格を
+推定しない。`meta: -`とし、同じ`SKILL.md`を唯一の実行本文として参照する。
+
+`--governance <record.json>`を指定した場合、recordの`skill_id`、XID、raw definition
+SHA-256を照合し、承認済みmaturityとpromotion decisionをrun logへ記録する。`draft`と
+`deprecated`は実行不可である。recordは定義本文を変更せず、production adoptionとも別である。
 
 run logには定義のXID、root-relative path、raw bytesのSHA-256を記録する。
 `workflow bind-execution`はこれらをrequestから受け取らずrun logから
@@ -114,11 +119,13 @@ MCP serverでは、自動scanではなく起動時に対象を明示する。
 ```powershell
 python -m xrefkit.mcp.server `
   --repo <repository> `
-  --skill-definition skills/<skill>/SKILL.md
+  --skill-definition skills/<skill>/SKILL.md `
+  --skill-governance governance/skills/<skill>.json
 ```
 
 `XRefCatalog.build(..., skill_definition_paths=[...])`とcatalog CLIの
-`--skill-definition`も同じ境界を使う。指定pathはrepository内のfileに限定し、
+`--skill-definition`も同じ境界を使う。対応するgovernance recordは
+`skill_governance_paths` / `--skill-governance`で明示する。指定pathはrepository内のfileに限定し、
 重複pathや定義間の`skill_id` / XID / alias衝突を拒否する。同じ`skill_id`の旧Skillが
 存在する場合、明示指定した定義をactive catalog entryとし、旧entryとの二重routingを
 行わない。指定しない候補はMCP catalogへ現れない。

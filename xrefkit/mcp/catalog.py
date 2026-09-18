@@ -244,6 +244,7 @@ class XRefCatalog:
     domain_knowledge_roots: tuple[Path, ...] = ()
     discovered_packages: tuple[DiscoveredSkillPackage, ...] = ()
     skill_definition_paths: tuple[Path, ...] = ()
+    skill_governance_paths: tuple[Path, ...] = ()
 
     @classmethod
     def build(
@@ -252,6 +253,7 @@ class XRefCatalog:
         domain_knowledge_roots: list[str | Path] | tuple[str | Path, ...] | None = None,
         discover_packages: bool = False,
         skill_definition_paths: list[str | Path] | tuple[str | Path, ...] | None = None,
+        skill_governance_paths: list[str | Path] | tuple[str | Path, ...] | None = None,
     ) -> "XRefCatalog":
         root = Path(repo_root).resolve()
         if not root.exists():
@@ -265,6 +267,12 @@ class XRefCatalog:
         )
         if len(definition_paths) != len(set(definition_paths)):
             raise ValueError("skill_definition_paths contains duplicates")
+        governance_paths = tuple(
+            _resolve_skill_governance_path(root, path)
+            for path in (skill_governance_paths or [])
+        )
+        if len(governance_paths) != len(set(governance_paths)):
+            raise ValueError("skill_governance_paths contains duplicates")
         fingerprint, fingerprint_basis = repository_identity(root)
         ownership = load_ownership(root)
         if ownership is not None:
@@ -280,6 +288,7 @@ class XRefCatalog:
             domain_knowledge_roots=external_roots,
             discovered_packages=tuple(discover_skill_packages()) if discover_packages else (),
             skill_definition_paths=definition_paths,
+            skill_governance_paths=governance_paths,
         )
 
     # knowledge, skills, and catalog_version are rebuilt from the live
@@ -300,7 +309,10 @@ class XRefCatalog:
             entries.extend(_build_package_skills(package))
         entries = self._apply_skill_edits(entries)
         definitions = _build_definition_skill_entries(
-            self.repo_root, self.ownership, self.skill_definition_paths,
+            self.repo_root,
+            self.ownership,
+            self.skill_definition_paths,
+            self.skill_governance_paths,
         )
         if definitions:
             replaced = {entry.skill_id for entry in definitions}
@@ -1786,18 +1798,43 @@ def _resolve_skill_definition_path(root: Path, value: str | Path) -> Path:
     return path
 
 
+def _resolve_skill_governance_path(root: Path, value: str | Path) -> Path:
+    path = (root / Path(value)).resolve()
+    try:
+        path.relative_to(root)
+    except ValueError as exc:
+        raise ValueError("Skill governance path must remain within the repository") from exc
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    return path
+
+
 def _build_definition_skill_entries(
     root: Path,
     ownership: Ownership | None,
     paths: tuple[Path, ...],
+    governance_paths: tuple[Path, ...] = (),
 ) -> list[SkillCatalogEntry]:
     if not paths:
         return []
-    build_definition_catalog(list(paths))
+    derived_catalog = build_definition_catalog(list(paths), list(governance_paths))
+    derived_by_id = {entry["skill_id"]: entry for entry in derived_catalog["entries"]}
     entries: list[SkillCatalogEntry] = []
     for path in paths:
         definition = load_markdown_skill_definition(path)
         meta = definition["metadata"]
+        derived = derived_by_id[meta["skill_id"]]
+        maturity_governance = derived["governance"]
+        if maturity_governance is not None:
+            maturity_governance = {
+                **maturity_governance,
+                "record_ref": {
+                    **maturity_governance["record_ref"],
+                    "path": relative_to_repo(
+                        Path(maturity_governance["record_ref"]["path"]), root,
+                    ),
+                },
+            }
         method = definition["method"]
         rel = relative_to_repo(path, root)
         closure = ClosureContract(
@@ -1812,7 +1849,7 @@ def _build_definition_skill_entries(
                 skill_id=meta["skill_id"],
                 title=first_heading(method, meta["skill_id"]),
                 summary=meta["summary"],
-                maturity="definition_v1",
+                maturity=derived["maturity"],
                 intent=list(meta["applies_when"]),
                 target_artifacts=list(meta["outputs"]),
                 applies_when=list(meta["applies_when"]),
@@ -1835,6 +1872,7 @@ def _build_definition_skill_entries(
                 definition_format="skill_definition_v1",
                 definition_xid=meta["xid"],
                 definition_content_hash=definition["content_hash"],
+                maturity_governance=maturity_governance,
             )
         )
     return entries
@@ -1942,7 +1980,7 @@ def _build_package_skills(package: DiscoveredSkillPackage) -> list[SkillCatalogE
                     skill_id=meta["skill_id"],
                     title=first_heading(method, meta["skill_id"]),
                     summary=meta["summary"],
-                    maturity="definition_v1",
+                    maturity="unassessed",
                     intent=list(meta["applies_when"]),
                     target_artifacts=list(meta["outputs"]),
                     applies_when=list(meta["applies_when"]),

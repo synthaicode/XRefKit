@@ -31,6 +31,7 @@ from xrefkit.skillmeta import (
 )
 from xrefkit.models.human_evaluation import HumanEvaluation
 from xrefkit.skill_definition import load_skill_definition
+from xrefkit.skill_definition_governance import load_governance_record, match_definition
 
 
 @dataclass
@@ -2580,16 +2581,17 @@ def update_token_usage(args) -> SkillRunResult:
 def run_skill(args) -> SkillRunResult:
     root = Path(args.root).resolve()
     definition_arg = getattr(args, "definition", None)
+    governance_arg = getattr(args, "governance", None)
     meta_arg = getattr(args, "meta", None)
     if bool(definition_arg) == bool(meta_arg):
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=["exactly one of --meta or --definition is required"])
-    if not definition_arg and any(
+    if not definition_arg and (governance_arg or any(
         getattr(args, key, None)
         for key in ("capability", "tuning", "responsibility", "execution_mode")
-    ):
+    )):
         return SkillRunResult(
             ok=False, skill_id=None, skill_doc=None, run_log=None,
-            errors=["--capability, --tuning, --responsibility, and --execution-mode are definition-only runtime inputs"],
+            errors=["--governance, --capability, --tuning, --responsibility, and --execution-mode are definition-only runtime inputs"],
         )
     meta_path = (root / (definition_arg or meta_arg)).resolve()
     task, task_errors = _read_task(args)
@@ -2614,7 +2616,32 @@ def run_skill(args) -> SkillRunResult:
         except ValueError:
             return SkillRunResult(ok=False, skill_id=skill_id, skill_doc=str(meta_path), run_log=None, errors=["definition must be under --root"])
         definition_relpath = Path(definition_relpath).as_posix()
-        definition_identity = {"xid": str(parsed["xid"]), "path": definition_relpath, "sha256": str(definition["content_hash"])}
+        definition_identity = {
+            "format": "skill_definition_v1",
+            "xid": str(parsed["xid"]),
+            "path": definition_relpath,
+            "sha256": str(definition["content_hash"]),
+        }
+        definition_maturity = "unassessed"
+        if governance_arg:
+            governance_path = (root / governance_arg).resolve()
+            try:
+                governance_relpath = governance_path.relative_to(root).as_posix()
+            except ValueError:
+                return SkillRunResult(ok=False, skill_id=skill_id, skill_doc=str(meta_path), run_log=None,
+                                      errors=["governance record must be under --root"])
+            try:
+                governance = load_governance_record(governance_path)
+                match_definition(governance, definition)
+            except (OSError, ValueError) as exc:
+                return SkillRunResult(ok=False, skill_id=skill_id, skill_doc=str(meta_path), run_log=None,
+                                      errors=[str(exc)])
+            definition_maturity = str(governance["maturity"])
+            definition_identity.update({
+                "governance_path": governance_relpath,
+                "governance_sha256": str(governance["_content_hash"]),
+                "promotion_decision": str(governance["promotion"]["decision"]),
+            })
         capability = str(getattr(args, "capability", "") or "").strip()
         tuning = str(getattr(args, "tuning", "") or "").strip()
         responsibility = str(getattr(args, "responsibility", "") or "").strip()
@@ -2622,7 +2649,7 @@ def run_skill(args) -> SkillRunResult:
         if not capability or not tuning or not responsibility or not execution_mode_arg:
             return SkillRunResult(ok=False, skill_id=skill_id, skill_doc=str(meta_path), run_log=None,
                                   errors=["definition-backed runs require --capability, --tuning, --responsibility, and --execution-mode"])
-        parsed.update({"maturity": "definition_v1", "execution_mode": execution_mode_arg, "skill_doc": meta_path.name,
+        parsed.update({"maturity": definition_maturity, "execution_mode": execution_mode_arg, "skill_doc": meta_path.name,
                        "guard_policy": "required", "capability_layering": "required", "workflow_protocol": "required",
                        "capability": capability, "tuning": tuning,
                        "role_responsibilities": [f"executor: {responsibility}"]})
@@ -2643,7 +2670,7 @@ def run_skill(args) -> SkillRunResult:
             domain_knowledge=domain_knowledge,
         )
     maturity, _ = _resolve_maturity(parsed)
-    maturity = "definition_v1" if definition_arg else (maturity or "stable")
+    maturity = (str(parsed.get("maturity") or "unassessed") if definition_arg else (maturity or "stable"))
 
     if maturity == "draft":
         return SkillRunResult(

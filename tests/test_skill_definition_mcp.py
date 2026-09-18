@@ -61,6 +61,29 @@ def _legacy(root):
     )
 
 
+def _write_governance(root, definition, *, maturity="stable"):
+    path = root / "governance" / "sample_skill.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    value = {
+        "schema_version": 1,
+        "skill_id": "sample_skill",
+        "definition_xid": "ABCDEF123456",
+        "definition_content_hash": hashlib.sha256(definition.read_bytes()).hexdigest(),
+        "maturity": maturity,
+        "observation_refs": ["observations/sample.md"],
+        "governance_refs": [],
+        "promotion": {
+            "decision": "approved",
+            "target_maturity": maturity,
+            "authority": "human:owner",
+            "decided_at": "2026-09-18T12:00:00+09:00",
+            "basis_refs": ["observations/sample.md"],
+        },
+    }
+    path.write_text(json.dumps(value), encoding="utf-8")
+    return path
+
+
 def _command(*args):
     output = io.StringIO()
     with contextlib.redirect_stdout(output):
@@ -103,6 +126,27 @@ def test_definition_configuration_is_bounded_and_collision_checked(tmp_path):
         XRefCatalog.build(tmp_path, skill_definition_paths=[one, two]).skills
     with pytest.raises(ValueError, match="within the repository"):
         XRefCatalog.build(tmp_path, skill_definition_paths=[tmp_path.parent / "outside.md"])
+
+
+def test_definition_governance_projects_maturity_without_changing_format(tmp_path):
+    definition, _ = _write_definition(tmp_path)
+    governance = _write_governance(tmp_path, definition)
+    catalog = XRefCatalog.build(
+        tmp_path,
+        skill_definition_paths=[definition],
+        skill_governance_paths=[governance],
+    )
+    entry = catalog.get_skill("sample_skill")
+    assert entry["definition_format"] == "skill_definition_v1"
+    assert entry["maturity"] == "stable"
+    assert entry["maturity_governance"]["promotion"]["authority"] == "human:owner"
+    assert entry["maturity_governance"]["record_ref"]["path"].endswith("sample_skill.json")
+
+    governance.write_text(governance.read_text(encoding="utf-8").replace(
+        hashlib.sha256(definition.read_bytes()).hexdigest(), "0" * 64,
+    ), encoding="utf-8")
+    with pytest.raises(ValueError, match="content_hash"):
+        catalog.list_skills()
 
 
 def test_definition_knowledge_activation_is_explicit_and_validated(tmp_path):

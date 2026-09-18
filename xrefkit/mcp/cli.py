@@ -25,6 +25,12 @@ def main(argv: list[str] | None = None) -> int:
             default=[],
             help="Repository-relative SkillDefinition to activate. Can be repeated.",
         )
+        command.add_argument(
+            "--skill-governance",
+            action="append",
+            default=[],
+            help="Repository-relative external governance record. Can be repeated.",
+        )
 
     catalog = sub.add_parser("catalog", help="build and print catalog summary")
     add_repo_arguments(catalog)
@@ -154,6 +160,7 @@ def main(argv: list[str] | None = None) -> int:
         args.domain_knowledge_root,
         discover_packages=args.command == "prepare-skill-edit",
         skill_definition_paths=args.skill_definition,
+        skill_governance_paths=args.skill_governance,
     )
 
     if args.command == "catalog":

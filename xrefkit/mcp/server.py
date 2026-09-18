@@ -218,6 +218,12 @@ def main(argv: list[str] | None = None) -> int:
         help="Repository-relative SkillDefinition to activate in the MCP catalog. Can be repeated.",
     )
     parser.add_argument(
+        "--skill-governance",
+        action="append",
+        default=[],
+        help="Repository-relative external governance record for an activated SkillDefinition. Can be repeated.",
+    )
+    parser.add_argument(
         "--initial-protocol",
         choices=["workflow", "reporting"],
         action="append",
@@ -265,6 +271,7 @@ def main(argv: list[str] | None = None) -> int:
         args.domain_knowledge_root,
         discover_packages=True,
         skill_definition_paths=args.skill_definition,
+        skill_governance_paths=args.skill_governance,
     )
     global _CONTEXT_CODEC
     _CONTEXT_CODEC = ContextTokenCodec(

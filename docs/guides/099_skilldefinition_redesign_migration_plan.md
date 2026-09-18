@@ -64,4 +64,4 @@ Lunaなどのlow-level modelへ渡すwork itemは、一つの判断境界と決�
 - docsのXID checkと関連testが通る。
 
 bulk conversion開始には、代表的な複雑Skillの観測、管理adoption経路のlive検証、
-v1 maturity/promotion schema、人によるactive source切替判断が必要である。
+外部v1 maturity/promotion recordの運用観測、人によるactive source切替判断が必要である。

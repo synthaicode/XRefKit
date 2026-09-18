@@ -342,11 +342,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "definition-check", help="Validate a single-source SkillDefinition candidate",
     )
     p_definition_check.add_argument("--path", required=True)
+    p_definition_check.add_argument("--governance", action="append", default=[])
     p_definition_check.add_argument("--json", action="store_true", help="Output is always JSON")
     p_definition_catalog = skill_sub.add_parser(
         "definition-catalog", help="Generate metadata-only catalog from explicit definition paths",
     )
     p_definition_catalog.add_argument("--path", required=True, action="append")
+    p_definition_catalog.add_argument("--governance", action="append", default=[])
     p_definition_catalog.add_argument("--json", action="store_true", help="Output is always JSON")
     p_skill_import = skill_sub.add_parser(
         "import",
@@ -411,6 +413,11 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_run_source = p_skill_run.add_mutually_exclusive_group(required=True)
     p_skill_run_source.add_argument("--meta", help="Relative path to the legacy Skill meta.md to run")
     p_skill_run_source.add_argument("--definition", help="Explicit SkillDefinition document to run without a legacy meta source")
+    p_skill_run.add_argument(
+        "--governance",
+        default=None,
+        help="External governance record bound to an explicit SkillDefinition",
+    )
     p_skill_run.add_argument("--capability", default=None, help="Runtime capability for an explicit SkillDefinition run")
     p_skill_run.add_argument("--tuning", default=None, help="Runtime tuning for an explicit SkillDefinition run")
     p_skill_run.add_argument("--responsibility", default=None, help="Runtime executor responsibility for an explicit SkillDefinition run")
