@@ -84,6 +84,28 @@ def test_stale_reference_blocks(startup):
     assert 'subagent.startup.read' not in log.read_text()
 
 
+def test_definition_revision_is_checked_before_startup_acknowledgement(startup):
+    root, log, file, binding = startup
+    skill = root / "skills/sample/SKILL.md"
+    skill.parent.mkdir(parents=True)
+    skill.write_text(
+        "<!-- xid: ABCDEF123456 -->\n<a id=\"xid-ABCDEF123456\"></a>\n# Skill\n",
+        encoding="utf-8",
+    )
+    digest = hashlib.sha256(skill.read_bytes()).hexdigest()
+    text = log.read_text(encoding="utf-8")
+    text = text.replace("- skill_doc: `-`", "- skill_doc: `skills/sample/SKILL.md`")
+    log.write_text(text, encoding="utf-8")
+    binding["definition_identity"] = {
+        "xid": "ABCDEF123456", "path": "skills/sample/SKILL.md", "sha256": digest,
+    }
+    file.write_text(json.dumps(binding), encoding="utf-8")
+    skill.write_text(skill.read_text(encoding="utf-8") + "changed\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="revision mismatch"):
+        read_subagent_startup(root, log, file)
+    assert 'subagent.startup.read' not in log.read_text()
+
+
 def test_external_path_blocks(startup):
     root, log, file, binding = startup
     binding["references"][0]["path"] = "../outside.md"

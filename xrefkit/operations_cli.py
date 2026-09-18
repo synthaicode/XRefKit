@@ -408,7 +408,18 @@ def _build_parser() -> argparse.ArgumentParser:
 
     p_skill_run = skill_sub.add_parser("run", help="Create a Skill runtime envelope and session log")
     p_skill_run.add_argument("--root", default=".", help="Project root (default: .)")
-    p_skill_run.add_argument("--meta", required=True, help="Relative path to the Skill meta.md to run")
+    p_skill_run_source = p_skill_run.add_mutually_exclusive_group(required=True)
+    p_skill_run_source.add_argument("--meta", help="Relative path to the legacy Skill meta.md to run")
+    p_skill_run_source.add_argument("--definition", help="Explicit SkillDefinition document to run without a legacy meta source")
+    p_skill_run.add_argument("--capability", default=None, help="Runtime capability for an explicit SkillDefinition run")
+    p_skill_run.add_argument("--tuning", default=None, help="Runtime tuning for an explicit SkillDefinition run")
+    p_skill_run.add_argument("--responsibility", default=None, help="Runtime executor responsibility for an explicit SkillDefinition run")
+    p_skill_run.add_argument(
+        "--execution-mode",
+        choices=["local_default", "subagent_preferred", "subagent_required"],
+        default=None,
+        help="Runtime dispatch mode; required for an explicit SkillDefinition run",
+    )
     p_skill_run.add_argument("--task", default=None, help="Task text for the Skill run")
     p_skill_run.add_argument("--task-file", default=None, help="Read task text from a UTF-8 file")
     p_skill_run.add_argument("--out", default=None, help="Write run log to this path")

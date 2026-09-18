@@ -22,6 +22,8 @@ _FIELDS = (
     "run_id", "flow_id", "root_run_id", "parent_run_id", "work_item_id",
     "node_id", "skill_id", "skill_doc", "task", "authority", "executor",
     "checker", "quality_reviewer", "handoff_owner",
+    "capability", "tuning", "responsibility", "definition_xid",
+    "definition_path", "definition_sha256",
 )
 _REQUIRED_REQUEST = {
     "work_item_id", "source_mode", "purpose", "capability", "tuning",
@@ -159,6 +161,22 @@ def build_execution_binding(log: Path, request: dict) -> dict:
         assert run_text is not None
         snap = _run_snapshot(run_text, request["work_item_id"])
         fields = snap["fields"]
+        captured = {"xid": fields["definition_xid"],
+                    "path": fields["definition_path"],
+                    "sha256": fields["definition_sha256"]}
+        present = [value is not None for value in captured.values()]
+        if any(present) and not all(present):
+            _fail("run has an incomplete definition identity")
+        if all(present):
+            if (_XID.fullmatch(captured["xid"]) is None
+                    or _HASH.fullmatch(captured["sha256"]) is None
+                    or not captured["path"].strip()):
+                _fail("run has an invalid definition identity")
+            for key in ("capability", "tuning", "responsibility"):
+                if fields[key] != request[key]:
+                    _fail(f"{key} does not match definition-backed Skill Run")
+            if request["source_mode"] == "mcp":
+                _fail("definition-backed MCP startup is not available until get_skill serves one definition document")
         if request["source_mode"] == "filesystem" and _log_field(run_text, "mcp_session_id"):
             _fail("filesystem binding cannot use an MCP session")
         if request["source_mode"] == "mcp" and fields["skill_id"] == "general_skill":
@@ -168,6 +186,8 @@ def build_execution_binding(log: Path, request: dict) -> dict:
         result = dict(request)
         result.update({"schema_version": 1, "run_id": fields["run_id"],
                        "binding_origin": "workflow_builder", "run_snapshot": snap})
+        if all(present):
+            result["definition_identity"] = captured
         return _json_snapshot(result)[1]
 
 

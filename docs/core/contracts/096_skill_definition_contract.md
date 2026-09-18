@@ -4,7 +4,7 @@
 # SkillDefinition v1 と派生catalog
 
 この契約は、実装済みのSkillDefinition parserとcatalog生成器が受理する候補形式を定める。
-既存の`skill run --meta`、MCP `get_skill`、package discoveryはまだこの形式へ切り替えていない。
+既存のMCP `get_skill`、package discoveryはまだこの形式へ切り替えていない。
 構造検証の成功を、Skillの実行可能化・品質受入れ・移行完了とみなさない。
 
 ## 編集正本と責務
@@ -82,6 +82,35 @@ APIは`load_skill_definition(path)`、`parse_skill_definition(text, source=...)`
 `build_definition_catalog(paths)`。CLIはJSONをstdoutへ返し、正本や既存catalogを
 上書きしない。catalogの検索順位付けやmodel評価は含まない。
 
+## 明示選択した定義の実行
+
+```powershell
+python -m xrefkit skill run `
+  --definition skills/<skill>/SKILL.md `
+  --task "<task>" `
+  --capability "<instruction-derived capability>" `
+  --tuning "<instruction-derived tuning>" `
+  --responsibility "<delegated responsibility>" `
+  --execution-mode subagent_required `
+  --json
+```
+
+`--definition`と`--meta`は排他的である。定義形式にはrouting結果を保存せず、
+`capability` / `tuning` / `responsibility` / `execution_mode`を実行開始時に必須入力として
+run logへ固定する。run logの`maturity: definition_v1`は形式識別であり、`stable`への
+品質昇格を表さない。`meta: -`とし、同じ`SKILL.md`を唯一の実行本文として参照する。
+
+run logには定義のXID、root-relative path、raw bytesのSHA-256を記録する。
+`workflow bind-execution`はこれらをrequestから受け取らずrun logから
+`definition_identity`へ転記し、runtime三要素がrequestと一致することを確認する。
+local subagent readerは本文を渡す直前とreceipt記録前にXIDとSHA-256を再検証する。
+したがって、run開始後に定義が変更された場合は新しいrun/bindingが必要になる。
+
+この段階ではdefinition-backed runをMCP source modeへbindしない。現在のMCP
+`get_skill`とreaderは旧metaと本文の2文書を要求するため、単一定義を配るcatalog/tool
+contractへ切り替わるまで明示的に拒否する。protocol選択、管理upload、旧`--meta`
+実行経路は維持する。
+
 ## 代表変換と切替条件
 
 ```powershell
@@ -101,7 +130,7 @@ python -m tools.convert_dotnet_skill_definition --root .
 
 - 固有の方法・観点・停止条件を保持したまま共通制御を参照へ統合する。
 - Knowledgeと方法の所有関係を確認し、既存XIDと必須取得条件を保つ。
-- 新定義とExecutionBindingをrun/Skill/MCP解決へ接続し、複雑Flowを検証する。
+- 新定義をMCP catalog/get_skill解決へ接続し、複雑Flowを検証する。
 - source、catalog、package、管理upload、docsの対象版を揃える。
 
 [Workflow Protocol](../../guides/088_instruction_workflow_protocol.md#xid-9F4C2A7D1B60)の

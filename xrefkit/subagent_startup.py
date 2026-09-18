@@ -120,7 +120,15 @@ def read_subagent_startup(root: Path, log: Path, binding_path: Path) -> dict:
         documents.extend(_read(root, PROTOCOL_SOURCES[p][0], xid=PROTOCOL_SOURCES[p][1]) for p in protocols)
         skill_doc = _log_field(run_text, "skill_doc")
         if skill_doc:
-            documents.append(_read(root, skill_doc))
+            identity = binding.get("definition_identity")
+            if identity is not None:
+                if (not isinstance(identity, dict)
+                        or identity.get("path") != skill_doc):
+                    raise ValueError("definition identity path does not match skill_doc")
+                documents.append(_read(root, skill_doc, xid=identity.get("xid"),
+                                       sha256=identity.get("sha256")))
+            else:
+                documents.append(_read(root, skill_doc))
         documents.extend(_read(root, r["path"], sha256=r["sha256"]) for r in references)
         if sum(d["bytes"] for d in documents) + binding_doc["bytes"] > MAX_TOTAL_BYTES:
             raise ValueError("startup context exceeds total byte limit")
