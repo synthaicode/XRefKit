@@ -53,6 +53,7 @@ productionの既定sourceを切り替えるadoptionを分ける。前者は検�
 | constraint-derivation family | [A4C9E2B7D160](../../skills/packs/constraint-derivation/constraint_derivation_index/SKILL.v1.md#xid-A4C9E2B7D160) | 11/11 Skills、family routing、domain-specific stop conditions | explicit `--definition`; legacy kept |
 | `security_review` | [7C4E9A2D1F60](../../skills/security_review/SKILL.v1.md#xid-7C4E9A2D1F60) | evidence、security viewpoints、unknown、handoff | explicit `--definition`; legacy kept |
 | `editorial_intake` | [7C4E9A2D6F81](../../skills/packs/editorial-ops/editorial_intake/SKILL.v1.md#xid-7C4E9A2D6F81) | context boundary、reader capability、publication stop | explicit `--definition`; legacy kept |
+| editorial-ops family | [C8E1A6D3B270](../../skills/packs/editorial-ops/editorial_ops_index/SKILL.v1.md#xid-C8E1A6D3B270) | 6/6 Skills、evidence review、reader review、human publication authority | explicit `--definition`; legacy kept |
 
 各tracked v1は新しいown XIDを持ち、旧本文XIDと旧meta XIDを`aliases`に保持する。
 外部governance recordがないため、明示実行時のmaturityは`unassessed`である。
