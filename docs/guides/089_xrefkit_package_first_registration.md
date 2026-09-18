@@ -60,7 +60,9 @@ semantic routing の案内を追記する。既存の MCP 設定を上書きす�
 VS Code 起動後は MCP の `xrefkit` サーバーを有効にし、利用者は自然言語で
 依頼する。MCP の semantic routing は、目的に適合する Skill を選択し、選択後に
 one-document methodを提供する。Knowledgeは`knowledge_needs`から必要なものだけを
-catalog検索し、XIDで解決する。Workflow Protocolは引き続き共通実行境界を提供する。
+catalog検索し、XIDで解決する。親またはclientが各`required_when`を評価してactive
+need IDを指定し、MCPは指定されたneedだけをrequiredとして解決する。未評価のneedを
+不要とはみなさない。Workflow Protocolは引き続き共通実行境界を提供する。
 Skill に基づく作業の実行、
 変更、承認および完了判断はクライアント側が担当する。
 
@@ -140,11 +142,17 @@ Package のバイト列はインストール先から読み込まれ、ランキ
 `package_id` と Package provenance が付く。MCP サーバーの Python 環境と、
 Package をインストールした Python 環境が異なる場合は発見されない。
 
+これはinstalled packageのentry-point discoveryである。repository内に置いただけの
+SkillDefinition v1候補を自動有効化する機能ではない。repository内のv1定義は
+`--skill-definition`で明示し、指定されていない候補をactive catalogへ出さない。
+
 package manifestの`provides.skills[].path`は、canonicalなone-document Markdown
 SkillDefinitionを指すことができる。この場合は`skill_definition_v1`として検証し、
 definition XIDとraw bytes SHA-256をcatalogへ登録する。既存のSkill YAMLとentry
 Markdownの組合せは`legacy_split_v1`として継続する。詳細は
 [SkillDefinition distribution and adoption boundary](098_skilldefinition_distribution_boundary.md#xid-B7D3A5E91C42)を参照する。
+parser検証やcatalog登録は、実行可能性、maturity、品質受入れ、production adoptionを
+意味しない。
 
 ## MCP サーバー起動パラメータ一覧
 
@@ -213,8 +221,8 @@ XID routing、Shared Memory Operations は、これらを選択しない場合�
 
 ## Batch Regression をフォルダへ展開する場合
 
-通常の Package 利用では不要。folder-based MCP が Skill ファイルを必要と
-する場合だけ、Package をインストールした後に実行する。
+通常の Package 利用では不要。`legacy_split_v1`のfolder-based MCP互換経路が
+Skillファイルを必要とする場合だけ、Packageをインストールした後に実行する。
 
 ```powershell
 xrefkit-batch-regression install-mcp-skill `
@@ -256,9 +264,11 @@ python -m xrefkit skills sync --all
 python -m xrefkit skills sync --bundle csharp --dry-run --json
 ```
 
-同期後にMCPサーバーを再起動すると、ライブカタログが最新のSkillとKnowledgeを
-セマンティックルーティング対象として読み込む。同期は管理者の登録操作であり、
-通常の利用者が個別Skillを選択する操作ではない。
+同期は配布物をrepositoryへ登録する操作であり、management upload、staging、seal、
+review、adoptionではない。legacy discovery対象はMCP再起動後に読み直される。
+SkillDefinition v1は、同期されたという理由だけではactiveにならず、検証後に
+`--skill-definition`と必要な`--skill-governance`で明示有効化する。このcheckoutには
+management upload transportとadoption実装は含まれていない。
 
 ## 更新
 
@@ -282,12 +292,12 @@ Package の manifest にある `requires.xrefkit_core` と XRefKit のバージ�
 | 公開 Package を追加する | `python -m pip install <distribution>` |
 | CLI resolver で Package を使う | `--enabled-package` または `xrefkit.server.toml` |
 | MCP で Package を使う | MCP と同じ Python 環境へインストール |
-| PyPI 未公開 Skill を登録する | `python -m xrefkit skills sync` |
-| folder-based MCP へ展開する | Package 固有の `install-mcp-skill` |
+| PyPI 未公開の配布物をrepositoryへ同期する | `python -m xrefkit skills sync` |
+| legacy folder-based MCP へ展開する | Package 固有の `install-mcp-skill` |
 
 ## 完了確認
 
-次の3点が成功すれば、通常のローカル利用を開始できる。
+次の3点はCLI resolverのdownload、discovery、明示enablementを確認する。
 
 ```powershell
 python -m xrefkit --help
@@ -297,6 +307,11 @@ python -m xrefkit show effective-skill <skill-id> `
   --enable-entry-point-discovery `
   --enabled-package <package-id>
 ```
+
+MCP利用では、同じinterpreterでserverを再起動し、live callで`list_skills`、
+`rank_skills_for_purpose`、選択後の`get_skill`を別に確認する。repository内の
+SkillDefinition v1は`--skill-definition`で明示有効化されていることも確認する。
+CLI resolverの成功だけではlive MCP routingを証明しない。
 
 `skills/_index.md` はリポジトリ内 Skill のカタログであり、Package の
 インストールや発見では更新されない。リポジトリ内 Skill 自体を変更した

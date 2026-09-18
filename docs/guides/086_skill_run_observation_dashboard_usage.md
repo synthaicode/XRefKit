@@ -30,9 +30,11 @@ The dashboard shows:
 - available but unused XIDs
 - proposal-only boundary analysis candidates with evidence and unknowns
 
-Base repository XIDs and local XIDs are both included when they appear in the
-Skill run log. Local XIDs include entries supplied through a domain-knowledge
-catalog and entries served from local knowledge such as `packs/local/...`.
+Base and local XIDs are displayed when they are recorded in the Skill run log.
+The dashboard also reads validated events from the optional MCP audit JSONL when
+their correlation identity matches the run. XID origin is not inferred: the
+dashboard reports recorded selected, queried, loaded, applied, and
+runtime-referenced values.
 
 ## Screen Image
 
@@ -343,8 +345,10 @@ The `XID Usage` tab is derived from Skill run logs.
 
 - Available XIDs come from the `Available Domain Knowledge` section.
 - Selected XIDs come from the `Selected Knowledge Inputs` section.
-- Used XIDs come from selected knowledge inputs plus runtime artifact or
-  concern targets that look like XIDs.
+- Used XIDs are the union of selected Knowledge inputs and XID-looking artifact
+  or concern targets, including explicit XID references in their notes or text.
+- Queried and loaded XIDs from validated MCP or local observation events are
+  displayed separately and are not silently treated as applied usage.
 - Unused XIDs are available XIDs that were not selected or used.
 
 This includes local XIDs. A local XID is still an XID for dashboard purposes;
