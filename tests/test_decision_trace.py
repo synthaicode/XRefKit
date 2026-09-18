@@ -299,3 +299,32 @@ def test_worktree_creates_isolated_hypothesis_checkout(tmp_path):
     assert (worktree_path / "README.md").exists()
     assert git("-C", str(worktree_path), "branch", "--show-current").stdout.strip() == "hypothesis/parallel-Y"
     git("worktree", "remove", "--force", str(worktree_path))
+
+def test_checkpoint_only_adds_generated_manifest_when_work_is_ignored(tmp_path):
+    def git(*args):
+        return subprocess.run(["git", *args], cwd=tmp_path, check=True, capture_output=True, text=True)
+
+    git("init")
+    git("config", "user.email", "test@example.invalid")
+    git("config", "user.name", "Decision Trace Test")
+    (tmp_path / "README.md").write_text("base\n", encoding="utf-8")
+    (tmp_path / ".gitignore").write_text("work/*\n", encoding="utf-8")
+    git("add", "README.md", ".gitignore")
+    git("commit", "-m", "initial")
+
+    other = tmp_path / "work" / "private.txt"
+    other.parent.mkdir(exist_ok=True)
+    other.write_text("not checkpoint data", encoding="utf-8")
+
+    assert main([
+        "checkpoint", "--root", str(tmp_path), "--checkpoint-id", "CP-1",
+        "--purpose", "before AI run", "--json",
+    ]) == 0
+    manifest = tmp_path / "work" / "decision-trace" / "checkpoints" / "CP-1.json"
+    assert manifest.exists()
+    assert json.loads(manifest.read_text(encoding="utf-8"))["git_commit"]
+    assert git("rev-parse", "checkpoint/CP-1^{}").stdout.strip() == git("rev-parse", "HEAD").stdout.strip()
+    assert "checkpoint: CP-1" in git("log", "-1", "--pretty=%s").stdout
+
+    assert git("ls-files", "work/private.txt").stdout.strip() == ""
+
