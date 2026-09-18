@@ -37,7 +37,9 @@ Typical contents:
 - XID as the primary key
 - `xref search/show/rewrite/check/fix`
 - `knowledge/` as shared domain fragments
-- `skills/` as executable procedure carrying the capability/tuning/responsibility identity
+- `skills/` as executable SkillDefinition procedures; runtime binding fields are
+  derived from the instruction under
+  `docs/core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F`
 
 These rules are about how XRefKit routes knowledge and keeps references durable.
 

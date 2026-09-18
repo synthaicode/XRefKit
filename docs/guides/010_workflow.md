@@ -57,9 +57,13 @@ The full Skill runtime sequence is documented in
 - `sources/` contains original materials retained for human verification.
 - `tools/` and the `xrefkit` runtime provide deterministic operations.
 
-Skill routing selects a method from intent and `applies_when`, then derives the
-capability / tuning / responsibility binding from the instruction at run start.
-See [SkillDefinition v1](../core/contracts/096_skill_definition_contract.md#xid-E6A19D4B72C3).
+Skill routing selects a method from intent and `applies_when`, then the
+Workflow Protocol derives the runtime binding from the instruction at run
+start. The binding field meanings and ownership are defined by [Workflow
+Runtime Binding](../core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F).
+See [SkillDefinition v1](../core/contracts/096_skill_definition_contract.md#xid-E6A19D4B72C3)
+for the method-owned fields; do not copy runtime binding semantics into a
+Skill definition.
 
 ## Managed Markdown and XID Rules
 

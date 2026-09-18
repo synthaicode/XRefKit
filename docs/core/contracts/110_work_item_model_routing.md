@@ -46,8 +46,9 @@ model requirements. This is the machine-readable decomposition boundary: the ada
 steps, dependencies, metrics, or execution kind from `SKILL.md` prose.
 
 SkillDefinition metadata describes the reusable method and its criteria.
-Runtime `capability`, `tuning`, and `responsibility` are derived from the
-current instruction and recorded on the concrete work item binding;
+The [Workflow Runtime Binding contract](111_workflow_runtime_binding.md#xid-8D50A972BA9F)
+owns the runtime `capability`, `tuning`, and `responsibility` fields derived
+from the current instruction and recorded on the concrete work item binding;
 `model_tier` remains a legacy split Skill quality-gate field and is not
 SkillDefinition v1 metadata. These fields have no direct
 relation to a model and are never converted into candidate capabilities, cost

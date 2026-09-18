@@ -82,8 +82,10 @@ python -m xrefkit workflow subagent-read `
 
 上記の run_id は例である。新しく開始した run の ID に置き換え、sha256 は対象ファイルの実際の raw bytes から計算する。例中の placeholder はそのままでは受理されない。
 
-必須の識別・責任フィールドは `run_id`、`work_item_id`、`purpose`、`capability`、
-`tuning`、`responsibility` である。`scope_in`、`scope_out`、`stop_conditions` は
+必須の識別・binding フィールドは `run_id`、`work_item_id`、`purpose`、`capability`、
+`tuning`、`responsibility` である。これらの意味と導出元は [Workflow Runtime Binding
+contract](../core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F) が所有し、
+この binding はその受渡しと整合性を検証する。`scope_in`、`scope_out`、`stop_conditions` は
 文字列配列、`protocols` は現在 `workflow` を必須とし、追加できる protocol は
 `reporting` に限られる。`knowledge_access.mode` は `on_demand` でなければならず、
 catalog は root 内のファイルを指す locator である。catalog 本文は自動ロードされない。
@@ -207,6 +209,7 @@ local binding の必須責任フィールドは同じで、MCP では次の項�
 
 これは差分例である。`schema_version`、`run_id`、`work_item_id`、`purpose`、
 `capability`、`tuning`、`responsibility`、scope と stop conditions も必要になる。
+field の意味は Workflow Runtime Binding に従い、adapter は意味を再定義しない。
 MCP の `content_hash` は UTF-8 本文に対する SHA-256 で、local reader の raw file
 bytes に対する `sha256` と区別する。
 
@@ -259,7 +262,7 @@ python -m xrefkit workflow subagent-read `
 ```
 
 requestは上記のlocal/MCP bindingから`schema_version`と`run_id`を除き、
-`instruction_basis`に今回の指示根拠を記載したJSONである。`work_item_id`、purpose、triad、
+`instruction_basis`に今回の指示根拠を記載したJSONである。`work_item_id`、purpose、binding fields、
 scope、stop conditions、protocols、Knowledge locatorは明示する。`references`は省略でき、
 その場合は空配列になる。local requestには`repository_fingerprint`を含めず、
 MCP requestでは必須とする。未定義のkeyは拒否する。

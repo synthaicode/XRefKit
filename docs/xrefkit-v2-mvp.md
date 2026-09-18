@@ -45,8 +45,10 @@ validity or business adoption of an output.
 
 Skill definitions carry executable procedure and Skill-specific boundaries.
 Knowledge carries reusable evidence, rules, and domain criteria. Routing uses
-the current instruction and catalog metadata; capability, tuning,
-responsibility, and execution mode are derived for the work item at run time.
+the current instruction and catalog metadata, then applies the
+[Workflow Runtime Binding contract](core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F)
+for the work-item runtime fields. `model_requirements` remains the separate
+model-eligibility input.
 Knowledge bodies are loaded only for selected XIDs, with content hashes and
 source trace retained in the resulting bundle or run record.
 

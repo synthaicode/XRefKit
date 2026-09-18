@@ -50,24 +50,24 @@ Every load-ready legacy Skill must also declare `capability_layering: required` 
 usage-time setting that makes the runtime envelope carry the selected Skill's
 capability-layer declaration. `workflow_protocol` binds the Skill run to the
 repository runtime protocol for work items, artifacts, role separation,
-deterministic checking, closure, and handoff. The legacy Skill's identity is its
-`capability` / `tuning` / `responsibility` triplet, declared directly in
-`meta.md`: `capability` names the base reusable ability, `tuning` names its
-specialization, and `responsibility` names the business use the Skill is
-accountable for. These are the Skill's meta identity and routing vocabulary,
-not evidence. SkillDefinition v1 replaces this fixed meta triad with the
-instruction-derived runtime binding described above.
+deterministic checking, closure, and handoff. Legacy `meta.md` may retain the
+`capability` / `tuning` / `responsibility` fields as compatibility inputs.
+Their canonical ownership and derivation are defined by the
+[Workflow Runtime Binding contract](111_workflow_runtime_binding.md#xid-8D50A972BA9F);
+SkillDefinition v1 does not own fixed values for them.
 
-The Skill declares its business use through the `responsibility` field. Common
-runtime roles are owned by the workflow protocol, not by the Skill: `executor`
+On the legacy path, the compatibility metadata supplies `responsibility` to the
+Workflow Runtime Binding. Common runtime roles are owned by the workflow
+protocol, not by the Skill: `executor`
 advances execution; `checker` performs the deterministic run-record check
 through `xrefkit skill verify`; `quality_reviewer` owns output-content acceptance
 when the quality gate is required; and `handoff_owner` advances explicit
 handoff. `trial`, `stable`, and `governed` Skill metadata must not define these
 protocol-owned roles under `role_responsibilities`; Skill-specific acceptance or
 handoff deltas belong in `lifecycle`, `constraints`, `closure`, or check
-artifacts. (The legacy `role_responsibilities.executor` value is still accepted
-as the responsibility, but new Skills declare `responsibility` directly.)
+artifacts. The legacy `role_responsibilities.executor` value is still accepted
+as a compatibility source for `responsibility`. New SkillDefinitions declare
+neither field; the Workflow Protocol derives the value for the work item.
 
 Every Skill must expose a recognizable human-facing report. The report must
 use the common `Report`, `Status`, `Result`, `Evidence`, `Open Items`, and
@@ -233,7 +233,7 @@ continue to use `--meta skills/<skill>/meta.md` with the same runtime envelope.
 - the task
 - the declared OS contract
 - the declared capability layering setting, workflow protocol setting, and the
-  capability / tuning / responsibility identity
+  instruction-derived Workflow Runtime Binding fields
 - a required worklist
 - a concrete work-item section for task-specific items
 - a runtime artifact section for outputs, evidence, checks, judgments, sources, and handoff links

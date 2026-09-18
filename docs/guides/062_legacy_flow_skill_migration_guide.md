@@ -45,7 +45,9 @@ layers:
   - human guidance and machine-readable workflow control where applicable
 - Workflow Protocol and runtime binding
   - common phases, roles, logging, closure, and instruction-derived runtime
-    fields such as `capability`, `tuning`, `responsibility`, and `execution_mode`
+    fields such as `capability`, `tuning`, `responsibility`, and `execution_mode`;
+    their meanings and derivation belong to the [Workflow Runtime Binding
+    contract](../core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F)
 
 Existing `skills/<skill_id>/meta.md` plus `SKILL.md` pairs are
 `legacy_split_v1` compatibility inputs. Keep them readable until their
@@ -61,8 +63,8 @@ When reading an old Flow / Skill:
 - old workflow explanation moves to `docs/`
 - old workflow control definitions move to `flows/` when a machine-readable form
   exists or can be reconstructed safely
-- old ad hoc runtime assumptions become explicit runtime binding fields or
-  Workflow Protocol records; do not copy them into the v1 method as fixed
+- old ad hoc runtime assumptions become Workflow Protocol runtime binding
+  inputs or records; do not copy their semantics into the v1 method as fixed
   Skill identity
 
 ## Minimum Migration Output

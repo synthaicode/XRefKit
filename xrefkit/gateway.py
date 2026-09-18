@@ -89,12 +89,25 @@ class Measurement(Record):
 
 
 class SkillExecutionProfile(Record):
+    """Selected Skill identity plus legacy split compatibility fields."""
+
     source_id: Text
     skill_id: Text
     maturity: Literal["trial", "stable", "governed"]
     capability: Text | None = None
-    execution_mode: Literal["local_default", "subagent_preferred", "subagent_required"]
+    execution_mode: Literal["local_default", "subagent_preferred", "subagent_required"] | None = None
     model_tier: Literal["light", "standard", "heavy"] | None = None
+
+
+class WorkflowRuntimeBinding(Record):
+    owner: Literal["workflow_protocol"] = "workflow_protocol"
+    contract_xid: Literal["8D50A972BA9F"] = "8D50A972BA9F"
+    source: Literal["instruction_derived", "legacy_meta_compatibility"]
+    capability: Text
+    tuning: Text
+    responsibility: Text
+    execution_mode: Literal["local_default", "subagent_preferred", "subagent_required"]
+    instruction_basis: Text
 
 
 class SkillGatewayWorkItem(Record):
@@ -108,6 +121,7 @@ class SkillGatewayWorkItem(Record):
     # These are task/domain descriptors retained in the adapter result. They
     # are never converted into candidate-model requirements.
     capability_inputs: list[Text] = Field(default_factory=list)
+    runtime_binding: WorkflowRuntimeBinding | None = None
     model_requirements: "WorkItemModelRequirements | None" = None
     metrics: dict[str, Measurement] = Field(default_factory=dict)
     tool_ref: Text | None = None
@@ -136,9 +150,10 @@ class SkillGatewayWorkItem(Record):
 class WorkItemModelRequirements(Record):
     """Explicit model-selection requirements for one concrete work item.
 
-    `capability` in Skill metadata is domain identity.  These requirement labels
-    are instead predicates evaluated against environment-owned candidate
-    evidence, and must be supplied with evidence for this work item.
+    Workflow Runtime Binding capability is task context, while legacy Skill
+    capability remains a compatibility field. These requirement labels are
+    separate predicates evaluated against environment-owned candidate evidence
+    and must be supplied with evidence for this work item.
     """
 
     required_candidate_capabilities: list[Text] = Field(default_factory=list)
@@ -168,6 +183,10 @@ class SkillAdapterRequest(Record):
     def skill_evidence(self):
         if not any(row.source_id == self.skill.source_id for row in self.work_item.evidence):
             raise ValueError("Skill work item evidence must reference the Skill metadata source")
+        if self.work_item.runtime_binding is None and self.skill.execution_mode is None:
+            raise ValueError(
+                "work item requires runtime_binding or legacy skill.execution_mode"
+            )
         return self
 
 
@@ -553,6 +572,12 @@ def adapt_skill_work_item(request: SkillAdapterRequest, policy: Policy) -> dict:
         issues.append("Skill work item and model policy belong to different environments")
 
     item = request.work_item
+    runtime_binding = item.runtime_binding
+    execution_mode = (
+        runtime_binding.execution_mode
+        if runtime_binding is not None
+        else request.skill.execution_mode
+    )
     if item.kind == "deterministic":
         step = Step(
             id=item.id,
@@ -577,6 +602,9 @@ def adapt_skill_work_item(request: SkillAdapterRequest, policy: Policy) -> dict:
             # Kept as an empty compatibility field. No Skill-to-model mapping
             # is performed by this adapter.
             "mapping_evidence": [],
+            "workflow_runtime_binding": (
+                runtime_binding.model_dump() if runtime_binding is not None else None
+            ),
             "skill_semantics": {
                 "capability": request.skill.capability,
                 "work_item_capability_inputs": item.capability_inputs,
@@ -592,7 +620,7 @@ def adapt_skill_work_item(request: SkillAdapterRequest, policy: Policy) -> dict:
     if unknown_axes:
         issues.append("unknown complexity: " + ", ".join(unknown_axes))
     if (
-        request.skill.execution_mode == "subagent_required"
+        execution_mode == "subagent_required"
         and item.execution_kind not in policy.subagent_execution_kinds
     ):
         issues.append(
@@ -623,7 +651,7 @@ def adapt_skill_work_item(request: SkillAdapterRequest, policy: Policy) -> dict:
             depends_on=item.depends_on,
             capabilities=required_capabilities,
             metrics=item.metrics,
-            execution_mode=request.skill.execution_mode,
+            execution_mode=execution_mode,
             minimum_cost_tier=requirements.minimum_cost_tier,
             node_id=item.node_id,
             authorization=item.authorization,
@@ -638,6 +666,9 @@ def adapt_skill_work_item(request: SkillAdapterRequest, policy: Policy) -> dict:
         "step": step,
         "eligibility_evidence": eligibility_evidence,
         "mapping_evidence": [],
+        "workflow_runtime_binding": (
+            runtime_binding.model_dump() if runtime_binding is not None else None
+        ),
         "skill_semantics": {
             "capability": request.skill.capability,
             "work_item_capability_inputs": item.capability_inputs,

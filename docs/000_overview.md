@@ -60,6 +60,11 @@ loaded, and used Knowledge and retain source hashes where available.
   the runtime binding succeeds; the human decides semantic acceptance and
   canonical adoption.
 
+The single definition of the runtime `capability`, `tuning`,
+`responsibility`, and `execution_mode` fields is the
+[Workflow Runtime Binding contract](core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F).
+`model_requirements` remains a separate per-work-item model-eligibility input.
+
 Business work is organized into Skills, Knowledge, and where useful a
 manifest-driven Business Pack. OS utility Skills protect or improve the
 operating layer; domain Skills perform business work inside that boundary.

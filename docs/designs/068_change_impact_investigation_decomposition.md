@@ -23,9 +23,10 @@ Change-impact investigation uses three current repository surfaces:
 - **Business Pack**: places the investigation in business progression and
   defines what consumes its output next.
 
-The reusable method is selected from its SkillDefinition metadata. The current
-instruction supplies capability / tuning / responsibility as a runtime routing
-and ExecutionBinding artifact rather than fixed Skill metadata.
+The reusable method is selected from its SkillDefinition metadata. The
+instruction-derived `capability`, `tuning`, and `responsibility` belong to the
+[Workflow Runtime Binding](../core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F),
+not to fixed Skill metadata.
 
 ## Responsibility Split
 

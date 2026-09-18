@@ -75,7 +75,7 @@ def gateway_contract(*, include_schemas: bool = False) -> dict:
             "Apply base startup first; preserve any required Prompt Flow initialization and correlation.",
             "Resolve Skill metadata through MCP, not client filesystem governance paths. Do not open a Skill body before its runtime gate.",
             "Adapt each concrete Skill work item separately. Supply execution kind, evidence-bearing model_requirements, and values for all six axes; never infer them from Skill prose.",
-            "Treat Skill capability, tuning, responsibility, and model_tier as task governance semantics, not model-selection inputs. Candidate eligibility comes from explicit work-item requirements and evaluated environment policy evidence.",
+            "Treat Workflow Runtime Binding capability, tuning, responsibility, and execution_mode as runtime task context. model_requirements remains the separate per-work-item model-eligibility input; Skill model_tier remains quality-gate metadata. Candidate eligibility comes from explicit work-item requirements and evaluated environment policy evidence.",
             "Read profiles through the active client's existing profile mechanism; never create a second profile store.",
             "Send source snapshots and task-relevant assessment evidence. Paths are labels, not server file read requests.",
             "Hash the instruction string as UTF-8 without a BOM; include exactly one instruction source with that hash and byte count.",

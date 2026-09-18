@@ -38,9 +38,10 @@ Typical contents:
 - `xref search/show/rewrite/check/fix`
 - `knowledge/` as shared domain fragments
 - `skills/` as executable SkillDefinition procedures; runtime
-  `capability`/`tuning`/`responsibility` values are derived from the current
-  instruction and carried by ExecutionBinding. Legacy split Skills may retain
-  those fields in `meta.md` during migration.
+  runtime binding values are derived from the current instruction and carried
+  by ExecutionBinding. See the [Workflow Runtime Binding contract](../contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F).
+  Legacy split Skills may retain the corresponding fields in `meta.md` during
+  migration.
 
 These rules are about how XRefKit routes knowledge and keeps references durable.
 

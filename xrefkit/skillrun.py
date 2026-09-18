@@ -514,6 +514,7 @@ def _render_log(
     domain_knowledge: dict[str, object],
     decision_trace_checkpoint: dict[str, object] | None = None,
     definition_identity: dict[str, str] | None = None,
+    runtime_binding_source: str = "legacy_meta_compatibility",
 ) -> str:
     tier_label = model_tier or "unset"
     quality_policy = "required" if model_tier in QUALITY_REQUIRED_TIERS else "optional"
@@ -617,6 +618,13 @@ def _render_log(
         for key, value in (definition_identity or {}).items()
     )
     runtime_responsibility = role_responsibilities.get("executor") or "not declared"
+    legacy_runtime_binding_lines = ""
+    if runtime_binding_source == "legacy_meta_compatibility":
+        legacy_runtime_binding_lines = (
+            f"- legacy_capability_layering: `{capability_layering}`\n"
+            "- legacy_capability_refs:\n"
+            f"{capability_ref_lines}\n"
+        )
     return f"""# Skill Run Log
 
 - run_id: `{run_id}`
@@ -644,10 +652,6 @@ def _render_log(
 - guard_policy: `{guard_policy}`
 - capability_layering: `{capability_layering}`
 - workflow_protocol: `{workflow_protocol}`
-- capability: `{capability}`
-- tuning: `{tuning}`
-- responsibility: `{runtime_responsibility}`
-- execution_mode: `{execution_mode}`
 - model_tier: `{tier_label}`
 - executor: `{assigned_roles["executor"]}`
 - checker: `{assigned_roles["checker"]}`
@@ -672,14 +676,18 @@ def _render_log(
 
 {contract_lines}
 
-## Capability Layering
+## Workflow Runtime Binding
 
-- capability_layering: `{capability_layering}`
+- owner: `workflow_protocol`
+- contract_xid: `8D50A972BA9F`
+- source: `{runtime_binding_source}`
 - capability: `{capability}`
 - tuning: `{tuning}`
-- rule: execute the Skill inside the declared capability / tuning / responsibility boundary; capability definitions are control definitions, not evidence
-- capability_refs:
-{capability_ref_lines}
+- responsibility: `{runtime_responsibility}`
+- execution_mode: `{execution_mode}`
+- instruction_basis: `run.task`
+- rule: derive and persist the runtime binding from the current instruction and work-item state; model_requirements remains a separate model-eligibility input
+{legacy_runtime_binding_lines}
 
 ## Startup Inputs
 
@@ -2856,6 +2864,7 @@ def run_skill(args) -> SkillRunResult:
         domain_knowledge=domain_knowledge,
         decision_trace_checkpoint=checkpoint,
         definition_identity=definition_identity,
+        runtime_binding_source="instruction_derived" if definition_arg else "legacy_meta_compatibility",
     )
     with _LogFileLock(out_path.with_name(f".{out_path.name}.lock")):
         _atomic_write_text(out_path, log)
@@ -2986,6 +2995,7 @@ def run_workflow_instruction(args) -> SkillRunResult:
         model_tier=None,
         domain_knowledge={"available": [], "selected": {}, "requirements": []},
         decision_trace_checkpoint=checkpoint,
+        runtime_binding_source="instruction_derived",
     )
     log = log.replace("# Skill Run Log", "# Workflow Run Log", 1)
     log = log.replace("## Skill Load Gate", "## Run Load Gate", 1)

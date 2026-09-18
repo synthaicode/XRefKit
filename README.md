@@ -40,10 +40,11 @@ tools, and an optional MCP adapter.
 
 Current Skill authoring targets the one-document `skill_definition_v1` format.
 Existing `legacy_split_v1` Skills and unversioned historical run logs remain
-readable during migration. `capability`, `tuning`, `responsibility`, and
-`execution_mode` are derived for each run and captured in its runtime binding;
-they are not fixed properties of a SkillDefinition. Knowledge used by a Skill
-remains separate and is resolved from the XID catalog when needed.
+readable during migration. The [Workflow Runtime Binding](docs/core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F)
+defines how instruction-derived `capability`, `tuning`, `responsibility`, and
+`execution_mode` are captured; these are not fixed SkillDefinition properties.
+Knowledge used by a Skill remains separate and is resolved from the XID catalog
+when needed.
 
 The [Skill Run Dashboard](docs/guides/086_skill_run_observation_dashboard_usage.md#xid-4A4763A2DE63)
 helps people inspect recorded XID retrieval and use together with the run's

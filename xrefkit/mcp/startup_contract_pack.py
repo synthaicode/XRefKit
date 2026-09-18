@@ -30,8 +30,8 @@ EMBEDDED_STARTUP_SOURCE_PATHS = {
 # no longer drift silently.
 EMBEDDED_BASED_ON_HASHES = {
     "0B5C58B5E5B2": "2ce3b2fff46200aef3d929811ff9ddfc90aec4b195a986b19ec57180d85b4a56",
-    "5A1C8E4D2F90": "af55e7d1705704563db948d47c0fe1201523d4f327157ed40030cf429d238f60",
-    "6C0B62D6366A": "19263a65785aecf19aca1bf584d1f91c8cb909967de1f9b447d0a0498ccf7947",
+    "5A1C8E4D2F90": "6872cc436fb4fe89bcb10b51b8fa49329656a9f89d1f6bc384e8d1f393b48a16",
+    "6C0B62D6366A": "0c5d70ffcdbee38b03df4070256d14aebb326ff2fe8f5d6f9c8c2084c5646139",
     "8A666C1FD121": "d03931f9892b6af13cd2b0fa7bc2112e06ed5a7f04bea6b9bd530594b516c4d0",
     "A7F3C92D4E11": "ede477b451acc9c543c312e7b3ea3ae5f10292f458150bc2ea5b80c9fea7d0b9",
     "4A423E72D2ED": "0bbdccc47ec51269809ea3010a55ac0a459e5815282286510b67f2ae37b9bffc",
@@ -74,7 +74,7 @@ Sources:
 - Use XIDs as primary keys. Resolve needed XID links through get_document_by_xid. Do not recursively load related links at startup.
 - In MCP mode, path#xid-... values are lookup handles and diagnostic locations, not client filesystem instructions. The client calls get_document_by_xid with the XID; server-side resolution maps the XID to content.
 - Keep Skill procedure, domain knowledge, and work logs separate.
-- Treat knowledge/ as shared evidence fragments and Skill definitions as executable methods with declared knowledge needs. Derive capability/tuning/responsibility from the current instruction at run start.
+- Treat knowledge/ as shared evidence fragments and Skill definitions as executable methods with declared knowledge needs. Apply the Workflow Runtime Binding contract (XID 8D50A972BA9F) to derive runtime fields from the current instruction at run start.
 - Treat docs/ indexes as lookup/navigation handles, not mandatory startup body loads.
 - Do not guess missing governance or task facts. Find and read the relevant XIDs first.
 
@@ -86,7 +86,7 @@ blocks. Each protocol owns its correlation, orchestration, reporting,
 verification, closure, and applicability details; this startup body does not
 duplicate those procedures.
 
-- Route dynamically from the active Skill catalog and the current instruction. The selected method and instruction determine the runtime capability/tuning/responsibility/execution-mode binding.
+- Route dynamically from the active Skill catalog and the current instruction. The selected method and instruction determine the Workflow Runtime Binding; model_requirements remains separate model-routing data.
 - Start a Skill Run with the returned runtime envelope, preserve its run_log and definition identity, and do not materialize or execute the method until the run and ExecutionBinding succeed.
 - In MCP mode, bind the returned run identity and Skill identity with bind_skill_run; carry any protocol correlation values required by the separate protocol blocks so client and server records remain joined.
 - Keep references XID-based and resolve only the needed XIDs. The client owns execution and human-facing decisions; MCP supplies definitions, resolution, and binding data.

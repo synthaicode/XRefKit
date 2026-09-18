@@ -92,6 +92,10 @@ def test_definition_run_records_dynamic_routing_and_exact_revision(tmp_path):
     assert "- definition_xid: `ABCDEF123456`" in text
     assert "- definition_path: `skills/definition_sample/SKILL.md`" in text
     assert f"- definition_sha256: `{digest}`" in text
+    assert "- source: `instruction_derived`" in text
+    assert "- owner: `workflow_protocol`" in text
+    assert "- instruction_basis: `run.task`" in text
+    assert "legacy_capability_layering" not in text
     assert "- capability: `repository inspection`" in text
     assert "- tuning: `preserve unknowns`" in text
     assert "- responsibility: `produce the bounded report`" in text

@@ -23,8 +23,8 @@ as stale to every client when they diverge.
 
 - pack_version: 1
 - 0B5C58B5E5B2: `8cb20f071fe988d8ef552dcf83db0470ba02ce0d4fc5efb9257091f4a9980515`
-- 5A1C8E4D2F90: `99f8a3ae139e1bbe6d8a7153fb59f37665ae98b93057ec9b3446563ae590ba7e`
-- 6C0B62D6366A: `4ee06b70eb432c6f93b0d089de71aee3fbde8d7af6c1656ba925779cdd4cb5c2`
+- 5A1C8E4D2F90: `4d85ea9ba71cb30d1271e363a071a4a03c19f869f3f50019c3677370bca457c8`
+- 6C0B62D6366A: `b3f4950c87f689fd5f51379380413fbd16be6f6c8fcf79ae27d0cd24c88aaaf5`
 - 8A666C1FD121: `ff3f5e3b7b83a738edb5e99195a79e664db33a514e7a8d1fe0129e6787f994a2`
 - A7F3C92D4E11: `5732f45b041b60ec643ae4ff2c94dcc2e15376cb77f12b39dc2dafbf3614a0a4`
 - 4A423E72D2ED: `75fa96411be95fcc5657ce1d13fee204c1d8e43ab789ca4ac6e79aef2d25654a`
@@ -45,7 +45,7 @@ Sources:
 - Use XIDs as primary keys. Resolve needed XID links through get_document_by_xid. Do not recursively load related links at startup.
 - In MCP mode, `path#xid-...` values are lookup handles and diagnostic locations, not client filesystem instructions. The client calls get_document_by_xid with the XID; server-side resolution maps the XID to content.
 - Keep Skill procedure, domain knowledge, and work logs separate.
-- Treat knowledge/ as shared evidence fragments and Skill definitions as executable methods with declared knowledge needs. Derive capability/tuning/responsibility from the current instruction at run start.
+- Treat knowledge/ as shared evidence fragments and Skill definitions as executable methods with declared knowledge needs. Apply the [Workflow Runtime Binding contract](111_workflow_runtime_binding.md#xid-8D50A972BA9F) to derive runtime fields from the current instruction at run start.
 - Treat docs/ indexes as lookup/navigation handles, not mandatory startup body loads.
 - Do not guess missing governance or task facts. Find and read the relevant XIDs first.
 
@@ -60,8 +60,7 @@ closure, and applicability details; this startup body does not duplicate
 those procedures.
 
 - Route dynamically from the active Skill catalog and the current instruction.
-  The selected method and instruction determine the runtime
-  capability/tuning/responsibility/execution-mode binding.
+  The selected method and instruction determine the Workflow Runtime Binding.
 - Start a Skill Run with the returned runtime envelope, preserve its `run_log`
   and definition identity, and do not materialize or execute the method until
   the run and ExecutionBinding succeed.

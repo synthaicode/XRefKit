@@ -16,7 +16,7 @@ Skillの編集正本は一つのMarkdownファイルとし、YAML headerに発�
 
 `capability` / `tuning` / `responsibility`、model名やmodel tierはheaderに置かず、
 今回の指示に基づくroutingと
-[ExecutionBinding](../../guides/095_subagent_startup_read.md#xid-D7A4C9E2B861)で扱う。
+[Workflow Runtime Binding](111_workflow_runtime_binding.md#xid-8D50A972BA9F)で扱う。
 共通のWorkflow、guard、unknown、検査分離、エスカレーションをSkillごとに再定義しない。
 Skill固有の適用外条件・方法・停止条件・handoffは本文に残す。
 
@@ -101,8 +101,9 @@ python -m xrefkit skill run `
 ```
 
 `--definition`と`--meta`は排他的である。定義形式にはrouting結果を保存せず、
-`capability` / `tuning` / `responsibility` / `execution_mode`を実行開始時に必須入力として
-run logへ固定する。形式は`definition_format: skill_definition_v1`で識別する。
+Workflow Runtime Bindingの`capability` / `tuning` / `responsibility` /
+`execution_mode`を実行開始時に必須入力としてrun logへ固定する。形式は
+`definition_format: skill_definition_v1`で識別する。
 外部governance recordがなければ`maturity: unassessed`とし、`stable`への品質昇格を
 推定しない。`meta: -`とし、同じ`SKILL.md`を唯一の実行本文として参照する。
 

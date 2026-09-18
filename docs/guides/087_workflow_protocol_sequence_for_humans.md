@@ -48,9 +48,10 @@ phase.
    - A v1 Skill is selected from header identity and `applies_when`; a legacy
      split Skill retains its meta identity and applicability path.
 
-3. Main AI / harness opens the runtime envelope.
-   For SkillDefinition v1, derive the runtime binding from the instruction:
-   python -m xrefkit skill run --definition <SKILL.md> --task "<task>" --capability "<capability>" --tuning "<tuning>" --responsibility "<responsibility>" --execution-mode <mode> --json
+3. Main AI / harness opens the runtime envelope. The Workflow Protocol owns
+   the runtime binding semantics; derive the fields from the instruction as
+   specified by [Workflow Runtime Binding](../core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F):
+   python -m xrefkit skill run --definition <SKILL.v1.md> --task "<task>" --capability "<capability>" --tuning "<tuning>" --responsibility "<responsibility>" --execution-mode <mode> --json
    For a legacy split Skill, use its compatibility metadata:
    python -m xrefkit skill run --meta <skill-meta> --task "<task>" --json
 

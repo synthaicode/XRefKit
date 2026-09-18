@@ -108,11 +108,11 @@ class SkillCatalogEntry:
     path: str
     meta_path: str
     context_size: dict[str, Any]
-    # Skill-centric consolidation (design 083/084): the capability/tuning/
-    # responsibility triad is the Skill meta identity and routing vocabulary,
-    # and preconditions/knowledge_slots are the declared needs that replace
-    # capability_refs binding and static knowledge_refs. Surfaced as an additive
-    # superset; empty until skill metas migrate to the new fields.
+    # Legacy catalog facets retained for compatibility. Runtime capability,
+    # tuning, and responsibility are owned by Workflow Runtime Binding under
+    # workflow_protocol; canonical v1 definitions derive them from the current
+    # instruction and work item. model_requirements remains a separate
+    # per-work-item model-eligibility input.
     capability: str = ""
     tuning: str = ""
     responsibility: str = ""

@@ -67,7 +67,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 
 ## Workflow And Organization Model
 
-- [Capability layering](reference/031_capability_layering.md#xid-8D50A972BA9F)
+- [Capability layering](core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F)
 - [Business intake workflow](packs/business-intake/067_business_intake_workflow.md#xid-7F2C8DA14E66)
 
 ## Operating Models, Guides, And Designs

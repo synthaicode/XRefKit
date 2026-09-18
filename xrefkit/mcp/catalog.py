@@ -2758,6 +2758,25 @@ def _workflow_protocol() -> dict[str, object]:
     return {
         "version": "1",
         "source": "xrefkit.mcp",
+        "runtime_binding": {
+            "contract_xid": "8D50A972BA9F",
+            "owner": "workflow_protocol",
+            "fields": [
+                "capability",
+                "tuning",
+                "responsibility",
+                "execution_mode",
+                "instruction_basis",
+            ],
+            "source_values": {
+                "skill_definition_v1": "instruction_derived",
+                "legacy_split_v1": "legacy_meta_compatibility",
+                "instruction_backed_workflow": "instruction_derived",
+            },
+            "derivation": "parent_workflow_or_host_derives_from_current_instruction_and_work_item_state",
+            "model_requirements": "separate_per_work_item_model_eligibility_input",
+            "compatibility": "legacy capability_layering and capability_refs metadata may remain visible but do not own the canonical binding",
+        },
         "decision_trace_protocol": {
             "status": "standard",
             "contract_xid": "22164A51A745",

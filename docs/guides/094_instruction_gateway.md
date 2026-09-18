@@ -121,9 +121,10 @@ python -m xrefkit gateway skill-adapt --request work/skill-item-001.json --polic
 
 For a canonical `skill_definition_v1`, `capability`, `tuning`, and
 `responsibility` are instruction-derived runtime binding fields recorded on the
-work item and ExecutionBinding. They describe the requested work context; they
-are not fixed SkillDefinition identity and do not map to, filter, rank, or
-select a model. `model_tier` and fixed triad values in legacy split Skill
+work item and ExecutionBinding. The Workflow Protocol owns their meanings and
+derivation; see [Workflow Runtime Binding](../core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F).
+They describe the requested work context; they are not fixed SkillDefinition
+identity and do not map to, filter, rank, or select a model. `model_tier` and fixed triad values in legacy split Skill
 metadata remain compatibility and quality-gate inputs only; they are not v1
 routing selectors. For each concrete model work item, supply `model_requirements` with the candidate-requirement
 labels actually needed, an optional minimum cost tier, and evidence for those
@@ -135,6 +136,12 @@ mismatched environment, or an `unknown` axis remains `needs_assessment`.
 Every non-ready adapter response returns `step: null`, so it cannot be added to
 an Assessment for routing. A legacy `skill_adapter` mapping block may remain in
 an existing policy for compatibility, but the gateway ignores it for selection.
+The adapter request may carry the complete binding as
+`work_item.runtime_binding`. The adapter returns it unchanged as
+`workflow_runtime_binding` and uses its `execution_mode` for placement. If the
+field is absent, the existing `skill.execution_mode` path remains available for
+legacy clients. `skill_semantics` remains a compatibility response field and is
+not the canonical owner of binding semantics.
 The same policy lists host-supported
 `subagent_execution_kinds`. Keep `analysis` absent unless that host can perform
 the requested SubAgent dispatch; keep `implementation` and `operation` present

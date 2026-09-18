@@ -26,7 +26,7 @@ reconstructing everything from scratch.
 
 ## Optional References
 
-- [Skill meta template](references/skill_meta_template.md#xid-C2FF81FBEE8E)
+- [SkillDefinition template](references/skill_meta_template.md#xid-C2FF81FBEE8E)
 - [Skill body template](references/skill_body_template.md#xid-84C920557A2C)
 - [Flow YAML template](references/flow_yaml_template.yaml#xid-87F138864C3F)
 - [Flow doc template](references/flow_doc_template.md#xid-9604C0C31FE3)
@@ -55,8 +55,8 @@ decisions before editing.
 ## Outputs
 
 - created or updated Skill files:
-  - `meta.md`
-  - `SKILL.md`
+  - `SKILL.v1.md` for canonical authoring
+  - `meta.md` and `SKILL.md` only when maintaining a legacy split Skill
   - optional `references/`
 - created or updated Flow file:
   - `flows/<flow_id>.yaml`
@@ -71,11 +71,12 @@ carry explicit continuity structure.
 
 - For a Skill, require:
   - explicit `input` and `output`
-  - explicit `capability_layering`, `workflow_protocol`, `tuning`, and
-    `role_responsibilities.executor` before `trial` or higher use
-  - no protocol-owned role responsibilities (`checker`, `quality_reviewer`,
-    or `handoff_owner`) in `meta.md`
-  - explicit startup, execution, monitoring, closure, and handoff behavior
+  - a one-document `skill_definition_v1` header with applicability,
+    exclusions, criteria, `knowledge_needs`, and Skill-specific `control_refs`
+  - no fixed `capability`, `tuning`, `responsibility`, `execution_mode`, or
+    protocol-owned roles in the SkillDefinition; the Workflow Protocol derives
+    the runtime binding for each work item
+  - explicit Skill-specific execution, stop, and handoff behavior
   - explicit `observation_refs` from `trial` upward
   - explicit references to reusable knowledge instead of burying facts in the
     body
@@ -146,11 +147,13 @@ carry explicit continuity structure.
 1. Create or update a session note in `work/sessions/` for the authoring
    observation basis.
 2. For a Skill:
-   - create `meta.md`
-   - create `SKILL.md`
+   - create one `SKILL.v1.md` document for new canonical authoring
+   - update `meta.md` and `SKILL.md` only when the requested target remains on
+     the legacy compatibility path
    - add `references/` only when they reduce repeated authoring effort
-   - force explicit `input`, `output`, lifecycle, observation, and closure
-     structure so later AI runs do not rely on implicit memory
+   - force explicit inputs, outputs, reusable method, criteria, and
+     Skill-specific stop/handoff structure so later AI runs do not rely on
+     implicit memory; keep common Workflow lifecycle control ambient
    - when starting from a rough draft, record the gap diagnosis and the next
      evidence needed before claiming trial readiness
 3. For a public Skill:
@@ -166,8 +169,8 @@ carry explicit continuity structure.
    - force explicit inputs, outputs, handoff, sequence, and control rules
    - add or update matching `docs/` explanation only when human-facing workflow
      interpretation is required
-5. If the Skill loads external context, compose the context-direction guard into
-   its `meta.md` and `SKILL.md`.
+5. Do not compose the ambient context-direction guard into the Skill. Add a
+   `control_refs` entry only for a Skill-specific control delta.
 6. Keep factual or domain-heavy text out of `SKILL.md`; move it to
    `knowledge/` when it needs durable shared reuse.
    - For `draft` or early `trial`, temporary embedded target-specific material
@@ -193,19 +196,22 @@ python -m xrefkit xref init --include skills docs knowledge agent capabilities t
 python -m xrefkit xref fix --include skills docs knowledge agent capabilities tools
 ```
 
-10. Validate the created Skill at the intended maturity level, and confirm
-    the publication boundary is clean (zero violations required before any
-    commit or publication):
+10. Validate the created Skill and confirm the publication boundary is clean
+    (zero violations required before any commit or publication):
 
 ```powershell
-python -m xrefkit skill check --meta <path-to-skill>/meta.md --level draft
-python -m xrefkit skill check --meta <path-to-skill>/meta.md --level trial
+python -m xrefkit skill run --definition <path-to-skill>/SKILL.v1.md --task "<bounded task>" --capability "<derived ability>" --tuning "<derived specialization>" --responsibility "<derived outcome>" --execution-mode <mode> --json
 python -m xrefkit skill list
 ```
 
-    `trial` or higher validation is a hard gate for the runtime role rule:
-    `role_responsibilities.executor` must be present, and `checker`,
-    `quality_reviewer`, and `handoff_owner` must not be defined there.
+    For a legacy split target, retain the existing compatibility validation:
+
+```powershell
+python -m xrefkit skill check --meta <path-to-skill>/meta.md --level trial
+```
+
+    Legacy runtime fields remain accepted inputs. Do not copy them into a new
+    `skill_definition_v1` header.
 
     `xrefkit skill list` shows every skill with its public/private boundary and
     fails when a private file is git-tracked or a public asset references a

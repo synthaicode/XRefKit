@@ -110,7 +110,10 @@ python tools/convert_to_xrefkit_skill.py <extracted_root> --batch --skill-id-pre
 5. Create a one-document SkillDefinition with a validated header and behavior-only
    method when the converter is not sufficient or manual normalization is required.
 6. Keep `capability`, `tuning`, `responsibility`, `execution_mode`, model selection,
-   maturity, and protocol-owned roles out of the definition. Bind them at runtime.
+   maturity, and protocol-owned roles out of the definition. Bind them at runtime
+   through the [Workflow Runtime Binding contract](../../docs/core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F);
+   this Skill preserves the field names only where legacy compatibility requires
+   them and does not redefine their meanings.
    When the current converter emits a legacy split Skill, record that format explicitly
    and migrate it before treating it as a v1 definition.
 7. Do not compose the context-direction guard into the imported Skill. The guard
@@ -124,7 +127,7 @@ python tools/convert_to_xrefkit_skill.py <extracted_root> --batch --skill-id-pre
 12. Validate and normalize links:
    - `python -m xrefkit xref rewrite`
    - `python -m xrefkit xref fix`
-13. Validate a v1 import with `python -m xrefkit skill definition-check --path <target>/SKILL.md`.
+13. Validate a v1 import with `python -m xrefkit skill definition-check --path <target>/SKILL.v1.md`.
     For an intentionally retained legacy import, use
     `python -m xrefkit skill check --meta <target>/meta.md --level trial`.
 

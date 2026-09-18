@@ -86,10 +86,22 @@ source adoption remains a separate human decision.
 
 ```powershell
 python -m xrefkit skill definition-check `
-  --path skills/<skill>/SKILL.md `
+  --path skills/<skill>/SKILL.v1.md `
   --governance governance/skills/<skill>.json `
   --json
 ```
+
+For SkillDefinition v1, improve the method, criteria, applicability,
+exclusions, Knowledge needs, and Skill-specific stop/handoff conditions from
+observed evidence. Reassess the external governance record against the exact
+new content hash. Do not add Workflow Runtime Binding values to the definition
+as part of promotion.
+
+## Legacy Split Maturity Requirements
+
+The remaining field lists and templates in this section apply only to
+`legacy_split_v1`. They document the existing validator and promotion
+transport; they do not define canonical SkillDefinition identity.
 
 ### Draft Minimum
 
@@ -232,7 +244,7 @@ For a legacy `trial`, runtime decisions may still be provisional in meaning,
 but its legacy runtime fields must be explicit before it is load-ready.
 SkillDefinition v1 receives those fields at run start.
 
-## Improvement Flow
+## Legacy Split Improvement Flow
 
 1. Create the Skill as `draft`.
 2. Add a first `SKILL.md` procedure and promote to `trial`.
@@ -297,7 +309,7 @@ apply updates `maturity`, `observation_refs`, and approved `governance_refs` in
 canonical `meta.md`, while publication, distribution, and live verification
 remain `not_performed`.
 
-## Draft Template
+## Legacy Draft Template
 
 ```md
 # Skill Meta: <skill_id>
@@ -311,7 +323,7 @@ remain `not_performed`.
 - maturity: `draft`
 ```
 
-## Trial Upgrade Template
+## Legacy Trial Upgrade Template
 
 ```md
 - maturity: `trial`
@@ -329,7 +341,7 @@ remain `not_performed`.
 review, and handoff ownership are defined by the Skill Operating Contract, not
 by Skill-local `role_responsibilities`.
 
-## Stable Upgrade Template
+## Legacy Stable Upgrade Template
 
 ```md
 - maturity: `stable`
@@ -374,9 +386,9 @@ Use a small Markdown note or session entry when refining a Skill:
 - promotion_effect: <does this support trial/stable/governed promotion?>
 ```
 
-## Promotion Questions
+## Legacy Promotion Questions
 
-Before promoting a Skill, ask:
+Before promoting a legacy split Skill, ask:
 
 - Is the current `use_when` based on actual use rather than only an initial idea?
 - Are the declared inputs and outputs specific enough for repeatable use?

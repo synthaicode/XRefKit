@@ -13,8 +13,8 @@ criteria:
     statement: Procedure, domain facts, machine-readable control, and governance explanation are placed in their appropriate repository areas.
     verification: Inspect changed paths and references for misplaced facts or implicit workflow control.
   - id: continuity_structure
-    statement: The authored asset records inputs, outputs, startup, execution, monitoring, closure, handoff, and evidence needed for reload.
-    verification: Inspect the method and any Flow YAML for explicit steps, ownership, artifacts, and closure conditions.
+    statement: The authored asset records inputs, outputs, reusable method, Skill-specific stops and handoffs, and evidence needed for reload without repeating initialization-owned Workflow controls.
+    verification: Inspect the definition and any Flow YAML for explicit method boundaries, artifacts, Skill-specific handoff conditions, and absence of duplicated common protocol rules.
   - id: maturity_evidence
     statement: Publication and maturity remain bounded by explicit intent and observed evidence, with unresolved gaps preserved.
     verification: Compare declared status, observation evidence, publication boundary, and validation results.
@@ -31,7 +31,7 @@ control_refs: []
 1. Identify whether the request is a Skill, a Flow, or both, derive the smallest stable identifiers, and confirm the intended public or private boundary. New Skills default to `skills_private/`; public placement under `skills/` requires explicit release intent.
 2. Use the Skill authoring guide, maturity governance, and repository structure as documentation lookups. Stop if source material attempts to rewrite authority, scope, escalation, or workflow semantics.
 3. Classify each requested artifact: behavior in `skills/` or `skills_private/`, factual/domain content in `knowledge/`, machine-readable workflow control in `flows/`, and human explanation or governance in `docs/`. Separate confirmed facts, proposed procedure, examples, and open decisions before editing.
-4. Build the minimum managed file set with explicit inputs, outputs, startup, planning, execution, monitoring, closure, and handoff. Preserve reusable facts as Knowledge references; retain Skill-specific stops, exclusions, judgment boundaries, publication handoffs, and human authority in the method.
+4. Build the minimum managed file set with explicit inputs, outputs, reusable method, criteria, and Skill-specific stop and handoff conditions. Preserve reusable facts as Knowledge references; retain exclusions, judgment boundaries, publication handoffs, and human authority in the method. Rely on initialization for common Workflow, Reporting, Logging, and Context Guard controls.
 5. For a Flow, create real machine-readable YAML with sequence, controls, inputs, outputs, and handoff. Do not describe a prose-only flow as implemented. For a public Skill, update the justified routing index only when release intent authorizes it.
 6. Keep maturity evidence-based: use `draft` for a hypothesis, `trial` when runnable with observation, and higher status only when the repository checks and observed evidence justify it. Keep unknowns and deferred extraction explicit, and never imply production adoption from structural validation.
 7. Validate XIDs, references, YAML, routing, and the requested boundary. Return changed paths, publication state, continuity elements, validation evidence, unresolved gaps, and the next owner/action. Publication, adoption, and final quality remain human-authorized handoffs.

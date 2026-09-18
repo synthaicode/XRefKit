@@ -1019,6 +1019,18 @@ Duplicate external body.
         self.assertNotIn("workflows", context)
         self.assertEqual(context["workflow_protocol"]["version"], "1")
         self.assertEqual(context["workflow_protocol"]["phase_order"][0], "startup")
+        self.assertEqual(
+            context["workflow_protocol"]["runtime_binding"]["contract_xid"],
+            "8D50A972BA9F",
+        )
+        self.assertEqual(
+            context["workflow_protocol"]["runtime_binding"]["owner"],
+            "workflow_protocol",
+        )
+        self.assertEqual(
+            context["workflow_protocol"]["runtime_binding"]["source_values"]["legacy_split_v1"],
+            "legacy_meta_compatibility",
+        )
         self.assertEqual(context["reporting_protocol"]["contract_xid"], "6B2D9F4A1C73")
         self.assertEqual(
             context["initial_protocol_selection"]["selected"],

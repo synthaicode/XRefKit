@@ -44,6 +44,11 @@ model routingは各work itemの必要能力を評価し、利用可能な低レ�
 
 ## 実行時に注入する情報
 
+The following values are an example of the instruction-derived Workflow
+Runtime Binding. Their meanings and ownership come from [Workflow Runtime
+Binding](../core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F);
+this example does not add SkillDefinition semantics.
+
 この指示では、親が次を確定してSkill runを開く。
 
 | runtime field | この例の値 |
@@ -64,8 +69,9 @@ python -m xrefkit skill run `
   --json
 ```
 
-runは定義のpath / XID / SHA-256とruntime fieldを固定する。`ExecutionBinding`はrunから
-定義identityを転記し、同じ`capability` / `tuning` / `responsibility`であることを確認する。
+runは定義のpath / XID / SHA-256とWorkflow Runtime Bindingを固定する。
+`ExecutionBinding`はdefinition identityとruntime bindingを別項目としてrunから転記し、
+後者の`capability` / `tuning` / `responsibility`を再解釈していないことを確認する。
 subagent readerは定義本文を渡す直前にも同じrevisionを確認する。
 
 ## Knowledgeの選択

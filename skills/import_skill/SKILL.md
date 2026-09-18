@@ -76,13 +76,16 @@ python tools/convert_to_xrefkit_skill.py <extracted_root> --batch --skill-id-pre
      `skills_private/<prefix>.<source_skill_dir>/`.
    - Existing XIDs in linked reference files are preserved; missing XIDs are
      assigned.
-5. Create `skills/<skill_id>/SKILL.md` with behavior-only instructions when the
-   converter is not sufficient or manual normalization is required.
-6. Create or rebuild `meta.md` using the current runtime rule:
-   - for `trial` or higher, include `capability_layering`,
-     `workflow_protocol`, `tuning`, and `role_responsibilities.executor`
-   - do not carry imported `checker`, `quality_reviewer`, or `handoff_owner`
-     entries under `role_responsibilities`; those roles are protocol-owned
+5. Create a one-document `skills/<skill_id>/SKILL.v1.md` with behavior-only
+   instructions when the converter is not sufficient or manual normalization
+   is required. Keep `meta.md` plus `SKILL.md` only for an explicit legacy
+   compatibility target.
+6. Do not copy imported `capability`, `tuning`, `responsibility`,
+   `execution_mode`, `capability_layering`, or runtime roles into a new
+   SkillDefinition. The Workflow Protocol derives the runtime binding from the
+   concrete instruction. When maintaining a legacy split target, preserve its
+   fields as compatibility inputs and do not reinterpret them as canonical
+   Skill identity.
 7. Do not compose the context-direction guard into the imported Skill. The guard
    is ambient through startup and MCP response control reminders.
 8. Move factual/domain statements into `knowledge/` fragments.
@@ -102,8 +105,9 @@ python tools/convert_to_xrefkit_skill.py <extracted_root> --batch --skill-id-pre
 - No large factual blocks remain in `skills/<skill_id>/SKILL.md`.
 - Knowledge references point to `knowledge/` with `#xid-...`.
 - The imported skill does not redefine the ambient context-direction guard.
-- `xrefkit skill check --level trial` rejects missing runtime fields and
-  protocol-owned role responsibility redefinitions.
+- New SkillDefinition headers contain no fixed Workflow Runtime Binding values.
+- Legacy `xrefkit skill check --level trial` compatibility remains available
+  for an imported split Skill.
 - Skill inspection reports `block: 0` before import.
 - `python -m xrefkit xref fix` reports `issues: 0`.
 

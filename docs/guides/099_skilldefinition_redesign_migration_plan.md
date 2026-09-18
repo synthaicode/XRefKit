@@ -12,12 +12,18 @@
 | Concern | Canonical owner |
 | --- | --- |
 | method, applies_when, I/O, Skill固有criteria/stop/handoff | one-document SkillDefinition |
-| capability, tuning, responsibility, execution_mode | instruction-derived runtime routing and ExecutionBinding |
+| capability, tuning, responsibility, execution_mode | Workflow ProtocolのWorkflow Runtime Binding; ExecutionBindingはその値を転送する |
 | facts, rules, evidence basis | Knowledge catalog; XID resolution on demand |
 | phases, roles, logging, unknown/risk, common escalation, closure | Workflow Protocol |
 | package delivery | `xrefkit.skill_packages` plus manifest path |
 | upload candidate delivery | existing management transport; staging outside active catalog |
 | quality and production adoption | human review and explicit adoption record |
+
+The runtime field meanings and derivation in this table are owned by the
+[Workflow Runtime Binding contract](../core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F).
+This migration plan records the ownership boundary and compatibility impact;
+it does not redefine `capability`, `tuning`, `responsibility`, or
+`execution_mode`.
 
 Workflow Protocolは継続する。Skill本文から削るのは共通制御の重複であり、実行時の
 worklist、check separation、unknown/risk、escalation、closure、handoffを削ることではない。

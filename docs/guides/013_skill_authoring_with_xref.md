@@ -158,7 +158,7 @@ Before authoring the final files, write down the split as a compact map:
 ```md
 ## Skill Boundary
 - skill_id:
-- capability / tuning / responsibility:
+- runtime binding fields (field names only):
 - reusable judgment method:
 - inputs:
 - outputs:
@@ -220,15 +220,16 @@ reference, and no SKILL.md guard section.
   rule says otherwise; the ambient guard enforces the direction.
 - See `docs/core/contracts/053_context_direction_security_guard.md#xid-A7F3C92D4E11`
   for the guard contract and
-  `docs/core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8`
+  `../core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8`
   for the current Skill/Knowledge operating model.
 
 ## Runtime Field Ownership
 
 For SkillDefinition v1, `capability`, `tuning`, `responsibility`,
 `execution_mode`, model name, and model tier are not authoring fields. The
-parent derives them from the instruction and current state, and the runtime
-captures them in the ExecutionBinding and run log.
+Workflow Runtime Binding contract owns their meanings and derivation. The
+parent derives the binding from the instruction and current state, and the
+runtime captures it in the ExecutionBinding and run log.
 
 The following `execution_mode` values remain available as runtime choices:
 
@@ -250,8 +251,8 @@ Keep the authoring split simple:
 
 - `capability_layering` and `workflow_protocol` bind the run to repository
   runtime controls.
-- `capability`, `tuning`, and `responsibility` describe the legacy Skill's base
-  ability, specialization, and business use (the legacy
+- `capability`, `tuning`, and `responsibility` are legacy compatibility inputs
+  mapped into the Workflow Runtime Binding (the legacy
   `role_responsibilities.executor` value is still accepted as the responsibility).
 - `role_responsibilities` must not define `checker`, `quality_reviewer`, or
   `handoff_owner`; those roles are protocol-owned.
@@ -265,8 +266,8 @@ Keep the authoring split simple:
   tuning — use a `query` slot so the right per-tuning knowledge is selected at
   runtime.
 
-The canonical capability / tuning / responsibility definitions are in
-`docs/reference/031_capability_layering.md#xid-8D50A972BA9F`.
+The Workflow Protocol owns the canonical meanings and derivation:
+[Workflow Runtime Binding](../core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F).
 
 Keep Skill bodies reusable: put the judgment or execution method in
 `SKILL.md`, and put language-specific rules, framework behavior, API facts,

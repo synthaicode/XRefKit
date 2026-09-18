@@ -65,8 +65,9 @@ After startup, route work by user intent:
 - Use `skills/_index.md` and needed `skills/index/*` files only when a Skill
   must be selected.
 - Select the canonical SkillDefinition semantically before direct
-  `--definition <path>` execution. Derive `capability`, `tuning`, and
-  `responsibility` from the current instruction for the runtime binding.
+  `--definition <path>` execution. Apply the
+  [Workflow Runtime Binding contract](111_workflow_runtime_binding.md#xid-8D50A972BA9F)
+  to derive the instruction-specific runtime fields.
 - Create the runtime envelope with `python -m xrefkit skill run --definition
   <path> --task "<task>" --capability "<instruction-derived capability>"
   --tuning "<instruction-derived tuning>" --responsibility
