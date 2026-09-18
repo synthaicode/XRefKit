@@ -28,8 +28,12 @@ far that clarification has actually progressed.
 - Treat maturity as the clarity level of the Skill's operating boundary with
   humans, not as a cosmetic progress label.
 - Promote a Skill only when the target maturity conditions are actually met.
-- Keep the current maturity explicit in `meta.md` through `maturity` or
-  `status`.
+- For `legacy_split_v1`, keep the current maturity explicit in `meta.md`
+  through `maturity` or `status`.
+- For SkillDefinition v1, keep maturity and promotion evidence in the derived
+  catalog/governance record. Do not add runtime routing fields to the definition
+  header. The v1 promotion schema is still pending; `definition_v1` identifies
+  the format and does not mean `stable`.
 
 ## Maturity Levels
 
@@ -41,7 +45,12 @@ far that clarification has actually progressed.
 | `governed` | stable Skill with governance and audit linkage | yes | explicit governance references, promotion evidence, and an auditable responsibility boundary |
 | `deprecated` | kept for compatibility/history, not for new use | no | preserve traceability and replacement path if applicable |
 
-## Meta Schema By Maturity
+## Legacy Meta Schema By Maturity
+
+This section documents the enforced `legacy_split_v1` validator. New
+one-document definitions follow
+[SkillDefinition v1](096_skill_definition_contract.md#xid-E6A19D4B72C3), with
+runtime fields recorded by ExecutionBinding rather than the definition.
 
 ### Draft Minimum
 
@@ -178,8 +187,9 @@ python -m xrefkit skill check --meta skills/<skill_id>/meta.md --level governed
   defined in
   `docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`
 
-For `trial`, runtime decisions may still be provisional in meaning, but the
-runtime fields themselves must be explicit before the Skill is load-ready.
+For a legacy `trial`, runtime decisions may still be provisional in meaning,
+but its legacy runtime fields must be explicit before it is load-ready.
+SkillDefinition v1 receives those fields at run start.
 
 ## Improvement Flow
 

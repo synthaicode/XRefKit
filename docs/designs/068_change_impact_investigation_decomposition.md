@@ -23,8 +23,9 @@ Change-impact investigation uses three current repository surfaces:
 - **Business Pack**: places the investigation in business progression and
   defines what consumes its output next.
 
-The Skill's capability / tuning / responsibility meta triad identifies and
-routes the method. It is metadata on the Skill, not a separate work artifact.
+The reusable method is selected from its SkillDefinition metadata. The current
+instruction supplies capability / tuning / responsibility as a runtime routing
+and ExecutionBinding artifact rather than fixed Skill metadata.
 
 ## Responsibility Split
 

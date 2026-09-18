@@ -3,8 +3,9 @@
 
 # Skill Operating Contract
 
-This page defines the repository-level operating contract that every loadable
-Skill must carry.
+This page defines the repository-level operating contract applied to every
+Skill run. The Workflow Protocol carries the common envelope. A SkillDefinition
+v1 references that control and does not copy it into each definition.
 
 The purpose is to make XRefKit behave like an AI work operating foundation, not
 only a collection of prompt files. A load-ready Skill must not be just a
@@ -18,7 +19,19 @@ boundary with humans becomes explicit: what the Skill may handle on its own,
 what must remain visible as uncertainty or risk, and what must be returned to a
 human with evidence and a clear handoff condition.
 
-## Core Rule
+## Format Applicability
+
+[SkillDefinition v1](096_skill_definition_contract.md#xid-E6A19D4B72C3) is the
+canonical new format. Its one-document source owns the method, Skill-specific
+criteria, `knowledge_needs`, and `control_refs`. The runtime derives
+`capability` / `tuning` / `responsibility` from the instruction and records them
+in the run and ExecutionBinding.
+
+The `meta.md` requirements below remain the enforced compatibility contract for
+`legacy_split_v1` Skills. They describe the current legacy validator and must
+not be copied into new SkillDefinition headers.
+
+## Legacy Meta Rule
 
 Every `stable` or `governed` Skill metadata file must declare an `os_contract`
 block.
@@ -31,17 +44,18 @@ is not considered `stable` or `governed`.
 `trial` Skills may still be carrying provisional runtime choices while they are
 being clarified through actual use.
 
-Every load-ready Skill must also declare `capability_layering: required` and
+Every load-ready legacy Skill must also declare `capability_layering: required` and
 `workflow_protocol: required` in `meta.md`. `capability_layering` is the
 usage-time setting that makes the runtime envelope carry the selected Skill's
 capability-layer declaration. `workflow_protocol` binds the Skill run to the
 repository runtime protocol for work items, artifacts, role separation,
-deterministic checking, closure, and handoff. The Skill's identity is its
+deterministic checking, closure, and handoff. The legacy Skill's identity is its
 `capability` / `tuning` / `responsibility` triplet, declared directly in
 `meta.md`: `capability` names the base reusable ability, `tuning` names its
 specialization, and `responsibility` names the business use the Skill is
 accountable for. These are the Skill's meta identity and routing vocabulary,
-not runtime-assigned values and not evidence.
+not evidence. SkillDefinition v1 replaces this fixed meta triad with the
+instruction-derived runtime binding described above.
 
 The Skill declares its business use through the `responsibility` field. Common
 runtime roles are owned by the workflow protocol, not by the Skill: `executor`
@@ -66,9 +80,9 @@ Human-facing report text follows the user's language. Runtime section keys,
 status enums, IDs, paths, commands, and other machine-facing identifiers remain
 stable; localize their explanations rather than changing the identifiers.
 
-## Required Meta Block
+## Required Legacy Meta Block
 
-The canonical compact declaration is the version shorthand:
+For `legacy_split_v1`, the compact declaration is the version shorthand:
 
 ```md
 - os_contract: v1
@@ -163,7 +177,7 @@ local truth before continuing.
 
 ## Skill Authoring Requirement
 
-When promoting a Skill to `stable` or `governed`, include sections that
+When promoting a legacy split Skill to `stable` or `governed`, include sections that
 correspond to the operating contract:
 
 - Startup
@@ -176,7 +190,11 @@ correspond to the operating contract:
 - Closure Gate
 - Handoff
 
-The exact wording may vary by Skill, but the responsibility must not disappear.
+The exact wording may vary by legacy Skill, but the responsibility must not
+disappear. A SkillDefinition v1 keeps only Skill-specific method, checks,
+stopping conditions, and handoff details. Workflow phases, generic logging,
+role separation, unknown/risk handling, common escalation, and closure are
+applied once by this contract and the Workflow Protocol.
 
 ## Enforcement Boundary
 

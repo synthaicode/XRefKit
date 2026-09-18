@@ -11,15 +11,15 @@ with
 ## Intent
 
 - Keep `knowledge/` focused on domain knowledge.
-- Identify each Skill by the capability / tuning / responsibility triad.
-- Treat capability as the Skill meta triad element and routing vocabulary (see
-  the triad-as-identity rule below).
+- Use capability / tuning / responsibility as runtime routing vocabulary.
+- Keep the SkillDefinition reusable and independent of a particular instruction
+  binding.
 
 ## Layers
 
 - `knowledge/`: shared domain knowledge and local rules
-- `skills/`: executable procedures that carry the meta triad, declare knowledge
-  slots, and run under the generic workflow protocol
+- `skills/`: executable SkillDefinitions that declare method, criteria, and
+  Knowledge needs, and run under the generic Workflow Protocol
 
 ## The Triad
 
@@ -36,18 +36,20 @@ with
   - examples: implementation, code review, finance, bookkeeping, management
     accounting
 
-## Triad Is Skill Meta Identity
+## Triad Is Runtime Routing Binding
 
-The triad is the Skill's fixed meta identity and the routing vocabulary.
+The triad is created from the instruction and current task state as a runtime
+route and execution binding. It is recorded with the run so the selected
+judgment basis is observable, but it is not a fixed SkillDefinition identity.
 
-- Different triad = different Skill. The triad is **not** assigned at execution
-  time: `tuning` and `responsibility` are structural (they shape the Skill's
-  method and viewpoints), so a differently-tuned or differently-responsible unit
-  is a different Skill, not the same Skill parameterized at runtime.
+- Different runtime triad = different routing context. The reusable method may
+  remain the same SkillDefinition when the instruction changes its tuning or
+  responsibility.
 - A controlled capability / tuning / responsibility vocabulary registry keeps
   routing terms consistent and preserves the ability inventory.
-- Semantic routing matches intent and current state against the triad to select
-  the Skill; only the task and its concrete inputs are supplied per run.
+- Semantic routing selects a SkillDefinition using `applies_when`; it then
+  derives the triad and other binding fields from the instruction before the
+  subagent starts.
 
 ## Role Replacement Rule
 
@@ -64,36 +66,36 @@ The capability and tuning may be shared by many Skills. The responsibility is
 what differs between implementation, review, design, verification, release
 preparation, or other business uses of the same tuned capability.
 
-In Skill metadata:
+In the canonical SkillDefinition v1:
 
-- `capability` names the reusable base ability.
-- `tuning` names the direct specialization (a single one such as `C#`, or a
-  composed one such as `C# + SQL`).
-- `responsibility` names the Skill's business use. This replaces the former
-  `role_responsibilities.executor` value, which was always a responsibility, not
-  a role.
+- `capability`, `tuning`, and `responsibility` are supplied by the runtime
+  binding derived from the instruction.
+- The definition itself contains method, `applies_when`, `inputs`, `outputs`,
+  `criteria`, `knowledge_needs`, and `control_refs`.
 - There is **no** role field. Every Skill is the executor; the checker is the
   deterministic protocol (`xrefkit skill verify`), so recording a role on the Skill
   conveys nothing.
-- `knowledge_slots` declare the knowledge the Skill needs; they are resolved at
-  runtime against the base+local catalog. There are no static `knowledge_refs`
-  or `capability_refs` bindings.
+- `knowledge_needs` are resolved at runtime through the XID Knowledge catalog;
+  legacy `knowledge_slots` and split `meta.md` are migration inputs only.
+
+See [SkillDefinition v1](../core/contracts/096_skill_definition_contract.md#xid-E6A19D4B72C3),
+[Subagent startup read](../guides/095_subagent_startup_read.md#xid-D7A4C9E2B861),
+and [Complex SkillDefinition Flow](../guides/097_complex_skilldefinition_flow.md#xid-4F8C2A7D91E6).
 
 ## Reuse Rule
 
-The triad identity is useful only when the Skill procedure stays reusable. Keep
-the Skill body focused on the judgment or execution method, and keep
-language-specific, framework-specific, or domain-specific criteria in
-`knowledge/`, selected through the Skill's slots.
+Keep the SkillDefinition body focused on the judgment or execution method, and
+keep language-specific, framework-specific, or domain-specific criteria in
+Knowledge selected through `knowledge_needs` and XID resolution.
 
 When adding a Python implementation or review Skill after a C# one:
 
-- keep `capability` and `responsibility` stable when the business use is the same
-- change `tuning` from `C#` to `Python`
-- resolve tuning-specific knowledge through the slots instead of hard-coding C#
+- derive the appropriate `capability`, `tuning`, and `responsibility` for each
+  instruction
+- resolve tuning-specific Knowledge through XID needs instead of hard-coding
   criteria
-- share the common method and common knowledge; do not copy the Skill body when
-  only the knowledge basis changes
+- share the common method and Knowledge; do not copy the SkillDefinition when
+  only the runtime binding or Knowledge basis changes
 
 ## Composite Tuning Knowledge Rule
 

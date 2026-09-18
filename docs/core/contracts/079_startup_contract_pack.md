@@ -45,17 +45,15 @@ Sources:
 - Use XIDs as primary keys. Resolve needed XID links through get_document_by_xid. Do not recursively load related links at startup.
 - In MCP mode, `path#xid-...` values are lookup handles and diagnostic locations, not client filesystem instructions. The client calls get_document_by_xid with the XID; server-side resolution maps the XID to content.
 - Keep Skill procedure, domain knowledge, and work logs separate.
-- Treat knowledge/ as shared evidence fragments and skills/ as executable procedure carrying the capability/tuning/responsibility identity.
+- Treat knowledge/ as shared evidence fragments and Skill definitions as executable methods with declared knowledge needs. Derive capability/tuning/responsibility from the current instruction at run start.
 - Treat docs/ indexes as lookup/navigation handles, not mandatory startup body loads.
 - Do not guess missing governance or task facts. Find and read the relevant XIDs first.
 
 ## Skill routing and runtime envelope
 
-- Route available skills from skills/_index.md first, then narrow through indexes and selected meta.md.
-- Select a Skill semantically from user intent and catalog metadata before direct --meta execution.
-- Skill execution MUST start with:
-  python -m xrefkit skill run --meta <path-to-meta.md> --task "<task>" --json
-- Do not open or execute SKILL.md until skill run succeeds. Preserve returned run_log and open SKILL.md only from returned skill_doc.
+- Route available Skills from the active catalog and select one semantically from user intent and catalog metadata.
+- For SkillDefinition v1, execution MUST start with `xrefkit skill run --definition <SKILL.md>` plus instruction-derived capability/tuning/responsibility/execution-mode values. For legacy split Skills, use `xrefkit skill run --meta <meta.md> --task "<task>" --json`.
+- Do not materialize or execute the method until the run and ExecutionBinding succeed. Preserve the returned run_log and verify definition XID/hash before subagent execution.
 - When binding a Skill Run through MCP, pass Prompt Flow correlation fields (`flow_id`, `root_run_id`, `parent_run_id`, `work_item_id`, and `node_id` when applicable) to `bind_skill_run` so server audit records join the client and run logs.
 - During Skill-backed work, record:
   - work items with: python -m xrefkit skill workitem --log <run-log> --item <id> --status <status> --role <assigned-role>
@@ -78,8 +76,9 @@ parameter `--initial-protocol workflow` or `--initial-protocol reporting` can
 limit the initial protocol bodies; when omitted, both are selected. The
 selection metadata is returned in `initial_protocol_selection`.
 
-- Orchestration is semantic routing over the Skill catalog from user intent,
-  using each Skill's meta triad and the generic workflow protocol.
+- Orchestration is semantic routing over the Skill catalog from user intent.
+  The selected method and instruction produce a runtime capability/tuning/responsibility
+  binding inside the generic workflow protocol.
 - When a Skill needs domain knowledge, search and load only the needed fragment:
   python -m xrefkit xref search "<query>"
   python -m xrefkit xref show <XID>

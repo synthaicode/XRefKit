@@ -58,8 +58,10 @@ semantic routing の案内を追記する。既存の MCP 設定を上書きす�
 `--force` を指定する。
 
 VS Code 起動後は MCP の `xrefkit` サーバーを有効にし、利用者は自然言語で
-依頼する。MCP の semantic routing は、目的に適合する Skill を選択し、必要な
-手順、Knowledge、Protocol をクライアントへ提供する。Skill に基づく作業の実行、
+依頼する。MCP の semantic routing は、目的に適合する Skill を選択し、選択後に
+one-document methodを提供する。Knowledgeは`knowledge_needs`から必要なものだけを
+catalog検索し、XIDで解決する。Workflow Protocolは引き続き共通実行境界を提供する。
+Skill に基づく作業の実行、
 変更、承認および完了判断はクライアント側が担当する。
 
 | 主体 | 担当 |
@@ -137,6 +139,12 @@ routing 対象へ登録する。MCP の ranking へ登録するためだけに S
 Package のバイト列はインストール先から読み込まれ、ランキング結果には
 `package_id` と Package provenance が付く。MCP サーバーの Python 環境と、
 Package をインストールした Python 環境が異なる場合は発見されない。
+
+package manifestの`provides.skills[].path`は、canonicalなone-document Markdown
+SkillDefinitionを指すことができる。この場合は`skill_definition_v1`として検証し、
+definition XIDとraw bytes SHA-256をcatalogへ登録する。既存のSkill YAMLとentry
+Markdownの組合せは`legacy_split_v1`として継続する。詳細は
+[SkillDefinition distribution and adoption boundary](098_skilldefinition_distribution_boundary.md#xid-B7D3A5E91C42)を参照する。
 
 ## MCP サーバー起動パラメータ一覧
 
