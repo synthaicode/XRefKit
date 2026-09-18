@@ -6,6 +6,32 @@ cases:
     target: cases/basic_comparison/fixture
     expected: cases/basic_comparison/expected.yaml
     calibration: cases/basic_comparison/calibration.yaml
+  - id: batch.impact_regression.regional-order-change
+    skill_id: batch.impact_regression
+    target: cases/case-001-regional-order-change/problem.md
+    expected: cases/case-001-regional-order-change/expected.yaml
+    calibration: cases/case-001-regional-order-change/calibration.yaml
+  - id: batch.impact_regression.dynamic-dispatch-unknown
+    skill_id: batch.impact_regression
+    target: cases/case-002-dynamic-dispatch-unknown/problem.md
+    expected: cases/case-002-dynamic-dispatch-unknown/expected.yaml
+    calibration: cases/case-002-dynamic-dispatch-unknown/calibration.yaml
+  - id: batch.impact_regression.classification-precedence
+    skill_id: batch.impact_regression
+    target: cases/case-003-classification-precedence/problem.md
+    expected: cases/case-003-classification-precedence/expected.yaml
+    calibration: cases/case-003-classification-precedence/calibration.yaml
+  - id: batch.impact_regression.reduction-and-feasibility
+    skill_id: batch.impact_regression
+    target: cases/case-004-reduction-and-feasibility/problem.md
+    expected: cases/case-004-reduction-and-feasibility/expected.yaml
+    calibration: cases/case-004-reduction-and-feasibility/calibration.yaml
+  - id: batch.impact_regression.safety-stop
+    skill_id: batch.impact_regression
+    target: cases/case-005-safety-stop/problem.md
+    expected: cases/case-005-safety-stop/expected.yaml
+    calibration: cases/case-005-safety-stop/calibration.yaml
+coverage: coverage.yaml
 run_policy:
   target_isolation: required
   expected_answers_are_not_in_target: true

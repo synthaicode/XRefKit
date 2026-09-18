@@ -1,3 +1,4 @@
+case_id: csharp.error_policy_extraction.rethrow-swallow
 checks:
   - caught_exception_types_are_distinguished
   - swallowed_exception_is_visible

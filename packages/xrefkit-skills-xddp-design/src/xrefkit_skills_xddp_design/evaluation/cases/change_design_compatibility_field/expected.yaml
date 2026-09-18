@@ -1,3 +1,4 @@
+case_id: xddp.design.change_design.compatibility-field
 required:
   - traceability
   - unknowns

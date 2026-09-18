@@ -1,3 +1,4 @@
+case_id: csharp.error_policy_extraction.rethrow-swallow
 required:
   - error_policy_inventory
   - disposition_matrix

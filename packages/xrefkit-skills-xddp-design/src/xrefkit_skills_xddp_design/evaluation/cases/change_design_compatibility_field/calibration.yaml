@@ -1,3 +1,4 @@
+case_id: xddp.design.change_design.compatibility-field
 checks:
   - request_is_traced_to_design
   - compatibility_unknown_is_visible

@@ -1,4 +1,4 @@
-case_id: public.csharp_review.case-001-synchronization
+case_id: csharp.review.synchronization-detailed
 must_not:
   - report a Roslyn/compiler error as the primary finding
   - claim that Task.Yield proves the waiter is parked

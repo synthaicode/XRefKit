@@ -1,17 +1,29 @@
 project: xrefkit-skills-brownfield
 
-distribution: xrefkit_skills_brownfield-0.1.0-py3-none-any.whl
-sha256: 94b9cc66a045ad4f49cad50939f72ab5c372c537834a8f48d69a2645d7dc9589
+distribution: xrefkit_skills_brownfield-0.1.4-py3-none-any.whl
+sha256: 6097f92fba8054ab685476f72647ce4a96d9afd98d4b4affa6b3ab97ea210206
 members:
-  - xrefkit_skills_brownfield-0.1.0.dist-info/METADATA
-  - xrefkit_skills_brownfield-0.1.0.dist-info/RECORD
-  - xrefkit_skills_brownfield-0.1.0.dist-info/WHEEL
-  - xrefkit_skills_brownfield-0.1.0.dist-info/entry_points.txt
-  - xrefkit_skills_brownfield-0.1.0.dist-info/top_level.txt
+  - xrefkit_skills_brownfield-0.1.4.dist-info/METADATA
+  - xrefkit_skills_brownfield-0.1.4.dist-info/RECORD
+  - xrefkit_skills_brownfield-0.1.4.dist-info/WHEEL
+  - xrefkit_skills_brownfield-0.1.4.dist-info/entry_points.txt
+  - xrefkit_skills_brownfield-0.1.4.dist-info/top_level.txt
   - xrefkit_skills_brownfield/__init__.py
+  - xrefkit_skills_brownfield/evaluation/cases/post_reconciliation_planning/calibration.yaml
+  - xrefkit_skills_brownfield/evaluation/cases/post_reconciliation_planning/expected.yaml
+  - xrefkit_skills_brownfield/evaluation/cases/post_reconciliation_planning/fixture/request.md
+  - xrefkit_skills_brownfield/evaluation/cases/requirement_validation/calibration.yaml
+  - xrefkit_skills_brownfield/evaluation/cases/requirement_validation/expected.yaml
+  - xrefkit_skills_brownfield/evaluation/cases/requirement_validation/fixture/request.md
+  - xrefkit_skills_brownfield/evaluation/cases/specification_reconciliation/calibration.yaml
+  - xrefkit_skills_brownfield/evaluation/cases/specification_reconciliation/expected.yaml
+  - xrefkit_skills_brownfield/evaluation/cases/specification_reconciliation/fixture/request.md
   - xrefkit_skills_brownfield/evaluation/cases/test_tool_planning/calibration.yaml
   - xrefkit_skills_brownfield/evaluation/cases/test_tool_planning/expected.yaml
   - xrefkit_skills_brownfield/evaluation/cases/test_tool_planning/fixture/request.md
+  - xrefkit_skills_brownfield/evaluation/cases/testability_gate/calibration.yaml
+  - xrefkit_skills_brownfield/evaluation/cases/testability_gate/expected.yaml
+  - xrefkit_skills_brownfield/evaluation/cases/testability_gate/fixture/request.md
   - xrefkit_skills_brownfield/evaluation/cases/unknown_propagation/calibration.yaml
   - xrefkit_skills_brownfield/evaluation/cases/unknown_propagation/expected.yaml
   - xrefkit_skills_brownfield/evaluation/cases/unknown_propagation/fixture/request.md
@@ -22,46 +34,87 @@ members:
   - xrefkit_skills_brownfield/review_axes/unknown_visibility.yaml
   - xrefkit_skills_brownfield/skills/brownfield_workflow.skill.yaml
   - xrefkit_skills_brownfield/skills/brownfield_workflow/entry.md
+  - xrefkit_skills_brownfield/skills/brownfield_workflow/references/change-test-suite.md
+  - xrefkit_skills_brownfield/skills/brownfield_workflow/references/delta-detail-planning.md
+  - xrefkit_skills_brownfield/skills/brownfield_workflow/references/file-edit-integrity.md
+  - xrefkit_skills_brownfield/skills/brownfield_workflow/references/ipa-reconstruction-guide-mapping.md
+  - xrefkit_skills_brownfield/skills/brownfield_workflow/references/phase-workflow.md
+  - xrefkit_skills_brownfield/skills/brownfield_workflow/references/reporting-and-closure.md
+  - xrefkit_skills_brownfield/skills/brownfield_workflow/references/requirements-validation.md
+  - xrefkit_skills_brownfield/skills/brownfield_workflow/references/service-data-impact.md
+  - xrefkit_skills_brownfield/skills/brownfield_workflow/references/specification-reconciliation.md
+  - xrefkit_skills_brownfield/skills/brownfield_workflow/references/testability-and-case-generation.md
 
-distribution: xrefkit_skills_brownfield-0.1.0.tar.gz
-sha256: 1ea0a738076e668b3874648f1d6ed123389110ca0cc58631b5564f58be078428
+distribution: xrefkit_skills_brownfield-0.1.4.tar.gz
+sha256: 6ae904f62fda50cc4be06b567091fdf273d9c7d7fbb6d92a29b8da07085071af
 members:
-  - xrefkit_skills_brownfield-0.1.0
-  - xrefkit_skills_brownfield-0.1.0/PKG-INFO
-  - xrefkit_skills_brownfield-0.1.0/README.md
-  - xrefkit_skills_brownfield-0.1.0/pyproject.toml
-  - xrefkit_skills_brownfield-0.1.0/setup.cfg
-  - xrefkit_skills_brownfield-0.1.0/src
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield.egg-info
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield.egg-info/PKG-INFO
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield.egg-info/SOURCES.txt
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield.egg-info/dependency_links.txt
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield.egg-info/entry_points.txt
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield.egg-info/requires.txt
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield.egg-info/top_level.txt
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/__init__.py
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/evaluation
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/evaluation/cases
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/evaluation/cases/test_tool_planning
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/evaluation/cases/test_tool_planning/calibration.yaml
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/evaluation/cases/test_tool_planning/expected.yaml
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/evaluation/cases/test_tool_planning/fixture
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/evaluation/cases/test_tool_planning/fixture/request.md
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/evaluation/cases/unknown_propagation
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/evaluation/cases/unknown_propagation/calibration.yaml
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/evaluation/cases/unknown_propagation/expected.yaml
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/evaluation/cases/unknown_propagation/fixture
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/evaluation/cases/unknown_propagation/fixture/request.md
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/evaluation/manifest.yaml
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/package_manifest.yaml
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/review_axes
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/review_axes/phase_completeness.yaml
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/review_axes/traceability.yaml
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/review_axes/unknown_visibility.yaml
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/skills
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/skills/brownfield_workflow
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/skills/brownfield_workflow.skill.yaml
-  - xrefkit_skills_brownfield-0.1.0/src/xrefkit_skills_brownfield/skills/brownfield_workflow/entry.md
-  - xrefkit_skills_brownfield-0.1.0/tests
-  - xrefkit_skills_brownfield-0.1.0/tests/test_package.py
+  - xrefkit_skills_brownfield-0.1.4
+  - xrefkit_skills_brownfield-0.1.4/PKG-INFO
+  - xrefkit_skills_brownfield-0.1.4/README.md
+  - xrefkit_skills_brownfield-0.1.4/pyproject.toml
+  - xrefkit_skills_brownfield-0.1.4/setup.cfg
+  - xrefkit_skills_brownfield-0.1.4/src
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield.egg-info
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield.egg-info/PKG-INFO
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield.egg-info/SOURCES.txt
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield.egg-info/dependency_links.txt
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield.egg-info/entry_points.txt
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield.egg-info/requires.txt
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield.egg-info/top_level.txt
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/__init__.py
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/post_reconciliation_planning
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/post_reconciliation_planning/calibration.yaml
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/post_reconciliation_planning/expected.yaml
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/post_reconciliation_planning/fixture
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/post_reconciliation_planning/fixture/request.md
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/requirement_validation
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/requirement_validation/calibration.yaml
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/requirement_validation/expected.yaml
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/requirement_validation/fixture
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/requirement_validation/fixture/request.md
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/specification_reconciliation
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/specification_reconciliation/calibration.yaml
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/specification_reconciliation/expected.yaml
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/specification_reconciliation/fixture
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/specification_reconciliation/fixture/request.md
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/test_tool_planning
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/test_tool_planning/calibration.yaml
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/test_tool_planning/expected.yaml
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/test_tool_planning/fixture
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/test_tool_planning/fixture/request.md
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/testability_gate
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/testability_gate/calibration.yaml
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/testability_gate/expected.yaml
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/testability_gate/fixture
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/testability_gate/fixture/request.md
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/unknown_propagation
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/unknown_propagation/calibration.yaml
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/unknown_propagation/expected.yaml
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/unknown_propagation/fixture
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/cases/unknown_propagation/fixture/request.md
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/evaluation/manifest.yaml
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/package_manifest.yaml
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/review_axes
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/review_axes/phase_completeness.yaml
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/review_axes/traceability.yaml
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/review_axes/unknown_visibility.yaml
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/skills
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/skills/brownfield_workflow
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/skills/brownfield_workflow.skill.yaml
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/skills/brownfield_workflow/entry.md
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/skills/brownfield_workflow/references
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/skills/brownfield_workflow/references/change-test-suite.md
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/skills/brownfield_workflow/references/delta-detail-planning.md
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/skills/brownfield_workflow/references/file-edit-integrity.md
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/skills/brownfield_workflow/references/ipa-reconstruction-guide-mapping.md
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/skills/brownfield_workflow/references/phase-workflow.md
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/skills/brownfield_workflow/references/reporting-and-closure.md
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/skills/brownfield_workflow/references/requirements-validation.md
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/skills/brownfield_workflow/references/service-data-impact.md
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/skills/brownfield_workflow/references/specification-reconciliation.md
+  - xrefkit_skills_brownfield-0.1.4/src/xrefkit_skills_brownfield/skills/brownfield_workflow/references/testability-and-case-generation.md
+  - xrefkit_skills_brownfield-0.1.4/tests
+  - xrefkit_skills_brownfield-0.1.4/tests/test_package.py

@@ -1,3 +1,4 @@
+case_id: dotnet.change_analysis.trim-boundary
 required:
   - structure_summary
   - impact_boundaries

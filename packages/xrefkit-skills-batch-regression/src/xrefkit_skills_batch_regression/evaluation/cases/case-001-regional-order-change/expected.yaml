@@ -1,4 +1,4 @@
-case_id: public.batch-impact-regression.case-001
+case_id: batch.impact_regression.regional-order-change
 expected:
   candidate_count: 4
   post_constraint_count: 3

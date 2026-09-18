@@ -1,3 +1,4 @@
+case_id: dotnet.change_analysis.trim-boundary
 checks:
   - source_locations_are_recorded
   - unknowns_are_explicit

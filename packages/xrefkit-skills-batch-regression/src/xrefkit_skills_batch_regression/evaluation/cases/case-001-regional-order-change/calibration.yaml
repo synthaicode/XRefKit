@@ -1,4 +1,4 @@
-case_id: public.batch-impact-regression.case-001
+case_id: batch.impact_regression.regional-order-change
 must_not:
   - claim that US + Delta is a business-invalid case solely because the SQL source returns 17
   - classify US + Full as unexplained_difference when the only changed field is tax_total and the explicit planned rule matches

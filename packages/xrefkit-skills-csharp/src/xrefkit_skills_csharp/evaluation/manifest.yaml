@@ -6,6 +6,31 @@ cases:
     target: cases/csharp_review_basic/fixture
     expected: cases/csharp_review_basic/expected.yaml
     calibration: cases/csharp_review_basic/calibration.yaml
+  - id: csharp.review.synchronization-detailed
+    skill_id: csharp.review
+    target: cases/csharp_review_synchronization_detailed/fixture
+    expected: cases/csharp_review_synchronization_detailed/expected.yaml
+    calibration: cases/csharp_review_synchronization_detailed/calibration.yaml
+  - id: csharp.review.resource-and-resilience
+    skill_id: csharp.review
+    target: cases/csharp_review_resource_and_resilience/fixture
+    expected: cases/csharp_review_resource_and_resilience/expected.yaml
+    calibration: cases/csharp_review_resource_and_resilience/calibration.yaml
+  - id: csharp.review.input-state-and-contract
+    skill_id: csharp.review
+    target: cases/csharp_review_input_state_and_contract/fixture
+    expected: cases/csharp_review_input_state_and_contract/expected.yaml
+    calibration: cases/csharp_review_input_state_and_contract/calibration.yaml
+  - id: csharp.review.time-and-lifecycle
+    skill_id: csharp.review
+    target: cases/csharp_review_time_and_lifecycle/fixture
+    expected: cases/csharp_review_time_and_lifecycle/expected.yaml
+    calibration: cases/csharp_review_time_and_lifecycle/calibration.yaml
+  - id: csharp.review.boundary-and-calibration
+    skill_id: csharp.review
+    target: cases/csharp_review_boundary_and_calibration/fixture
+    expected: cases/csharp_review_boundary_and_calibration/expected.yaml
+    calibration: cases/csharp_review_boundary_and_calibration/calibration.yaml
   - id: dotnet.change_analysis.basic-boundary
     skill_id: dotnet.change_analysis
     target: cases/dotnet_change_basic/fixture
@@ -16,6 +41,17 @@ cases:
     target: cases/error_policy_basic/fixture
     expected: cases/error_policy_basic/expected.yaml
     calibration: cases/error_policy_basic/calibration.yaml
+  - id: dotnet.change_analysis.trim-boundary
+    skill_id: dotnet.change_analysis
+    target: cases/dotnet_change_trim_boundary/fixture
+    expected: cases/dotnet_change_trim_boundary/expected.yaml
+    calibration: cases/dotnet_change_trim_boundary/calibration.yaml
+  - id: csharp.error_policy_extraction.rethrow-swallow
+    skill_id: csharp.error_policy_extraction
+    target: cases/error_policy_rethrow_swallow/fixture
+    expected: cases/error_policy_rethrow_swallow/expected.yaml
+    calibration: cases/error_policy_rethrow_swallow/calibration.yaml
+coverage: coverage.yaml
 run_policy:
   target_isolation: required
   expected_answers_are_not_in_target: true
