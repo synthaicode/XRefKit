@@ -236,3 +236,45 @@ run 状態では成功 receipt を残さない。stale pack は server 側で更
 この adapter は既存の管理ポート、Skill/Knowledge upload、protocol 選択の server API を
 変更しない。materialization 後も、host による実際の subagent 起動、作業の実行、
 Workflow Protocol の verify/close、人による成果物採用は別途必要である。
+
+## 開いたRunからExecutionBindingを生成する
+
+`workflow bind-execution` は、親が指示から具体化した実行情報を、既存のRunとwork itemへ
+結び付ける。生成器はSkill metaからtriadをコピーしない。Skill選択やモデル評価を行う
+意味的routing、権限の付与、subagentのdispatchはhost側の責任である。
+
+```powershell
+python -m xrefkit workflow bind-execution `
+  --log work/run.md --request work/execution-request.json --json > work/binding.json
+python -m xrefkit workflow subagent-read `
+  --root . --log work/run.md --binding work/binding.json --json
+```
+
+requestは上記のlocal/MCP bindingから`schema_version`と`run_id`を除き、
+`instruction_basis`に今回の指示根拠を記載したJSONである。`work_item_id`、purpose、triad、
+scope、stop conditions、protocols、Knowledge locatorは明示する。`references`は省略でき、
+その場合は空配列になる。local requestには`repository_fingerprint`を含めず、
+MCP requestでは必須とする。未定義のkeyは拒否する。
+
+生成結果は既存のreaderへそのまま渡せるbindingで、次を追加する。
+
+- `run_id`と`schema_version: 1`
+- `binding_origin: "workflow_builder"`
+- `run_snapshot`: 親子相関、選択Skill、task、authority、assigned roles、work itemの
+  criterionとstatus、Closure Gate状態
+
+APIは`xrefkit.execution_binding.build_execution_binding(log, request)`である。
+生成時にはrun logだけを読み、参照先の本文を取得したりファイルを更新したりしない。
+参照hashは呼出し側が実際の版から指定し、readerが取得時に検査する。
+生成器でJSONの構造が通っても、指定したlocal pathやremote XIDの存在確認は未実施である。
+
+両readerはgenerated bindingのsnapshotを起動時に照合する。役割・権限・task・相関、
+work itemの条件やstatusが生成後に変われば停止し、変更内容を確認してbindingを作り直す。
+MCPのsession correlationは読取り中に確立するため、snapshot対象から除く。
+元の手書きbindingも引き続き利用できるが、生成器のsnapshot照合は付かない。
+
+これはhostが渡した情報とRunの整合性検査であり、署名による認証ではない。
+`instruction_basis`やauthorityに記述があることだけで新たな実行権限は生まれず、
+既存のguard、停止・エスカレーション、verify/close、人間による採用条件を継続適用する。
+モデルの選択や実行観測はこの生成結果に捏造しない。Skill/catalogの新形式への移行と、
+モデルrouting実装との接続は別の変更単位で行う。

@@ -13,6 +13,8 @@ from collections.abc import Awaitable, Callable
 from pathlib import Path
 from typing import Any, NoReturn
 
+from xrefkit.execution_binding import validate_binding_context
+
 from xrefkit.skillrun import (
     _LogFileLock, _append_observation_event, _atomic_write_text, _log_field,
     _parse_work_items, _section_status, _valid_log_token,
@@ -109,6 +111,7 @@ def _run_state(log: Path, binding: dict) -> tuple[str, dict]:
     if error:
         _bad("; ".join(error.errors))
     assert text is not None
+    validate_binding_context(text, binding)
     closure = _section_status(text, "Closure Gate")
     if closure in {"done", "escalated"}:
         _bad("startup requires an open workflow run")

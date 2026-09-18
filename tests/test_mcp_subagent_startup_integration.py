@@ -56,6 +56,10 @@ def test_stdio_startup_receipt_and_reference(tmp_path, protocols, skill_id):
                              "resolve_tool": "get_document_by_xid"},
         "references": [{"xid": doc["xid"], "content_hash": doc["content_hash"]}],
     }
+    from xrefkit.execution_binding import build_execution_binding
+    request = {k: v for k, v in binding.items() if k not in {"run_id", "schema_version"}}
+    request["instruction_basis"] = "Integration test instruction"
+    binding = build_execution_binding(log, request)
     audit = tmp_path / "audit.jsonl"
     calls = []
     async def scenario():

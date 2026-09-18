@@ -8,6 +8,8 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+
+from xrefkit.execution_binding import validate_binding_context
 from pathlib import Path
 
 from xrefkit.skillrun import (
@@ -104,6 +106,7 @@ def read_subagent_startup(root: Path, log: Path, binding_path: Path) -> dict:
         if error:
             raise ValueError("; ".join(error.errors))
         assert run_text is not None
+        validate_binding_context(run_text, binding)
         if _log_field(run_text, "mcp_session_id"):
             raise ValueError("MCP-bound runs must resolve governance through the MCP provider")
         if _log_field(run_text, "run_id") != binding["run_id"]:
@@ -124,6 +127,10 @@ def read_subagent_startup(root: Path, log: Path, binding_path: Path) -> dict:
         # Recheck inputs before recording success; never acknowledge partial reads.
         for doc in [binding_doc, *documents]:
             _read(root, doc["path"], sha256=doc["sha256"])
+        current_text, error = _validate_observation_log(log)
+        if error:
+            raise ValueError("run changed during startup")
+        validate_binding_context(current_text, binding)
         receipt = [{k: d[k] for k in ("path", "xid", "sha256", "bytes")} for d in documents]
         event = {"event": "subagent.startup.read", "run_id": binding["run_id"],
                  "work_item_id": binding["work_item_id"], "binding_sha256": binding_doc["sha256"],
