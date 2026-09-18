@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-fbd4ca08-f0b5-44d0-a84e-2ec05957cbcb",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-09-18T08:10:11Z",
+  "git_commit": "0d5b689e7a2699d33b60d40120665315c790c46f",
+  "purpose": "before AI workflow run fbd4ca08-f0b5-44d0-a84e-2ec05957cbcb",
+  "work_item_id": "PARSER",
+  "run_id": "fbd4ca08-f0b5-44d0-a84e-2ec05957cbcb",
+  "context_policy": "current-only",
+  "human_approved": false
+}
