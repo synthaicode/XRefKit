@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-2745629c-3845-4f65-a77c-8757bda73912",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-09-18T09:32:06Z",
+  "git_commit": "c3ed0a1e87f555d2de31ee9a3dcab3e4dc5bdaa3",
+  "purpose": "before AI workflow run 2745629c-3845-4f65-a77c-8757bda73912",
+  "work_item_id": "WI-definition-maturity",
+  "run_id": "2745629c-3845-4f65-a77c-8757bda73912",
+  "context_policy": "current-only",
+  "human_approved": false
+}
