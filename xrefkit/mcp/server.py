@@ -5,6 +5,8 @@ import asyncio
 import logging
 import os
 import sys
+import threading
+import time
 import uuid
 import weakref
 from pathlib import Path
@@ -13,6 +15,27 @@ from typing import Any
 from . import __version__
 from .audit import McpAuditLog, SessionRunBinding, SessionRunRegistry
 from .catalog import XRefCatalog
+from .contribution_returns import MAX_NETWORK_REQUEST_BYTES
+from .contribution_adoption import (
+    CanonicalAdoptionTransport,
+    HmacHumanApprovalVerifier,
+    LocalCanonicalAdoptionTransport,
+)
+from .inbound_uploads import (
+    DEFAULT_TTL_SECONDS,
+    InboundUploadManager,
+    add_inbound_webdav_routes,
+)
+from .gateway import (
+    adapt_gateway_skill_work_item,
+    evaluate_feedback,
+    gateway_contract,
+    initialize_gateway_workflow,
+    prepare_gateway,
+    record_gateway_work_item_result,
+    route_gateway,
+    route_gateway_work_items,
+)
 from .context_token import CONTEXT_META_KEY, ContextClaims, ContextTokenCodec
 from .dist import DIST_ROUTE_PATH, ArtifactDistribution, add_dist_routes
 from xrefkit.structure_catalog import get_entry as get_structure_entry
@@ -21,6 +44,7 @@ from xrefkit.structure_catalog import list_targets as list_structure_targets
 from xrefkit.structure_catalog import load_catalog as load_structure_catalog
 
 SERVER_VERSION = __version__
+DEFAULT_MAX_REQUEST_BODY_BYTES = MAX_NETWORK_REQUEST_BYTES
 LOGGER = logging.getLogger(__name__)
 
 # Sessions that have called get_startup_context at least once. Keyed by the
@@ -81,6 +105,27 @@ def _with_control_reminder(result: dict[str, Any]) -> dict[str, Any]:
 # declare required_tools even though the general tool catalog still applies.
 _CLIENT_TOOLS_UNLOCKED_SESSIONS: "weakref.WeakSet[Any]" = weakref.WeakSet()
 _CONTEXT_CODEC: ContextTokenCodec | None = None
+_ADMIN_ONLY_INSTRUCTION_MARKERS = (
+    "prepare_skill_edit",
+    "list_skill_edits",
+    "export_skill_edit",
+    "deactivate_skill_edit",
+    "create_local_knowledge",
+    "list_local_knowledge",
+    "export_local_knowledge",
+    "deactivate_local_knowledge",
+    "create_contribution_upload_session",
+    "seal_contribution_upload",
+    "submit_contribution_return",
+    "list_contribution_returns",
+    "export_contribution_return",
+    "review_contribution_return",
+    "adopt_contribution_return",
+    "assess_skill_maturity",
+    "propose_skill_maturity",
+    "review_skill_maturity_proposal",
+    "apply_skill_maturity_proposal",
+)
 
 
 def _initialize_protocol_selection(ctx: Any, server_initial_protocols: list[str] | None) -> dict[str, Any]:
@@ -103,6 +148,30 @@ def _initialize_protocol_selection(ctx: Any, server_initial_protocols: list[str]
     if server_initial_protocols is not None:
         return {"initial_protocols": server_initial_protocols, "selection_source": "server"}
     return {"selection_source": "server"}
+
+
+def _apply_server_profile(
+    result: dict[str, Any],
+    profile: str,
+    *,
+    inbound_webdav: bool,
+) -> dict[str, Any]:
+    """Describe the port-scoped MCP feature and write boundary."""
+    response = dict(result)
+    response["server_profile"] = {
+        "name": profile,
+        "skill_updates": profile == "admin",
+        "update_transport": "local_overlay" if profile == "admin" else None,
+        "inbound_webdav": profile == "admin" and inbound_webdav,
+        "boundary": "loopback port separation",
+    }
+    if profile == "reader":
+        response["client_instructions"] = [
+            instruction
+            for instruction in response.get("client_instructions", [])
+            if not any(marker in instruction for marker in _ADMIN_ONLY_INSTRUCTION_MARKERS)
+        ]
+    return response
 
 
 def _unlock_client_tools(ctx: Any) -> None:
@@ -168,6 +237,12 @@ def _require_client_tools_unlocked(ctx: Any, tool_name: str) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="xrefkit-mcp-server")
     parser.add_argument("--repo", required=True, help="Path to an XRefKit repository")
+    parser.add_argument(
+        "--profile",
+        choices=["reader", "admin"],
+        default="reader",
+        help="Port-scoped feature profile. reader is read/execute only; admin enables update and contribution tools.",
+    )
     parser.add_argument(
         "--transport",
         choices=["stdio", "sse", "streamable-http"],
@@ -259,7 +334,72 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Structured MCP audit JSONL path. Defaults to <repo>/work/mcp/xid_audit.jsonl.",
     )
+    parser.add_argument(
+        "--max-request-body-bytes",
+        type=int,
+        default=DEFAULT_MAX_REQUEST_BODY_BYTES,
+        help="Maximum streamable-HTTP request body size (default: 8 MiB).",
+    )
+    parser.add_argument(
+        "--contribution-adoption-transport",
+        choices=["local", "webdav"],
+        default="local",
+        help="Canonical adoption transport. Only local is supported; webdav is a migration error.",
+    )
+    parser.add_argument(
+        "--webdav-staging-url",
+        help="Deprecated outbound WebDAV option; specifying it is a migration error.",
+    )
+    parser.add_argument(
+        "--webdav-canonical-url",
+        help="Deprecated outbound WebDAV option; use MCP-owned inbound upload sessions.",
+    )
+    parser.add_argument(
+        "--enable-inbound-webdav",
+        action="store_true",
+        help="Enable MCP-owned scoped WebDAV upload sessions.",
+    )
+    parser.add_argument(
+        "--inbound-webdav-host",
+        default="127.0.0.1",
+        help="Host for the stdio companion listener; defaults to loopback.",
+    )
+    parser.add_argument(
+        "--inbound-webdav-port",
+        type=int,
+        help="Port for the stdio companion listener. Streamable HTTP uses the MCP port.",
+    )
+    parser.add_argument(
+        "--inbound-webdav-public-base-url",
+        help="Advertised base URL without credentials, query, or fragment.",
+    )
+    parser.add_argument(
+        "--inbound-webdav-session-seconds",
+        type=int,
+        default=DEFAULT_TTL_SECONDS,
+        help="Default upload-session lifetime in seconds (30-3600).",
+    )
+    parser.add_argument(
+        "--contribution-approval-secret",
+        help="Trusted approval-assertion HMAC secret; defaults to XREFKIT_CONTRIBUTION_APPROVAL_SECRET.",
+    )
     args = parser.parse_args(argv)
+    if args.profile == "admin" and args.host not in {"127.0.0.1", "::1", "localhost"}:
+        parser.error("admin profile must bind to a loopback host")
+    legacy_webdav_env = sorted(
+        name for name in os.environ if name.startswith("XREFKIT_ADOPTION_WEBDAV_")
+    )
+    if (
+        args.contribution_adoption_transport == "webdav"
+        or args.webdav_staging_url
+        or args.webdav_canonical_url
+        or legacy_webdav_env
+    ):
+        parser.error(
+            "external WebDAV canonical adoption is no longer supported. "
+            "Use --enable-inbound-webdav for client-to-MCP staging; reviewed "
+            "canonical adoption remains local and atomic."
+        )
     if args.stateless_http and args.transport != "streamable-http":
         parser.error("--stateless-http requires --transport streamable-http")
     context_secret = args.context_secret or os.environ.get("XREFKIT_CONTEXT_SECRET")
@@ -302,6 +442,20 @@ def main(argv: list[str] | None = None) -> int:
     )
     audit_log = McpAuditLog(args.audit_log or (Path(args.repo) / "work" / "mcp" / "xid_audit.jsonl"))
     run_registry = SessionRunRegistry()
+    adoption_transport: CanonicalAdoptionTransport = LocalCanonicalAdoptionTransport()
+    approval_secret = args.contribution_approval_secret or os.environ.get(
+        "XREFKIT_CONTRIBUTION_APPROVAL_SECRET"
+    )
+    approval_verifier = (
+        HmacHumanApprovalVerifier(approval_secret) if approval_secret else None
+    )
+
+    upload_manager: InboundUploadManager | None = None
+    if args.enable_inbound_webdav:
+        try:
+            upload_manager = _build_inbound_upload_manager(args, Path(args.repo))
+        except ValueError as exc:
+            parser.error(str(exc))
 
     # Artifact distribution runs only on the network transport: executable
     # artifacts are served as plain HTTP downloads next to the MCP endpoint
@@ -337,6 +491,11 @@ def main(argv: list[str] | None = None) -> int:
         log_level=args.log_level.upper(),
         stateless_http=args.stateless_http,
     )
+
+    def hidden_admin_tool(*_args: Any, **_kwargs: Any) -> Any:
+        return lambda function: function
+
+    admin_tool = app.tool if args.profile == "admin" else hidden_admin_tool
 
     @app.tool()
     def get_repository_identity() -> dict[str, str]:
@@ -449,6 +608,11 @@ def main(argv: list[str] | None = None) -> int:
             excluded_protocols=protocol_selection.get("excluded_protocols"),
             selection_source=protocol_selection["selection_source"],
         )
+        result = _apply_server_profile(
+            result,
+            args.profile,
+            inbound_webdav=upload_manager is not None,
+        )
         for xid in result.get("load_order", []):
             _log_xid_query("get_startup_context", xid)
         _mark_startup_loaded(ctx)
@@ -461,6 +625,80 @@ def main(argv: list[str] | None = None) -> int:
         if dist is not None:
             result = _with_artifact_distribution(result, dist, dist_base_url)
         return result
+
+    @app.tool()
+    def get_instruction_gateway_contract(ctx: Context) -> dict[str, Any]:
+        """Get pre-workflow gateway instructions and strict request schemas after startup."""
+        _require_startup_loaded(ctx, "get_instruction_gateway_contract")
+        return gateway_contract(include_schemas=True)
+
+    @app.tool()
+    def prepare_instruction_gateway(ctx: Context, request: dict[str, Any]) -> dict[str, Any]:
+        """Receive each instruction with client-owned profile/source snapshots before workflow execution."""
+        _require_startup_loaded(ctx, "prepare_instruction_gateway")
+        return _with_control_reminder(prepare_gateway(request))
+
+    @app.tool()
+    def route_instruction_gateway(
+        ctx: Context, assessment: dict[str, Any], policy: dict[str, Any],
+        current_sources: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        """Select eligible models without opening client paths or dispatching; no Skill Run binding needed."""
+        _require_startup_loaded(ctx, "route_instruction_gateway")
+        return _with_control_reminder(route_gateway(assessment, policy, current_sources))
+
+    @app.tool()
+    def adapt_skill_work_item_for_gateway(
+        ctx: Context,
+        request: dict[str, Any],
+        policy: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Adapt one explicit Skill work item without inferring metrics or host policy."""
+        _require_startup_loaded(ctx, "adapt_skill_work_item_for_gateway")
+        return _with_control_reminder(adapt_gateway_skill_work_item(request, policy))
+
+    @app.tool()
+    def initialize_instruction_workflow(
+        ctx: Context,
+        assessment: dict[str, Any],
+        previous_state: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Create or explicitly re-enter per-work-item state after instruction assessment."""
+        _require_startup_loaded(ctx, "initialize_instruction_workflow")
+        return _with_control_reminder(initialize_gateway_workflow(assessment, previous_state))
+
+    @app.tool()
+    def route_instruction_work_items(
+        ctx: Context,
+        assessment: dict[str, Any],
+        policy: dict[str, Any],
+        workflow_state: dict[str, Any],
+        current_sources: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        """Route dependency-ready pending nodes and return the next workflow re-entry state."""
+        _require_startup_loaded(ctx, "route_instruction_work_items")
+        return _with_control_reminder(route_gateway_work_items(
+            assessment, policy, workflow_state, current_sources
+        ))
+
+    @app.tool()
+    def record_instruction_work_item_result(
+        ctx: Context,
+        assessment: dict[str, Any],
+        workflow_state: dict[str, Any],
+        result: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Record observed model/tool evidence and return state for the next pending route."""
+        _require_startup_loaded(ctx, "record_instruction_work_item_result")
+        return _with_control_reminder(record_gateway_work_item_result(
+            assessment, workflow_state, result
+        ))
+
+    @app.tool()
+    def evaluate_instruction_feedback(ctx: Context, feedback: dict[str, Any]) -> dict[str, Any]:
+        """Evaluate explicit acceptance and repeated-instruction feedback without inferring user preferences."""
+        _require_startup_loaded(ctx, "evaluate_instruction_feedback")
+        return _with_control_reminder(evaluate_feedback(feedback))
 
     @app.tool()
     def list_knowledge_catalog(limit: int | None = None) -> list[dict[str, Any]]:
@@ -646,7 +884,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         return response
 
-    @app.tool()
+    @admin_tool()
     def prepare_skill_edit(
         ctx: Context,
         skill_id: str,
@@ -666,13 +904,13 @@ def main(argv: list[str] | None = None) -> int:
             )
         return _with_control_reminder(result)
 
-    @app.tool()
+    @admin_tool()
     def list_skill_edits(ctx: Context) -> list[dict[str, Any]]:
         """List project-local Skill overlays and their provenance."""
         _require_startup_loaded(ctx, "list_skill_edits")
         return catalog.list_skill_edits()
 
-    @app.tool()
+    @admin_tool()
     def export_skill_edit(
         ctx: Context,
         skill_id: str,
@@ -683,14 +921,14 @@ def main(argv: list[str] | None = None) -> int:
         result = catalog.export_skill_edit(skill_id, write_patch)
         return _with_control_reminder(result)
 
-    @app.tool()
+    @admin_tool()
     def deactivate_skill_edit(ctx: Context, skill_id: str) -> dict[str, Any]:
         """Stop routing to a local edit while preserving its files."""
         _require_startup_loaded(ctx, "deactivate_skill_edit")
         result = catalog.deactivate_skill_edit(skill_id)
         return _with_control_reminder(result)
 
-    @app.tool()
+    @admin_tool()
     def create_local_knowledge(
         ctx: Context,
         xid: str,
@@ -703,13 +941,13 @@ def main(argv: list[str] | None = None) -> int:
         result = catalog.create_local_knowledge(xid, content, filename, domain)
         return _with_control_reminder(result)
 
-    @app.tool()
+    @admin_tool()
     def list_local_knowledge(ctx: Context) -> list[dict[str, Any]]:
         """List project-local Knowledge additions and their provenance."""
         _require_startup_loaded(ctx, "list_local_knowledge")
         return catalog.list_local_knowledge()
 
-    @app.tool()
+    @admin_tool()
     def export_local_knowledge(
         ctx: Context,
         xid: str,
@@ -719,11 +957,455 @@ def main(argv: list[str] | None = None) -> int:
         _require_startup_loaded(ctx, "export_local_knowledge")
         return _with_control_reminder(catalog.export_local_knowledge(xid, write_patch))
 
-    @app.tool()
+    @admin_tool()
     def deactivate_local_knowledge(ctx: Context, xid: str) -> dict[str, Any]:
         """Stop routing to a local Knowledge addition while preserving it."""
         _require_startup_loaded(ctx, "deactivate_local_knowledge")
         return _with_control_reminder(catalog.deactivate_local_knowledge(xid))
+
+    @app.tool()
+    def get_contribution_return_contract(ctx: Context) -> dict[str, Any]:
+        """Describe the inert MCP return inbox and its validation limits."""
+        _require_startup_loaded(ctx, "get_contribution_return_contract")
+        result = catalog.get_contribution_return_contract()
+        result["preferred_transfer"] = {
+            "mode": "mcp_owned_inbound_webdav",
+            "issue_tool": "create_contribution_upload_session",
+            "seal_tool": "seal_contribution_upload",
+            "enabled": upload_manager is not None,
+            "canonical_adoption": "local_atomic_only",
+        }
+        return result
+
+    @admin_tool()
+    def create_contribution_upload_session(
+        ctx: Context,
+        expires_in_seconds: int | None = None,
+    ) -> dict[str, Any]:
+        """Issue one scoped, expiring credential for inert inbound WebDAV staging."""
+        _require_startup_loaded(ctx, "create_contribution_upload_session")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError(
+                "XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before create_contribution_upload_session"
+            )
+        if upload_manager is None:
+            raise RuntimeError(
+                "XREFKIT_INBOUND_WEBDAV_DISABLED: start the MCP server with "
+                "--enable-inbound-webdav and a reachable listener configuration"
+            )
+        result = upload_manager.issue(
+            binding=binding,
+            expires_in_seconds=expires_in_seconds,
+        )
+        audit_log.append(
+            "contribution.upload_session_created",
+            binding=binding,
+            tool="create_contribution_upload_session",
+            upload_id=result["upload_id"],
+            expires_at=result["expires_at"],
+        )
+        result["audit_status"] = "recorded"
+        return result
+
+    @admin_tool()
+    def seal_contribution_upload(
+        ctx: Context,
+        upload_id: str,
+        contribution_id: str,
+        kind: str,
+        title: str,
+        summary: str,
+        expected_files: list[dict[str, Any]],
+        skill_content_hash: str,
+        package_id: str | None = None,
+        knowledge_versions: list[dict[str, str]] | None = None,
+        knowledge: dict[str, Any] | None = None,
+        deterministic_tool: dict[str, Any] | None = None,
+        skill_observation: dict[str, Any] | None = None,
+        proposed_target_path: str | None = None,
+    ) -> dict[str, Any]:
+        """Freeze and verify one inbound upload, then create an inert review record."""
+        _require_startup_loaded(ctx, "seal_contribution_upload")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError(
+                "XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before seal_contribution_upload"
+            )
+        if upload_manager is None:
+            raise RuntimeError("XREFKIT_INBOUND_WEBDAV_DISABLED: upload listener is not enabled")
+        source_snapshot = catalog.contribution_source_snapshot(
+            skill_id=binding.skill_id,
+            package_id=package_id,
+            skill_content_hash=skill_content_hash,
+            knowledge_versions=knowledge_versions,
+            provider_version=SERVER_VERSION,
+        )
+        request_basis = {
+            "contribution_id": contribution_id,
+            "kind": kind,
+            "title": title,
+            "summary": summary,
+            "skill_content_hash": skill_content_hash,
+            "package_id": package_id,
+            "knowledge_versions": knowledge_versions,
+            "knowledge": knowledge,
+            "deterministic_tool": deterministic_tool,
+            "skill_observation": skill_observation,
+            "proposed_target_path": proposed_target_path,
+            "source_snapshot": source_snapshot,
+        }
+
+        def submit(files: list[dict[str, Any]]) -> dict[str, Any]:
+            return catalog.submit_contribution_return(
+                binding=binding,
+                source_snapshot=source_snapshot,
+                contribution_id=contribution_id,
+                kind=kind,
+                title=title,
+                summary=summary,
+                files=files,
+                knowledge=knowledge,
+                deterministic_tool=deterministic_tool,
+                skill_observation=skill_observation,
+                proposed_target_path=proposed_target_path,
+            )
+
+        result = upload_manager.seal(
+            binding=binding,
+            upload_id=upload_id,
+            expected_files=expected_files,
+            submit=submit,
+            request_basis=request_basis,
+        )
+        audit_log.append(
+            "contribution.upload_sealed",
+            binding=binding,
+            tool="seal_contribution_upload",
+            upload_id=upload_id,
+            contribution_id=contribution_id,
+            payload_hash=result["payload_hash"],
+            idempotent_replay=result["seal_idempotent_replay"],
+        )
+        result["audit_status"] = "recorded"
+        return result
+
+    @admin_tool()
+    def submit_contribution_return(
+        ctx: Context,
+        contribution_id: str,
+        kind: str,
+        title: str,
+        summary: str,
+        files: list[dict[str, Any]],
+        skill_content_hash: str,
+        package_id: str | None = None,
+        knowledge_versions: list[dict[str, str]] | None = None,
+        knowledge: dict[str, Any] | None = None,
+        deterministic_tool: dict[str, Any] | None = None,
+        skill_observation: dict[str, Any] | None = None,
+        proposed_target_path: str | None = None,
+    ) -> dict[str, Any]:
+        """Store a local contribution as pending review without activating it."""
+        _require_startup_loaded(ctx, "submit_contribution_return")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError(
+                "XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before submit_contribution_return"
+            )
+        if binding.repository_fingerprint != catalog.repository_fingerprint:
+            raise ValueError("active Skill Run repository does not match the receiving MCP workspace")
+        source_snapshot = catalog.contribution_source_snapshot(
+            skill_id=binding.skill_id,
+            package_id=package_id,
+            skill_content_hash=skill_content_hash,
+            knowledge_versions=knowledge_versions,
+            provider_version=SERVER_VERSION,
+        )
+        result = catalog.submit_contribution_return(
+            binding=binding,
+            source_snapshot=source_snapshot,
+            contribution_id=contribution_id,
+            kind=kind,
+            title=title,
+            summary=summary,
+            files=files,
+            knowledge=knowledge,
+            deterministic_tool=deterministic_tool,
+            skill_observation=skill_observation,
+            proposed_target_path=proposed_target_path,
+        )
+        try:
+            audit_log.append(
+                "contribution.return_submitted",
+                binding=binding,
+                tool="submit_contribution_return",
+                contribution_id=result["contribution_id"],
+                contribution_kind=result["kind"],
+                payload_hash=result["payload_hash"],
+                created=result["created"],
+                idempotent_replay=result["idempotent_replay"],
+            )
+            result["audit_status"] = "recorded"
+        except OSError as exc:
+            LOGGER.error("contribution return audit failed: %s", exc)
+            result["audit_status"] = "failed"
+        return result
+
+    @admin_tool()
+    def list_contribution_returns(ctx: Context) -> list[dict[str, Any]]:
+        """List pending-review contribution metadata without file bodies."""
+        _require_startup_loaded(ctx, "list_contribution_returns")
+        return catalog.list_contribution_returns(approval_verifier)
+
+    @admin_tool()
+    def export_contribution_return(ctx: Context, contribution_id: str) -> dict[str, Any]:
+        """Export a complete inert review bundle without activating it."""
+        _require_startup_loaded(ctx, "export_contribution_return")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError(
+                "XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before export_contribution_return"
+            )
+        result = catalog.export_contribution_return(contribution_id, approval_verifier)
+        try:
+            audit_log.append(
+                "contribution.return_exported",
+                binding=binding,
+                tool="export_contribution_return",
+                contribution_id=contribution_id,
+            )
+            result["audit_status"] = "recorded"
+        except OSError as exc:
+            LOGGER.error("contribution return export audit failed: %s", exc)
+            result["audit_status"] = "failed"
+        return result
+
+    @admin_tool()
+    def review_contribution_return(
+        ctx: Context,
+        contribution_id: str,
+        decision_id: str,
+        decision: str,
+        reviewer: str,
+        decision_evidence: str,
+        approval_assertion: str,
+        approved_target_path: str | None = None,
+    ) -> dict[str, Any]:
+        """Record one explicit human review decision without canonical mutation."""
+        _require_startup_loaded(ctx, "review_contribution_return")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError(
+                "XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before review_contribution_return"
+            )
+        result = catalog.review_contribution_return(
+            contribution_id=contribution_id,
+            decision_id=decision_id,
+            decision=decision,
+            reviewer=reviewer,
+            decision_evidence=decision_evidence,
+            approval_assertion=approval_assertion,
+            approved_target_path=approved_target_path,
+            approval_verifier=approval_verifier,
+        )
+        try:
+            audit_log.append(
+                "contribution.review_decided",
+                binding=binding,
+                tool="review_contribution_return",
+                contribution_id=contribution_id,
+                decision_id=result["decision_id"],
+                decision=result["decision"],
+                reviewer=result["reviewer"],
+                payload_hash=result["payload_hash"],
+                review_binding_hash=result["review_binding_hash"],
+                created=result["created"],
+            )
+            result["audit_status"] = "recorded"
+        except OSError as exc:
+            LOGGER.error("contribution review audit failed: %s", exc)
+            result["audit_status"] = "failed"
+        return result
+
+    @admin_tool()
+    def adopt_contribution_return(
+        ctx: Context,
+        contribution_id: str,
+        adoption_id: str,
+        reviewer: str,
+        decision_evidence: str,
+        approval_token: str,
+    ) -> dict[str, Any]:
+        """Promote one human-accepted contribution through the server transport."""
+        _require_startup_loaded(ctx, "adopt_contribution_return")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError(
+                "XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before adopt_contribution_return"
+            )
+        result = catalog.adopt_contribution_return(
+            transport=adoption_transport,
+            approval_verifier=approval_verifier,
+            contribution_id=contribution_id,
+            adoption_id=adoption_id,
+            reviewer=reviewer,
+            decision_evidence=decision_evidence,
+            approval_token=approval_token,
+        )
+        try:
+            audit_log.append(
+                "contribution.adopted",
+                binding=binding,
+                tool="adopt_contribution_return",
+                contribution_id=contribution_id,
+                adoption_id=result["adoption_id"],
+                payload_hash=result["payload_hash"],
+                review_binding_hash=result["review_binding_hash"],
+                canonical_target=result["canonical_target"],
+                transport=result["transport"]["transport"],
+                created=result["created"],
+            )
+            result["audit_status"] = "recorded"
+        except OSError as exc:
+            LOGGER.error("contribution adoption audit failed: %s", exc)
+            result["audit_status"] = "failed"
+        return result
+
+    @admin_tool()
+    def assess_skill_maturity(
+        ctx: Context,
+        assessment_id: str,
+        skill_id: str,
+        observation_contribution_ids: list[str],
+    ) -> dict[str, Any]:
+        """Aggregate committed adopted observations without proposing a maturity."""
+        _require_startup_loaded(ctx, "assess_skill_maturity")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError("XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before assess_skill_maturity")
+        if approval_verifier is None:
+            raise RuntimeError("trusted human approval verifier is not configured")
+        result = catalog.assess_skill_maturity(
+            assessment_id=assessment_id,
+            skill_id=skill_id,
+            observation_contribution_ids=observation_contribution_ids,
+            approval_verifier=approval_verifier,
+        )
+        try:
+            audit_log.append(
+                "skill.maturity_assessed", binding=binding, tool="assess_skill_maturity",
+                assessment_id=result["assessment_id"], skill_id=result["skill_id"],
+                observation_count=result["aggregation"]["observation_count"],
+                event_hash=result["event_hash"],
+            )
+            result["audit_status"] = "recorded"
+        except OSError as exc:
+            LOGGER.error("Skill maturity assessment audit failed: %s", exc)
+            result["audit_status"] = "failed"
+        return result
+
+    @admin_tool()
+    def propose_skill_maturity(
+        ctx: Context,
+        proposal_id: str,
+        assessment_id: str,
+        target_maturity: str,
+        governance_refs: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """Create a non-authoritative maturity proposal and run its deterministic gate."""
+        _require_startup_loaded(ctx, "propose_skill_maturity")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError("XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before propose_skill_maturity")
+        if approval_verifier is None:
+            raise RuntimeError("trusted human approval verifier is not configured")
+        result = catalog.propose_skill_maturity(
+            proposal_id=proposal_id, assessment_id=assessment_id,
+            target_maturity=target_maturity, governance_refs=governance_refs,
+            approval_verifier=approval_verifier,
+        )
+        try:
+            audit_log.append(
+                "skill.maturity_proposed", binding=binding, tool="propose_skill_maturity",
+                proposal_id=result["proposal_id"], skill_id=result["skill_id"],
+                target_maturity=result["target_maturity"], readiness=result["readiness"],
+                event_hash=result["event_hash"],
+            )
+            result["audit_status"] = "recorded"
+        except OSError as exc:
+            LOGGER.error("Skill maturity proposal audit failed: %s", exc)
+            result["audit_status"] = "failed"
+        return result
+
+    @admin_tool()
+    def review_skill_maturity_proposal(
+        ctx: Context,
+        proposal_id: str,
+        decision_id: str,
+        decision: str,
+        reviewer: str,
+        decision_evidence: str,
+        approval_assertion: str,
+    ) -> dict[str, Any]:
+        """Record a signed human maturity decision without mutating meta.md."""
+        _require_startup_loaded(ctx, "review_skill_maturity_proposal")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError("XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before review_skill_maturity_proposal")
+        if approval_verifier is None:
+            raise RuntimeError("trusted human approval verifier is not configured")
+        result = catalog.review_skill_maturity_proposal(
+            proposal_id=proposal_id, decision_id=decision_id, decision=decision,
+            reviewer=reviewer, decision_evidence=decision_evidence,
+            approval_assertion=approval_assertion, approval_verifier=approval_verifier,
+        )
+        try:
+            audit_log.append(
+                "skill.maturity_review_decided", binding=binding,
+                tool="review_skill_maturity_proposal", proposal_id=result["proposal_id"],
+                decision_id=result["decision_id"], decision=result["decision"],
+                reviewer=result["reviewer"], review_binding_hash=result["review_binding_hash"],
+            )
+            result["audit_status"] = "recorded"
+        except OSError as exc:
+            LOGGER.error("Skill maturity review audit failed: %s", exc)
+            result["audit_status"] = "failed"
+        return result
+
+    @admin_tool()
+    def apply_skill_maturity_proposal(
+        ctx: Context,
+        proposal_id: str,
+        apply_id: str,
+        reviewer: str,
+        decision_evidence: str,
+        approval_token: str,
+    ) -> dict[str, Any]:
+        """Apply one human-accepted, revalidated maturity proposal to canonical meta.md."""
+        _require_startup_loaded(ctx, "apply_skill_maturity_proposal")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError("XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before apply_skill_maturity_proposal")
+        if approval_verifier is None:
+            raise RuntimeError("trusted human approval verifier is not configured")
+        result = catalog.apply_skill_maturity_proposal(
+            proposal_id=proposal_id, apply_id=apply_id, reviewer=reviewer,
+            decision_evidence=decision_evidence, approval_token=approval_token,
+            approval_verifier=approval_verifier,
+        )
+        try:
+            audit_log.append(
+                "skill.maturity_applied", binding=binding, tool="apply_skill_maturity_proposal",
+                proposal_id=result["proposal_id"], apply_id=result["apply_id"],
+                skill_id=result["skill_id"], maturity=result["maturity"],
+                meta_content_hash=result["meta_content_hash"],
+            )
+            result["audit_status"] = "recorded"
+        except OSError as exc:
+            LOGGER.error("Skill maturity apply audit failed: %s", exc)
+            result["audit_status"] = "failed"
+        return result
 
     @app.tool()
     def resolve_skill_knowledge(
@@ -807,6 +1489,7 @@ def main(argv: list[str] | None = None) -> int:
     def check_xrefkit_runtime_version(installed: dict[str, str] | None = None) -> dict[str, Any]:
         return catalog.check_xrefkit_runtime_version(installed)
 
+    inbound_companion: _InboundCompanion | None = None
     try:
         if args.transport == "streamable-http":
             _run_streamable_http(
@@ -819,8 +1502,17 @@ def main(argv: list[str] | None = None) -> int:
                 args.ssl_keyfile,
                 dist,
                 dist_base_url,
+                args.max_request_body_bytes,
+                upload_manager,
             )
         else:
+            if upload_manager is not None:
+                inbound_companion = _start_inbound_companion(
+                    upload_manager,
+                    args.inbound_webdav_host,
+                    args.inbound_webdav_port,
+                    args.log_level,
+                )
             app.run(transport=args.transport)
     except KeyboardInterrupt:
         # Ctrl+C is the expected operator action for stopping a foreground
@@ -828,6 +1520,9 @@ def main(argv: list[str] | None = None) -> int:
         # after Uvicorn has already completed its graceful shutdown; do not
         # print a traceback for that normal lifecycle event.
         return 0
+    finally:
+        if inbound_companion is not None:
+            inbound_companion.stop()
     return 0
 
 
@@ -986,6 +1681,8 @@ def _run_streamable_http(
     ssl_keyfile: Path | None = None,
     dist: Any = None,
     dist_base_url: str = "",
+    max_request_body_bytes: int = DEFAULT_MAX_REQUEST_BODY_BYTES,
+    upload_manager: InboundUploadManager | None = None,
 ) -> None:
     if sys.platform == "win32":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -997,6 +1694,9 @@ def _run_streamable_http(
         starlette_app = app.streamable_http_app()
         if dist is not None:
             add_dist_routes(starlette_app, dist, dist_base_url)
+        if upload_manager is not None:
+            add_inbound_webdav_routes(starlette_app, upload_manager)
+        _add_request_size_limit_middleware(starlette_app, max_request_body_bytes)
         _add_streamable_http_probe_middleware(starlette_app, http_path)
         config = uvicorn.Config(
             starlette_app,
@@ -1010,6 +1710,183 @@ def _run_streamable_http(
         await server.serve()
 
     anyio.run(serve)
+
+
+class _InboundCompanion:
+    def __init__(self, server: Any, thread: threading.Thread) -> None:
+        self.server = server
+        self.thread = thread
+
+    def stop(self) -> None:
+        self.server.should_exit = True
+        self.thread.join(timeout=10)
+        if self.thread.is_alive():
+            self.server.force_exit = True
+            self.thread.join(timeout=5)
+
+
+def _start_inbound_companion(
+    manager: InboundUploadManager,
+    host: str,
+    port: int | None,
+    log_level: str,
+) -> _InboundCompanion:
+    if port is None:
+        raise RuntimeError("stdio inbound WebDAV requires --inbound-webdav-port")
+    import uvicorn
+    from starlette.applications import Starlette
+
+    starlette_app = Starlette()
+    add_inbound_webdav_routes(starlette_app, manager)
+    config = uvicorn.Config(
+        starlette_app,
+        host=host,
+        port=port,
+        log_level=log_level.lower(),
+        access_log=False,
+    )
+    server = uvicorn.Server(config)
+    thread = threading.Thread(target=server.run, name="xrefkit-inbound-webdav", daemon=True)
+    thread.start()
+    deadline = time.monotonic() + 10
+    while not server.started and thread.is_alive() and time.monotonic() < deadline:
+        time.sleep(0.02)
+    if not server.started:
+        server.should_exit = True
+        thread.join(timeout=5)
+        raise RuntimeError("inbound WebDAV companion listener failed to start")
+    return _InboundCompanion(server, thread)
+
+
+def _build_inbound_upload_manager(args: Any, repo: Path) -> InboundUploadManager:
+    loopback = {"127.0.0.1", "::1", "localhost"}
+    if args.transport == "streamable-http":
+        if args.inbound_webdav_port is not None and args.inbound_webdav_port != args.port:
+            raise ValueError(
+                "streamable-http inbound WebDAV shares the MCP port; omit "
+                "--inbound-webdav-port or set it to --port"
+            )
+        scheme = "https" if args.ssl_certfile else "http"
+        generated_base = _inbound_listener_base(scheme, args.host, args.port)
+        if args.host not in loopback and args.ssl_certfile is None:
+            raise ValueError(
+                "non-loopback inbound WebDAV requires TLS"
+            )
+        if args.host not in loopback and not args.inbound_webdav_public_base_url:
+            raise ValueError(
+                "non-loopback inbound WebDAV requires an explicit public base URL matching the TLS listener"
+            )
+        public_base = _validated_inbound_public_base(
+            args.inbound_webdav_public_base_url,
+            generated_base,
+        )
+        listener = {
+            "mode": "shared_streamable_http_app",
+            "host": args.host,
+            "port": args.port,
+            "route": "/webdav/uploads/{upload_id}",
+            "process_lifecycle": "same MCP HTTP server",
+        }
+    elif args.transport == "stdio":
+        if args.inbound_webdav_port is None or not 1 <= args.inbound_webdav_port <= 65535:
+            raise ValueError("stdio inbound WebDAV requires --inbound-webdav-port 1..65535")
+        if args.inbound_webdav_host not in loopback:
+            raise ValueError(
+                "stdio inbound WebDAV companion is loopback-only; use streamable-http with TLS for remote clients"
+            )
+        generated_base = _inbound_listener_base(
+            "http", args.inbound_webdav_host, args.inbound_webdav_port
+        )
+        public_base = _validated_inbound_public_base(
+            args.inbound_webdav_public_base_url,
+            generated_base,
+        )
+        listener = {
+            "mode": "same_process_stdio_companion",
+            "host": args.inbound_webdav_host,
+            "port": args.inbound_webdav_port,
+            "route": "/webdav/uploads/{upload_id}",
+            "process_lifecycle": "starts before stdio MCP requests and stops on stdio EOF",
+        }
+    else:
+        raise ValueError(
+            "inbound WebDAV is unsupported with SSE; use stdio companion or streamable-http"
+        )
+    return InboundUploadManager(
+        repo,
+        public_base_url=public_base,
+        listener=listener,
+        default_ttl_seconds=args.inbound_webdav_session_seconds,
+    )
+
+
+def _validated_inbound_public_base(configured: str | None, generated: str) -> str:
+    if configured is None:
+        return generated
+    if configured.rstrip("/").casefold() != generated.casefold():
+        raise ValueError(
+            "--inbound-webdav-public-base-url must exactly match the MCP-owned listener "
+            f"address: {generated}"
+        )
+    return generated
+
+
+def _inbound_listener_base(scheme: str, host: str, port: int) -> str:
+    rendered_host = f"[{host}]" if ":" in host and not host.startswith("[") else host
+    return f"{scheme}://{rendered_host}:{port}"
+
+
+def _add_request_size_limit_middleware(starlette_app: Any, max_bytes: int) -> None:
+    from starlette.responses import JSONResponse
+
+    if max_bytes <= 0:
+        raise ValueError("max request body bytes must be positive")
+
+    class RequestSizeLimitMiddleware:
+        def __init__(self, app: Any) -> None:
+            self.app = app
+
+        async def __call__(self, scope: dict[str, Any], receive: Any, send: Any) -> None:
+            if scope.get("type") != "http":
+                await self.app(scope, receive, send)
+                return
+            headers = _decode_headers(scope.get("headers", []))
+            content_length = headers.get("content-length")
+            if content_length is not None:
+                try:
+                    if int(content_length) > max_bytes:
+                        await JSONResponse({"error": "request_body_too_large"}, status_code=413)(
+                            scope, receive, send
+                        )
+                        return
+                except ValueError:
+                    await JSONResponse({"error": "invalid_content_length"}, status_code=400)(
+                        scope, receive, send
+                    )
+                    return
+            consumed = 0
+
+            async def limited_receive() -> dict[str, Any]:
+                nonlocal consumed
+                message = await receive()
+                if message.get("type") == "http.request":
+                    consumed += len(message.get("body", b""))
+                    if consumed > max_bytes:
+                        raise _RequestBodyTooLarge
+                return message
+
+            try:
+                await self.app(scope, limited_receive, send)
+            except _RequestBodyTooLarge:
+                await JSONResponse({"error": "request_body_too_large"}, status_code=413)(
+                    scope, receive, send
+                )
+
+    starlette_app.add_middleware(RequestSizeLimitMiddleware)
+
+
+class _RequestBodyTooLarge(Exception):
+    pass
 
 
 def _add_streamable_http_probe_middleware(starlette_app: Any, http_path: str) -> None:

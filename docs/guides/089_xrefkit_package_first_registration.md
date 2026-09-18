@@ -165,6 +165,7 @@ xrefkit mcp serve --repo C:\path\to\XRefKit --transport stdio
 | Parameter | Default | 説明 |
 | --- | --- | --- |
 | `--repo <path>` | required | XRefKit repository root |
+| `--profile reader\|admin` | `reader` | port単位の機能境界。`admin` はloopback限定で更新・contribution toolsを公開 |
 | `--transport stdio\|sse\|streamable-http` | `stdio` | MCP transport |
 | `--host <host>` | `127.0.0.1` | HTTP transport の bind host |
 | `--port <number>` | `8000` | HTTP transport の port |
@@ -175,6 +176,9 @@ xrefkit mcp serve --repo C:\path\to\XRefKit --transport stdio
 | `--public-base-url <url>` | auto | artifact distribution 用の公開URL |
 | `--dist-extra-dir <path>` | none | `/dist` に追加する artifact directory |
 | `--enable-executable-distribution` | off | executable artifact distribution を有効化 |
+| `--enable-inbound-webdav` | off | MCP所有のinbound contribution stagingを有効化。management用の`admin` profileで使用 |
+| `--inbound-webdav-host <host>` | MCP host | inbound WebDAV listener host |
+| `--inbound-webdav-port <port>` | MCP port | inbound WebDAV listener port |
 | `--stateless-http` | off | Streamable HTTP を stateless mode で提供 |
 | `--context-secret <secret>` | `XREFKIT_CONTEXT_SECRET` | context token 用 HMAC secret |
 | `--distribution-trust-id <id>` | none | executable distribution の trust identity |
@@ -184,6 +188,10 @@ xrefkit mcp serve --repo C:\path\to\XRefKit --transport stdio
 | `--initial-protocol workflow` | both | legacy compatibility: `workflow_protocol` を初期連携 |
 | `--initial-protocol reporting` | both | legacy compatibility: `reporting_protocol` を初期連携 |
 | `--audit-log <path>` | `<repo>\work\mcp\xid_audit.jsonl` | MCP audit JSONL の出力先 |
+
+通常利用ポートは`--profile reader`とし、Skill/Knowledge更新、contribution upload、
+review、adoptionを扱う管理ポートだけを`--profile admin`で起動する。`admin`は
+loopback hostにのみbindできる。`reader`のtool discoveryには管理toolを出さない。
 
 新しい MCP client は `initialize` params の `xrefkit.excluded_protocols` を使う。
 例えば `reporting` を除外する場合は次の JSON を送る。

@@ -184,7 +184,29 @@ if __name__ == "__main__":
                 },
             ],
         )
-        self.assertTrue(all(tool.side_effects in {"none", "audit_write"} for tool in catalog.tools))
+        repo_writers = {
+            tool.tool_id for tool in catalog.tools if tool.side_effects == "repo_write"
+        }
+        self.assertEqual(
+            repo_writers,
+            {
+                "xref.create_contribution_upload_session",
+                "xref.seal_contribution_upload",
+                "xref.submit_contribution_return",
+                "xref.review_contribution_return",
+                "xref.adopt_contribution_return",
+                "xref.assess_skill_maturity",
+                "xref.propose_skill_maturity",
+                "xref.review_skill_maturity_proposal",
+                "xref.apply_skill_maturity_proposal",
+            },
+        )
+        self.assertTrue(
+            all(
+                tool.side_effects in {"none", "audit_write", "repo_write"}
+                for tool in catalog.tools
+            )
+        )
         self.assertTrue(
             all(tool.to_dict()["input_json_schema"]["type"] == "object" for tool in catalog.tools)
         )
@@ -1330,6 +1352,30 @@ flow_id: sample
             "known_version",
             contracts["xref.get_document_by_xid"]["input_json_schema"]["required"],
         )
+        contribution_schema = contracts["xref.submit_contribution_return"][
+            "input_json_schema"
+        ]
+        self.assertEqual(contribution_schema["properties"]["files"]["maxItems"], 64)
+        self.assertEqual(
+            contribution_schema["properties"]["knowledge_versions"]["maxItems"], 128
+        )
+        self.assertIn("proposed_target_path", contribution_schema["properties"])
+        self.assertIn("skill_observation", contribution_schema["properties"])
+        upload_schema = contracts["xref.create_contribution_upload_session"]["input_json_schema"]
+        self.assertIn("expires_in_seconds", upload_schema["properties"])
+        seal_schema = contracts["xref.seal_contribution_upload"]["input_json_schema"]
+        self.assertEqual(seal_schema["properties"]["expected_files"]["maxItems"], 64)
+        review_schema = contracts["xref.review_contribution_return"]["input_json_schema"]
+        self.assertIn("decision_id", review_schema["required"])
+        self.assertIn("reviewer", review_schema["required"])
+        self.assertIn("approval_assertion", review_schema["required"])
+        adoption_schema = contracts["xref.adopt_contribution_return"]["input_json_schema"]
+        self.assertIn("approval_token", adoption_schema["required"])
+        maturity_review_schema = contracts["xref.review_skill_maturity_proposal"]["input_json_schema"]
+        self.assertIn("approval_assertion", maturity_review_schema["required"])
+        maturity_apply_schema = contracts["xref.apply_skill_maturity_proposal"]["input_json_schema"]
+        self.assertIn("approval_token", maturity_apply_schema["required"])
+        self.assertNotIn("knowledge_versions", contribution_schema["required"])
 
 
 if __name__ == "__main__":

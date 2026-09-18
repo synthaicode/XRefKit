@@ -54,6 +54,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Complex SkillDefinition / Flow example](guides/097_complex_skilldefinition_flow.md#xid-4F8C2A7D91E6)
 - [SkillDefinition distribution and adoption boundary](guides/098_skilldefinition_distribution_boundary.md#xid-B7D3A5E91C42)
 - [SkillDefinition redesign migration plan](guides/099_skilldefinition_redesign_migration_plan.md#xid-C8E4B6F20D31)
+- [Work-item model routing contract](core/contracts/110_work_item_model_routing.md#xid-F2C91B7E4A60)
 
 ## Cross-Cutting Schemas And Boundaries
 
@@ -83,7 +84,9 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Knowledge observation and improvement platform design](designs/088_knowledge_observation_and_improvement_platform_design.md#xid-32B512763C78)
 - [Copilot trace Skill boundary analysis design](designs/089_copilot_trace_skill_boundary_analysis_design.md#xid-B6E4A91C7D2F)
 - [MCP Skill local edit design](designs/090_mcp_skill_local_edit_design.md#xid-A4C7E2D91B60)
+- [MCP contribution return adoption usage guide](guides/095_mcp_contribution_return_adoption.md#xid-0E5C778EB6AF)
 - [AI Decision Trace Protocol guide](guides/092_ai_decision_trace_protocol_for_ai.md#xid-88830262A85D)
+- [Instruction gateway guide](guides/094_instruction_gateway.md#xid-E7A2C6109F43)
 
 ## Common links
 

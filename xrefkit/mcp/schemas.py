@@ -6,6 +6,17 @@ from typing import Any, Literal
 
 ExecutionLocation = Literal["server", "client"]
 SideEffects = Literal["none", "audit_write", "repo_write", "external_write", "unknown"]
+SERVER_REPO_WRITE_ALLOWLIST = {
+    "xref.create_contribution_upload_session",
+    "xref.seal_contribution_upload",
+    "xref.submit_contribution_return",
+    "xref.review_contribution_return",
+    "xref.adopt_contribution_return",
+    "xref.assess_skill_maturity",
+    "xref.propose_skill_maturity",
+    "xref.review_skill_maturity_proposal",
+    "xref.apply_skill_maturity_proposal",
+}
 ResponseEnvelope = Literal["direct_object", "mcp_result_array"]
 
 
@@ -24,9 +35,12 @@ class ToolContract:
     response_envelope: ResponseEnvelope = "direct_object"
 
     def validate(self) -> None:
-        if self.execution_location == "server" and self.side_effects not in {"none", "audit_write"}:
+        allowed = {"none", "audit_write"}
+        if self.tool_id in SERVER_REPO_WRITE_ALLOWLIST:
+            allowed.add("repo_write")
+        if self.execution_location == "server" and self.side_effects not in allowed:
             raise ValueError(
-                f"server tool {self.tool_id!r} may declare only side_effects='none' or 'audit_write'"
+                f"server tool {self.tool_id!r} may declare only side_effects in {sorted(allowed)}"
             )
 
     def to_dict(self) -> dict[str, Any]:
@@ -308,6 +322,7 @@ class StartupContext:
     references: list[StartupReference]
     semantic_routing_references: list[dict[str, Any]]
     missing: list[dict[str, str]]
+    instruction_gateway: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -326,6 +341,7 @@ class StartupContext:
             "load_order": self.load_order,
             "startup_contract_pack": self.startup_contract_pack,
             "prompt_flow_protocol": self.prompt_flow_protocol,
+            "instruction_gateway": self.instruction_gateway,
             "workflow_protocol": self.workflow_protocol,
             "reporting_protocol": self.reporting_protocol,
             "initial_protocol_selection": self.initial_protocol_selection,
@@ -339,7 +355,11 @@ def _json_schema_object(schema: dict[str, Any]) -> dict[str, Any]:
     properties: dict[str, Any] = {}
     required: list[str] = []
     for name, descriptor in schema.items():
-        optional = isinstance(descriptor, str) and descriptor.endswith("?")
+        optional = (
+            isinstance(descriptor, str) and descriptor.endswith("?")
+        ) or (
+            isinstance(descriptor, dict) and descriptor.get("x-optional") is True
+        )
         if not optional:
             required.append(name)
         properties[name] = _json_schema_for_descriptor(descriptor)
@@ -355,7 +375,7 @@ def _json_schema_object(schema: dict[str, Any]) -> dict[str, Any]:
 
 def _json_schema_for_descriptor(descriptor: Any) -> dict[str, Any]:
     if isinstance(descriptor, dict):
-        return descriptor
+        return {key: value for key, value in descriptor.items() if key != "x-optional"}
     if not isinstance(descriptor, str):
         return {"description": str(descriptor)}
     base = descriptor.removesuffix("?")
