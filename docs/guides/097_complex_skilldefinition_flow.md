@@ -3,7 +3,8 @@
 
 # 複雑なSkillDefinition / Flowの実行例
 
-この例は、`dotnet_change_analysis`を一つの編集正本として選択し、指示ごとに必要な
+この例は、明示選択したtracked v1 (`skills/dotnet_change_analysis/SKILL.v1.md`)を
+`dotnet_change_analysis`の編集正本として扱い、旧meta+本文も読める状態を保ったまま、指示ごとに必要な
 能力・調整・責任とKnowledgeを組み立て、subagentへ渡す流れを示す。AI固有の
 誤読防止、unknown、証拠、role分離、check、handoffは既存controlを継続利用する。
 
@@ -54,7 +55,7 @@ model routingは各work itemの必要能力を評価し、利用可能な低レ�
 
 ```powershell
 python -m xrefkit skill run `
-  --definition work/skill-definition-candidate/dotnet_change_analysis/SKILL.md `
+  --definition skills/dotnet_change_analysis/SKILL.v1.md `
   --task "OrderServiceの変更前分析" `
   --capability ".NET repository structure and impact inspection" `
   --tuning "DI lifetime and attribute-binding evidence; preserve unknown" `
@@ -110,5 +111,5 @@ scope変更、retry上限、人の採用判断はSkill本文へ複製しない�
 
 Skill固有criteriaは定義headerにあり、Workflowはwork item、artifact、evidence、role分離、
 unknown/riskの解決またはescalationを検査する。AIのcheck成功は出力内容の採用を意味しない。
-人がnoteを確認し、次のdesign/implementationで使うかを決める。
-
+人がnoteを確認し、次のdesign/implementationで使うかを決める。tracked v1の存在は
+自動adoptionやmaturityの昇格を意味せず、legacy本文は引き続き読取可能である。

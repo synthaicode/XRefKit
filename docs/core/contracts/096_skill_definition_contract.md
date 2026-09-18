@@ -168,14 +168,19 @@ python -m tools.convert_dotnet_skill_definition --root .
 `runtime_cutover_pending`、観測・昇格履歴などはprovenanceとして保持する。
 編集済み候補の上書きは拒否する。
 
-これは一つの正本へまとめる物理形式の実証であり、本文の共通制御を削除・統合する
-意味的な簡易化はまだ行っていない。旧Skillの本文とmetaを現在の実行正本として残し、
-候補を第二の有効Skillとして登録しない。後続の切替で必要なのは次の確認である。
+converterの出力は、一つの正本へまとめる物理形式の実証であり、元本文をbyte単位で
+保持するため、意味的な簡易化までは行わない。別途、共通制御を参照へ統合した
+[tracked v1](../../../skills/dotnet_change_analysis/SKILL.v1.md#xid-9883EF4E8CA9)を置く。これは固有の方法、
+Knowledge要求、確認条件を保持し、旧本文XID `D94E3B3A7C11`と旧meta XID
+`1F4A6D20B8E1`を`aliases`で対応付ける。
 
-- 固有の方法・観点・停止条件を保持したまま共通制御を参照へ統合する。
-- Knowledgeと方法の所有関係を確認し、既存XIDと必須取得条件を保つ。
-- 代表定義をactive catalogへ採用し、複雑Flowを検証する。
-- source、catalog、package、管理upload、docsの対象版を揃える。
+tracked v1は明示的な定義選択時の推奨対象である。旧Skillの本文とmetaは引き続き
+読取可能なlegacy経路として残す。tracked v1の存在は自動adoptionやmaturityの昇格を
+意味しない。productionの既定値へ切り替える場合は、次を別に確認する。
+
+- 人が簡易化後の方法と確認条件を受け入れたことをgovernance recordへ記録する。
+- source、catalog、package、管理upload、docsの採用対象版を揃える。
+- legacy経路の廃止条件が決まるまでは旧本文とmetaを削除しない。
 
 [Workflow Protocol](../../guides/088_instruction_workflow_protocol.md#xid-9F4C2A7D1B60)の
 verify/closeと、人による出力品質・採用の判断は引き続き別である。

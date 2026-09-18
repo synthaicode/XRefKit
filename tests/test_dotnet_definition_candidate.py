@@ -75,3 +75,29 @@ def test_representative_definition_resolves_runtime_selected_knowledge():
         assert resolved["required"] is True
         assert resolved["satisfied"] is True
         assert resolved["candidates"][0]["xid"] == source["seed_xids"][0]
+
+
+def test_tracked_v1_definition_resolves_knowledge_and_explicit_selection_is_single_entry():
+    repo = Path(__file__).resolve().parents[1]
+    relative = Path("skills/dotnet_change_analysis/SKILL.v1.md")
+    definition = load_skill_definition(repo / relative)
+    candidate = load_skill_definition(repo / "work/skill-definition-candidate/dotnet_change_analysis/SKILL.md")
+    assert definition["metadata"]["xid"] == "9883EF4E8CA9"
+    assert set(definition["metadata"]["aliases"]) == {"D94E3B3A7C11", "1F4A6D20B8E1"}
+    migrated_method = definition["method"].replace("9883EF4E8CA9", "D94E3B3A7C11")
+    assert migrated_method.splitlines() == candidate["method"].splitlines()
+    catalog = XRefCatalog.build(repo, skill_definition_paths=[relative])
+    entries = [entry for entry in catalog.skills if entry.skill_id == "dotnet_change_analysis"]
+    assert len(entries) == 1
+    assert entries[0].definition_format == "skill_definition_v1"
+    need_ids = [need["id"] for need in definition["metadata"]["knowledge_needs"]]
+    result = catalog.resolve_skill_knowledge("dotnet_change_analysis", need_ids)
+    assert result["unresolved_activation"] == []
+    assert result["unsatisfied_required"] == []
+    assert [need["id"] for need in result["needs"]] == need_ids
+
+
+def test_legacy_meta_still_points_to_legacy_body():
+    repo = Path(__file__).resolve().parents[1]
+    meta = (repo / "skills/dotnet_change_analysis/meta.md").read_text(encoding="utf-8")
+    assert "skill_doc: `./SKILL.md`" in meta
