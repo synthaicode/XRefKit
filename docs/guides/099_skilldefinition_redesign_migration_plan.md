@@ -50,6 +50,7 @@ productionの既定sourceを切り替えるadoptionを分ける。前者は検�
 | --- | --- | --- | --- |
 | `dotnet_change_analysis` | [9883EF4E8CA9](../../skills/dotnet_change_analysis/SKILL.v1.md#xid-9883EF4E8CA9) | complex analysis method、Knowledge、Skill固有handoff | explicit `--definition`; legacy kept |
 | `code_constraint_derivation` | [7C4E9A1B2D60](../../skills/packs/constraint-derivation/code_constraint_derivation/SKILL.v1.md#xid-7C4E9A1B2D60) | Knowledge selection、unsupported business meaning stop | explicit `--definition`; legacy kept |
+| constraint-derivation family | [A4C9E2B7D160](../../skills/packs/constraint-derivation/constraint_derivation_index/SKILL.v1.md#xid-A4C9E2B7D160) | 11/11 Skills、family routing、domain-specific stop conditions | explicit `--definition`; legacy kept |
 | `security_review` | [7C4E9A2D1F60](../../skills/security_review/SKILL.v1.md#xid-7C4E9A2D1F60) | evidence、security viewpoints、unknown、handoff | explicit `--definition`; legacy kept |
 | `editorial_intake` | [7C4E9A2D6F81](../../skills/packs/editorial-ops/editorial_intake/SKILL.v1.md#xid-7C4E9A2D6F81) | context boundary、reader capability、publication stop | explicit `--definition`; legacy kept |
 
