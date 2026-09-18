@@ -39,6 +39,22 @@ SkillDefinitionに残す。
 6. **Docs and bulk conversion** — canonical docsを新モデルへ揃え、代表runの観測後に変換単位を決める。
    最後にlegacy meta validatorとsplit sourceを廃止する。
 
+ここでいうbulk conversionは、tracked v1をlegacyと並べて追加するdefinition migrationと、
+productionの既定sourceを切り替えるadoptionを分ける。前者は検証済みの変換単位ごとに進められる。
+後者とlegacy削除はmanagement adoption、人の受入れ、利用時の観測が揃うまで行わない。
+
+## Current definition migration status
+
+| Skill | tracked v1 | coverage | active-source boundary |
+| --- | --- | --- | --- |
+| `dotnet_change_analysis` | [9883EF4E8CA9](../../skills/dotnet_change_analysis/SKILL.v1.md#xid-9883EF4E8CA9) | complex analysis method、Knowledge、Skill固有handoff | explicit `--definition`; legacy kept |
+| `code_constraint_derivation` | [7C4E9A1B2D60](../../skills/packs/constraint-derivation/code_constraint_derivation/SKILL.v1.md#xid-7C4E9A1B2D60) | Knowledge selection、unsupported business meaning stop | explicit `--definition`; legacy kept |
+| `security_review` | [7C4E9A2D1F60](../../skills/security_review/SKILL.v1.md#xid-7C4E9A2D1F60) | evidence、security viewpoints、unknown、handoff | explicit `--definition`; legacy kept |
+| `editorial_intake` | [7C4E9A2D6F81](../../skills/packs/editorial-ops/editorial_intake/SKILL.v1.md#xid-7C4E9A2D6F81) | context boundary、reader capability、publication stop | explicit `--definition`; legacy kept |
+
+各tracked v1は新しいown XIDを持ち、旧本文XIDと旧meta XIDを`aliases`に保持する。
+外部governance recordがないため、明示実行時のmaturityは`unassessed`である。
+
 ## Low-level model work packets
 
 Lunaなどのlow-level modelへ渡すwork itemは、一つの判断境界と決定的な完了条件に限定する。
@@ -63,5 +79,6 @@ Lunaなどのlow-level modelへ渡すwork itemは、一つの判断境界と決�
 - human adoption前のcandidateをproduction active sourceとして扱わない。
 - docsのXID checkと関連testが通る。
 
-bulk conversion開始には、代表的な複雑Skillの観測、管理adoption経路のlive検証、
+production既定sourceの一括切替には、代表的な複雑Skillの利用観測、管理adoption経路のlive検証、
 外部v1 maturity/promotion recordの運用観測、人によるactive source切替判断が必要である。
+それまではtracked v1の追加と明示実行による検証を続け、legacy経路を削除しない。
