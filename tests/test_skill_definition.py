@@ -40,6 +40,12 @@ def test_preserves_method_and_hash(metadata, tmp_path):
     assert loaded["method"] == parsed["method"]
 
 
+def test_control_refs_may_be_empty(metadata):
+    metadata["control_refs"] = []
+    parsed = parse_skill_definition(text_for(metadata))
+    assert parsed["metadata"]["control_refs"] == []
+
+
 @pytest.mark.parametrize("key,value", [
     ("schema_version", True), ("schema_version", 2), ("skill_id", "Bad-ID"),
     ("xid", "not-an-xid"), ("summary", ""), ("applies_when", []),

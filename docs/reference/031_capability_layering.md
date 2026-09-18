@@ -71,7 +71,8 @@ In the canonical SkillDefinition v1:
 - `capability`, `tuning`, and `responsibility` are supplied by the runtime
   binding derived from the instruction.
 - The definition itself contains method, `applies_when`, `inputs`, `outputs`,
-  `criteria`, `knowledge_needs`, and `control_refs`.
+  `criteria`, `knowledge_needs`, and any Skill-specific additional `control_refs`;
+  initialization-owned common controls are not repeated.
 - There is **no** role field. Every Skill is the executor; the checker is the
   deterministic protocol (`xrefkit skill verify`), so recording a role on the Skill
   conveys nothing.

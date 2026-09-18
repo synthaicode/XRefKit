@@ -18,7 +18,7 @@
     {"id": "editorial_operations_framework", "query": "editorial operations framework for intake scope and publication boundary", "required_when": "Required for every editorial intake unless the parent explicitly records why it is not applicable.", "seed_xids": ["F9E58E2BAD21"]},
     {"id": "reader_capability_model", "query": "reader capability model for audience and prior knowledge assumptions", "required_when": "Required when audience capability or assumed prior knowledge affects the intake.", "seed_xids": ["125B6C5E3630"]}
   ],
-  "control_refs": ["B7A2C94F0E61", "A7F3C92D4E11", "6B2D9F4A1C73"]
+  "control_refs": []
 }
 ---
 <!-- xid: 7C4E9A2D6F81 -->

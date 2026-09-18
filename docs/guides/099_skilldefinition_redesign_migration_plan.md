@@ -22,7 +22,8 @@
 Workflow Protocolは継続する。Skill本文から削るのは共通制御の重複であり、実行時の
 worklist、check separation、unknown/risk、escalation、closure、handoffを削ることではない。
 共通escalationはWorkflow Protocolが所有し、Skill固有の停止・適用外・専門判断の移譲条件だけを
-SkillDefinitionに残す。
+SkillDefinitionに残す。初期化で供給されるWorkflow、Reporting、Logging、Context Guardは
+`control_refs`にも重複記載せず、Skill固有の追加制御がない場合は空配列とする。
 
 ## Migration order
 

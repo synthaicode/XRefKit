@@ -122,7 +122,7 @@ def _validate_metadata(metadata: Any) -> dict[str, Any]:
         "outputs": _string_list(metadata["outputs"], "outputs", nonempty=True),
         "criteria": _validate_criteria(metadata["criteria"]),
         "knowledge_needs": _validate_knowledge_needs(metadata["knowledge_needs"]),
-        "control_refs": _xid_list(metadata["control_refs"], "control_refs", nonempty=True),
+        "control_refs": _xid_list(metadata["control_refs"], "control_refs", nonempty=False),
     }
     if "aliases" in metadata:
         aliases = _xid_list(metadata["aliases"], "aliases", nonempty=False)

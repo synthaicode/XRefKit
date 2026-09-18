@@ -47,7 +47,7 @@ headerの必須項目:
 | `inputs` / `outputs` | 入出力要求の文字列配列 |
 | `criteria` | 下記の確認条件。1件以上 |
 | `knowledge_needs` | 下記のKnowledge検索要求。空配列も可 |
-| `control_refs` | 適用する既存制御契約のXID配列。1件以上 |
+| `control_refs` | Skill固有で追加取得する制御・policyのXID配列。追加がなければ空配列 |
 
 任意項目は`aliases`のみ。旧metaなどのXIDを同じSkillへ対応付けるための配列であり、
 自身のXIDや重複を含めない。これは生成catalog内の対応で、既存XID resolverへの
@@ -62,6 +62,10 @@ Criterion/Decisionの将来の全スキーマを実装したことを意味し�
 XIDで本文を解決する。seedは既知の入口を保持するもので、関連文書の再帰ロードや
 Knowledge本文のheaderへの埋込みを許可しない。必須かどうかは`required_when`と
 Skillの方法に従い、検索結果の存在だけで判断条件を満たしたとしない。
+
+Workflow、Reporting、Logging、Context Guardなど初期化時に供給される共通制御は
+`control_refs`へ重複記載しない。`control_refs`は、working-area policyのようにそのSkillが
+追加で必要とする制御だけを列挙する。追加制御がないSkillは`control_refs: []`とする。
 
 未定義key、重複mapping key、重複criterion/need ID、不正XID、YAML alias/anchorや
 unsafe tagは拒否する。documentは512,000 bytes、headerは64,000 bytes、methodは

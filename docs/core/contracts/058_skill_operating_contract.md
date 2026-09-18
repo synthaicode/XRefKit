@@ -23,7 +23,8 @@ human with evidence and a clear handoff condition.
 
 [SkillDefinition v1](096_skill_definition_contract.md#xid-E6A19D4B72C3) is the
 canonical new format. Its one-document source owns the method, Skill-specific
-criteria, `knowledge_needs`, and `control_refs`. The runtime derives
+criteria, `knowledge_needs`, and only Skill-specific additional `control_refs`.
+Initialization-owned common controls are not repeated. The runtime derives
 `capability` / `tuning` / `responsibility` from the instruction and records them
 in the run and ExecutionBinding.
 

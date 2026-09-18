@@ -111,11 +111,7 @@
       ]
     }
   ],
-  "control_refs": [
-    "B7A2C94F0E61",
-    "A7F3C92D4E11",
-    "6B2D9F4A1C73"
-  ]
+  "control_refs": []
 }
 ---
 <!-- xid: 9883EF4E8CA9 -->

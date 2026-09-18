@@ -43,9 +43,6 @@ knowledge_needs:
     seed_xids:
       - A1D4E8C93B71
 control_refs:
-  - B7A2C94F0E61
-  - A7F3C92D4E11
-  - 6B2D9F4A1C73
   - 111D282CA0EA
 ---
 <!-- xid: 7C4E9A1B2D60 -->

@@ -318,7 +318,9 @@ python -m xrefkit xref show <XID>
 4. Decide whether the skill loads external context during execution.
 5. For SkillDefinition v1, keep `capability`, `tuning`, `responsibility`,
    `execution_mode`, model, and common Workflow controls out of the header.
-   Declare `knowledge_needs` and `control_refs`; derive the runtime binding when
+   Declare `knowledge_needs`; use `control_refs` only for Skill-specific controls
+   not already supplied by initialization, and otherwise write `control_refs: []`.
+   Derive the runtime binding when
    opening the run. When maintaining a legacy split Skill, retain its required
    compatibility fields in `meta.md`.
 6. Do not compose the context-direction guard in the Skill; it is ambient

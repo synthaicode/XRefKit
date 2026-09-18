@@ -12,7 +12,8 @@ routing:
 
 - **Skill** — executable procedure (method) and reusable SkillDefinition
   contract. The canonical v1 form carries `applies_when`, `inputs`, `outputs`,
-  `criteria`, `knowledge_needs`, and `control_refs`. `capability` / `tuning` /
+  `criteria`, `knowledge_needs`, and optional Skill-specific `control_refs`.
+  Initialization-owned common controls are not repeated. `capability` / `tuning` /
   `responsibility` are runtime routing and binding fields derived from the
   instruction, not fixed Skill metadata. Lives in `skills/`.
 - **Knowledge** — evidence, facts, domain and local rules. Resolved dynamically
