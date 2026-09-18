@@ -1,7 +1,7 @@
 <!-- xid: D7A4C9E2B861 -->
 <a id="xid-D7A4C9E2B861"></a>
 
-# `workflow subagent-read` の利用ガイド
+# Subagent startup read の利用ガイド
 
 `workflow subagent-read` は、すでに開かれている local workflow run に対して、
 子作業を担当する実行主体へ渡す bounded な startup context を filesystem から
@@ -162,3 +162,77 @@ python -m xrefkit workflow subagent-read --help
 `xrefkit/subagent_startup.py`、基本的な挙動確認は `tests/test_subagent_startup.py` に
 ある。特に selected sources のみの materialization、stale hash、root 外 path、誤った
 XID、unopened log、MCP-bound run、reporting protocol の明示指定を確認する。
+
+## MCP client adapter
+
+MCP session を利用する host は、初期化済みの transport から次の async API を呼ぶ。
+`workflow subagent-read` CLI は引き続き filesystem 専用である。
+
+```python
+from pathlib import Path
+from xrefkit.mcp.subagent_startup import read_mcp_subagent_startup
+
+async def call_tool(name, arguments):
+    response = await session.call_tool(name, arguments)
+    if response.isError:
+        raise RuntimeError(str(response.content))
+    return response.structuredContent
+
+result = await read_mcp_subagent_startup(Path("work/run.md"), binding, call_tool)
+# Host supplies result to the assigned subagent before it starts its work.
+```
+
+`session` は host が初期化した MCP client session、`binding` は実際の run と
+work item から組み立てた辞書である。stateless HTTP で `context_id` を利用する host は、
+callback 内で応答の context 更新と次の呼出しへの引継ぎも行う。
+
+local binding の必須責任フィールドは同じで、MCP では次の項目に置き換える。
+`repository_fingerprint` は接続先の `get_repository_identity` などで確認する。
+
+```json
+{
+  "source_mode": "mcp",
+  "repository_fingerprint": "<expected repository fingerprint>",
+  "protocols": ["workflow"],
+  "knowledge_access": {
+    "mode": "on_demand",
+    "catalog_tool": "search_knowledge_catalog",
+    "resolve_tool": "get_document_by_xid"
+  },
+  "references": [
+    {"xid": "8A666C1FD121", "content_hash": "<64 lowercase hex characters>"}
+  ]
+}
+```
+
+これは差分例である。`schema_version`、`run_id`、`work_item_id`、`purpose`、
+`capability`、`tuning`、`responsibility`、scope と stop conditions も必要になる。
+MCP の `content_hash` は UTF-8 本文に対する SHA-256 で、local reader の raw file
+bytes に対する `sha256` と区別する。
+
+host の initialize で選択した protocol と binding の `protocols` が一致することを
+確認する。adapter が session の選択を書き換えることはない。workflow run の読取りには
+`workflow` が必要であり、reporting のみの session では停止する。
+`initial_protocol_selection` は取得元を含めて result と receipt に保持する。
+
+読取りは次の順で進む。
+
+1. 開かれた local run と work item、binding を確認する。
+2. `get_startup_context` から pack、選択された protocol と Prompt Flow 契約を取得する。
+3. `bind_skill_run` の応答を検証し、信頼済み local runtime で correlation を記録する。
+4. managed Skill run は `get_skill`、明示された参照は `get_document_by_xid` で取得する。
+5. repository identity、hash、サイズ、run 状態を確認して読取 receipt を記録する。
+
+`instruction` run は Skill 本文を取得しない。普通の Skill 文書を使う `general_skill`
+は、この adapter では remote managed Skill identity を決定できないため未対応として停止する。
+Knowledge catalog の検索や本文の一括ロードは行わない。MCP 応答に含まれる path や
+`client_record_command` は実行せず、governance 文書を local filesystem で代読しない。
+
+stale な startup pack、欠落した本文、hash や fingerprint の不一致、取得中に変更された
+run 状態では成功 receipt を残さない。stale pack は server 側で更新してから再試行する。
+本文は 1 件 256,000 bytes、binding と protocol を含む総量は 1,000,000 bytes まで。
+途中で本文取得が失敗した場合でも、すでに成立した session correlation は事実として残る。
+
+この adapter は既存の管理ポート、Skill/Knowledge upload、protocol 選択の server API を
+変更しない。materialization 後も、host による実際の subagent 起動、作業の実行、
+Workflow Protocol の verify/close、人による成果物採用は別途必要である。
