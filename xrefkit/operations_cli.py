@@ -338,6 +338,16 @@ def _build_parser() -> argparse.ArgumentParser:
     skill = subparsers.add_parser("skill", help="Validate skill metadata before loading")
     skill_sub = skill.add_subparsers(dest="skill_cmd", required=True)
 
+    p_definition_check = skill_sub.add_parser(
+        "definition-check", help="Validate a single-source SkillDefinition candidate",
+    )
+    p_definition_check.add_argument("--path", required=True)
+    p_definition_check.add_argument("--json", action="store_true", help="Output is always JSON")
+    p_definition_catalog = skill_sub.add_parser(
+        "definition-catalog", help="Generate metadata-only catalog from explicit definition paths",
+    )
+    p_definition_catalog.add_argument("--path", required=True, action="append")
+    p_definition_catalog.add_argument("--json", action="store_true", help="Output is always JSON")
     p_skill_import = skill_sub.add_parser(
         "import",
         help="Import an external file-based Skill into XRefKit Skill + Knowledge files",
@@ -819,6 +829,10 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_ctx(args, cfg)
 
     if args.command == "skill":
+        if args.skill_cmd in {"definition-check", "definition-catalog"}:
+            from xrefkit.skill_definition_catalog import cmd_definition
+
+            return cmd_definition(args)
         if args.skill_cmd == "import":
             from xrefkit.import_skill import cmd_skill_import
 
