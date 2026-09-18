@@ -105,6 +105,28 @@ def test_definition_configuration_is_bounded_and_collision_checked(tmp_path):
         XRefCatalog.build(tmp_path, skill_definition_paths=[tmp_path.parent / "outside.md"])
 
 
+def test_definition_knowledge_activation_is_explicit_and_validated(tmp_path):
+    definition, _ = _write_definition(tmp_path)
+    catalog = XRefCatalog.build(tmp_path, skill_definition_paths=[definition])
+
+    unresolved = catalog.resolve_skill_knowledge("sample_skill")
+    assert unresolved["unresolved_activation"] == ["rules"]
+    assert unresolved["activation"]["active_need_ids"] is None
+    assert unresolved["needs"][0]["required_when"] == "always"
+    assert unresolved["needs"][0]["required"] is None
+    assert unresolved["needs"][0]["satisfied"] is None
+    assert unresolved["unsatisfied_required"] == []
+
+    active = catalog.resolve_skill_knowledge("sample_skill", ["rules"])
+    assert active["unresolved_activation"] == []
+    assert active["needs"][0]["required"] is True
+
+    with pytest.raises(ValueError, match="unknown active knowledge need IDs"):
+        catalog.resolve_skill_knowledge("sample_skill", ["missing"])
+    with pytest.raises(ValueError, match="duplicates"):
+        catalog.resolve_skill_knowledge("sample_skill", ["rules", "rules"])
+
+
 def test_mcp_startup_materializes_exact_definition_document(tmp_path):
     definition, _ = _write_definition(tmp_path)
     log = tmp_path / "work" / "run.md"

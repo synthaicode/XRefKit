@@ -598,7 +598,9 @@ class XRefCatalog:
             "definition_content_hash": entry.definition_content_hash,
         }
 
-    def resolve_skill_knowledge(self, skill_id: str) -> dict:
+    def resolve_skill_knowledge(
+        self, skill_id: str, active_need_ids: list[str] | None = None
+    ) -> dict:
         """Resolve a Skill's declared ``knowledge_slots`` against the base+local
         unified catalog (design 082 Decision 3 / 084 M5).
 
@@ -612,6 +614,58 @@ class XRefCatalog:
         entry = self._skill_by_id(skill_id)
         knowledge = self.knowledge
         by_xid = {item.xid: item for item in knowledge}
+        if entry.definition_format == "skill_definition_v1":
+            needs = entry.knowledge_slots
+            known_ids = {str(need.get("id")) for need in needs}
+            if active_need_ids is not None:
+                if (not isinstance(active_need_ids, list)
+                        or any(not isinstance(item, str) or not item.strip() for item in active_need_ids)):
+                    raise ValueError("active_need_ids must be a list of nonempty strings")
+                if len(active_need_ids) != len(set(active_need_ids)):
+                    raise ValueError("active_need_ids contains duplicates")
+                unknown = [item for item in active_need_ids if item not in known_ids]
+                if unknown:
+                    raise ValueError(f"unknown active knowledge need IDs: {', '.join(unknown)}")
+                active = set(active_need_ids)
+            else:
+                active = set()
+            resolved: list[dict] = []
+            for need in needs:
+                need_id = str(need.get("id"))
+                query = str(need.get("query") or need_id)
+                seed_candidates = [by_xid[xid].to_dict() for xid in need.get("seed_xids", []) if xid in by_xid]
+                seed_ids = {item["xid"] for item in seed_candidates}
+                ranked = [item for item in _rank_entries(query, knowledge) if item.xid not in seed_ids]
+                candidates = (seed_candidates + [item.to_dict() for item in ranked])[:5]
+                activation_state = (
+                    "unresolved" if active_need_ids is None
+                    else "active" if need_id in active
+                    else "inactive"
+                )
+                required = None if active_need_ids is None else need_id in active
+                satisfied = bool(candidates) if required is True else None
+                resolved.append({
+                    "id": need_id,
+                    "query": query,
+                    "required_when": need.get("required_when"),
+                    "required": required,
+                    "activation_state": activation_state,
+                    "candidates": candidates,
+                    "satisfied": satisfied,
+                })
+            return {
+                "skill_id": entry.skill_id,
+                "needs": resolved,
+                "slots": [],
+                "activation": {"active_need_ids": list(active_need_ids) if active_need_ids is not None else None},
+                "unresolved_activation": [
+                    need["id"] for need in resolved if need["activation_state"] == "unresolved"
+                ],
+                "unsatisfied_required": [
+                    need["id"] for need in resolved
+                    if need["required"] is True and need["satisfied"] is False
+                ],
+            }
         resolved: list[dict] = []
         for slot in entry.knowledge_slots:
             name = slot.get("slot") or slot.get("name")

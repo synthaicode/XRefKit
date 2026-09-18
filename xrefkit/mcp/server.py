@@ -694,9 +694,11 @@ def main(argv: list[str] | None = None) -> int:
         return _with_control_reminder(catalog.deactivate_local_knowledge(xid))
 
     @app.tool()
-    def resolve_skill_knowledge(ctx: Context, skill_id: str) -> dict[str, Any]:
+    def resolve_skill_knowledge(
+        ctx: Context, skill_id: str, active_need_ids: list[str] | None = None
+    ) -> dict[str, Any]:
         _require_startup_loaded(ctx, "resolve_skill_knowledge")
-        return _with_control_reminder(catalog.resolve_skill_knowledge(skill_id))
+        return _with_control_reminder(catalog.resolve_skill_knowledge(skill_id, active_need_ids))
 
     @app.tool()
     def rank_skills_for_purpose(ctx: Context, purpose: str, limit: int = 5) -> list[dict[str, Any]]:

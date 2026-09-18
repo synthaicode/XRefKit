@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from tools.convert_dotnet_skill_definition import convert
+from xrefkit.mcp.catalog import XRefCatalog
 from xrefkit.skill_definition import load_skill_definition
 from xrefkit.skillmeta import _parse_meta_lines
 
@@ -35,3 +36,42 @@ def test_representative_conversion_is_lossless_and_nonactivating(tmp_path):
 def test_conversion_cannot_write_outside_work(tmp_path):
     with pytest.raises(ValueError, match="root/work"):
         convert(tmp_path, Path("skills/overwrite"))
+
+
+def test_simplified_candidate_retains_analysis_method_and_removes_common_controls():
+    repo = Path(__file__).resolve().parents[1]
+    skill = (repo / "work/skill-definition-candidate/dotnet_change_analysis/SKILL.md").read_text(encoding="utf-8")
+    manifest = json.loads((repo / "work/skill-definition-candidate/dotnet_change_analysis/migration.json").read_text(encoding="utf-8"))
+    assert "## Where Impacted-Boundary Analysis (grep-first)" in skill
+    assert "## Semantic-Inventory Mode (deterministic pack — grep-weak questions only)" in skill
+    assert "## Closure Gate" in skill
+    assert "## Handoff" in skill
+    assert "## Context Direction Guard" not in skill
+    assert "## Worklist" not in skill
+    assert "## Execution Role" not in skill
+    assert "## Reporting Contract" not in skill
+    assert "## Required Knowledge (XID)" not in skill
+    assert manifest["method_preserved_byte_for_byte"] is False
+    assert "Failure Handling" in manifest["simplification_coverage_map"]["removed_common_sections"]
+    assert "Execution" in manifest["simplification_coverage_map"]["retained_skill_specific_sections"]
+
+
+def test_representative_definition_resolves_runtime_selected_knowledge():
+    repo = Path(__file__).resolve().parents[1]
+    relative = Path("work/skill-definition-candidate/dotnet_change_analysis/SKILL.md")
+    definition = load_skill_definition(repo / relative)
+    catalog = XRefCatalog.build(repo, skill_definition_paths=[relative])
+    entries = [entry for entry in catalog.skills if entry.skill_id == "dotnet_change_analysis"]
+    assert len(entries) == 1
+    assert entries[0].definition_format == "skill_definition_v1"
+
+    need_ids = [need["id"] for need in definition["metadata"]["knowledge_needs"]]
+    result = catalog.resolve_skill_knowledge("dotnet_change_analysis", need_ids)
+    assert result["unresolved_activation"] == []
+    assert result["unsatisfied_required"] == []
+    assert [need["id"] for need in result["needs"]] == need_ids
+    for source, resolved in zip(definition["metadata"]["knowledge_needs"], result["needs"], strict=True):
+        assert resolved["activation_state"] == "active"
+        assert resolved["required"] is True
+        assert resolved["satisfied"] is True
+        assert resolved["candidates"][0]["xid"] == source["seed_xids"][0]

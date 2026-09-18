@@ -129,6 +129,14 @@ catalog entryの`definition_format`は`skill_definition_v1`、旧meta+本文形�
 path / XID / SHA-256とcatalog responseを照合してから本文を受け取り、receiptを記録する。
 legacy entryは従来どおりmetaと本文の二文書を返す。
 
+`resolve_skill_knowledge(skill_id, active_need_ids=...)`は、指示と
+`knowledge_needs.required_when`を評価した親がactive need IDを明示して呼ぶ。
+`active_need_ids`を省略した場合は各needを`activation_state: unresolved`、
+`required: null`、`satisfied: null`として返し、条件未評価を不要扱いしない。指定時は
+未知IDと重複IDを拒否し、active needだけをrequiredとする。候補は`seed_xids`の一致を
+先に並べ、同じXIDを除いたquery順位を続ける。選択した本文は従来どおりXIDとrevisionで
+取得し、ExecutionBindingの`references`とrunのKnowledge observationに記録する。
+
 protocol選択、管理upload、旧`--meta`実行経路は変更しない。管理upload後の定義を
 `--skill-definition`へ採用する操作と、package discoveryでの配布形式切替は別作業である。
 
