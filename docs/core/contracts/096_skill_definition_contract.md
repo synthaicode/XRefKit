@@ -4,7 +4,8 @@
 # SkillDefinition v1 と派生catalog
 
 この契約は、実装済みのSkillDefinition parserとcatalog生成器が受理する候補形式を定める。
-既存のMCP `get_skill`、package discoveryはまだこの形式へ切り替えていない。
+MCP `get_skill`は、repositoryで明示選択した定義とpackage manifestが指す定義を
+同じ一文書形式で返す。既存packageの分割YAML形式も移行期間中は受理する。
 構造検証の成功を、Skillの実行可能化・品質受入れ・移行完了とみなさない。
 
 ## 編集正本と責務
@@ -137,8 +138,15 @@ legacy entryは従来どおりmetaと本文の二文書を返す。
 先に並べ、同じXIDを除いたquery順位を続ける。選択した本文は従来どおりXIDとrevisionで
 取得し、ExecutionBindingの`references`とrunのKnowledge observationに記録する。
 
-protocol選択、管理upload、旧`--meta`実行経路は変更しない。管理upload後の定義を
-`--skill-definition`へ採用する操作と、package discoveryでの配布形式切替は別作業である。
+protocol選択、管理upload、旧`--meta`実行経路は変更しない。package manifestの
+`provides.skills[].path`がMarkdown定義を指す場合は、entry point discovery後に
+`skill_definition_v1`として検証・catalog化する。従来の`*.skill.yaml`を指すpackageは
+`legacy_split_v1`として継続する。いずれもpackage外へpathが逸脱してはならない。
+
+このcheckoutには管理upload transport、staging、seal、review、adoptionの実装がない。
+したがってupload済みbytesをactive catalogへ採用する操作は、ここでは未実装である。
+uploadの成功をrouting可能化とみなさず、将来のadoption側はraw bytesのhashとXIDを
+検証してから、既存の明示有効化境界へ渡す必要がある。
 
 ## 代表変換と切替条件
 

@@ -1914,13 +1914,72 @@ def _build_package_skills(package: DiscoveredSkillPackage) -> list[SkillCatalogE
     """
     entries: list[SkillCatalogEntry] = []
     manifest = package.manifest
+    package_root = package.package_root.resolve()
     for provided in manifest.provides.skills:
-        skill_path = package.package_root / provided.path
+        skill_path = (package_root / provided.path).resolve()
+        try:
+            rel_skill = skill_path.relative_to(package_root).as_posix()
+        except ValueError as exc:
+            raise ValueError(f"package Skill path escapes package root: {provided.path}") from exc
+        if skill_path.suffix.lower() == ".md":
+            definition = load_markdown_skill_definition(skill_path)
+            meta = definition["metadata"]
+            method = definition["method"]
+            if meta["skill_id"] != provided.id or meta["xid"] != provided.xid:
+                raise ValueError(
+                    "package SkillDefinition identity does not match manifest: "
+                    f"{provided.id}/{provided.xid} != {meta['skill_id']}/{meta['xid']}"
+                )
+            closure = ClosureContract(
+                closure_conditions=[item["statement"] for item in meta["criteria"]],
+                exit_enum=["completed", "blocked", "needs_input"],
+                handoff_policy="SkillDefinition method and Workflow Protocol govern explicit handoff",
+                worklist_policy="required",
+            )
+            knowledge_needs = [dict(item) for item in meta["knowledge_needs"]]
+            entries.append(
+                SkillCatalogEntry(
+                    skill_id=meta["skill_id"],
+                    title=first_heading(method, meta["skill_id"]),
+                    summary=meta["summary"],
+                    maturity="definition_v1",
+                    intent=list(meta["applies_when"]),
+                    target_artifacts=list(meta["outputs"]),
+                    applies_when=list(meta["applies_when"]),
+                    not_for=list(meta["exclusions"]),
+                    required_knowledge=knowledge_needs,
+                    required_tools=[],
+                    inputs=list(meta["inputs"]),
+                    outputs=list(meta["outputs"]),
+                    closure_contract=closure,
+                    meta_content="",
+                    meta_links=[],
+                    skill_content="",
+                    skill_links=markdown_xid_link_targets(method),
+                    path=rel_skill,
+                    meta_path=rel_skill,
+                    context_size=_skill_context_size("", method, list(meta["outputs"]), closure),
+                    knowledge_slots=knowledge_needs,
+                    missing=[],
+                    zone_metadata={
+                        "source": "installed_skill_package",
+                        "package_id": package.package_id,
+                        "package_version": package.version,
+                        "entry_point": package.entry_point_name,
+                    },
+                    package_id=package.package_id,
+                    source_root=str(package_root),
+                    definition_format="skill_definition_v1",
+                    definition_xid=meta["xid"],
+                    definition_content_hash=definition["content_hash"],
+                )
+            )
+            continue
         skill = load_package_skill_definition(skill_path)
         entry_path = package.package_root / skill.entry.path
         entry_text = read_text(entry_path) if entry_path.exists() else ""
         summary = first_paragraph(entry_text) or f"Package Skill {skill.skill_id}"
-        rel_skill = skill_path.relative_to(package.package_root).as_posix()
+        rel_skill = skill_path.relative_to(package_root).as_posix()
         rel_entry = skill.entry.path.replace("\\", "/")
         required_knowledge = [
             {"xid": xid, "required": True, "reason": "package declaration"}
@@ -1969,7 +2028,7 @@ def _build_package_skills(package: DiscoveredSkillPackage) -> list[SkillCatalogE
                     "entry_point": package.entry_point_name,
                 },
                 package_id=package.package_id,
-                source_root=str(package.package_root),
+                source_root=str(package_root),
             )
         )
     return entries
