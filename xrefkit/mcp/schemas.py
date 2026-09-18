@@ -111,6 +111,9 @@ class SkillCatalogEntry:
     # same routing shape as repository Skills.
     package_id: str | None = None
     source_root: str = field(default="", repr=False, compare=False)
+    definition_format: Literal["legacy_split_v1", "skill_definition_v1"] = "legacy_split_v1"
+    definition_xid: str | None = None
+    definition_content_hash: str | None = None
 
     def to_dict(self, *, include_tools: bool = True) -> dict[str, Any]:
         data = asdict(self)

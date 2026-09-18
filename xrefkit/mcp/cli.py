@@ -19,6 +19,12 @@ def main(argv: list[str] | None = None) -> int:
             default=[],
             help="External XID-addressable domain knowledge root. Can be repeated.",
         )
+        command.add_argument(
+            "--skill-definition",
+            action="append",
+            default=[],
+            help="Repository-relative SkillDefinition to activate. Can be repeated.",
+        )
 
     catalog = sub.add_parser("catalog", help="build and print catalog summary")
     add_repo_arguments(catalog)
@@ -147,6 +153,7 @@ def main(argv: list[str] | None = None) -> int:
         Path(args.repo),
         args.domain_knowledge_root,
         discover_packages=args.command == "prepare-skill-edit",
+        skill_definition_paths=args.skill_definition,
     )
 
     if args.command == "catalog":

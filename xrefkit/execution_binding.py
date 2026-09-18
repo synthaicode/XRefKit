@@ -175,8 +175,6 @@ def build_execution_binding(log: Path, request: dict) -> dict:
             for key in ("capability", "tuning", "responsibility"):
                 if fields[key] != request[key]:
                     _fail(f"{key} does not match definition-backed Skill Run")
-            if request["source_mode"] == "mcp":
-                _fail("definition-backed MCP startup is not available until get_skill serves one definition document")
         if request["source_mode"] == "filesystem" and _log_field(run_text, "mcp_session_id"):
             _fail("filesystem binding cannot use an MCP session")
         if request["source_mode"] == "mcp" and fields["skill_id"] == "general_skill":

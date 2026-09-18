@@ -212,6 +212,12 @@ def main(argv: list[str] | None = None) -> int:
         help="External XID-addressable domain knowledge root. Can be repeated.",
     )
     parser.add_argument(
+        "--skill-definition",
+        action="append",
+        default=[],
+        help="Repository-relative SkillDefinition to activate in the MCP catalog. Can be repeated.",
+    )
+    parser.add_argument(
         "--initial-protocol",
         choices=["workflow", "reporting"],
         action="append",
@@ -258,6 +264,7 @@ def main(argv: list[str] | None = None) -> int:
         Path(args.repo),
         args.domain_knowledge_root,
         discover_packages=True,
+        skill_definition_paths=args.skill_definition,
     )
     global _CONTEXT_CODEC
     _CONTEXT_CODEC = ContextTokenCodec(

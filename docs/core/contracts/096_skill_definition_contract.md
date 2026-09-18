@@ -106,10 +106,31 @@ run logには定義のXID、root-relative path、raw bytesのSHA-256を記録す
 local subagent readerは本文を渡す直前とreceipt記録前にXIDとSHA-256を再検証する。
 したがって、run開始後に定義が変更された場合は新しいrun/bindingが必要になる。
 
-この段階ではdefinition-backed runをMCP source modeへbindしない。現在のMCP
-`get_skill`とreaderは旧metaと本文の2文書を要求するため、単一定義を配るcatalog/tool
-contractへ切り替わるまで明示的に拒否する。protocol選択、管理upload、旧`--meta`
-実行経路は維持する。
+## MCPでの明示的な有効化
+
+MCP serverでは、自動scanではなく起動時に対象を明示する。
+
+```powershell
+python -m xrefkit.mcp.server `
+  --repo <repository> `
+  --skill-definition skills/<skill>/SKILL.md
+```
+
+`XRefCatalog.build(..., skill_definition_paths=[...])`とcatalog CLIの
+`--skill-definition`も同じ境界を使う。指定pathはrepository内のfileに限定し、
+重複pathや定義間の`skill_id` / XID / alias衝突を拒否する。同じ`skill_id`の旧Skillが
+存在する場合、明示指定した定義をactive catalog entryとし、旧entryとの二重routingを
+行わない。指定しない候補はMCP catalogへ現れない。
+
+catalog entryの`definition_format`は`skill_definition_v1`、旧meta+本文形式は
+`legacy_split_v1`である。routing一覧にはheader由来metadataだけを載せ、method本文は
+`get_skill`で選択後に一文書だけ返す。その文書はBOM・改行を含むraw UTF-8 bytesと
+同じSHA-256を持つ。MCP subagent readerは`ExecutionBinding.definition_identity`の
+path / XID / SHA-256とcatalog responseを照合してから本文を受け取り、receiptを記録する。
+legacy entryは従来どおりmetaと本文の二文書を返す。
+
+protocol選択、管理upload、旧`--meta`実行経路は変更しない。管理upload後の定義を
+`--skill-definition`へ採用する操作と、package discoveryでの配布形式切替は別作業である。
 
 ## 代表変換と切替条件
 
@@ -130,7 +151,7 @@ python -m tools.convert_dotnet_skill_definition --root .
 
 - 固有の方法・観点・停止条件を保持したまま共通制御を参照へ統合する。
 - Knowledgeと方法の所有関係を確認し、既存XIDと必須取得条件を保つ。
-- 新定義をMCP catalog/get_skill解決へ接続し、複雑Flowを検証する。
+- 代表定義をactive catalogへ採用し、複雑Flowを検証する。
 - source、catalog、package、管理upload、docsの対象版を揃える。
 
 [Workflow Protocol](../../guides/088_instruction_workflow_protocol.md#xid-9F4C2A7D1B60)の

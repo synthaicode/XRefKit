@@ -264,12 +264,28 @@ async def read_mcp_subagent_startup(
     if skill_id != "instruction":
         skill = await call("get_skill", {"skill_id": skill_id, "known_document_versions": {}})
         docs = skill.get("documents")
-        if skill.get("skill_id") != skill_id or not isinstance(docs, list) or len(docs) != 2:
-            _bad("managed Skill requires its meta and procedure documents")
-        for doc in docs:
-            add_document(doc, "skill")
-        if docs[0]["xid"] == docs[1]["xid"]:
-            _bad("Skill meta and procedure must have distinct XIDs")
+        identity = binding.get("definition_identity")
+        if identity is not None:
+            if (skill.get("skill_id") != skill_id
+                    or skill.get("definition_format") != "skill_definition_v1"
+                    or skill.get("path") != identity.get("path")
+                    or skill.get("definition_xid") != identity.get("xid")
+                    or skill.get("definition_content_hash") != identity.get("sha256")
+                    or not isinstance(docs, list) or len(docs) != 1):
+                _bad("managed SkillDefinition identity or document shape mismatch")
+            add_document(
+                docs[0], "skill_definition",
+                {"xid": identity["xid"], "content_hash": identity["sha256"]},
+            )
+        else:
+            if (skill.get("skill_id") != skill_id
+                    or skill.get("definition_format", "legacy_split_v1") != "legacy_split_v1"
+                    or not isinstance(docs, list) or len(docs) != 2):
+                _bad("managed Skill requires its meta and procedure documents")
+            for doc in docs:
+                add_document(doc, "skill")
+            if docs[0]["xid"] == docs[1]["xid"]:
+                _bad("Skill meta and procedure must have distinct XIDs")
     for ref in binding.get("references", []):
         add_document(await call("get_document_by_xid", {"xid": ref["xid"]}), "reference", ref)
     with _LogFileLock(lock_path):

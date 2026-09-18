@@ -10,7 +10,12 @@ from pathlib import Path
 
 from .contracts import builtin_tool_contracts
 from ..discovery import discover_skill_packages, DiscoveredSkillPackage
-from ..loaders import load_skill_definition
+from ..loaders import load_skill_definition as load_package_skill_definition
+from ..skill_definition import (
+    load_skill_definition as load_markdown_skill_definition,
+    parse_skill_definition as parse_markdown_skill_definition,
+)
+from ..skill_definition_catalog import build_definition_catalog
 from .ownership import Ownership, load_ownership, validate_ownership
 from .skill_edits import (
     active_edit,
@@ -238,6 +243,7 @@ class XRefCatalog:
     ownership: Ownership | None = None
     domain_knowledge_roots: tuple[Path, ...] = ()
     discovered_packages: tuple[DiscoveredSkillPackage, ...] = ()
+    skill_definition_paths: tuple[Path, ...] = ()
 
     @classmethod
     def build(
@@ -245,6 +251,7 @@ class XRefCatalog:
         repo_root: str | Path,
         domain_knowledge_roots: list[str | Path] | tuple[str | Path, ...] | None = None,
         discover_packages: bool = False,
+        skill_definition_paths: list[str | Path] | tuple[str | Path, ...] | None = None,
     ) -> "XRefCatalog":
         root = Path(repo_root).resolve()
         if not root.exists():
@@ -252,6 +259,12 @@ class XRefCatalog:
         external_roots = tuple(
             _resolve_domain_knowledge_root(path) for path in (domain_knowledge_roots or [])
         )
+        definition_paths = tuple(
+            _resolve_skill_definition_path(root, path)
+            for path in (skill_definition_paths or [])
+        )
+        if len(definition_paths) != len(set(definition_paths)):
+            raise ValueError("skill_definition_paths contains duplicates")
         fingerprint, fingerprint_basis = repository_identity(root)
         ownership = load_ownership(root)
         if ownership is not None:
@@ -266,6 +279,7 @@ class XRefCatalog:
             ownership=ownership,
             domain_knowledge_roots=external_roots,
             discovered_packages=tuple(discover_skill_packages()) if discover_packages else (),
+            skill_definition_paths=definition_paths,
         )
 
     # knowledge, skills, and catalog_version are rebuilt from the live
@@ -284,7 +298,15 @@ class XRefCatalog:
         entries = _build_skills(self.repo_root, self.ownership)
         for package in self.discovered_packages:
             entries.extend(_build_package_skills(package))
-        return self._apply_skill_edits(entries)
+        entries = self._apply_skill_edits(entries)
+        definitions = _build_definition_skill_entries(
+            self.repo_root, self.ownership, self.skill_definition_paths,
+        )
+        if definitions:
+            replaced = {entry.skill_id for entry in definitions}
+            entries = [entry for entry in entries if entry.skill_id not in replaced]
+            entries.extend(definitions)
+        return entries
 
     def _apply_skill_edits(self, entries: list[SkillCatalogEntry]) -> list[SkillCatalogEntry]:
         """Replace explicitly registered source entries with local overlays."""
@@ -397,6 +419,7 @@ class XRefCatalog:
                 entry.skill_id
                 + entry.summary
                 + stable_hash(entry.meta_content + "\n" + entry.skill_content)
+                + (entry.definition_content_hash or "")
                 for entry in self.skills
             ]
             + [
@@ -522,10 +545,18 @@ class XRefCatalog:
 
         documents: list[dict] = []
         source_root = Path(entry.source_root) if entry.source_root else self.repo_root
-        for relative_path in [entry.meta_path, entry.path]:
+        relative_paths = (
+            [entry.path]
+            if entry.definition_format == "skill_definition_v1"
+            else [entry.meta_path, entry.path]
+        )
+        for relative_path in relative_paths:
             path = source_root / relative_path
-            text = read_text(path)
-            document = _xref_document(path, source_root, text)
+            if entry.definition_format == "skill_definition_v1":
+                document = _raw_skill_definition_document(path, relative_path, entry)
+            else:
+                text = read_text(path)
+                document = _xref_document(path, source_root, text)
             if entry.source_root:
                 document = XRefDocument(
                     xid=document.xid,
@@ -562,6 +593,9 @@ class XRefCatalog:
             "skill_doc": entry.path,
             "skill_links": entry.skill_links,
             "missing": entry.missing,
+            "definition_format": entry.definition_format,
+            "definition_xid": entry.definition_xid,
+            "definition_content_hash": entry.definition_content_hash,
         }
 
     def resolve_skill_knowledge(self, skill_id: str) -> dict:
@@ -1494,11 +1528,18 @@ def _skill_document_versions(
 ) -> list[dict]:
     versions: list[dict] = []
     source_root = Path(entry.source_root) if entry.source_root else root
-    for relative_path, text in [
-        (entry.meta_path, entry.meta_content),
-        (entry.path, entry.skill_content),
-    ]:
-        document = _xref_document(source_root / relative_path, source_root, text)
+    sources = (
+        [(entry.path, None)]
+        if entry.definition_format == "skill_definition_v1"
+        else [(entry.meta_path, entry.meta_content), (entry.path, entry.skill_content)]
+    )
+    for relative_path, stored_text in sources:
+        path = source_root / relative_path
+        if entry.definition_format == "skill_definition_v1":
+            document = _raw_skill_definition_document(path, relative_path, entry)
+        else:
+            assert stored_text is not None
+            document = _xref_document(path, source_root, stored_text)
         if entry.source_root:
             document = XRefDocument(
                 xid=document.xid,
@@ -1522,6 +1563,31 @@ def _skill_document_versions(
             }
         )
     return versions
+
+
+def _raw_skill_definition_document(
+    path: Path,
+    relative_path: str,
+    entry: SkillCatalogEntry,
+) -> XRefDocument:
+    raw = path.read_bytes()
+    content = raw.decode("utf-8")
+    parsed = parse_markdown_skill_definition(
+        raw.decode("utf-8-sig"), source=str(path),
+    )
+    digest = hashlib_sha256_bytes(raw)
+    if (parsed["metadata"]["xid"] != entry.definition_xid
+            or digest != entry.definition_content_hash):
+        raise ValueError("SkillDefinition changed during catalog resolution; retry")
+    return XRefDocument(
+        xid=parsed["metadata"]["xid"],
+        title=entry.title,
+        path=relative_path,
+        summary=entry.summary,
+        content=content,
+        links=markdown_xid_link_targets(content),
+        content_hash=digest,
+    )
 
 
 def _startup_contract_pack(
@@ -1655,6 +1721,71 @@ def _build_skill_entry(root: Path, ownership: Ownership | None, meta_path: Path)
     )
 
 
+def _resolve_skill_definition_path(root: Path, value: str | Path) -> Path:
+    path = (root / Path(value)).resolve()
+    try:
+        path.relative_to(root)
+    except ValueError as exc:
+        raise ValueError("SkillDefinition path must remain within the repository") from exc
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    return path
+
+
+def _build_definition_skill_entries(
+    root: Path,
+    ownership: Ownership | None,
+    paths: tuple[Path, ...],
+) -> list[SkillCatalogEntry]:
+    if not paths:
+        return []
+    build_definition_catalog(list(paths))
+    entries: list[SkillCatalogEntry] = []
+    for path in paths:
+        definition = load_markdown_skill_definition(path)
+        meta = definition["metadata"]
+        method = definition["method"]
+        rel = relative_to_repo(path, root)
+        closure = ClosureContract(
+            closure_conditions=[item["statement"] for item in meta["criteria"]],
+            exit_enum=["completed", "blocked", "needs_input"],
+            handoff_policy="SkillDefinition method and Workflow Protocol govern explicit handoff",
+            worklist_policy="required",
+        )
+        knowledge_needs = [dict(item) for item in meta["knowledge_needs"]]
+        entries.append(
+            SkillCatalogEntry(
+                skill_id=meta["skill_id"],
+                title=first_heading(method, meta["skill_id"]),
+                summary=meta["summary"],
+                maturity="definition_v1",
+                intent=list(meta["applies_when"]),
+                target_artifacts=list(meta["outputs"]),
+                applies_when=list(meta["applies_when"]),
+                not_for=list(meta["exclusions"]),
+                required_knowledge=knowledge_needs,
+                required_tools=[],
+                inputs=list(meta["inputs"]),
+                outputs=list(meta["outputs"]),
+                closure_contract=closure,
+                meta_content="",
+                meta_links=[],
+                skill_content="",
+                skill_links=markdown_xid_link_targets(method),
+                path=rel,
+                meta_path=rel,
+                context_size=_skill_context_size("", method, list(meta["outputs"]), closure),
+                knowledge_slots=knowledge_needs,
+                missing=[],
+                zone_metadata=_zone_metadata(ownership, rel),
+                definition_format="skill_definition_v1",
+                definition_xid=meta["xid"],
+                definition_content_hash=definition["content_hash"],
+            )
+        )
+    return entries
+
+
 def _slot_int(value: object, default: int = 0) -> int:
     try:
         return int(str(value).strip())
@@ -1731,7 +1862,7 @@ def _build_package_skills(package: DiscoveredSkillPackage) -> list[SkillCatalogE
     manifest = package.manifest
     for provided in manifest.provides.skills:
         skill_path = package.package_root / provided.path
-        skill = load_skill_definition(skill_path)
+        skill = load_package_skill_definition(skill_path)
         entry_path = package.package_root / skill.entry.path
         entry_text = read_text(entry_path) if entry_path.exists() else ""
         summary = first_paragraph(entry_text) or f"Package Skill {skill.skill_id}"

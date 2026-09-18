@@ -105,14 +105,15 @@ def test_definition_run_records_dynamic_routing_and_exact_revision(tmp_path):
     assert binding["run_snapshot"]["fields"]["definition_sha256"] == digest
 
 
-def test_definition_binding_rejects_runtime_drift_and_unavailable_mcp(tmp_path):
+def test_definition_binding_rejects_runtime_drift_and_supports_mcp_identity(tmp_path):
     _, log = _open_run(tmp_path)
     request = _request()
     request["tuning"] = "different tuning"
     with pytest.raises(ValueError, match="tuning does not match"):
         build_execution_binding(log, request)
-    with pytest.raises(ValueError, match="definition-backed MCP startup is not available"):
-        build_execution_binding(log, _request("mcp"))
+    binding = build_execution_binding(log, _request("mcp"))
+    assert binding["source_mode"] == "mcp"
+    assert binding["definition_identity"]["xid"] == "ABCDEF123456"
 
 
 def test_definition_run_requires_complete_runtime_routing(tmp_path):
@@ -125,4 +126,3 @@ def test_definition_run_requires_complete_runtime_routing(tmp_path):
     )
     assert code == 1
     assert "--execution-mode" in output
-
