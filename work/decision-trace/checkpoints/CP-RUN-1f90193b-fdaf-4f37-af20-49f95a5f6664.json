@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-1f90193b-fdaf-4f37-af20-49f95a5f6664",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-09-18T11:14:00Z",
+  "git_commit": "73eb0ea7ceb8878d5c8c4a440c525a4e5a04fccc",
+  "purpose": "before AI workflow run 1f90193b-fdaf-4f37-af20-49f95a5f6664",
+  "work_item_id": "WI-constraint-family-v1",
+  "run_id": "1f90193b-fdaf-4f37-af20-49f95a5f6664",
+  "context_policy": "current-only",
+  "human_approved": false
+}
