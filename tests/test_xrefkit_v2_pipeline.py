@@ -23,7 +23,16 @@ REPO_XDDP_PACKAGE_ROOT = REPO_ROOT / "packages" / "xrefkit-skills-xddp-design" /
 REPO_XDDP_PACKAGE_MANIFEST = REPO_XDDP_PACKAGE_ROOT / "package_manifest.yaml"
 REPO_CSHARP_PACKAGE_ROOT = REPO_ROOT / "packages" / "xrefkit-skills-csharp" / "src" / "xrefkit_skills_csharp"
 REPO_CSHARP_PACKAGE_MANIFEST = REPO_CSHARP_PACKAGE_ROOT / "package_manifest.yaml"
-REPO_SAMPLE_LOCAL_MANIFEST = REPO_ROOT / "samples" / "xrefkit-v2" / "order-system" / "xrefkit.local" / "local_manifest.yaml"
+REPO_LEGACY_LOCAL_MANIFEST = (
+    REPO_ROOT
+    / "tests"
+    / "fixtures"
+    / "legacy"
+    / "xrefkit-v2"
+    / "order-system"
+    / "xrefkit.local"
+    / "local_manifest.yaml"
+)
 
 
 def _write(path: Path, text: str) -> None:
@@ -407,10 +416,10 @@ def test_minimal_mcp_facade_resolves_entry(tmp_path: Path) -> None:
     assert effective["effective_skill_id"] == "project.order_change_design"
 
 
-def test_repository_xddp_design_package_resolves_sample_local() -> None:
+def test_repository_xddp_design_package_resolves_legacy_local_fixture() -> None:
     registry = build_registry(
         package_manifests=[REPO_XDDP_PACKAGE_MANIFEST],
-        local_manifest_path=REPO_SAMPLE_LOCAL_MANIFEST,
+        local_manifest_path=REPO_LEGACY_LOCAL_MANIFEST,
     )
 
     bundle = EffectiveSkillResolver(registry).resolve_entry("project.order_change_design")
@@ -431,7 +440,7 @@ def test_repository_xddp_design_package_resolves_sample_local() -> None:
     assert {entry.xid for entry in bundle.loaded_texts.all_loaded()} <= {entry.xid for entry in bundle.source_trace}
 
 
-def test_repository_sample_cli_tree_and_resolved_json(capsys: object) -> None:
+def test_repository_legacy_fixture_cli_tree_and_resolved_json(capsys: object) -> None:
     assert main([
         "show",
         "effective-skill",
@@ -441,7 +450,7 @@ def test_repository_sample_cli_tree_and_resolved_json(capsys: object) -> None:
         "--package-manifest",
         str(REPO_XDDP_PACKAGE_MANIFEST),
         "--local-manifest",
-        str(REPO_SAMPLE_LOCAL_MANIFEST),
+        str(REPO_LEGACY_LOCAL_MANIFEST),
     ]) == 0
     tree_output = capsys.readouterr().out
     assert "effective_skill: project.order_change_design" in tree_output
@@ -458,7 +467,7 @@ def test_repository_sample_cli_tree_and_resolved_json(capsys: object) -> None:
         "--package-manifest",
         str(REPO_XDDP_PACKAGE_MANIFEST),
         "--local-manifest",
-        str(REPO_SAMPLE_LOCAL_MANIFEST),
+        str(REPO_LEGACY_LOCAL_MANIFEST),
     ]) == 0
     resolved = json.loads(capsys.readouterr().out)
     assert resolved["effective_skill_id"] == "project.order_change_design"
