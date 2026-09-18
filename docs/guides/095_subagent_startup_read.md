@@ -1,18 +1,13 @@
 <!-- xid: D7A4C9E2B861 -->
 <a id="xid-D7A4C9E2B861"></a>
 
-# Subagent startup read の利用ガイド
+# Guide to Using `subagent startup read`
 
-`workflow subagent-read` は、すでに開かれている local workflow run に対して、
-子作業を担当する実行主体へ渡す bounded な startup context を filesystem から
-materialize するコマンドである。run を開くこと、work item を登録すること、返された
-資料を理解して実行することは、このコマンドの外側で行う。
+`workflow subagent-read` materializes bounded startup context from the filesystem for the executor responsible for child work in an already-open local workflow run. Opening the run, registering the work item, and understanding and executing the returned material are performed outside this command.
 
-## 前提: 開かれた run と work item
+## Prerequisites: An Open Run and Work Item
 
-先に `workflow run` で run log を作り、completion criterion を持つ work item を
-`pending` または `in_progress` として登録する。binding の `run_id` と
-`work_item_id` は、この開かれた run と一致しなければならない。
+First create a run log with `workflow run`, then register a work item with a completion criterion as `pending` or `in_progress`. The binding's `run_id` and `work_item_id` must match this open run.
 
 ```powershell
 python -m xrefkit workflow run `
@@ -31,12 +26,9 @@ python -m xrefkit skill workitem `
   --role instruction:executor
 ```
 
-run log が未開封、run ID が不一致、work item が存在しない、または criterion が
-空の場合、startup read は成功を記録せずに失敗する。run log に
-`mcp_session_id` がある場合も local filesystem reader は拒否する。MCP-bound run は
-MCP provider で governance context を解決する。
+If the run log is unopened, the run ID does not match, the work item does not exist, or the criterion is empty, startup read fails without recording success. The local filesystem reader also rejects a run log with `mcp_session_id`. An MCP-bound run resolves governance context through the MCP provider.
 
-## 実行方法
+## Execution
 
 ```powershell
 python -m xrefkit workflow subagent-read `
@@ -46,12 +38,9 @@ python -m xrefkit workflow subagent-read `
   --json
 ```
 
-`--binding` は UTF-8 JSON ファイルである。`--json` は常に JSON 出力として扱われ、
-成功時の `state` は `materialized`、入力検証や hash 検証に失敗した場合の CLI 出力は
-`state: "blocked"` と `errors` を含む。成功時でも process は agent を起動せず、
-資料を読み取って receipt を run log に追記するだけである。
+`--binding` is a UTF-8 JSON file. `--json` always requests JSON output: on success, `state` is `materialized`; when input or hash validation fails, CLI output contains `state: "blocked"` and `errors`. Even on success, the process does not start an agent; it only reads the material and appends a receipt to the run log.
 
-## binding の形式
+## Binding Format
 
 ```json
 {
@@ -80,29 +69,17 @@ python -m xrefkit workflow subagent-read `
 }
 ```
 
-上記の run_id は例である。新しく開始した run の ID に置き換え、sha256 は対象ファイルの実際の raw bytes から計算する。例中の placeholder はそのままでは受理されない。
+The `run_id` above is an example. Replace it with the ID of the newly started run, and calculate `sha256` from the target file's actual raw bytes. The placeholders in the example are not accepted as-is.
 
-必須の識別・binding フィールドは `run_id`、`work_item_id`、`purpose`、`capability`、
-`tuning`、`responsibility` である。これらの意味と導出元は [Workflow Runtime Binding
-contract](../core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F) が所有し、
-この binding はその受渡しと整合性を検証する。`scope_in`、`scope_out`、`stop_conditions` は
-文字列配列、`protocols` は現在 `workflow` を必須とし、追加できる protocol は
-`reporting` に限られる。`knowledge_access.mode` は `on_demand` でなければならず、
-catalog は root 内のファイルを指す locator である。catalog 本文は自動ロードされない。
+The required identity and binding fields are `run_id`, `work_item_id`, `purpose`, `capability`, `tuning`, and `responsibility`. Their meaning and derivation are owned by the [Workflow Runtime Binding contract](../core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F), and this binding verifies their transfer and consistency. `scope_in`, `scope_out`, and `stop_conditions` are string arrays. `protocols` currently requires `workflow`, and the only additional protocol that may be added is `reporting`. `knowledge_access.mode` must be `on_demand`, and `catalog` is a locator for a file inside root. The catalog body is not loaded automatically.
 
-`references` は任意の配列だが、各要素には root 内の `path` と、その時点の raw bytes
-に対する lowercase SHA-256 の `sha256` が必要である。最大 32 件で、読取時に hash が
-一致しなければ処理は停止する。`source_mode` は local reader のため
-`filesystem` 固定である。
+`references` is optional, but each element requires a `path` inside root and a lowercase SHA-256 `sha256` for the raw bytes at that point. There may be at most 32 entries; processing stops if a hash does not match during reading. `source_mode` is fixed to `filesystem` for the local reader.
 
-## 何が materialize されるか
+## What Is Materialized
 
-成功すると、`AGENTS.md`、startup contract と base control の startup source、
-binding の `protocols` に指定した protocol 文書、run log の `skill_doc`（存在する
-場合）、および hash-pinned `references` が順に `documents` として返される。各文書には
-`path`、`xid`（該当する場合）、`sha256`、`bytes` が含まれる。
+On success, `AGENTS.md`, the startup contract and base-control startup source, protocol documents specified by the binding's `protocols`, the run log's `skill_doc` when present, and hash-pinned `references` are returned in order as `documents`. Each document includes `path`, `xid` when applicable, `sha256`, and `bytes`.
 
-同時に、次の `subagent.startup.read` receipt が run log に記録される。
+At the same time, the following `subagent.startup.read` receipt is recorded in the run log.
 
 ```json
 {
@@ -117,31 +94,19 @@ binding の `protocols` に指定した protocol 文書、run log の `skill_doc
 }
 ```
 
-receipt の `meaning` は境界を明示する。materialized は、host が本文を子作業の
-実行主体へ届けられる状態を示すだけで、agent の起動、本文の comprehension、手順の
-execution、成果物の品質受入れを示さない。subagent の自動 dispatch や spawn も行われない。
+The receipt's `meaning` makes the boundary explicit. `materialized` only indicates that the host can deliver the content to the executor for child work; it does not indicate agent startup, content comprehension, procedure execution, or artifact quality acceptance. No automatic subagent dispatch or spawn occurs.
 
-## Knowledge と XID
+## Knowledge and XID
 
-catalog は on-demand の lookup handle であり、startup read は catalog 本文を
-`documents` に含めない。必要な knowledge は、作業の判断が必要になった時点で XID を
-検索・解決し、どの判断や成果物に適用したかを別途記録する。path と XID は参照を特定
-するために使うが、hash-pinned reference の検証結果を省略するものではない。
+The catalog is an on-demand lookup handle, and startup read does not include the catalog body in `documents`. When knowledge is needed for a work decision, search and resolve its XID and separately record which decision or artifact it was applied to. `path` and XID identify a reference, but they do not replace verification of a hash-pinned reference.
 
-## MCP-bound run の境界
+## Boundary for MCP-Bound Runs
 
-local reader に MCP の governance context を混在させないため、run log の
-`mcp_session_id` が空でない場合は `MCP-bound runs must resolve governance through the
-MCP provider` として拒否する。MCP mode では provider の XID 解決・session binding
-手順を使う。filesystem fallback が MCP-only document を代読したり、MCP-bound run を
-local として受理したりはしない。
+To keep MCP governance context separate from the local reader, a non-empty `mcp_session_id` in the run log is rejected with `MCP-bound runs must resolve governance through the MCP provider`. MCP mode uses the provider's XID resolution and session-binding procedure. The filesystem fallback does not read MCP-only documents on its behalf or accept an MCP-bound run as local.
 
-## 実行後の責任と確認
+## Responsibilities and Verification After Execution
 
-host は実際の作業結果・成果物・検証証拠を根拠に、assigned role を使って execution と handoff を記録する。receipt は起動資料の読取り記録であり、作業の完了証拠ではない。
-典型的には executor が work item と output/evidence artifact を更新し、
-`instruction:handoff_owner` が handoff phase を記録する。checker は executor と分離
-された `instruction:checker` として deterministic な確認を担当する。
+The host records execution and handoff using the assigned roles, based on actual work results, artifacts, and verification evidence. The receipt records reading startup material; it is not evidence that the work is complete. Typically, the executor updates the work item and output/evidence artifact, while `instruction:handoff_owner` records the handoff phase. The checker performs deterministic verification as the `instruction:checker` role, separate from the executor.
 
 ```powershell
 python -m xrefkit skill phase --log <run-log> --phase execution --status done --role instruction:executor
@@ -150,25 +115,19 @@ python -m xrefkit skill verify --log <run-log>
 python -m xrefkit skill close --log <run-log>
 ```
 
-`skill verify` は run log の work item、artifact、role、phase などを決定的に確認する。
-output 本文の品質を判断したり、subagent の理解を推定したりしない。verify と close が
-成功するまで run の手続き上の完了を主張しない。work item はその完了条件と実際の証拠に基づいて done にし、その後で verify/close に進む。`materialized` だけを作業完了の根拠にしない。
+`skill verify` deterministically checks the run log's work item, artifact, role, phase, and other fields. It does not judge the quality of output content or infer subagent comprehension. Do not claim procedural completion of the run until verify and close succeed. Mark the work item done based on its completion condition and actual evidence, then proceed to verify/close. Do not use `materialized` alone as evidence that the work is complete.
 
-## CLI の確認
+## CLI Check
 
 ```powershell
 python -m xrefkit workflow subagent-read --help
 ```
 
-このコマンドは `--root`、`--log`、必須の `--binding`、`--json` を表示する。実装は
-`xrefkit/subagent_startup.py`、基本的な挙動確認は `tests/test_subagent_startup.py` に
-ある。特に selected sources のみの materialization、stale hash、root 外 path、誤った
-XID、unopened log、MCP-bound run、reporting protocol の明示指定を確認する。
+This command displays `--root`, `--log`, required `--binding`, and `--json`. The implementation is in `xrefkit/subagent_startup.py`, and basic behavior checks are in `tests/test_subagent_startup.py`. In particular, verify materialization of only selected sources, stale hashes, paths outside root, incorrect XIDs, unopened logs, MCP-bound runs, and explicit selection of the reporting protocol.
 
-## MCP client adapter
+## MCP Client Adapter
 
-MCP session を利用する host は、初期化済みの transport から次の async API を呼ぶ。
-`workflow subagent-read` CLI は引き続き filesystem 専用である。
+A host using an MCP session calls the following async API through an initialized transport. The `workflow subagent-read` CLI remains filesystem-only.
 
 ```python
 from pathlib import Path
@@ -184,12 +143,9 @@ result = await read_mcp_subagent_startup(Path("work/run.md"), binding, call_tool
 # Host supplies result to the assigned subagent before it starts its work.
 ```
 
-`session` は host が初期化した MCP client session、`binding` は実際の run と
-work item から組み立てた辞書である。stateless HTTP で `context_id` を利用する host は、
-callback 内で応答の context 更新と次の呼出しへの引継ぎも行う。
+`session` is the MCP client session initialized by the host, and `binding` is a dictionary assembled from the actual run and work item. A host using `context_id` over stateless HTTP also updates the response context in the callback and carries it into the next call.
 
-local binding の必須責任フィールドは同じで、MCP では次の項目に置き換える。
-`repository_fingerprint` は接続先の `get_repository_identity` などで確認する。
+The required binding fields are the same for a local binding; in MCP they are supplemented by the following items. Verify `repository_fingerprint` using `get_repository_identity` or an equivalent operation on the connected endpoint.
 
 ```json
 {
@@ -207,52 +163,29 @@ local binding の必須責任フィールドは同じで、MCP では次の項�
 }
 ```
 
-これは差分例である。`schema_version`、`run_id`、`work_item_id`、`purpose`、
-`capability`、`tuning`、`responsibility`、scope と stop conditions も必要になる。
-field の意味は Workflow Runtime Binding に従い、adapter は意味を再定義しない。
-MCP の `content_hash` は UTF-8 本文に対する SHA-256 で、local reader の raw file
-bytes に対する `sha256` と区別する。
+This is a delta example. `schema_version`, `run_id`, `work_item_id`, `purpose`, `capability`, `tuning`, `responsibility`, scope, and stop conditions are also required. Field meaning follows Workflow Runtime Binding; the adapter does not redefine it. MCP `content_hash` is SHA-256 over the UTF-8 body and is distinct from the local reader's `sha256` over raw file bytes.
 
-MCP client の initialize では、初期連携する Protocol を
-initialize params の `xrefkit.excluded_protocols` で除外指定する。
-値は `prompt_flow`、`workflow`、`reporting` の配列で、未指定または `[]`
-は3つすべてを選択する。`xrefkit.initial_protocols` は旧互換であり、
-`workflow`／`reporting` の include list として扱い、`prompt_flow` は常に
-含まれる。両方の extension を同時に送ることはできない。
+For MCP client initialize, exclude protocols from the initial exchange with `xrefkit.excluded_protocols` in the initialize params. Its value is an array of `prompt_flow`, `workflow`, and `reporting`; omission or `[]` selects all three. `xrefkit.initial_protocols` is legacy compatibility: it is treated as an include list for `workflow`/`reporting`, while `prompt_flow` is always included. Both extensions cannot be sent together.
 
-host の initialize で選択した protocol と binding の `protocols` が一致することを
-確認する。adapter が session の選択を書き換えることはない。選択された Protocol
-には body、除外された Protocol には `null` が返ることも検証する。
-workflow run の読取りには `workflow` が必要であり、reporting のみの session では停止する。
-`initial_protocol_selection` は取得元を含めて result と receipt に保持する。
+Verify that the protocols selected by the host's initialize match the binding's `protocols`. The adapter does not rewrite the session's selection. Also verify that selected protocols return a body and excluded protocols return `null`. Reading a workflow run requires `workflow`; stop when the session contains only reporting. Preserve `initial_protocol_selection`, including its source, in the result and receipt.
 
-読取りは次の順で進む。
+Reading proceeds in the following order.
 
-1. 開かれた local run と work item、binding を確認する。
-2. `get_startup_context` から pack、選択された protocol と Prompt Flow 契約を取得する。
-3. `bind_skill_run` の応答を検証し、信頼済み local runtime で correlation を記録する。
-4. managed Skill run は `get_skill`、明示された参照は `get_document_by_xid` で取得する。
-5. repository identity、hash、サイズ、run 状態を確認して読取 receipt を記録する。
+1. Verify the open local run, work item, and binding.
+2. Obtain the pack, selected protocols, and Prompt Flow contract from `get_startup_context`.
+3. Verify the `bind_skill_run` response and record correlation in the trusted local runtime.
+4. Obtain managed Skill runs with `get_skill` and explicit references with `get_document_by_xid`.
+5. Verify repository identity, hashes, sizes, and run state, then record the read receipt.
 
-`instruction` run は Skill 本文を取得しない。普通の Skill 文書を使う `general_skill`
-は、この adapter では remote managed Skill identity を決定できないため未対応として停止する。
-Knowledge catalog の検索や本文の一括ロードは行わない。MCP 応答に含まれる path や
-`client_record_command` は実行せず、governance 文書を local filesystem で代読しない。
+An `instruction` run does not retrieve Skill content. `general_skill`, which uses an ordinary Skill document, stops as unsupported because this adapter cannot determine a remote managed Skill identity. It does not search the Knowledge catalog or bulk-load its body. It does not execute paths or `client_record_command` returned by MCP, and it does not read governance documents through the local filesystem.
 
-stale な startup pack、欠落した本文、hash や fingerprint の不一致、取得中に変更された
-run 状態では成功 receipt を残さない。stale pack は server 側で更新してから再試行する。
-本文は 1 件 256,000 bytes、binding と protocol を含む総量は 1,000,000 bytes まで。
-途中で本文取得が失敗した場合でも、すでに成立した session correlation は事実として残る。
+It does not leave a success receipt for a stale startup pack, missing body, hash or fingerprint mismatch, or a run state changed during retrieval. Update a stale pack on the server side before retrying. Each body is limited to 256,000 bytes, and the total including binding and protocols is limited to 1,000,000 bytes. Even if body retrieval fails partway through, an already-established session correlation remains a fact.
 
-この adapter は既存の管理ポート、Skill/Knowledge upload、protocol 選択の server API を
-変更しない。materialization 後も、host による実際の subagent 起動、作業の実行、
-Workflow Protocol の verify/close、人による成果物採用は別途必要である。
+This adapter does not change the existing admin port, Skill/Knowledge upload, or protocol-selection server APIs. After materialization, the host still separately needs to start the actual subagent, execute the work, run Workflow Protocol verify/close, and obtain human adoption of the artifact.
 
-## 開いたRunからExecutionBindingを生成する
+## Generating an ExecutionBinding from an Open Run
 
-`workflow bind-execution` は、親が指示から具体化した実行情報を、既存のRunとwork itemへ
-結び付ける。生成器はSkill metaからtriadをコピーしない。Skill選択やモデル評価を行う
-意味的routing、権限の付与、subagentのdispatchはhost側の責任である。
+`workflow bind-execution` connects execution information concretized by the parent from the instruction to an existing Run and work item. The generator does not copy the triad from Skill meta. Semantic routing for Skill selection and model evaluation, granting authority, and subagent dispatch are the host's responsibility.
 
 ```powershell
 python -m xrefkit workflow bind-execution `
@@ -261,31 +194,16 @@ python -m xrefkit workflow subagent-read `
   --root . --log work/run.md --binding work/binding.json --json
 ```
 
-requestは上記のlocal/MCP bindingから`schema_version`と`run_id`を除き、
-`instruction_basis`に今回の指示根拠を記載したJSONである。`work_item_id`、purpose、binding fields、
-scope、stop conditions、protocols、Knowledge locatorは明示する。`references`は省略でき、
-その場合は空配列になる。local requestには`repository_fingerprint`を含めず、
-MCP requestでは必須とする。未定義のkeyは拒否する。
+The request is JSON based on the local/MCP binding above, with `schema_version` and `run_id` removed and the basis for the current instruction recorded in `instruction_basis`. It explicitly includes `work_item_id`, purpose, binding fields, scope, stop conditions, protocols, and the Knowledge locator. `references` may be omitted, in which case it becomes an empty array. Do not include `repository_fingerprint` in a local request; it is required in an MCP request. Undefined keys are rejected.
 
-生成結果は既存のreaderへそのまま渡せるbindingで、次を追加する。
+The generated result is a binding that can be passed directly to the existing reader, with the following additions:
 
-- `run_id`と`schema_version: 1`
+- `run_id` and `schema_version: 1`
 - `binding_origin: "workflow_builder"`
-- `run_snapshot`: 親子相関、選択Skill、task、authority、assigned roles、work itemの
-  criterionとstatus、Closure Gate状態
+- `run_snapshot`: parent-child correlation, selected Skill, task, authority, assigned roles, the work item's criterion and status, and Closure Gate state
 
-APIは`xrefkit.execution_binding.build_execution_binding(log, request)`である。
-生成時にはrun logだけを読み、参照先の本文を取得したりファイルを更新したりしない。
-参照hashは呼出し側が実際の版から指定し、readerが取得時に検査する。
-生成器でJSONの構造が通っても、指定したlocal pathやremote XIDの存在確認は未実施である。
+The API is `xrefkit.execution_binding.build_execution_binding(log, request)`. During generation it reads only the run log; it does not retrieve referenced content or update files. The caller specifies reference hashes from the actual versions, and the reader checks them during retrieval. Even if the generator accepts the JSON structure, it does not verify that specified local paths or remote XIDs exist.
 
-両readerはgenerated bindingのsnapshotを起動時に照合する。役割・権限・task・相関、
-work itemの条件やstatusが生成後に変われば停止し、変更内容を確認してbindingを作り直す。
-MCPのsession correlationは読取り中に確立するため、snapshot対象から除く。
-元の手書きbindingも引き続き利用できるが、生成器のsnapshot照合は付かない。
+Both readers compare the generated binding snapshot at startup. If roles, authority, task, correlation, or the work item's criterion or status changes after generation, stop, inspect the change, and recreate the binding. MCP session correlation is established during reading, so it is excluded from the snapshot. The original hand-written binding remains usable, but does not receive the generator's snapshot comparison.
 
-これはhostが渡した情報とRunの整合性検査であり、署名による認証ではない。
-`instruction_basis`やauthorityに記述があることだけで新たな実行権限は生まれず、
-既存のguard、停止・エスカレーション、verify/close、人間による採用条件を継続適用する。
-モデルの選択や実行観測はこの生成結果に捏造しない。Skill/catalogの新形式への移行と、
-モデルrouting実装との接続は別の変更単位で行う。
+This is a consistency check between information supplied by the host and the Run; it is not authentication by signature. Merely describing something in `instruction_basis` or authority does not create new execution authority. Existing guards, stop and escalation rules, verify/close, and human adoption conditions continue to apply. Do not fabricate model selection or execution observations in this generated result. Migration to the new Skill/catalog format and connection to model-routing implementation are separate change units.

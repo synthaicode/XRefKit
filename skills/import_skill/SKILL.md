@@ -118,7 +118,7 @@ python tools/convert_to_xrefkit_skill.py <extracted_root> --batch --skill-id-pre
 - If references are unclear:
   - keep TODO markers in skill file and resolve with `xref search/show` before finalizing
 
-## Reporting Contract (共通報告)
+## Reporting Contract (Common Report)
 
 
 
@@ -129,7 +129,7 @@ Use the shared [Skill Reporting Contract](../../docs/core/contracts/081_skill_re
 1. Status — done, partial, blocked, or escalated
 2. Result — what was produced or decided
 3. Evidence — output, evidence, checks, or XIDs
-4. Open Items — unresolved unknowns, risks, judgments, or なし
-5. Handoff — next owner and next action, or なし
+4. Open Items — unresolved unknowns, risks, judgments, or none
+5. Handoff — next owner and next action, or none
 
 Keep this summary-first section visible before Skill-specific detail; do not omit empty sections.

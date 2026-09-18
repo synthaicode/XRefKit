@@ -1,97 +1,118 @@
 <!-- xid: E6A19D4B72C3 -->
 <a id="xid-E6A19D4B72C3"></a>
 
-# SkillDefinition v1 と派生catalog
+# SkillDefinition v1 and Derived Catalog
 
-この契約は、実装済みのSkillDefinition parserとcatalog生成器が受理する候補形式を定める。
-MCP `get_skill`は、repositoryで明示選択した定義とpackage manifestが指す定義を
-同じ一文書形式で返す。既存packageの分割YAML形式も移行期間中は受理する。
-構造検証の成功を、Skillの実行可能化・品質受入れ・移行完了とみなさない。
+This contract defines the candidate format accepted by the implemented
+SkillDefinition parser and catalog builder. MCP `get_skill` returns an explicitly
+selected repository definition and a definition referenced by a package manifest
+in the same single-document format. The existing split YAML format for packages
+remains accepted during the migration period. Successful structural validation
+does not mean that a Skill is executable, quality-accepted, or fully migrated.
 
-## 編集正本と責務
+## Authoritative Editing Source and Responsibilities
 
-Skillの編集正本は一つのMarkdownファイルとし、YAML headerに発見・適用・入出力・
-必要材料・確認条件を置き、headerの後に方法本文を置く。JSON形式のheaderもYAMLの
-部分集合として利用できる。catalogは正本から生成し、手編集する第二のmeta正本にしない。
+The authoritative editing source for a Skill is one Markdown file. Its YAML
+header contains discovery, applicability, inputs and outputs, required material,
+and verification conditions; the method body follows the header. A JSON header
+may also be used as a subset of YAML. The catalog is generated from the
+authoritative source and must not become a second hand-edited meta source.
 
-`capability` / `tuning` / `responsibility`、model名やmodel tierはheaderに置かず、
-今回の指示に基づくroutingと
-[Workflow Runtime Binding](111_workflow_runtime_binding.md#xid-8D50A972BA9F)で扱う。
-共通のWorkflow、guard、unknown、検査分離、エスカレーションをSkillごとに再定義しない。
-Skill固有の適用外条件・方法・停止条件・handoffは本文に残す。
+`capability` / `tuning` / `responsibility`, model names, and model tiers do not
+belong in the header. They are handled by routing based on the current
+instruction and by the
+[Workflow Runtime Binding](111_workflow_runtime_binding.md#xid-8D50A972BA9F).
+Common Workflow, guard, unknown, verification separation, and escalation rules
+must not be redefined for each Skill. Skill-specific applicability exclusions,
+method, stop conditions, and handoff remain in the body.
 
-## 物理形式
+## Physical Format
 
 ```text
 ---
-<YAML mapping または JSON object>
+<YAML mapping or JSON object>
 ---
-<XID comment / anchor と Markdown method>
+<XID comment / anchor and Markdown method>
 ```
 
-UTF-8（file先頭のBOMは可）。先頭とheader末尾は単独行の`---`と改行が必要。
-methodの改行や末尾を正規化せず保持する。fileの`content_hash`はBOMと改行を含む
-raw bytesのSHA-256で、版が変われば再生成する。parser APIへ文字列を渡す場合は
-その文字列のUTF-8 bytesをhash対象とする。
+UTF-8 (a BOM at the start of the file is permitted). The opening and closing
+header delimiters must each be on their own line as `---`, followed by a newline.
+Preserve method newlines and the trailing content without normalization. The
+file `content_hash` is the SHA-256 of the raw bytes, including the BOM and
+newlines; regenerate it when the version changes. When a string is passed to the
+parser API, hash the UTF-8 bytes of that string.
 
-headerの必須項目:
+Required header fields:
 
-| key | 内容 |
+| key | Description |
 |---|---|
-| `schema_version` | 整数`1` |
-| `skill_id` | 小文字で始まる英小文字・数字・underscoreの識別子 |
-| `xid` | 自身の12桁uppercase hexadecimal XID。method内のcomment/anchorと一致 |
-| `summary` | 発見時の短い目的説明。詳細Purposeはmethodに保持 |
-| `applies_when` | 適用する状況の文字列配列 |
-| `exclusions` | 適用外の文字列配列。空配列も可 |
-| `inputs` / `outputs` | 入出力要求の文字列配列 |
-| `criteria` | 下記の確認条件。1件以上 |
-| `knowledge_needs` | 下記のKnowledge検索要求。空配列も可 |
-| `control_refs` | Skill固有で追加取得する制御・policyのXID配列。追加がなければ空配列 |
+| `schema_version` | integer `1` |
+| `skill_id` | identifier consisting of lowercase English letters, digits, and underscore, beginning with a lowercase letter |
+| `xid` | the Skill's 12-character uppercase hexadecimal XID; must match the comment/anchor in the method |
+| `summary` | short purpose description used for discovery. Keep the detailed Purpose in the method |
+| `applies_when` | array of strings describing applicable situations |
+| `exclusions` | array of strings describing exclusions. An empty array is allowed |
+| `inputs` / `outputs` | arrays of strings describing input/output requirements |
+| `criteria` | verification conditions below. At least one is required |
+| `knowledge_needs` | Knowledge search requirements below. An empty array is allowed |
+| `control_refs` | array of control/policy XIDs that this Skill additionally retrieves. Use an empty array when there are no additions |
 
-任意項目は`aliases`のみ。旧metaなどのXIDを同じSkillへ対応付けるための配列であり、
-自身のXIDや重複を含めない。これは生成catalog内の対応で、既存XID resolverへの
-登録や旧ファイルの削除を自動で行う機能ではない。
+The only optional field is `aliases`. It is an array for mapping XIDs such as
+old meta files to the same Skill; it must not contain the Skill's own XID or
+duplicates. This mapping is used in the generated catalog and does not
+automatically register entries with the existing XID resolver or delete old
+files.
 
-`criteria`の各要素は`id`、`statement`、`verification`の非空文字列を持つ。
-ここでは再利用する確認条件を表現する。Task固有の基準・権限を確定したことや、
-Criterion/Decisionの将来の全スキーマを実装したことを意味しない。
+Each element of `criteria` has non-empty string values for `id`, `statement`,
+and `verification`. These express reusable verification conditions. They do not
+mean that task-specific criteria or authority have been finalized, nor that all
+future Criterion/Decision schemas have been implemented.
 
-`knowledge_needs`の各要素は`id`、`query`、`required_when`の非空文字列と、
-`seed_xids`配列を持つ。実行主体は必要な時点でcatalogを検索し、適用範囲を確認して
-XIDで本文を解決する。seedは既知の入口を保持するもので、関連文書の再帰ロードや
-Knowledge本文のheaderへの埋込みを許可しない。必須かどうかは`required_when`と
-Skillの方法に従い、検索結果の存在だけで判断条件を満たしたとしない。
+Each element of `knowledge_needs` has non-empty string values for `id`, `query`,
+and `required_when`, and has a `seed_xids` array. At the required point, the
+executor searches the catalog, confirms applicability, and resolves the body by
+XID. Seeds preserve known entry points; they do not permit recursive loading of
+related documents or embedding Knowledge bodies in the header. Whether a need is
+required follows `required_when` and the Skill method; the mere presence of a
+search result does not satisfy the condition.
 
-Workflow、Reporting、Logging、Context Guardなど初期化時に供給される共通制御は
-`control_refs`へ重複記載しない。`control_refs`は、working-area policyのようにそのSkillが
-追加で必要とする制御だけを列挙する。追加制御がないSkillは`control_refs: []`とする。
+Common controls supplied during initialization, such as Workflow, Reporting,
+Logging, and Context Guard, must not be duplicated in `control_refs`.
+`control_refs` lists only controls additionally required by that Skill, such as
+a working-area policy. A Skill with no additional controls uses
+`control_refs: []`.
 
-未定義key、重複mapping key、重複criterion/need ID、不正XID、YAML alias/anchorや
-unsafe tagは拒否する。documentは512,000 bytes、headerは64,000 bytes、methodは
-256,000 bytesまで。参照XIDの存在・権限・意味的適合は構造parserでは検証しない。
+Reject undefined keys, duplicate mapping keys, duplicate criterion/need IDs,
+invalid XIDs, YAML aliases/anchors, and unsafe tags. The document is limited to
+512,000 bytes, the header to 64,000 bytes, and the method to 256,000 bytes. A
+structural parser does not validate the existence, authorization, or semantic
+fitness of referenced XIDs.
 
-## CatalogとCLI
+## Catalog and CLI
 
 ```powershell
-python -m xrefkit skill definition-check --path <candidate-SKILL.md> --json
+python -m xrefkit skill definition-check --path <candidate-SKILL.v1.md> --json
 python -m xrefkit skill definition-catalog --path <candidate-A> --path <candidate-B> --json
 ```
 
-catalogには検証済みheader、定義へのpath/hash、XID/alias対応を出す。method本文は
-含めない。生成処理は定義fileを検査するが、Knowledge本文や参照先を取得しない。
-指定file全件を検査し、Skill IDまたはXID/aliasが衝突すれば部分catalogを返さず拒否する。
-最大2,048定義、skill_id順で出力し、同じpathとbytesなら入力順に依存しない。
+The catalog outputs the validated header, path/hash for the definition, and XID/
+alias mappings. It does not include the method body. Generation inspects each
+definition file but does not retrieve Knowledge bodies or referenced targets.
+Inspect every specified file; reject the request without returning a partial
+catalog if Skill ID or XID/alias collisions occur. Output at most 2,048
+definitions in `skill_id` order, and make output independent of input order when
+the paths and bytes are the same.
 
-APIは`load_skill_definition(path)`、`parse_skill_definition(text, source=...)`、
-`build_definition_catalog(paths)`。CLIはJSONをstdoutへ返し、正本や既存catalogを
-上書きしない。catalogの検索順位付けやmodel評価は含まない。
+The APIs are `load_skill_definition(path)`, `parse_skill_definition(text, source=)`,
+and `build_definition_catalog(paths)`. The CLI returns JSON to stdout and does
+not overwrite the authoritative source or an existing catalog. It does not
+perform catalog search ranking or model evaluation.
 
-## 明示選択した定義の実行
+## Running an Explicitly Selected Definition
 
 ```powershell
 python -m xrefkit skill run `
-  --definition skills/<skill>/SKILL.md `
+  --definition skills/<skill>/SKILL.v1.md `
   --task "<task>" `
   --capability "<instruction-derived capability>" `
   --tuning "<instruction-derived tuning>" `
@@ -100,92 +121,118 @@ python -m xrefkit skill run `
   --json
 ```
 
-`--definition`と`--meta`は排他的である。定義形式にはrouting結果を保存せず、
-Workflow Runtime Bindingの`capability` / `tuning` / `responsibility` /
-`execution_mode`を実行開始時に必須入力としてrun logへ固定する。形式は
-`definition_format: skill_definition_v1`で識別する。
-外部governance recordがなければ`maturity: unassessed`とし、`stable`への品質昇格を
-推定しない。`meta: -`とし、同じ`SKILL.md`を唯一の実行本文として参照する。
+`--definition` and `--meta` are mutually exclusive. The definition format does
+not store routing results; it requires the Workflow Runtime Binding
+`capability` / `tuning` / `responsibility` / `execution_mode` as inputs when the
+run starts and fixes them in the run log. Identify the format as
+`definition_format: skill_definition_v1`. Without an external governance
+record, use `maturity: unassessed` and do not infer promotion to `stable`.
+Use `meta: -` and reference the same `SKILL.v1.md` as the sole execution body.
 
-`--governance <record.json>`を指定した場合、recordの`skill_id`、XID、raw definition
-SHA-256を照合し、承認済みmaturityとpromotion decisionをrun logへ記録する。`draft`と
-`deprecated`は実行不可である。recordは定義本文を変更せず、production adoptionとも別である。
+When `--governance <record.json>` is specified, compare the record's
+`skill_id`, XID, and raw definition SHA-256, then record the approved maturity
+and promotion decision in the run log. `draft` and `deprecated` cannot be run.
+The record does not change the definition body and is separate from production
+adoption.
 
-run logには定義のXID、root-relative path、raw bytesのSHA-256を記録する。
-`workflow bind-execution`はこれらをrequestから受け取らずrun logから
-`definition_identity`へ転記し、runtime三要素がrequestと一致することを確認する。
-local subagent readerは本文を渡す直前とreceipt記録前にXIDとSHA-256を再検証する。
-したがって、run開始後に定義が変更された場合は新しいrun/bindingが必要になる。
+The run log records the definition XID, root-relative path, and raw-byte
+SHA-256. `workflow bind-execution` does not accept these from the request; it
+copies them from the run log into `definition_identity` and confirms that the
+three runtime values match the request. The local subagent reader rechecks the
+XID and SHA-256 immediately before passing the body and before recording the
+receipt. Therefore, a definition changed after the run starts requires a new
+run/binding.
 
-## MCPでの明示的な有効化
+## Explicit Enablement through MCP
 
-MCP serverでは、自動scanではなく起動時に対象を明示する。
+On an MCP server, target Skills are explicitly enabled at startup rather than
+being found by automatic scanning.
 
 ```powershell
 python -m xrefkit.mcp.server `
   --repo <repository> `
-  --skill-definition skills/<skill>/SKILL.md `
+  --skill-definition skills/<skill>/SKILL.v1.md `
   --skill-governance governance/skills/<skill>.json
 ```
 
-`XRefCatalog.build(..., skill_definition_paths=[...])`とcatalog CLIの
-`--skill-definition`も同じ境界を使う。対応するgovernance recordは
-`skill_governance_paths` / `--skill-governance`で明示する。指定pathはrepository内のfileに限定し、
-重複pathや定義間の`skill_id` / XID / alias衝突を拒否する。同じ`skill_id`の旧Skillが
-存在する場合、明示指定した定義をactive catalog entryとし、旧entryとの二重routingを
-行わない。指定しない候補はMCP catalogへ現れない。
+`XRefCatalog.build(..., skill_definition_paths=[...])` and the catalog CLI's
+`--skill-definition` use the same boundary. The corresponding governance record
+is specified through `skill_governance_paths` / `--skill-governance`. Specified
+paths must refer to files inside the repository. Reject duplicate paths and
+`skill_id` / XID / alias collisions between definitions. If an old Skill with the
+same `skill_id` exists, the explicitly specified definition becomes the active
+catalog entry; do not route to both entries. Candidates that are not specified
+do not appear in the MCP catalog.
 
-catalog entryの`definition_format`は`skill_definition_v1`、旧meta+本文形式は
-`legacy_split_v1`である。routing一覧にはheader由来metadataだけを載せ、method本文は
-`get_skill`で選択後に一文書だけ返す。その文書はBOM・改行を含むraw UTF-8 bytesと
-同じSHA-256を持つ。MCP subagent readerは`ExecutionBinding.definition_identity`の
-path / XID / SHA-256とcatalog responseを照合してから本文を受け取り、receiptを記録する。
-legacy entryは従来どおりmetaと本文の二文書を返す。
+The catalog entry's `definition_format` is `skill_definition_v1`; the old
+meta-plus-body format is `legacy_split_v1`. Routing lists contain only metadata
+from the header; after selection, `get_skill` returns the method body as one
+document. That document has the same SHA-256 as its raw UTF-8 bytes, including
+the BOM and newlines. The MCP subagent reader compares
+`ExecutionBinding.definition_identity` path / XID / SHA-256 with the catalog
+response before receiving the body and recording the receipt. A legacy entry
+continues to return meta and body as two documents.
 
-`resolve_skill_knowledge(skill_id, active_need_ids=...)`は、指示と
-`knowledge_needs.required_when`を評価した親がactive need IDを明示して呼ぶ。
-`active_need_ids`を省略した場合は各needを`activation_state: unresolved`、
-`required: null`、`satisfied: null`として返し、条件未評価を不要扱いしない。指定時は
-未知IDと重複IDを拒否し、active needだけをrequiredとする。候補は`seed_xids`の一致を
-先に並べ、同じXIDを除いたquery順位を続ける。選択した本文は従来どおりXIDとrevisionで
-取得し、ExecutionBindingの`references`とrunのKnowledge observationに記録する。
+`resolve_skill_knowledge(skill_id, active_need_ids=...)` is called by the parent
+after evaluating the instruction and `knowledge_needs.required_when` and
+explicitly naming active need IDs. When `active_need_ids` is omitted, return
+each need with `activation_state: unresolved`, `required: null`, and
+`satisfied: null`; do not treat an unevaluated condition as unnecessary. When
+specified, reject unknown and duplicate IDs and mark only active needs as
+required. List candidates matching `seed_xids` first, followed by query-ranked
+results with duplicate XIDs removed. As before, retrieve selected bodies by XID
+and revision, and record them in `ExecutionBinding.references` and the run's
+Knowledge observation.
 
-protocol選択、管理upload、旧`--meta`実行経路は変更しない。package manifestの
-`provides.skills[].path`がMarkdown定義を指す場合は、entry point discovery後に
-`skill_definition_v1`として検証・catalog化する。従来の`*.skill.yaml`を指すpackageは
-`legacy_split_v1`として継続する。いずれもpackage外へpathが逸脱してはならない。
+Protocol selection, administrative upload, and the old `--meta` execution path
+are unchanged. If `package manifest` `provides.skills[].path` points to a
+Markdown definition, validate and catalog it as `skill_definition_v1` after
+entry-point discovery. A package pointing to the existing `*.skill.yaml`
+continues as `legacy_split_v1`. In both cases, the path must not escape the
+package.
 
-このcheckoutには管理upload transport、staging、seal、review、adoptionの実装がない。
-したがってupload済みbytesをactive catalogへ採用する操作は、ここでは未実装である。
-uploadの成功をrouting可能化とみなさず、将来のadoption側はraw bytesのhashとXIDを
-検証してから、既存の明示有効化境界へ渡す必要がある。
+The admin profile provides the contribution upload, staging, seal, review, and
+adoption path. Each state transition preserves its own authority boundary:
+upload success does not make a Skill routable, review acceptance does not publish
+it, and adoption does not prove distribution or live availability. The adoption
+path validates the immutable review event, approval token, raw-byte hash, XID,
+and target ownership before writing through the repository-owned transport. A
+newly adopted SkillDefinition becomes routable only after it is included through
+the existing explicit-enablement or package-discovery boundary and that active
+catalog state is verified.
 
-## 代表変換と切替条件
+## Representative Conversion and Cutover Conditions
 
 ```powershell
 python -m tools.convert_dotnet_skill_definition --root .
 ```
 
-代表変換は`skills/dotnet_change_analysis`を読み、
-`work/skill-definition-candidate/dotnet_change_analysis/`に候補と`migration.json`を作る。
-元の本文はbyte単位で保持し、9つのClosure Gate条件と5つのKnowledge要求をheaderへ
-対応付ける。元metaの全項目・値・移行先をmanifestに記録し、動的実行項目は
-`runtime_cutover_pending`、観測・昇格履歴などはprovenanceとして保持する。
-編集済み候補の上書きは拒否する。
+The representative conversion reads `skills/dotnet_change_analysis` and creates
+a candidate and `migration.json` under
+`work/skill-definition-candidate/dotnet_change_analysis/`. Preserve the original
+body byte-for-byte and map the 9 Closure Gate conditions and 5 Knowledge
+requirements into the header. Record every original meta field/value and its
+destination in the manifest. Keep dynamic execution items as
+`runtime_cutover_pending`, and preserve observation/promotion history and other
+items as provenance. Reject overwriting an edited candidate.
 
-converterの出力は、一つの正本へまとめる物理形式の実証であり、元本文をbyte単位で
-保持するため、意味的な簡易化までは行わない。別途、共通制御を参照へ統合した
-[tracked v1](../../../skills/dotnet_change_analysis/SKILL.v1.md#xid-9883EF4E8CA9)を置く。これは固有の方法、
-Knowledge要求、確認条件を保持し、旧本文XID `D94E3B3A7C11`と旧meta XID
-`1F4A6D20B8E1`を`aliases`で対応付ける。
+The converter output demonstrates the physical format consolidated into one
+authoritative source; it does not simplify the meaning because the original body
+is preserved byte-for-byte. Separately, place the
+[tracked v1](../../../skills/dotnet_change_analysis/SKILL.v1.md#xid-9883EF4E8CA9),
+which integrates common controls into references. It preserves the method,
+Knowledge requirements, and verification conditions specific to the Skill, and
+maps the old body XID `D94E3B3A7C11` and old meta XID `1F4A6D20B8E1` through
+`aliases`.
 
-tracked v1は明示的な定義選択時の推奨対象である。旧Skillの本文とmetaは引き続き
-読取可能なlegacy経路として残す。tracked v1の存在は自動adoptionやmaturityの昇格を
-意味しない。productionの既定値へ切り替える場合は、次を別に確認する。
+tracked v1 is the recommended target for explicit definition selection. Keep the
+old Skill body and meta readable through the legacy path. The existence of
+tracked v1 does not mean automatic adoption or maturity promotion. Confirm the
+following separately before switching the production default:
 
-- 人が簡易化後の方法と確認条件を受け入れたことをgovernance recordへ記録する。
-- source、catalog、package、管理upload、docsの採用対象版を揃える。
-- legacy経路の廃止条件が決まるまでは旧本文とmetaを削除しない。
+- Record human acceptance of the simplified method and verification conditions in the governance record.
+- Align the adopted versions of source, catalog, package, administrative upload, and docs.
+- Do not delete the old body and meta until the retirement conditions for the legacy path are decided.
 
-[Workflow Protocol](../../guides/088_instruction_workflow_protocol.md#xid-9F4C2A7D1B60)の
-verify/closeと、人による出力品質・採用の判断は引き続き別である。
+[Workflow Protocol](../../guides/088_instruction_workflow_protocol.md#xid-9F4C2A7D1B60)'s
+verify/close and human judgment of output quality and adoption remain separate.

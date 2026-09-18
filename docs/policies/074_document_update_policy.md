@@ -6,6 +6,12 @@
 This policy applies to repository documentation, knowledge pages, Skill-facing
 instructions, workflow definitions, and agent startup or routing documents.
 
+## Authoring Language
+
+Follow the [Language Policy](030_language_policy.md#xid-72FB974C8236). When a
+canonical Markdown document is substantively updated, keep or make the complete
+document English instead of adding another mixed-language section.
+
 ## Rule
 
 Target documents must describe the current authoritative state only.

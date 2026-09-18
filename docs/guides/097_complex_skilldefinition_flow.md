@@ -1,12 +1,14 @@
 <!-- xid: 4F8C2A7D91E6 -->
 <a id="xid-4F8C2A7D91E6"></a>
 
-# 複雑なSkillDefinition / Flowの実行例
+# Complex SkillDefinition / Flow Execution Example
 
-この例は、明示選択したtracked v1 (`skills/dotnet_change_analysis/SKILL.v1.md`)を
-`dotnet_change_analysis`の編集正本として扱い、旧meta+本文も読める状態を保ったまま、指示ごとに必要な
-能力・調整・責任とKnowledgeを組み立て、subagentへ渡す流れを示す。AI固有の
-誤読防止、unknown、証拠、role分離、check、handoffは既存controlを継続利用する。
+This example treats the explicitly selected tracked v1
+(`skills/dotnet_change_analysis/SKILL.v1.md`) as the authoring source of truth for
+`dotnet_change_analysis`, keeps the old meta plus body readable, and shows how to
+assemble the instruction-specific runtime binding and Knowledge before passing
+bounded work to a subagent. Existing controls continue to handle AI-specific
+misreading prevention, unknowns, evidence, role separation, checks, and handoff.
 
 ```mermaid
 flowchart TD
@@ -31,27 +33,31 @@ flowchart TD
     H --> O
 ```
 
-## 例に使う指示
+## Instruction Used in the Example
 
-> `OrderService`に新しい依存を追加する前に、DI lifetime、attribute route、暗黙の
-> runtime binding、影響範囲を調べ、実装判断はせずchange-analysis noteを作る。
+> Before adding a new dependency to `OrderService`, inspect the DI lifetime,
+> attribute route, implicit runtime binding, and impact range, then produce a
+> change-analysis note without deciding the implementation.
 
-parentはまずInstruction-backed Workflowを開き、成果物、証拠、停止条件、権限を
-work itemへ分ける。catalog一覧で方法本文はまだ取得せず、headerの`applies_when`、
-`exclusions`、`inputs`、`outputs`、`criteria`だけで`dotnet_change_analysis`を選ぶ。
-model routingは各work itemの必要能力を評価し、利用可能な低レベルmodelで満たせる
-単位に分ける。Skill自身にmodel名やtierを保存しない。
+The parent first opens an instruction-backed Workflow and separates deliverables,
+evidence, stop conditions, and authority into work items. It does not retrieve
+the method body from the catalog yet; it selects `dotnet_change_analysis` using
+only the header's `applies_when`, `exclusions`, `inputs`, `outputs`, and
+`criteria`. Model routing evaluates the requirements of each work item and
+splits work into units that an available low-level model can satisfy. The Skill
+itself does not store a model name or tier.
 
-## 実行時に注入する情報
+## Information Injected at Runtime
 
 The following values are an example of the instruction-derived Workflow
 Runtime Binding. Their meanings and ownership come from [Workflow Runtime
 Binding](../core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F);
 this example does not add SkillDefinition semantics.
 
-この指示では、親が次を確定してSkill runを開く。
+For this instruction, the parent fixes the following values before opening the
+Skill run.
 
-| runtime field | この例の値 |
+| runtime field | value in this example |
 |---|---|
 | `capability` | `.NET repository structure and impact inspection` |
 | `tuning` | `DI lifetime and attribute-binding evidence; preserve unknown` |
@@ -61,7 +67,7 @@ this example does not add SkillDefinition semantics.
 ```powershell
 python -m xrefkit skill run `
   --definition skills/dotnet_change_analysis/SKILL.v1.md `
-  --task "OrderServiceの変更前分析" `
+  --task "Pre-change analysis of OrderService" `
   --capability ".NET repository structure and impact inspection" `
   --tuning "DI lifetime and attribute-binding evidence; preserve unknown" `
   --responsibility "produce the scoped note; do not decide implementation policy" `
@@ -69,53 +75,64 @@ python -m xrefkit skill run `
   --json
 ```
 
-runは定義のpath / XID / SHA-256とWorkflow Runtime Bindingを固定する。
-`ExecutionBinding`はdefinition identityとruntime bindingを別項目としてrunから転記し、
-後者の`capability` / `tuning` / `responsibility`を再解釈していないことを確認する。
-subagent readerは定義本文を渡す直前にも同じrevisionを確認する。
+The run fixes the definition path, XID, SHA-256, and Workflow Runtime Binding.
+`ExecutionBinding` copies definition identity and runtime binding from the run as
+separate fields and verifies that it has not reinterpreted the latter's
+`capability` / `tuning` / `responsibility`. The subagent reader verifies the same
+revision immediately before receiving the definition body.
 
-## Knowledgeの選択
+## Knowledge Selection
 
-headerの`knowledge_needs`は本文ではなく検索要求である。親は`required_when`を今回の
-指示へ適用し、必要なneed IDだけを`active_need_ids`として渡す。この例では少なくとも
-次をactiveにする。
+The header's `knowledge_needs` is a search request rather than the body itself.
+The parent applies `required_when` to the current instruction and passes only the
+needed need IDs as `active_need_ids`. This example activates at least the
+following:
 
 - `common_source_analysis_criteria`
 - `dotnet_change_analysis_viewpoints`
 - `structure_analysis_determinism_tiers`
-- `structure_graph_tm_backstop`（DI lifetimeをgrepだけで確定できない場合）
+- `structure_graph_tm_backstop` (when DI lifetime cannot be established from grep alone)
 
-`custom_framework_common_criteria`はcustom frameworkの存在が観測された時点でactiveに
-する。条件をまだ評価していない場合、resolverは`unresolved_activation`を返し、必要性を
-勝手にfalseへしない。active needはseed XIDを入口にcatalogを検索し、本文は必要な時点で
-`get_document_by_xid`により取得する。
+Activate `custom_framework_common_criteria` when the presence of a custom
+framework is observed. If the condition has not yet been evaluated, the
+resolver returns `unresolved_activation` and does not silently set the need to
+false. Active needs search the catalog from their seed XID, and the body is
+retrieved with `get_document_by_xid` when needed.
 
-## subagentへの分割
+## Subagent Decomposition
 
-親は仕事全体を移譲せず、相互に独立して読める調査作業を渡す。
+The parent does not delegate the entire job; it assigns independently readable
+investigation tasks.
 
-| work item | subagent責任 | 完了証拠 |
+| work item | subagent responsibility | completion evidence |
 |---|---|---|
-| `WI-DI` | registration site、lifetime、依存方向を収集 | pathと検索/解析command |
-| `WI-ROUTE` | attribute routeとconsumerを追跡 | producer/consumer/tokenの対応 |
-| `WI-IMPACT` | review boundaryとmust-change boundaryを分離 | reference inventoryと分類根拠 |
-| `WI-NOTE` |上記を統合しnoteを作る | output pathとcriterion対応 |
+| `WI-DI` | collect the registration site, lifetime, and dependency direction | path and search/analysis command |
+| `WI-ROUTE` | trace the attribute route and consumers | producer/consumer/token mapping |
+| `WI-IMPACT` | separate the review boundary from the must-change boundary | reference inventory and classification grounds |
+| `WI-NOTE` | integrate the above into a note | output path and criterion mapping |
 
-各subagentは同じ定義revisionと、自分のscope、stop condition、active Knowledgeだけを受け取る。
-親は結果を統合し、別roleのcheckerがWorkflow recordとSkill固有criteriaを検査する。
+Each subagent receives the same definition revision, its own scope, stop
+condition, and active Knowledge only. The parent integrates the results, and a
+checker in a separate role inspects the Workflow record and Skill-specific
+criteria.
 
-## エスカレーションの置き場所
+## Where Escalation Belongs
 
-共通条件はWorkflow/guard/unknown contractで統一する。たとえば権限不足、必要証拠の欠落、
-scope変更、retry上限、人の採用判断はSkill本文へ複製しない。Skill固有条件は方法に残す。
-この例では、custom frameworkのactivation mechanismを確認できない、実装方針の決定が
-必要、suspected defect/security issueが見つかった、既存構造自体を修復対象へ広げる必要が
-ある場合が該当する。前二者は`unknown`または人への判断要求、後二者はそれぞれ
-`csharp_review` / `security_review`またはscope拡張判断へのhandoffとして記録する。
+Common conditions use the Workflow, guard, and unknown contracts consistently.
+Insufficient authority, missing required evidence, scope changes, retry limits,
+and human adoption decisions are not duplicated in the Skill body. Skill-specific
+conditions remain in the method. In this example, the applicable conditions are
+an unverified custom-framework activation mechanism, a need to decide
+implementation policy, a suspected defect or security issue, or a need to
+expand the existing structure into the repair scope. Record the first two as
+an `unknown` or a request for human judgment; record the latter two as a
+handoff to `csharp_review` / `security_review` or to a scope-expansion decision.
 
-## 完了境界
+## Completion Boundary
 
-Skill固有criteriaは定義headerにあり、Workflowはwork item、artifact、evidence、role分離、
-unknown/riskの解決またはescalationを検査する。AIのcheck成功は出力内容の採用を意味しない。
-人がnoteを確認し、次のdesign/implementationで使うかを決める。tracked v1の存在は
-自動adoptionやmaturityの昇格を意味せず、legacy本文は引き続き読取可能である。
+Skill-specific criteria are in the definition header. The Workflow inspects work
+items, artifacts, evidence, role separation, and resolution or escalation of
+unknown/risk. A successful AI check does not mean that the output is adopted.
+A person reviews the note and decides whether to use it for the next design or
+implementation. The existence of tracked v1 does not automatically adopt it or
+promote its maturity, and the legacy body remains readable.

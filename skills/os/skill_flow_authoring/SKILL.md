@@ -276,7 +276,7 @@ python -m xrefkit skill check --meta <path-to-skill>/meta.md --level trial
 - Do not leave continuity-critical information implicit when it can be recorded
   structurally.
 
-## Reporting Contract (共通報告)
+## Reporting Contract (Common Report)
 
 
 
@@ -287,7 +287,7 @@ Use the shared [Skill Reporting Contract](../../../docs/core/contracts/081_skill
 1. Status — done, partial, blocked, or escalated
 2. Result — what was produced or decided
 3. Evidence — output, evidence, checks, or XIDs
-4. Open Items — unresolved unknowns, risks, judgments, or なし
-5. Handoff — next owner and next action, or なし
+4. Open Items — unresolved unknowns, risks, judgments, or none
+5. Handoff — next owner and next action, or none
 
 Keep this summary-first section visible before Skill-specific detail; do not omit empty sections.
