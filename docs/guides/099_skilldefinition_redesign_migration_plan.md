@@ -54,6 +54,7 @@ productionの既定sourceを切り替えるadoptionを分ける。前者は検�
 | `security_review` | [7C4E9A2D1F60](../../skills/security_review/SKILL.v1.md#xid-7C4E9A2D1F60) | evidence、security viewpoints、unknown、handoff | explicit `--definition`; legacy kept |
 | `editorial_intake` | [7C4E9A2D6F81](../../skills/packs/editorial-ops/editorial_intake/SKILL.v1.md#xid-7C4E9A2D6F81) | context boundary、reader capability、publication stop | explicit `--definition`; legacy kept |
 | editorial-ops family | [C8E1A6D3B270](../../skills/packs/editorial-ops/editorial_ops_index/SKILL.v1.md#xid-C8E1A6D3B270) | 6/6 Skills、evidence review、reader review、human publication authority | explicit `--definition`; legacy kept |
+| simple top-level batch | [D4A7C91E2B60](../../skills/requirements_flow/SKILL.v1.md#xid-D4A7C91E2B60) | 8/8 Skills、review/planning/traceability、human decision boundaries | explicit `--definition`; legacy kept |
 
 各tracked v1は新しいown XIDを持ち、旧本文XIDと旧meta XIDを`aliases`に保持する。
 外部governance recordがないため、明示実行時のmaturityは`unassessed`である。
