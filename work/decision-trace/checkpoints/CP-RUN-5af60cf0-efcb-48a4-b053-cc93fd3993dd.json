@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-5af60cf0-efcb-48a4-b053-cc93fd3993dd",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-09-18T12:03:38Z",
+  "git_commit": "d8f35a7c3012f6802776220b1d555f41d35d65e2",
+  "purpose": "before AI workflow run 5af60cf0-efcb-48a4-b053-cc93fd3993dd",
+  "work_item_id": "WI-design-intake-v1",
+  "run_id": "5af60cf0-efcb-48a4-b053-cc93fd3993dd",
+  "context_policy": "current-only",
+  "human_approved": false
+}
