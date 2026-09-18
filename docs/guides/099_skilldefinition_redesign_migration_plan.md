@@ -59,6 +59,7 @@ productionの既定sourceを切り替えるadoptionを分ける。前者は検�
 | medium OS batch | [F8A2C6D1B370](../../skills/os/knowledge_ontology_management/SKILL.v1.md#xid-F8A2C6D1B370) | 5/5 Skills、goal continuity、migration、research、canonical publication boundaries | explicit `--definition`; legacy kept |
 | implementation and review batch | [D7B4E9A2C610](../../skills/implementation_flow/SKILL.v1.md#xid-D7B4E9A2C610) | 7/7 Skills、bounded implementation/test、language review、QA gate、report composition boundaries | explicit `--definition`; legacy kept |
 | design planning and business-intake batch | [6A4F8C2D1E70](../../skills/design_flow/SKILL.v1.md#xid-6A4F8C2D1E70) | 6/6 Skills、planning/design approval、goal-first learning、provisional scoping、evidence-bound conversation analysis | explicit `--definition`; legacy kept |
+| final brownfield DB catalog batch | [E1A7C4D9B260](../../skills/brownfield-workflow/SKILL.v1.md#xid-E1A7C4D9B260) | 9/9 Skills、source/DB evidence、safe deterministic regression、catalog publication、Skill/Flow authoring boundaries | explicit `--definition`; legacy kept |
 
 各tracked v1は新しいown XIDを持ち、旧本文XIDと旧meta XIDを`aliases`に保持する。
 外部governance recordがないため、明示実行時のmaturityは`unassessed`である。
