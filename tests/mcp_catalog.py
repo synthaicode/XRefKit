@@ -961,16 +961,23 @@ Duplicate external body.
             {reference["xid"]: reference["content_hash"] for reference in context["references"]},
         )
         self.assertIn("# Startup Contract Pack v1", pack["body"])
-        self.assertIn(
-            'python -m xrefkit skill run --meta <path-to-meta.md> --task "<task>" --json',
-            pack["body"],
-        )
+        self.assertIn("Start a Skill Run with the returned runtime envelope", pack["body"])
         self.assertEqual(
             pack["pack_hash"],
             hashlib.sha256(pack["body"].encode("utf-8")).hexdigest(),
         )
-        self.assertIn("python -m xrefkit skill verify --log <run-log>", pack["body"])
-        self.assertIn("python -m xrefkit xref search \"<query>\"", pack["body"])
+        self.assertIn("prompt_flow_protocol", pack["body"])
+        self.assertIn("workflow_protocol", pack["body"])
+        self.assertIn("reporting_protocol", pack["body"])
+        self.assertIn("separate response", pack["body"])
+        self.assertNotIn("python -m xrefkit skill workitem", pack["body"])
+        self.assertNotIn("python -m xrefkit skill artifact", pack["body"])
+        self.assertNotIn("python -m xrefkit skill concern", pack["body"])
+        self.assertNotIn("python -m xrefkit skill phase", pack["body"])
+        self.assertNotIn("python -m xrefkit skill verify", pack["body"])
+        self.assertNotIn("python -m xrefkit skill close", pack["body"])
+        self.assertNotIn("workflow reconcile", pack["body"])
+        self.assertNotIn("### Status", pack["body"])
         self.assertIn("Stop and escalate", pack["body"])
         self.assertEqual(context["references"][0]["layer"], "base_control")
         self.assertNotIn("reason", context["references"][0])
