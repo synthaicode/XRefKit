@@ -36,6 +36,7 @@ _MCP_KNOWLEDGE = {
     "catalog_tool": "search_knowledge_catalog",
     "resolve_tool": "get_document_by_xid",
 }
+INITIAL_PROTOCOLS = ("prompt_flow", "workflow", "reporting")
 
 
 def _fail(message: str) -> None:
@@ -77,11 +78,11 @@ def _validate_request(request: Any) -> dict[str, Any]:
     _strings(request["scope_in"], "scope_in")
     _strings(request["scope_out"], "scope_out", empty=True)
     _strings(request["stop_conditions"], "stop_conditions")
-    protocols = _strings(request["protocols"], "protocols")
+    protocols = _strings(request["protocols"], "protocols", empty=True)
     if len(set(protocols)) != len(protocols):
         _fail("protocols contains duplicates")
-    if "workflow" not in protocols or set(protocols) - {"workflow", "reporting"}:
-        _fail("protocols must include workflow and contain only workflow/reporting")
+    if set(protocols) - set(INITIAL_PROTOCOLS):
+        _fail("protocols must contain only prompt_flow, workflow, or reporting")
     if not isinstance(request["knowledge_access"], dict):
         _fail("knowledge_access must be an object")
     source = request["source_mode"]

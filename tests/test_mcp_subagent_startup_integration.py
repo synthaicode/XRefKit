@@ -46,12 +46,14 @@ def test_stdio_startup_receipt_and_reference(tmp_path, protocols, skill_id):
     doc = catalog.get_document_by_xid("8A666C1FD121")
     if hasattr(doc, "to_dict"):
         doc = doc.to_dict()
+    # Legacy --initial-protocol include semantics always retain prompt_flow.
+    selected_protocols = ["prompt_flow", *protocols]
     binding = {
         "schema_version": 1, "source_mode": "mcp", "run_id": run["run_id"],
         "work_item_id": "WI-1", "purpose": "MCP integration", "capability": "read",
         "tuning": "bounded", "responsibility": "verify receipt", "scope_in": ["reference"],
         "scope_out": ["execution"], "stop_conditions": ["invalid context"],
-        "protocols": protocols, "repository_fingerprint": catalog.repository_fingerprint,
+        "protocols": selected_protocols, "repository_fingerprint": catalog.repository_fingerprint,
         "knowledge_access": {"mode": "on_demand", "catalog_tool": "search_knowledge_catalog",
                              "resolve_tool": "get_document_by_xid"},
         "references": [{"xid": doc["xid"], "content_hash": doc["content_hash"]}],
@@ -81,7 +83,7 @@ def test_stdio_startup_receipt_and_reference(tmp_path, protocols, skill_id):
                     return await read_mcp_subagent_startup(log, binding, call)
     result = asyncio.run(scenario())
     assert result["state"] == "materialized"
-    assert result["initial_protocol_selection"]["selected"] == protocols
+    assert result["initial_protocol_selection"]["selected"] == selected_protocols
     assert result["knowledge_access"]["body_loaded"] is False
     assert calls == ["get_startup_context", "bind_skill_run", *(
         ["get_skill"] if skill_id != "instruction" else []), "get_document_by_xid"]
@@ -134,7 +136,7 @@ def test_stdio_definition_startup_uses_one_exact_document(tmp_path):
         "tuning": "bounded", "responsibility": "produce analysis",
         "instruction_basis": "integration test", "scope_in": ["definition"],
         "scope_out": ["publication"], "stop_conditions": ["invalid context"],
-        "protocols": ["workflow"], "repository_fingerprint": catalog.repository_fingerprint,
+        "protocols": ["prompt_flow", "workflow"], "repository_fingerprint": catalog.repository_fingerprint,
         "knowledge_access": {"mode": "on_demand", "catalog_tool": "search_knowledge_catalog",
                              "resolve_tool": "get_document_by_xid"},
     })

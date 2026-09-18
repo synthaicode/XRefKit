@@ -55,11 +55,34 @@ Markdown directly from the local filesystem.
 | 6 | MCP | `get_document_by_xid` | Resolve only needed transferred links by XID. |
 | 7 | MCP | Skill and workflow catalog tools | Route task-specific work after initialization. |
 
-The MCP server may be started with one or more repeatable
-`--initial-protocol workflow|reporting` parameters. When omitted, both
-protocols are included in `get_startup_context`. The response exposes the
-selected protocol bodies as `workflow_protocol` and `reporting_protocol`, plus
-`initial_protocol_selection`; an unselected protocol is returned as `null`.
+The client selects startup protocols at MCP `initialize` time through the
+`xrefkit.excluded_protocols` extension. The extension value is a list of
+protocol names from `prompt_flow`, `workflow`, and `reporting`:
+
+```json
+{
+  "capabilities": {},
+  "xrefkit": {
+    "excluded_protocols": ["reporting"]
+  }
+}
+```
+
+An omitted extension, or an empty list, selects all three protocols. The
+server response records the effective choice in `initial_protocol_selection`
+and returns one body for each selected protocol (`prompt_flow_protocol`,
+`workflow_protocol`, and `reporting_protocol`); every excluded body is `null`.
+All three names may be excluded. `startup_contract_pack` remains mandatory and
+is outside this selection even when no optional protocol body is returned.
+The client validates this body/null shape against
+`initial_protocol_selection.selected` and retains that selection object in its
+startup result and receipt.
+
+The legacy `xrefkit.initial_protocols` initialize extension remains accepted
+for compatibility. Its include list applies only to `workflow` and
+`reporting`; `prompt_flow` remains selected automatically. A client must not
+send both extensions in one initialize request. The exclusion extension is
+canonical for new clients.
 
 The Skill catalog is a routing surface, not an execution-tool manifest:
 

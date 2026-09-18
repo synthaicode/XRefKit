@@ -301,7 +301,7 @@ class StartupContext:
     link_resolution: dict[str, str]
     load_order: list[str]
     startup_contract_pack: dict[str, Any]
-    prompt_flow_protocol: dict[str, Any]
+    prompt_flow_protocol: dict[str, Any] | None
     workflow_protocol: dict[str, Any] | None
     reporting_protocol: dict[str, Any] | None
     initial_protocol_selection: dict[str, Any]

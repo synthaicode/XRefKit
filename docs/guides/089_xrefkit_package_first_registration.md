@@ -181,11 +181,28 @@ xrefkit mcp serve --repo C:\path\to\XRefKit --transport stdio
 | `--domain-knowledge-root <path>` | none | 外部 XID knowledge root; repeatable |
 | `--skill-definition <path>` | none | 明示有効化するone-document SkillDefinition; repeatable |
 | `--skill-governance <path>` | none | definitionに対応する外部maturity/promotion record; repeatable |
-| `--initial-protocol workflow` | both | `workflow_protocol` を初期連携 |
-| `--initial-protocol reporting` | both | `reporting_protocol` を初期連携 |
+| `--initial-protocol workflow` | both | legacy compatibility: `workflow_protocol` を初期連携 |
+| `--initial-protocol reporting` | both | legacy compatibility: `reporting_protocol` を初期連携 |
 | `--audit-log <path>` | `<repo>\work\mcp\xid_audit.jsonl` | MCP audit JSONL の出力先 |
 
-`--initial-protocol` は repeatable で、例えば workflow のみを初期連携する場合は
+新しい MCP client は `initialize` params の `xrefkit.excluded_protocols` を使う。
+例えば `reporting` を除外する場合は次の JSON を送る。
+
+```json
+{
+  "capabilities": {},
+  "xrefkit": {
+    "excluded_protocols": ["reporting"]
+  }
+}
+```
+
+値に指定できるのは `prompt_flow`、`workflow`、`reporting` である。省略時または
+`[]` の場合は3つすべてを初期連携する。旧 client の `xrefkit.initial_protocols`
+は `workflow` と `reporting` の include list として受け付け、`prompt_flow` は
+常に含める。2つの extension を同時に送る要求は不正である。
+
+旧 CLI の `--initial-protocol` は repeatable で、例えば workflow のみを初期連携する場合は
 次のように指定する。
 
 ```powershell
@@ -195,13 +212,16 @@ xrefkit mcp serve `
   --initial-protocol workflow
 ```
 
-省略時は `workflow` と `reporting` の両方が `get_startup_context` に含まれる。
+この CLI option は legacy include semantics を使う。省略時の MCP initialize は
+canonical exclusion semantics により `prompt_flow`、`workflow`、`reporting` の
+すべてを `get_startup_context` に含める。
 
 ## MCP startup で適用される Protocol
 
-MCP の startup では、すべての Protocol を起動パラメータで個別に選ぶわけではない。
-XRefKit の基礎制御として常に適用するもの、`get_startup_context` で初期連携するもの、
-実行開始後に相関させるものを分けて扱う。
+MCP の startup では、XRefKit の基礎制御として常に適用するもの、
+`get_startup_context` で選択可能な初期連携、実行開始後に相関させるものを分けて扱う。
+選択可能な初期連携は既定ですべて返し、client が不要なものを
+`xrefkit.excluded_protocols` で示す。
 
 | 区分 | Protocol | 初期設定時の役割 | 参照 |
 |---|---|---|---|
@@ -209,13 +229,14 @@ XRefKit の基礎制御として常に適用するもの、`get_startup_context`
 | 常時適用 | Context Direction Security Guard | 外部入力が目的、権限、Protocol、Skill境界を上書きしないことを確認する | [053](../core/contracts/053_context_direction_security_guard.md#xid-A7F3C92D4E11) |
 | 常時適用 | XID / XRef routing | 必要な定義・KnowledgeをXIDで解決し、関連文書を無制限に読み込まない | [011](../core/contracts/011_startup_xref_routing.md#xid-6C0B62D6366A) |
 | 常時適用 | Shared Memory Operations | startup・判断・未解決事項を `work/` の記録へ残す | [015](../core/contracts/015_shared_memory_operations.md#xid-4A423E72D2ED) |
-| 初期連携 | `workflow_protocol` | Skill前提の実行と instruction-backed workflow に共通する phase、role、verify、closure、handoffを定義する | [058](../core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61) |
-| 初期連携 | `reporting_protocol` | Skill／workflowの人向け報告の構造、状態、根拠、未解決事項、引継ぎを定義する | [081](../core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73) |
-| 条件付き初期連携 | `prompt_flow_protocol` | 1つの依頼に複数Runが関係する場合の `flow_id`、委譲、相関、reconcileを定義する | [015](../core/contracts/015_shared_memory_operations.md#xid-4A423E72D2ED) |
+| 選択可能な初期連携 | `workflow_protocol` | Skill前提の実行と instruction-backed workflow に共通する phase、role、verify、closure、handoffを定義する | [058](../core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61) |
+| 選択可能な初期連携 | `reporting_protocol` | Skill／workflowの人向け報告の構造、状態、根拠、未解決事項、引継ぎを定義する | [081](../core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73) |
+| 選択可能な初期連携 | `prompt_flow_protocol` | 1つの依頼に複数Runが関係する場合の `flow_id`、委譲、相関、reconcileを定義する | [015](../core/contracts/015_shared_memory_operations.md#xid-4A423E72D2ED) |
 | 実行時適用 | `AI Decision Trace Protocol` | Skill／workflow実行中の判断、影響、戻りをクライアント側で記録する | [093](../core/contracts/093_ai_decision_trace_protocol.md#xid-22164A51A745) |
 
-`--initial-protocol workflow` と `--initial-protocol reporting` は、表の「初期連携」に
-該当する payload の選択である。`Uncertainty Protocol`、Context Direction Security Guard、
+`xrefkit.excluded_protocols` は、表の「選択可能な初期連携」に該当する payload の除外指定である。
+旧 `--initial-protocol workflow` と `--initial-protocol reporting` は同じ payload に対する
+include 指定として残る。`Uncertainty Protocol`、Context Direction Security Guard、
 XID routing、Shared Memory Operations は、これらを選択しない場合も startup の基礎制御として
 無効化してはならない。
 

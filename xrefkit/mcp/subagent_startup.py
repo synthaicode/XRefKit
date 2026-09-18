@@ -33,6 +33,7 @@ KNOWLEDGE_ACCESS = {
     "mode": "on_demand", "catalog_tool": "search_knowledge_catalog",
     "resolve_tool": "get_document_by_xid",
 }
+INITIAL_PROTOCOLS = ("prompt_flow", "workflow", "reporting")
 
 
 class McpSubagentStartupError(ValueError):
@@ -68,8 +69,8 @@ def _strings(value: Any, name: str, *, empty: bool = False) -> list[str]:
     return value
 
 
-def _unique(value: Any, name: str) -> list[str]:
-    values = _strings(value, name)
+def _unique(value: Any, name: str, *, empty: bool = False) -> list[str]:
+    values = _strings(value, name, empty=empty)
     if len(set(values)) != len(values):
         _bad(f"{name} contains duplicates")
     return values
@@ -90,9 +91,9 @@ def _validate_binding(binding: dict) -> None:
             _bad(f"binding requires {key}")
     for key in ("scope_in", "scope_out", "stop_conditions"):
         _strings(binding.get(key), key, empty=key == "scope_out")
-    protocols = _unique(binding.get("protocols"), "protocols")
-    if "workflow" not in protocols or set(protocols) - {"workflow", "reporting"}:
-        _bad("opened workflow requires workflow; only workflow/reporting are supported")
+    protocols = _unique(binding.get("protocols"), "protocols", empty=True)
+    if set(protocols) - set(INITIAL_PROTOCOLS):
+        _bad("protocols must contain only prompt_flow, workflow, or reporting")
     if binding.get("knowledge_access") != KNOWLEDGE_ACCESS:
         _bad("invalid MCP knowledge_access")
     refs = binding.get("references", [])
@@ -196,7 +197,9 @@ async def read_mcp_subagent_startup(
     if policy.get("mode") != "mcp_only" or startup.get("missing") != []:
         _bad("invalid or incomplete MCP startup")
     selection = _object(startup.get("initial_protocol_selection"), "protocol selection")
-    selected = _unique(selection.get("selected"), "selected protocols")
+    selected = _unique(selection.get("selected"), "selected protocols", empty=True)
+    if set(selected) - set(INITIAL_PROTOCOLS):
+        _bad("protocol selection contains an unsupported protocol")
     if set(selected) != set(binding["protocols"]):
         _bad("protocol selection mismatch")
     pack = _object(startup.get("startup_contract_pack"), "startup_contract_pack")
@@ -212,9 +215,10 @@ async def read_mcp_subagent_startup(
              content_hash=pack["pack_hash"])
     for name in ("prompt_flow_protocol", "workflow_protocol", "reporting_protocol"):
         protocol = startup.get(name)
-        if name == "reporting_protocol" and "reporting" not in selected:
+        protocol_name = name.removesuffix("_protocol")
+        if protocol_name not in selected:
             if protocol is not None:
-                _bad("unselected reporting protocol present")
+                _bad(f"unselected {name} present")
             continue
         protocol = _object(protocol, name)
         if protocol.get("version") != "1":

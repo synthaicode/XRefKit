@@ -28,7 +28,7 @@ def _binding(run_id, *, protocols=None, refs=None, skill=False):
         "run_id": run_id, "work_item_id": "WI-1", "purpose": "adapter test",
         "capability": "testing", "tuning": "bounded", "responsibility": "verify",
         "scope_in": ["tests/test_mcp_subagent_startup.py"], "scope_out": ["publication"],
-        "stop_conditions": ["contract failure"], "protocols": protocols or ["workflow"],
+        "stop_conditions": ["contract failure"], "protocols": ["workflow"] if protocols is None else protocols,
         "knowledge_access": {"mode": "on_demand", "catalog_tool": "search_knowledge_catalog",
                               "resolve_tool": "get_document_by_xid"},
         "references": refs or [],
@@ -43,7 +43,9 @@ def _context(binding, *, stale=False):
             "access_policy": {"mode": "mcp_only"}, "missing": [],
             "initial_protocol_selection": {"selected": binding["protocols"], "source": "test"},
             "startup_contract_pack": pack, "load_order": ["ABCDEF123456"],
-            "workflow_protocol": {"version": "1"}, "prompt_flow_protocol": {"version": "1", "reconciliation": {"default": "report_only"}},
+            "workflow_protocol": {"version": "1"} if "workflow" in binding["protocols"] else None,
+            "prompt_flow_protocol": ({"version": "1", "reconciliation": {"default": "report_only"}}
+                                     if "prompt_flow" in binding["protocols"] else None),
             "reporting_protocol": {"version": "1"} if "reporting" in binding["protocols"] else None}
 
 
@@ -359,3 +361,92 @@ def test_optional_references_and_reordered_selection(tmp_path):
     result = asyncio.run(read_mcp_subagent_startup(log, binding, call))
     assert result["state"] == "materialized"
     assert result["initial_protocol_selection"]["selected"] == ["reporting", "workflow"]
+
+
+def test_canonical_selection_accepts_all_three_and_preserves_receipt(tmp_path):
+    log, run_id = _run_log(tmp_path)
+    binding = _binding(run_id, protocols=["prompt_flow", "workflow", "reporting"])
+
+    async def call(name, args):
+        if name == "get_startup_context":
+            reply = _context(binding)
+            reply["initial_protocol_selection"] = {
+                "available": ["prompt_flow", "workflow", "reporting"],
+                "selected": ["prompt_flow", "workflow", "reporting"],
+                "excluded": [], "source": "initialize", "selection_mode": "exclude",
+            }
+            return reply
+        assert name == "bind_skill_run"
+        return {**args, "repository_fingerprint": "repo-fp", "mcp_session_id": "session",
+                "audit_enabled": True}
+
+    result = asyncio.run(read_mcp_subagent_startup(log, binding, call))
+    assert result["initial_protocol_selection"]["selection_mode"] == "exclude"
+    assert result["receipt"]["selection"] == result["initial_protocol_selection"]
+
+
+def test_excluded_prompt_flow_may_be_null(tmp_path):
+    log, run_id = _run_log(tmp_path)
+    binding = _binding(run_id, protocols=["workflow", "reporting"])
+
+    async def call(name, args):
+        if name == "get_startup_context":
+            reply = _context(binding)
+            reply["initial_protocol_selection"] = {
+                "available": ["prompt_flow", "workflow", "reporting"],
+                "selected": ["workflow", "reporting"],
+                "excluded": ["prompt_flow"], "source": "initialize", "selection_mode": "exclude",
+            }
+            return reply
+        assert name == "bind_skill_run"
+        return {**args, "repository_fingerprint": "repo-fp", "mcp_session_id": "session",
+                "audit_enabled": True}
+
+    result = asyncio.run(read_mcp_subagent_startup(log, binding, call))
+    assert result["documents"][-2]["kind"] == "workflow_protocol"
+    assert result["initial_protocol_selection"]["excluded"] == ["prompt_flow"]
+
+
+def test_all_protocols_excluded_allows_empty_selection(tmp_path):
+    log, run_id = _run_log(tmp_path)
+    binding = _binding(run_id, protocols=[])
+
+    async def call(name, args):
+        if name == "get_startup_context":
+            reply = _context(binding)
+            reply["initial_protocol_selection"] = {
+                "available": ["prompt_flow", "workflow", "reporting"],
+                "selected": [], "excluded": ["prompt_flow", "workflow", "reporting"],
+                "source": "initialize", "selection_mode": "exclude",
+            }
+            return reply
+        assert name == "bind_skill_run"
+        return {**args, "repository_fingerprint": "repo-fp", "mcp_session_id": "session",
+                "audit_enabled": True}
+
+    result = asyncio.run(read_mcp_subagent_startup(log, binding, call))
+    assert result["initial_protocol_selection"]["selected"] == []
+    assert [doc["kind"] for doc in result["documents"]] == ["startup_contract_pack"]
+
+
+def test_legacy_selection_receipt_keeps_prompt_flow(tmp_path):
+    log, run_id = _run_log(tmp_path)
+    binding = _binding(run_id, protocols=["prompt_flow", "workflow"])
+
+    async def call(name, args):
+        if name == "get_startup_context":
+            reply = _context(binding)
+            reply["initial_protocol_selection"] = {
+                "available": ["prompt_flow", "workflow", "reporting"],
+                "selected": ["prompt_flow", "workflow"],
+                "excluded": ["reporting"], "source": "initialize",
+                "selection_mode": "legacy_include",
+            }
+            return reply
+        assert name == "bind_skill_run"
+        return {**args, "repository_fingerprint": "repo-fp", "mcp_session_id": "session",
+                "audit_enabled": True}
+
+    result = asyncio.run(read_mcp_subagent_startup(log, binding, call))
+    assert result["initial_protocol_selection"]["selected"] == ["prompt_flow", "workflow"]
+    assert result["receipt"]["selection"]["selection_mode"] == "legacy_include"

@@ -37,6 +37,18 @@ def test_build_local_and_read_without_inheriting_skill_triad(startup):
     assert materialized["binding"]["instruction_basis"] == "User requested bounded analysis"
 
 
+@pytest.mark.parametrize("protocols", [
+    [], ["prompt_flow"], ["workflow"], ["reporting"],
+    ["prompt_flow", "workflow", "reporting"],
+])
+def test_binding_accepts_each_effective_protocol_selection(startup, protocols):
+    _, log, _, manual = startup
+    request = request_for(manual)
+    request["protocols"] = protocols
+    binding = build_execution_binding(log, request)
+    assert binding["protocols"] == protocols
+
+
 @pytest.mark.parametrize("key,value", [
     ("capability", ""), ("instruction_basis", ""), ("protocols", ["workflow", {}]),
     ("scope_in", []), ("source_mode", "other"), ("run_id", "injected"),

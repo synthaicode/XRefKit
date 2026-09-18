@@ -984,6 +984,8 @@ class XRefCatalog:
         self,
         known_document_versions: dict[str, str] | None = None,
         initial_protocols: list[str] | None = None,
+        excluded_protocols: list[str] | None = None,
+        selection_source: str | None = None,
     ) -> dict:
         known_document_versions = known_document_versions or {}
         references: list[StartupReference] = []
@@ -1059,7 +1061,12 @@ class XRefCatalog:
                 "the live sources with get_document_by_xid, and escalate to "
                 "the repository maintainers to regenerate the pack.",
             ]
-        selected_protocols = _normalize_initial_protocols(initial_protocols)
+        selected_protocols, protocol_selection = _select_initial_protocols(
+            initial_protocols=initial_protocols,
+            excluded_protocols=excluded_protocols,
+        )
+        if selection_source is not None:
+            protocol_selection["source"] = selection_source
         return StartupContext(
             catalog_version=self.catalog_version,
             repository_identity=self.get_repository_identity(),
@@ -1111,18 +1118,16 @@ class XRefCatalog:
             },
             load_order=[reference.xid for reference in references],
             startup_contract_pack=startup_contract_pack,
-            prompt_flow_protocol=_prompt_flow_protocol(),
+            prompt_flow_protocol=(
+                _prompt_flow_protocol() if "prompt_flow" in selected_protocols else None
+            ),
             workflow_protocol=(
                 _workflow_protocol() if "workflow" in selected_protocols else None
             ),
             reporting_protocol=(
                 _reporting_protocol() if "reporting" in selected_protocols else None
             ),
-            initial_protocol_selection={
-                "available": ["workflow", "reporting"],
-                "selected": selected_protocols,
-                "default": ["workflow", "reporting"],
-            },
+            initial_protocol_selection=protocol_selection,
             references=references,
             semantic_routing_references=_semantic_routing_references(),
             missing=missing,
@@ -2666,17 +2671,62 @@ def _reporting_protocol() -> dict[str, object]:
     }
 
 
-def _normalize_initial_protocols(initial_protocols: list[str] | None) -> list[str]:
-    if initial_protocols is None:
-        return ["workflow", "reporting"]
-    selected = list(dict.fromkeys(initial_protocols))
-    invalid = [item for item in selected if item not in {"workflow", "reporting"}]
+_AVAILABLE_PROTOCOLS = ["prompt_flow", "workflow", "reporting"]
+
+
+def _normalize_protocol_names(value: object, field: str) -> list[str]:
+    if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+        raise ValueError(f"{field} must be a list of protocol names")
+    selected = list(dict.fromkeys(value))
+    invalid = [item for item in selected if item not in _AVAILABLE_PROTOCOLS]
     if invalid:
         raise ValueError(
-            "initial_protocols must contain only workflow or reporting: "
+            f"{field} must contain only prompt_flow, workflow, or reporting: "
             + ", ".join(invalid)
         )
     return selected
+
+
+def _select_initial_protocols(
+    *,
+    initial_protocols: list[str] | None,
+    excluded_protocols: list[str] | None,
+) -> tuple[list[str], dict[str, object]]:
+    if initial_protocols is not None and excluded_protocols is not None:
+        raise ValueError("initial_protocols and excluded_protocols cannot be used together")
+    if excluded_protocols is not None:
+        excluded = _normalize_protocol_names(excluded_protocols, "excluded_protocols")
+        selected = [name for name in _AVAILABLE_PROTOCOLS if name not in excluded]
+        return selected, {
+            "available": list(_AVAILABLE_PROTOCOLS),
+            "selected": selected,
+            "excluded": excluded,
+            "default": list(_AVAILABLE_PROTOCOLS),
+            "source": "initialize",
+            "selection_mode": "exclude",
+        }
+    if initial_protocols is not None:
+        legacy = _normalize_protocol_names(initial_protocols, "initial_protocols")
+        if "prompt_flow" in legacy:
+            raise ValueError("initial_protocols supports only workflow or reporting")
+        selected = ["prompt_flow", *[name for name in ("workflow", "reporting") if name in legacy]]
+        return selected, {
+            "available": list(_AVAILABLE_PROTOCOLS),
+            "selected": selected,
+            "excluded": [name for name in _AVAILABLE_PROTOCOLS if name not in selected],
+            "default": ["workflow", "reporting"],
+            "source": "initialize",
+            "selection_mode": "legacy_include",
+        }
+    selected = list(_AVAILABLE_PROTOCOLS)
+    return selected, {
+        "available": list(_AVAILABLE_PROTOCOLS),
+        "selected": selected,
+        "excluded": [],
+        "default": list(_AVAILABLE_PROTOCOLS),
+        "source": "default",
+        "selection_mode": "exclude",
+    }
 
 
 def _context_injection_policy() -> dict[str, object]:

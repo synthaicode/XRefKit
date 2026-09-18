@@ -210,9 +210,17 @@ local binding の必須責任フィールドは同じで、MCP では次の項�
 MCP の `content_hash` は UTF-8 本文に対する SHA-256 で、local reader の raw file
 bytes に対する `sha256` と区別する。
 
+MCP client の initialize では、初期連携する Protocol を
+initialize params の `xrefkit.excluded_protocols` で除外指定する。
+値は `prompt_flow`、`workflow`、`reporting` の配列で、未指定または `[]`
+は3つすべてを選択する。`xrefkit.initial_protocols` は旧互換であり、
+`workflow`／`reporting` の include list として扱い、`prompt_flow` は常に
+含まれる。両方の extension を同時に送ることはできない。
+
 host の initialize で選択した protocol と binding の `protocols` が一致することを
-確認する。adapter が session の選択を書き換えることはない。workflow run の読取りには
-`workflow` が必要であり、reporting のみの session では停止する。
+確認する。adapter が session の選択を書き換えることはない。選択された Protocol
+には body、除外された Protocol には `null` が返ることも検証する。
+workflow run の読取りには `workflow` が必要であり、reporting のみの session では停止する。
 `initial_protocol_selection` は取得元を含めて result と receipt に保持する。
 
 読取りは次の順で進む。

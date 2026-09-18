@@ -83,6 +83,28 @@ _CLIENT_TOOLS_UNLOCKED_SESSIONS: "weakref.WeakSet[Any]" = weakref.WeakSet()
 _CONTEXT_CODEC: ContextTokenCodec | None = None
 
 
+def _initialize_protocol_selection(ctx: Any, server_initial_protocols: list[str] | None) -> dict[str, Any]:
+    """Read XRefKit protocol selection extensions from MCP initialize params."""
+    session = _session_of(ctx)
+    params = getattr(session, "client_params", None) or getattr(session, "_client_params", None)
+    extra = getattr(params, "model_extra", None) or (params if isinstance(params, dict) else {})
+    xrefkit = extra.get("xrefkit")
+    if xrefkit is not None and not isinstance(xrefkit, dict):
+        raise ValueError("initialize xrefkit extension must be an object")
+    xrefkit = xrefkit or {}
+    has_excluded = "excluded_protocols" in xrefkit
+    has_legacy = "initial_protocols" in xrefkit
+    if has_excluded and has_legacy:
+        raise ValueError("initialize xrefkit cannot contain both excluded_protocols and initial_protocols")
+    if has_excluded:
+        return {"excluded_protocols": xrefkit["excluded_protocols"], "selection_source": "initialize"}
+    if has_legacy:
+        return {"initial_protocols": xrefkit["initial_protocols"], "selection_source": "initialize"}
+    if server_initial_protocols is not None:
+        return {"initial_protocols": server_initial_protocols, "selection_source": "server"}
+    return {"selection_source": "server"}
+
+
 def _unlock_client_tools(ctx: Any) -> None:
     session = _session_of(ctx)
     if session is not None:
@@ -420,9 +442,12 @@ def main(argv: list[str] | None = None) -> int:
         ctx: Context,
         known_document_versions: dict[str, str] | None = None,
     ) -> dict[str, Any]:
+        protocol_selection = _initialize_protocol_selection(ctx, args.initial_protocols)
         result = catalog.get_startup_context(
             known_document_versions,
-            initial_protocols=args.initial_protocols,
+            initial_protocols=protocol_selection.get("initial_protocols"),
+            excluded_protocols=protocol_selection.get("excluded_protocols"),
+            selection_source=protocol_selection["selection_source"],
         )
         for xid in result.get("load_order", []):
             _log_xid_query("get_startup_context", xid)
