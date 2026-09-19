@@ -781,6 +781,7 @@ def test_contribution_return_over_real_mcp_stdio(tmp_path: Path) -> None:
             command=sys.executable,
             cwd=str(root),
             args=["-m", "xrefkit.mcp.server", "--repo", str(root),
+                  "--profile", "admin",
                   "--audit-log", str(tmp_path / "audit.jsonl"),
                   "--contribution-approval-secret", APPROVAL_SECRET],
         )

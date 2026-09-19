@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-1583bde1-c087-49c7-9210-d630b9f17f2d",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-09-18T10:29:44Z",
+  "git_commit": "d9d3b201ee4f59b0b63a3e100b21977606a87ae3",
+  "purpose": "before AI workflow run 1583bde1-c087-49c7-9210-d630b9f17f2d",
+  "work_item_id": "WI-readme-wording",
+  "run_id": "1583bde1-c087-49c7-9210-d630b9f17f2d",
+  "context_policy": "current-only",
+  "human_approved": false
+}

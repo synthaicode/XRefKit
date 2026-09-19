@@ -5,7 +5,8 @@
 
 This repository intentionally separates:
 
-- canonical AI-facing operational docs in `docs/`, `knowledge/`, and `agent/`
+- canonical AI-facing operational Markdown in `docs/`, `knowledge/`, `skills/`,
+  `capabilities/`, and `agent/`
 - human-facing language trees under `human-docs/`
 
 Current human-facing trees:
@@ -25,8 +26,16 @@ If we managed both languages under the same XID index, we would create unavoidab
 
 Therefore:
 
-- **All managed XID references live in the English tree** (`docs/`, `knowledge/`, `agent/`)
+- **All managed XID references live in the English canonical trees**
+- **All canonical Markdown in `docs/`, `knowledge/`, `skills/`,
+  `capabilities/`, and `agent/` is authored in English**
 - The human-facing trees under `human-docs/` are **excluded from the XID index** and do not participate in `xref rewrite/check`
+
+New canonical Markdown and substantive updates to existing canonical Markdown
+must use English throughout. Keep XIDs, identifiers, paths, commands, field
+names, enum values, and status values unchanged. Content intentionally showing
+a localized input or output may retain that sample language when the example
+requires it; its explanation remains English.
 
 ## What to do when you need bilingual navigation
 
@@ -42,5 +51,7 @@ These links are not rewritten by XRefKit; keep them stable and minimal.
 
 - `knowledge/` is the canonical domain knowledge the AI reads and references by XID
 - `docs/` is canonical operational documentation for this repository
+- `skills/`, `capabilities/`, and `agent/` contain canonical executable or
+  operating instructions
 - `sources/` holds originals for human verification
 - `human-docs/` holds human-facing language trees, materials, and presentation assets; it may drift and is not part of the managed reference graph

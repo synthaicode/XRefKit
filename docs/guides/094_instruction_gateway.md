@@ -119,9 +119,14 @@ inputs may be retained for task/domain semantics in either kind of work item.
 python -m xrefkit gateway skill-adapt --request work/skill-item-001.json --policy work/model-policy.json --out work/step-001.json
 ```
 
-`capability`, `tuning`, `responsibility`, and `model_tier` identify or govern a
-Skill. They do not map to, filter, rank, or select a model. For each concrete
-model work item, supply `model_requirements` with the candidate-requirement
+For a canonical `skill_definition_v1`, `capability`, `tuning`, and
+`responsibility` are instruction-derived runtime binding fields recorded on the
+work item and ExecutionBinding. The Workflow Protocol owns their meanings and
+derivation; see [Workflow Runtime Binding](../core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F).
+They describe the requested work context; they are not fixed SkillDefinition
+identity and do not map to, filter, rank, or select a model. `model_tier` and fixed triad values in legacy split Skill
+metadata remain compatibility and quality-gate inputs only; they are not v1
+routing selectors. For each concrete model work item, supply `model_requirements` with the candidate-requirement
 labels actually needed, an optional minimum cost tier, and evidence for those
 requirements. The environment policy supplies evaluated candidate labels,
 limits, input-byte limits, cost tiers, and `evaluation_ref` evidence. Eligibility
@@ -131,6 +136,12 @@ mismatched environment, or an `unknown` axis remains `needs_assessment`.
 Every non-ready adapter response returns `step: null`, so it cannot be added to
 an Assessment for routing. A legacy `skill_adapter` mapping block may remain in
 an existing policy for compatibility, but the gateway ignores it for selection.
+The adapter request may carry the complete binding as
+`work_item.runtime_binding`. The adapter returns it unchanged as
+`workflow_runtime_binding` and uses its `execution_mode` for placement. If the
+field is absent, the existing `skill.execution_mode` path remains available for
+legacy clients. `skill_semantics` remains a compatibility response field and is
+not the canonical owner of binding semantics.
 The same policy lists host-supported
 `subagent_execution_kinds`. Keep `analysis` absent unless that host can perform
 the requested SubAgent dispatch; keep `implementation` and `operation` present
@@ -179,8 +190,9 @@ is an evidence pointer; the CLI does not validate the underlying benchmark.
 The `vscode_copilot` host policy requires `parent_cost_tier` and
 `parent_model_id`, which identify the conversation model and evaluated rank
 reported by the host policy. Candidates above that tier cannot be dispatched.
-These host cost ranks are supplied by the operator and are independent of Skill
-`model_tier`; no existing quality requirement is relaxed by routing.
+These host cost ranks are supplied by the operator and are independent of
+legacy Skill `model_tier`; no existing quality requirement is relaxed by
+routing.
 
 For every ready `implementation` or `operation` model work item, routing emits one
 `subagent_dispatches` record with `parent_model`, `selected_model`,

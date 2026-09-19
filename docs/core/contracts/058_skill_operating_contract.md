@@ -3,8 +3,9 @@
 
 # Skill Operating Contract
 
-This page defines the repository-level operating contract that every loadable
-Skill must carry.
+This page defines the repository-level operating contract applied to every
+Skill run. The Workflow Protocol carries the common envelope. A SkillDefinition
+v1 references that control and does not copy it into each definition.
 
 The purpose is to make XRefKit behave like an AI work operating foundation, not
 only a collection of prompt files. A load-ready Skill must not be just a
@@ -18,7 +19,20 @@ boundary with humans becomes explicit: what the Skill may handle on its own,
 what must remain visible as uncertainty or risk, and what must be returned to a
 human with evidence and a clear handoff condition.
 
-## Core Rule
+## Format Applicability
+
+[SkillDefinition v1](096_skill_definition_contract.md#xid-E6A19D4B72C3) is the
+canonical new format. Its one-document source owns the method, Skill-specific
+criteria, `knowledge_needs`, and only Skill-specific additional `control_refs`.
+Initialization-owned common controls are not repeated. The runtime derives
+`capability` / `tuning` / `responsibility` from the instruction and records them
+in the run and ExecutionBinding.
+
+The `meta.md` requirements below remain the enforced compatibility contract for
+`legacy_split_v1` Skills. They describe the current legacy validator and must
+not be copied into new SkillDefinition headers.
+
+## Legacy Meta Rule
 
 Every `stable` or `governed` Skill metadata file must declare an `os_contract`
 block.
@@ -31,28 +45,29 @@ is not considered `stable` or `governed`.
 `trial` Skills may still be carrying provisional runtime choices while they are
 being clarified through actual use.
 
-Every load-ready Skill must also declare `capability_layering: required` and
+Every load-ready legacy Skill must also declare `capability_layering: required` and
 `workflow_protocol: required` in `meta.md`. `capability_layering` is the
 usage-time setting that makes the runtime envelope carry the selected Skill's
 capability-layer declaration. `workflow_protocol` binds the Skill run to the
 repository runtime protocol for work items, artifacts, role separation,
-deterministic checking, closure, and handoff. The Skill's identity is its
-`capability` / `tuning` / `responsibility` triplet, declared directly in
-`meta.md`: `capability` names the base reusable ability, `tuning` names its
-specialization, and `responsibility` names the business use the Skill is
-accountable for. These are the Skill's meta identity and routing vocabulary,
-not runtime-assigned values and not evidence.
+deterministic checking, closure, and handoff. Legacy `meta.md` may retain the
+`capability` / `tuning` / `responsibility` fields as compatibility inputs.
+Their canonical ownership and derivation are defined by the
+[Workflow Runtime Binding contract](111_workflow_runtime_binding.md#xid-8D50A972BA9F);
+SkillDefinition v1 does not own fixed values for them.
 
-The Skill declares its business use through the `responsibility` field. Common
-runtime roles are owned by the workflow protocol, not by the Skill: `executor`
+On the legacy path, the compatibility metadata supplies `responsibility` to the
+Workflow Runtime Binding. Common runtime roles are owned by the workflow
+protocol, not by the Skill: `executor`
 advances execution; `checker` performs the deterministic run-record check
 through `xrefkit skill verify`; `quality_reviewer` owns output-content acceptance
 when the quality gate is required; and `handoff_owner` advances explicit
 handoff. `trial`, `stable`, and `governed` Skill metadata must not define these
 protocol-owned roles under `role_responsibilities`; Skill-specific acceptance or
 handoff deltas belong in `lifecycle`, `constraints`, `closure`, or check
-artifacts. (The legacy `role_responsibilities.executor` value is still accepted
-as the responsibility, but new Skills declare `responsibility` directly.)
+artifacts. The legacy `role_responsibilities.executor` value is still accepted
+as a compatibility source for `responsibility`. New SkillDefinitions declare
+neither field; the Workflow Protocol derives the value for the work item.
 
 Every Skill must expose a recognizable human-facing report. The report must
 use the common `Report`, `Status`, `Result`, `Evidence`, `Open Items`, and
@@ -66,9 +81,9 @@ Human-facing report text follows the user's language. Runtime section keys,
 status enums, IDs, paths, commands, and other machine-facing identifiers remain
 stable; localize their explanations rather than changing the identifiers.
 
-## Required Meta Block
+## Required Legacy Meta Block
 
-The canonical compact declaration is the version shorthand:
+For `legacy_split_v1`, the compact declaration is the version shorthand:
 
 ```md
 - os_contract: v1
@@ -163,7 +178,7 @@ local truth before continuing.
 
 ## Skill Authoring Requirement
 
-When promoting a Skill to `stable` or `governed`, include sections that
+When promoting a legacy split Skill to `stable` or `governed`, include sections that
 correspond to the operating contract:
 
 - Startup
@@ -176,7 +191,11 @@ correspond to the operating contract:
 - Closure Gate
 - Handoff
 
-The exact wording may vary by Skill, but the responsibility must not disappear.
+The exact wording may vary by legacy Skill, but the responsibility must not
+disappear. A SkillDefinition v1 keeps only Skill-specific method, checks,
+stopping conditions, and handoff details. Workflow phases, generic logging,
+role separation, unknown/risk handling, common escalation, and closure are
+applied once by this contract and the Workflow Protocol.
 
 ## Enforcement Boundary
 
@@ -193,12 +212,20 @@ treated as ready for that maturity.
 Operational Skill use must start through the runtime-envelope command:
 
 ```powershell
-python -m xrefkit skill run --meta skills/<skill>/meta.md --task "task text"
+python -m xrefkit skill run `
+  --definition skills/<skill>/SKILL.v1.md `
+  --task "task text" `
+  --capability "<instruction-derived capability>" `
+  --tuning "<instruction-derived tuning>" `
+  --responsibility "<instruction-derived responsibility>" `
+  --execution-mode subagent_required
 ```
 
-This command is the Skill load gate for `trial`, `stable`, and `governed`
-Skills. It validates the Skill metadata at runtime-open level, confirms that
-the referenced `SKILL.md` file exists, then writes a session log containing:
+This command is the canonical SkillDefinition v1 load gate for `trial`,
+`stable`, and `governed` definitions. It validates the definition at
+runtime-open level, confirms that the method file exists, and writes a session
+log containing the instruction-derived runtime binding. Legacy split Skills
+continue to use `--meta skills/<skill>/meta.md` with the same runtime envelope.
 
 - the active Skill
 - the resolved `skill_doc` path that may be opened next
@@ -206,7 +233,7 @@ the referenced `SKILL.md` file exists, then writes a session log containing:
 - the task
 - the declared OS contract
 - the declared capability layering setting, workflow protocol setting, and the
-  capability / tuning / responsibility identity
+  instruction-derived Workflow Runtime Binding fields
 - a required worklist
 - a concrete work-item section for task-specific items
 - a runtime artifact section for outputs, evidence, checks, judgments, sources, and handoff links
@@ -224,7 +251,14 @@ When work starts from a prior Skill handoff, the receiving startup must name
 the source run log explicitly:
 
 ```powershell
-python -m xrefkit skill run --meta skills/<skill>/meta.md --task "task text" --handoff-source-log work/sessions/<source-run-log>.md
+python -m xrefkit skill run `
+  --definition skills/<skill>/SKILL.v1.md `
+  --task "task text" `
+  --capability "<instruction-derived capability>" `
+  --tuning "<instruction-derived tuning>" `
+  --responsibility "<instruction-derived responsibility>" `
+  --execution-mode subagent_required `
+  --handoff-source-log work/sessions/<source-run-log>.md
 ```
 
 The receiving startup must not continue from that handoff unless the source run
@@ -275,8 +309,8 @@ The generated log also contains a `Concrete Work Items` section. Add or update
 task-specific work items with:
 
 ```powershell
-python -m xrefkit skill workitem --log work/sessions/<run-log>.md --item WI-001 --text "implement the concrete change" --status pending --role "<skill_id>:executor"
-python -m xrefkit skill workitem --log work/sessions/<run-log>.md --item WI-001 --status done --role "<skill_id>:executor"
+python -m xrefkit skill workitem --log work/sessions/<run-log>.md --item WI-001 --text "implement the concrete change" --completion-criterion "the concrete change is implemented and checked" --status pending --role "<skill_id>:executor"
+python -m xrefkit skill workitem --log work/sessions/<run-log>.md --item WI-001 --completion-criterion "the concrete change is implemented and checked" --status done --role "<skill_id>:executor"
 ```
 
 Supported work-item statuses are the same runtime status set:
@@ -423,16 +457,20 @@ asks "is the output acceptable." The two are kept apart on purpose: the check
 phase is deterministic and never judges output content, so output acceptance
 needs its own owner.
 
-Quality check items are recorded as `check`-kind artifacts. Declare them at
-planning with `status: pending`; an independent quality reviewer sets each to
-`done` (pass), `blocked` (fail), or `na` (not applicable to this run). An
+Determine applicability before creating quality check artifacts and record the
+applicability decision in planning evidence. Applicable check items are
+recorded as `check`-kind artifacts with `status: pending`; an independent
+quality reviewer sets each to `done` (pass) or `blocked` (fail). A pending
+artifact renders as `not_checked` and prevents quality completion. The current
+artifact status schema has no `na` value, so an inapplicable candidate must not
+be created as a check artifact. An
 acceptance check item is a criterion the output must meet; a domain-review
 check item names a review-oriented Skill (for example `csharp_review`) whose
 own run vouches for the output; a tool-type check item runs a deterministic
-tool. Tool checks are content-conditional, not uniform: a skill declares it can
-apply one by referencing the capability (for example `CAP-QA-011` for the
-Roslyn analyzer), and a per-run content probe decides whether it applies or is
-`na`. Because a subagent cannot start another subagent, the quality reviewer
+tool. Tool checks are content-conditional, not uniform: a Skill declares that
+one may apply by referencing the capability (for example `CAP-QA-011` for the
+Roslyn analyzer), and a per-run content probe decides applicability before the
+artifact is created. Because a subagent cannot start another subagent, the quality reviewer
 subagent performs generic acceptance verification and runs deterministic tools
 itself, while the main session orchestrates any domain-review Skill runs and
 links their verdicts back as `check` artifacts.
@@ -479,7 +517,7 @@ check phase to `done`, or to `blocked` with the failing condition named. It
 reads the recorded process only — it does not open artifact targets, judge
 content, or assess output quality.
 
-`xrefkit skill run` assigns `checker_context: deterministic_fm_verification`
+`xrefkit skill run` assigns `checker_context: deterministic_xrefkit_verification`
 regardless of `execution_mode`, which governs the executor side only.
 Deterministic code is context-independent by construction: it cannot be biased
 by the producer's context and cannot be argued into a pass, so it satisfies the

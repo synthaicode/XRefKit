@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-0e59cde9-a58d-46d7-bb1a-c24ff95bf67a",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-09-18T11:08:24Z",
+  "git_commit": "ae9320787ca7c48dfc99f010326aba580df4e4c8",
+  "purpose": "before AI workflow run 0e59cde9-a58d-46d7-bb1a-c24ff95bf67a",
+  "work_item_id": "WI-remove-common-control-refs",
+  "run_id": "0e59cde9-a58d-46d7-bb1a-c24ff95bf67a",
+  "context_policy": "current-only",
+  "human_approved": false
+}

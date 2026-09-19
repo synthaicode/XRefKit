@@ -28,8 +28,12 @@ far that clarification has actually progressed.
 - Treat maturity as the clarity level of the Skill's operating boundary with
   humans, not as a cosmetic progress label.
 - Promote a Skill only when the target maturity conditions are actually met.
-- Keep the current maturity explicit in `meta.md` through `maturity` or
-  `status`.
+- For `legacy_split_v1`, keep the current maturity explicit in `meta.md`
+  through `maturity` or `status`.
+- For SkillDefinition v1, keep maturity and promotion evidence in the derived
+  catalog/governance record. Do not add runtime routing fields to the definition
+  header. `skill_definition_v1` identifies the format and does not mean
+  `stable`; a definition without a governance record is `unassessed`.
 
 ## Maturity Levels
 
@@ -41,7 +45,63 @@ far that clarification has actually progressed.
 | `governed` | stable Skill with governance and audit linkage | yes | explicit governance references, promotion evidence, and an auditable responsibility boundary |
 | `deprecated` | kept for compatibility/history, not for new use | no | preserve traceability and replacement path if applicable |
 
-## Meta Schema By Maturity
+## Legacy Meta Schema By Maturity
+
+This section documents the enforced `legacy_split_v1` validator. New
+one-document definitions follow
+[SkillDefinition v1](096_skill_definition_contract.md#xid-E6A19D4B72C3), with
+runtime fields recorded by ExecutionBinding rather than the definition.
+
+## SkillDefinition v1 Governance Record
+
+Maturity for a one-document definition is supplied explicitly through a
+separate JSON record. The record is not auto-discovered and does not alter the
+definition bytes. It is bound to `skill_id`, definition XID, and raw definition
+SHA-256, so editing the method invalidates the prior assessment.
+
+```json
+{
+  "schema_version": 1,
+  "skill_id": "sample_skill",
+  "definition_xid": "ABCDEF123456",
+  "definition_content_hash": "<64 lowercase hex characters>",
+  "maturity": "trial",
+  "observation_refs": ["observations/sample-run.md"],
+  "governance_refs": [],
+  "promotion": {
+    "decision": "approved",
+    "target_maturity": "trial",
+    "authority": "human:owner",
+    "decided_at": "2026-09-18T12:00:00+09:00",
+    "basis_refs": ["observations/sample-run.md"]
+  }
+}
+```
+
+The record uses the same maturity enum as legacy Skills. `trial`, `stable`, and
+`governed` require observations; `governed` also requires governance refs.
+`promotion.decision` is `not_requested`, `approved`, or `rejected`. Approved and
+rejected decisions require a named authority, timestamp, and basis. Production
+source adoption remains a separate human decision.
+
+```powershell
+python -m xrefkit skill definition-check `
+  --path skills/<skill>/SKILL.v1.md `
+  --governance governance/skills/<skill>.json `
+  --json
+```
+
+For SkillDefinition v1, improve the method, criteria, applicability,
+exclusions, Knowledge needs, and Skill-specific stop/handoff conditions from
+observed evidence. Reassess the external governance record against the exact
+new content hash. Do not add Workflow Runtime Binding values to the definition
+as part of promotion.
+
+## Legacy Split Maturity Requirements
+
+The remaining field lists and templates in this section apply only to
+`legacy_split_v1`. They document the existing validator and promotion
+transport; they do not define canonical SkillDefinition identity.
 
 ### Draft Minimum
 
@@ -148,11 +208,13 @@ explicit governance linkage:
 ```md
 - governance_refs:
   - `../../docs/<governance-doc>.md#xid-...`
-  - `../../work/<promotion-or-review-record>.md`
+  - `../../docs/core/contracts/<promotion-or-review-record>.md#xid-...`
 ```
 
-`governance_refs` should point to the policy, approval, audit basis, or review
-record that justifies governed status.
+`governance_refs` should point to a committed repository file containing the
+policy, approval, audit basis, or review record that justifies governed status.
+Local `work/` records must be promoted to a tracked location before they are
+used as governance references.
 
 ## Check Modes
 
@@ -178,10 +240,11 @@ python -m xrefkit skill check --meta skills/<skill_id>/meta.md --level governed
   defined in
   `docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`
 
-For `trial`, runtime decisions may still be provisional in meaning, but the
-runtime fields themselves must be explicit before the Skill is load-ready.
+For a legacy `trial`, runtime decisions may still be provisional in meaning,
+but its legacy runtime fields must be explicit before it is load-ready.
+SkillDefinition v1 receives those fields at run start.
 
-## Improvement Flow
+## Legacy Split Improvement Flow
 
 1. Create the Skill as `draft`.
 2. Add a first `SKILL.md` procedure and promote to `trial`.
@@ -246,7 +309,7 @@ apply updates `maturity`, `observation_refs`, and approved `governance_refs` in
 canonical `meta.md`, while publication, distribution, and live verification
 remain `not_performed`.
 
-## Draft Template
+## Legacy Draft Template
 
 ```md
 # Skill Meta: <skill_id>
@@ -260,7 +323,7 @@ remain `not_performed`.
 - maturity: `draft`
 ```
 
-## Trial Upgrade Template
+## Legacy Trial Upgrade Template
 
 ```md
 - maturity: `trial`
@@ -278,7 +341,7 @@ remain `not_performed`.
 review, and handoff ownership are defined by the Skill Operating Contract, not
 by Skill-local `role_responsibilities`.
 
-## Stable Upgrade Template
+## Legacy Stable Upgrade Template
 
 ```md
 - maturity: `stable`
@@ -323,9 +386,9 @@ Use a small Markdown note or session entry when refining a Skill:
 - promotion_effect: <does this support trial/stable/governed promotion?>
 ```
 
-## Promotion Questions
+## Legacy Promotion Questions
 
-Before promoting a Skill, ask:
+Before promoting a legacy split Skill, ask:
 
 - Is the current `use_when` based on actual use rather than only an initial idea?
 - Are the declared inputs and outputs specific enough for repeatable use?

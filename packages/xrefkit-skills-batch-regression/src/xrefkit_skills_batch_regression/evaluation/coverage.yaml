@@ -1,0 +1,30 @@
+evaluation_id: public.batch-impact-regression.coverage-v1
+cases:
+  - batch.impact_regression.basic-comparison
+  - batch.impact_regression.regional-order-change
+  - batch.impact_regression.dynamic-dispatch-unknown
+  - batch.impact_regression.classification-precedence
+  - batch.impact_regression.reduction-and-feasibility
+  - batch.impact_regression.safety-stop
+workflow_coverage:
+  1_boundary_versions_adapter: [batch.impact_regression.regional-order-change, batch.impact_regression.dynamic-dispatch-unknown]
+  2_csharp_entrypoints_sp_invocations: [batch.impact_regression.regional-order-change, batch.impact_regression.dynamic-dispatch-unknown]
+  3_child_objects_dynamic_sql_transactions_outputs: [batch.impact_regression.dynamic-dispatch-unknown, batch.impact_regression.safety-stop]
+  4_extract_dimensions_values_unknowns: [batch.impact_regression.regional-order-change, batch.impact_regression.reduction-and-feasibility]
+  5_separate_constraint_ledgers: [batch.impact_regression.regional-order-change, batch.impact_regression.reduction-and-feasibility]
+  6_candidate_and_post_constraint_counts: [batch.impact_regression.regional-order-change, batch.impact_regression.reduction-and-feasibility]
+  7_safe_small_execution_and_side_effect_check: [batch.impact_regression.safety-stop]
+  8_full_run_feasibility: [batch.impact_regression.reduction-and-feasibility]
+  9_observed_baseline_not_business_truth: [batch.impact_regression.regional-order-change, batch.impact_regression.classification-precedence]
+  10_requirement_predicate_and_allowed_differences: [batch.impact_regression.regional-order-change, batch.impact_regression.classification-precedence]
+  11_identical_serialized_old_new_inputs: [batch.impact_regression.regional-order-change, batch.impact_regression.classification-precedence]
+  12_normalize_and_trace_each_difference: [batch.impact_regression.classification-precedence]
+  13_reduced_regression_set: [batch.impact_regression.reduction-and-feasibility]
+  14_release_full_run_rollback_stop_gates: [batch.impact_regression.reduction-and-feasibility, batch.impact_regression.safety-stop]
+  15_unresolved_decisions_handoff_no_close: [batch.impact_regression.dynamic-dispatch-unknown, batch.impact_regression.safety-stop]
+classification_precedence:
+  - system_error
+  - uncertain
+  - business_invalid
+  - upstream_absent
+  - result_comparison

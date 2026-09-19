@@ -1,55 +1,63 @@
 <!-- xid: C2FF81FBEE8E -->
 <a id="xid-C2FF81FBEE8E"></a>
 
-# Skill Meta Template
+# SkillDefinition Template
 
-Use this when creating a new Skill in XRefKit.
+Use this one-document format when creating a new Skill in XRefKit. The file is
+normally named `SKILL.v1.md`. The historical filename of this template is kept
+so existing XID links remain stable.
 
 ```md
-# Skill Meta: <skill_id>
+---
+schema_version: 1
+skill_id: <skill_id>
+xid: <12-character-XID>
+aliases: []
+summary: <one-line purpose>
+applies_when: [<selection condition>]
+exclusions: [<out-of-scope condition>]
+inputs: [<required input>]
+outputs: [<produced artifact>]
+criteria:
+  - id: <stable criterion id>
+    statement: <what must be true>
+    verification: <how it is checked>
+knowledge_needs:
+  - id: <need id>
+    query: <catalog search intent>
+    required_when: <activation condition>
+    seed_xids: [<optional-XID>]
+control_refs: []
+---
+<!-- xid: <12-character-XID> -->
+<a id="xid-<12-character-XID>"></a>
 
-- skill_id: `<skill_id>`
-- summary: <one-line purpose>
-- use_when: <when the Skill should be selected>
-- input: <expected inputs>
-- output: <expected outputs>
-- maturity: `draft|trial`
-- execution_mode: `local_default|subagent_preferred|subagent_required`
-- capability_layering: `required`
-- workflow_protocol: `required`
-- capability: <reusable base ability>
-- tuning: <direct specialization of the capability for this Skill, e.g. C# or C# + SQL>
-- responsibility: <Skill-specific business use, e.g. implementation or quality check>
-- os_contract: v1
-- constraints: <operational constraints and escalation boundary>
-- constraints: <include what must not stay implicit for later AI reuse>
-- lifecycle:
-  - startup: <startup rule>
-  - planning: <planning rule>
-  - execution: <execution rule>
-  - monitoring_and_control: <downgrade and escalation rule>
-  - closure: <closure rule>
-- tags: `<tag1>`, `<tag2>`
-- skill_doc: `./SKILL.md`
-- knowledge_slots:
-  - name=<slot>; query=<intent phrase>; domain=<domain>; min=1; required
-  - name=<slot>; bind=<xid-of-always-needed-domain-knowledge>
-- observation_refs:
-  - `<relative-path-to-work>/sessions/<session>.md`
+# Skill: <skill_id>
+
+## Method
+
+1. <reusable judgment or procedure>
+
+## Stop and handoff
+
+<Skill-specific stop, exclusion, or specialist handoff only.>
 ```
 
 Notes:
 
-- Keep `draft` when the procedure is not load-ready yet.
-- Move to `trial` only after the Skill can actually run and has observation.
 - Use `skills_private/` by default; move to `skills/` only for explicit public
   release.
 - Replace the relative-path placeholders to match the actual family path such
   as `skills/os/<skill_id>/` or `skills/packs/<pack>/<skill_id>/`.
-- `responsibility` is the Skill's business use (implementation, quality check,
-  design, ...). There is no role field: every Skill is the executor, and the
-  checker is the workflow protocol, advanced deterministically with
-  `xrefkit skill verify`.
+- Do not add fixed `capability`, `tuning`, `responsibility`, or
+  `execution_mode` values. The Workflow Protocol derives them for each work
+  item under the Workflow Runtime Binding contract.
+- Keep maturity and observations in the external governance record. They are
+  not SkillDefinition identity.
 - If later AI runs would need to remember something critical, encode it as
-  `input`, `output`, `constraints`, `knowledge_slots`, `observation_refs`, or
-  handoff/closure wording instead of leaving it unstated.
+  `inputs`, `outputs`, `criteria`, `knowledge_needs`, or Skill-specific
+  handoff wording instead of leaving it unstated.
+
+For an existing `legacy_split_v1` Skill, its `meta.md` fields remain valid
+compatibility inputs. Preserve them while maintaining that format; do not use
+the legacy shape as the template for a new Skill.

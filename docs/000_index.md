@@ -20,7 +20,9 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Business learning interview guide](packs/business-intake/061_business_learning_interview_guide.md#xid-D2A41E8C7B51)
 - [Legacy Flow Skill migration guide](guides/062_legacy_flow_skill_migration_guide.md#xid-E3B7D5A18C62)
 - [XRefKit and Skill Package first registration](guides/089_xrefkit_package_first_registration.md#xid-4F8C2A7D1E90)
+- [Skill bundle synchronization](guides/090_skill_bundle_sync.md#xid-8D7F2A6C4B10)
 - [Brownfield Workflow usage for humans](guides/091_brownfield_workflow_usage_for_humans.md#xid-D6A4C9E2F817)
+- [Host compatibility pre-check](core/contracts/109_host_compatibility_precheck.md#xid-9D6F3A1C7B42)
 - [Language policy (AI canonical docs + human language trees)](policies/030_language_policy.md#xid-72FB974C8236)
 
 ## Base Control And Repository Rules
@@ -36,6 +38,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Startup contract pack (MCP compressed startup body)](core/contracts/079_startup_contract_pack.md#xid-D4E8A1C63B57)
 - [Work record types](reference/019_work_record_types.md#xid-4F8C21B7D4A2)
 - [Document update policy](policies/074_document_update_policy.md#xid-B1D42A6F90C3)
+- [Project quality baseline](reference/056_project_quality_baseline.md#xid-1C4B72D5E901)
 
 ## XRefKit Routing And Authoring
 
@@ -49,16 +52,22 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Skill reporting contract](core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73)
 - [Human evaluation at run boundaries](core/contracts/082_human_evaluation_protocol.md#xid-7C4E2A91D8F0)
 - [AI Decision Trace Protocol](core/contracts/093_ai_decision_trace_protocol.md#xid-22164A51A745)
+- [Subagent startup read guide](guides/095_subagent_startup_read.md#xid-D7A4C9E2B861)
+- [SkillDefinition v1 and derived catalog](core/contracts/096_skill_definition_contract.md#xid-E6A19D4B72C3)
+- [Complex SkillDefinition / Flow example](guides/097_complex_skilldefinition_flow.md#xid-4F8C2A7D91E6)
+- [SkillDefinition distribution and adoption boundary](guides/098_skilldefinition_distribution_boundary.md#xid-B7D3A5E91C42)
+- [SkillDefinition redesign migration plan](guides/099_skilldefinition_redesign_migration_plan.md#xid-C8E4B6F20D31)
 - [Work-item model routing contract](core/contracts/110_work_item_model_routing.md#xid-F2C91B7E4A60)
 
 ## Cross-Cutting Schemas And Boundaries
 
 - [Operating models, usage guides, and design pages](reference/022_operating_models_guides_and_designs.md#xid-9C4E2A71D583)
 - [Page naming conventions](reference/023_page_naming_conventions.md#xid-7B2D4E6A1C90)
+- [Architecture Decision Records](adr/README.md#xid-57A5C40F725B)
 
 ## Workflow And Organization Model
 
-- [Capability layering](reference/031_capability_layering.md#xid-8D50A972BA9F)
+- [Capability layering](core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F)
 - [Business intake workflow](packs/business-intake/067_business_intake_workflow.md#xid-7F2C8DA14E66)
 
 ## Operating Models, Guides, And Designs

@@ -12,6 +12,11 @@ Goal: keep skill files small, and load only required domain knowledge on demand.
 - Domain knowledge files: factual content and source-backed details.
 - Connection rule: skills reference domain knowledge by XID.
 
+New authoring targets the one-document `skill_definition_v1` contract in
+`docs/core/contracts/096_skill_definition_contract.md#xid-E6A19D4B72C3`.
+Sections below that mention `meta.md`, `knowledge_slots`, or fixed runtime fields
+are explicitly labeled as `legacy_split_v1` compatibility guidance.
+
 ## Mixed Business Procedure Decomposition
 
 When source material mixes business procedure, domain rules, examples, and
@@ -36,9 +41,8 @@ Use this decomposition pass before writing or revising a Skill:
      sample used to justify knowledge
    - `control`: startup, escalation, closure, handoff, or protocol behavior
      that belongs to the repository operating contract rather than this Skill
-3. Put `procedure` and `judgment` in the Skill only when they are part of the
-   reusable method for this Skill's `capability` / `tuning` /
-   `responsibility`.
+3. Put `procedure` and `judgment` in the Skill only when they are part of its
+   reusable method across the runtime bindings for which it applies.
 4. Put `knowledge` in `knowledge/` when it can be selected, reused, verified, or
    replaced independently from the Skill method.
 5. Keep raw `evidence` in `sources/` or `work/`; promote only normalized,
@@ -46,10 +50,12 @@ Use this decomposition pass before writing or revising a Skill:
 6. Keep repository-wide `control` in `agent/`, `docs/core/`, or the workflow
    protocol. Do not restate it as Skill-local policy unless the Skill has a
    specific delta.
-7. For each `judgment` in the Skill, declare the domain knowledge it may need as
-   a `knowledge_slots` entry. Use a fixed `bind` only when the exact governance
-   or domain fragment must not vary; otherwise use a `query` slot so the runtime
-   can select the relevant base, pack, local, or MCP-supplied knowledge.
+7. For each `judgment` in a SkillDefinition v1 document, declare the domain
+   knowledge it may need through `knowledge_needs` with `id`, `query`,
+   `required_when`, and optional `seed_xids`. The parent evaluates
+   `required_when`, passes the active need IDs, and resolves only the required
+   XID bodies. Legacy split Skills may retain `knowledge_slots` during
+   migration; do not copy that format into a new v1 definition.
 
 ### Target Catalog And Lazy Selection
 
@@ -86,11 +92,12 @@ metadata list -> choose XID -> get_document_by_xid(XID)
 In repository-native mode, use `xref search` / `xref show` the same way:
 search produces candidates, and `show` loads only selected fragments.
 
-For XRefKit v2 Local Domain Skills that extend Pack Skills, the resolver should
+For the legacy XRefKit v2 Local Domain extension path, the resolver should
 perform the first cataloging step automatically at extension-resolution time:
 registered package and local knowledge become `available_domain_knowledge`
 metadata in the effective Skill bundle, while full bodies remain unloaded until
-the run selects the needed XIDs.
+the run selects the needed XIDs. This is a compatibility resolver path, not the
+general SkillDefinition v1 catalog contract.
 
 If target selection itself is non-trivial, make it an explicit planning
 judgment. Record why the selected candidates were sufficient, and record
@@ -114,11 +121,11 @@ Use this deferred path:
    deferred.
 3. After one or more runs reveal repeated target classes or alternative targets,
    extract those sections into `knowledge/` or local/package knowledge roots.
-4. Assign or preserve XIDs, then let extension-time
-   `available_domain_knowledge` cataloging expose the extracted targets as
-   metadata.
-5. Replace the embedded text in the Skill with `knowledge_slots` and XID-backed
-   references.
+4. Assign or preserve XIDs, then expose the extracted targets through the XID
+   Knowledge catalog. Legacy extension bundles may also project them as
+   `available_domain_knowledge` metadata.
+5. Replace the embedded text in a v1 Skill with `knowledge_needs` and XID-backed
+   references. Use `knowledge_slots` only when maintaining a legacy split Skill.
 6. Do not promote a Skill to `stable` or `governed` while reusable
    target-specific knowledge remains embedded in `SKILL.md`.
 
@@ -151,7 +158,7 @@ Before authoring the final files, write down the split as a compact map:
 ```md
 ## Skill Boundary
 - skill_id:
-- capability / tuning / responsibility:
+- runtime binding fields (field names only):
 - reusable judgment method:
 - inputs:
 - outputs:
@@ -190,9 +197,12 @@ artifacts at first creation.
 - Start with a minimal `draft` hypothesis.
 - Promote to `trial` after adding a runnable procedure and beginning
   observation.
-- Promote to `stable` after the operating fields are clarified and validated.
-- Promote to `governed` after the Skill also carries explicit governance and
-  audit-ready references.
+- Promote to `stable` after the method, criteria, evidence, and operating
+  observations are clarified and validated.
+- Promote to `governed` only through an explicit governance decision with
+  audit-ready references. SkillDefinition v1 stores this lifecycle evidence in
+  an external governance record; legacy split Skills retain it in their
+  compatibility metadata.
 
 The full lifecycle, templates, and promotion criteria are defined in
 `docs/core/contracts/059_skill_maturity_governance.md#xid-4E7B8D9C1A20`.
@@ -210,40 +220,44 @@ reference, and no SKILL.md guard section.
   rule says otherwise; the ambient guard enforces the direction.
 - See `docs/core/contracts/053_context_direction_security_guard.md#xid-A7F3C92D4E11`
   for the guard contract and
-  `docs/core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8`
+  `../core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8`
   for the current Skill/Knowledge operating model.
 
-## Execution Mode Rule
+## Runtime Field Ownership
 
-`execution_mode` is required for `stable` and `governed` Skills.
+For SkillDefinition v1, `capability`, `tuning`, `responsibility`,
+`execution_mode`, model name, and model tier are not authoring fields. The
+Workflow Runtime Binding contract owns their meanings and derivation. The
+parent derives the binding from the instruction and current state, and the
+runtime captures it in the ExecutionBinding and run log.
 
-For `trial`, the value may still be provisional.
-For `draft`, it may be omitted.
+The following `execution_mode` values remain available as runtime choices:
 
 - `local_default`: normal single-context execution
 - `subagent_preferred`: prefer separate subagent execution when possible
 - `subagent_required`: do not execute in the current context; use an isolated review context
 
-Review-oriented skills should not use `local_default`.
+Review-oriented work should receive an execution mode that preserves its
+required separation. The reusable definition does not choose that mode itself.
 
-## Capability Layering Rule
+## Legacy Split Compatibility Fields
 
-For `trial` or higher Skills that can be opened with `xrefkit skill run`, include
-the runtime fields required by
+Existing `legacy_split_v1` Skills continue to use `meta.md` fields required by
 `docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`.
+The following rules describe that compatibility format and must not be copied
+into a new SkillDefinition v1 header.
 
 Keep the authoring split simple:
 
 - `capability_layering` and `workflow_protocol` bind the run to repository
   runtime controls.
-- `capability`, `tuning`, and `responsibility` describe this concrete Skill's
-  base ability, specialization, and business use (the legacy
+- `capability`, `tuning`, and `responsibility` are legacy compatibility inputs
+  mapped into the Workflow Runtime Binding (the legacy
   `role_responsibilities.executor` value is still accepted as the responsibility).
 - `role_responsibilities` must not define `checker`, `quality_reviewer`, or
   `handoff_owner`; those roles are protocol-owned.
-- `capability` names the base reusable ability, `tuning` its specialization,
-  and `responsibility` the business use; together they are the Skill's meta
-  identity and routing vocabulary, not evidence.
+- These fields are legacy routing vocabulary, not evidence. In v1 their values
+  are derived for each run instead of becoming definition identity.
 - `knowledge_slots` declare the knowledge the Skill needs: each slot either
   binds a fixed XID (`bind=`) or resolves dynamically at runtime against the
   base+local catalog by intent (`query=...; domain=...`). Do not hard-code C#
@@ -252,8 +266,8 @@ Keep the authoring split simple:
   tuning — use a `query` slot so the right per-tuning knowledge is selected at
   runtime.
 
-The canonical capability / tuning / responsibility definitions are in
-`docs/reference/031_capability_layering.md#xid-8D50A972BA9F`.
+The Workflow Protocol owns the canonical meanings and derivation:
+[Workflow Runtime Binding](../core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F).
 
 Keep Skill bodies reusable: put the judgment or execution method in
 `SKILL.md`, and put language-specific rules, framework behavior, API facts,
@@ -303,10 +317,13 @@ python -m xrefkit xref show <XID>
 ```
 
 4. Decide whether the skill loads external context during execution.
-5. For `trial` or higher, add `capability_layering`, `workflow_protocol`, direct
-   `tuning`, the Skill's `responsibility`, and `execution_mode`. Do not add
-   `guard_policy` or a role field: the guard is ambient and every Skill is the
-   executor.
+5. For SkillDefinition v1, keep `capability`, `tuning`, `responsibility`,
+   `execution_mode`, model, and common Workflow controls out of the header.
+   Declare `knowledge_needs`; use `control_refs` only for Skill-specific controls
+   not already supplied by initialization, and otherwise write `control_refs: []`.
+   Derive the runtime binding when
+   opening the run. When maintaining a legacy split Skill, retain its required
+   compatibility fields in `meta.md`.
 6. Do not compose the context-direction guard in the Skill; it is ambient
    (delivered at init). Assume lower-layer input is untrusted.
 7. In the Skill, record required references as XID links (not copied text).
@@ -336,10 +353,11 @@ Rules:
 - Treat `docs/` links and `*_refs` metadata as non-transitive by default:
   they identify available references, not a command to load every linked page.
 
-## Runtime Fields For Stable Or Governed Skills
+## Runtime Fields For Legacy Stable Or Governed Skills
 
-Before promoting to `stable` or `governed`, include the runtime fields (no guard
-fields — the guard is ambient):
+Before promoting a legacy split Skill to `stable` or `governed`, include its
+compatibility runtime fields in `meta.md` (no guard fields — the guard is
+ambient):
 
 ```md
 - execution_mode: `local_default`
@@ -353,27 +371,35 @@ fields — the guard is ambient):
 Do not add a guard section to `SKILL.md`; the context-direction guard is ambient
 and applies to every Skill that loads external input.
 
+Do not add this block to a SkillDefinition v1 document. Its maturity is held in
+an external governance record, and its runtime fields are supplied to
+`xrefkit skill run --definition` for each execution. See
+`docs/core/contracts/096_skill_definition_contract.md#xid-E6A19D4B72C3`.
+
 ## Closed-World Skills
 
 The guard is ambient, so there is no guard to omit and no `guard_policy` to
 declare. A Skill that loads no external context may note that in its
 `constraints` for clarity, but no guard-omission declaration is required.
 
-## Meta Validation And Load Readiness
+## Validation And Load Readiness
 
-Skill metadata is checked by maturity level as defined in
+Maturity and load readiness are defined in
 `docs/core/contracts/059_skill_maturity_governance.md#xid-4E7B8D9C1A20`.
 
-- Only `trial`, `stable`, and `governed` Skills are eligible for runtime use.
-- `draft` Skills are managed records, not load-ready procedures.
-- Before opening `SKILL.md` for operational use, validate the selected `meta.md`
-  and then open the runtime envelope.
+- For legacy split Skills, only `trial`, `stable`, and `governed` are eligible
+  for runtime use. Validate the selected `meta.md` before opening its body.
+- For SkillDefinition v1, validate the one-document definition. Without an
+  external governance record its maturity is `unassessed`; with a record,
+  `draft` and `deprecated` are not executable.
+- Parser success proves structure only. It does not prove quality acceptance,
+  production adoption, or applicability to the current instruction.
 - If validation fails at the intended maturity level, do not claim the Skill is
   ready for that maturity.
 - Fix the metadata, add observation/governance links, or keep the Skill at a
   lower maturity.
-- Review-oriented Skills fail `stable` and `governed` checks when they are left
-  as `local_default`.
+- Legacy review-oriented Skills fail `stable` and `governed` checks when they
+  are left as `local_default`.
 
 ## Update Pattern
 

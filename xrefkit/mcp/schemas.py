@@ -108,11 +108,11 @@ class SkillCatalogEntry:
     path: str
     meta_path: str
     context_size: dict[str, Any]
-    # Skill-centric consolidation (design 083/084): the capability/tuning/
-    # responsibility triad is the Skill meta identity and routing vocabulary,
-    # and preconditions/knowledge_slots are the declared needs that replace
-    # capability_refs binding and static knowledge_refs. Surfaced as an additive
-    # superset; empty until skill metas migrate to the new fields.
+    # Legacy catalog facets retained for compatibility. Runtime capability,
+    # tuning, and responsibility are owned by Workflow Runtime Binding under
+    # workflow_protocol; canonical v1 definitions derive them from the current
+    # instruction and work item. model_requirements remains a separate
+    # per-work-item model-eligibility input.
     capability: str = ""
     tuning: str = ""
     responsibility: str = ""
@@ -125,6 +125,10 @@ class SkillCatalogEntry:
     # same routing shape as repository Skills.
     package_id: str | None = None
     source_root: str = field(default="", repr=False, compare=False)
+    definition_format: Literal["legacy_split_v1", "skill_definition_v1"] = "legacy_split_v1"
+    definition_xid: str | None = None
+    definition_content_hash: str | None = None
+    maturity_governance: dict[str, Any] | None = None
 
     def to_dict(self, *, include_tools: bool = True) -> dict[str, Any]:
         data = asdict(self)
@@ -311,7 +315,7 @@ class StartupContext:
     link_resolution: dict[str, str]
     load_order: list[str]
     startup_contract_pack: dict[str, Any]
-    prompt_flow_protocol: dict[str, Any]
+    prompt_flow_protocol: dict[str, Any] | None
     workflow_protocol: dict[str, Any] | None
     reporting_protocol: dict[str, Any] | None
     initial_protocol_selection: dict[str, Any]

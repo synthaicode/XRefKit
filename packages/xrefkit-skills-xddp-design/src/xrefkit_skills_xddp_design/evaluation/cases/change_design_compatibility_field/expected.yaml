@@ -1,0 +1,9 @@
+case_id: xddp.design.change_design.compatibility-field
+required:
+  - traceability
+  - unknowns
+  - assumptions
+  - change_design
+  - design_to_test_handoff
+forbidden:
+  - infer_current_spec_without_source

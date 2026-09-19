@@ -23,8 +23,10 @@ Change-impact investigation uses three current repository surfaces:
 - **Business Pack**: places the investigation in business progression and
   defines what consumes its output next.
 
-The Skill's capability / tuning / responsibility meta triad identifies and
-routes the method. It is metadata on the Skill, not a separate work artifact.
+The reusable method is selected from its SkillDefinition metadata. The
+instruction-derived `capability`, `tuning`, and `responsibility` belong to the
+[Workflow Runtime Binding](../core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F),
+not to fixed Skill metadata.
 
 ## Responsibility Split
 
@@ -64,7 +66,7 @@ Knowledge determines what the Skill looks for in each target context:
 ## .NET Line-Of-Business Example
 
 - Skill:
-  [dotnet_change_analysis](../../skills/dotnet_change_analysis/SKILL.md#xid-D94E3B3A7C11)
+  [dotnet_change_analysis](../../skills/dotnet_change_analysis/SKILL.v1.md#xid-9883EF4E8CA9)
 - Knowledge:
   [Common source analysis criteria](../../knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001),
   [Custom framework common criteria](../../knowledge/source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002), and

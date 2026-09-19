@@ -21,16 +21,20 @@ Do not treat a rough note as an approved Skill boundary.
 
 1. **Intake**: ask only the questions needed to identify the target, users,
    inputs, outputs, handoff, publication boundary, and expected evidence.
-2. **Scaffold**: create or update `meta.md`, `SKILL.md`, and only the required
-   `references/` or `flows/` files. Default a new Skill to private placement.
-3. **Gap diagnosis**: run draft validation and report missing runtime fields,
-   mixed procedure/facts, unclear scope, missing handoff, missing observation,
-   and unsupported maturity claims.
+2. **Scaffold**: create or update one `SKILL.v1.md` definition and only the
+   required `references/` or `flows/` files. Maintain `meta.md` plus `SKILL.md`
+   only for an explicit legacy split target. Default a new Skill to private
+   placement.
+3. **Gap diagnosis**: run definition validation and report missing definition
+   fields, unresolved runtime-binding derivation at the run boundary, mixed
+   procedure/facts, unclear scope, missing handoff, missing observation, and
+   unsupported maturity claims.
 4. **Human revision**: present the gaps and proposed changes before applying
    changes that alter the Skill boundary, publication scope, or authority.
-5. **Trial promotion**: promote to `trial` only when the Skill is runnable,
-   has the required executor role, explicit lifecycle and closure, and an
-   observation reference. Keep unresolved gaps visible.
+5. **Trial promotion**: propose `trial` only when the Skill is runnable, has
+   explicit criteria and closure, and has external observation evidence. Keep
+   runtime binding and governance status outside the SkillDefinition and keep
+   unresolved gaps visible.
 6. **Observation loop**: run the Skill on a bounded real task, record outputs,
    evidence, unknowns, and quality feedback, then return to diagnosis.
 
@@ -41,8 +45,11 @@ open:
 
 - `skill_id`, purpose, trigger, and boundary
 - input and output artifacts
-- startup, planning, execution, monitoring, closure, and handoff
-- `capability_layering`, `workflow_protocol`, tuning, and executor role
+- reusable method and Skill-specific stop/handoff conditions; common Workflow
+  phases remain initialization-owned
+- applicability, exclusions, criteria, Knowledge needs, and Skill-specific
+  control deltas; runtime binding field names may be noted but values are not
+  stored in the Skill
 - maturity basis and unresolved gaps
 - knowledge XIDs or a deferred extraction note
 

@@ -101,6 +101,34 @@ def test_adapter_uses_explicit_work_item_requirements_and_analysis_dispatches(re
     assert work_route["subagent_dispatches"][0]["agent_role"] == "analysis_subagent"
 
 
+def test_adapter_preserves_workflow_runtime_binding_separately_from_model_requirements(request_and_policy):
+    assessment, raw_policy = request_and_policy
+    request = _adapter_request(assessment)
+    request["work_item"]["runtime_binding"] = {
+        "source": "instruction_derived",
+        "capability": "software review",
+        "tuning": "Python and bounded evidence",
+        "responsibility": "report findings for one module",
+        "execution_mode": "subagent_required",
+        "instruction_basis": "request.work_item.task",
+    }
+    request["skill"].pop("capability")
+    request["skill"].pop("execution_mode")
+    policy_data = _adapter_policy(raw_policy)
+    policy_data["subagent_execution_kinds"] = ["analysis", "implementation", "operation"]
+
+    result = adapt_skill_work_item(
+        SkillAdapterRequest.model_validate(request), Policy.model_validate(policy_data)
+    )
+
+    assert result["status"] == "ready"
+    assert result["step"]["execution_mode"] == "subagent_required"
+    assert result["workflow_runtime_binding"]["owner"] == "workflow_protocol"
+    assert result["workflow_runtime_binding"]["contract_xid"] == "8D50A972BA9F"
+    assert result["workflow_runtime_binding"]["capability"] == "software review"
+    assert result["eligibility_evidence"][0]["required_candidate_capabilities"] == ["orthogonal_array"]
+
+
 def test_adapter_keeps_unknown_measurement_nonready(request_and_policy):
     assessment, raw_policy = request_and_policy
     request = _adapter_request(assessment)

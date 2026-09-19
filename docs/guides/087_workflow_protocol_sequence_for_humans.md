@@ -31,7 +31,7 @@ phase.
 |---|---|
 | User | Provides the goal, constraints, and human decisions when escalation is needed. |
 | Main AI / harness / client | Routes the task, runs `xrefkit skill` commands, manages the run log, and may orchestrate subagents. |
-| `xrefkit skill run` | Opens the runtime envelope, validates Skill metadata, resolves `skill_doc`, assigns runtime roles, and creates the run log. |
+| `xrefkit skill run` | Opens the runtime envelope, validates the selected v1 definition or legacy metadata, fixes definition and runtime-binding identity, assigns runtime roles, and creates the run log. |
 | MCP `bind_skill_run` | Binds the Skill Run `run_id` to the active MCP session and starts correlated server audit records. |
 | Skill executor AI | Reads the returned `skill_doc` and performs the Skill procedure. |
 | `xrefkit skill verify` | Deterministically verifies workflow-progression records and advances the check phase. |
@@ -45,14 +45,23 @@ phase.
 
 2. Main AI / harness routes the goal to a Skill.
    - Routing is semantic and therefore non-deterministic.
-   - The selected Skill is identified by meta identity and applicability.
+   - A v1 Skill is selected from header identity and `applies_when`; a legacy
+     split Skill retains its meta identity and applicability path.
 
-3. Main AI / harness opens the runtime envelope.
+3. Main AI / harness opens the runtime envelope. The Workflow Protocol owns
+   the runtime binding semantics; derive the fields from the instruction as
+   specified by [Workflow Runtime Binding](../core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F):
+   python -m xrefkit skill run --definition <SKILL.v1.md> --task "<task>" --capability "<capability>" --tuning "<tuning>" --responsibility "<responsibility>" --execution-mode <mode> --json
+   For a legacy split Skill, use its compatibility metadata:
    python -m xrefkit skill run --meta <skill-meta> --task "<task>" --json
 
 4. `xrefkit skill run` creates the run log.
-   - validates metadata at runtime-open level
-   - confirms the referenced SKILL.md exists
+   - validates the selected one-document definition or legacy metadata
+   - records `skill_definition_v1` for v1 runs and preserves the established
+     legacy run-log shape for `--meta` runs; old logs are not rewritten
+   - for v1, records definition path, XID, raw bytes SHA-256, maturity evidence,
+     and the instruction-derived runtime binding
+   - confirms the exact Skill body exists
    - returns run_log and skill_doc
    - assigns executor, checker, quality_reviewer, and handoff_owner roles
    - records workflow_protocol, os_contract, worklist, artifact sections,
@@ -77,17 +86,19 @@ phase.
     ```
 
 5. Skill executor AI opens only the returned skill_doc.
-   - The executor interprets SKILL.md.
+   - The executor verifies and interprets the exact selected SKILL.md.
+   - For v1, the parent evaluates `knowledge_needs.required_when`, specifies
+     active need IDs, and resolves only the needed Knowledge bodies by XID.
    - The executor performs the actual work.
-   - If model_tier is light or standard, execution may be delegated to a
-     tier-matched executor subagent.
-   - If model_tier is heavy or unset, execution may remain in the main context.
+   - Execution placement follows the active routing policy and captured
+     `execution_mode`. Legacy `model_tier` remains a quality-gate compatibility
+     field; it does not become SkillDefinition v1 metadata.
 
 6. Main AI / harness records concrete work items.
-   python -m xrefkit skill workitem --log <run-log> --item WI-001 --text "<work>" --status pending --role "<skill>:executor"
+   python -m xrefkit skill workitem --log <run-log> --item WI-001 --text "<work>" --completion-criterion "<observable condition>" --status pending --role "<skill>:executor"
 
 7. Executor completes work items and records status.
-   python -m xrefkit skill workitem --log <run-log> --item WI-001 --status done --role "<skill>:executor"
+   python -m xrefkit skill workitem --log <run-log> --item WI-001 --completion-criterion "<observable condition>" --status done --role "<skill>:executor"
 
 8. Main AI / harness records outputs and evidence.
    python -m xrefkit skill artifact --log <run-log> --artifact OUT-001 --kind output --target "<path>" --item WI-001 --status done --role "<skill>:executor"
@@ -119,8 +130,10 @@ phase.
     Then `xrefkit skill verify` is called again.
 
 14. If the quality gate is required, quality acceptance is recorded separately.
-    - standard and heavy tiers require the quality gate.
-    - light and unset tiers may close without it.
+    - legacy standard and heavy tiers require the quality gate.
+    - legacy light and unset tiers may close without it.
+    - v1 output acceptance remains a separate human or review responsibility;
+      parser success, maturity, and procedural closure do not accept quality.
     - acceptance criteria are recorded as `check` artifacts.
     - the assigned `quality_reviewer` role advances the quality phase.
 
@@ -171,8 +184,8 @@ Main AI / harness context
 Skill executor context
   - reads the returned SKILL.md
   - performs Skill-specific judgment and generation
-  - may be a subagent for light / standard Skills
-  - may be the main context for heavy / unset Skills
+  - receives the definition identity and instruction-derived runtime binding
+  - runs in the context selected by execution_mode and the active routing policy
 
 Deterministic checker context
   - is not an AI reasoning context

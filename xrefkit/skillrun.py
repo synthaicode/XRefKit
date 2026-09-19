@@ -30,6 +30,8 @@ from xrefkit.skillmeta import (
     validate_skill_meta,
 )
 from xrefkit.models.human_evaluation import HumanEvaluation
+from xrefkit.skill_definition import load_skill_definition
+from xrefkit.skill_definition_governance import load_governance_record, match_definition
 
 
 @dataclass
@@ -511,6 +513,8 @@ def _render_log(
     model_tier: str | None,
     domain_knowledge: dict[str, object],
     decision_trace_checkpoint: dict[str, object] | None = None,
+    definition_identity: dict[str, str] | None = None,
+    runtime_binding_source: str = "legacy_meta_compatibility",
 ) -> str:
     tier_label = model_tier or "unset"
     quality_policy = "required" if model_tier in QUALITY_REQUIRED_TIERS else "optional"
@@ -609,6 +613,18 @@ def _render_log(
             f"- node_id: `{node_id or '-'}`",
         ]
     )
+    definition_lines = "".join(
+        f"- definition_{key}: `{value}`\n"
+        for key, value in (definition_identity or {}).items()
+    )
+    runtime_responsibility = role_responsibilities.get("executor") or "not declared"
+    legacy_runtime_binding_lines = ""
+    if runtime_binding_source == "legacy_meta_compatibility":
+        legacy_runtime_binding_lines = (
+            f"- legacy_capability_layering: `{capability_layering}`\n"
+            "- legacy_capability_refs:\n"
+            f"{capability_ref_lines}\n"
+        )
     return f"""# Skill Run Log
 
 - run_id: `{run_id}`
@@ -620,7 +636,7 @@ def _render_log(
 - maturity: `{maturity}`
 - meta: `{meta_path.as_posix()}`
 - skill_doc: `{skill_doc.as_posix()}`
-- task: {task}
+{definition_lines}- task: {task}
 - report_language: `user_language`
 - language_rule: `human-facing report prose follows the user's language; runtime keys, status enums, IDs, paths, and commands remain stable`
 
@@ -636,9 +652,6 @@ def _render_log(
 - guard_policy: `{guard_policy}`
 - capability_layering: `{capability_layering}`
 - workflow_protocol: `{workflow_protocol}`
-- capability: `{capability}`
-- tuning: `{tuning}`
-- execution_mode: `{execution_mode}`
 - model_tier: `{tier_label}`
 - executor: `{assigned_roles["executor"]}`
 - checker: `{assigned_roles["checker"]}`
@@ -663,14 +676,18 @@ def _render_log(
 
 {contract_lines}
 
-## Capability Layering
+## Workflow Runtime Binding
 
-- capability_layering: `{capability_layering}`
+- owner: `workflow_protocol`
+- contract_xid: `8D50A972BA9F`
+- source: `{runtime_binding_source}`
 - capability: `{capability}`
 - tuning: `{tuning}`
-- rule: execute the Skill inside the declared capability / tuning / responsibility boundary; capability definitions are control definitions, not evidence
-- capability_refs:
-{capability_ref_lines}
+- responsibility: `{runtime_responsibility}`
+- execution_mode: `{execution_mode}`
+- instruction_basis: `run.task`
+- rule: derive and persist the runtime binding from the current instruction and work-item state; model_requirements remains a separate model-eligibility input
+{legacy_runtime_binding_lines}
 
 ## Startup Inputs
 
@@ -2571,16 +2588,81 @@ def update_token_usage(args) -> SkillRunResult:
 
 def run_skill(args) -> SkillRunResult:
     root = Path(args.root).resolve()
-    meta_path = (root / args.meta).resolve()
+    definition_arg = getattr(args, "definition", None)
+    governance_arg = getattr(args, "governance", None)
+    meta_arg = getattr(args, "meta", None)
+    if bool(definition_arg) == bool(meta_arg):
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=["exactly one of --meta or --definition is required"])
+    if not definition_arg and (governance_arg or any(
+        getattr(args, key, None)
+        for key in ("capability", "tuning", "responsibility", "execution_mode")
+    )):
+        return SkillRunResult(
+            ok=False, skill_id=None, skill_doc=None, run_log=None,
+            errors=["--governance, --capability, --tuning, --responsibility, and --execution-mode are definition-only runtime inputs"],
+        )
+    meta_path = (root / (definition_arg or meta_arg)).resolve()
     task, task_errors = _read_task(args)
     if task_errors:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=task_errors)
     handoff_source_logs = [str(value).strip() for value in getattr(args, "handoff_source_log", []) if str(value).strip()]
 
     if not meta_path.exists():
-        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"meta not found: {meta_path}"])
+        source_name = "definition" if definition_arg else "meta"
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"{source_name} not found: {meta_path}"])
 
-    parsed = _parse_meta_lines(meta_path.read_text(encoding="utf-8"))
+    definition_identity = None
+    if definition_arg:
+        try:
+            definition = load_skill_definition(meta_path)
+        except (OSError, ValueError) as exc:
+            return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[str(exc)])
+        parsed = dict(definition["metadata"])
+        skill_id = str(parsed["skill_id"])
+        try:
+            definition_relpath = str(meta_path.relative_to(root))
+        except ValueError:
+            return SkillRunResult(ok=False, skill_id=skill_id, skill_doc=str(meta_path), run_log=None, errors=["definition must be under --root"])
+        definition_relpath = Path(definition_relpath).as_posix()
+        definition_identity = {
+            "format": "skill_definition_v1",
+            "xid": str(parsed["xid"]),
+            "path": definition_relpath,
+            "sha256": str(definition["content_hash"]),
+        }
+        definition_maturity = "unassessed"
+        if governance_arg:
+            governance_path = (root / governance_arg).resolve()
+            try:
+                governance_relpath = governance_path.relative_to(root).as_posix()
+            except ValueError:
+                return SkillRunResult(ok=False, skill_id=skill_id, skill_doc=str(meta_path), run_log=None,
+                                      errors=["governance record must be under --root"])
+            try:
+                governance = load_governance_record(governance_path)
+                match_definition(governance, definition)
+            except (OSError, ValueError) as exc:
+                return SkillRunResult(ok=False, skill_id=skill_id, skill_doc=str(meta_path), run_log=None,
+                                      errors=[str(exc)])
+            definition_maturity = str(governance["maturity"])
+            definition_identity.update({
+                "governance_path": governance_relpath,
+                "governance_sha256": str(governance["_content_hash"]),
+                "promotion_decision": str(governance["promotion"]["decision"]),
+            })
+        capability = str(getattr(args, "capability", "") or "").strip()
+        tuning = str(getattr(args, "tuning", "") or "").strip()
+        responsibility = str(getattr(args, "responsibility", "") or "").strip()
+        execution_mode_arg = str(getattr(args, "execution_mode", "") or "").strip()
+        if not capability or not tuning or not responsibility or not execution_mode_arg:
+            return SkillRunResult(ok=False, skill_id=skill_id, skill_doc=str(meta_path), run_log=None,
+                                  errors=["definition-backed runs require --capability, --tuning, --responsibility, and --execution-mode"])
+        parsed.update({"maturity": definition_maturity, "execution_mode": execution_mode_arg, "skill_doc": meta_path.name,
+                       "guard_policy": "required", "capability_layering": "required", "workflow_protocol": "required",
+                       "capability": capability, "tuning": tuning,
+                       "role_responsibilities": [f"executor: {responsibility}"]})
+    else:
+        parsed = _parse_meta_lines(meta_path.read_text(encoding="utf-8"))
     domain_knowledge, domain_knowledge_errors = _prepare_domain_knowledge_context(
         parsed_meta=parsed,
         catalog_path=getattr(args, "domain_knowledge_catalog", None),
@@ -2596,7 +2678,7 @@ def run_skill(args) -> SkillRunResult:
             domain_knowledge=domain_knowledge,
         )
     maturity, _ = _resolve_maturity(parsed)
-    maturity = maturity or "stable"
+    maturity = (str(parsed.get("maturity") or "unassessed") if definition_arg else (maturity or "stable"))
 
     if maturity == "draft":
         return SkillRunResult(
@@ -2618,8 +2700,10 @@ def run_skill(args) -> SkillRunResult:
         )
 
     validation_level = "trial" if maturity == "trial" else "stable"
-    validation = validate_skill_meta(meta_path, check_level=validation_level)
-    if maturity == "trial":
+    validation = validate_skill_meta(meta_path, check_level=validation_level) if not definition_arg else None
+    if definition_arg:
+        blocking_errors = []
+    elif maturity == "trial":
         allowed_trial_errors = {"trial-or-higher skills must include at least one observation_refs entry"}
         blocking_errors = [error for error in validation.errors if error not in allowed_trial_errors]
     else:
@@ -2683,6 +2767,8 @@ def run_skill(args) -> SkillRunResult:
             errors=[f"skill_doc not found: {skill_doc_path}"],
         )
     os_contract = resolve_os_contract(parsed.get("os_contract"))
+    if definition_arg:
+        os_contract = dict(REQUIRED_OS_CONTRACT)
     if maturity == "trial":
         merged_os_contract = dict(REQUIRED_OS_CONTRACT)
         merged_os_contract.update(os_contract)
@@ -2760,7 +2846,7 @@ def run_skill(args) -> SkillRunResult:
         node_id=getattr(args, "node_id", None),
         skill_id=skill_id,
         maturity=maturity,
-        meta_path=meta_path.relative_to(root),
+        meta_path=Path("-") if definition_arg else meta_path.relative_to(root),
         skill_doc=skill_doc_path.relative_to(root),
         execution_mode=execution_mode,
         guard_policy=guard_policy,
@@ -2777,6 +2863,8 @@ def run_skill(args) -> SkillRunResult:
         model_tier=model_tier,
         domain_knowledge=domain_knowledge,
         decision_trace_checkpoint=checkpoint,
+        definition_identity=definition_identity,
+        runtime_binding_source="instruction_derived" if definition_arg else "legacy_meta_compatibility",
     )
     with _LogFileLock(out_path.with_name(f".{out_path.name}.lock")):
         _atomic_write_text(out_path, log)
@@ -2907,6 +2995,7 @@ def run_workflow_instruction(args) -> SkillRunResult:
         model_tier=None,
         domain_knowledge={"available": [], "selected": {}, "requirements": []},
         decision_trace_checkpoint=checkpoint,
+        runtime_binding_source="instruction_derived",
     )
     log = log.replace("# Skill Run Log", "# Workflow Run Log", 1)
     log = log.replace("## Skill Load Gate", "## Run Load Gate", 1)

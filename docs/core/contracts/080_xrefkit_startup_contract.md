@@ -64,9 +64,16 @@ After startup, route work by user intent:
 
 - Use `skills/_index.md` and needed `skills/index/*` files only when a Skill
   must be selected.
-- Select the Skill semantically before direct `--meta <path>` execution.
-- Create the runtime envelope with `python -m xrefkit skill run --meta <path> --task
-  "<task>" --json` before opening or executing `SKILL.md`.
+- Select the canonical SkillDefinition semantically before direct
+  `--definition <path>` execution. Apply the
+  [Workflow Runtime Binding contract](111_workflow_runtime_binding.md#xid-8D50A972BA9F)
+  to derive the instruction-specific runtime fields.
+- Create the runtime envelope with `python -m xrefkit skill run --definition
+  <path> --task "<task>" --capability "<instruction-derived capability>"
+  --tuning "<instruction-derived tuning>" --responsibility
+  "<instruction-derived responsibility>" --execution-mode subagent_required
+  before opening or executing the method. Use `--meta` only for legacy split
+  Skills during migration.
 - Load selected knowledge, workflow, and linked documents only when the active
   task or selected Skill requires them.
 
@@ -78,9 +85,11 @@ same governance contract:
 - `get_repository_identity` is an optional content-free cache preflight.
 - `get_startup_context` returns the MCP startup payload.
 - `startup_contract_pack.body` is the MCP model-facing compressed startup text.
-- `prompt_flow_protocol` is the MCP initialization contract for one prompt
-  spanning generic workflow and delegated Skill Runs. It defines correlation,
-  reconciliation, explicit status projection, and uncertainty boundaries.
+- `prompt_flow_protocol` is the optional MCP initialization contract for one
+  prompt spanning generic workflow and delegated Skill Runs. When excluded by
+  the initialize selection it is returned as `null`; selected protocol bodies
+  define correlation, reconciliation, explicit status projection, and
+  uncertainty boundaries.
 - `get_document_by_xid` resolves needed linked XIDs.
 - `get_skill` transfers selected Skill content.
 - After `xrefkit skill run` creates `run_id`, `bind_skill_run` binds that ID to

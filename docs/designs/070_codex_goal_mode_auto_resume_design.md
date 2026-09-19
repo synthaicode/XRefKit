@@ -22,6 +22,19 @@ The design goal is to:
 4. re-enter the same goal automatically
 5. preserve claim control, boundary control, and auditability across the wait
 
+## Current implementation status
+
+The repository now implements the repository-visible state primitives described
+by this design: append-only continuation packets, wake observations, per-goal
+leases with locking and expiry handling, drift-check fields, and CLI access
+through `xrefkit goal` / `xrefkit workflow recovery`. These primitives preserve
+restart truth and prevent competing lease holders.
+
+Fully automatic resume remains unimplemented. XRefKit does not currently own a
+provider quota watcher, session-start wake scheduler, or automatic provider
+re-entry. A wake event is an explicit observation supplied by an external
+observer or operator; it does not itself resume a goal.
+
 ## Routing Position
 
 This design must remain consistent with the repository's semantic-routing-first model.
@@ -127,8 +140,8 @@ The interaction is:
 1. Codex runs a goal in `goal_mode`
 2. usage reaches `0%`
 3. Codex appends a continuation packet and releases or expires its active lease
-4. an external watcher records that quota may be available again
-5. one or more Codex sessions wake and inspect resumable goals
+4. an external watcher or operator records that quota may be available again
+5. a later Codex session or operator inspects resumable goals
 6. each session attempts to acquire the goal lease
 7. only the lease holder may resume
 8. the lease holder reloads the latest valid continuation packet
@@ -342,16 +355,16 @@ Required responses include:
 
 Phase 1:
 
-- define continuation packet requirements in `goal_mode`
-- add append-only continuation packet rules
-- add goal lease rules
-- add waiting and wakeup-observed states
+- define continuation packet requirements in `goal_mode` (implemented)
+- add append-only continuation packet rules (implemented)
+- add goal lease rules (implemented)
+- add waiting and wakeup-observed state storage (implemented)
 
 Phase 2:
 
-- implement quota watcher integration
-- implement session-start lease acquisition and resume logic
-- implement stop-hook append and lease release
+- implement quota watcher integration (not implemented)
+- implement session-start lease acquisition and resume logic (not implemented)
+- implement stop-hook append and lease release (runtime integration not implemented)
 
 Phase 3:
 

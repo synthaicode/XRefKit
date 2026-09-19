@@ -32,7 +32,9 @@ is not part of the mandatory startup read path.
   `docs/core/models/017_base_and_xref_layering.md#xid-5A1C8E4D2F90`.
 - Manage skill definitions and domain knowledge as separate files.
 - Treat domain knowledge in `knowledge/` as shared/common.
-- A Skill's capability/tuning/responsibility is its meta identity and the routing vocabulary.
+- Runtime binding ownership for `capability`, `tuning`, and `responsibility` is
+  defined by `docs/core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F`.
+  Legacy split Skills retain corresponding `meta.md` fields for compatibility.
 - When updating repository documents, apply the document update policy in
   `docs/policies/074_document_update_policy.md#xid-B1D42A6F90C3`: target
   documents describe the latest authoritative state; prior document states stay
@@ -49,8 +51,8 @@ is not part of the mandatory startup read path.
   `docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61`
   before opening or executing `SKILL.md`.
 - Route to the target Skill by semantic routing from user intent and the Skill
-  catalog (capability/tuning/responsibility triad); there is no separate
-  capability-routing model.
+  catalog, then create the Workflow Runtime Binding from the instruction.
+  `model_requirements` remains separate model-routing data.
 - When a task or skill needs domain knowledge, route via:
   - `python -m xrefkit xref search "<query>"`
   - `python -m xrefkit xref show <XID>`

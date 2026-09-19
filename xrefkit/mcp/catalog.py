@@ -10,7 +10,12 @@ from pathlib import Path
 
 from .contracts import builtin_tool_contracts
 from ..discovery import discover_skill_packages, DiscoveredSkillPackage
-from ..loaders import load_skill_definition
+from ..loaders import load_skill_definition as load_package_skill_definition
+from ..skill_definition import (
+    load_skill_definition as load_markdown_skill_definition,
+    parse_skill_definition as parse_markdown_skill_definition,
+)
+from ..skill_definition_catalog import build_definition_catalog
 from .ownership import Ownership, load_ownership, validate_ownership
 from .skill_edits import (
     active_edit,
@@ -256,6 +261,8 @@ class XRefCatalog:
     ownership: Ownership | None = None
     domain_knowledge_roots: tuple[Path, ...] = ()
     discovered_packages: tuple[DiscoveredSkillPackage, ...] = ()
+    skill_definition_paths: tuple[Path, ...] = ()
+    skill_governance_paths: tuple[Path, ...] = ()
 
     @classmethod
     def build(
@@ -263,6 +270,8 @@ class XRefCatalog:
         repo_root: str | Path,
         domain_knowledge_roots: list[str | Path] | tuple[str | Path, ...] | None = None,
         discover_packages: bool = False,
+        skill_definition_paths: list[str | Path] | tuple[str | Path, ...] | None = None,
+        skill_governance_paths: list[str | Path] | tuple[str | Path, ...] | None = None,
     ) -> "XRefCatalog":
         root = Path(repo_root).resolve()
         if not root.exists():
@@ -270,6 +279,18 @@ class XRefCatalog:
         external_roots = tuple(
             _resolve_domain_knowledge_root(path) for path in (domain_knowledge_roots or [])
         )
+        definition_paths = tuple(
+            _resolve_skill_definition_path(root, path)
+            for path in (skill_definition_paths or [])
+        )
+        if len(definition_paths) != len(set(definition_paths)):
+            raise ValueError("skill_definition_paths contains duplicates")
+        governance_paths = tuple(
+            _resolve_skill_governance_path(root, path)
+            for path in (skill_governance_paths or [])
+        )
+        if len(governance_paths) != len(set(governance_paths)):
+            raise ValueError("skill_governance_paths contains duplicates")
         fingerprint, fingerprint_basis = repository_identity(root)
         ownership = load_ownership(root)
         if ownership is not None:
@@ -284,6 +305,8 @@ class XRefCatalog:
             ownership=ownership,
             domain_knowledge_roots=external_roots,
             discovered_packages=tuple(discover_skill_packages()) if discover_packages else (),
+            skill_definition_paths=definition_paths,
+            skill_governance_paths=governance_paths,
         )
 
     # knowledge, skills, and catalog_version are rebuilt from the live
@@ -302,7 +325,18 @@ class XRefCatalog:
         entries = _build_skills(self.repo_root, self.ownership)
         for package in self.discovered_packages:
             entries.extend(_build_package_skills(package))
-        return self._apply_skill_edits(entries)
+        entries = self._apply_skill_edits(entries)
+        definitions = _build_definition_skill_entries(
+            self.repo_root,
+            self.ownership,
+            self.skill_definition_paths,
+            self.skill_governance_paths,
+        )
+        if definitions:
+            replaced = {entry.skill_id for entry in definitions}
+            entries = [entry for entry in entries if entry.skill_id not in replaced]
+            entries.extend(definitions)
+        return entries
 
     def _apply_skill_edits(self, entries: list[SkillCatalogEntry]) -> list[SkillCatalogEntry]:
         """Replace explicitly registered source entries with local overlays."""
@@ -562,6 +596,7 @@ class XRefCatalog:
                 entry.skill_id
                 + entry.summary
                 + stable_hash(entry.meta_content + "\n" + entry.skill_content)
+                + (entry.definition_content_hash or "")
                 for entry in self.skills
             ]
             + [
@@ -687,10 +722,18 @@ class XRefCatalog:
 
         documents: list[dict] = []
         source_root = Path(entry.source_root) if entry.source_root else self.repo_root
-        for relative_path in [entry.meta_path, entry.path]:
+        relative_paths = (
+            [entry.path]
+            if entry.definition_format == "skill_definition_v1"
+            else [entry.meta_path, entry.path]
+        )
+        for relative_path in relative_paths:
             path = source_root / relative_path
-            text = read_text(path)
-            document = _xref_document(path, source_root, text)
+            if entry.definition_format == "skill_definition_v1":
+                document = _raw_skill_definition_document(path, relative_path, entry)
+            else:
+                text = read_text(path)
+                document = _xref_document(path, source_root, text)
             if entry.source_root:
                 document = XRefDocument(
                     xid=document.xid,
@@ -727,9 +770,14 @@ class XRefCatalog:
             "skill_doc": entry.path,
             "skill_links": entry.skill_links,
             "missing": entry.missing,
+            "definition_format": entry.definition_format,
+            "definition_xid": entry.definition_xid,
+            "definition_content_hash": entry.definition_content_hash,
         }
 
-    def resolve_skill_knowledge(self, skill_id: str) -> dict:
+    def resolve_skill_knowledge(
+        self, skill_id: str, active_need_ids: list[str] | None = None
+    ) -> dict:
         """Resolve a Skill's declared ``knowledge_slots`` against the base+local
         unified catalog (design 082 Decision 3 / 084 M5).
 
@@ -743,6 +791,58 @@ class XRefCatalog:
         entry = self._skill_by_id(skill_id)
         knowledge = self.knowledge
         by_xid = {item.xid: item for item in knowledge}
+        if entry.definition_format == "skill_definition_v1":
+            needs = entry.knowledge_slots
+            known_ids = {str(need.get("id")) for need in needs}
+            if active_need_ids is not None:
+                if (not isinstance(active_need_ids, list)
+                        or any(not isinstance(item, str) or not item.strip() for item in active_need_ids)):
+                    raise ValueError("active_need_ids must be a list of nonempty strings")
+                if len(active_need_ids) != len(set(active_need_ids)):
+                    raise ValueError("active_need_ids contains duplicates")
+                unknown = [item for item in active_need_ids if item not in known_ids]
+                if unknown:
+                    raise ValueError(f"unknown active knowledge need IDs: {', '.join(unknown)}")
+                active = set(active_need_ids)
+            else:
+                active = set()
+            resolved: list[dict] = []
+            for need in needs:
+                need_id = str(need.get("id"))
+                query = str(need.get("query") or need_id)
+                seed_candidates = [by_xid[xid].to_dict() for xid in need.get("seed_xids", []) if xid in by_xid]
+                seed_ids = {item["xid"] for item in seed_candidates}
+                ranked = [item for item in _rank_entries(query, knowledge) if item.xid not in seed_ids]
+                candidates = (seed_candidates + [item.to_dict() for item in ranked])[:5]
+                activation_state = (
+                    "unresolved" if active_need_ids is None
+                    else "active" if need_id in active
+                    else "inactive"
+                )
+                required = None if active_need_ids is None else need_id in active
+                satisfied = bool(candidates) if required is True else None
+                resolved.append({
+                    "id": need_id,
+                    "query": query,
+                    "required_when": need.get("required_when"),
+                    "required": required,
+                    "activation_state": activation_state,
+                    "candidates": candidates,
+                    "satisfied": satisfied,
+                })
+            return {
+                "skill_id": entry.skill_id,
+                "needs": resolved,
+                "slots": [],
+                "activation": {"active_need_ids": list(active_need_ids) if active_need_ids is not None else None},
+                "unresolved_activation": [
+                    need["id"] for need in resolved if need["activation_state"] == "unresolved"
+                ],
+                "unsatisfied_required": [
+                    need["id"] for need in resolved
+                    if need["required"] is True and need["satisfied"] is False
+                ],
+            }
         resolved: list[dict] = []
         for slot in entry.knowledge_slots:
             name = slot.get("slot") or slot.get("name")
@@ -1049,6 +1149,8 @@ class XRefCatalog:
         self,
         known_document_versions: dict[str, str] | None = None,
         initial_protocols: list[str] | None = None,
+        excluded_protocols: list[str] | None = None,
+        selection_source: str | None = None,
     ) -> dict:
         known_document_versions = known_document_versions or {}
         references: list[StartupReference] = []
@@ -1124,7 +1226,12 @@ class XRefCatalog:
                 "the live sources with get_document_by_xid, and escalate to "
                 "the repository maintainers to regenerate the pack.",
             ]
-        selected_protocols = _normalize_initial_protocols(initial_protocols)
+        selected_protocols, protocol_selection = _select_initial_protocols(
+            initial_protocols=initial_protocols,
+            excluded_protocols=excluded_protocols,
+        )
+        if selection_source is not None:
+            protocol_selection["source"] = selection_source
         return StartupContext(
             catalog_version=self.catalog_version,
             repository_identity=self.get_repository_identity(),
@@ -1176,7 +1283,9 @@ class XRefCatalog:
             },
             load_order=[reference.xid for reference in references],
             startup_contract_pack=startup_contract_pack,
-            prompt_flow_protocol=_prompt_flow_protocol(),
+            prompt_flow_protocol=(
+                _prompt_flow_protocol() if "prompt_flow" in selected_protocols else None
+            ),
             instruction_gateway=gateway_contract(),
             workflow_protocol=(
                 _workflow_protocol() if "workflow" in selected_protocols else None
@@ -1184,11 +1293,7 @@ class XRefCatalog:
             reporting_protocol=(
                 _reporting_protocol() if "reporting" in selected_protocols else None
             ),
-            initial_protocol_selection={
-                "available": ["workflow", "reporting"],
-                "selected": selected_protocols,
-                "default": ["workflow", "reporting"],
-            },
+            initial_protocol_selection=protocol_selection,
             references=references,
             semantic_routing_references=_semantic_routing_references(),
             missing=missing,
@@ -1663,11 +1768,18 @@ def _skill_document_versions(
 ) -> list[dict]:
     versions: list[dict] = []
     source_root = Path(entry.source_root) if entry.source_root else root
-    for relative_path, text in [
-        (entry.meta_path, entry.meta_content),
-        (entry.path, entry.skill_content),
-    ]:
-        document = _xref_document(source_root / relative_path, source_root, text)
+    sources = (
+        [(entry.path, None)]
+        if entry.definition_format == "skill_definition_v1"
+        else [(entry.meta_path, entry.meta_content), (entry.path, entry.skill_content)]
+    )
+    for relative_path, stored_text in sources:
+        path = source_root / relative_path
+        if entry.definition_format == "skill_definition_v1":
+            document = _raw_skill_definition_document(path, relative_path, entry)
+        else:
+            assert stored_text is not None
+            document = _xref_document(path, source_root, stored_text)
         if entry.source_root:
             document = XRefDocument(
                 xid=document.xid,
@@ -1691,6 +1803,31 @@ def _skill_document_versions(
             }
         )
     return versions
+
+
+def _raw_skill_definition_document(
+    path: Path,
+    relative_path: str,
+    entry: SkillCatalogEntry,
+) -> XRefDocument:
+    raw = path.read_bytes()
+    content = raw.decode("utf-8")
+    parsed = parse_markdown_skill_definition(
+        raw.decode("utf-8-sig"), source=str(path),
+    )
+    digest = hashlib_sha256_bytes(raw)
+    if (parsed["metadata"]["xid"] != entry.definition_xid
+            or digest != entry.definition_content_hash):
+        raise ValueError("SkillDefinition changed during catalog resolution; retry")
+    return XRefDocument(
+        xid=parsed["metadata"]["xid"],
+        title=entry.title,
+        path=relative_path,
+        summary=entry.summary,
+        content=content,
+        links=markdown_xid_link_targets(content),
+        content_hash=digest,
+    )
 
 
 def _startup_contract_pack(
@@ -1824,6 +1961,97 @@ def _build_skill_entry(root: Path, ownership: Ownership | None, meta_path: Path)
     )
 
 
+def _resolve_skill_definition_path(root: Path, value: str | Path) -> Path:
+    path = (root / Path(value)).resolve()
+    try:
+        path.relative_to(root)
+    except ValueError as exc:
+        raise ValueError("SkillDefinition path must remain within the repository") from exc
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    return path
+
+
+def _resolve_skill_governance_path(root: Path, value: str | Path) -> Path:
+    path = (root / Path(value)).resolve()
+    try:
+        path.relative_to(root)
+    except ValueError as exc:
+        raise ValueError("Skill governance path must remain within the repository") from exc
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    return path
+
+
+def _build_definition_skill_entries(
+    root: Path,
+    ownership: Ownership | None,
+    paths: tuple[Path, ...],
+    governance_paths: tuple[Path, ...] = (),
+) -> list[SkillCatalogEntry]:
+    if not paths:
+        return []
+    derived_catalog = build_definition_catalog(list(paths), list(governance_paths))
+    derived_by_id = {entry["skill_id"]: entry for entry in derived_catalog["entries"]}
+    entries: list[SkillCatalogEntry] = []
+    for path in paths:
+        definition = load_markdown_skill_definition(path)
+        meta = definition["metadata"]
+        derived = derived_by_id[meta["skill_id"]]
+        maturity_governance = derived["governance"]
+        if maturity_governance is not None:
+            maturity_governance = {
+                **maturity_governance,
+                "record_ref": {
+                    **maturity_governance["record_ref"],
+                    "path": relative_to_repo(
+                        Path(maturity_governance["record_ref"]["path"]), root,
+                    ),
+                },
+            }
+        method = definition["method"]
+        rel = relative_to_repo(path, root)
+        closure = ClosureContract(
+            closure_conditions=[item["statement"] for item in meta["criteria"]],
+            exit_enum=["completed", "blocked", "needs_input"],
+            handoff_policy="SkillDefinition method and Workflow Protocol govern explicit handoff",
+            worklist_policy="required",
+        )
+        knowledge_needs = [dict(item) for item in meta["knowledge_needs"]]
+        entries.append(
+            SkillCatalogEntry(
+                skill_id=meta["skill_id"],
+                title=first_heading(method, meta["skill_id"]),
+                summary=meta["summary"],
+                maturity=derived["maturity"],
+                intent=list(meta["applies_when"]),
+                target_artifacts=list(meta["outputs"]),
+                applies_when=list(meta["applies_when"]),
+                not_for=list(meta["exclusions"]),
+                required_knowledge=knowledge_needs,
+                required_tools=[],
+                inputs=list(meta["inputs"]),
+                outputs=list(meta["outputs"]),
+                closure_contract=closure,
+                meta_content="",
+                meta_links=[],
+                skill_content="",
+                skill_links=markdown_xid_link_targets(method),
+                path=rel,
+                meta_path=rel,
+                context_size=_skill_context_size("", method, list(meta["outputs"]), closure),
+                knowledge_slots=knowledge_needs,
+                missing=[],
+                zone_metadata=_zone_metadata(ownership, rel),
+                definition_format="skill_definition_v1",
+                definition_xid=meta["xid"],
+                definition_content_hash=definition["content_hash"],
+                maturity_governance=maturity_governance,
+            )
+        )
+    return entries
+
+
 def _slot_int(value: object, default: int = 0) -> int:
     try:
         return int(str(value).strip())
@@ -1898,13 +2126,72 @@ def _build_package_skills(package: DiscoveredSkillPackage) -> list[SkillCatalogE
     """
     entries: list[SkillCatalogEntry] = []
     manifest = package.manifest
+    package_root = package.package_root.resolve()
     for provided in manifest.provides.skills:
-        skill_path = package.package_root / provided.path
-        skill = load_skill_definition(skill_path)
+        skill_path = (package_root / provided.path).resolve()
+        try:
+            rel_skill = skill_path.relative_to(package_root).as_posix()
+        except ValueError as exc:
+            raise ValueError(f"package Skill path escapes package root: {provided.path}") from exc
+        if skill_path.suffix.lower() == ".md":
+            definition = load_markdown_skill_definition(skill_path)
+            meta = definition["metadata"]
+            method = definition["method"]
+            if meta["skill_id"] != provided.id or meta["xid"] != provided.xid:
+                raise ValueError(
+                    "package SkillDefinition identity does not match manifest: "
+                    f"{provided.id}/{provided.xid} != {meta['skill_id']}/{meta['xid']}"
+                )
+            closure = ClosureContract(
+                closure_conditions=[item["statement"] for item in meta["criteria"]],
+                exit_enum=["completed", "blocked", "needs_input"],
+                handoff_policy="SkillDefinition method and Workflow Protocol govern explicit handoff",
+                worklist_policy="required",
+            )
+            knowledge_needs = [dict(item) for item in meta["knowledge_needs"]]
+            entries.append(
+                SkillCatalogEntry(
+                    skill_id=meta["skill_id"],
+                    title=first_heading(method, meta["skill_id"]),
+                    summary=meta["summary"],
+                    maturity="unassessed",
+                    intent=list(meta["applies_when"]),
+                    target_artifacts=list(meta["outputs"]),
+                    applies_when=list(meta["applies_when"]),
+                    not_for=list(meta["exclusions"]),
+                    required_knowledge=knowledge_needs,
+                    required_tools=[],
+                    inputs=list(meta["inputs"]),
+                    outputs=list(meta["outputs"]),
+                    closure_contract=closure,
+                    meta_content="",
+                    meta_links=[],
+                    skill_content="",
+                    skill_links=markdown_xid_link_targets(method),
+                    path=rel_skill,
+                    meta_path=rel_skill,
+                    context_size=_skill_context_size("", method, list(meta["outputs"]), closure),
+                    knowledge_slots=knowledge_needs,
+                    missing=[],
+                    zone_metadata={
+                        "source": "installed_skill_package",
+                        "package_id": package.package_id,
+                        "package_version": package.version,
+                        "entry_point": package.entry_point_name,
+                    },
+                    package_id=package.package_id,
+                    source_root=str(package_root),
+                    definition_format="skill_definition_v1",
+                    definition_xid=meta["xid"],
+                    definition_content_hash=definition["content_hash"],
+                )
+            )
+            continue
+        skill = load_package_skill_definition(skill_path)
         entry_path = package.package_root / skill.entry.path
         entry_text = read_text(entry_path) if entry_path.exists() else ""
         summary = first_paragraph(entry_text) or f"Package Skill {skill.skill_id}"
-        rel_skill = skill_path.relative_to(package.package_root).as_posix()
+        rel_skill = skill_path.relative_to(package_root).as_posix()
         rel_entry = skill.entry.path.replace("\\", "/")
         required_knowledge = [
             {"xid": xid, "required": True, "reason": "package declaration"}
@@ -1953,7 +2240,7 @@ def _build_package_skills(package: DiscoveredSkillPackage) -> list[SkillCatalogE
                     "entry_point": package.entry_point_name,
                 },
                 package_id=package.package_id,
-                source_root=str(package.package_root),
+                source_root=str(package_root),
             )
         )
     return entries
@@ -2471,6 +2758,25 @@ def _workflow_protocol() -> dict[str, object]:
     return {
         "version": "1",
         "source": "xrefkit.mcp",
+        "runtime_binding": {
+            "contract_xid": "8D50A972BA9F",
+            "owner": "workflow_protocol",
+            "fields": [
+                "capability",
+                "tuning",
+                "responsibility",
+                "execution_mode",
+                "instruction_basis",
+            ],
+            "source_values": {
+                "skill_definition_v1": "instruction_derived",
+                "legacy_split_v1": "legacy_meta_compatibility",
+                "instruction_backed_workflow": "instruction_derived",
+            },
+            "derivation": "parent_workflow_or_host_derives_from_current_instruction_and_work_item_state",
+            "model_requirements": "separate_per_work_item_model_eligibility_input",
+            "compatibility": "legacy capability_layering and capability_refs metadata may remain visible but do not own the canonical binding",
+        },
         "decision_trace_protocol": {
             "status": "standard",
             "contract_xid": "22164A51A745",
@@ -2561,17 +2867,62 @@ def _reporting_protocol() -> dict[str, object]:
     }
 
 
-def _normalize_initial_protocols(initial_protocols: list[str] | None) -> list[str]:
-    if initial_protocols is None:
-        return ["workflow", "reporting"]
-    selected = list(dict.fromkeys(initial_protocols))
-    invalid = [item for item in selected if item not in {"workflow", "reporting"}]
+_AVAILABLE_PROTOCOLS = ["prompt_flow", "workflow", "reporting"]
+
+
+def _normalize_protocol_names(value: object, field: str) -> list[str]:
+    if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+        raise ValueError(f"{field} must be a list of protocol names")
+    selected = list(dict.fromkeys(value))
+    invalid = [item for item in selected if item not in _AVAILABLE_PROTOCOLS]
     if invalid:
         raise ValueError(
-            "initial_protocols must contain only workflow or reporting: "
+            f"{field} must contain only prompt_flow, workflow, or reporting: "
             + ", ".join(invalid)
         )
     return selected
+
+
+def _select_initial_protocols(
+    *,
+    initial_protocols: list[str] | None,
+    excluded_protocols: list[str] | None,
+) -> tuple[list[str], dict[str, object]]:
+    if initial_protocols is not None and excluded_protocols is not None:
+        raise ValueError("initial_protocols and excluded_protocols cannot be used together")
+    if excluded_protocols is not None:
+        excluded = _normalize_protocol_names(excluded_protocols, "excluded_protocols")
+        selected = [name for name in _AVAILABLE_PROTOCOLS if name not in excluded]
+        return selected, {
+            "available": list(_AVAILABLE_PROTOCOLS),
+            "selected": selected,
+            "excluded": excluded,
+            "default": list(_AVAILABLE_PROTOCOLS),
+            "source": "initialize",
+            "selection_mode": "exclude",
+        }
+    if initial_protocols is not None:
+        legacy = _normalize_protocol_names(initial_protocols, "initial_protocols")
+        if "prompt_flow" in legacy:
+            raise ValueError("initial_protocols supports only workflow or reporting")
+        selected = ["prompt_flow", *[name for name in ("workflow", "reporting") if name in legacy]]
+        return selected, {
+            "available": list(_AVAILABLE_PROTOCOLS),
+            "selected": selected,
+            "excluded": [name for name in _AVAILABLE_PROTOCOLS if name not in selected],
+            "default": ["workflow", "reporting"],
+            "source": "initialize",
+            "selection_mode": "legacy_include",
+        }
+    selected = list(_AVAILABLE_PROTOCOLS)
+    return selected, {
+        "available": list(_AVAILABLE_PROTOCOLS),
+        "selected": selected,
+        "excluded": [],
+        "default": list(_AVAILABLE_PROTOCOLS),
+        "source": "default",
+        "selection_mode": "exclude",
+    }
 
 
 def _context_injection_policy() -> dict[str, object]:
