@@ -30,8 +30,8 @@ EMBEDDED_STARTUP_SOURCE_PATHS = {
 # no longer drift silently.
 EMBEDDED_BASED_ON_HASHES = {
     "0B5C58B5E5B2": "2ce3b2fff46200aef3d929811ff9ddfc90aec4b195a986b19ec57180d85b4a56",
-    "5A1C8E4D2F90": "6872cc436fb4fe89bcb10b51b8fa49329656a9f89d1f6bc384e8d1f393b48a16",
-    "6C0B62D6366A": "0c5d70ffcdbee38b03df4070256d14aebb326ff2fe8f5d6f9c8c2084c5646139",
+    "5A1C8E4D2F90": "b4cc94e25ff8373d13bbe23beb9ad418fa9745d3e99506bcc8015c98a1c14b0a",
+    "6C0B62D6366A": "c4de2227516494e4112045a7b5dbf2a4c14285c1520c1f82a5013e22df1ecc5e",
     "8A666C1FD121": "d03931f9892b6af13cd2b0fa7bc2112e06ed5a7f04bea6b9bd530594b516c4d0",
     "A7F3C92D4E11": "ede477b451acc9c543c312e7b3ea3ae5f10292f458150bc2ea5b80c9fea7d0b9",
     "4A423E72D2ED": "0bbdccc47ec51269809ea3010a55ac0a459e5815282286510b67f2ae37b9bffc",
@@ -81,10 +81,12 @@ Sources:
 ## Protocol boundary and runtime routing
 
 The live get_startup_context response returns prompt_flow_protocol,
-workflow_protocol, and the selected reporting_protocol as separate response
-blocks. Each protocol owns its correlation, orchestration, reporting,
-verification, closure, and applicability details; this startup body does not
-duplicate those procedures.
+workflow_protocol, and reporting_protocol as separate response blocks.
+Each selected protocol has a body; each excluded protocol body is null.
+The effective selection is recorded in initial_protocol_selection. Each
+protocol owns its correlation, orchestration, reporting, verification,
+closure, and applicability details; this startup body does not duplicate
+those procedures.
 
 - Route dynamically from the active Skill catalog and the current instruction. The selected method and instruction determine the Workflow Runtime Binding; model_requirements remains separate model-routing data.
 - Start a Skill Run with the returned runtime envelope, preserve its run_log and definition identity, and do not materialize or execute the method until the run and ExecutionBinding succeed.
