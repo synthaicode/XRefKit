@@ -2348,7 +2348,10 @@ def _reporting_protocol() -> dict[str, object]:
         "version": "1",
         "source": "xrefkit.mcp",
         "contract_xid": "6B2D9F4A1C73",
-        "activation": "every human-facing Skill or workflow report",
+        "activation": (
+            "human-facing Skill or workflow reports only when the conversation "
+            "has an established decision framework"
+        ),
         "required_sections": [
             "Report",
             "Status",
@@ -2376,7 +2379,18 @@ def _reporting_protocol() -> dict[str, object]:
             "artifact_traceability",
         ],
         "rules": [
+            "do not apply this protocol when the conversation has no decision framework",
+            "protocol loading or profile selection alone does not establish a decision framework",
+            "without a decision framework, use ordinary conversational form without required report headings or status labels",
+            "do not invent criteria or a decision framework merely to apply this protocol",
+            "reporting applicability does not waive runtime recording, verification, closure, or uncertainty obligations",
             "summary_first",
+            "attach a brief reader perspective near the conclusion within Result (Japanese: 結論), without adding required sections or changing report order",
+            "ground the perspective in the user purpose and established decision framework; name the relationship, distinction, or change to focus on and why it matters for the next judgment",
+            "when perspectives have an established or evidence-supported priority, include the priority order and a brief reason grounded in the user purpose and decision framework; do not invent a ranking, and do not treat lower priority as exclusion or exemption from required checks",
+            "when relevant, distinguish what evidence establishes from remaining human judgment and state the condition requiring reconsideration; keep supporting evidence reachable",
+            "a reader perspective must not imply unverified areas are safe to ignore, prior evaluations still apply without checking their conditions, or a plausible explanation proves correctness or understanding",
+            "reading guidance adds no approval gate or evaluation criterion; preserve unknowns instead of inventing reader purpose, authority, or a decision framework",
             "preserve evidence and open items",
             "keep workflow status separate from domain gate verdict",
             "do not use done to hide unresolved unknowns, risks, or handoff conditions",

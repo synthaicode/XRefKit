@@ -991,6 +991,22 @@ Duplicate external body.
         self.assertEqual(context["workflow_protocol"]["version"], "1")
         self.assertEqual(context["workflow_protocol"]["phase_order"][0], "startup")
         self.assertEqual(context["reporting_protocol"]["contract_xid"], "6B2D9F4A1C73")
+        reporting = context["reporting_protocol"]
+        self.assertIn("only when the conversation", reporting["activation"])
+        self.assertIn("established decision framework", reporting["activation"])
+        self.assertIn(
+            "do not apply this protocol when the conversation has no decision framework",
+            reporting["rules"],
+        )
+        self.assertTrue(any("ordinary conversational form" in rule for rule in reporting["rules"]))
+        self.assertTrue(any("do not invent criteria" in rule for rule in reporting["rules"]))
+        self.assertTrue(any("reader perspective near the conclusion" in rule for rule in reporting["rules"]))
+        self.assertTrue(any("why it matters for the next judgment" in rule for rule in reporting["rules"]))
+        self.assertTrue(any("include the priority order and a brief reason" in rule for rule in reporting["rules"]))
+        self.assertTrue(any("do not invent a ranking" in rule for rule in reporting["rules"]))
+        self.assertTrue(any("preserve unknowns instead of inventing" in rule for rule in reporting["rules"]))
+        self.assertNotIn("Perspective", reporting["required_sections"])
+        self.assertNotIn("視点", reporting["japanese_sections"])
         self.assertEqual(
             context["initial_protocol_selection"]["selected"],
             ["workflow", "reporting"],
