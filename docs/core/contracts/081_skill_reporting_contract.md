@@ -6,12 +6,27 @@
 This contract makes the result of every Skill recognizable to a human and to
 the next Skill in a workflow. It uses frontloaded, scan-friendly reporting:
 the decision-relevant summary comes first, while detailed evidence remains
-available below it. A Skill may add domain-specific sections, but it must keep
+available below it. When this contract applies, a Skill may add domain-specific sections, but it must keep
 the common summary visible in its human-facing report.
+
+## Applicability
+
+Apply this reporting protocol only when the conversation has an established
+decision framework, such as agreed evaluation criteria, completion conditions,
+or a review gate for the active task. Loading the protocol or selecting a
+reporting profile does not by itself establish that framework.
+
+When the conversation has no decision framework, do not apply this protocol.
+Respond in ordinary conversational form without requiring its report headings,
+status labels, or reporting profiles. Do not invent criteria or a decision
+framework merely to apply the protocol.
+
+This condition governs human-facing reporting only. Existing runtime recording,
+verification, closure, and uncertainty obligations remain in force.
 
 ## Required Report Shape
 
-Every human-facing Skill report starts with a `## Report` section containing
+When this protocol applies, a human-facing Skill or workflow report starts with a `## Report` section containing
 these headings:
 
 ```md
@@ -112,6 +127,43 @@ Use this extension only when the work can span meaningful steps, sessions,
 agents, or verification gates. It supplements the Run Log and does not replace
 XID-backed evidence, work items, artifacts, concerns, phases, `skill verify`,
 or `skill close`.
+
+## Reader Perspective
+
+When this protocol applies, every report MUST attach a brief reader perspective
+near the conclusion, within `Result` (Japanese: `結論`). A short inline label
+such as `Perspective:` / `視点:` may be used; do not add a required top-level
+section or change the existing report order.
+
+Ground the perspective in the user's purpose and the established decision
+framework. State which relationship, distinction, or change the reader should
+focus on and why it matters for the next judgment. Do not substitute a generic
+role label such as "from a technical perspective" for this guidance.
+
+When the perspectives have an established or evidence-supported priority,
+include their priority order and a brief reason so the reader knows what to
+consider first. Base that order on the user purpose and decision framework.
+Do not invent a ranking when no priority is established or supported; preserve
+equal priority or an unknown ordering when relevant. Lower priority does not
+mean excluded or exempt from required checks.
+
+When relevant, distinguish what the evidence establishes from what still needs
+human judgment, and state the condition that would require reconsideration.
+Keep supporting detail and evidence reachable without requiring the reader to
+reconstruct the main relationship from a file list or evidence table. The
+perspective must not imply that an unverified area is safe to ignore, that a
+prior evaluation still applies without checking its conditions, or that a
+plausible explanation establishes correctness or human understanding.
+
+For example, when reporting a completed procedural check with content quality
+still unverified:
+
+> 視点: 今回は、手続記録の検証完了と成果物の品質確認を分けて読んでください。
+> この結果が示すのは前者であり、採用には未確認の品質を判断する必要があります。
+
+This is reading guidance, not an additional approval gate or a new evaluation
+criterion. If the perspective depends on missing context, name that unknown
+rather than inventing the reader's purpose, authority, or decision framework.
 
 ## Finding And Checklist Anchors
 
