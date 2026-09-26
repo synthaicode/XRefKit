@@ -19,6 +19,9 @@ criteria:
   - id: artifact_traceability
     statement: Produced artifacts retain the source pointers, reproducible inputs, and verification evidence required by this Skill
     verification: Inspect the artifact paths, source links, and verification record
+  - id: diagram_connector_alignment
+    statement: Arrows between distinct content blocks have visibly bounded endpoints and run between the blocks at their vertical midpoint; return arrows read as a separate feedback path
+    verification: Inspect the rendered diagram at slide size for bounded endpoints, centered forward arrows, clear labels, and an unambiguous return path
   - id: acceptance_boundary
     statement: Human acceptance and publication decisions remain explicit and are not inferred from successful generation
     verification: Check the handoff and acceptance boundary before closure
@@ -104,6 +107,8 @@ This skill may also be used in `single_image_infographic` mode when Marketing Gr
   - boxes, arrows, comparisons, loops, labels, badges
 - Prefer comparison, flow, hub-and-spoke, and loop layouts for concept slides.
 - Choose patterns from `references/layout-patterns.md` instead of inventing a new structure by default.
+- For a flow or loop, identify which blocks each arrow connects and how a
+  feedback arrow differs from a forward step before writing the render source.
 - Keep one visual per slide. If the slide needs two different stories, split it.
 - Keep one central claim per standalone infographic. If the image needs multiple unrelated claims, split it into a deck or a series of images.
 
@@ -151,6 +156,10 @@ npx --yes playwright screenshot --browser chromium --viewport-size "1600,900" fi
   - audit trail and XID traceability support reproducibility
 - Verify markdown does not repeat text that already appears inside the PNG.
 - Regenerate PNG files after any structural change to the diagrams.
+- For arrows between distinct blocks, check the rendered PNG: both endpoints
+  are visibly enclosed, each forward arrow lies between borders at the blocks'
+  vertical midpoint, and labels do not collide with borders. Keep return arrows
+  outside the blocks with a clearly visible direction.
 - Keep CSS simple and consistent across slides:
   - stable typography
   - limited color palette

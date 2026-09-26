@@ -28,3 +28,4 @@
 - observation_refs:
   - `../../observations/2026-04-29_skill_run_marketing_slide_png.md`
   - `../../observations/2026-04-29_skill_run_closure_gate.md`
+  - `../../observations/2026-09-26_arrow_block_alignment.md`
