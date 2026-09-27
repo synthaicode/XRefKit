@@ -1,0 +1,97 @@
+:root{font-family:Inter,"Segoe UI","Yu Gothic UI",sans-serif;color:#253c3c;background:#f4f3ed;font-synthesis:none}*{box-sizing:border-box}body{margin:0}button,input,summary{font:inherit}button,summary{cursor:pointer}button{border:1px solid #d6ded8;background:#fffdf8;border-radius:10px;padding:10px 15px;color:inherit}button:hover{background:#e8eee6}button:focus-visible,summary:focus-visible{outline:3px solid #719a84;outline-offset:4px}button:disabled{opacity:.5;cursor:wait}[hidden]{display:none!important}main{max-width:1040px;margin:auto;padding:36px 64px 140px}header{display:flex;justify-content:space-between;align-items:center}.brand{font-size:14px;letter-spacing:.17em;font-weight:700}.local{font-size:10px;color:#758981;letter-spacing:.12em}.intro{padding:70px 0 35px}.eyebrow{font-size:12px;letter-spacing:.08em;color:#68877a}h1{font-size:clamp(36px,5vw,62px);font-weight:500;letter-spacing:-.04em;line-height:1.3;margin:20px 0}.lede{font-size:15px;line-height:2;color:#63756d}.guide{display:flex;gap:22px;border-top:1px solid #d7dfd6;padding-top:26px;margin-top:12px}.guide-icon{font-size:28px;color:#718e6e}h2{font-size:18px;font-weight:600;margin:0 0 10px}.guide p,.import p{font-size:13px;line-height:1.9;color:#66776e}.lab{border:1px solid #dce1d6;background:#fafbf6;border-radius:18px;padding:22px;margin:22px 0}.scenario-tabs{display:flex;gap:7px;flex-wrap:wrap}.scenario-tabs button{font-size:11px;padding:9px 11px;border-radius:20px}.scenario-tabs .selected{background:#315b49;color:#fff;border-color:#315b49}#scenario-description{font-size:13px;min-height:35px;padding:10px 0}.lab-footer{display:flex;align-items:center;gap:12px;font-size:12px;flex-wrap:wrap}#step-label{margin-right:auto;color:#798a7e}.primary{background:#315b49;color:white;border-color:#315b49}.primary:hover{background:#234936}.import{font-size:12px;margin:25px 0}summary{padding:10px 0;color:#506e5e}footer{border-top:1px solid #dde1d8;padding-top:18px;font-size:10px;color:#7c8a80;line-height:1.8}footer button{font-size:11px}#error{position:fixed;top:14px;left:50%;transform:translateX(-50%);max-width:85%;background:#743d36;color:white;padding:14px 22px;border-radius:12px;z-index:5}.pet-dock{position:fixed;right:30px;bottom:22px;z-index:3;--pet:#b4d5b6;--accent:#547361}.pet-row{display:flex;align-items:center;justify-content:flex-end;gap:10px}#pet{width:136px;height:136px;border:0;background:transparent;padding:0;border-radius:50%}#pet svg{width:100%;overflow:visible}#pet-caption{font-size:11px;color:#698171;background:#fffdf4d9;border:1px solid #e0e5d8;border-radius:20px;padding:8px 13px;max-width:200px}.shadow{fill:#2f493d;opacity:.1}.body,.ear{fill:var(--pet);stroke:var(--accent);stroke-width:2.5}.eye,.mouth,.brow,.arm,.lost path{fill:none;stroke:#314e43;stroke-width:4;stroke-linecap:round}.arm{stroke-width:2}.cheek{fill:#d88c70;opacity:.35}.brow,.worry,.flat,.sweat,.lost{display:none}.sweat{fill:#8dc3d0}.symbol circle{fill:#fffdf6;stroke:var(--accent);stroke-width:2}.symbol text{font-size:21px;fill:var(--accent);font-weight:bold}.creature{transform-origin:80px 140px;animation:none}.symbol{display:none}.panel{width:368px;max-height:calc(100vh - 184px);overflow:auto;background:#fffffaf5;backdrop-filter:blur(12px);border:1px solid #d8e0d4;box-shadow:0 15px 60px #26493520;border-radius:22px;padding:24px;margin-bottom:3px}.panel-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}#close{border:0;font-size:23px;padding:0 8px}.panel h2{font-size:20px}#state-note{font-size:12px;color:#687c6d;line-height:1.7}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0 8px}.metrics span{display:block;font-size:10px;color:#7c897e}.metrics strong{display:block;font-size:25px;font-weight:500;margin-top:8px}#trajectory{font-size:22px}.disclaimer{font-size:9px;color:#879084;line-height:1.7}.trend{padding-top:12px}.trend span{font-size:10px;color:#6a846b}.trend svg{width:100%;height:55px}#trend-line{fill:none;stroke:#689a74;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}h3{font-size:12px;font-weight:600;margin-top:22px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.actions button{text-align:left;font-size:12px}.actions small{display:block;font-size:9px;color:#7a877c;margin-top:5px}.panel details{border-top:1px solid #e4e7de;margin-top:20px;font-size:11px}.panel li{margin:7px 0;overflow-wrap:anywhere}.panel ul{padding-left:17px}.panel details p,#recovery-result{font-size:11px;color:#66785f;line-height:1.7}#expand{font-size:10px;float:right}.pet-dock[data-expression=loaded]{--pet:#d5d8a6;--accent:#85894b}.pet-dock[data-expression=loaded] .brow{display:block}.pet-dock[data-expression=strained]{--pet:#e5c18c;--accent:#a08245}.pet-dock[data-expression=strained] .brow,.pet-dock[data-expression=strained] .flat,.pet-dock[data-expression=strained] .sweat{display:block}.pet-dock[data-expression=strained] .calm{display:none}.pet-dock[data-expression=high_pressure]{--pet:#e7a888;--accent:#ab674b}.pet-dock[data-expression=high_pressure] .worry,.pet-dock[data-expression=high_pressure] .sweat,.pet-dock[data-expression=high_pressure] .brow,.pet-dock[data-expression=high_pressure] .symbol{display:block}.pet-dock[data-expression=high_pressure] .calm{display:none}.pet-dock[data-expression=unstable]{--pet:#d69c99;--accent:#985758}.pet-dock[data-expression=unstable] .lost,.pet-dock[data-expression=unstable] .worry,.pet-dock[data-expression=unstable] .symbol{display:block}.pet-dock[data-expression=unstable] .eyes,.pet-dock[data-expression=unstable] .calm{display:none}.pet-dock[data-expression=wrong_trajectory]{--pet:#b6afd1;--accent:#75608d}.pet-dock[data-expression=wrong_trajectory] .creature{transform:rotate(-10deg);animation:none}.pet-dock[data-expression=wrong_trajectory] .symbol,.pet-dock[data-expression=wrong_trajectory] .flat{display:block}.pet-dock[data-expression=wrong_trajectory] .calm{display:none}.pet-dock[data-expression=unknown]{--pet:#c9d1cc;--accent:#83978b}.pet-dock[data-expression=unknown] .symbol,.pet-dock[data-expression=unknown] .flat{display:block}.pet-dock[data-expression=unknown] .calm{display:none}.pet-dock[data-trend=rapid_rise] .symbol{display:block}@keyframes breathe{50%{transform:translateY(-4px) scale(1.01)}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}@media(max-width:650px){main{padding:25px 24px 180px}.intro{padding-top:44px}.local{display:none}.pet-dock{right:14px;bottom:12px}.panel{width:min(368px,calc(100vw - 28px))}.lab{padding:15px}#pet{width:108px;height:108px}.panel{max-height:calc(100vh - 145px)}}
+
+.pet-labels{display:flex;flex-direction:column;align-items:flex-end;gap:6px}#pet-caption{color:#405b4b;font-size:12px}#pet-notice{font-size:11px;color:#674d32;max-width:190px;line-height:1.6;text-align:right}.pet-dock[data-expression=loaded] .calm{display:none}.pet-dock[data-expression=loaded] .flat{display:block}
+
+#trajectory{font-size:17px;line-height:1.6}.metrics span{font-size:11px}
+
+#state-note{white-space:pre-line}
+
+.record-help{font-size:12px;line-height:1.7;color:#405b4b;background:#f1f4ed;border-radius:10px;padding:10px 12px;margin-top:12px}.record-help p{margin:0 0 8px}.record-help button{font-size:12px}#import-section label{display:block;margin:12px 0 6px}
+
+.metrics{grid-template-columns:repeat(2,1fr)}
+
+body[data-mode=face] #error{display:none!important}
+.model-settings{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:16px 0 8px}.model-settings label{display:grid;gap:5px;font-size:11px;color:#64766d}.model-settings select{width:100%;border:1px solid #d6ded8;background:#fffdf8;border-radius:8px;padding:7px;color:#253c3c}.model-settings p{grid-column:1/-1;margin:0;font-size:10px;line-height:1.6;color:#687c6d}.metrics{grid-template-columns:repeat(3,1fr)}#headroom{font-size:20px}
+
+/* Distinct poses remain legible when animation is disabled. */
+.focus-eyes,.tired-eyes{display:none;fill:none;stroke:#314e43;stroke-width:4;stroke-linecap:round}
+.motion-setting{display:flex;align-items:center;gap:8px;font-size:12px;margin-top:16px;cursor:pointer}
+.pet-dock[data-expression=stable] .creature{animation:pet-easy 4.5s ease-in-out infinite}
+.pet-dock[data-expression=loaded] .creature{animation:pet-focus 3s ease-in-out infinite;transform:rotate(-5deg)}
+.pet-dock[data-expression=loaded] .eyes,.pet-dock[data-expression=strained] .eyes{display:none}
+.pet-dock[data-expression=loaded] .focus-eyes,.pet-dock[data-expression=strained] .focus-eyes{display:block}
+.pet-dock[data-expression=loaded] .brow.left,.pet-dock[data-expression=strained] .brow.left{transform:rotate(17deg);transform-origin:53px 72px}
+.pet-dock[data-expression=loaded] .brow.right,.pet-dock[data-expression=strained] .brow.right{transform:rotate(-17deg);transform-origin:105px 72px}
+.pet-dock[data-expression=strained] .creature{animation:pet-burden 1.8s ease-in-out infinite;transform:translateY(4px) scale(1.03,.95)}
+.pet-dock[data-expression=strained] .flat{display:none}
+.pet-dock[data-expression=strained] .worry{display:block}
+.pet-dock[data-expression=high_pressure] .creature{animation:pet-fidget 1.2s ease-in-out infinite;transform:translateY(6px) scale(1.04,.92)}
+.pet-dock[data-expression=high_pressure] .sweat,.pet-dock[data-expression=strained] .sweat{animation:pet-sweat 1.8s ease-in-out infinite}
+.pet-dock[data-expression=unstable] .creature{animation:pet-heavy 2.4s ease-in-out infinite;transform:translateY(10px) scale(1.09,.83)}
+.pet-dock[data-expression=unstable] .lost{display:none}
+.pet-dock[data-expression=unstable] .tired-eyes,.pet-dock[data-expression=unstable] .sweat{display:block}
+.pet-dock[data-expression=unstable] .sweat{animation:pet-sweat 1.2s ease-in-out infinite}
+.pet-dock[data-expression=wrong_trajectory] .creature{animation:pet-question 4s ease-in-out infinite}
+@keyframes pet-easy{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px) scale(.98,1.025)}}
+@keyframes pet-focus{0%,100%{transform:rotate(-5deg) translateY(2px)}45%,65%{transform:rotate(3deg) translateY(-2px)}}
+@keyframes pet-burden{0%,100%{transform:translateY(4px) rotate(-4deg) scale(1.03,.95)}50%{transform:translateY(6px) rotate(4deg) scale(1.04,.93)}}
+@keyframes pet-fidget{0%,100%{transform:translate(-3px,6px) rotate(-3deg) scale(1.04,.92)}50%{transform:translate(3px,3px) rotate(3deg) scale(1.02,.97)}}
+@keyframes pet-heavy{0%,100%{transform:translateY(10px) scale(1.09,.83)}50%{transform:translateY(7px) scale(1.06,.88)}}
+@keyframes pet-sweat{0%,100%{transform:translateY(0)}75%{transform:translateY(9px)}}
+@keyframes pet-question{0%,100%{transform:rotate(-10deg)}40%,65%{transform:rotate(7deg)}}
+body[data-motion=off] .creature,body[data-motion=off] .sweat{animation:none!important}
+@media(max-width:650px){.model-settings{grid-template-columns:1fr}.model-settings p{grid-column:auto}.metrics{grid-template-columns:repeat(3,1fr)}}
+
+/* Moderate load should remain visibly comfortable; strain begins above it. */
+.pet-dock[data-expression=loaded]{--pet:#bdd8b2;--accent:#60845b}
+.pet-dock[data-expression=loaded] .focus-eyes,
+.pet-dock[data-expression=loaded] .brow,
+.pet-dock[data-expression=loaded] .flat{display:none}
+.pet-dock[data-expression=loaded] .eyes,
+.pet-dock[data-expression=loaded] .calm{display:block}
+.pet-dock[data-expression=loaded] .creature{transform:none;animation:pet-comfortable 2.8s ease-in-out infinite}
+@keyframes pet-comfortable{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-10px) rotate(3deg) scale(.98,1.03)}}
+
+#motion-status{font-size:11px;color:#405b4b;line-height:1.6}
+
+/* Model Fit: difficulty, comfortable work, and idle capacity are distinct. */
+.pet-dock[data-expression=balanced] .creature{animation:pet-easy 4.5s ease-in-out infinite}
+.pet-dock[data-expression=fit-strained]{--pet:#e5c18c;--accent:#a08245}
+.pet-dock[data-expression=fit-strained] .eyes,.pet-dock[data-expression=fit-strained] .calm{display:none}
+.pet-dock[data-expression=fit-strained] .focus-eyes,.pet-dock[data-expression=fit-strained] .worry,.pet-dock[data-expression=fit-strained] .sweat{display:block}
+.pet-dock[data-expression=fit-strained] .creature{transform:translateY(4px) rotate(-4deg) scale(1.03,.95);animation:pet-burden 1.8s ease-in-out infinite}
+.pet-dock[data-expression=fit-strained] .sweat{animation:pet-sweat 1.8s ease-in-out infinite}
+.pet-dock[data-expression=relaxed]{--pet:#b8cfdf;--accent:#648495}
+.pet-dock[data-expression=relaxed] .eyes{display:none}
+.pet-dock[data-expression=relaxed] .tired-eyes{display:block}
+.pet-dock[data-expression=relaxed] .creature{transform:rotate(9deg);animation:pet-idle 6s ease-in-out infinite}
+@keyframes pet-idle{0%,100%{transform:rotate(9deg)}50%{transform:rotate(-7deg) translateY(-2px)}}
+.panel{width:min(440px,calc(100vw - 28px))}
+.calibration{font-size:12px;line-height:1.7;background:#f2edda;color:#66552d;padding:9px 12px;border-radius:8px}
+#fit-reasons,#cost-note,#delta{font-size:12px;line-height:1.8}
+.panel table{width:100%;border-collapse:collapse;font-size:11px;margin:12px 0}
+.panel th,.panel td{text-align:left;padding:8px 4px;border-bottom:1px solid #dde4d9}
+.panel th{font-weight:600;color:#506e5e}
+.panel table caption{text-align:left;font-size:12px;margin-bottom:7px}
+.pet-dock[data-expression=review]{--pet:#c5bdd9;--accent:#807096}
+.pet-dock[data-expression=review] .symbol,.pet-dock[data-expression=review] .flat{display:block}
+.pet-dock[data-expression=review] .calm{display:none}
+.pet-dock[data-expression=review] .creature{transform:rotate(-10deg);animation:pet-question 4s ease-in-out infinite}
+.fit-summary{font-size:12px;line-height:1.7}.fit-summary dt{font-weight:600;margin-top:8px}.fit-summary dd{margin:0;color:#506e5e}
+#lower-cost-candidates{font-size:12px;line-height:1.8}
+/* Three levels: compact status, separate judgments, expandable evidence. */
+#main-headline{font-size:clamp(26px,3vw,44px);line-height:1.55;white-space:pre-line}
+.scope-note,#pet-notice{color:#506e5e;background:#edf1e8;border-radius:8px;padding:6px 10px;font-size:12px}
+.confidence-note{font-size:12px;color:#687c6d}.action-hint{font-size:13px;line-height:1.8}
+.model-guide{font-size:14px;line-height:1.8;color:#355b47;background:#edf2e9;border-radius:10px;padding:9px 12px}
+.guide-detail{font-size:11px;line-height:1.7;color:#64766d}
+#pet-model-guide{font-size:11px;color:#355b47;background:#edf2e9;border:1px solid #dce8d8;border-radius:16px;padding:5px 10px}
+#pet-model-guide[hidden]{display:none!important}
+#pet-caption{max-width:260px;line-height:1.7}.pet-labels{max-width:calc(100vw - 175px)}
+.source-model{white-space:pre-line;font-size:12px;line-height:1.7;color:#64766d}
+body[data-mode=details] main{width:calc(100% - 480px);margin:0;padding:30px 32px 160px}
+@media(max-width:900px){body[data-mode=details] main{width:100%;padding:24px 24px 30px}body[data-mode=details] .pet-dock{position:relative;right:auto;bottom:auto;margin:14px 14px 160px}body[data-mode=details] .panel{width:100%;max-height:none}body[data-mode=details] .pet-row{position:fixed;right:14px;bottom:12px}.intro{padding-top:24px}}
+/* A new chat message gets a short acknowledgment; the expression still represents model fit. */
+@keyframes chat-arrival{0%,100%{transform:scale(1)}35%{transform:scale(1.09)}65%{transform:scale(.97)}}
+.pet-dock[data-chat-update=on] #pet{animation:chat-arrival .65s ease-out 1}
+body[data-motion=off] .pet-dock[data-chat-update=on] #pet{animation:none}

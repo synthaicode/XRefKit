@@ -1,0 +1,499 @@
+{
+  "$defs": {
+    "Behavior": {
+      "additionalProperties": false,
+      "properties": {
+        "exploration": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Exploration",
+          "type": "number"
+        },
+        "dependency_expansion": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Dependency Expansion",
+          "type": "number"
+        },
+        "constraint_discovery": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Constraint Discovery",
+          "type": "number"
+        },
+        "uncertainty_discovery": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Uncertainty Discovery",
+          "type": "number"
+        },
+        "alternative_generation": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Alternative Generation",
+          "type": "number"
+        },
+        "compression": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Compression",
+          "type": "number"
+        }
+      },
+      "required": [
+        "exploration",
+        "dependency_expansion",
+        "constraint_discovery",
+        "uncertainty_discovery",
+        "alternative_generation",
+        "compression"
+      ],
+      "title": "Behavior",
+      "type": "object"
+    },
+    "Capability": {
+      "additionalProperties": false,
+      "properties": {
+        "reasoning": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Reasoning",
+          "type": "number"
+        },
+        "constraint_tracking": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Constraint Tracking",
+          "type": "number"
+        },
+        "evidence_handling": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Evidence Handling",
+          "type": "number"
+        }
+      },
+      "required": [
+        "reasoning",
+        "constraint_tracking",
+        "evidence_handling"
+      ],
+      "title": "Capability",
+      "type": "object"
+    },
+    "FitCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "title": "Model",
+          "type": "string"
+        },
+        "reasoning": {
+          "title": "Reasoning",
+          "type": "string"
+        },
+        "expansion": {
+          "maximum": 30,
+          "minimum": 0,
+          "title": "Expansion",
+          "type": "number"
+        },
+        "effectiveRal": {
+          "maximum": 130,
+          "minimum": 0,
+          "title": "Effectiveral",
+          "type": "number"
+        },
+        "capability": {
+          "$ref": "#/$defs/Capability"
+        },
+        "requiredCapability": {
+          "$ref": "#/$defs/Capability"
+        },
+        "shortfalls": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Shortfalls",
+          "type": "array"
+        },
+        "meetsRequirements": {
+          "title": "Meetsrequirements",
+          "type": "boolean"
+        },
+        "relativeInferenceCost": {
+          "exclusiveMinimum": 0,
+          "title": "Relativeinferencecost",
+          "type": "number"
+        }
+      },
+      "required": [
+        "model",
+        "reasoning",
+        "expansion",
+        "effectiveRal",
+        "capability",
+        "requiredCapability",
+        "shortfalls",
+        "meetsRequirements",
+        "relativeInferenceCost"
+      ],
+      "title": "FitCandidate",
+      "type": "object"
+    },
+    "ModelProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "capability": {
+          "$ref": "#/$defs/Capability"
+        },
+        "behavior": {
+          "$ref": "#/$defs/Behavior"
+        },
+        "relative_inference_cost": {
+          "exclusiveMinimum": 0,
+          "title": "Relative Inference Cost",
+          "type": "number"
+        },
+        "calibration": {
+          "const": "uncalibrated",
+          "default": "uncalibrated",
+          "title": "Calibration",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "capability",
+        "behavior",
+        "relative_inference_cost"
+      ],
+      "title": "ModelProfile",
+      "type": "object"
+    },
+    "Presentation": {
+      "additionalProperties": false,
+      "properties": {
+        "petState": {
+          "enum": [
+            "Unknown",
+            "Strained",
+            "Balanced",
+            "Relaxed",
+            "Review"
+          ],
+          "title": "Petstate",
+          "type": "string"
+        },
+        "headline": {
+          "title": "Headline",
+          "type": "string"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "shortMessage": {
+          "title": "Shortmessage",
+          "type": "string"
+        },
+        "detailReason": {
+          "title": "Detailreason",
+          "type": "string"
+        },
+        "actionHint": {
+          "title": "Actionhint",
+          "type": "string"
+        },
+        "scopeNote": {
+          "title": "Scopenote",
+          "type": "string"
+        },
+        "confidenceNote": {
+          "title": "Confidencenote",
+          "type": "string"
+        },
+        "modelFitLabel": {
+          "title": "Modelfitlabel",
+          "type": "string"
+        },
+        "costFitLabel": {
+          "title": "Costfitlabel",
+          "type": "string"
+        },
+        "coverageLabel": {
+          "title": "Coveragelabel",
+          "type": "string"
+        },
+        "confidenceLabel": {
+          "title": "Confidencelabel",
+          "type": "string"
+        },
+        "modelGuide": {
+          "title": "Modelguide",
+          "type": "string"
+        },
+        "modelGuideShort": {
+          "title": "Modelguideshort",
+          "type": "string"
+        },
+        "modelGuideDetail": {
+          "title": "Modelguidedetail",
+          "type": "string"
+        },
+        "modelGuideStatus": {
+          "enum": [
+            "Unknown",
+            "Available",
+            "NoLowerCandidate",
+            "HoldForReview",
+            "Underpowered"
+          ],
+          "title": "Modelguidestatus",
+          "type": "string"
+        }
+      },
+      "required": [
+        "petState",
+        "headline",
+        "summary",
+        "shortMessage",
+        "detailReason",
+        "actionHint",
+        "scopeNote",
+        "confidenceNote",
+        "modelFitLabel",
+        "costFitLabel",
+        "coverageLabel",
+        "confidenceLabel",
+        "modelGuide",
+        "modelGuideShort",
+        "modelGuideDetail",
+        "modelGuideStatus"
+      ],
+      "title": "Presentation",
+      "type": "object"
+    },
+    "ReasoningDepth": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "capability_modifier": {
+          "maximum": 100,
+          "minimum": -100,
+          "title": "Capability Modifier",
+          "type": "number"
+        },
+        "exploration_modifier": {
+          "minimum": 0,
+          "title": "Exploration Modifier",
+          "type": "number"
+        },
+        "cost_modifier": {
+          "exclusiveMinimum": 0,
+          "title": "Cost Modifier",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "capability_modifier",
+        "exploration_modifier",
+        "cost_modifier"
+      ],
+      "title": "ReasoningDepth",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": "fit-experiment-v1",
+      "default": "fit-experiment-v1",
+      "title": "Version",
+      "type": "string"
+    },
+    "calibration": {
+      "const": "uncalibrated",
+      "default": "uncalibrated",
+      "title": "Calibration",
+      "type": "string"
+    },
+    "modelFit": {
+      "enum": [
+        "Underpowered",
+        "Sufficient",
+        "Unknown"
+      ],
+      "title": "Modelfit",
+      "type": "string"
+    },
+    "costFit": {
+      "enum": [
+        "RetryRisk",
+        "NoLowerCostCandidate",
+        "LowerCostCandidateAvailable",
+        "ReviewNeeded",
+        "Unknown"
+      ],
+      "title": "Costfit",
+      "type": "string"
+    },
+    "coverage": {
+      "anyOf": [
+        {
+          "enum": [
+            "partial",
+            "reviewed"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Coverage"
+    },
+    "evaluationConfidence": {
+      "default": "Unknown",
+      "enum": [
+        "Unknown",
+        "Low",
+        "Medium",
+        "High"
+      ],
+      "title": "Evaluationconfidence",
+      "type": "string"
+    },
+    "presentation": {
+      "$ref": "#/$defs/Presentation"
+    },
+    "baseRal": {
+      "anyOf": [
+        {
+          "maximum": 100,
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Baseral"
+    },
+    "selected": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FitCandidate"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "profile": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ModelProfile"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "depth": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ReasoningDepth"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "alternatives": {
+      "items": {
+        "$ref": "#/$defs/FitCandidate"
+      },
+      "title": "Alternatives",
+      "type": "array"
+    },
+    "lowerCostCandidates": {
+      "items": {
+        "$ref": "#/$defs/FitCandidate"
+      },
+      "title": "Lowercostcandidates",
+      "type": "array"
+    },
+    "inferenceCostIndex": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Inferencecostindex"
+    },
+    "reasons": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Reasons",
+      "type": "array"
+    },
+    "expectedTotalCost": {
+      "default": null,
+      "title": "Expectedtotalcost",
+      "type": "null"
+    },
+    "inferenceCost": {
+      "default": null,
+      "title": "Inferencecost",
+      "type": "null"
+    },
+    "retryCost": {
+      "default": null,
+      "title": "Retrycost",
+      "type": "null"
+    },
+    "correctionCost": {
+      "default": null,
+      "title": "Correctioncost",
+      "type": "null"
+    },
+    "failureRiskCost": {
+      "default": null,
+      "title": "Failureriskcost",
+      "type": "null"
+    }
+  },
+  "required": [
+    "modelFit",
+    "costFit",
+    "presentation",
+    "reasons"
+  ],
+  "title": "FitEvaluation",
+  "type": "object"
+}

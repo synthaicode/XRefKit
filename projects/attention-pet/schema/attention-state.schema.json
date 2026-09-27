@@ -1,0 +1,310 @@
+{
+  "$defs": {
+    "Cause": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "severity": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Severity",
+          "type": "number"
+        },
+        "points": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Points",
+          "type": "number"
+        }
+      },
+      "required": [
+        "type",
+        "severity",
+        "points"
+      ],
+      "title": "Cause",
+      "type": "object"
+    },
+    "FeatureChange": {
+      "additionalProperties": false,
+      "properties": {
+        "feature": {
+          "title": "Feature",
+          "type": "string"
+        },
+        "delta": {
+          "title": "Delta",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "feature",
+        "delta"
+      ],
+      "title": "FeatureChange",
+      "type": "object"
+    },
+    "Observation": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "validated",
+            "repeated_error",
+            "correction_ignored",
+            "misread_explanation",
+            "decision_contradiction",
+            "intent_drift",
+            "no_improvement",
+            "repeated_failure"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "evidence": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Evidence",
+          "type": "string"
+        },
+        "context": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Context",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "evidence",
+        "context"
+      ],
+      "title": "Observation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1,
+      "title": "Schemaversion",
+      "type": "integer"
+    },
+    "evaluatorVersion": {
+      "const": "heuristic-v1",
+      "title": "Evaluatorversion",
+      "type": "string"
+    },
+    "measurement": {
+      "const": "task-structure-based estimated load",
+      "title": "Measurement",
+      "type": "string"
+    },
+    "weights": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "title": "Weights",
+      "type": "object"
+    },
+    "taskId": {
+      "title": "Taskid",
+      "type": "string"
+    },
+    "contextId": {
+      "title": "Contextid",
+      "type": "string"
+    },
+    "observedAt": {
+      "title": "Observedat",
+      "type": "number"
+    },
+    "coverage": {
+      "enum": [
+        "partial",
+        "reviewed"
+      ],
+      "title": "Coverage",
+      "type": "string"
+    },
+    "ral": {
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Ral",
+      "type": "integer"
+    },
+    "deltaRal": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Deltaral"
+    },
+    "deltaSeconds": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Deltaseconds"
+    },
+    "trajectoryStability": {
+      "anyOf": [
+        {
+          "maximum": 100,
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Trajectorystability"
+    },
+    "trajectoryEvidence": {
+      "items": {
+        "$ref": "#/$defs/Observation"
+      },
+      "title": "Trajectoryevidence",
+      "type": "array"
+    },
+    "state": {
+      "enum": [
+        "NORMAL",
+        "HIGH LOAD",
+        "WRONG TRAJECTORY",
+        "CRITICAL",
+        "UNKNOWN"
+      ],
+      "title": "State",
+      "type": "string"
+    },
+    "loadBand": {
+      "enum": [
+        "stable",
+        "loaded",
+        "strained",
+        "high_pressure",
+        "unstable"
+      ],
+      "title": "Loadband",
+      "type": "string"
+    },
+    "expression": {
+      "enum": [
+        "stable",
+        "loaded",
+        "strained",
+        "high_pressure",
+        "unstable",
+        "wrong_trajectory",
+        "unknown"
+      ],
+      "title": "Expression",
+      "type": "string"
+    },
+    "trend": {
+      "enum": [
+        "rapid_rise",
+        "rising",
+        "falling",
+        "steady",
+        "unknown"
+      ],
+      "title": "Trend",
+      "type": "string"
+    },
+    "windowDeltaRal": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Windowdeltaral"
+    },
+    "features": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "title": "Features",
+      "type": "object"
+    },
+    "changes": {
+      "items": {
+        "$ref": "#/$defs/FeatureChange"
+      },
+      "title": "Changes",
+      "type": "array"
+    },
+    "causes": {
+      "items": {
+        "$ref": "#/$defs/Cause"
+      },
+      "title": "Causes",
+      "type": "array"
+    },
+    "recommendedActions": {
+      "items": {
+        "enum": [
+          "fix",
+          "summarize",
+          "split",
+          "externalize",
+          "archive",
+          "resolve",
+          "rebase",
+          "restart"
+        ],
+        "type": "string"
+      },
+      "title": "Recommendedactions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "evaluatorVersion",
+    "measurement",
+    "weights",
+    "taskId",
+    "contextId",
+    "observedAt",
+    "coverage",
+    "ral",
+    "deltaRal",
+    "deltaSeconds",
+    "trajectoryStability",
+    "trajectoryEvidence",
+    "state",
+    "loadBand",
+    "expression",
+    "trend",
+    "windowDeltaRal",
+    "features",
+    "changes",
+    "causes",
+    "recommendedActions"
+  ],
+  "title": "AttentionState",
+  "type": "object"
+}
