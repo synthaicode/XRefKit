@@ -215,6 +215,28 @@ def test_ui_drops_old_evaluation_after_network_failure():
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_ui_uses_browser_language_for_api_and_dynamic_text():
+    import os
+    import subprocess
+    from pathlib import Path
+    view = Store().submit(task("B", 3))
+    view["fit"] = evaluate_fit(view["state"], "sol", locale="en")
+    environment = {**os.environ, "ATTENTION_PET_TEST_LANG": "en-US"}
+    result = subprocess.run(["node", "tests/attention_pet_ui_check.cjs"],
+                            input=json.dumps(view), text=True, capture_output=True,
+                            cwd=Path(__file__).resolve().parents[1], timeout=15,
+                            env=environment)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_english_presentation_preserves_evaluation_meaning():
+    fit = evaluate_fit(evaluate(task("B", 3)), "luna", locale="en")
+    assert fit["modelFit"] == "Underpowered"
+    assert fit["presentation"]["petState"] == "Strained"
+    assert "capability" in fit["presentation"]["headline"].lower()
+    assert all("実験値" not in reason for reason in fit["reasons"])
+
+
 @pytest.mark.parametrize("model,cost,pet,headline,summary", [
     ("Unknown", "Unknown", "Unknown", "まだ評価できません", "情報が不足"),
     ("Underpowered", "RetryRisk", "Strained", "能力が不足する可能性", "一部を満たしていません"),

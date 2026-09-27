@@ -10,10 +10,12 @@ from pydantic import ValidationError
 from .model import Conversation, WorkingSet, extract
 from .store import Store
 from .evaluator import evaluate_fit
+from .client_protocol import ClientState, StaleActivation, handshake
 
 
 def make_server(store: Store, port: int = 0, source=None):
     token = secrets.token_urlsafe(32)
+    instance_id = secrets.token_urlsafe(18)
 
     class Handler(BaseHTTPRequestHandler):
         def setup(self):
@@ -51,18 +53,20 @@ def make_server(store: Store, port: int = 0, source=None):
 
         def selection(self):
             query = parse_qs(urlsplit(self.path).query, keep_blank_values=True)
-            if set(query) - {"model", "reasoning"} or any(len(v) != 1 for v in query.values()):
+            if set(query) - {"model", "reasoning", "lang"} or any(len(v) != 1 for v in query.values()):
                 raise ValueError("invalid fit selection")
-            selection = (query.get("model", [""])[0], query.get("reasoning", ["standard"])[0])
-            evaluate_fit(None, *selection)  # Reject invalid choices before any mutation.
+            selection = (query.get("model", [""])[0], query.get("reasoning", ["standard"])[0],
+                         query.get("lang", ["ja"])[0])
+            evaluate_fit(None, *selection[:2], locale=selection[2])  # Reject before mutation.
             return selection
 
         def with_fit(self, result, selection):
             # In chat-bound mode the observed model is the default. An explicit
             # query is a read-only comparison and never changes the Codex run.
-            actual_selection = selection if selection[0] else source.selection() if source else selection
+            actual_selection = selection[:2] if selection[0] else source.selection() if source else selection[:2]
             source_status = source.status() if source else {"mode": "manual"}
-            return {**result, "fit": evaluate_fit(result["state"], *actual_selection),
+            return {**result, "fit": evaluate_fit(result["state"], *actual_selection,
+                                                    locale=selection[2]),
                     "source": source_status}
 
         def do_GET(self):
@@ -78,19 +82,18 @@ def make_server(store: Store, port: int = 0, source=None):
                         self.reply(400, {"error": str(exc)})
                         return
                     try:
-                        if source:
-                            source.sync(store)
-                        self.reply(200, self.with_fit(store.view(), selection))
+                        result = source.view(store) if source else store.view()
+                        self.reply(200, self.with_fit(result, selection))
                     except (OSError, ValueError):
                         self.reply(503, {"error": "bound chat is temporarily unavailable"})
+            elif urlsplit(self.path).path == "/api/client/handshake":
+                if self.allowed():
+                    self.reply(200, handshake(instance_id))
             else:
                 self.reply(404, {"error": "not found"})
 
         def do_POST(self):
             if not self.allowed():
-                return
-            if source:
-                self.reply(409, {"error": "bound chat view is read-only"})
                 return
             try:
                 selection = self.selection()
@@ -103,6 +106,16 @@ def make_server(store: Store, port: int = 0, source=None):
                 body = json.loads(self.rfile.read(size))
                 if not isinstance(body, dict):
                     raise ValueError("object required")
+                if path == "/api/active-session":
+                    if not source or not hasattr(source, "activate"):
+                        self.reply(409, {"error": "client-state mode is not enabled"})
+                        return
+                    result = source.activate(ClientState.model_validate(body))
+                    self.reply(200, {**result, "instanceId": instance_id})
+                    return
+                if source:
+                    self.reply(409, {"error": "bound chat view is read-only"})
+                    return
                 if path == "/api/snapshot":
                     result = store.submit(WorkingSet.model_validate(body))
                 elif path == "/api/conversation":
@@ -115,6 +128,8 @@ def make_server(store: Store, port: int = 0, source=None):
                     self.reply(404, {"error": "not found"})
                     return
                 self.reply(200, self.with_fit(result, selection))
+            except StaleActivation as exc:
+                self.reply(409, {"error": str(exc)})
             except (ValueError, ValidationError, TypeError) as exc:
                 # Pydantic errors can contain sensitive input; expose only the class.
                 message = "invalid contract; check required fields, references and value types" if isinstance(exc, ValidationError) else str(exc)
@@ -125,4 +140,5 @@ def make_server(store: Store, port: int = 0, source=None):
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     server.daemon_threads = True
     server.write_token = token
+    server.instance_id = instance_id
     return server, f"http://127.0.0.1:{server.server_port}/"

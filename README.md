@@ -13,6 +13,34 @@ people assess capability sufficiency and lower inference-cost candidates separat
 Its Model Fit / Cost Fit estimates use uncalibrated profiles; it does not measure internal
 attention or switch models automatically.
 
+### Codex-only preview: Attention Pet
+
+Attention Pet is a small local companion for Codex work. It reads the current
+Codex chat's local session record, estimates whether the selected model meets
+the visible work requirements, and shows the result through a compact animated
+pet. It also shows lower inference-cost comparison candidates when the
+experimental profiles support one. The estimate is observational and does not
+change the Codex model, reasoning level, or chat.
+
+Run it from a Codex terminal in this repository so `CODEX_THREAD_ID` identifies
+the current chat:
+
+```powershell
+python -m xrefkit.attention_pet serve --port 8769
+```
+
+Open the printed `http://127.0.0.1:8769/` address in the Codex browser panel.
+The display follows the browser's preferred language: Japanese is used for a
+Japanese preference, with English as the fallback. Stop the process with
+Ctrl+C.
+
+This Codex preview is bound to the chat that launched it. Selecting another
+chat does not move the Pet automatically; launch it again from that chat when
+you want a separate view. The model and reasoning dropdowns only compare
+estimates and do not change the active Codex settings. See the
+[Attention Pet guide](projects/attention-pet/README.md) for interpretation,
+limitations, client integration, and API details.
+
 Using AI for real work creates recurring operating problems:
 
 ![Why XRefKit is needed](human-docs/en/assets/why_xrefkit_needed/whatis_xrefkit.png)

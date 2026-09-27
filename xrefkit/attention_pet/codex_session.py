@@ -145,3 +145,7 @@ class CodexSessionSource:
                             observations=[])
             store.submit(ws)
             self.changed = False
+
+    def view(self, store):
+        self.sync(store)
+        return store.view()

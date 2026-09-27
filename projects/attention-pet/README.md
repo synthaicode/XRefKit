@@ -7,6 +7,24 @@
 利用者がモデル配分を判断するための参考情報として、Model Fit・Cost Fit・入力範囲・未評価の確からしさを別々に表示します。
 Codex内で起動した場合、このチャットのローカル記録から新しい利用者発言と実行設定（モデル名・考える深さ）を読み取り、Petを自動更新します。新しい発言を受け取ると短く動き、表情は評価結果に従います。能力・挙動・コストは未校正の仮説値で、AI内部のAttentionや残り能力の測定、自動モデル切替は行いません。
 
+## Codex限定プレビュー
+
+現時点で利用者がそのまま起動できる自動連動機能はCodex限定です。Attention Petは、起動したCodexチャットのローカル記録から確認できる作業内容と実行設定を読み取り、「このモデルで進める余力」と低コスト比較候補をPetの表情と短い文で示します。表示は観測と試算であり、Codexのモデル、考える深さ、チャット内容を変更しません。
+
+1. 対象チャットのCodexターミナルで、このリポジトリのルートを開きます。
+2. 次のコマンドを実行します。
+
+   ```powershell
+   python -m xrefkit.attention_pet serve --port 8769
+   ```
+
+3. 表示された `http://127.0.0.1:8769/` をCodexのブラウザパネルで開きます。
+4. 終了するときは、起動したターミナルでCtrl+Cを押します。
+
+Petは起動時のチャットに固定されます。Codexで別のチャットを選んでも自動では切り替わらないため、別チャットを観測する場合は、そのチャットのターミナルから改めて起動します。画面のモデルと深さの選択は試算の比較だけに使い、Codex本体の設定は切り替えません。
+
+provider-neutralなclient-state連携は別の統合経路です。現時点ではCodexやVS Codeの画面選択を検知するクライアントアダプターを同梱していません。
+
 ## 起動
 
 このworktreeのルートで実行します。既存のPython環境（Python >= 3.11 / Pydantic 2）を使います。
@@ -15,10 +33,18 @@ Codex内で起動した場合、このチャットのローカル記録から新
 python -m xrefkit.attention_pet serve --port 8769
 ```
 
-起動元の `CODEX_THREAD_ID` がある場合は、そのチャットのローカル記録に固定して追跡します。別チャットへ画面を切り替えても自動で追従しません。明示的に結び付ける場合は `--thread-id <チャットID>` を指定します。チャット連動時は別の保存ファイルを使い、従来の手動セッションを上書きしません。ローカル記録が見つからない場合は起動に失敗します。
-ローカル記録のJSONL形式を読む実験的アダプターです。Codex側で記録形式が変わると更新できなくなる可能性があります。保存ファイルには発言本文を残さず、最大100件の利用者発言を汎用項目として保持します。
+正式なクライアント連携では、JSONLを直接読まずclient-stateモードを使います。
+
+```powershell
+xrefkit attention-pet serve --client --port 8769
+```
+
+このモードは最初の標準出力にendpoint、protocol version、instance ID、書き込みtokenを1行JSONで返します。クライアントは認証付きhandshakeで通信相手を確認してから、アクティブセッションの完全な構造化スナップショットを送ります。契約は[クライアントプロトコル](CLIENT_PROTOCOL.md)を参照してください。
+
+起動元の `CODEX_THREAD_ID` がある場合のJSONL読み取りは、従来の実験的フォールバックです。そのチャットのローカル記録に固定され、別チャットへの画面切替には追従しません。Codex側で記録形式が変わると更新できなくなる可能性があります。正式なクライアントアダプターは `--client` を起動し、セッション切替をloopback APIへ明示通知します。
 
 表示された `http://127.0.0.1:8769/` をCodexのブラウザパネルで開きます。画面の表示に認証は不要です。
+表示言語はブラウザーの優先言語に従います。日本語を優先している環境では日本語、それ以外では英語を表示します。評価APIにも同じ `lang=ja|en` を送り、見出し、理由、次の行動を同じ言語に揃えます。
 画面にはモデルとコストの配分カードとPetを常時表示します。一部の作業だけを評価している場合は、その範囲もPetの横に表示します。
 カードには能力・コスト・入力範囲・確からしさを表示します。チャット連動時はCodexの実行記録を試算条件の初期値にします。プルダウンで別のモデルや深さを比較できますが、Codex本体の実行設定は変更しません。
 「数値・候補・評価理由を見る」を開くと、RALや必要能力3軸、候補、推論コスト指数と理由を確認できます。
@@ -75,12 +101,15 @@ HTTP API:
 | Method / Path | 入出力 |
 |---|---|
 | GET `/api/state` | 現在のWorking Set、Attention State、直近100履歴、回復記録、FitEvaluation |
+| GET `/api/client/handshake` | クライアントがservice、protocol、instance、capabilityを確認 |
+| POST `/api/active-session` | クライアントがアクティブセッションと完全なWorkingSetを通知 |
 | POST `/api/snapshot` | WorkingSet JSONを評価・保存 |
 | POST `/api/conversation` | 注釈付きConversationを抽出・評価・保存 |
 | POST `/api/recover` | `action`, `expectedObservedAt`。古い画面操作を拒否 |
 
-GET `/api/state` は認証なしで利用できます。POSTには手動モードの起動時に別途表示される `Authorization: Bearer <token>` と `Content-Type: application/json` が必要です。
+GET `/api/state` は認証なしで利用できます。client handshakeとPOSTには起動時に別途渡される `Authorization: Bearer <token>` が必要で、POSTには `Content-Type: application/json` も必要です。
 各APIに `?model=luna&reasoning=standard` などを付けると、応答の `fit` にその比較条件の評価が入ります。チャット連動時、モデル指定がなければ記録中のモデル・深さを初期値にし、指定があれば読み取り専用の比較として使います。応答の `source` には実際の連動状態が入り、比較条件を変えてもCodex本体は変更しません。
+`lang=ja|en` は評価文の表示言語だけを変更し、判定値や作業内容は変更しません。
 モデルは `luna|terra|sol|astra`、深さは `light|standard|high`。モデル省略時は `Unknown`、深さの既定値は `standard`。Terraを含むプロファイルと相対推論コストは未校正の実験値です。
 未知値・重複パラメータは更新前に拒否します。GETでの比較は作業内容と履歴を変更しません。
 CLIは `--model` 指定時に `{state, fit}` を返し、省略時の既存出力を維持します。

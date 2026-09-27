@@ -2,6 +2,8 @@
 const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
+const testLang = process.env.ATTENTION_PET_TEST_LANG || 'ja-JP';
+const english = testLang.startsWith('en');
 const sample = JSON.parse(fs.readFileSync(0, 'utf8'));
 const html = fs.readFileSync('xrefkit/resources/attention_pet/pet.html', 'utf8');
 assert.doesNotMatch(html, /id="workspace"/);
@@ -9,6 +11,8 @@ assert.doesNotMatch(html, /id="close"/);
 assert.doesNotMatch(html, /id="import-section"/);
 assert.doesNotMatch(html, /id="recovery-section"/);
 assert.match(html, /<section id="panel" class="panel" aria-label=/);
+const localizedTextNodes = [...html.matchAll(/data-i18n="([^"]+)"/g)].map(match => ({dataset:{i18n:match[1]},innerHTML:null}));
+const localizedAriaNodes = [...html.matchAll(/data-i18n-aria="([^"]+)"/g)].map(match => ({dataset:{i18nAria:match[1]},setAttribute(_name,value){this.ariaLabel=value;}}));
 function element() {
   return {textContent:'',value:'',checked:true,hidden:true,dataset:{},children:[],
     setAttribute(name,value){this[name]=value;},
@@ -21,17 +25,25 @@ const storage = {getItem:()=>null,setItem:()=>{}};
 let failure = false;
 let hold = false, releaseFetch;
 let lastFetchOptions = null;
+let lastFetchPath = null;
 const context = vm.createContext({
-  document:{getElementById:node,body:element(),createElement:element,querySelectorAll:()=>[],addEventListener:()=>{}},
+  document:{getElementById:node,body:element(),documentElement:element(),title:'',createElement:element,querySelectorAll:selector=>selector==='[data-i18n]' ? localizedTextNodes : selector==='[data-i18n-aria]' ? localizedAriaNodes : [],addEventListener:()=>{}},
   window:{addEventListener:()=>{},matchMedia:()=>({matches:false,addEventListener:()=>{}})},
+  navigator:{languages:[testLang],language:testLang},
   localStorage:storage,sessionStorage:storage,location:{hash:'',pathname:'/'},history:{replaceState:()=>{}},
   URLSearchParams,AbortSignal,setInterval:()=>{},setTimeout,clearTimeout,
-  fetch:async(_path,options)=>{lastFetchOptions=options;if(failure) throw Error('simulated connection failure');if(hold) await new Promise(resolve=>releaseFetch=resolve);return {ok:true,json:async()=>sample};},
+  fetch:async(path,options)=>{lastFetchPath=path;lastFetchOptions=options;if(failure) throw Error('simulated connection failure');if(hold) await new Promise(resolve=>releaseFetch=resolve);return {ok:true,json:async()=>sample};},
   sample,
 });
 (async()=>{
   vm.runInContext(fs.readFileSync('xrefkit/resources/attention_pet/pet.js','utf8'),context);
   await new Promise(setImmediate);
+  assert.match(lastFetchPath, new RegExp(`lang=${english ? 'en' : 'ja'}`));
+  if (english) {
+    assert.ok(localizedTextNodes.every(item => typeof item.innerHTML === 'string' && item.innerHTML.length));
+    assert.ok(localizedAriaNodes.every(item => typeof item.ariaLabel === 'string' && item.ariaLabel.length));
+    assert.equal(context.document.documentElement.lang,'en');
+  }
   assert.equal(lastFetchOptions.method,'GET');
   assert.equal(lastFetchOptions.headers.Authorization,undefined);
   assert.match(node('model-fit').textContent,/Sufficient/);
@@ -43,7 +55,7 @@ const context = vm.createContext({
   hold=true;
   node('model-profile').value='astra';
   vm.runInContext('storeProfile()',context);
-  assert.equal(node('state-title').textContent,'評価を更新中');
+  assert.equal(node('state-title').textContent,english ? 'Updating evaluation' : '評価を更新中');
   assert.equal(node('dock').dataset.expression,'unknown');
   hold=false;releaseFetch();
   await new Promise(setImmediate);
@@ -53,7 +65,7 @@ const context = vm.createContext({
   for(const id of ['ral','expansion','effective','model-fit','cost-fit','fit-coverage','fit-confidence']) assert.equal(node(id).textContent,'—',id);
   for(const id of ['fit-reasons','capability-rows','candidate-rows','lower-cost-candidates','causes']) assert.equal(node(id).children.length,0,id);
   assert.equal(node('dock').dataset.expression,'unknown');
-  assert.equal(node('state-title').textContent,'評価を取得できません');
+  assert.equal(node('state-title').textContent,english ? 'Could not retrieve the evaluation' : '評価を取得できません');
   assert.equal(node('panel-model-guide').textContent,'');
   assert.equal(node('pet-caption').textContent,node('state-title').textContent);
   assert.equal(vm.runInContext('current',context),null);
@@ -81,11 +93,15 @@ const context = vm.createContext({
   assert.equal(node('reasoning-effort').value,'standard');
   assert.equal(node('model-profile').disabled,false);
   assert.equal(node('reasoning-effort').disabled,false);
-  assert.match(node('source-detail').textContent,/会話中の発言数/);
+  assert.match(node('source-detail').textContent,english ? /message counts/ : /会話中の発言数/);
   assert.match(node('source-model').textContent,/Codex model: gpt-6-sol/);
   assert.match(node('source-model').textContent,/Default evaluation profile: Sol \/ standard/);
   assert.notEqual(node('dock').dataset.chatUpdate,'on');
   sample.source.observedUserTurns=3;
   vm.runInContext('render(sample)',context);
   assert.equal(node('dock').dataset.chatUpdate,'on');
+  sample.source={mode:'client-state',connected:true,provider:'github-copilot-vscode',activationRevision:3,model:'gpt-6-sol',effort:'medium',profile:'sol',reasoning:'standard'};
+  vm.runInContext('renderedSignature=""; render(sample)',context);
+  assert.match(node('source-model').textContent,/Client: github-copilot-vscode/);
+  assert.match(node('source-detail').textContent,english ? /structured information/ : /構造化情報/);
 })().catch(error=>{console.error(error);process.exitCode=1;});
