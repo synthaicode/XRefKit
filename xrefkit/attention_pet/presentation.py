@@ -2,9 +2,90 @@
 from .model import FitCandidate, Presentation
 
 
+def _present_fit_en(state: str, model_fit: str, cost_fit: str, coverage: str | None,
+                    confidence: str, selected: FitCandidate | None,
+                    lowest_sufficient: FitCandidate | None) -> Presentation:
+    messages = {
+        "Unknown": ("Not enough information to evaluate yet.",
+                    "Information required for this evaluation is missing.",
+                    "Evaluation is not available yet", "Model fit has not been determined.",
+                    "Check the work information and selected model."),
+        "Strained": ("This work may exceed the model's capability.",
+                     "Some estimated capability requirements are not met. This does not prove that model capability caused an actual failure.",
+                     "Capability may be insufficient", "Some of the three estimated capability requirements are not met.",
+                     "Compare a model that meets the requirements, or split and clarify the work."),
+        "Balanced": ("The estimated capability requirements are met.",
+                     "Under the current assumptions, no candidate at the same reasoning depth meets the requirements at a lower relative inference cost.",
+                     "Estimated capability requirements are met", "All three estimated requirements are met; this is not a quality guarantee.",
+                     "Continue with the current settings or check the actual result."),
+        "Relaxed": ("A lower inference-cost candidate may meet the requirements.",
+                    "The current model meets the estimated requirements, and a candidate at the same reasoning depth has a lower relative inference cost.",
+                    "Lower-cost comparison candidate available", "Retries, correction time, failure losses, and equivalent actual quality remain unverified.",
+                    "Review the conditions for the lower-cost candidate."),
+        "Review": ("Review the allocation using the actual results.",
+                   "There are records of failures, retries, or corrections. Model capability alone is not identified as the cause.",
+                   "Actual results need review", "Review the outcome records and total cost separately from capability fit.",
+                   "Review the failure, correction, and retry records."),
+    }
+    headline, summary, short, detail, action = messages[state]
+    if state != "Unknown":
+        if coverage == "partial":
+            headline = "For the work currently visible, " + headline[0].lower() + headline[1:]
+            short = {"Strained": "Some visible work may exceed capability",
+                     "Balanced": "Visible work meets estimated requirements",
+                     "Relaxed": "Lower-cost candidate for some visible work"}.get(state, short)
+        elif confidence in {"Unknown", "Low"}:
+            headline = "For the current input, " + headline[0].lower() + headline[1:]
+    if coverage == "partial":
+        summary += " Only part of the work is included."
+    confidence_labels = {"Unknown": "Not evaluated / Unknown", "Low": "Low",
+                         "Medium": "Medium", "High": "High"}
+    confidence_note = ("Evaluation confidence has not been assessed." if confidence == "Unknown" else
+                       "Evaluation confidence is low." if confidence == "Low" else
+                       "Evaluation confidence is separate from capability fit.")
+    if cost_fit == "ReviewNeeded":
+        guide_status, guide = "HoldForReview", "Review the actual result before comparing lower-cost candidates."
+        guide_detail = "Failure or correction records are present, so candidate guidance based only on relative inference cost is paused."
+    elif model_fit == "Unknown":
+        guide_status, guide = "Unknown", "Provide work information and select a model to estimate lower-cost candidates."
+        guide_detail = "A candidate cannot be shown until the required capability is known."
+    elif model_fit == "Underpowered":
+        guide_status, guide = "Underpowered", "First compare candidates that meet the capability requirements."
+        guide_detail = "Lower-cost comparison is paused until a model is estimated to meet the requirements."
+    elif cost_fit == "LowerCostCandidateAvailable" and selected and lowest_sufficient:
+        guide_status = "Available"
+        guide = f"Lower-cost candidate: {lowest_sufficient.model.capitalize()} / {lowest_sufficient.reasoning} (same reasoning depth, estimated)"
+        guide_detail = (f"Under the current assumptions, {lowest_sufficient.model.capitalize()} / {lowest_sufficient.reasoning} also meets all three estimated requirements after its own work expansion. Relative inference-cost index: current {selected.model.capitalize()} {selected.relativeInferenceCost}; candidate {lowest_sufficient.model.capitalize()} {lowest_sufficient.relativeInferenceCost}. Actual quality and total cost including retries, corrections, and failures have not been compared.")
+    else:
+        guide_status, guide = "NoLowerCandidate", "No lower relative inference-cost candidate is currently estimated to meet the requirements."
+        guide_detail = "This compares registered candidates at the same reasoning depth. It does not establish an advantage in quality or total cost."
+    if coverage == "partial" and guide_status == "Available":
+        guide_detail += " This estimate uses only the supplied part of the work."
+    guide_short = (f"Lower-cost candidate: {lowest_sufficient.model.capitalize()}"
+                   if guide_status == "Available" and selected and lowest_sufficient else
+                   "No lower-cost candidate (estimate)" if guide_status == "NoLowerCandidate" else "")
+    return Presentation(
+        petState=state, headline=headline, summary=summary, shortMessage=short,
+        detailReason=detail, actionHint=action,
+        scopeNote="Partial work only" if coverage == "partial" else "",
+        confidenceNote=confidence_note,
+        modelFitLabel={"Unknown": "Cannot determine / Unknown", "Underpowered": "Below estimated requirements / Underpowered",
+                       "Sufficient": "Meets estimated requirements / Sufficient"}[model_fit],
+        costFitLabel={"Unknown": "Not determined / Unknown", "RetryRisk": "Retries or corrections may increase",
+                      "NoLowerCostCandidate": "No lower-cost fit candidate",
+                      "LowerCostCandidateAvailable": "Lower inference-cost fit candidate available",
+                      "ReviewNeeded": "Review outcome records and total cost"}[cost_fit],
+        coverageLabel={None: "No input", "partial": "Partial", "reviewed": "Input scope reviewed / Reviewed"}[coverage],
+        confidenceLabel=confidence_labels[confidence], modelGuide=guide,
+        modelGuideShort=guide_short, modelGuideDetail=guide_detail,
+        modelGuideStatus=guide_status,
+    )
+
+
 def present_fit(model_fit: str, cost_fit: str, coverage: str | None = None,
                 confidence: str = "Unknown", selected: FitCandidate | None = None,
-                lowest_sufficient: FitCandidate | None = None) -> Presentation:
+                lowest_sufficient: FitCandidate | None = None,
+                locale: str = "ja") -> Presentation:
     # Outcome evidence takes priority over an otherwise comfortable face.
     if cost_fit == "ReviewNeeded":
         state = "Review"
@@ -18,6 +99,9 @@ def present_fit(model_fit: str, cost_fit: str, coverage: str | None = None,
         state = "Relaxed"
     else:
         state = "Unknown"
+    if locale == "en":
+        return _present_fit_en(state, model_fit, cost_fit, coverage, confidence,
+                               selected, lowest_sufficient)
     messages = {
         "Unknown": (
             "まだ評価できません。", "評価に必要な情報が不足しています。",

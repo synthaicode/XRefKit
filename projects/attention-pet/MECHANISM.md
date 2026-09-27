@@ -22,8 +22,10 @@
 ```
 
 評価はPython側に集約。ブラウザはAPIの `fit` を表示し、3秒ごとに更新する。観測した利用者発言数が増えたときだけ短い動きで受信を示す。この動きは評価結果や表情を変更せず、動きのオフ設定と端末の動き低減設定に従う。
+表示言語はブラウザーの優先言語から決める。日本語は `ja`、それ以外は英語へフォールバックし、APIの `lang` にも渡す。言語切替はPresentationと説明文だけに適用し、`ModelFit`、`CostFit`、Pet stateなどの機械判定値は変えない。
 Codex内で起動すると `CODEX_THREAD_ID` のローカルJSONL記録へ固定して連動する。利用者発言の数と、明示的な修正語・前方参照語だけを汎用の作業項目へ投影する。本文は保存しない。添付本文、意味上の依存、作業の完了、実際の成功・失敗は推定しない。したがって常に `Coverage=partial`、`EvaluationConfidence=Unknown` とする。最大100件の利用者発言を対象にし、古い発言は作業集合から外す。テスト用の合成例は利用者向け画面・API・CLIに公開しない。
-`turn_context` のモデル識別子と `effort` を読み取り、既知のモデル系列（Luna/Terra/Sol/Astra）と `light/standard/high` の仮設定へ対応付ける。これを試算条件の初期値にし、利用者は画面で別のモデルと深さを比較できる。比較条件はFitEvaluationだけに使い、Codex本体の実行設定やWorkingSetを変更しない。未対応の識別子はModelFit=Unknown。これはモデルの実能力・価格の測定ではない。対象チャットは起動時に固定し、他チャットへの画面切替には追従しない。チャット連動APIは読み取り専用で、手動入力・整理操作は非表示・拒否する。手動モードでは従来の構造注釈を利用できる。
+このJSONL読み取りは実験的フォールバックであり、正式な複数クライアント連携には使わない。正式な経路は `attention-pet-client-v1` とし、同一ホストのクライアントアダプターが認証付きhandshake後にアクティブセッションと完全なWorkingSetを通知する。Petはprovider・client instance・sessionごとにStoreを分離し、単調増加するactivation revisionで遅延通知を拒否する。CodexとVS Code/GitHub Copilotの観測可能範囲は各アダプターのcapabilityとして明示する。
+`turn_context` のモデル識別子と `effort` を読み取り、既知のモデル系列（Luna/Terra/Sol/Astra）と `light/standard/high` の仮設定へ対応付ける。これを試算条件の初期値にし、利用者は画面で別のモデルと深さを比較できる。比較条件はFitEvaluationだけに使い、Codex本体の実行設定やWorkingSetを変更しない。未対応の識別子はModelFit=Unknown。これはモデルの実能力・価格の測定ではない。JSONLフォールバックでは対象チャットを起動時に固定し、他チャットへの画面切替には追従しない。チャット連動APIは読み取り専用で、手動入力・整理操作は非表示・拒否する。手動モードでは従来の構造注釈を利用できる。
 一部の作業しか把握できていない場合は `coverage=partial` として理由欄に表示する。
 
 ## Base RAL：入力された作業の複雑さ
@@ -224,6 +226,7 @@ Cでは低いコストの候補があっても、失敗・修正の記録に基�
 ブラウザー画面からの入力・整理操作・画面切替は提供しない。
 モデル選択はブラウザ内に保存する。WorkingSetと履歴はローカルのセッションファイルに保存する。
 Loopback APIの表示用GETは認証を要求しない。更新用POSTは起動時のトークンで認証する。HostとOriginの検証はどちらにも適用する。FitEvaluationは応答時に計算し、既存の保存形式・入力スキーマは変えない。
+クライアント用handshakeも認証し、service、protocol version、instance ID、capabilityを返す。client-stateモードの起動情報は1行JSONでlauncherへ返し、表示URLにはtokenを含めない。クライアント通信契約は `projects/attention-pet/CLIENT_PROTOCOL.md` と `schema/client-state.schema.json` に固定する。
 
 ## 将来の校正候補と未検証事項
 

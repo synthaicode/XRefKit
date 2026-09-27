@@ -143,21 +143,29 @@ def fit_candidate(state: dict, profile: ModelProfile, depth: ReasoningDepth) -> 
                         relativeInferenceCost=round(profile.relative_inference_cost * depth.cost_modifier, 2))
 
 
-def evaluate_fit(state: dict | None, model: str = "", reasoning: str = "standard") -> dict:
+def evaluate_fit(state: dict | None, model: str = "", reasoning: str = "standard",
+                 locale: str = "ja") -> dict:
     """Relative quality/cost allocation hypothesis; never a routing decision."""
+    if locale not in {"ja", "en"}:
+        raise ValueError("unsupported display language")
     if model and model not in PROFILES:
         raise ValueError("unknown model profile")
     if reasoning not in DEPTHS:
         raise ValueError("unknown reasoning depth")
     if not model or state is None or not state["features"]["active_items"]:
-        reason = "比較するモデルを選んでください。" if not model else "判定に使う作業内容がありません。"
+        reason = (("Select a model to compare." if not model else "There is no work data to evaluate.")
+                  if locale == "en" else
+                  ("比較するモデルを選んでください。" if not model else "判定に使う作業内容がありません。"))
         cost_fit = "ReviewNeeded" if state and any(o["kind"] != "validated" for o in state["trajectoryEvidence"]) else "Unknown"
         reasons = [reason]
         if cost_fit == "ReviewNeeded":
-            reasons.append("失敗・修正の記録があり、総コストの確認が必要です。能力不足が原因とは断定しません。")
+            reasons.append("Failure or correction records require a total-cost review; they do not prove a capability shortfall."
+                           if locale == "en" else
+                           "失敗・修正の記録があり、総コストの確認が必要です。能力不足が原因とは断定しません。")
         return FitEvaluation(modelFit="Unknown", costFit=cost_fit, reasons=reasons,
                              coverage=state["coverage"] if state else None,
-                             presentation=present_fit("Unknown", cost_fit, state["coverage"] if state else None),
+                             presentation=present_fit("Unknown", cost_fit, state["coverage"] if state else None,
+                                                      locale=locale),
                              baseRal=state["ral"] if state else None).model_dump()
     profile, depth = PROFILES[model], DEPTHS[reasoning]
     selected = fit_candidate(state, profile, depth)
@@ -165,33 +173,50 @@ def evaluate_fit(state: dict | None, model: str = "", reasoning: str = "standard
     cheaper = [c for c in candidates if c.meetsRequirements
                and c.relativeInferenceCost < selected.relativeInferenceCost]
     lowest_sufficient = min(cheaper, key=lambda c: c.relativeInferenceCost, default=None)
-    axes = {"reasoning": "推論", "constraint_tracking": "制約の保持", "evidence_handling": "根拠の扱い"}
+    axes = ({"reasoning": "reasoning", "constraint_tracking": "constraint tracking",
+             "evidence_handling": "evidence handling"} if locale == "en" else
+            {"reasoning": "推論", "constraint_tracking": "制約の保持", "evidence_handling": "根拠の扱い"})
     # Capability adequacy never depends on candidate prices or comparisons.
     model_fit = "Sufficient" if selected.meetsRequirements else "Underpowered"
     if model_fit == "Underpowered":
         cost_fit = "RetryRisk"
-        reasons = ["仮の必要能力に届かない項目：" + "、".join(axes[k] for k in selected.shortfalls) + "。",
-                   "再試行や修正が増える可能性があります。回数・損失は未推定です。"]
+        reasons = (["Estimated capability shortfalls: " + ", ".join(axes[k] for k in selected.shortfalls) + ".",
+                    "Retries or corrections may increase; their count and cost are not estimated."]
+                   if locale == "en" else
+                   ["仮の必要能力に届かない項目：" + "、".join(axes[k] for k in selected.shortfalls) + "。",
+                    "再試行や修正が増える可能性があります。回数・損失は未推定です。"])
     elif cheaper:
         cost_fit = "LowerCostCandidateAvailable"
         labels = " / ".join(PROFILES[c.model].label for c in cheaper)
-        reasons = ["選択モデルは仮の必要能力3軸を満たしています。",
-                   f"同じ考える深さで、{labels} も必要能力を満たし、より低い相対推論コストとなる試算です。",
-                   "再試行・修正・失敗損失はまだ比較していません。実品質の同等性、総コストの低下、モデル変更の必要性を示すものではありません。"]
+        reasons = (["The selected model meets all three estimated capability requirements.",
+                    f"At the same reasoning depth, {labels} also meets the requirements at a lower relative inference cost.",
+                    "Retries, correction time, and failure losses are not compared. This does not establish equal quality, lower total cost, or a need to change models."]
+                   if locale == "en" else
+                   ["選択モデルは仮の必要能力3軸を満たしています。",
+                    f"同じ考える深さで、{labels} も必要能力を満たし、より低い相対推論コストとなる試算です。",
+                    "再試行・修正・失敗損失はまだ比較していません。実品質の同等性、総コストの低下、モデル変更の必要性を示すものではありません。"])
     else:
         cost_fit = "NoLowerCostCandidate"
-        reasons = ["仮の必要能力を全項目で満たしています。",
-                   "同じ考える深さの登録候補には、より低い相対推論コストで必要能力を満たすものがありません。実品質や総コストの優位性は未確認です。"]
+        reasons = (["All estimated capability requirements are met.",
+                    "No registered candidate at the same reasoning depth meets the requirements at a lower relative inference cost. Quality and total-cost advantages are unverified."]
+                   if locale == "en" else
+                   ["仮の必要能力を全項目で満たしています。",
+                    "同じ考える深さの登録候補には、より低い相対推論コストで必要能力を満たすものがありません。実品質や総コストの優位性は未確認です。"])
     if any(o["kind"] != "validated" for o in state["trajectoryEvidence"]):
         cost_fit = "ReviewNeeded"
-        reasons.append("失敗・修正に関する記録があります。能力試算とは別に再試行や修正を含む総コストの確認が必要です。")
+        reasons.append("Failure or correction records require a separate total-cost review including retries and corrections."
+                       if locale == "en" else
+                       "失敗・修正に関する記録があります。能力試算とは別に再試行や修正を含む総コストの確認が必要です。")
     if state["coverage"] == "partial":
-        reasons.append("入力は作業の一部です。未入力の条件により評価は変わります。")
-    reasons.append("実験値・未校正。実際の能力、成功率、費用を計測した結果ではありません。")
+        reasons.append("The input covers only part of the work; omitted conditions may change the evaluation."
+                       if locale == "en" else "入力は作業の一部です。未入力の条件により評価は変わります。")
+    reasons.append("Experimental and uncalibrated; this is not a measurement of actual capability, success rate, or cost."
+                   if locale == "en" else "実験値・未校正。実際の能力、成功率、費用を計測した結果ではありません。")
     return FitEvaluation(modelFit=model_fit, costFit=cost_fit, baseRal=state["ral"],
                          coverage=state["coverage"],
                          presentation=present_fit(model_fit, cost_fit, state["coverage"],
-                                                  selected=selected, lowest_sufficient=lowest_sufficient),
+                                                  selected=selected, lowest_sufficient=lowest_sufficient,
+                                                  locale=locale),
                          lowerCostCandidates=cheaper, inferenceCostIndex=selected.relativeInferenceCost,
                          selected=selected, profile=profile, depth=depth,
                          alternatives=candidates, reasons=reasons).model_dump()
