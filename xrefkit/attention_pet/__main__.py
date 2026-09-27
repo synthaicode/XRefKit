@@ -44,6 +44,8 @@ def main():
                                     if source else Path("work/attention-pet/session.json"))
     server, url = make_server(Store(session_path, weights), args.port, source)
     print(url, flush=True)
+    if args.manual:
+        print(f"Write API Authorization: Bearer {server.write_token}", flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

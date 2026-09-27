@@ -72,10 +72,10 @@ def test_live_api_defaults_to_observed_model_allows_comparison_and_rejects_mutat
     server, launch = make_server(store, source=source)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
-    base, token = launch.split("/#token=")
+    base, token = launch.rstrip("/"), server.write_token
     headers = {"Authorization": f"Bearer {token}"}
     try:
-        with urlopen(Request(base + "/api/state?model=astra&reasoning=high", headers=headers), timeout=5) as response:
+        with urlopen(Request(base + "/api/state?model=astra&reasoning=high"), timeout=5) as response:
             value = json.load(response)
         assert value["source"]["mode"] == "codex-chat"
         assert value["source"]["observedUserTurns"] == 1
@@ -83,7 +83,7 @@ def test_live_api_defaults_to_observed_model_allows_comparison_and_rejects_mutat
         assert value["source"]["reasoning"] == "standard"
         assert value["fit"]["selected"]["model"] == "astra"
         assert value["fit"]["selected"]["reasoning"] == "high"
-        with urlopen(Request(base + "/api/state?model=&reasoning=standard", headers=headers), timeout=5) as response:
+        with urlopen(Request(base + "/api/state?model=&reasoning=standard"), timeout=5) as response:
             defaulted = json.load(response)
         assert defaulted["fit"]["selected"]["model"] == "sol"
         before = store.view()

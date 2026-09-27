@@ -219,7 +219,7 @@ def test_http_api_auth_origin_validation_recovery_and_assets():
     server, launch = make_server(Store())
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
-    base, token = launch.split("/#token=")
+    base, token = launch.rstrip("/"), server.write_token
     def request(path, data=None, auth=True, origin=None):
         headers = {"Authorization":f"Bearer {token}"} if auth else {}
         if origin:
@@ -233,8 +233,9 @@ def test_http_api_auth_origin_validation_recovery_and_assets():
         assert b"Attention Pet" in request("/", auth=False)
         for path in ("/pet.js", "/pet.css"):
             assert request(path, auth=False)
+        assert json.loads(request("/api/state", auth=False))["state"] is None
         with pytest.raises(HTTPError) as error:
-            request("/api/state", auth=False)
+            request("/api/snapshot", fixture().model_dump(), auth=False)
         assert error.value.code == 401
         with pytest.raises(HTTPError) as error:
             request("/api/snapshot", fixture().model_dump(), origin="https://example.com")

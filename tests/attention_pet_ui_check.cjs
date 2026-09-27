@@ -20,17 +20,20 @@ const node = id => {if(!nodes.has(id)) nodes.set(id,element());return nodes.get(
 const storage = {getItem:()=>null,setItem:()=>{}};
 let failure = false;
 let hold = false, releaseFetch;
+let lastFetchOptions = null;
 const context = vm.createContext({
   document:{getElementById:node,body:element(),createElement:element,querySelectorAll:()=>[],addEventListener:()=>{}},
   window:{addEventListener:()=>{},matchMedia:()=>({matches:false,addEventListener:()=>{}})},
   localStorage:storage,sessionStorage:storage,location:{hash:'',pathname:'/'},history:{replaceState:()=>{}},
   URLSearchParams,AbortSignal,setInterval:()=>{},setTimeout,clearTimeout,
-  fetch:async()=>{if(failure) throw Error('simulated connection failure');if(hold) await new Promise(resolve=>releaseFetch=resolve);return {ok:true,json:async()=>sample};},
+  fetch:async(_path,options)=>{lastFetchOptions=options;if(failure) throw Error('simulated connection failure');if(hold) await new Promise(resolve=>releaseFetch=resolve);return {ok:true,json:async()=>sample};},
   sample,
 });
 (async()=>{
   vm.runInContext(fs.readFileSync('xrefkit/resources/attention_pet/pet.js','utf8'),context);
   await new Promise(setImmediate);
+  assert.equal(lastFetchOptions.method,'GET');
+  assert.equal(lastFetchOptions.headers.Authorization,undefined);
   assert.match(node('model-fit').textContent,/Sufficient/);
   assert.equal(node('dock').dataset.expression,sample.fit.presentation.petState.toLowerCase());
   assert.notEqual(node('effective').textContent,'—');
