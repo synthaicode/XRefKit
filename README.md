@@ -8,7 +8,7 @@ record evidence, preserve human judgment, and apply explicit completion checks.
 
 ## Why XRefKit?
 
-Experimental local tool: [Attention Pet](projects/attention-pet/README.md) helps
+Experimental local tool: [Attention Pet](projects/attention-pet/README.en.md) helps
 people assess capability sufficiency and lower inference-cost candidates separately.
 Its Model Fit / Cost Fit estimates use uncalibrated profiles; it does not measure internal
 attention or switch models automatically.
@@ -21,6 +21,11 @@ the visible work requirements, and shows the result through a compact animated
 pet. It also shows lower inference-cost comparison candidates when the
 experimental profiles support one. The estimate is observational and does not
 change the Codex model, reasoning level, or chat.
+
+It does not measure token usage. It estimates the structural complexity of the
+work context the AI must handle, including retained items, dependencies,
+constraints, decision depth, conflicts, and dispersed evidence. It does not
+read model-internal attention or remaining context-window capacity.
 
 Run it from a Codex terminal in this repository so `CODEX_THREAD_ID` identifies
 the current chat:
@@ -38,7 +43,7 @@ This Codex preview is bound to the chat that launched it. Selecting another
 chat does not move the Pet automatically; launch it again from that chat when
 you want a separate view. The model and reasoning dropdowns only compare
 estimates and do not change the active Codex settings. See the
-[Attention Pet guide](projects/attention-pet/README.md) for interpretation,
+[Attention Pet guide](projects/attention-pet/README.en.md) for interpretation,
 limitations, client integration, and API details.
 
 Using AI for real work creates recurring operating problems:
