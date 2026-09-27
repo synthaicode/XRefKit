@@ -1,0 +1,188 @@
+{
+  "taskId": "demo-B",
+  "contextId": "context-1",
+  "observedAt": 60.0,
+  "coverage": "reviewed",
+  "turns": [
+    {
+      "id": "turn-0",
+      "text": "Add requirement 1; preserve all earlier constraints and their dependencies.",
+      "items": [
+        {
+          "id": "c0-0",
+          "kind": "constraint",
+          "text": "Requirement 1.1",
+          "source": "turn-0",
+          "status": "active",
+          "depth": 0,
+          "fixed": false
+        },
+        {
+          "id": "c0-1",
+          "kind": "constraint",
+          "text": "Requirement 1.2",
+          "source": "turn-0",
+          "status": "active",
+          "depth": 0,
+          "fixed": false
+        },
+        {
+          "id": "c0-2",
+          "kind": "constraint",
+          "text": "Requirement 1.3",
+          "source": "turn-0",
+          "status": "active",
+          "depth": 0,
+          "fixed": false
+        },
+        {
+          "id": "c0-3",
+          "kind": "constraint",
+          "text": "Requirement 1.4",
+          "source": "turn-0",
+          "status": "active",
+          "depth": 0,
+          "fixed": false
+        },
+        {
+          "id": "d0",
+          "kind": "decision",
+          "text": "Decision 1",
+          "source": "turn-0",
+          "status": "active",
+          "depth": 1,
+          "fixed": false
+        }
+      ],
+      "dependencies": [
+        {
+          "source": "c0-0",
+          "target": "d0",
+          "evidence": "turn-0"
+        },
+        {
+          "source": "c0-1",
+          "target": "d0",
+          "evidence": "turn-0"
+        },
+        {
+          "source": "c0-2",
+          "target": "d0",
+          "evidence": "turn-0"
+        },
+        {
+          "source": "c0-3",
+          "target": "d0",
+          "evidence": "turn-0"
+        }
+      ],
+      "observations": []
+    },
+    {
+      "id": "turn-1",
+      "text": "Add requirement 2; preserve all earlier constraints and their dependencies.",
+      "items": [
+        {
+          "id": "c1-0",
+          "kind": "constraint",
+          "text": "Requirement 2.1",
+          "source": "turn-1",
+          "status": "active",
+          "depth": 0,
+          "fixed": false
+        },
+        {
+          "id": "c1-1",
+          "kind": "constraint",
+          "text": "Requirement 2.2",
+          "source": "turn-1",
+          "status": "active",
+          "depth": 0,
+          "fixed": false
+        },
+        {
+          "id": "c1-2",
+          "kind": "constraint",
+          "text": "Requirement 2.3",
+          "source": "turn-1",
+          "status": "active",
+          "depth": 0,
+          "fixed": false
+        },
+        {
+          "id": "c1-3",
+          "kind": "constraint",
+          "text": "Requirement 2.4",
+          "source": "turn-1",
+          "status": "active",
+          "depth": 0,
+          "fixed": false
+        },
+        {
+          "id": "d1",
+          "kind": "decision",
+          "text": "Decision 2",
+          "source": "turn-1",
+          "status": "active",
+          "depth": 2,
+          "fixed": false
+        }
+      ],
+      "dependencies": [
+        {
+          "source": "c1-0",
+          "target": "d1",
+          "evidence": "turn-1"
+        },
+        {
+          "source": "c1-0",
+          "target": "d0",
+          "evidence": "turn-1"
+        },
+        {
+          "source": "c1-1",
+          "target": "d1",
+          "evidence": "turn-1"
+        },
+        {
+          "source": "c1-1",
+          "target": "d0",
+          "evidence": "turn-1"
+        },
+        {
+          "source": "c1-2",
+          "target": "d1",
+          "evidence": "turn-1"
+        },
+        {
+          "source": "c1-2",
+          "target": "d0",
+          "evidence": "turn-1"
+        },
+        {
+          "source": "c1-3",
+          "target": "d1",
+          "evidence": "turn-1"
+        },
+        {
+          "source": "c1-3",
+          "target": "d0",
+          "evidence": "turn-1"
+        },
+        {
+          "source": "d1",
+          "target": "d0",
+          "evidence": "turn-1"
+        }
+      ],
+      "observations": [
+        {
+          "id": "check",
+          "kind": "validated",
+          "evidence": "Synthetic reviewer: current constraints were retained.",
+          "context": "context-1"
+        }
+      ]
+    }
+  ]
+}

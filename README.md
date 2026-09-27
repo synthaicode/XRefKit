@@ -8,6 +8,11 @@ record evidence, preserve human judgment, and apply explicit completion checks.
 
 ## Why XRefKit?
 
+Experimental local tool: [Attention Pet](projects/attention-pet/README.md) helps
+people assess capability sufficiency and lower inference-cost candidates separately.
+Its Model Fit / Cost Fit estimates use uncalibrated profiles; it does not measure internal
+attention or switch models automatically.
+
 Using AI for real work creates recurring operating problems:
 
 ![Why XRefKit is needed](human-docs/en/assets/why_xrefkit_needed/whatis_xrefkit.png)
