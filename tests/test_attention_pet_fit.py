@@ -293,10 +293,10 @@ def test_api_model_selection_is_read_only_and_invalid_queries_cannot_mutate():
     server, launch = make_server(store)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
-    base, token = launch.split("/#token=")
+    base, token = launch.rstrip("/"), server.write_token
 
     def request(path, data=None):
-        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"} if data is not None else {}
         req = Request(base + path, json.dumps(data).encode() if data is not None else None, headers)
         with urlopen(req, timeout=5) as response:
             return json.load(response)

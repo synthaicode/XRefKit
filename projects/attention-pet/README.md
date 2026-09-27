@@ -18,7 +18,7 @@ python -m xrefkit.attention_pet serve --port 8769
 起動元の `CODEX_THREAD_ID` がある場合は、そのチャットのローカル記録に固定して追跡します。別チャットへ画面を切り替えても自動で追従しません。明示的に結び付ける場合は `--thread-id <チャットID>` を指定します。チャット連動時は別の保存ファイルを使い、従来の手動セッションを上書きしません。ローカル記録が見つからない場合は起動に失敗します。
 ローカル記録のJSONL形式を読む実験的アダプターです。Codex側で記録形式が変わると更新できなくなる可能性があります。保存ファイルには発言本文を残さず、最大100件の利用者発言を汎用項目として保持します。
 
-表示された `http://127.0.0.1:8769/#token=...` をCodexのブラウザパネルで開きます。
+表示された `http://127.0.0.1:8769/` をCodexのブラウザパネルで開きます。画面の表示に認証は不要です。
 画面にはモデルとコストの配分カードとPetを常時表示します。一部の作業だけを評価している場合は、その範囲もPetの横に表示します。
 カードには能力・コスト・入力範囲・確からしさを表示します。チャット連動時はCodexの実行記録を試算条件の初期値にします。プルダウンで別のモデルや深さを比較できますが、Codex本体の実行設定は変更しません。
 「数値・候補・評価理由を見る」を開くと、RALや必要能力3軸、候補、推論コスト指数と理由を確認できます。
@@ -70,7 +70,7 @@ python -m xrefkit.attention_pet evaluate projects/attention-pet/examples/working
 python -m xrefkit.attention_pet evaluate projects/attention-pet/examples/conversation.json --conversation
 ```
 
-HTTP API（トークンは起動時のURLから取得）:
+HTTP API:
 
 | Method / Path | 入出力 |
 |---|---|
@@ -79,7 +79,7 @@ HTTP API（トークンは起動時のURLから取得）:
 | POST `/api/conversation` | 注釈付きConversationを抽出・評価・保存 |
 | POST `/api/recover` | `action`, `expectedObservedAt`。古い画面操作を拒否 |
 
-全APIに `Authorization: Bearer <token>`、POSTには `Content-Type: application/json` が必要です。
+GET `/api/state` は認証なしで利用できます。POSTには手動モードの起動時に別途表示される `Authorization: Bearer <token>` と `Content-Type: application/json` が必要です。
 各APIに `?model=luna&reasoning=standard` などを付けると、応答の `fit` にその比較条件の評価が入ります。チャット連動時、モデル指定がなければ記録中のモデル・深さを初期値にし、指定があれば読み取り専用の比較として使います。応答の `source` には実際の連動状態が入り、比較条件を変えてもCodex本体は変更しません。
 モデルは `luna|terra|sol|astra`、深さは `light|standard|high`。モデル省略時は `Unknown`、深さの既定値は `standard`。Terraを含むプロファイルと相対推論コストは未校正の実験値です。
 未知値・重複パラメータは更新前に拒否します。GETでの比較は作業内容と履歴を変更しません。
@@ -88,7 +88,7 @@ CLIは `--model` 指定時に `{state, fit}` を返し、省略時の既存出�
 独立入力アダプターからこのAPIを呼べます。初期版はMCPの登録やCodex設定変更を行いません。
 
 ```powershell
-$petHeaders = @{ Authorization = 'Bearer <起動時のtoken>' }
+$petHeaders = @{ Authorization = 'Bearer <手動モード起動時のtoken>' }
 $petBody = Get-Content projects/attention-pet/examples/working-set.json -Raw
 Invoke-RestMethod http://127.0.0.1:8769/api/snapshot -Method Post -Headers $petHeaders -ContentType 'application/json; charset=utf-8' -Body ([System.Text.Encoding]::UTF8.GetBytes($petBody))
 ```

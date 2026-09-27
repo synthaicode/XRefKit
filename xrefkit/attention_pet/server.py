@@ -1,4 +1,4 @@
-"""Loopback-only HTTP adapter with same-origin writes and per-process bearer token."""
+"""Loopback-only HTTP adapter with public reads and authenticated writes."""
 import json
 import secrets
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -35,7 +35,7 @@ def make_server(store: Store, port: int = 0, source=None):
             self.end_headers()
             self.wfile.write(payload)
 
-        def allowed(self):
+        def allowed(self, *, require_auth=True):
             expected_host = f"127.0.0.1:{self.server.server_port}"
             if self.headers.get("Host") != expected_host:
                 self.reply(403, {"error": "invalid host"})
@@ -44,8 +44,8 @@ def make_server(store: Store, port: int = 0, source=None):
             if origin and origin != f"http://{expected_host}":
                 self.reply(403, {"error": "cross-origin request rejected"})
                 return False
-            if not secrets.compare_digest(self.headers.get("Authorization", ""), f"Bearer {token}"):
-                self.reply(401, {"error": "open the local launch URL with its token"})
+            if require_auth and not secrets.compare_digest(self.headers.get("Authorization", ""), f"Bearer {token}"):
+                self.reply(401, {"error": "write authorization required"})
                 return False
             return True
 
@@ -71,7 +71,7 @@ def make_server(store: Store, port: int = 0, source=None):
                 name, kind = assets[self.path]
                 self.reply(200, files("xrefkit").joinpath("resources", "attention_pet", name).read_bytes(), kind)
             elif urlsplit(self.path).path == "/api/state":
-                if self.allowed():
+                if self.allowed(require_auth=False):
                     try:
                         selection = self.selection()
                     except ValueError as exc:
@@ -124,4 +124,5 @@ def make_server(store: Store, port: int = 0, source=None):
 
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     server.daemon_threads = True
-    return server, f"http://127.0.0.1:{server.server_port}/#token={token}"
+    server.write_token = token
+    return server, f"http://127.0.0.1:{server.server_port}/"

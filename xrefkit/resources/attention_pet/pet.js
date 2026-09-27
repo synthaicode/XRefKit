@@ -5,11 +5,6 @@ window.addEventListener("error", event => {
   $("error").textContent = `画面の初期化に失敗しました：${event.message}`;
   $("error").hidden = false;
 });
-function consumeToken() {
-  const fragment = new URLSearchParams(location.hash.slice(1));
-  if (fragment.has("token")) { sessionStorage.setItem("attention-pet-token", fragment.get("token")); history.replaceState(null, "", location.pathname); }
-}
-consumeToken();
 try { $("motion").checked = localStorage.getItem("attention-pet-motion") !== "off"; } catch {}
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 function setMotion() {
@@ -89,7 +84,7 @@ const featureNames = {goal:"目的",constraint:"制約",decision:"判断",questi
 async function api(path, body) {
   path += `?${new URLSearchParams({model:$("model-profile").value,reasoning:$("reasoning-effort").value})}`;
   if (body) pendingFit("評価を更新中");
-  const response = await fetch(path, {signal:AbortSignal.timeout(5000), method: body ? "POST" : "GET", headers: {"Authorization":`Bearer ${sessionStorage.getItem("attention-pet-token") || ""}`, ...(body ? {"Content-Type":"application/json"} : {})}, ...(body ? {body:JSON.stringify(body)} : {})});
+  const response = await fetch(path, {signal:AbortSignal.timeout(5000), method: body ? "POST" : "GET", headers: body ? {"Content-Type":"application/json"} : {}, ...(body ? {body:JSON.stringify(body)} : {})});
   const value = await response.json();
   if (!response.ok) throw new Error(value.error || "読み込みに失敗しました");
   return value;
@@ -189,5 +184,4 @@ async function refresh() {
 }
 pendingFit("評価を読み込み中");
 refresh();
-window.addEventListener("hashchange", () => {consumeToken(); renderedSignature = ""; generation += 1; refresh();});
 setInterval(refresh, 3000);
