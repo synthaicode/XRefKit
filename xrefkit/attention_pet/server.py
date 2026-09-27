@@ -10,7 +10,8 @@ from pydantic import ValidationError
 from .model import Conversation, WorkingSet, extract
 from .store import Store
 from .evaluator import evaluate_fit
-from .client_protocol import ClientState, StaleActivation, handshake
+from .profiles import PROFILES, DEPTHS, canonical_reasoning
+from .client_protocol import ClientState, ClientStateSource, StaleActivation, handshake
 
 
 def make_server(store: Store, port: int = 0, source=None):
@@ -51,20 +52,29 @@ def make_server(store: Store, port: int = 0, source=None):
                 return False
             return True
 
-        def selection(self):
+        def selection(self, *, mutating=False):
             query = parse_qs(urlsplit(self.path).query, keep_blank_values=True)
             if set(query) - {"model", "reasoning", "lang"} or any(len(v) != 1 for v in query.values()):
                 raise ValueError("invalid fit selection")
             selection = (query.get("model", [""])[0], query.get("reasoning", ["standard"])[0],
                          query.get("lang", ["ja"])[0])
-            evaluate_fit(None, *selection[:2], locale=selection[2])  # Reject before mutation.
+            evaluate_fit(None, *selection[:2], locale=selection[2])
+            if mutating and (selection[0] and selection[0] not in PROFILES or
+                             selection[1] not in DEPTHS or
+                             selection[0] and canonical_reasoning(selection[1]) not in PROFILES[selection[0]].supported_reasoning):
+                raise ValueError("unknown execution profile")
             return selection
 
-        def with_fit(self, result, selection):
+        def with_fit(self, result, selection, observed=None):
             # In chat-bound mode the observed model is the default. An explicit
             # query is a read-only comparison and never changes the Codex run.
-            actual_selection = selection[:2] if selection[0] else source.selection() if source else selection[:2]
-            source_status = source.status() if source else {"mode": "manual"}
+            if observed is not None:
+                source_selection, source_status = observed
+            elif source:
+                source_selection, source_status = source.selection(), source.status()
+            else:
+                source_selection, source_status = selection[:2], {"mode": "manual"}
+            actual_selection = selection[:2] if selection[0] else source_selection
             return {**result, "fit": evaluate_fit(result["state"], *actual_selection,
                                                     locale=selection[2]),
                     "source": source_status}
@@ -74,6 +84,13 @@ def make_server(store: Store, port: int = 0, source=None):
             if self.path in assets:
                 name, kind = assets[self.path]
                 self.reply(200, files("xrefkit").joinpath("resources", "attention_pet", name).read_bytes(), kind)
+            elif urlsplit(self.path).path == "/api/profiles":
+                if self.allowed(require_auth=False):
+                    self.reply(200, {"models": [{"id": p.id, "label": p.label,
+                                                  "reasoning": list(p.supported_reasoning)}
+                                                 for p in PROFILES.values()],
+                                     "legacyAliases": {"light": "low", "standard": "medium"},
+                                     "calibration": "uncalibrated"})
             elif urlsplit(self.path).path == "/api/state":
                 if self.allowed(require_auth=False):
                     try:
@@ -82,8 +99,12 @@ def make_server(store: Store, port: int = 0, source=None):
                         self.reply(400, {"error": str(exc)})
                         return
                     try:
-                        result = source.view(store) if source else store.view()
-                        self.reply(200, self.with_fit(result, selection))
+                        if isinstance(source, ClientStateSource):
+                            result, source_selection, source_status = source.snapshot(store)
+                            self.reply(200, self.with_fit(result, selection, (source_selection, source_status)))
+                        else:
+                            result = source.view(store) if source else store.view()
+                            self.reply(200, self.with_fit(result, selection))
                     except (OSError, ValueError):
                         self.reply(503, {"error": "bound chat is temporarily unavailable"})
             elif urlsplit(self.path).path == "/api/client/handshake":
@@ -96,7 +117,7 @@ def make_server(store: Store, port: int = 0, source=None):
             if not self.allowed():
                 return
             try:
-                selection = self.selection()
+                selection = self.selection(mutating=True)
                 path = urlsplit(self.path).path
                 if self.headers.get("Content-Type", "").split(";")[0] != "application/json":
                     raise ValueError("application/json required")

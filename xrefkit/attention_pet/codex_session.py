@@ -20,8 +20,8 @@ _AMBIENT = re.compile(r"<in-app-browser-context\b[^>]*>.*?</in-app-browser-conte
 _REFERENCE = re.compile(r"(?:^|\s)(?:この|これ|それ|その|同じ|つづけて|続けて)")
 _CONSTRAINT = ("不要", "削除", "しない", "なくす", "やめ", "違う", "おかしい", "修正", "変更")
 _MODEL_SUFFIX = {"luna": "luna", "terra": "terra", "sol": "sol", "astra": "astra"}
-_DEPTH = {"none": "light", "minimal": "light", "low": "light", "medium": "standard",
-          "high": "high", "xhigh": "high", "max": "high", "ultra": "high"}
+_DEPTH = {"none": "low", "minimal": "low", "low": "low", "medium": "medium",
+          "high": "high", "xhigh": "xhigh", "max": "max", "ultra": "max"}
 
 
 def find_rollout(thread_id: str, codex_home: Path) -> Path:

@@ -81,6 +81,25 @@
       "title": "Capability",
       "type": "object"
     },
+    "ExecutionProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "title": "Model",
+          "type": "string"
+        },
+        "reasoning": {
+          "title": "Reasoning",
+          "type": "string"
+        }
+      },
+      "required": [
+        "model",
+        "reasoning"
+      ],
+      "title": "ExecutionProfile",
+      "type": "object"
+    },
     "FitCandidate": {
       "additionalProperties": false,
       "properties": {
@@ -162,6 +181,18 @@
           "exclusiveMinimum": 0,
           "title": "Relative Inference Cost",
           "type": "number"
+        },
+        "supported_reasoning": {
+          "default": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "title": "Supported Reasoning",
+          "type": "array"
         },
         "calibration": {
           "const": "uncalibrated",
@@ -406,6 +437,28 @@
       ],
       "default": null
     },
+    "selectedProfile": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExecutionProfile"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "lowerCostCandidate": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExecutionProfile"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
     "profile": {
       "anyOf": [
         {
@@ -480,6 +533,11 @@
     "correctionCost": {
       "default": null,
       "title": "Correctioncost",
+      "type": "null"
+    },
+    "latencyCost": {
+      "default": null,
+      "title": "Latencycost",
       "type": "null"
     },
     "failureRiskCost": {

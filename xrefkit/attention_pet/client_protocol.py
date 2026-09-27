@@ -93,6 +93,11 @@ class ClientStateSource:
         with self.lock:
             return self._store(self.active).view() if self.active else _fallback_store.view()
 
+    def snapshot(self, fallback_store: Store) -> tuple[dict, tuple[str, str], dict]:
+        """Read the active work, execution profile, and source under one lock."""
+        with self.lock:
+            return self.view(fallback_store), self.selection(), self.status()
+
     def selection(self) -> tuple[str, str]:
         with self.lock:
             state = self.states.get(self.active) if self.active else None
@@ -100,8 +105,8 @@ class ClientStateSource:
                 return "", "standard"
             family = state.model.rsplit("-", 1)[-1]
             model = family if state.model.startswith("gpt-") and family in {"luna", "terra", "sol", "astra"} else ""
-            depth = {"none": "light", "minimal": "light", "low": "light", "medium": "standard",
-                     "high": "high", "xhigh": "high", "max": "high", "ultra": "high"}.get(state.reasoning)
+            depth = {"none": "low", "minimal": "low", "low": "low", "medium": "medium",
+                     "high": "high", "xhigh": "xhigh", "max": "max", "ultra": "max"}.get(state.reasoning)
             return (model, depth) if model and depth else ("", "standard")
 
     def status(self) -> dict:

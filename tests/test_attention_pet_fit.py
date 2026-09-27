@@ -16,6 +16,50 @@ from xrefkit.attention_pet.server import make_server
 from xrefkit.attention_pet.store import Store
 
 
+def test_execution_profile_search_crosses_models_and_efforts(monkeypatch):
+    # Controlled hypotheses make the two cross-axis cases independent of scenario thresholds.
+    state = {"ral": 50, "causes": [], "features": {"active_items": 1},
+             "coverage": "reviewed", "trajectoryEvidence": []}
+    for model, base in (("luna", 20), ("sol", 40)):
+        monkeypatch.setitem(PROFILES, model, PROFILES[model].model_copy(
+            update={"capability": Capability(reasoning=base, constraint_tracking=base,
+                                             evidence_handling=base)}))
+    for model in ("terra", "astra"):
+        monkeypatch.setitem(PROFILES, model, PROFILES[model].model_copy(
+            update={"relative_inference_cost": 100.0}))
+    result = evaluate_fit(state, "sol", "high")
+    assert result["modelFit"] == "Sufficient"
+    assert result["costFit"] == "LowerCostCandidateAvailable"
+    assert { (c["model"], c["reasoning"]) for c in result["lowerCostCandidates"] } >= {
+        ("luna", "xhigh"), ("sol", "medium")}
+    assert not next(c for c in result["alternatives"] if
+                    (c["model"], c["reasoning"]) == ("luna", "high"))["meetsRequirements"]
+    assert result["lowerCostCandidate"] == {"model": "sol", "reasoning": "medium"}
+    assert result["selectedProfile"] == {"model": "sol", "reasoning": "high"}
+    assert result["expectedTotalCost"] is None
+
+    underpowered = evaluate_fit(state, "sol", "low")
+    assert underpowered["modelFit"] == "Underpowered"
+    assert underpowered["costFit"] == "RetryRisk"
+    assert underpowered["lowerCostCandidate"] is None
+    assert underpowered["lowerCostCandidates"] == []
+
+
+def test_unknown_and_legacy_execution_profiles():
+    state = evaluate(task())
+    for model, reasoning in (("absent", "high"), ("sol", "absent"),
+                             ("terra", "xhigh")):
+        result = evaluate_fit(state, model, reasoning)
+        assert result["modelFit"] == result["costFit"] == "Unknown"
+        assert result["presentation"]["petState"] == "Unknown"
+    assert evaluate_fit(state, "sol", "light")["selected"]["reasoning"] == "light"
+    assert evaluate_fit(state, "sol", "standard")["selected"]["reasoning"] == "standard"
+    assert evaluate_fit(state, "sol", "light")["selectedProfile"] == {"model": "sol", "reasoning": "low"}
+    assert evaluate_fit(state, "sol", "standard")["selectedProfile"] == {"model": "sol", "reasoning": "medium"}
+    assert evaluate_fit(state, "sol", "standard")["selected"]["capability"] == \
+        evaluate_fit(state, "sol", "medium")["selected"]["capability"]
+
+
 def task(name="A", step=5):
     return WorkingSet.model_validate(scenario(name, step)["workingSet"])
 
@@ -70,10 +114,10 @@ def test_comparison_is_pure_and_total_cost_is_unknown():
     assert {r["baseRal"] for r in results} == {state["ral"]}
     for result in results:
         assert result["expectedTotalCost"] is None
-        assert all(result[k] is None for k in ("inferenceCost", "retryCost", "correctionCost", "failureRiskCost"))
+        assert all(result[k] is None for k in ("inferenceCost", "retryCost", "correctionCost", "latencyCost", "failureRiskCost"))
         assert result["calibration"] == "uncalibrated"
     assert results[0]["costFit"] == "RetryRisk"
-    assert results[1]["costFit"] == "NoLowerCostCandidate"
+    assert results[1]["costFit"] == "LowerCostCandidateAvailable"
     assert results[2]["costFit"] == "LowerCostCandidateAvailable"
 
 
@@ -121,9 +165,9 @@ def test_schema_matches_python_cost_fit_contract():
 
 
 @pytest.mark.parametrize("name,step,costs,faces", [
-    ("A", 5, ["NoLowerCostCandidate"] + ["LowerCostCandidateAvailable"] * 3, ["Balanced"] + ["Relaxed"] * 3),
-    ("B", 3, ["RetryRisk", "NoLowerCostCandidate", "LowerCostCandidateAvailable", "LowerCostCandidateAvailable"], ["Strained", "Balanced", "Relaxed", "Relaxed"]),
-    ("B", 5, ["RetryRisk"] * 3 + ["NoLowerCostCandidate"], ["Strained"] * 3 + ["Balanced"]),
+    ("A", 5, ["LowerCostCandidateAvailable"] * 4, ["Relaxed"] * 4),
+    ("B", 3, ["RetryRisk"] + ["LowerCostCandidateAvailable"] * 3, ["Strained"] + ["Relaxed"] * 3),
+    ("B", 5, ["RetryRisk"] * 3 + ["LowerCostCandidateAvailable"], ["Strained"] * 3 + ["Relaxed"]),
     ("D", 5, ["RetryRisk"] * 4, ["Strained"] * 4),
     ("C", 3, ["ReviewNeeded"] * 4, ["Review"] * 4),
 ])
@@ -141,11 +185,11 @@ def test_scenarios_separate_cost_and_presentation(name, step, costs, faces):
 
 def test_other_prices_do_not_change_model_fit(monkeypatch):
     state = evaluate(task())
-    before = evaluate_fit(state, "astra")
+    before = evaluate_fit(state, "astra", "low")
     assert before["costFit"] == "LowerCostCandidateAvailable"
     for name in ("luna", "terra", "sol"):
         monkeypatch.setitem(PROFILES, name, PROFILES[name].model_copy(update={"relative_inference_cost": 100.0}))
-    after = evaluate_fit(state, "astra")
+    after = evaluate_fit(state, "astra", "low")
     assert before["modelFit"] == after["modelFit"] == "Sufficient"
     assert after["costFit"] == "NoLowerCostCandidate"
     assert after["lowerCostCandidates"] == []
@@ -153,9 +197,9 @@ def test_other_prices_do_not_change_model_fit(monkeypatch):
 
 @pytest.mark.parametrize("name,step,model,status,target", [
     ("A", 5, "astra", "Available", "Luna"),
-    ("B", 3, "astra", "Available", "Terra"),
-    ("B", 3, "sol", "Available", "Terra"),
-    ("B", 3, "terra", "NoLowerCandidate", None),
+    ("B", 3, "astra", "Available", "Sol"),
+    ("B", 3, "sol", "Available", "Sol"),
+    ("B", 3, "terra", "Available", "Sol"),
     ("B", 3, "luna", "Underpowered", None),
     ("C", 3, "astra", "HoldForReview", None),
     ("D", 5, "astra", "Underpowered", None),
@@ -168,7 +212,7 @@ def test_lowest_sufficient_downgrade_guidance(name, step, model, status, target)
     if target:
         assert f"低コスト比較候補: {target}" in guide["modelGuide"]
         assert target in guide["modelGuideShort"]
-        assert "同じ考える深さ" in guide["modelGuide"]
+        assert " / " in guide["modelGuideShort"]
         assert "再試行・修正時間・失敗損失を含む総コストは未比較" in guide["modelGuideDetail"]
         assert "仮の必要能力3軸を満たす試算" in guide["modelGuideDetail"]
         lowest = min(fit["lowerCostCandidates"], key=lambda c: c["relativeInferenceCost"])
@@ -241,7 +285,7 @@ def test_english_presentation_preserves_evaluation_meaning():
     ("Unknown", "Unknown", "Unknown", "まだ評価できません", "情報が不足"),
     ("Underpowered", "RetryRisk", "Strained", "能力が不足する可能性", "一部を満たしていません"),
     ("Sufficient", "NoLowerCostCandidate", "Balanced", "必要な能力を満たす試算", "候補は確認されていません"),
-    ("Sufficient", "LowerCostCandidateAvailable", "Relaxed", "より低い推論コストの候補", "現在のモデルでも必要能力を満たす試算"),
+    ("Sufficient", "LowerCostCandidateAvailable", "Relaxed", "より低い推論コストの候補", "現在の実行プロファイルでも必要能力を満たす試算"),
     ("Sufficient", "ReviewNeeded", "Review", "実際の結果", "モデル能力だけを原因とは判断していません"),
     ("Underpowered", "ReviewNeeded", "Review", "実際の結果", "モデル能力だけを原因とは判断していません"),
 ])
@@ -309,6 +353,13 @@ def test_profiles_reject_invalid_costs(field, value):
         ModelProfile.model_validate(data)
 
 
+def test_profiles_reject_reasoning_without_depth_definition():
+    data = PROFILES["luna"].model_dump()
+    data["supported_reasoning"] = ("low", "ultra")
+    with pytest.raises(ValidationError, match="unsupported reasoning levels: ultra"):
+        ModelProfile.model_validate(data)
+
+
 def test_api_model_selection_is_read_only_and_invalid_queries_cannot_mutate():
     store = Store()
     before = store.submit(task("B", 3))
@@ -324,6 +375,12 @@ def test_api_model_selection_is_read_only_and_invalid_queries_cannot_mutate():
             return json.load(response)
 
     try:
+        catalog = request("/api/profiles")
+        assert next(p for p in catalog["models"] if p["id"] == "luna")["reasoning"] == [
+            "low", "medium", "high", "xhigh"]
+        assert catalog["legacyAliases"] == {"light": "low", "standard": "medium"}
+        unknown = request("/api/state?model=absent&reasoning=xhigh")
+        assert unknown["fit"]["modelFit"] == "Unknown"
         for model, expected in zip(PROFILES, ["Underpowered", "Sufficient", "Sufficient", "Sufficient"], strict=True):
             value = request(f"/api/state?model={model}&reasoning=standard")
             assert value["fit"]["modelFit"] == expected

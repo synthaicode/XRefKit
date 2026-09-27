@@ -54,7 +54,7 @@ body[data-motion=off] .creature,body[data-motion=off] .sweat{animation:none!impo
 
 #motion-status{font-size:11px;color:#405b4b;line-height:1.6}
 
-/* Model Fit: difficulty, comfortable work, and idle capacity are distinct. */
+/* Profile Fit: difficulty, comfortable work, and idle capacity are distinct. */
 .pet-dock[data-expression=balanced] .creature{animation:pet-easy 4.5s ease-in-out infinite}
 .pet-dock[data-expression=fit-strained]{--pet:#e5c18c;--accent:#a08245}
 .pet-dock[data-expression=fit-strained] .eyes,.pet-dock[data-expression=fit-strained] .calm{display:none}
@@ -91,7 +91,7 @@ body[data-motion=off] .creature,body[data-motion=off] .sweat{animation:none!impo
 .source-model{white-space:pre-line;font-size:12px;line-height:1.7;color:#64766d}
 body[data-mode=details] main{width:calc(100% - 480px);margin:0;padding:30px 32px 160px}
 @media(max-width:900px){body[data-mode=details] main{width:100%;padding:24px 24px 30px}body[data-mode=details] .pet-dock{position:relative;right:auto;bottom:auto;margin:14px 14px 160px}body[data-mode=details] .panel{width:100%;max-height:none}body[data-mode=details] .pet-row{position:fixed;right:14px;bottom:12px}.intro{padding-top:24px}}
-/* A new chat message gets a short acknowledgment; the expression still represents model fit. */
+/* A new chat message gets a short acknowledgment; the expression still represents profile fit. */
 @keyframes chat-arrival{0%,100%{transform:scale(1)}35%{transform:scale(1.09)}65%{transform:scale(.97)}}
 .pet-dock[data-chat-update=on] #pet{animation:chat-arrival .65s ease-out 1}
 body[data-motion=off] .pet-dock[data-chat-update=on] #pet{animation:none}

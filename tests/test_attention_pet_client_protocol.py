@@ -101,10 +101,16 @@ def test_handshake_authentication_and_active_session_switching(tmp_path):
             get("/api/state?lang=fr")
         assert error.value.code == 400
 
-        post("/api/active-session", payload("session-b", 2, 2))
-        second = get("/api/state")
+        next_session = payload("session-b", 2, 2)
+        next_session["model"] = "gpt-6-astra"
+        next_session["reasoning"] = "high"
+        post("/api/active-session", next_session)
+        second = get("/api/state?model=&reasoning=medium")
         assert second["source"]["sessionId"] == "session-b"
+        assert second["fit"]["selectedProfile"] == {"model": "astra", "reasoning": "high"}
         assert second["state"]["features"]["active_items"] == 2
+        manual_comparison = get("/api/state?model=sol&reasoning=medium")
+        assert manual_comparison["fit"]["selectedProfile"] == {"model": "sol", "reasoning": "medium"}
 
         with pytest.raises(HTTPError) as error:
             post("/api/active-session", payload("session-a", 1, 1))
@@ -114,6 +120,95 @@ def test_handshake_authentication_and_active_session_switching(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join(timeout=5)
+
+
+def test_state_response_keeps_one_session_when_activation_follows_snapshot(tmp_path, monkeypatch):
+    source = ClientStateSource(tmp_path / "sessions", Weights())
+    source.activate(ClientState.model_validate(payload("session-a", 1)))
+    next_session = payload("session-b", 2)
+    next_session["model"] = "gpt-6-astra"
+    next_session["reasoning"] = "high"
+    next_state = ClientState.model_validate(next_session)
+    original_snapshot = source.snapshot
+
+    def switch_after_snapshot(fallback_store):
+        snapshot = original_snapshot(fallback_store)
+        source.activate(next_state)
+        return snapshot
+
+    monkeypatch.setattr(source, "snapshot", switch_after_snapshot)
+    server, launch = make_server(Store(), source=source)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        with urlopen(launch + "api/state?model=&reasoning=medium", timeout=5) as response:
+            before = json.load(response)
+        assert before["state"]["taskId"] == "task-session-a"
+        assert before["source"]["sessionId"] == "session-a"
+        assert before["fit"]["selectedProfile"] == {"model": "sol", "reasoning": "medium"}
+
+        monkeypatch.setattr(source, "snapshot", original_snapshot)
+        with urlopen(launch + "api/state?model=&reasoning=medium", timeout=5) as response:
+            after = json.load(response)
+        assert after["state"]["taskId"] == "task-session-b"
+        assert after["source"]["sessionId"] == "session-b"
+        assert after["fit"]["selectedProfile"] == {"model": "astra", "reasoning": "high"}
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
+def test_client_snapshot_blocks_activation_until_all_session_fields_are_read(tmp_path, monkeypatch):
+    source = ClientStateSource(tmp_path / "sessions", Weights())
+    source.activate(ClientState.model_validate(payload("session-a", 1)))
+    next_session = payload("session-b", 2)
+    next_session["model"] = "gpt-6-astra"
+    next_session["reasoning"] = "high"
+    next_state = ClientState.model_validate(next_session)
+    view_read = threading.Event()
+    resume_view = threading.Event()
+    activation_started = threading.Event()
+    activation_done = threading.Event()
+    captured = {}
+    original_view = source.view
+
+    def pause_after_view(fallback_store):
+        result = original_view(fallback_store)
+        view_read.set()
+        assert resume_view.wait(timeout=5)
+        return result
+
+    def read_snapshot():
+        captured["snapshot"] = source.snapshot(Store())
+
+    def activate_next():
+        activation_started.set()
+        source.activate(next_state)
+        activation_done.set()
+
+    monkeypatch.setattr(source, "view", pause_after_view)
+    reader = threading.Thread(target=read_snapshot)
+    activator = threading.Thread(target=activate_next)
+    reader.start()
+    try:
+        assert view_read.wait(timeout=5)
+        activator.start()
+        assert activation_started.wait(timeout=5)
+        assert not activation_done.wait(timeout=0.1)
+    finally:
+        resume_view.set()
+        reader.join(timeout=5)
+        if activator.ident is not None:
+            activator.join(timeout=5)
+
+    assert not reader.is_alive() and not activator.is_alive()
+    result, selection, status = captured["snapshot"]
+    assert result["state"]["taskId"] == "task-session-a"
+    assert selection == ("sol", "medium")
+    assert status["sessionId"] == "session-a"
+    assert activation_done.is_set()
+    assert source.status()["sessionId"] == "session-b"
 
 
 def test_client_contract_rejects_mismatched_session_and_manual_mode(tmp_path):

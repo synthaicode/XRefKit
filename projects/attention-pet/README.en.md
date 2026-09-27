@@ -2,11 +2,18 @@
 
 English | [日本語](README.md)
 
-Attention Pet is a local experiment that separates two questions: whether the
-selected model is estimated to meet the work's capability requirements, and
-whether a lower inference-cost candidate may also fit. It displays Model Fit,
-Cost Fit, input coverage, and unevaluated confidence separately so people can
-use them when deciding how to allocate models.
+Attention Pet is a concept for estimating the structural complexity of a work
+context and informing execution choices. Token counts describe input and output
+volume, but equal token counts can hide different dependencies, constraints,
+conflicts, decision branches, and work needed to reconstruct relationships in a
+table. An Execution Profile pairs a model with a reasoning effort. Changing the
+effort creates a distinct execution condition even for the same model.
+
+The current XRefKit version is a local reference implementation of this
+concept. It compares whether the selected profile meets estimated capability
+requirements and whether another fitting profile has a lower hypothetical
+inference-cost index. It displays Profile Fit, Cost Fit, Coverage, and Confidence
+separately so people can use them when choosing execution conditions.
 
 Attention Pet does not measure token usage. It estimates the structural
 complexity of the work context the AI must handle: retained items,
@@ -21,18 +28,39 @@ behavior, and cost values are uncalibrated hypotheses. The Pet does not measure
 model-internal attention or remaining capacity, and it never switches models
 automatically.
 
+## Conceptual invariants and non-goals
+
+An alternative implementation must preserve these boundaries:
+
+- Token usage describes volume, not reasoning load itself. Do not claim to
+  measure internal attention, remaining capability, or context-window headroom.
+- Estimate structural complexity from the Working Set's items, dependencies,
+  constraints, decision depth, conflicts, and dispersed evidence.
+- Evaluate the selected model **and** reasoning effort as one Execution Profile.
+  Keep Profile Fit, Cost Fit, Coverage, and Confidence separate.
+- Treat capability coefficients and inference-cost indices as uncalibrated
+  hypotheses, never measured performance, real prices, or total-cost optimality.
+- Do not switch models or reasoning effort automatically. The Pet's expression
+  communicates an estimate; it does not depict AI fatigue or emotion.
+
+Attention Pet is not a token meter, context-window gauge, visualization of LLM
+attention weights, simple benchmark ranking, or cheapest-model router. The
+[mechanism and reference implementation](MECHANISM.md#xid-A4D0C1E89B73)
+describe the current formulas and adapters separately from these invariants.
+
 ## Codex-only preview
 
 The ready-to-run automatic integration is currently limited to Codex. It reads
 the work information and runtime settings visible in the launching Codex chat,
 then uses the Pet's expression and short message to show whether the current
-model is estimated to have enough capacity for that work and whether a
-lower-cost comparison candidate exists. This is an observation and estimate;
+model-and-reasoning combination is estimated to have enough capability for that
+work and whether a lower-cost comparison candidate exists. This is an
+observation and estimate;
 it does not change the Codex model, reasoning depth, or chat content.
 
-In this guide, model "headroom" means the comparison between the currently
-visible work-context complexity and an experimental model capability profile.
-It does not mean remaining tokens.
+Here, "headroom" compares the currently visible work-context complexity with
+the selected Execution Profile's hypothetical capability. It does not mean
+remaining tokens. Sol / low and Sol / high can produce different results.
 
 1. Open a Codex terminal for the chat you want to observe and go to the root of
    this repository.
@@ -85,16 +113,17 @@ with English as the fallback. The browser sends the same `lang=ja|en` value to
 the evaluation API so headings, reasons, and suggested actions use one
 language.
 
-The primary view keeps the model and cost allocation card and Pet visible. It
+The primary view keeps the execution-profile and cost card and Pet visible. It
 shows capability fit, cost comparison, input coverage, and confidence. In a
 chat-bound view, the recorded Codex model and reasoning level initialize the
 comparison controls. Changing those controls does not modify the Codex run.
 
 Open **Show values, candidates, and reasons** to inspect Base RAL, the three
 capability axes, candidates, relative inference-cost indices, and reasons. A
-lower-cost candidate means that an experimental profile at the same reasoning
-depth is estimated to meet all three capability requirements at a lower
-relative inference cost. It does not establish equal real-world quality or a
+lower-cost candidate means that a compatible model and reasoning combination
+is estimated to meet all three capability requirements at a lower experimental
+inference-cost index. The primary view shows one candidate; details show more.
+This does not establish equal real-world quality or a
 lower total cost.
 
 Terra is an experimental comparison profile between Luna and Sol. The profile
@@ -104,22 +133,24 @@ order and coefficients do not claim a real model performance ranking.
 
 | Evaluation | Values |
 |---|---|
-| Model Fit, capability only | Unknown / Underpowered / Sufficient |
+| Profile Fit, selected Execution Profile capability only | Unknown / Underpowered / Sufficient |
 | Cost Fit, hypothetical inference-cost comparison plus outcome records | Unknown / RetryRisk / NoLowerCostCandidate / LowerCostCandidateAvailable / ReviewNeeded |
+| Coverage, observed work scope | partial / reviewed / no input |
+| Confidence, evaluation certainty | Unknown / Low / Medium / High; currently Unknown |
 | Pet State, presentation only | Unknown / Strained / Balanced / Relaxed / Review |
 
 Meeting all three capability requirements produces `Sufficient`, regardless of
 other candidates' prices. A fitting candidate with lower relative inference
-cost at the same depth produces `LowerCostCandidateAvailable`. The `Relaxed`
+cost across the compatible combinations produces `LowerCostCandidateAvailable`. The `Relaxed`
 expression means that a lower-cost candidate can be compared; it does not mean
 the current model has excessive capability.
 
 Failure, retry, or correction records produce `ReviewNeeded / Review` and stay
-separate from Model Fit. `Balanced` means that no lower-cost fit candidate was
+separate from Profile Fit. `Balanced` means that no lower-cost fit candidate was
 found under the current assumptions, while `Relaxed` means that one was found.
 Neither state measures actual quality or total cost.
 
-Actual inference cost, retry cost, correction cost, failure loss, and total
+Actual inference cost, retry cost, correction cost, latency cost, failure loss, and total
 cost remain `null`. Coverage and Confidence are independent; Confidence is
 currently `Unknown`. See [How it works](MECHANISM.md) for formulas, API fields,
 scenario tables, and unverified assumptions.
@@ -154,6 +185,7 @@ HTTP endpoints:
 | Method and path | Purpose |
 |---|---|
 | GET `/api/state` | Return the current WorkingSet, Attention State, latest 100 history entries, recovery records, and FitEvaluation |
+| GET `/api/profiles` | Return supported reasoning levels for each registered model and legacy aliases |
 | GET `/api/client/handshake` | Verify service, protocol, instance, and capabilities |
 | POST `/api/active-session` | Notify the active session and complete WorkingSet |
 | POST `/api/snapshot` | Evaluate and save a WorkingSet |
@@ -166,10 +198,22 @@ also require `Content-Type: application/json`.
 
 Query parameters such as `?model=luna&reasoning=standard` affect only the
 returned comparison. `lang=ja|en` affects only presentation text. Supported
-models are `luna|terra|sol|astra`, and supported reasoning depths are
-`light|standard|high`. Unknown and duplicate parameters are rejected before an
-update. External origins are rejected; request limits are 2 MB, 500 items,
+models are `luna|terra|sol|astra`; each model declares its own supported
+reasoning levels through `/api/profiles`. The legacy inputs `light` and
+`standard` remain accepted as aliases of `low` and `medium`, with `standard`
+still the default. Unknown or unsupported combinations return `Unknown` on
+reads and are rejected before updates. Duplicate or invalid parameters are
+rejected. Responses add `selectedProfile` and `lowerCostCandidate`, each with
+model and reasoning; existing fit fields remain. The `modelFit` field remains
+for API compatibility and carries the same capability judgment called Profile
+Fit in the UI and documentation. Cost Fit and Pet State may
+change for the same input because comparisons now cover more profiles.
+External origins are rejected; request limits are 2 MB, 500 items,
 2,000 edges, and 500 observations.
+
+Capability and inference-cost indices are uncalibrated hypotheses, not measured
+model performance or prices. Attention Pet does not inspect internal attention
+or remaining tokens, establish minimum total cost, or switch execution settings.
 
 ## Validation
 
