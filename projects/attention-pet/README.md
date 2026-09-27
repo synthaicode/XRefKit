@@ -5,16 +5,19 @@
 
 [English](README.en.md) | 日本語
 
-選択モデルが仮の必要能力を満たすかと、より低い推論コストの適合候補があるかを分けて示すローカル実験版です。
-利用者がモデル配分を判断するための参考情報として、Model Fit・Cost Fit・入力範囲・未評価の確からしさを別々に表示します。
+Attention Petは、作業コンテキストの構造的複雑さを推定し、実行条件の選択を考えるための概念です。トークン数は入出力の量を示せますが、同じ量でも依存関係・制約・矛盾・判断分岐や、表に並んだ情報の関係を復元する手間は異なります。
+Execution Profileとは、モデルとreasoning effort（考える深さ）の組合せです。同じモデルでも深さが異なれば別の実行条件として、能力適合と仮の推論コスト指数を比較します。
+現在のXRefKit版は、この概念のローカルな参照実装です。Profile Fit・Cost Fit・Coverage・Confidenceを分けて示し、利用者が実行条件の配分を判断するための参考情報にします。
 Attention Petが見るのはトークン使用量ではありません。AIが扱う作業コンテキストについて、保持する項目、依存関係、制約、判断の深さ、矛盾、根拠の分散を構造化し、その複雑さを推定します。これはAI内部のAttention値やコンテキストウィンドウの残量を読み取るものではありません。
 Codex内で起動した場合、このチャットのローカル記録から新しい利用者発言と実行設定（モデル名・考える深さ）を読み取り、Petを自動更新します。新しい発言を受け取ると短く動き、表情は評価結果に従います。能力・挙動・コストは未校正の仮説値で、AI内部のAttentionや残り能力の測定、自動モデル切替は行いません。
 
+概念を別実装へ移す際に守る[不変条件とNon-goals](MECHANISM.md#xid-A4D0C1E89B73)は、現在のPython/Codex実装と分けて記しています。Petの表情は評価を伝える表示であり、AIの感情を示しません。
+
 ## Codex限定プレビュー
 
-現時点で利用者がそのまま起動できる自動連動機能はCodex限定です。Attention Petは、起動したCodexチャットのローカル記録から確認できる作業内容と実行設定を読み取り、「このモデルで進める余力」と低コスト比較候補をPetの表情と短い文で示します。表示は観測と試算であり、Codexのモデル、考える深さ、チャット内容を変更しません。
+現時点で利用者がそのまま起動できる自動連動機能はCodex限定です。Attention Petは、起動したCodexチャットのローカル記録から確認できる作業内容と実行設定を読み取り、「現在のモデルと考える深さの組合せで進める余力」と低コスト比較候補をPetの表情と短い文で示します。表示は観測と試算であり、Codexのモデル、考える深さ、チャット内容を変更しません。
 
-ここでいう「余力」は残りトークン数ではなく、現在確認できる作業コンテキストの複雑さと、選択モデルの仮の能力プロファイルを比較した結果です。
+ここでいう「余力」は残りトークン数ではなく、現在確認できる作業コンテキストの複雑さと、選択したExecution Profileの仮の能力を比較した結果です。たとえばSol / lowとSol / highでは異なる結果になり得ます。
 
 1. 対象チャットのCodexターミナルで、このリポジトリのルートを開きます。
 2. 次のコマンドを実行します。
@@ -50,12 +53,12 @@ xrefkit attention-pet serve --client --port 8769
 
 表示された `http://127.0.0.1:8769/` をCodexのブラウザパネルで開きます。画面の表示に認証は不要です。
 表示言語はブラウザーの優先言語に従います。日本語を優先している環境では日本語、それ以外では英語を表示します。評価APIにも同じ `lang=ja|en` を送り、見出し、理由、次の行動を同じ言語に揃えます。
-画面にはモデルとコストの配分カードとPetを常時表示します。一部の作業だけを評価している場合は、その範囲もPetの横に表示します。
+画面には実行条件とコストの配分カードとPetを常時表示します。一部の作業だけを評価している場合は、その範囲もPetの横に表示します。
 カードには能力・コスト・入力範囲・確からしさを表示します。チャット連動時はCodexの実行記録を試算条件の初期値にします。プルダウンで別のモデルや深さを比較できますが、Codex本体の実行設定は変更しません。
 「数値・候補・評価理由を見る」を開くと、RALや必要能力3軸、候補、推論コスト指数と理由を確認できます。
-低コスト比較候補があればPetの横に「低コスト比較候補: Luna」のように表示します。詳細では、同じ考える深さで仮の必要能力3軸を満たす候補のうち、相対推論コスト指数が最も低いモデルを示します。実品質や総コストの優位性を示す案内ではありません。
+低コスト比較候補があればPetの横に「低コスト比較候補: Luna / xhigh」のように表示します。詳細では、登録されたモデルと考える深さの組合せを横断し、仮の必要能力3軸を満たす候補を推論コスト指数順に示します。実品質や総コストの優位性を示す案内ではありません。
 候補がない場合はその旨を表示します。能力不足や結果記録の確認が必要な場合は、低コスト候補の案内を保留します。
-チャット連動時は記録中のモデル識別子の系列と考える深さを実験プロファイルへ対応付けます。未対応の識別子では能力を未判定にします。モデル世代ごとの実能力や実品質、総コストの優位性は未確認です。
+チャット連動時は記録中のモデル識別子の系列と考える深さを実験プロファイルへ対応付けます。未対応の識別子や組合せでは能力を未判定にします。モデル世代ごとの実能力や実品質、総コストの優位性は未確認です。
 TerraはLunaとSolの間に置いた仮の比較候補です。現行の表示順や係数は実モデルの性能順位を示しません。
 停止は起動したターミナルでCtrl+Cです。
 
@@ -69,19 +72,21 @@ CostFit=NoLowerCostCandidateの表示は「低コスト適合候補なし / No l
 
 | 評価 | 状態 |
 |---|---|
-| Model Fit（能力適合のみ） | Unknown / Underpowered / Sufficient |
+| Profile Fit（選択したExecution Profileの能力適合のみ） | Unknown / Underpowered / Sufficient |
 | Cost Fit（推論コストの仮比較と結果記録） | Unknown / RetryRisk / NoLowerCostCandidate / LowerCostCandidateAvailable / ReviewNeeded |
+| Coverage（観測できた作業の範囲） | partial / reviewed / 入力なし |
+| Confidence（評価の確からしさ） | Unknown / Low / Medium / High。現行実装はUnknown |
 | Pet State（表示専用） | Unknown / Strained / Balanced / Relaxed / Review |
 
 必要能力3軸を満たせば、他候補の価格に関わらずSufficientです。
-同じ深さで低い推論コストの適合候補があれば、Cost FitにLowerCostCandidateAvailableを表示し、候補名と指数を示します。
+同一モデル内の深さ変更も、モデルをまたぐ深さ変更も比較します。より低い仮の推論コスト指数で適合する組合せがあれば、Cost FitにLowerCostCandidateAvailableを表示します。
 Relaxedの表情は「低コスト候補を比較できます」という意味です。能力が過剰だという判定ではありません。
-現文脈に失敗・修正の記録がある場合はReviewNeeded / Reviewを優先し、Model Fitとは分けます。
+現文脈に失敗・修正の記録がある場合はReviewNeeded / Reviewを優先し、Profile Fitとは分けます。
 
 Base RAL、仮の作業展開量、Effective RAL、必要能力3軸、RALの全6要素は維持しています。
 入力範囲Coverageと評価の確からしさConfidenceを独立表示し、今回はConfidenceをUnknownとします。
 Balancedは低コスト比較候補が確認されなかった表示、Relaxedは候補がある表示です。どちらも実際の品質や総コストを示しません。
-実際の推論・再試行・修正・失敗損失・総コストはnull。仮の推論指数が低くても、総コストが低いとは判断しません。
+実際の推論・再試行・修正・待ち時間・失敗損失・総コストはnull。仮の推論指数が低くても、総コストが低いとは判断しません。
 式・APIフィールド・シナリオ表・未検証事項は [仕組みの説明](MECHANISM.md) を参照してください。
 
 ## API入力（技術向け）
@@ -106,6 +111,7 @@ HTTP API:
 | Method / Path | 入出力 |
 |---|---|
 | GET `/api/state` | 現在のWorking Set、Attention State、直近100履歴、回復記録、FitEvaluation |
+| GET `/api/profiles` | 登録モデルごとの対応reasoning levelと旧名称の対応表 |
 | GET `/api/client/handshake` | クライアントがservice、protocol、instance、capabilityを確認 |
 | POST `/api/active-session` | クライアントがアクティブセッションと完全なWorkingSetを通知 |
 | POST `/api/snapshot` | WorkingSet JSONを評価・保存 |
@@ -115,8 +121,8 @@ HTTP API:
 GET `/api/state` は認証なしで利用できます。client handshakeとPOSTには起動時に別途渡される `Authorization: Bearer <token>` が必要で、POSTには `Content-Type: application/json` も必要です。
 各APIに `?model=luna&reasoning=standard` などを付けると、応答の `fit` にその比較条件の評価が入ります。チャット連動時、モデル指定がなければ記録中のモデル・深さを初期値にし、指定があれば読み取り専用の比較として使います。応答の `source` には実際の連動状態が入り、比較条件を変えてもCodex本体は変更しません。
 `lang=ja|en` は評価文の表示言語だけを変更し、判定値や作業内容は変更しません。
-モデルは `luna|terra|sol|astra`、深さは `light|standard|high`。モデル省略時は `Unknown`、深さの既定値は `standard`。Terraを含むプロファイルと相対推論コストは未校正の実験値です。
-未知値・重複パラメータは更新前に拒否します。GETでの比較は作業内容と履歴を変更しません。
+モデルは `luna|terra|sol|astra`。対応する深さはモデルごとに `/api/profiles` から取得します。旧 `light|standard|high` は引き続き受け付け、`light→low`、`standard→medium` と同じ仮係数で評価します。既定値は `standard` です。GETで未知のモデル・深さ・非対応の組合せを指定すると `Unknown` を返し、更新APIでは拒否します。重複・不正なパラメータも拒否します。GETでの比較は作業内容と履歴を変更しません。
+`selectedProfile` と `lowerCostCandidate` はモデル名と深さを組で返します。既存の `selected`、`lowerCostCandidates`、`profile`、`depth`、`modelFit`、`costFit` は維持します。`modelFit` はAPI互換名であり、利用者向けのProfile Fitと同じ能力適合判定を表します。候補探索の範囲が広がるため、同じ入力でも Cost Fit と Pet State が変わることがあります。Terraを含む能力・推論コスト係数は未校正の仮説で、実能力、実価格、総コスト最適性は未検証です。設定は自動切替しません。
 CLIは `--model` 指定時に `{state, fit}` を返し、省略時の既存出力を維持します。
 外部Originは拒否します。上限2MB、Item500件、edge2000件、観測500件です。
 独立入力アダプターからこのAPIを呼べます。初期版はMCPの登録やCodex設定変更を行いません。

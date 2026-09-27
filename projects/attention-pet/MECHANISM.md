@@ -3,12 +3,29 @@
 
 # Attention Pet の仕組み
 
-更新：2026-09-26。現行評価は `fit-experiment-v1`。能力適合・推論コスト比較・表情を独立させた改訂版。
+更新：2026-09-27。現行評価は `fit-experiment-v1`。評価単位はモデル × reasoning effort のExecution Profile。
 
 ## 目的と流れ
 
-選択モデルが仮の必要能力を満たすかと、現在の仮定の範囲でより低い推論コストの適合候補が存在するかを分けて示す。利用者がモデル配分を判断するための参考情報である。最終目標は、品質を満たしながら推論・再試行・修正・失敗損失を含む総コストを抑えること。
+選択中のモデル × reasoning effort の組合せ（Execution Profile）が仮の必要能力を満たすかと、現在の仮定の範囲でより低い推論コストの適合候補が存在するかを分けて示す。利用者が配分を判断するための参考情報である。最終目標は、品質を満たしながら推論・再試行・修正・待ち時間・失敗損失を含む総コストを抑えること。
 数値は実験的な仮定で、実モデルの性能・料金を表すものではない。モデル内部のAttentionや残り能力は測定しない。
+
+## 概念上の不変条件と参照実装
+
+Attention Petの概念は、現在のPython・Codex実装から独立している。別実装でも次の条件を保つ。
+
+1. Token usageは入出力の量であり、AIの推論負荷そのものとはみなさない。
+2. AI内部のAttention weight、残り能力、context window残量を測定したとは主張しない。
+3. Working Setの項目・依存関係・制約・判断深度・矛盾・根拠分散から構造的複雑性を評価する。
+4. 選択中の能力適合（Profile Fit）と、他候補とのコスト比較（Cost Fit）を分離する。
+5. 評価単位はモデル単体ではなく、モデルとreasoning effortの組合せであるExecution Profileとする。
+6. 未校正の能力係数・コスト指数を、実測性能・実価格・総コスト最適性として扱わない。
+7. Coverage（観測できた作業の範囲）とConfidence（評価の確からしさ）を評価結果から分離する。
+8. Attention Pet自身はモデルやreasoning effortを自動変更しない。Petの表情は説明用の表示であり、AIの感情ではない。
+
+Non-goals：token meter、context-window残量計、LLM内部Attentionの可視化、benchmark scoreによる単純なモデルランキング、最安モデルを自動選択するrouter、AIの疲労や感情の主張。品質同等性や総コスト最適性も現時点では判定しない。
+
+以下の数式・係数・Codex JSONL連動・API・画面は、XRefKitにおける現在の参照実装である。別実装は上の不変条件を保ちつつ、入力アダプターや仮の係数を置き換えられる。
 
 ```text
 注釈付き会話／確認した作業項目・依存関係・結果の記録
@@ -16,16 +33,16 @@
   ＋ ModelProfile（能力3軸、挙動6項目、相対推論コスト）
   ＋ ReasoningDepth（能力補正、探索倍率、相対コスト倍率）
   → 各候補の Model Expansion / Effective RAL / 必要能力
-  → Model Fit / Cost Fit / 理由と比較候補
+  → Profile Fit / Cost Fit / 理由と比較候補
   → Presentation.petState（表示専用の状態）
   → Petの表情・詳細画面 → 利用者の判断
 ```
 
 評価はPython側に集約。ブラウザはAPIの `fit` を表示し、3秒ごとに更新する。観測した利用者発言数が増えたときだけ短い動きで受信を示す。この動きは評価結果や表情を変更せず、動きのオフ設定と端末の動き低減設定に従う。
-表示言語はブラウザーの優先言語から決める。日本語は `ja`、それ以外は英語へフォールバックし、APIの `lang` にも渡す。言語切替はPresentationと説明文だけに適用し、`ModelFit`、`CostFit`、Pet stateなどの機械判定値は変えない。
+表示言語はブラウザーの優先言語から決める。日本語は `ja`、それ以外は英語へフォールバックし、APIの `lang` にも渡す。言語切替はPresentationと説明文だけに適用し、`modelFit`、`costFit`、Pet stateなどの機械判定値は変えない。
 Codex内で起動すると `CODEX_THREAD_ID` のローカルJSONL記録へ固定して連動する。利用者発言の数と、明示的な修正語・前方参照語だけを汎用の作業項目へ投影する。本文は保存しない。添付本文、意味上の依存、作業の完了、実際の成功・失敗は推定しない。したがって常に `Coverage=partial`、`EvaluationConfidence=Unknown` とする。最大100件の利用者発言を対象にし、古い発言は作業集合から外す。テスト用の合成例は利用者向け画面・API・CLIに公開しない。
 このJSONL読み取りは実験的フォールバックであり、正式な複数クライアント連携には使わない。正式な経路は `attention-pet-client-v1` とし、同一ホストのクライアントアダプターが認証付きhandshake後にアクティブセッションと完全なWorkingSetを通知する。Petはprovider・client instance・sessionごとにStoreを分離し、単調増加するactivation revisionで遅延通知を拒否する。CodexとVS Code/GitHub Copilotの観測可能範囲は各アダプターのcapabilityとして明示する。
-`turn_context` のモデル識別子と `effort` を読み取り、既知のモデル系列（Luna/Terra/Sol/Astra）と `light/standard/high` の仮設定へ対応付ける。これを試算条件の初期値にし、利用者は画面で別のモデルと深さを比較できる。比較条件はFitEvaluationだけに使い、Codex本体の実行設定やWorkingSetを変更しない。未対応の識別子はModelFit=Unknown。これはモデルの実能力・価格の測定ではない。JSONLフォールバックでは対象チャットを起動時に固定し、他チャットへの画面切替には追従しない。チャット連動APIは読み取り専用で、手動入力・整理操作は非表示・拒否する。手動モードでは従来の構造注釈を利用できる。
+`turn_context` のモデル識別子と `effort` を読み取り、既知のモデル系列（Luna/Terra/Sol/Astra）と `low/medium/high/xhigh/max` の仮設定へ対応付ける。モデルごとに対応する深さを定義し、非対応の組合せはUnknownとする。これを試算条件の初期値にし、利用者は画面で別のモデルと深さを比較できる。比較条件はFitEvaluationだけに使い、Codex本体の実行設定やWorkingSetを変更しない。これはモデルの実能力・価格の測定ではない。JSONLフォールバックでは対象チャットを起動時に固定し、他チャットへの画面切替には追従しない。チャット連動APIは読み取り専用で、手動入力・整理操作は非表示・拒否する。手動モードでは従来の構造注釈を利用できる。
 一部の作業しか把握できていない場合は `coverage=partial` として理由欄に表示する。
 
 ## Base RAL：入力された作業の複雑さ
@@ -57,12 +74,17 @@ Base RALは0〜100で、モデル選択に依存しない。詳細画面には�
 
 | 考える深さ | 各能力への補正 | 探索倍率 | 相対コスト倍率 |
 |---|---:|---:|---:|
-| light（軽め） | −8 | .6 | .7 |
-| standard（標準） | 0 | 1 | 1 |
-| high（深く考える） | ＋8 | 1.6 | 1.6 |
+| low（旧light） | −8 | .6 | .7 |
+| medium（旧standard） | 0 | 1 | 1 |
+| high | ＋8 | 1.6 | 1.6 |
+| xhigh | ＋15 | 2 | 2.1 |
+| max | ＋20 | 2.4 | 2.7 |
+
+対応する深さはModelProfileの `supported_reasoning` で個別に定義する。Lunaはlow〜xhigh、Terraはlow〜high、SolとAstraはlow〜max。これらの係数はすべて未校正の仮説で、固定的な実モデル順位ではない。能力計算の境界 `profile_capability(model, depth)` は将来の実測校正に交換できる。
 
 能力への補正後は0〜100に制限。深く考えると探索も増えるため、能力向上だけを扱わない。
 モデル世代、料金プラン、キャッシュ、実トークン使用量、作業分野の得意不得意は未反映。
+`light` と `standard` は旧APIの入力名として受け付け、候補探索ではそれぞれ `low` と `medium` に正規化する。Codexの `effort` は入力アダプターで対応付ける。別providerを追加する場合もアダプターで対応付け、評価本体はprovider固有名を解釈しない。
 
 ## 作業展開と必要能力の式
 
@@ -87,14 +109,16 @@ Effective RAL = round(Base RAL + Expansion, 1)
 相対推論コスト = round(プロファイルの相対コスト × 深さのコスト倍率, 2)
 ```
 
+上記は現時点の仮説実装である。能力算出は `profile_capability(profile, depth)` の境界に置き、実測で校正した関数へ交換できる。`Luna high < Sol low` のような異モデル・異深さの絶対順位を前提としない。必要能力は現在のWorking Setから生じ、同じタスクでも依存関係・矛盾・未解決事項・根拠の追加で変化する。
+
 Effective RALは最大130。Expansionは仮の展開量で、実際に発見した依存関係ではない。
 圧縮は展開を抑える扱いであり、Base RALより下にはしない。比較しても入力項目・依存関係・保存履歴は変わらない。
 
 ## 独立した評価と表示
 
-Model Fitは選択モデルの3軸の能力だけで判断する。他モデルの価格・コスト・適合結果を使わない。
+Profile Fitは選択中のExecution Profileの3軸の能力だけで判断する。他プロファイルの価格・コスト・適合結果を使わない。
 
-| ModelFit | 条件 |
+| Profile Fit（API互換名 `modelFit`） | 条件 |
 |---|---|
 | Unknown | 作業なし・モデル未選択など、能力評価に必要な材料がない |
 | Underpowered | 必要能力3軸のいずれかを下回る |
@@ -106,31 +130,31 @@ Cost Fitは能力評価と推論コストの仮比較、現文脈の結果記録
 |---|---|
 | Unknown | コスト比較の材料がない |
 | RetryRisk | 必要能力を満たさず、再試行等で総コストが増える可能性。ただし失敗原因とは断定しない |
-| NoLowerCostCandidate | 現在モデルが必要能力を満たし、同じ深さの登録候補に、より低い相対推論コストで必要能力を満たす候補がない。品質・総コスト・未登録モデルは未比較 |
-| LowerCostCandidateAvailable | 能力を満たし、同じ深さで低い相対推論コストの適合候補がある |
+| NoLowerCostCandidate | 現在の組合せが必要能力を満たし、登録された全対応組合せに、より低い推論コスト指数で必要能力を満たす候補がない。品質・総コスト・未登録候補は未比較 |
+| LowerCostCandidateAvailable | 能力を満たし、モデルと深さを横断して低い推論コスト指数の適合候補がある |
 | ReviewNeeded | 現文脈に失敗・修正の記録がある。他のコスト判定に優先 |
 
-各候補は自分自身のExpansionを含めて必要能力を計算する。低い推論コストの候補があるという評価は、現在モデルの能力が過剰であること、実品質の同等性、総コストの低下、モデル変更の必要性を意味しない。
+各候補は自分自身のExpansionを含めて必要能力を計算する。低い推論コストの候補があるという評価は、現在のExecution Profileの能力が過剰であること、実品質の同等性、総コストの低下、モデル変更の必要性を意味しない。
 
-Petはモデル内部の状態や感情を表現しない。ModelFit、CostFit、Coverage、Confidence、結果記録を人間が短時間で認知できる形に圧縮するPresentationである。PetStateは評価データではなくPresentation stateであり、最も重大な評価を選ぶ順位付けでもない。表情の導出は独立した `presentation.py` に置き、UIは `presentation.petState` のみを使う。
+Petはモデル内部の状態や感情を表現しない。Profile Fit、Cost Fit、Coverage、Confidence、結果記録を人間が短時間で認知できる形に圧縮するPresentationである。PetStateは評価データではなくPresentation stateであり、最も重大な評価を選ぶ順位付けでもない。表情の導出は独立した `presentation.py` に置き、UIは `presentation.petState` のみを使う。
 
 | 優先順 | 条件 | PetState | 表情 |
 |---:|---|---|---|
 | 1 | CostFit=ReviewNeeded | Review | 疑問符と首かしげ。結果の記録の確認を促す |
-| 2 | ModelFit=Unknown | Unknown | 灰色の疑問符 |
-| 3 | ModelFit=Underpowered | Strained | 困った顔、汗、小さく揺れる |
+| 2 | Profile Fit=Unknown | Unknown | 灰色の疑問符 |
+| 3 | Profile Fit=Underpowered | Strained | 困った顔、汗、小さく揺れる |
 | 4 | Sufficient / NoLowerCostCandidate | Balanced | 落ち着いた笑顔、ゆっくり動く |
 | 5 | Sufficient / LowerCostCandidateAvailable | Relaxed | 暇そうな目、穏やかな揺れ |
 
 Balancedは現在の比較条件で低コストの適合候補が確認されない状態であり、配分の最適性ではない。Relaxedは低コスト比較候補がある状態であり、能力過剰の判定ではない。
-Reviewは能力不明・不足でも優先する。失敗・再試行・修正の実結果がある場合、仮の能力判定だけで結論を進めず、次に実結果を確認する行動を示すためである。ModelFitを上書きせず、詳細にはModelFitとCostFitの両方を表示する。Underpowered / ReviewNeeded / Reviewは矛盾ではない。
+Reviewは能力不明・不足でも優先する。失敗・再試行・修正の実結果がある場合、仮の能力判定だけで結論を進めず、次に実結果を確認する行動を示すためである。Profile Fitを上書きせず、詳細にはProfile FitとCost Fitの両方を表示する。Underpowered / ReviewNeeded / Reviewは矛盾ではない。
 通信失敗や選択変更の待機中は、表情をUnknownにして以前の能力・コスト評価・候補・内訳・整理操作を消す。再接続後に再表示する。
 
 ## Presentation：文章と表情を一箇所で生成
 
 ### 低コスト比較候補の案内
 
-同じ考える深さで各候補自身の作業展開を含めて必要能力3軸を試算する。選択モデルがSufficientで結果記録によるReviewNeededがない場合、`lowerCostCandidates` のうち相対推論コスト指数が最も低い候補を「低コスト比較候補」として表示する。例：A5でAstraの比較候補はLuna、B3でAstraまたはSolの比較候補はTerra。比較候補と指数は詳細にも示す。品質同等性や総コスト低下は未確認。
+登録された全対応Execution Profileについて、各候補自身の作業展開を含めて必要能力3軸を試算する。選択した組合せがSufficientで結果記録によるReviewNeededがない場合、`lowerCostCandidates` を推論コスト指数順に並べ、最初の1件をPet横に「モデル / 深さ」で表示する。詳細では複数候補と指数を示す。同一モデル内の深さ変更、異なるモデル・深さの変更を扱う。品質同等性や総コスト低下は未確認。
 
 該当候補がない場合は「現在の比較条件では、より低い相対推論コストで仮の必要能力を満たす候補は確認されていません」。Underpoweredでは低コスト候補を案内しない。ReviewNeededでは結果記録の確認まで案内を保留する。Unknownでは作業内容とモデル選択を求める。
 Partialでは入力された一部の作業に限ると注記する。案内は実験プロファイルの仮比較であり、Codex記録からモデル識別子を読んでも、実能力・実品質・総コストは測定していない。モデル変更は自動実行しない。
@@ -150,12 +174,12 @@ APIの `presentation` に `headline/summary/shortMessage/detailReason/actionHint
 | Review | 実際の結果を含めて、配分を見直す必要があります。 | 結果の記録がある。モデル能力だけが原因とは判断しない | 失敗・修正記録を確認 |
 
 Partialの場合、Unknown以外の見出しに「現在確認できている範囲では、」を付け、補足に一部だけの評価と明記する。Pet横と中央にも「一部の作業のみ評価」を表示する。
-ReviewedでもConfidenceがUnknown/Lowなら「現在の入力範囲では、」を付ける。Confidenceは別ラベルで表示し、ModelFitを上書きしない。
+ReviewedでもConfidenceがUnknown/Lowなら「現在の入力範囲では、」を付ける。Confidenceは別ラベルで表示し、Profile Fitを上書きしない。
 CostFit=NoLowerCostCandidateは「低コスト適合候補なし / No lower-cost candidate」と表示する。現在の比較条件に限定し、モデルの推奨を意味しない。
 Relaxedの暇そうな見た目は候補の存在を示すUI上の比喩であり、内部状態の観測ではない。
 
 情報は3層：Pet＋短文＋範囲 → 4種類の評価 → 折り畳み式の数値・3軸・候補・指数・理由。
-候補比較には現在モデル／深さ／指数と候補名／深さ／指数を表示する。再試行・修正時間・失敗損失を総コスト比較に含めていない注記を維持する。
+候補比較には現在のExecution Profile（モデル／深さ）／指数と候補名／深さ／指数を表示する。再試行・修正時間・失敗損失を総コスト比較に含めていない注記を維持する。
 選択変更・入力更新の待機中は全見出しを「評価を更新中」に揃え、通信失敗なら「評価を取得できません」とUnknown表情に戻す。古い見出し・数値・候補を新評価として表示しない。
 
 変更ファイル：presentation.py、model.py、evaluator.py（Presentationへの引数受け渡しのみ）、pet.html/js/css、fit.schema.json、test_attention_pet_fit.py、attention_pet_ui_check.cjs、README、設計書、本MDと検証記録。
@@ -163,41 +187,44 @@ Relaxedの暇そうな見た目は候補の存在を示すUI上の比喩であ�
 ## 入力範囲と確からしさ
 
 `coverage=partial|reviewed|null` は評価結果とは独立した入力範囲。nullは作業なし。
-UIはModel Fit、Coverage、Confidenceを別々に表示する。
+UIはProfile Fit、Cost Fit、Coverage、Confidenceを別々に表示する。
 `evaluationConfidence=Unknown|Low|Medium|High` を独立フィールドとして用意し、今回は常にUnknown。
 reviewedでも性能予測の信頼性を保証しない。Sufficient＋partialは、入力された一部について仮の必要能力を満たす試算にとどまる。
 
 ## 総コストとAPI契約
 
 ```text
-Expected Total Cost = Inference Cost + Retry Cost + Correction Cost + Failure Risk Cost
+Expected Total Cost = Inference Cost + Retry Cost + Correction Cost + Latency Cost + Failure Risk Cost
 ```
 
 現在は `inferenceCostIndex` のみ仮の比較に使う。
-実金額の `inferenceCost`、`retryCost`、`correctionCost`、`failureRiskCost`、`expectedTotalCost` はすべてnull。
+実金額の `inferenceCost`、`retryCost`、`correctionCost`、`latencyCost`、`failureRiskCost`、`expectedTotalCost` はすべてnull。
 LowerCostCandidateAvailableは相対推論コストの仮比較に限定する。lower inference cost → lower total costという推論は未検証であり、判定に使わない。
 
 APIの `fit` は以下を持つ。旧分類の互換別名は返さない。保存済みセッションはfitを保持しないため移行不要。
 
 - `baseRal`、`selected` 内の `expansion/effectiveRal/requiredCapability/capability`。
-- `modelFit`、`costFit`、`presentation.petState`。
-- `alternatives`（他候補すべて）、`lowerCostCandidates`（同じ深さ・必要能力を満たす・より低い推論コストの候補）。
+- `modelFit`、`costFit`、`presentation.petState`。`modelFit` はAPI互換名で、利用者向けのProfile Fitと同じ能力適合判定を表す。
+- `alternatives`（選択中以外の全対応組合せ）、`lowerCostCandidates`（必要能力を満たす、より低い仮の推論コスト指数の組合せ）。
+- `selectedProfile`、`lowerCostCandidate`（モデルと深さの組。旧フィールドは維持）。
 - `coverage`、`evaluationConfidence`、`reasons`。
 - `inferenceCostIndex` と上記の未推定コスト。
 - `profile/depth`、`version=fit-experiment-v1`、`calibration=uncalibrated`。
 
 元の `costComponents` 辞書は明示的なコストフィールドへ移行。`selected.relativeInferenceCost` は候補比較用の指数として維持。
-入力スキーマ・Base RAL・Expansion・必要能力3軸・ModelProfile・ReasoningDepthの式は変更しない。
+入力スキーマ・Base RAL・Expansion・必要能力3軸の形は維持する。ReasoningDepthにはxhigh/maxを追加した。評価対象とCost Fitの候補範囲が広がったため、旧版と同じ入力でもCost FitやPet Stateは変わり得る。
+
+将来の校正記録は、Working Setの構造的特徴、選択Execution Profile、成否、再試行回数、修正回数、reasoning token使用量、所要時間、人間のレビュー結果、最終結果を一組として扱う。現行APIには実測記録がないため、実推論費・再試行費・修正費・失敗損失・期待総コストはnullのままにする。token使用量を将来の校正データとして記録しても、残りtokenや内部Attentionの測定にはならない。
 
 ## テスト用シナリオ（画面には表示しない）
 
-以下は標準深さの ModelFit / CostFit / PetState。実性能の実証結果ではない。
+以下は標準深さの Profile Fit / Cost Fit / PetState。実性能の実証結果ではない。
 
 | シナリオ | Luna | Terra | Sol | Astra |
 |---|---|---|---|---|
-| A・5段階目 | Sufficient / NoLowerCostCandidate / Balanced | Sufficient / LowerCostCandidateAvailable / Relaxed | Sufficient / LowerCostCandidateAvailable / Relaxed | Sufficient / LowerCostCandidateAvailable / Relaxed |
-| B・3段階目 | Underpowered / RetryRisk / Strained | Sufficient / NoLowerCostCandidate / Balanced | Sufficient / LowerCostCandidateAvailable / Relaxed | Sufficient / LowerCostCandidateAvailable / Relaxed |
-| B・5段階目 | Underpowered / RetryRisk / Strained | Underpowered / RetryRisk / Strained | Underpowered / RetryRisk / Strained | Sufficient / NoLowerCostCandidate / Balanced |
+| A・5段階目 | Sufficient / LowerCostCandidateAvailable / Relaxed | Sufficient / LowerCostCandidateAvailable / Relaxed | Sufficient / LowerCostCandidateAvailable / Relaxed | Sufficient / LowerCostCandidateAvailable / Relaxed |
+| B・3段階目 | Underpowered / RetryRisk / Strained | Sufficient / LowerCostCandidateAvailable / Relaxed | Sufficient / LowerCostCandidateAvailable / Relaxed | Sufficient / LowerCostCandidateAvailable / Relaxed |
+| B・5段階目 | Underpowered / RetryRisk / Strained | Underpowered / RetryRisk / Strained | Underpowered / RetryRisk / Strained | Sufficient / LowerCostCandidateAvailable / Relaxed |
 | D・5段階目 | Underpowered / RetryRisk / Strained | Underpowered / RetryRisk / Strained | Underpowered / RetryRisk / Strained | Underpowered / RetryRisk / Strained |
 | C・3段階目 | Sufficient / ReviewNeeded / Review | Sufficient / ReviewNeeded / Review | Sufficient / ReviewNeeded / Review | Sufficient / ReviewNeeded / Review |
 
@@ -222,7 +249,7 @@ Cでは低いコストの候補があっても、失敗・修正の記録に基�
 
 ## 保存と画面
 
-標準はモデルとコストの配分カード＋Pet。カードには状態文・入力範囲・比較モデル・深さを常時表示し、数値・候補・評価理由だけを展開表示にする。「5分以上更新されていません」は表示しない。
+標準は実行条件とコストの配分カード＋Pet。カードには状態文・入力範囲・比較モデル・深さを常時表示し、数値・候補・評価理由だけを展開表示にする。「5分以上更新されていません」は表示しない。
 ブラウザー画面からの入力・整理操作・画面切替は提供しない。
 モデル選択はブラウザ内に保存する。WorkingSetと履歴はローカルのセッションファイルに保存する。
 Loopback APIの表示用GETは認証を要求しない。更新用POSTは起動時のトークンで認証する。HostとOriginの検証はどちらにも適用する。FitEvaluationは応答時に計算し、既存の保存形式・入力スキーマは変えない。

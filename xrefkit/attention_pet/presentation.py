@@ -15,11 +15,11 @@ def _present_fit_en(state: str, model_fit: str, cost_fit: str, coverage: str | N
                      "Capability may be insufficient", "Some of the three estimated capability requirements are not met.",
                      "Compare a model that meets the requirements, or split and clarify the work."),
         "Balanced": ("The estimated capability requirements are met.",
-                     "Under the current assumptions, no candidate at the same reasoning depth meets the requirements at a lower relative inference cost.",
+                     "Under the current assumptions, no compatible execution profile meets the requirements at a lower estimated inference-cost index.",
                      "Estimated capability requirements are met", "All three estimated requirements are met; this is not a quality guarantee.",
                      "Continue with the current settings or check the actual result."),
         "Relaxed": ("A lower inference-cost candidate may meet the requirements.",
-                    "The current model meets the estimated requirements, and a candidate at the same reasoning depth has a lower relative inference cost.",
+                    "The current execution profile meets the estimated requirements, and another compatible profile has a lower estimated inference-cost index.",
                     "Lower-cost comparison candidate available", "Retries, correction time, failure losses, and equivalent actual quality remain unverified.",
                     "Review the conditions for the lower-cost candidate."),
         "Review": ("Review the allocation using the actual results.",
@@ -54,14 +54,14 @@ def _present_fit_en(state: str, model_fit: str, cost_fit: str, coverage: str | N
         guide_detail = "Lower-cost comparison is paused until a model is estimated to meet the requirements."
     elif cost_fit == "LowerCostCandidateAvailable" and selected and lowest_sufficient:
         guide_status = "Available"
-        guide = f"Lower-cost candidate: {lowest_sufficient.model.capitalize()} / {lowest_sufficient.reasoning} (same reasoning depth, estimated)"
+        guide = f"Lower-cost candidate: {lowest_sufficient.model.capitalize()} / {lowest_sufficient.reasoning} (estimated)"
         guide_detail = (f"Under the current assumptions, {lowest_sufficient.model.capitalize()} / {lowest_sufficient.reasoning} also meets all three estimated requirements after its own work expansion. Relative inference-cost index: current {selected.model.capitalize()} {selected.relativeInferenceCost}; candidate {lowest_sufficient.model.capitalize()} {lowest_sufficient.relativeInferenceCost}. Actual quality and total cost including retries, corrections, and failures have not been compared.")
     else:
         guide_status, guide = "NoLowerCandidate", "No lower relative inference-cost candidate is currently estimated to meet the requirements."
-        guide_detail = "This compares registered candidates at the same reasoning depth. It does not establish an advantage in quality or total cost."
+        guide_detail = "This compares registered model and reasoning combinations. It does not establish an advantage in quality or total cost."
     if coverage == "partial" and guide_status == "Available":
         guide_detail += " This estimate uses only the supplied part of the work."
-    guide_short = (f"Lower-cost candidate: {lowest_sufficient.model.capitalize()}"
+    guide_short = (f"Lower-cost candidate: {lowest_sufficient.model.capitalize()} / {lowest_sufficient.reasoning}"
                    if guide_status == "Available" and selected and lowest_sufficient else
                    "No lower-cost candidate (estimate)" if guide_status == "NoLowerCandidate" else "")
     return Presentation(
@@ -114,12 +114,12 @@ def present_fit(model_fit: str, cost_fit: str, coverage: str | None = None,
             "必要能力を満たす候補や、作業の分割・整理を比較してください。"),
         "Balanced": (
             "必要な能力を満たす試算です。",
-            "現在の仮定では、同じ深さで、より低い推論コストで必要能力を満たす候補は確認されていません。",
+            "現在の仮定では、登録された組合せに、より低い推論コストで必要能力を満たす候補は確認されていません。",
             "必要能力を満たす試算です", "仮の必要能力3軸を満たしています。実務での品質保証ではありません。",
             "現在の設定で進めるか、実際の結果を確認してください。"),
         "Relaxed": (
             "必要能力を満たす、より低い推論コストの候補があります。",
-            "現在のモデルでも必要能力を満たす試算ですが、同じ深さで、より低い相対推論コストの候補があります。",
+            "現在の実行プロファイルでも必要能力を満たす試算ですが、より低い推論コスト指数の候補があります。",
             "低コスト比較候補があります",
             "再試行、修正時間、失敗損失はまだ総コスト比較に含まれていません。候補の実品質の同等性も未検証です。",
             "低コスト比較候補の条件を確認してください。"),
@@ -163,7 +163,7 @@ def present_fit(model_fit: str, cost_fit: str, coverage: str | None = None,
     elif cost_fit == "LowerCostCandidateAvailable" and selected and lowest_sufficient:
         guide_status = "Available"
         guide = (f"低コスト比較候補: {lowest_sufficient.model.capitalize()} /"
-                 f" {lowest_sufficient.reasoning}（同じ考える深さ・試算）")
+                 f" {lowest_sufficient.reasoning}（試算）")
         guide_detail = (f"現在の仮定では、{lowest_sufficient.model.capitalize()} /"
                         f" {lowest_sufficient.reasoning} も、その候補自身の作業展開を含めた"
                         "仮の必要能力3軸を満たす試算です。相対推論コスト指数: "
@@ -173,10 +173,10 @@ def present_fit(model_fit: str, cost_fit: str, coverage: str | None = None,
     else:
         guide_status = "NoLowerCandidate"
         guide = "現在の比較条件では、より低い相対推論コストで仮の必要能力を満たす候補は確認されていません。"
-        guide_detail = "同じ考える深さの登録候補を比較した結果です。品質や総コストの優位性は確認していません。"
+        guide_detail = "登録されたモデルと考える深さの組合せを比較した結果です。品質や総コストの優位性は確認していません。"
     if coverage == "partial" and guide_status == "Available":
         guide_detail += "入力された一部の作業だけに基づく試算です。"
-    guide_short = (f"低コスト比較候補: {lowest_sufficient.model.capitalize()}"
+    guide_short = (f"低コスト比較候補: {lowest_sufficient.model.capitalize()} / {lowest_sufficient.reasoning}"
                    if guide_status == "Available" and selected and lowest_sufficient else
                    "低コスト比較候補なし（試算）" if guide_status == "NoLowerCandidate" else "")
     return Presentation(

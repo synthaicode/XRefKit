@@ -38,7 +38,7 @@ def test_one_bound_chat_updates_incrementally_without_saving_text(tmp_path):
     store = Store(saved)
     source.sync(store)
     first = store.view()
-    assert source.selection() == ("sol", "standard")
+    assert source.selection() == ("sol", "medium")
     assert source.status()["observedUserTurns"] == 1
     assert first["state"]["coverage"] == "partial"
     assert len(first["workingSet"]["items"]) == 1
@@ -55,7 +55,7 @@ def test_one_bound_chat_updates_incrementally_without_saving_text(tmp_path):
     assert "この修正は不要" not in saved.read_text(encoding="utf-8")
     append(log, "2026-09-26T12:00:03Z", "turn_context", {"model": "gpt-6-terra", "effort": "low"})
     source.sync(store)
-    assert source.selection() == ("terra", "light")
+    assert source.selection() == ("terra", "low")
     assert store.view() == second
     append(log, "2026-09-26T12:00:04Z", "turn_context", {"model": "unrecognized-model", "effort": "medium"})
     source.sync(store)
@@ -80,7 +80,7 @@ def test_live_api_defaults_to_observed_model_allows_comparison_and_rejects_mutat
         assert value["source"]["mode"] == "codex-chat"
         assert value["source"]["observedUserTurns"] == 1
         assert value["source"]["profile"] == "sol"
-        assert value["source"]["reasoning"] == "standard"
+        assert value["source"]["reasoning"] == "medium"
         assert value["fit"]["selected"]["model"] == "astra"
         assert value["fit"]["selected"]["reasoning"] == "high"
         with urlopen(Request(base + "/api/state?model=&reasoning=standard"), timeout=5) as response:

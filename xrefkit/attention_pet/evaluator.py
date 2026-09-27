@@ -1,8 +1,8 @@
 """Explainable heuristic v1. Thresholds are hypotheses, not calibrated probabilities."""
 from dataclasses import dataclass, asdict
 
-from .model import AttentionState, WorkingSet, Capability, FitCandidate, FitEvaluation, ModelProfile, ReasoningDepth
-from .profiles import PROFILES, DEPTHS
+from .model import AttentionState, WorkingSet, Capability, ExecutionProfile, FitCandidate, FitEvaluation, ModelProfile, ReasoningDepth
+from .profiles import PROFILES, DEPTHS, canonical_reasoning, execution_profiles
 from .presentation import present_fit
 
 
@@ -110,6 +110,12 @@ def evaluate(ws: WorkingSet, previous: dict | None = None, history: list[dict] |
     return AttentionState.model_validate(result).model_dump()
 
 
+def profile_capability(profile: ModelProfile, depth: ReasoningDepth) -> Capability:
+    """Replaceable, uncalibrated capability hypothesis for one execution profile."""
+    return Capability(**{k: min(100, max(0, v + depth.capability_modifier))
+                         for k, v in profile.capability.model_dump().items()})
+
+
 def fit_candidate(state: dict, profile: ModelProfile, depth: ReasoningDepth) -> FitCandidate:
     """Model-generated expansion is a projection, never added to actual input/history."""
     base = state["ral"]
@@ -134,8 +140,7 @@ def fit_candidate(state: dict, profile: ModelProfile, depth: ReasoningDepth) -> 
         constraint_tracking=min(100, round(.65 * effective + 25 * constraints + 10 * unresolved, 1)),
         evidence_handling=min(100, round(.65 * effective + 35 * evidence, 1)),
     )
-    capability = Capability(**{k: min(100, max(0, v + depth.capability_modifier))
-                               for k, v in profile.capability.model_dump().items()})
+    capability = profile_capability(profile, depth)
     shortfalls = [k for k, need in required.model_dump().items() if capability.model_dump()[k] < need]
     return FitCandidate(model=profile.id, reasoning=depth.id, expansion=expansion,
                         effectiveRal=effective, capability=capability, requiredCapability=required,
@@ -148,14 +153,12 @@ def evaluate_fit(state: dict | None, model: str = "", reasoning: str = "standard
     """Relative quality/cost allocation hypothesis; never a routing decision."""
     if locale not in {"ja", "en"}:
         raise ValueError("unsupported display language")
-    if model and model not in PROFILES:
-        raise ValueError("unknown model profile")
-    if reasoning not in DEPTHS:
-        raise ValueError("unknown reasoning depth")
-    if not model or state is None or not state["features"]["active_items"]:
-        reason = (("Select a model to compare." if not model else "There is no work data to evaluate.")
+    normalized = canonical_reasoning(reasoning)
+    known = model in PROFILES and normalized in DEPTHS and normalized in PROFILES[model].supported_reasoning
+    if not known or state is None or not state["features"]["active_items"]:
+        reason = (("Select a supported model and reasoning level." if not known else "There is no work data to evaluate.")
                   if locale == "en" else
-                  ("比較するモデルを選んでください。" if not model else "判定に使う作業内容がありません。"))
+                  ("対応するモデルと考える深さを選んでください。" if not known else "判定に使う作業内容がありません。"))
         cost_fit = "ReviewNeeded" if state and any(o["kind"] != "validated" for o in state["trajectoryEvidence"]) else "Unknown"
         reasons = [reason]
         if cost_fit == "ReviewNeeded":
@@ -169,10 +172,12 @@ def evaluate_fit(state: dict | None, model: str = "", reasoning: str = "standard
                              baseRal=state["ral"] if state else None).model_dump()
     profile, depth = PROFILES[model], DEPTHS[reasoning]
     selected = fit_candidate(state, profile, depth)
-    candidates = [fit_candidate(state, p, depth) for p in PROFILES.values() if p.id != model]
+    candidates = [fit_candidate(state, p, d) for p, d in execution_profiles()
+                  if (p.id, d.id) != (model, normalized)]
     cheaper = [c for c in candidates if c.meetsRequirements
                and c.relativeInferenceCost < selected.relativeInferenceCost]
-    lowest_sufficient = min(cheaper, key=lambda c: c.relativeInferenceCost, default=None)
+    cheaper.sort(key=lambda c: (c.relativeInferenceCost, c.model, c.reasoning))
+    lowest_sufficient = cheaper[0] if cheaper else None
     axes = ({"reasoning": "reasoning", "constraint_tracking": "constraint tracking",
              "evidence_handling": "evidence handling"} if locale == "en" else
             {"reasoning": "推論", "constraint_tracking": "制約の保持", "evidence_handling": "根拠の扱い"})
@@ -187,21 +192,21 @@ def evaluate_fit(state: dict | None, model: str = "", reasoning: str = "standard
                     "再試行や修正が増える可能性があります。回数・損失は未推定です。"])
     elif cheaper:
         cost_fit = "LowerCostCandidateAvailable"
-        labels = " / ".join(PROFILES[c.model].label for c in cheaper)
-        reasons = (["The selected model meets all three estimated capability requirements.",
-                    f"At the same reasoning depth, {labels} also meets the requirements at a lower relative inference cost.",
+        labels = ", ".join(f"{PROFILES[c.model].label} / {c.reasoning}" for c in cheaper[:3])
+        reasons = (["The selected execution profile meets all three estimated capability requirements.",
+                    f"Across compatible execution profiles, {labels} also meets the requirements at a lower estimated inference-cost index.",
                     "Retries, correction time, and failure losses are not compared. This does not establish equal quality, lower total cost, or a need to change models."]
                    if locale == "en" else
-                   ["選択モデルは仮の必要能力3軸を満たしています。",
-                    f"同じ考える深さで、{labels} も必要能力を満たし、より低い相対推論コストとなる試算です。",
+                    ["選択した実行プロファイルは仮の必要能力3軸を満たしています。",
+                    f"対応する実行プロファイルを横断すると、{labels} も必要能力を満たし、より低い推論コスト指数となる試算です。",
                     "再試行・修正・失敗損失はまだ比較していません。実品質の同等性、総コストの低下、モデル変更の必要性を示すものではありません。"])
     else:
         cost_fit = "NoLowerCostCandidate"
         reasons = (["All estimated capability requirements are met.",
-                    "No registered candidate at the same reasoning depth meets the requirements at a lower relative inference cost. Quality and total-cost advantages are unverified."]
+                    "No registered execution profile meets the requirements at a lower estimated inference-cost index. Quality and total-cost advantages are unverified."]
                    if locale == "en" else
                    ["仮の必要能力を全項目で満たしています。",
-                    "同じ考える深さの登録候補には、より低い相対推論コストで必要能力を満たすものがありません。実品質や総コストの優位性は未確認です。"])
+                    "登録された実行プロファイルには、より低い推論コスト指数で必要能力を満たすものがありません。実品質や総コストの優位性は未確認です。"])
     if any(o["kind"] != "validated" for o in state["trajectoryEvidence"]):
         cost_fit = "ReviewNeeded"
         reasons.append("Failure or correction records require a separate total-cost review including retries and corrections."
@@ -217,6 +222,11 @@ def evaluate_fit(state: dict | None, model: str = "", reasoning: str = "standard
                          presentation=present_fit(model_fit, cost_fit, state["coverage"],
                                                   selected=selected, lowest_sufficient=lowest_sufficient,
                                                   locale=locale),
-                         lowerCostCandidates=cheaper, inferenceCostIndex=selected.relativeInferenceCost,
+                         lowerCostCandidates=(cheaper if cost_fit == "LowerCostCandidateAvailable" else []),
+                         inferenceCostIndex=selected.relativeInferenceCost,
+                         selectedProfile=ExecutionProfile(model=model, reasoning=normalized),
+                         lowerCostCandidate=(ExecutionProfile(model=lowest_sufficient.model,
+                                                               reasoning=lowest_sufficient.reasoning)
+                                             if cost_fit == "LowerCostCandidateAvailable" and lowest_sufficient else None),
                          selected=selected, profile=profile, depth=depth,
                          alternatives=candidates, reasons=reasons).model_dump()

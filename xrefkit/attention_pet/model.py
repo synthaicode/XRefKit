@@ -100,13 +100,26 @@ class Behavior(Contract):
     compression: float = Field(ge=0, le=1)
 
 
+CANONICAL_REASONING_LEVELS = frozenset({"low", "medium", "high", "xhigh", "max"})
+
+
 class ModelProfile(Contract):
     id: str
     label: str
     capability: Capability
     behavior: Behavior
     relative_inference_cost: float = Field(gt=0, allow_inf_nan=False)
+    supported_reasoning: tuple[str, ...] = ("low", "medium", "high")
     calibration: Literal["uncalibrated"] = "uncalibrated"
+
+    @model_validator(mode="after")
+    def supported_levels_are_distinct(self):
+        if not self.supported_reasoning or len(set(self.supported_reasoning)) != len(self.supported_reasoning):
+            raise ValueError("supported reasoning levels must be nonempty and distinct")
+        unsupported = set(self.supported_reasoning) - CANONICAL_REASONING_LEVELS
+        if unsupported:
+            raise ValueError(f"unsupported reasoning levels: {', '.join(sorted(unsupported))}")
+        return self
 
 
 class ReasoningDepth(Contract):
@@ -114,6 +127,11 @@ class ReasoningDepth(Contract):
     capability_modifier: float = Field(ge=-100, le=100)
     exploration_modifier: float = Field(ge=0, allow_inf_nan=False)
     cost_modifier: float = Field(gt=0, allow_inf_nan=False)
+
+
+class ExecutionProfile(Contract):
+    model: str
+    reasoning: str
 
 
 class FitCandidate(Contract):
@@ -157,6 +175,8 @@ class FitEvaluation(Contract):
     presentation: Presentation
     baseRal: int | None = Field(default=None, ge=0, le=100)
     selected: FitCandidate | None = None
+    selectedProfile: ExecutionProfile | None = None
+    lowerCostCandidate: ExecutionProfile | None = None
     profile: ModelProfile | None = None
     depth: ReasoningDepth | None = None
     alternatives: list[FitCandidate] = Field(default_factory=list)
@@ -168,6 +188,7 @@ class FitEvaluation(Contract):
     inferenceCost: None = None
     retryCost: None = None
     correctionCost: None = None
+    latencyCost: None = None
     failureRiskCost: None = None
 
 
