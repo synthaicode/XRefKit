@@ -18,6 +18,13 @@ its Skill catalog and semantic routing for Skill selection.
 
 The VS Code workspace MCP configuration is `.vscode/mcp.json`.
 
+At the start of each AI conversation using XRefKit, call get_startup_context
+before task-specific work and follow its client_instructions and
+legacy_migration guidance. Ask for the old shared folder when needed and
+migrate only the assets requested by the user. Users describe their goal
+naturally; they do not need to specify a Skill name. MCP initialization alone
+does not start an AI conversation.
+
 Do not manually import or select individual Skill files during normal task
 execution. The administrator manages Skill registration; the client uses the
 MCP catalog to select and execute Skills.
@@ -120,9 +127,17 @@ Generated setup files:
 
 The setup command does not modify client instruction files or overwrite an
 existing VS Code MCP configuration. Apply these files only after review.
+However, setup --import writes converted assets into the specified --repo,
+and setup runs XID fix in that repository. The temporary output folder holds
+configuration proposals and reports; it is not an isolated conversion preview.
+For an isolated review, use a separate copied --repo.
 
 After applying the files, open the repository in VS Code and start the
 `xrefkit` MCP server from the MCP controls.
+Start a Copilot conversation and ask it to call get_startup_context and follow
+the initial migration guidance. Opening VS Code alone does not guarantee an
+AI utterance. Conversion remains in_progress until MCP body retrieval verifies
+every selected artifact; reconnecting and package upgrades preserve this state.
 """
     (output / "SETUP.md").write_text(guide, encoding="utf-8")
 
@@ -135,47 +150,25 @@ def setup(args: argparse.Namespace) -> int:
     metas: list[Path] = []
 
     if args.import_source:
-        from xrefkit.import_skill import _find_skill_doc, _slug, convert_skill, convert_skill_tree
+        from .legacy_migration import import_legacy_assets, plan_legacy_migration
+        from xrefkit.import_skill import _slug
 
         source = Path(args.import_source).resolve()
-        if (source / "skills").is_dir() or args.batch:
-            result = convert_skill_tree(
-                source_root=source,
-                repo_root=root,
-                skill_id_prefix=args.skill_id_prefix,
-                target_skill_root=root / "skills",
-                dry_run=False,
-            )
-            import_report = result.to_dict()
-        else:
-            try:
-                _find_skill_doc(source, None)
-            except FileNotFoundError as exc:
-                raise SystemExit(
-                    "--import must point to a Skill directory containing SKILL.md or README.md, "
-                    "or a directory containing skills/"
-                ) from exc
-            skill_id = args.skill_id or _slug(source.name)
-            result = convert_skill(
-                source_dir=source,
-                source_root=source.parent,
-                repo_root=root,
-                skill_id=skill_id,
-                target_skill_dir=root / "skills" / skill_id,
-                dry_run=False,
-            )
-            import_report = result.to_dict()
-
-        if isinstance(import_report, dict):
-            metas = [root / Path(item["meta_doc"]) for item in import_report.get("converted_skills", []) if item.get("meta_doc")]
-            if not metas and import_report.get("meta_doc"):
-                metas = [root / Path(import_report["meta_doc"])]
+        plan = plan_legacy_migration(root, str(source))
+        result = import_legacy_assets(
+            root, str(source), plan["targets"], prefix=args.skill_id_prefix,
+            single_skill_id=(args.skill_id or _slug(source.name)) if plan["targets"] == ["."] else None,
+        )
+        import_report = result
+        if plan["targets"] == ["."] and result["converted_skills"]:
+            import_report = {**result, **result["converted_skills"][0]}
+        metas = [root / item["meta_doc"] for item in result["converted_skills"]]
 
     xref_report = _run_xref_fix(root)
     checks = _run_skill_checks(root, metas)
     _write_setup_files(output, root=root, import_report=import_report, xref_report=xref_report, checks=checks)
 
-    payload = {"ok": xref_report["returncode"] == 0 and all(item["returncode"] == 0 for item in checks), "output": str(output), "report": str(output / "import-report.json")}
+    payload = {"ok": (import_report is None or import_report.get("ok", False)) and xref_report["returncode"] == 0 and all(item["returncode"] == 0 for item in checks), "output": str(output), "report": str(output / "import-report.json")}
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:

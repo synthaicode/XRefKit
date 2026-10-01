@@ -117,6 +117,20 @@ This command starts the optional catalog and runtime MCP adapter. This checkout
 does not implement management upload, staging, sealing, review, or adoption of
 uploaded SkillDefinition bytes into the active catalog.
 
+To connect VS Code/Copilot, run from your target workspace:
+
+```powershell
+python -m pip install "xrefkit[mcp]"
+python -m xrefkit mcp setup --repo . --output .xrefkit/setup-review
+python -m xrefkit mcp setup apply --repo . --source .xrefkit/setup-review
+```
+
+Review the generated files before applying them, open the workspace in VS Code,
+and start the `xrefkit` MCP server. In Copilot chat, ask: "Call XRefKit's
+get_startup_context and help me get started." The AI receives any needed legacy
+migration guidance; you can describe your goal without specifying Skill names.
+Opening VS Code alone does not guarantee an AI conversation starts.
+
 ## Where to go next
 
 - [Install XRefKit and register Skill Packages](docs/guides/089_xrefkit_package_first_registration.md#xid-4F8C2A7D1E90)

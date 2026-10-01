@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .contracts import builtin_tool_contracts
+from .legacy_migration import migration_context
 from ..discovery import discover_skill_packages, DiscoveredSkillPackage
 from ..loaders import load_skill_definition as load_package_skill_definition
 from ..skill_definition import (
@@ -1213,6 +1214,8 @@ class XRefCatalog:
         pack_document_text = pack_resolved[1] if pack_resolved else None
         startup_contract_pack = _startup_contract_pack(references, pack_document_text)
         client_instructions = _client_instructions()
+        legacy_migration = migration_context(self.repo_root)
+        client_instructions.extend(legacy_migration["client_instructions"])
         if startup_contract_pack["stale"]:
             stale_xids = [
                 str(item["xid"]) for item in startup_contract_pack["stale_sources"]
@@ -1268,6 +1271,7 @@ class XRefCatalog:
             session_context_deduplication=_session_context_deduplication(),
             core_runtime_distribution=_xrefkit_runtime_distribution(self.repo_root).to_dict(),
             repository_zones=_repository_zones(self.ownership),
+            legacy_migration=legacy_migration,
             client_instructions=client_instructions,
             client_obligations=_client_obligations(),
             link_resolution={

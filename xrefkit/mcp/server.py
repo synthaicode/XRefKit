@@ -15,6 +15,12 @@ from typing import Any
 from . import __version__
 from .audit import McpAuditLog, SessionRunBinding, SessionRunRegistry
 from .catalog import XRefCatalog
+from .legacy_migration import (
+    dismiss_legacy_migration as dismiss_migration,
+    plan_legacy_migration as plan_migration,
+    record_mcp_retrieval,
+)
+from .repository import first_xid
 from .contribution_returns import MAX_NETWORK_REQUEST_BYTES
 from .contribution_adoption import (
     CanonicalAdoptionTransport,
@@ -701,6 +707,18 @@ def main(argv: list[str] | None = None) -> int:
         return _with_control_reminder(evaluate_feedback(feedback))
 
     @app.tool()
+    def plan_legacy_migration(ctx: Context, source: str) -> dict[str, Any]:
+        """Read-only inventory of a user-provided legacy folder on this server."""
+        _require_startup_loaded(ctx, "plan_legacy_migration")
+        return plan_migration(catalog.repo_root, source)
+
+    @app.tool()
+    def dismiss_legacy_migration(ctx: Context) -> dict[str, Any]:
+        """Persist the user's explicit confirmation that no legacy assets need migration."""
+        _require_startup_loaded(ctx, "dismiss_legacy_migration")
+        return dismiss_migration(catalog.repo_root)
+
+    @app.tool()
     def list_knowledge_catalog(limit: int | None = None) -> list[dict[str, Any]]:
         return catalog.list_knowledge_catalog(limit)
 
@@ -785,6 +803,7 @@ def main(argv: list[str] | None = None) -> int:
         _require_startup_loaded(ctx, "get_document_by_xid")
         binding = _binding_for(ctx, run_registry)
         result = catalog.get_document_by_xid(xid, known_version)
+        record_mcp_retrieval(catalog.repo_root, [result])
         _log_xid_query(
             "get_document_by_xid",
             xid,
@@ -851,6 +870,15 @@ def main(argv: list[str] | None = None) -> int:
                 f"get_skill requested {skill_id!r}, but the active Skill Run is bound to {binding.skill_id!r}"
             )
         result = catalog.get_skill(skill_id, known_document_versions)
+        if known_document_versions is not None:
+            record_mcp_retrieval(catalog.repo_root, result.get("documents", []))
+        else:
+            record_mcp_retrieval(catalog.repo_root, [
+                {"path": result.get("meta_path"), "xid": first_xid(result.get("meta_content") or ""),
+                 "content": result.get("meta_content")},
+                {"path": result.get("path"), "xid": first_xid(result.get("skill_content") or ""),
+                 "content": result.get("skill_content")},
+            ])
         if binding is not None:
             audit_log.append(
                 "skill.selected",

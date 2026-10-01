@@ -323,10 +323,12 @@ class StartupContext:
     semantic_routing_references: list[dict[str, Any]]
     missing: list[dict[str, str]]
     instruction_gateway: dict[str, Any] | None = None
+    legacy_migration: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "catalog_version": self.catalog_version,
+            "legacy_migration": self.legacy_migration,
             "repository_identity": self.repository_identity,
             "access_policy": self.access_policy,
             "context_injection_policy": self.context_injection_policy,

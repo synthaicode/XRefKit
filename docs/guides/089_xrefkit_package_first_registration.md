@@ -32,10 +32,19 @@ python -m xrefkit --help
 
 ## 既存 Skill を import して VS Code MCP で使う場合
 
-管理者は、既存の folder-based Skill を XRefKit の管理対象形式へ変換するための
-取り込み結果と MCP 接続用の設定例を一度に準備できる。`--import` は Skill を
-直ちにリポジトリへ確定配置する操作ではなく、変換結果・設定ファイル・
-`AGENTS.md`／`CLAUDE.md` の追記文を確認用の一時フォルダへ出力する。
+まず `--import` なしで MCP 接続を準備し、接続後の AI に移行を案内させられる。
+Skill 名を利用者が指定する必要はない。生成した追記案は、AI 会話の開始時に
+`get_startup_context` を呼び、その `legacy_migration` と `client_instructions`
+に従う指示を含む。MCP の initialize と AI の発話開始は別であり、VS Code を
+開くだけで自動発話する保証はない。Copilot の会話で「XRefKit の
+get_startup_context を呼んで、使い始める案内をして」と依頼する。
+
+管理者が先に移行する場合は `--import` を指定できる。この指定は、変換した
+Skill／Knowledge を **`--repo` のフォルダへ書き込む**。一時出力先に置くのは
+設定案とレポートであり、変換先を隔離する機能ではない。隔離レビューには
+コピーした別の `--repo` を指定する。移行元と移行先は重ならない別フォルダにする。
+既存の移行先ファイルは異なる内容で上書きせず、衝突として報告する。
+また setup は対象 repo で XID fix を実行する。
 
 ```powershell
 python -m pip install "xrefkit[mcp]"
@@ -72,6 +81,41 @@ Skill に基づく作業の実行、
 | XRefKit MCP | Skill を選択し、不活性な定義を提供する |
 | AI クライアント | Skill に従って調査・変更・検証する |
 | 人間／クライアント | 承認と最終的な完了判断を行う |
+
+### AI に渡す初回移行案内と状態
+
+`get_startup_context.legacy_migration` は、対象 MCP サーバーの repo にある
+`.xrefkit/legacy-migration.json` を読み、未開始なら移行元を尋ねる案内、途中なら
+残りの対象と取得待ち XID、完了なら案内なしを返す。状態は版番号や文書キャッシュと
+独立している。サーバー再起動や XRefKit 更新だけでは初回案内を復活させない。
+更新案内はこの状態とは別の責務であり、この機能は更新案内を実装しない。
+
+AI は `plan_legacy_migration(source)` で読み取りのみの一覧を取得し、利用者が
+指示した対象だけを、応答の `client_import_command` に `--target <対象>` として
+追加し、クライアント側の Python で `python -m xrefkit mcp migrate` を実行する。
+MCP サーバー自身は Skill／Knowledge の配置を行わない。対象は
+`skills/` 配下の Skill フォルダ（入れ子を含む）または `knowledge/` 配下の
+Markdown／テキストファイル。未リンクの Knowledge も選択できる。Skill を選ぶと
+その直接リンク先 Knowledge も同梱する。対応外の形式は一覧で明示し、勝手に
+完了扱いにしない。旧ファイルを削除・変更せず、対象 repo へコピー変換する。
+Skill は既存の folder-based `legacy_split_v1` 互換変換器を使用する。
+これは SkillDefinition v1 の採用・品質承認ではない。
+
+選択範囲の全成果物について、配置ファイルの SHA-256 と、MCP の既存の
+XID 表現へ正規化した本文の SHA-256 を保存する。`get_document_by_xid` または
+`get_skill` で期待した本文を取得できたことを記録して移行完了とする。
+変換、CLI 確認、キャッシュによる本文省略だけでは完了しない。
+未選択対象まで移行済みとは主張しない。AI は取得待ち XID を
+`get_document_by_xid`（`known_version` なし）で取得する。
+失敗時は対象ごとの理由と準備済み成果物を保持し、再試行では未完了対象だけを
+扱う。状態が壊れていた場合は初期化せず、保全してエラーを報告する。
+旧資産がないことを利用者が明示した場合のみ `dismiss_legacy_migration` で
+案内不要を保存できる。
+
+保存場所はクライアントごとではなく **サーバーの対象 repo ごと**。stdio の
+ローカル接続では利用者の対象環境になる。共有 HTTP サーバーでは同じ repo を
+利用するクライアントが状態を共有する。移行元パスもサーバーから読める必要がある。
+会社 PC 側にしかないフォルダをリモートサーバーが読めるとは仮定しない。
 
 ## Skill Package を追加する場合
 
