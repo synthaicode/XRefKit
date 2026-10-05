@@ -28,6 +28,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install "${PACKAGE_ROOT}"
+          python -m pip install pytest
+      - name: Verify installed package discovery and resolver compatibility
+        working-directory: ${{ runner.temp }}
+        run: python -m pytest "${GITHUB_WORKSPACE}/${PACKAGE_ROOT}/tests" --import-mode=importlib -o pythonpath= -q
       - name: Verify package root and manifest
         run: |
           python - <<'PY'
@@ -158,6 +162,9 @@ jobs:
           assert (package_root() / "package_manifest.yaml").is_file()
           assert (package_root() / "skills" / "csharp_review.skill.yaml").is_file()
           PY
+          python -m pip install pytest
+          cd "${RUNNER_TEMP}"
+          python -m pytest "${GITHUB_WORKSPACE}/${PACKAGE_ROOT}/tests" --import-mode=importlib -o pythonpath= -q
 
   publish-to-pypi:
     name: Publish Skill Package to PyPI
