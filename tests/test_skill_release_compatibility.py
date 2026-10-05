@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import urllib.error
 import zipfile
+from email.message import Message
 from types import SimpleNamespace
 
 import pytest
@@ -180,9 +181,10 @@ def test_passing_candidate_cannot_rescue_incompatible_public_wheel(tmp_path, mon
         return "0.1.0"
     monkeypatch.setattr(gate, "check_dependency", dependency)
     monkeypatch.setattr(gate, "probe", lambda *args: {"executed_tests": 4})
+    monkeypatch.setattr(gate, "probe_combined", lambda *args: None)
     report = gate.check(tmp_path, core, "all", tmp_path / "evidence")
     assert [(row["scope"], row["status"]) for row in report["results"]] == [
-        ("published", "incompatible"), ("candidate", "passed")]
+        ("published", "incompatible"), ("candidate", "passed"), ("candidate_combination", "passed")]
     assert report["ok"] is False
 
 
@@ -205,10 +207,71 @@ def test_source_only_status_requires_registry_evidence(tmp_path, monkeypatch, re
 def test_missing_package_regression_tests_are_unverified(tmp_path, monkeypatch):
     monkeypatch.setattr(gate.venv.EnvBuilder, "create", lambda self, path: None)
     monkeypatch.setattr(gate, "run", lambda *args, **kwargs: "")
+    monkeypatch.setattr(gate, "wheel_metadata", lambda path: Message())
     with pytest.raises(gate.GateError, match="no package regression tests") as error:
         gate.probe(tmp_path, {"name": "demo", "path": "packages/demo", "package_id": "official.demo"},
                    tmp_path / "skill.whl", tmp_path / "core.whl", "0.6.1", tmp_path, tmp_path / "log")
     assert error.value.status == "blocked"
+
+
+def test_declared_test_extra_is_installed_without_changing_runtime_dependency(tmp_path, monkeypatch):
+    monkeypatch.setattr(gate.venv.EnvBuilder, "create", lambda self, path: None)
+    metadata = Message()
+    metadata["Provides-Extra"] = "test"
+    monkeypatch.setattr(gate, "wheel_metadata", lambda path: metadata)
+    commands = []
+    monkeypatch.setattr(gate, "run", lambda command, *args, **kwargs: commands.append(command))
+    with pytest.raises(gate.GateError, match="no package regression tests"):
+        gate.probe(tmp_path, {"name": "demo", "path": "packages/demo", "package_id": "official.demo"},
+                   tmp_path / "skill.whl", tmp_path / "core.whl", "0.6.1", tmp_path, tmp_path / "log")
+    assert str(tmp_path / "skill.whl") + "[test]" in commands[0]
+    assert str(tmp_path / "core.whl") in commands[0]
+
+
+def test_source_only_candidate_included_in_combined_check(tmp_path, monkeypatch):
+    (tmp_path / "pyproject.toml").write_text('[project]\nversion="0.1.0"\n', encoding="utf-8")
+    core = wheel(tmp_path)
+    monkeypatch.setattr(gate, "wheel_metadata", lambda path: {"Name": "xrefkit", "Version": "0.1.0"})
+    packages = [
+        {"name": "published-demo", "path": "packages/a", "package_id": "official.a", "publication": "pypi"},
+        {"name": "source-demo", "path": "packages/b", "package_id": "official.b", "publication": "source_only"},
+    ]
+    monkeypatch.setattr(gate, "inventory", lambda repo: packages)
+    def build(command, cwd, log, **kwargs):
+        dist = cwd / "dist"
+        dist.mkdir()
+        (dist / "candidate.whl").write_bytes(core.read_bytes())
+    monkeypatch.setattr(gate, "run", build)
+    monkeypatch.setattr(gate, "check_dependency", lambda *args: "0.1.0")
+    monkeypatch.setattr(gate, "probe", lambda *args: {"executed_tests": 4})
+    observed = []
+    monkeypatch.setattr(gate, "probe_combined", lambda repo, selected, *args: observed.append(selected))
+    report = gate.check(tmp_path, core, "candidate", tmp_path / "evidence")
+    assert report["ok"]
+    assert observed == [packages]
+    assert report["results"][-1]["scope"] == "candidate_combination"
+
+
+def test_failed_candidate_combination_blocks_gate(tmp_path, monkeypatch):
+    (tmp_path / "pyproject.toml").write_text('[project]\nversion="0.1.0"\n', encoding="utf-8")
+    core = wheel(tmp_path)
+    monkeypatch.setattr(gate, "wheel_metadata", lambda path: {"Name": "xrefkit", "Version": "0.1.0"})
+    monkeypatch.setattr(gate, "inventory", lambda repo: [
+        {"name": "demo", "path": "packages/demo", "package_id": "official.demo", "publication": "source_only"}])
+    def build(command, cwd, log, **kwargs):
+        dist = cwd / "dist"
+        dist.mkdir()
+        (dist / "candidate.whl").write_bytes(core.read_bytes())
+    monkeypatch.setattr(gate, "run", build)
+    monkeypatch.setattr(gate, "check_dependency", lambda *args: "0.1.0")
+    monkeypatch.setattr(gate, "probe", lambda *args: {"executed_tests": 4})
+    def collision(*args):
+        raise gate.GateError("incompatible", "duplicate XID")
+    monkeypatch.setattr(gate, "probe_combined", collision)
+    report = gate.check(tmp_path, core, "candidate", tmp_path / "evidence")
+    assert report["results"][0]["status"] == "passed"
+    assert report["results"][-1]["status"] == "incompatible"
+    assert not report["ok"]
 
 
 def test_core_publish_has_both_scopes_and_fresh_published_check():

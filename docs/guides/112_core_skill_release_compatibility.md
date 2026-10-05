@@ -37,6 +37,9 @@ published official Skills together and loads them with all their package IDs
 enabled, catching shared dependency and registry/XID conflicts. Source-only
 rows are confirmed by a PyPI 404; an outage blocks the check, and a newly
 published source-only row requires an inventory update.
+After all candidate checks pass, a separate environment also installs and
+enables every candidate together, including source-only packages. Individual
+success cannot mask candidate dependency or XID collisions.
 
 The **candidate** scope builds and installs each inventoried repository Skill
 in a separate isolated venv with that same Core artifact. Passing this scope
@@ -54,7 +57,9 @@ wrapper. Core **protocol** compatibility comes from the runtime's own
 The probe validates actual Skill schemas, retained manifest contracts, required
 Knowledge/review-axis/schema/template references, file existence and content,
 workflow file handles, all YAML/JSON assets, and the package regression tests.
-Tests run outside the repository with source-path injection disabled.
+Tests run outside the repository with source-path injection disabled. A
+declared `test` extra is installed for regression tooling; it does not change
+the Skill's runtime Core constraint.
 JUnit evidence must show executed tests with no failures, errors, or skips;
 missing, empty, or skipped regression coverage blocks the gate.
 
@@ -68,11 +73,12 @@ missing, empty, or skipped regression coverage blocks the gate.
 - `not_published`: explicit source-only published-scope row. It does not waive
   its required candidate check.
 
-The initial source-only XDDP design candidate declares `xrefkit>=2.0,<3.0`
-as a Python distribution requirement and has no package regression suite.
-Against Core 0.6.1 it blocks the candidate gate. Correcting its support policy
-and adding evidence is a separate decision; this gate does not publish it or
-automatically change its contract.
+The source-only XDDP design candidate targets the Core distribution range
+`xrefkit>=0.6.1,<0.7.0` independently of manifest protocol
+`>=2.0.0 <3.0.0`. Its installed-runtime regression suite covers discovery,
+contract inheritance, file-backed references, on-demand branch availability,
+the output schema, CLI resolution, and rejection cases. It remains unpublished;
+a successful candidate check does not authorize publication.
 
 ## Local use and boundary
 

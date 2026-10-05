@@ -162,8 +162,10 @@ def probe(repo: Path, package: dict, wheel: Path, core: Path, core_version: str,
     environment_root = work / "venv"
     venv.EnvBuilder(with_pip=True).create(environment_root)
     python = environment_root / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    test_target = (f"{wheel}[test]" if "test" in wheel_metadata(wheel).get_all("Provides-Extra", [])
+                   else str(wheel))
     run([str(python), "-m", "pip", "install", "--index-url", "https://pypi.org/simple",
-         str(core), str(wheel), "pytest"], work, log, stage="install")
+         str(core), test_target, "pytest"], work, log, stage="install")
     run([str(python), "-m", "pip", "check"], work, log, stage="pip-check")
     run([str(python), "-I", str(repo / "tools/check_installed_skill_contract.py"),
          "--name", package["name"], "--package-id", package["package_id"],
@@ -209,6 +211,7 @@ def check(repo: Path, core: Path, scope: str, output: Path) -> dict:
     packages = inventory(repo)
     results = []
     published_artifacts = {}
+    candidate_artifacts = {}
     for package in packages:
         for selected in (["published", "candidate"] if scope == "all" else [scope]):
             row = {"name": package["name"], "scope": selected}
@@ -245,6 +248,8 @@ def check(repo: Path, core: Path, scope: str, output: Path) -> dict:
                 row["status"] = "passed"
                 if selected == "published":
                     published_artifacts[package["name"]] = wheel
+                else:
+                    candidate_artifacts[package["name"]] = wheel
             except GateError as exc:
                 row.update(status=exc.status, reason=str(exc))
             except (ValueError, KeyError, OSError, zipfile.BadZipFile) as exc:
@@ -252,12 +257,18 @@ def check(repo: Path, core: Path, scope: str, output: Path) -> dict:
             results.append(row)
             print(f"[{selected}] {package['name']}: {row['status']} {row.get('reason', '')}", flush=True)
     published_packages = [p for p in packages if p["publication"] == "pypi"]
-    if published_packages and scope in {"published", "all"} and len(published_artifacts) == len(published_packages):
-        row = {"name": "all-published-official-skills", "scope": "published_combination"}
+    combinations = [
+        ("published", published_packages, published_artifacts),
+        ("candidate", packages, candidate_artifacts),
+    ]
+    for selected, combined_packages, artifacts in combinations:
+        if not combined_packages or scope not in {selected, "all"} or len(artifacts) != len(combined_packages):
+            continue
+        row = {"name": f"all-{selected}-official-skills", "scope": f"{selected}_combination"}
         try:
-            probe_combined(repo, published_packages,
-                           [published_artifacts[p["name"]] for p in published_packages],
-                           core, core_version, output / "published-combination")
+            probe_combined(repo, combined_packages,
+                           [artifacts[p["name"]] for p in combined_packages],
+                           core, core_version, output / f"{selected}-combination")
             row["status"] = "passed"
         except GateError as exc:
             row.update(status=exc.status, reason=str(exc))
