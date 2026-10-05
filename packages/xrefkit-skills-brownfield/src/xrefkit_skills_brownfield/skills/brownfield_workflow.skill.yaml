@@ -54,7 +54,10 @@ required_knowledge:
   - xid-7A2F4C8D1701
   - xid-7A2F4C8D2201
   - xid-7A2F4C8D2301
-review_axes: []
+review_axes:
+  - xid-axis-brownfield-traceability
+  - xid-axis-brownfield-unknown-visibility
+  - xid-axis-brownfield-phase-completeness
 
 must_not:
   - treat_existing_implementation_as_business_truth

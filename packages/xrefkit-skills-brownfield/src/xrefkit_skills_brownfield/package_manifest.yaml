@@ -1,6 +1,6 @@
 package_id: xrefkit.skills.brownfield
 package_type: skill_package
-version: 0.1.4
+version: 0.1.5
 
 requires:
   xrefkit_core: ">=2.0.0 <3.0.0"
@@ -71,9 +71,33 @@ provides:
         - silently_complete_missing_test_input
         - hand_off_unreviewed_design
         - approve_human_owned_decisions
+        - silently_change_file_encoding_or_newlines
+        - overwrite_concurrent_human_or_ai_edits
+        - write_from_unconfirmed_ai_interpretation
+        - resolve_spec_conflict_by_newest_commit
+        - discard_or_hide_uncommitted_edits_without_authorization
+        - add_file_without_local_extension_pattern_check
 
   fragments: []
-  knowledge: []
+  knowledge:
+    - id: brownfield.llm_review_knowledge_usage
+      xid: xid-7A2F4C8D1401
+      path: knowledge/organization/140_llm_review_knowledge_usage_rules.md
+    - id: brownfield.implementation_assumption_gap
+      xid: xid-7A2F4C8D1501
+      path: knowledge/organization/150_implementation_assumption_gap_handling.md
+    - id: brownfield.test_design_criteria
+      xid: xid-8C4D2A7E5102
+      path: knowledge/quality/110_test_design_criteria.md
+    - id: brownfield.xddp_basics
+      xid: xid-7A2F4C8D1701
+      path: knowledge/organization/170_xddp_basics.md
+    - id: brownfield.service_catalog
+      xid: xid-7A2F4C8D2201
+      path: knowledge/architecture/100_service_catalog_knowledge_schema.md
+    - id: brownfield.service_data_flow
+      xid: xid-7A2F4C8D2301
+      path: knowledge/architecture/110_service_interaction_data_flow_viewpoints.md
   review_axes:
     - id: brownfield.traceability
       xid: xid-axis-brownfield-traceability
