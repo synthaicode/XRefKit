@@ -81,6 +81,18 @@ def _with_control_reminder(result: dict[str, Any]) -> dict[str, Any]:
 # declare required_tools even though the general tool catalog still applies.
 _CLIENT_TOOLS_UNLOCKED_SESSIONS: "weakref.WeakSet[Any]" = weakref.WeakSet()
 _CONTEXT_CODEC: ContextTokenCodec | None = None
+_INITIAL_PROTOCOLS_PARAMETER = "xrefkit.initial_protocols"
+_EXCLUDED_PROTOCOLS_PARAMETER = "xrefkit.excluded_protocols"
+_ADMIN_ONLY_INSTRUCTION_MARKERS = (
+    "prepare_skill_edit",
+    "list_skill_edits",
+    "export_skill_edit",
+    "deactivate_skill_edit",
+    "create_local_knowledge",
+    "list_local_knowledge",
+    "export_local_knowledge",
+    "deactivate_local_knowledge",
+)
 
 
 def _unlock_client_tools(ctx: Any) -> None:
@@ -107,6 +119,66 @@ def _context_token(claims: ContextClaims | None) -> str | None:
     if _CONTEXT_CODEC is None or claims is None:
         return None
     return _CONTEXT_CODEC.refresh(claims)
+
+
+def _initialize_protocol_selection(
+    ctx: Any,
+    server_initial_protocols: list[str] | None,
+) -> dict[str, Any]:
+    """Read canonical and legacy protocol selection from MCP initialize."""
+    session = _session_of(ctx)
+    params = getattr(session, "client_params", None) or getattr(
+        session, "_client_params", None
+    )
+    extra = getattr(params, "model_extra", None) or (
+        params if isinstance(params, dict) else {}
+    )
+    xrefkit = extra.get("xrefkit")
+    if xrefkit is not None and not isinstance(xrefkit, dict):
+        raise ValueError("initialize parameter xrefkit must be an object")
+    xrefkit = xrefkit or {}
+    has_excluded = "excluded_protocols" in xrefkit
+    has_legacy = "initial_protocols" in xrefkit
+    if has_excluded and has_legacy:
+        raise ValueError(
+            f"initialize cannot contain both {_EXCLUDED_PROTOCOLS_PARAMETER} "
+            f"and {_INITIAL_PROTOCOLS_PARAMETER}"
+        )
+    if has_excluded:
+        return {
+            "excluded_protocols": xrefkit["excluded_protocols"],
+            "selection_source": "initialize",
+        }
+    if has_legacy:
+        return {
+            "initial_protocols": xrefkit["initial_protocols"],
+            "selection_source": "initialize",
+        }
+    if server_initial_protocols is not None:
+        return {
+            "initial_protocols": server_initial_protocols,
+            "selection_source": "server",
+        }
+    return {"selection_source": "server"}
+
+
+def _apply_server_profile(result: dict[str, Any], profile: str) -> dict[str, Any]:
+    """Describe the server's port-scoped write boundary in startup output."""
+    response = dict(result)
+    response["server_profile"] = {
+        "name": profile,
+        "skill_updates": profile == "admin",
+        "update_transport": "local_overlay" if profile == "admin" else None,
+        "inbound_webdav": False,
+        "boundary": "loopback port separation",
+    }
+    if profile == "reader":
+        response["client_instructions"] = [
+            instruction
+            for instruction in response.get("client_instructions", [])
+            if not any(marker in instruction for marker in _ADMIN_ONLY_INSTRUCTION_MARKERS)
+        ]
+    return response
 
 
 def _binding_for(ctx: Any, run_registry: SessionRunRegistry) -> SessionRunBinding | None:
@@ -146,6 +218,12 @@ def _require_client_tools_unlocked(ctx: Any, tool_name: str) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="xrefkit-mcp-server")
     parser.add_argument("--repo", required=True, help="Path to an XRefKit repository")
+    parser.add_argument(
+        "--profile",
+        choices=["reader", "admin"],
+        default="reader",
+        help="Port-scoped feature profile. reader is read/execute only; admin enables local Skill and Knowledge updates.",
+    )
     parser.add_argument(
         "--transport",
         choices=["stdio", "sse", "streamable-http"],
@@ -212,6 +290,18 @@ def main(argv: list[str] | None = None) -> int:
         help="External XID-addressable domain knowledge root. Can be repeated.",
     )
     parser.add_argument(
+        "--skill-definition",
+        action="append",
+        default=[],
+        help="Repository-relative SkillDefinition to activate in the MCP catalog. Can be repeated.",
+    )
+    parser.add_argument(
+        "--skill-governance",
+        action="append",
+        default=[],
+        help="Repository-relative external governance record for an activated SkillDefinition. Can be repeated.",
+    )
+    parser.add_argument(
         "--initial-protocol",
         choices=["workflow", "reporting"],
         action="append",
@@ -226,6 +316,8 @@ def main(argv: list[str] | None = None) -> int:
         help="Structured MCP audit JSONL path. Defaults to <repo>/work/mcp/xid_audit.jsonl.",
     )
     args = parser.parse_args(argv)
+    if args.profile == "admin" and args.host not in {"127.0.0.1", "::1", "localhost"}:
+        parser.error("admin profile must bind to a loopback host")
     if args.stateless_http and args.transport != "streamable-http":
         parser.error("--stateless-http requires --transport streamable-http")
     context_secret = args.context_secret or os.environ.get("XREFKIT_CONTEXT_SECRET")
@@ -258,6 +350,8 @@ def main(argv: list[str] | None = None) -> int:
         Path(args.repo),
         args.domain_knowledge_root,
         discover_packages=True,
+        skill_definition_paths=args.skill_definition,
+        skill_governance_paths=args.skill_governance,
     )
     global _CONTEXT_CODEC
     _CONTEXT_CODEC = ContextTokenCodec(
@@ -406,10 +500,14 @@ def main(argv: list[str] | None = None) -> int:
         ctx: Context,
         known_document_versions: dict[str, str] | None = None,
     ) -> dict[str, Any]:
+        protocol_selection = _initialize_protocol_selection(ctx, args.initial_protocols)
         result = catalog.get_startup_context(
             known_document_versions,
-            initial_protocols=args.initial_protocols,
+            initial_protocols=protocol_selection.get("initial_protocols"),
+            excluded_protocols=protocol_selection.get("excluded_protocols"),
+            selection_source=protocol_selection["selection_source"],
         )
+        result = _apply_server_profile(result, args.profile)
         for xid in result.get("load_order", []):
             _log_xid_query("get_startup_context", xid)
         _mark_startup_loaded(ctx)
@@ -607,89 +705,92 @@ def main(argv: list[str] | None = None) -> int:
             )
         return response
 
+    if args.profile == "admin":
+        @app.tool()
+        def prepare_skill_edit(
+            ctx: Context,
+            skill_id: str,
+            package_id: str | None = None,
+        ) -> dict[str, Any]:
+            """Materialize a selected Skill as a project-local editable overlay."""
+            _require_startup_loaded(ctx, "prepare_skill_edit")
+            result = catalog.prepare_skill_edit(skill_id, package_id)
+            binding = _binding_for(ctx, run_registry)
+            if binding is not None:
+                audit_log.append(
+                    "skill.edit_prepared",
+                    binding=binding,
+                    tool="prepare_skill_edit",
+                    skill_id=skill_id,
+                    source_package_id=package_id,
+                )
+            return _with_control_reminder(result)
+
+        @app.tool()
+        def list_skill_edits(ctx: Context) -> list[dict[str, Any]]:
+            """List project-local Skill overlays and their provenance."""
+            _require_startup_loaded(ctx, "list_skill_edits")
+            return catalog.list_skill_edits()
+
+        @app.tool()
+        def export_skill_edit(
+            ctx: Context,
+            skill_id: str,
+            write_patch: bool = False,
+        ) -> dict[str, Any]:
+            """Return an upstream-ready diff for an active local Skill edit."""
+            _require_startup_loaded(ctx, "export_skill_edit")
+            result = catalog.export_skill_edit(skill_id, write_patch)
+            return _with_control_reminder(result)
+
+        @app.tool()
+        def deactivate_skill_edit(ctx: Context, skill_id: str) -> dict[str, Any]:
+            """Stop routing to a local edit while preserving its files."""
+            _require_startup_loaded(ctx, "deactivate_skill_edit")
+            result = catalog.deactivate_skill_edit(skill_id)
+            return _with_control_reminder(result)
+
+        @app.tool()
+        def create_local_knowledge(
+            ctx: Context,
+            xid: str,
+            content: str,
+            filename: str | None = None,
+            domain: str | None = None,
+        ) -> dict[str, Any]:
+            """Create a project-local XID-addressable Knowledge document."""
+            _require_startup_loaded(ctx, "create_local_knowledge")
+            result = catalog.create_local_knowledge(xid, content, filename, domain)
+            return _with_control_reminder(result)
+
+        @app.tool()
+        def list_local_knowledge(ctx: Context) -> list[dict[str, Any]]:
+            """List project-local Knowledge additions and their provenance."""
+            _require_startup_loaded(ctx, "list_local_knowledge")
+            return catalog.list_local_knowledge()
+
+        @app.tool()
+        def export_local_knowledge(
+            ctx: Context,
+            xid: str,
+            write_patch: bool = False,
+        ) -> dict[str, Any]:
+            """Return an upstream-ready diff for a new local Knowledge document."""
+            _require_startup_loaded(ctx, "export_local_knowledge")
+            return _with_control_reminder(catalog.export_local_knowledge(xid, write_patch))
+
+        @app.tool()
+        def deactivate_local_knowledge(ctx: Context, xid: str) -> dict[str, Any]:
+            """Stop routing to a local Knowledge addition while preserving it."""
+            _require_startup_loaded(ctx, "deactivate_local_knowledge")
+            return _with_control_reminder(catalog.deactivate_local_knowledge(xid))
+
     @app.tool()
-    def prepare_skill_edit(
-        ctx: Context,
-        skill_id: str,
-        package_id: str | None = None,
+    def resolve_skill_knowledge(
+        ctx: Context, skill_id: str, active_need_ids: list[str] | None = None
     ) -> dict[str, Any]:
-        """Materialize a selected Skill as a project-local editable overlay."""
-        _require_startup_loaded(ctx, "prepare_skill_edit")
-        result = catalog.prepare_skill_edit(skill_id, package_id)
-        binding = _binding_for(ctx, run_registry)
-        if binding is not None:
-            audit_log.append(
-                "skill.edit_prepared",
-                binding=binding,
-                tool="prepare_skill_edit",
-                skill_id=skill_id,
-                source_package_id=package_id,
-            )
-        return _with_control_reminder(result)
-
-    @app.tool()
-    def list_skill_edits(ctx: Context) -> list[dict[str, Any]]:
-        """List project-local Skill overlays and their provenance."""
-        _require_startup_loaded(ctx, "list_skill_edits")
-        return catalog.list_skill_edits()
-
-    @app.tool()
-    def export_skill_edit(
-        ctx: Context,
-        skill_id: str,
-        write_patch: bool = False,
-    ) -> dict[str, Any]:
-        """Return an upstream-ready diff for an active local Skill edit."""
-        _require_startup_loaded(ctx, "export_skill_edit")
-        result = catalog.export_skill_edit(skill_id, write_patch)
-        return _with_control_reminder(result)
-
-    @app.tool()
-    def deactivate_skill_edit(ctx: Context, skill_id: str) -> dict[str, Any]:
-        """Stop routing to a local edit while preserving its files."""
-        _require_startup_loaded(ctx, "deactivate_skill_edit")
-        result = catalog.deactivate_skill_edit(skill_id)
-        return _with_control_reminder(result)
-
-    @app.tool()
-    def create_local_knowledge(
-        ctx: Context,
-        xid: str,
-        content: str,
-        filename: str | None = None,
-        domain: str | None = None,
-    ) -> dict[str, Any]:
-        """Create a project-local XID-addressable Knowledge document."""
-        _require_startup_loaded(ctx, "create_local_knowledge")
-        result = catalog.create_local_knowledge(xid, content, filename, domain)
-        return _with_control_reminder(result)
-
-    @app.tool()
-    def list_local_knowledge(ctx: Context) -> list[dict[str, Any]]:
-        """List project-local Knowledge additions and their provenance."""
-        _require_startup_loaded(ctx, "list_local_knowledge")
-        return catalog.list_local_knowledge()
-
-    @app.tool()
-    def export_local_knowledge(
-        ctx: Context,
-        xid: str,
-        write_patch: bool = False,
-    ) -> dict[str, Any]:
-        """Return an upstream-ready diff for a new local Knowledge document."""
-        _require_startup_loaded(ctx, "export_local_knowledge")
-        return _with_control_reminder(catalog.export_local_knowledge(xid, write_patch))
-
-    @app.tool()
-    def deactivate_local_knowledge(ctx: Context, xid: str) -> dict[str, Any]:
-        """Stop routing to a local Knowledge addition while preserving it."""
-        _require_startup_loaded(ctx, "deactivate_local_knowledge")
-        return _with_control_reminder(catalog.deactivate_local_knowledge(xid))
-
-    @app.tool()
-    def resolve_skill_knowledge(ctx: Context, skill_id: str) -> dict[str, Any]:
         _require_startup_loaded(ctx, "resolve_skill_knowledge")
-        return _with_control_reminder(catalog.resolve_skill_knowledge(skill_id))
+        return _with_control_reminder(catalog.resolve_skill_knowledge(skill_id, active_need_ids))
 
     @app.tool()
     def rank_skills_for_purpose(ctx: Context, purpose: str, limit: int = 5) -> list[dict[str, Any]]:

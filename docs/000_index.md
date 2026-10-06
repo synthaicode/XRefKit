@@ -49,6 +49,11 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Skill reporting contract](core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73)
 - [Human evaluation at run boundaries](core/contracts/082_human_evaluation_protocol.md#xid-7C4E2A91D8F0)
 - [AI Decision Trace Protocol](core/contracts/093_ai_decision_trace_protocol.md#xid-22164A51A745)
+- [Subagent startup read guide](guides/095_subagent_startup_read.md#xid-D7A4C9E2B861)
+- [SkillDefinition v1 and derived catalog](core/contracts/096_skill_definition_contract.md#xid-E6A19D4B72C3)
+- [Complex SkillDefinition / Flow example](guides/097_complex_skilldefinition_flow.md#xid-4F8C2A7D91E6)
+- [SkillDefinition distribution and adoption boundary](guides/098_skilldefinition_distribution_boundary.md#xid-B7D3A5E91C42)
+- [SkillDefinition redesign migration plan](guides/099_skilldefinition_redesign_migration_plan.md#xid-C8E4B6F20D31)
 
 ## Cross-Cutting Schemas And Boundaries
 

@@ -338,6 +338,18 @@ def _build_parser() -> argparse.ArgumentParser:
     skill = subparsers.add_parser("skill", help="Validate skill metadata before loading")
     skill_sub = skill.add_subparsers(dest="skill_cmd", required=True)
 
+    p_definition_check = skill_sub.add_parser(
+        "definition-check", help="Validate a single-source SkillDefinition candidate",
+    )
+    p_definition_check.add_argument("--path", required=True)
+    p_definition_check.add_argument("--governance", action="append", default=[])
+    p_definition_check.add_argument("--json", action="store_true", help="Output is always JSON")
+    p_definition_catalog = skill_sub.add_parser(
+        "definition-catalog", help="Generate metadata-only catalog from explicit definition paths",
+    )
+    p_definition_catalog.add_argument("--path", required=True, action="append")
+    p_definition_catalog.add_argument("--governance", action="append", default=[])
+    p_definition_catalog.add_argument("--json", action="store_true", help="Output is always JSON")
     p_skill_import = skill_sub.add_parser(
         "import",
         help="Import an external file-based Skill into XRefKit Skill + Knowledge files",
@@ -398,7 +410,23 @@ def _build_parser() -> argparse.ArgumentParser:
 
     p_skill_run = skill_sub.add_parser("run", help="Create a Skill runtime envelope and session log")
     p_skill_run.add_argument("--root", default=".", help="Project root (default: .)")
-    p_skill_run.add_argument("--meta", required=True, help="Relative path to the Skill meta.md to run")
+    p_skill_run_source = p_skill_run.add_mutually_exclusive_group(required=True)
+    p_skill_run_source.add_argument("--meta", help="Relative path to the legacy Skill meta.md to run")
+    p_skill_run_source.add_argument("--definition", help="Explicit SkillDefinition document to run without a legacy meta source")
+    p_skill_run.add_argument(
+        "--governance",
+        default=None,
+        help="External governance record bound to an explicit SkillDefinition",
+    )
+    p_skill_run.add_argument("--capability", default=None, help="Runtime capability for an explicit SkillDefinition run")
+    p_skill_run.add_argument("--tuning", default=None, help="Runtime tuning for an explicit SkillDefinition run")
+    p_skill_run.add_argument("--responsibility", default=None, help="Runtime executor responsibility for an explicit SkillDefinition run")
+    p_skill_run.add_argument(
+        "--execution-mode",
+        choices=["local_default", "subagent_preferred", "subagent_required"],
+        default=None,
+        help="Runtime dispatch mode; required for an explicit SkillDefinition run",
+    )
     p_skill_run.add_argument("--task", default=None, help="Task text for the Skill run")
     p_skill_run.add_argument("--task-file", default=None, help="Read task text from a UTF-8 file")
     p_skill_run.add_argument("--out", default=None, help="Write run log to this path")
@@ -749,6 +777,20 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_workflow_reconcile.add_argument("--json", action="store_true", help="Emit JSON")
 
+    p_binding = workflow_sub.add_parser(
+        "bind-execution", help="Build explicit startup binding from an opened workflow run",
+    )
+    p_binding.add_argument("--log", required=True)
+    p_binding.add_argument("--request", required=True, help="UTF-8 JSON routing decision")
+    p_binding.add_argument("--json", action="store_true", help="Output is always JSON")
+    p_subagent_read = workflow_sub.add_parser(
+        "subagent-read", help="Read bounded startup material for an opened local workflow/Skill run",
+    )
+    p_subagent_read.add_argument("--root", default=".")
+    p_subagent_read.add_argument("--log", required=True)
+    p_subagent_read.add_argument("--binding", required=True, help="UTF-8 JSON execution binding")
+    p_subagent_read.add_argument("--json", action="store_true", help="Output is always JSON")
+
     mcp = subparsers.add_parser(
         "mcp",
         help="Client-side MCP initialization helpers",
@@ -805,6 +847,10 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_ctx(args, cfg)
 
     if args.command == "skill":
+        if args.skill_cmd in {"definition-check", "definition-catalog"}:
+            from xrefkit.skill_definition_catalog import cmd_definition
+
+            return cmd_definition(args)
         if args.skill_cmd == "import":
             from xrefkit.import_skill import cmd_skill_import
 
@@ -879,6 +925,14 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_skill(args)
 
     if args.command == "workflow":
+        if args.workflow_cmd == "bind-execution":
+            from xrefkit.execution_binding_cli import cmd_execution_binding
+
+            return cmd_execution_binding(args)
+        if args.workflow_cmd == "subagent-read":
+            from xrefkit.subagent_startup import cmd_subagent_read
+
+            return cmd_subagent_read(args)
         if args.workflow_cmd == "run":
             from xrefkit.skillrun import cmd_workflow_run
 

@@ -88,6 +88,29 @@ def _run_xids(run: dict[str, Any]) -> set[str]:
     )
 
 
+_DEFINITION_BINDING_FIELDS = (
+    "definition_format",
+    "definition_xid",
+    "definition_sha256",
+    "capability",
+    "tuning",
+    "responsibility",
+    "execution_mode",
+)
+_ROUTING_BINDING_FIELDS = ("capability", "tuning", "responsibility", "execution_mode")
+
+
+def _binding(run: dict[str, Any], fields: tuple[str, ...] = _DEFINITION_BINDING_FIELDS) -> tuple[str, ...]:
+    return tuple(
+        _string(run.get(key)) or ("legacy_unversioned" if key == "definition_format" else "unknown")
+        for key in fields
+    )
+
+
+def _binding_context(binding: tuple[str, ...], fields: tuple[str, ...] = _DEFINITION_BINDING_FIELDS) -> dict[str, str]:
+    return dict(zip(fields, binding))
+
+
 def _feedback_events(run: dict[str, Any], kind: str = "human") -> list[dict[str, Any]]:
     events = []
     for event in _as_list(run.get("observation_events")):
@@ -114,8 +137,11 @@ def _new_skill_stat() -> dict[str, Any]:
         "used_xids": set(),
         "feedback": Counter(),
         "feedback_runs": defaultdict(list),
+        "feedback_by_binding": defaultdict(Counter),
+        "feedback_runs_by_binding": defaultdict(lambda: defaultdict(list)),
         "run_paths": [],
         "observed_sets": [],
+        "routing_stats": defaultdict(lambda: {"run_count": 0, "xids": set(), "run_paths": []}),
         "missing_information": Counter(),
     }
 
@@ -159,6 +185,7 @@ def _candidate(
     counterevidence: list[str],
     unknowns: list[str],
     verification_plan: list[str],
+    analysis_context: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     subject = sorted(subject_xids)
     skills = sorted(skill_ids)
@@ -167,6 +194,8 @@ def _candidate(
         "subject_xids": subject,
         "skill_ids": skills,
     }
+    if analysis_context:
+        identity["analysis_context"] = analysis_context
     return {
         "proposal_id": f"bo-{_short_hash(identity)}",
         "proposal": "split" if category == "split" else "merge" if category == "merge" else "investigate",
@@ -180,6 +209,7 @@ def _candidate(
         "unknowns": unknowns,
         "verification_plan": verification_plan,
         "decision": {"status": "pending", "owner": None},
+        "analysis_context": analysis_context or {},
     }
 
 
@@ -224,46 +254,55 @@ def _feedback_candidates(
         )
 
     for skill_id, stat in sorted(skill_stats.items()):
-        corrected = int(stat["feedback"].get("corrected", 0))
-        rejected = int(stat["feedback"].get("rejected", 0))
-        total = corrected + rejected
-        if total < min_samples:
-            continue
-        refs = sorted({path for paths in stat["feedback_runs"].values() for path in paths})
-        candidates.append(
-            _candidate(
-                category="skill_correction",
-                subject_xids=set(stat["used_xids"]),
-                skill_ids={skill_id},
-                support=total,
-                evidence_refs=refs,
-                rationale=f"The Skill has repeated human feedback requiring correction or rejection ({total} events).",
-                counterevidence=["Feedback may reflect varied task inputs or missing Knowledge rather than a stable Skill defect."],
-                unknowns=["The dashboard does not contain the full task intent or private reasoning."],
-                verification_plan=[
-                    "Cluster the corrected outputs by task purpose and failure condition.",
-                    "Update procedure, constraint, routing, or quality criteria only after human review.",
-                    "Rerun the same bounded task population and compare quality outcomes.",
-                ],
+        for binding, feedback in sorted(stat["feedback_by_binding"].items()):
+            corrected = int(feedback.get("corrected", 0))
+            rejected = int(feedback.get("rejected", 0))
+            total = corrected + rejected
+            if total < min_samples:
+                continue
+            feedback_runs = stat["feedback_runs_by_binding"][binding]
+            refs = sorted({path for paths in feedback_runs.values() for path in paths})
+            candidates.append(
+                _candidate(
+                    category="skill_correction",
+                    subject_xids=set().union(
+                        *(values for observed_binding, values in stat["observed_sets"] if observed_binding == binding)
+                    ),
+                    skill_ids={skill_id},
+                    support=total,
+                    evidence_refs=refs,
+                    rationale=f"The Skill has repeated human feedback requiring correction or rejection ({total} events) under one definition and runtime binding.",
+                    counterevidence=["Feedback may reflect varied task inputs or missing Knowledge rather than a stable Skill defect."],
+                    unknowns=["The dashboard does not contain the full task intent or private reasoning."],
+                    verification_plan=[
+                        "Cluster the corrected outputs by task purpose and failure condition.",
+                        "Update procedure, constraint, routing, or quality criteria only after human review.",
+                        "Rerun the same bounded task population and compare quality outcomes.",
+                    ],
+                    analysis_context=_binding_context(binding),
+                )
             )
-        )
     return candidates
 
 
 def _split_candidates(skill_stats: dict[str, dict[str, Any]], min_samples: int) -> list[dict[str, Any]]:
     candidates: list[dict[str, Any]] = []
     for skill_id, stat in sorted(skill_stats.items()):
-        run_sets = [set(values) for values in stat["observed_sets"] if values]
-        if len(run_sets) < min_samples * 2:
-            continue
-        xid_counts = Counter(xid for values in run_sets for xid in values)
-        eligible = sorted(xid for xid, count in xid_counts.items() if count >= min_samples)
-        for left, right in combinations(eligible, 2):
-            cooccurrence = sum(left in values and right in values for values in run_sets)
-            if cooccurrence != 0:
+        by_binding: dict[tuple[str, ...], list[set[str]]] = defaultdict(list)
+        for binding, values in stat["observed_sets"]:
+            if values:
+                by_binding[binding].append(set(values))
+        for binding, run_sets in by_binding.items():
+            if len(run_sets) < min_samples * 2:
                 continue
-            support = min(xid_counts[left], xid_counts[right])
-            candidates.append(
+            xid_counts = Counter(xid for values in run_sets for xid in values)
+            eligible = sorted(xid for xid, count in xid_counts.items() if count >= min_samples)
+            for left, right in combinations(eligible, 2):
+                cooccurrence = sum(left in values and right in values for values in run_sets)
+                if cooccurrence != 0:
+                    continue
+                support = min(xid_counts[left], xid_counts[right])
+                candidates.append(
                 _candidate(
                     category="split",
                     subject_xids={left, right},
@@ -278,6 +317,7 @@ def _split_candidates(skill_stats: dict[str, dict[str, Any]], min_samples: int) 
                         "Define child responsibilities, shared Knowledge, routing, and handoff contracts.",
                         "Compare routing and quality on a bounded post-split sample.",
                     ],
+                    analysis_context=_binding_context(binding),
                 )
             )
     return candidates
@@ -285,35 +325,38 @@ def _split_candidates(skill_stats: dict[str, dict[str, Any]], min_samples: int) 
 
 def _merge_candidates(skill_stats: dict[str, dict[str, Any]], min_samples: int) -> list[dict[str, Any]]:
     candidates: list[dict[str, Any]] = []
-    eligible = [
-        (skill_id, stat)
-        for skill_id, stat in sorted(skill_stats.items())
-        if int(stat["run_count"]) >= min_samples and stat["xids"]
-    ]
+    eligible = [(skill_id, stat) for skill_id, stat in sorted(skill_stats.items()) if stat["routing_stats"]]
     for (left_id, left), (right_id, right) in combinations(eligible, 2):
-        left_xids = set(left["xids"])
-        right_xids = set(right["xids"])
-        union = left_xids | right_xids
-        overlap = len(left_xids & right_xids) / len(union) if union else 0.0
-        if overlap < 0.8:
-            continue
-        candidates.append(
-            _candidate(
-                category="merge",
-                subject_xids=union,
-                skill_ids={left_id, right_id},
-                support=min(int(left["run_count"]), int(right["run_count"])),
-                evidence_refs=sorted(set(left["run_paths"]) | set(right["run_paths"])),
-                rationale=f"{left_id} and {right_id} repeatedly observe substantially overlapping XID sets.",
-                counterevidence=["Dashboard data cannot prove that authority, risk, approval, or quality ownership is the same."],
-                unknowns=["Task purpose and handoff cost are not fully represented in the dashboard payload."],
-                verification_plan=[
-                    "Compare responsibilities, constraints, routing, and closure gates.",
-                    "Confirm that a merged Skill would not weaken an approval or security boundary.",
-                    "Run a bounded pre-change and post-merge comparison.",
-                ],
+        shared_bindings = set(left["routing_stats"]) & set(right["routing_stats"])
+        for binding in sorted(shared_bindings):
+            left_group = left["routing_stats"][binding]
+            right_group = right["routing_stats"][binding]
+            if min(int(left_group["run_count"]), int(right_group["run_count"])) < min_samples:
+                continue
+            left_xids = set(left_group["xids"])
+            right_xids = set(right_group["xids"])
+            union = left_xids | right_xids
+            overlap = len(left_xids & right_xids) / len(union) if union else 0.0
+            if overlap < 0.8:
+                continue
+            candidates.append(
+                _candidate(
+                    category="merge",
+                    subject_xids=union,
+                    skill_ids={left_id, right_id},
+                    support=min(int(left_group["run_count"]), int(right_group["run_count"])),
+                    evidence_refs=sorted(set(left_group["run_paths"]) | set(right_group["run_paths"])),
+                    rationale=f"{left_id} and {right_id} repeatedly observe substantially overlapping XID sets under one runtime binding.",
+                    counterevidence=["Dashboard data cannot prove that authority, risk, approval, or quality ownership is the same."],
+                    unknowns=["Task purpose and handoff cost are not fully represented in the dashboard payload."],
+                    verification_plan=[
+                        "Compare responsibilities, constraints, routing, and closure gates.",
+                        "Confirm that a merged Skill would not weaken an approval or security boundary.",
+                        "Run a bounded pre-change and post-merge comparison.",
+                    ],
+                    analysis_context=_binding_context(binding, _ROUTING_BINDING_FIELDS),
+                )
             )
-        )
     return candidates
 
 
@@ -422,7 +465,13 @@ def analyze_dashboard_payload(
         )
         skill["used_xids"].update(_strings(run.get("used_xids")))
         skill["run_paths"].append(_string(run.get("path")) or _string(run.get("name")))
-        skill["observed_sets"].append(observed_xids)
+        binding = _binding(run)
+        skill["observed_sets"].append((binding, observed_xids))
+        routing_binding = _binding(run, _ROUTING_BINDING_FIELDS)
+        routing_stat = skill["routing_stats"][routing_binding]
+        routing_stat["run_count"] += 1
+        routing_stat["xids"].update(observed_xids | _strings(run.get("available_xids")) | _strings(run.get("selected_xids")))
+        routing_stat["run_paths"].append(_string(run.get("path")) or _string(run.get("name")))
         for item in _as_list(run.get("missing_information")):
             entry = _as_dict(item)
             code = _string(entry.get("code"))
@@ -432,6 +481,8 @@ def analyze_dashboard_payload(
             status_value = _string(event.get("status")) or "unknown"
             skill["feedback"][status_value] += 1
             skill["feedback_runs"][status_value].append(_string(run.get("path")))
+            skill["feedback_by_binding"][binding][status_value] += 1
+            skill["feedback_runs_by_binding"][binding][status_value].append(_string(run.get("path")))
 
         available = _strings(run.get("available_xids"))
         selected = _strings(run.get("selected_xids"))

@@ -1,0 +1,121 @@
+---
+schema_version: 1
+skill_id: release_planning_flow
+xid: F5C8A2E6B710
+aliases:
+  - D216FD3C726C
+  - 22DE60C2BBCB
+summary: prepare release materials, procedures, monitoring, event response, readiness, and verification evidence for CAB
+applies_when:
+  - user needs release-planning work after manufacturing and testing
+exclusions:
+  - Human final approval or release decision remains outside this Skill
+  - Unsupported conclusions remain unresolved rather than being silently completed
+inputs:
+  - manufacturing outputs, requirements, design materials, optional performance data
+outputs:
+  - release plans and procedures, monitoring specification, event-response procedure, readiness and verification results, unresolved list
+criteria:
+  - id: semantic_sequence
+    statement: The Skill's evaluation sequence and semantic criteria are applied in order without embedding routing or capability identifiers
+    verification: Inspect each phase result and evidence link against the method sequence
+  - id: decision_boundary
+    statement: Human final-decision authority remains explicit and unsupported judgments remain unknown
+    verification: Check closure, rules, and handoff for approval boundaries
+  - id: output_closure
+    statement: The declared result and unresolved items are returned with a handoff
+    verification: Check the output and handoff before closure
+knowledge_needs:
+  - id: ipa_release_activity_catalog
+    query: IPA release activity catalog
+    required_when: Required when checking release-planning activity coverage
+    seed_xids:
+      - 7B3E5D1A6101
+control_refs: []
+---
+<!-- xid: F5C8A2E6B710 -->
+<a id="xid-F5C8A2E6B710"></a>
+
+# Skill: release_planning_flow
+
+## Purpose
+
+Prepare release materials, monitoring, event response, readiness, and verification in that order for CAB.
+
+## Inputs
+
+- manufacturing outputs
+- integration regression verification result
+- release policy
+- planning basis source list
+- design materials
+- requirement materials
+- optional performance data
+
+## Outputs
+
+- test-environment release plan
+- production-environment release plan
+- release basis reference
+- environment release basis reference
+- release procedure draft
+- release confirmation procedure draft
+- rollback procedure draft
+- monitoring specification
+- event-response procedure draft
+- operational readiness result
+- release verification result
+- release verification basis reference
+- unresolved list
+
+## Startup
+
+- Confirm manufacturing outputs exist.
+- Confirm design and requirement materials exist.
+- Confirm performance evidence exists when needed.
+- Record `unknown` if required evidence is missing.
+
+## Planning
+
+- Define the release-planning scope.
+- Map each business activity to its supporting capability:
+  - release plan draft creation
+  - monitoring design
+  - event-response procedure drafting
+  - operational readiness gate
+  - release verification
+- Define the step order explicitly.
+- Prepare management rows for planning, monitoring, response procedures, readiness findings, and release verification findings.
+
+## Execution
+
+- Draft the release plan.
+- Split the release plan into test-environment and production-environment versions.
+- Prepare release, release-confirmation, and rollback procedures as part of the release materials.
+- Define placement confirmation steps and behavior confirmation steps inside the release-confirmation procedure.
+- Record which release policy entry and planning basis source each environment-specific release plan realizes.
+- Check IPA-derived release activity areas and keep missing areas explicit.
+- Define monitoring and thresholds.
+- Draft event-response procedures.
+- Evaluate operational readiness with evidence.
+- Evaluate release verification with evidence.
+- Check that both placement confirmation evidence and behavior confirmation evidence are present.
+- Record which release plan item, release confirmation procedure item, and release basis reference each release verification result confirms.
+
+## Monitoring and Control
+
+- Check that each required release-planning and release-verification artifact has a recorded state.
+- Downgrade unsupported readiness conclusions to `unknown`.
+- Preserve explicit operational evidence gaps.
+
+## Closure
+
+- Confirm all rows are finalized as `done`, `unknown`, or `out_of_scope`.
+- Hand off release materials, release basis references, and release verification basis reference to CAB.
+- Escalate out-of-scope operational items when reassignment is required.
+
+## Rules
+
+- Do not approve final release timing.
+- Do not approve final go/no-go.
+- Every judgment in the readiness gate must cite evidence.

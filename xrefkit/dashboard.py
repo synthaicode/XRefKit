@@ -111,6 +111,18 @@ class DashboardRun:
     mcp_events: list[dict[str, object]]
     missing_information: list[dict[str, str]]
     intake: dict[str, str]
+    definition_format: str
+    definition_xid: str | None
+    definition_path: str | None
+    definition_sha256: str | None
+    definition_governance_path: str | None
+    definition_governance_sha256: str | None
+    definition_promotion_decision: str | None
+    maturity: str
+    capability: str | None
+    tuning: str | None
+    responsibility: str | None
+    execution_mode: str | None
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -148,6 +160,18 @@ class DashboardRun:
             "mcp_events": self.mcp_events,
             "missing_information": self.missing_information,
             "intake": self.intake,
+            "definition_format": self.definition_format,
+            "definition_xid": self.definition_xid,
+            "definition_path": self.definition_path,
+            "definition_sha256": self.definition_sha256,
+            "definition_governance_path": self.definition_governance_path,
+            "definition_governance_sha256": self.definition_governance_sha256,
+            "definition_promotion_decision": self.definition_promotion_decision,
+            "maturity": self.maturity,
+            "capability": self.capability,
+            "tuning": self.tuning,
+            "responsibility": self.responsibility,
+            "execution_mode": self.execution_mode,
         }
 
 
@@ -510,6 +534,8 @@ def _parse_one_run(
         name: _field_value(text, name) or "unknown"
         for name in ("purpose", "scope_in", "scope_out", "owner", "authority", "expected_evidence", "stop_conditions")
     }
+    definition_format = _field_value(text, "definition_format") or "legacy_unversioned"
+    maturity = _field_value(text, "maturity") or "unknown"
     stat = path.stat()
     mtime = datetime.fromtimestamp(stat.st_mtime).isoformat(timespec="seconds")
     return DashboardRun(
@@ -547,6 +573,18 @@ def _parse_one_run(
         mcp_events=mcp_events,
         missing_information=missing_information,
         intake=intake,
+        definition_format=definition_format,
+        definition_xid=_field_value(text, "definition_xid"),
+        definition_path=_field_value(text, "definition_path"),
+        definition_sha256=_field_value(text, "definition_sha256"),
+        definition_governance_path=_field_value(text, "definition_governance_path"),
+        definition_governance_sha256=_field_value(text, "definition_governance_sha256"),
+        definition_promotion_decision=_field_value(text, "definition_promotion_decision"),
+        maturity=maturity,
+        capability=_field_value(text, "capability"),
+        tuning=_field_value(text, "tuning"),
+        responsibility=_field_value(text, "responsibility"),
+        execution_mode=_field_value(text, "execution_mode"),
     )
 
 
@@ -1634,6 +1672,19 @@ def _closure_card(run: object) -> str:
         f"<div class='box'><h3>Runtime State</h3><div class='kv'>{phase_pills}</div></div>"
         f"<div class='box'><h3>Closure</h3><div class='kv'><span class='pill'>closure: {closure}</span>"
         f"<span class='pill'>quality: {quality}</span><span class='pill'>quality required: {required}</span></div></div>"
+        f"<div class='box'><h3>Definition and binding</h3><div class='kv'>"
+        f"<span class='pill'>format: {html.escape(str(run.get('definition_format', 'legacy_unversioned')))}</span>"
+        f"<span class='pill'>maturity: {html.escape(str(run.get('maturity', 'unknown')))}</span>"
+        f"<span class='pill'>definition XID: {html.escape(str(run.get('definition_xid') or 'unknown'))}</span>"
+        f"<span class='pill'>definition path: {html.escape(str(run.get('definition_path') or 'unknown'))}</span>"
+        f"<span class='pill'>definition SHA-256: {html.escape(str(run.get('definition_sha256') or 'unknown'))}</span>"
+        f"<span class='pill'>governance path: {html.escape(str(run.get('definition_governance_path') or 'none'))}</span>"
+        f"<span class='pill'>governance SHA-256: {html.escape(str(run.get('definition_governance_sha256') or 'none'))}</span>"
+        f"<span class='pill'>promotion: {html.escape(str(run.get('definition_promotion_decision') or 'unknown'))}</span>"
+        f"<span class='pill'>capability: {html.escape(str(run.get('capability') or 'unknown'))}</span>"
+        f"<span class='pill'>tuning: {html.escape(str(run.get('tuning') or 'unknown'))}</span>"
+        f"<span class='pill'>responsibility: {html.escape(str(run.get('responsibility') or 'unknown'))}</span>"
+        f"<span class='pill'>execution_mode: {html.escape(str(run.get('execution_mode') or 'unknown'))}</span></div></div>"
     )
     return _category_card(run=run, status=status, skill_id=skill_id, path=path, mtime=mtime, body=body)
 
@@ -1889,6 +1940,12 @@ def _run_data_attributes(run: object) -> str:
         run.get("run_id", ""),
         run.get("mcp_session_id", ""),
         run.get("repository_fingerprint", ""),
+        run.get("definition_format", ""), run.get("definition_xid", ""),
+        run.get("definition_path", ""), run.get("definition_sha256", ""),
+        run.get("definition_governance_path", ""), run.get("definition_governance_sha256", ""),
+        run.get("definition_promotion_decision", ""), run.get("maturity", ""),
+        run.get("capability", ""), run.get("tuning", ""),
+        run.get("responsibility", ""), run.get("execution_mode", ""),
         run.get("status", ""),
         run.get("closure_status", ""),
         run.get("quality_status", ""),

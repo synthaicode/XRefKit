@@ -3,8 +3,8 @@
 
 # Instruction-Backed Workflow Protocol
 
-XRefKit v0.4.3 extends the workflow protocol to instructions that do not have
-an applicable Skill. This does not make the instruction an implicit Skill and
+XRefKit applies the workflow protocol to instructions that do not have an
+applicable Skill. This does not make the instruction an implicit Skill and
 does not make the protocol responsible for judging output quality.
 
 When an ordinary Skill document exists but is not an XRefKit-managed Skill,
@@ -130,8 +130,9 @@ xrefkit skill workitem --log <run-log> --item WI-002 --supersedes WI-001 `
 These commands verify process records. They do not inspect the content of the
 output artifact.
 
-When the main AI selects an existing Skill for a Work Item's quality review,
-it may record the selection and start the child review run together:
+When the main AI selects an existing legacy split Skill for a Work Item's
+quality review, it may record the selection and start the child review run
+together:
 
 ```powershell
 xrefkit workflow quality-review `
@@ -148,6 +149,10 @@ xrefkit workflow quality-review `
 This command does not perform semantic selection. The selected Skill and
 reason must come from the main AI. If selection is uncertain, record
 `needs_clarification` instead and do not start the child review.
+`workflow quality-review` currently accepts `--meta` and is therefore the
+legacy compatibility helper. A SkillDefinition v1 review run must be opened
+with the v1 `skill run --definition` path and correlated explicitly until this
+helper supports definition identity and runtime-binding arguments.
 
 Every work item must also declare its own procedural completion criterion:
 

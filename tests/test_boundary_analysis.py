@@ -17,8 +17,9 @@ class BoundaryAnalysisTests(unittest.TestCase):
         xids: list[str],
         *,
         feedback: list[dict[str, str]] | None = None,
+        **context: str,
     ) -> dict[str, object]:
-        return {
+        run: dict[str, object] = {
             "path": path,
             "name": Path(path).name,
             "skill_id": skill_id,
@@ -41,6 +42,8 @@ class BoundaryAnalysisTests(unittest.TestCase):
             "observation_events": feedback or [],
             "mcp_events": [],
         }
+        run.update(context)
+        return run
 
     def _payload(self) -> dict[str, object]:
         xid_a = "XID-A-001"
@@ -91,6 +94,44 @@ class BoundaryAnalysisTests(unittest.TestCase):
         xid_row = next(item for item in report["xid_usage"] if item["xid"] == "XID-A-001")
         self.assertEqual(4, xid_row["run_count"])
         self.assertEqual(4, xid_row["used_count"])
+
+    def test_analysis_does_not_combine_distinct_definition_bindings(self) -> None:
+        feedback = [{"event": "human.feedback", "status": "corrected", "target": "OUT-001"}]
+        runs = [
+            self._run(
+                "alpha", f"a-{index}.md", ["XID-A"], feedback=feedback if index == 1 else [],
+                definition_format="skill_definition_v1", definition_xid="DEF-A", definition_sha256="sha-a",
+                capability="analysis", tuning="bounded", responsibility="report", execution_mode="subagent_required",
+            )
+            for index in (1, 2)
+        ] + [
+            self._run(
+                "alpha", f"b-{index}.md", ["XID-B"], feedback=feedback if index == 1 else [],
+                definition_format="skill_definition_v1", definition_xid="DEF-A", definition_sha256="sha-b",
+                capability="analysis", tuning="deep", responsibility="report", execution_mode="subagent_required",
+            )
+            for index in (1, 2)
+        ]
+
+        report = analyze_dashboard_payload({"runs": runs}, min_samples=2)
+        categories = {item["category"] for item in report["proposals"]}
+
+        self.assertNotIn("split", categories)
+        self.assertNotIn("skill_correction", categories)
+
+    def test_merge_requires_samples_under_the_same_runtime_binding(self) -> None:
+        runs = [
+            self._run(
+                skill, f"{skill}-{index}.md", ["XID-A"],
+                capability="analysis", tuning=tuning, responsibility="report", execution_mode="subagent_required",
+            )
+            for skill, tuning in (("alpha", "bounded"), ("beta", "deep"))
+            for index in (1, 2)
+        ]
+
+        report = analyze_dashboard_payload({"runs": runs}, min_samples=2)
+
+        self.assertNotIn("merge", {item["category"] for item in report["proposals"]})
 
     def test_markdown_explains_proposal_only_boundary(self) -> None:
         markdown = render_markdown(analyze_dashboard_payload(self._payload(), source_hash="source-001"))

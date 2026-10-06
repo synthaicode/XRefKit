@@ -961,16 +961,23 @@ Duplicate external body.
             {reference["xid"]: reference["content_hash"] for reference in context["references"]},
         )
         self.assertIn("# Startup Contract Pack v1", pack["body"])
-        self.assertIn(
-            'python -m xrefkit skill run --meta <path-to-meta.md> --task "<task>" --json',
-            pack["body"],
-        )
+        self.assertIn("Start a Skill Run with the returned runtime envelope", pack["body"])
         self.assertEqual(
             pack["pack_hash"],
             hashlib.sha256(pack["body"].encode("utf-8")).hexdigest(),
         )
-        self.assertIn("python -m xrefkit skill verify --log <run-log>", pack["body"])
-        self.assertIn("python -m xrefkit xref search \"<query>\"", pack["body"])
+        self.assertIn("prompt_flow_protocol", pack["body"])
+        self.assertIn("workflow_protocol", pack["body"])
+        self.assertIn("reporting_protocol", pack["body"])
+        self.assertIn("separate response", pack["body"])
+        self.assertNotIn("python -m xrefkit skill workitem", pack["body"])
+        self.assertNotIn("python -m xrefkit skill artifact", pack["body"])
+        self.assertNotIn("python -m xrefkit skill concern", pack["body"])
+        self.assertNotIn("python -m xrefkit skill phase", pack["body"])
+        self.assertNotIn("python -m xrefkit skill verify", pack["body"])
+        self.assertNotIn("python -m xrefkit skill close", pack["body"])
+        self.assertNotIn("workflow reconcile", pack["body"])
+        self.assertNotIn("### Status", pack["body"])
         self.assertIn("Stop and escalate", pack["body"])
         self.assertEqual(context["references"][0]["layer"], "base_control")
         self.assertNotIn("reason", context["references"][0])
@@ -1009,8 +1016,11 @@ Duplicate external body.
         self.assertNotIn("視点", reporting["japanese_sections"])
         self.assertEqual(
             context["initial_protocol_selection"]["selected"],
-            ["workflow", "reporting"],
+            ["prompt_flow", "workflow", "reporting"],
         )
+        self.assertEqual(context["initial_protocol_selection"]["excluded"], [])
+        self.assertEqual(context["initial_protocol_selection"]["default"], ["prompt_flow", "workflow", "reporting"])
+        self.assertEqual(context["initial_protocol_selection"]["selection_mode"], "exclude")
         self.assertNotIn("runtime_role_contract", context)
         self.assertNotIn("client_tool_distribution", context)
         self.assertEqual(context["prompt_flow_protocol"]["version"], "1")
@@ -1043,10 +1053,54 @@ Duplicate external body.
 
         self.assertIsNotNone(context["workflow_protocol"])
         self.assertIsNone(context["reporting_protocol"])
-        self.assertEqual(context["initial_protocol_selection"]["selected"], ["workflow"])
+        self.assertEqual(context["initial_protocol_selection"]["selected"], ["prompt_flow", "workflow"])
+        self.assertEqual(context["initial_protocol_selection"]["selection_mode"], "legacy_include")
+
+        excluded = XRefCatalog.build(self.repo).get_startup_context(
+            excluded_protocols=["workflow"]
+        )
+        self.assertIsNotNone(excluded["prompt_flow_protocol"])
+        self.assertIsNone(excluded["workflow_protocol"])
+        self.assertIsNotNone(excluded["reporting_protocol"])
+        self.assertEqual(excluded["initial_protocol_selection"]["selected"], ["prompt_flow", "reporting"])
+        self.assertEqual(excluded["initial_protocol_selection"]["excluded"], ["workflow"])
+        self.assertEqual(excluded["initial_protocol_selection"]["source"], "initialize")
+
+        with self.assertRaisesRegex(ValueError, "together"):
+            XRefCatalog.build(self.repo).get_startup_context(
+                initial_protocols=["workflow"], excluded_protocols=[]
+            )
 
         with self.assertRaisesRegex(ValueError, "initial_protocols"):
             XRefCatalog.build(self.repo).get_startup_context(initial_protocols=["unknown"])
+
+    def test_startup_context_supports_every_exclusion_combination(self) -> None:
+        catalog = XRefCatalog.build(self.repo)
+        available = ["prompt_flow", "workflow", "reporting"]
+        body_keys = {
+            "prompt_flow": "prompt_flow_protocol",
+            "workflow": "workflow_protocol",
+            "reporting": "reporting_protocol",
+        }
+        for mask in range(8):
+            excluded = [name for index, name in enumerate(available) if mask & (1 << index)]
+            with self.subTest(excluded=excluded):
+                context = catalog.get_startup_context(excluded_protocols=excluded)
+                selected = [name for name in available if name not in excluded]
+                selection = context["initial_protocol_selection"]
+                self.assertEqual(selection["available"], available)
+                self.assertEqual(selection["selected"], selected)
+                self.assertEqual(selection["excluded"], excluded)
+                self.assertEqual(selection["default"], available)
+                self.assertEqual(selection["selection_mode"], "exclude")
+                for name, key in body_keys.items():
+                    if name in selected:
+                        self.assertIsNotNone(context[key])
+                    else:
+                        self.assertIsNone(context[key])
+
+        with self.assertRaisesRegex(ValueError, "list of protocol names"):
+            catalog.get_startup_context(excluded_protocols="workflow")
 
     def test_startup_context_rejects_duplicate_catalog_xid(self) -> None:
         write(

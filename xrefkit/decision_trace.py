@@ -239,7 +239,7 @@ def _checkpoint(root: Path, args: argparse.Namespace) -> dict[str, Any]:
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     try:
         relative_manifest = str(manifest_path.relative_to(root))
-        _git(root, "add", "--", relative_manifest)
+        _git(root, "add", "-f", "--", relative_manifest)
         _git(root, "commit", "--only", "-m", f"checkpoint: {args.checkpoint_id}", "--", relative_manifest)
         commit = _git(root, "rev-parse", "HEAD")
         _git(root, "tag", "-a", tag, commit, "-m", json.dumps(manifest, ensure_ascii=False))

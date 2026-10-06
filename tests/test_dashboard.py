@@ -538,6 +538,74 @@ class DashboardTests(unittest.TestCase):
             self.assertEqual(1, analysis["sample_count"])
             self.assertEqual(0, analysis["summary"]["proposals"])
 
+    def test_dashboard_preserves_unversioned_legacy_split_and_definition_v1_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            legacy = self._write_closed_run(root)
+            legacy_text = legacy.read_text(encoding="utf-8")
+            legacy.write_text(legacy_text.replace("- maturity: `stable`\n", "", 1), encoding="utf-8")
+
+            split = legacy.parent / "legacy-split.md"
+            split.write_text(
+                legacy_text.replace("- run_id: `", "- run_id: `split-", 1).replace(
+                    "- skill_id: `sample_skill`\n",
+                    "- skill_id: `sample_skill`\n- definition_format: `legacy_split_v1`\n",
+                    1,
+                ),
+                encoding="utf-8",
+            )
+
+            definition = legacy.parent / "definition-v1.md"
+            definition_fields = (
+                "- definition_format: `skill_definition_v1`\n"
+                "- definition_xid: `ABCDEF123456`\n"
+                "- definition_path: `skills/sample/SKILL.md`\n"
+                "- definition_sha256: `definition-hash`\n"
+                "- definition_governance_path: `governance/sample.json`\n"
+                "- definition_governance_sha256: `governance-hash`\n"
+                "- definition_promotion_decision: `approved`\n"
+                "- capability: `analysis`\n"
+                "- tuning: `bounded`\n"
+                "- responsibility: `report`\n"
+                "- execution_mode: `subagent_required`\n"
+            )
+            definition.write_text(
+                legacy_text.replace("- run_id: `", "- run_id: `definition-", 1).replace(
+                    "- skill_id: `sample_skill`\n",
+                    "- skill_id: `sample_skill`\n" + definition_fields,
+                    1,
+                ).replace("- maturity: `stable`", "- maturity: `trial`", 1),
+                encoding="utf-8",
+            )
+
+            payload = build_payload(root, legacy.parent)
+            runs = {run["name"]: run for run in payload["runs"]}
+
+            self.assertEqual("legacy_unversioned", runs["run.md"]["definition_format"])
+            self.assertEqual("unknown", runs["run.md"]["maturity"])
+            self.assertIsNone(runs["run.md"]["definition_xid"])
+            self.assertEqual("legacy_split_v1", runs["legacy-split.md"]["definition_format"])
+            self.assertEqual("stable", runs["legacy-split.md"]["maturity"])
+            current = runs["definition-v1.md"]
+            self.assertEqual("skill_definition_v1", current["definition_format"])
+            self.assertEqual("ABCDEF123456", current["definition_xid"])
+            self.assertEqual("definition-hash", current["definition_sha256"])
+            self.assertEqual("governance/sample.json", current["definition_governance_path"])
+            self.assertEqual("governance-hash", current["definition_governance_sha256"])
+            self.assertEqual("approved", current["definition_promotion_decision"])
+            self.assertEqual("trial", current["maturity"])
+            self.assertEqual("analysis", current["capability"])
+            self.assertEqual("bounded", current["tuning"])
+            self.assertEqual("report", current["responsibility"])
+            self.assertEqual("subagent_required", current["execution_mode"])
+            self.assertEqual("closed", current["status"])
+
+            html = _html_page(payload)
+            self.assertIn("legacy_unversioned", html)
+            self.assertIn("ABCDEF123456", html)
+            self.assertIn("definition-hash", html)
+            self.assertIn("subagent_required", html)
+
     def test_dashboard_html_splits_categories(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
