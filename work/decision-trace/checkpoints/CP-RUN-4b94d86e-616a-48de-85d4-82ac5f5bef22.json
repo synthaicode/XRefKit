@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-4b94d86e-616a-48de-85d4-82ac5f5bef22",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-10-06T22:13:44Z",
+  "git_commit": "1ea017cbcf17da2c9c6c23f02506a9e1f71ef8e7",
+  "purpose": "before AI Skill run csharp_review",
+  "work_item_id": null,
+  "run_id": "4b94d86e-616a-48de-85d4-82ac5f5bef22",
+  "context_policy": "current-only",
+  "human_approved": false
+}
