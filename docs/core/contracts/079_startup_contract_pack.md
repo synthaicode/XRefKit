@@ -22,7 +22,7 @@ as stale to every client when they diverge.
 ## Based On
 
 - pack_version: 1
-- 0B5C58B5E5B2: `8cb20f071fe988d8ef552dcf83db0470ba02ce0d4fc5efb9257091f4a9980515`
+- 0B5C58B5E5B2: `7c7a138032567258edf9e9c2f4fcaf84701f35c616d11e441f60425d114d78f8`
 - 5A1C8E4D2F90: `f6e9bad07a66f4e11a5e94224bdbbacc17bccf83e4306caf4c157a3d9d74a12f`
 - 6C0B62D6366A: `a49541d1d93598ecf8042b331aa826417dde285e9a8f5026c78e7a35d87119b4`
 - 8A666C1FD121: `ff3f5e3b7b83a738edb5e99195a79e664db33a514e7a8d1fe0129e6787f994a2`
@@ -45,7 +45,7 @@ Sources:
 - Use XIDs as primary keys. Resolve needed XID links through get_document_by_xid. Do not recursively load related links at startup.
 - In MCP mode, `path#xid-...` values are lookup handles and diagnostic locations, not client filesystem instructions. The client calls get_document_by_xid with the XID; server-side resolution maps the XID to content.
 - Keep Skill procedure, domain knowledge, and work logs separate.
-- Treat knowledge/ as shared evidence fragments and Skill definitions as executable methods with declared knowledge needs. Derive capability/tuning/responsibility from the current instruction at run start.
+- Treat knowledge/ as shared evidence fragments and Skill definitions as executable methods with declared knowledge needs. Bind runtime inputs from the current instruction and explicitly recorded repository adoption values; do not infer missing inputs from method text.
 - Treat docs/ indexes as lookup/navigation handles, not mandatory startup body loads.
 - Do not guess missing governance or task facts. Find and read the relevant XIDs first.
 
@@ -60,6 +60,12 @@ duplicate those procedures.
 - Route dynamically from the active Skill catalog and the current instruction.
   The selected method and instruction determine the runtime
   capability/tuning/responsibility/execution-mode binding.
+- For adopted repository Skills, select `SKILL.v1.md` headers and start with
+  `python -m xrefkit skill run --definition <path-to-SKILL.v1.md> --task
+  "<task>" --json`. Supply missing runtime inputs explicitly from the active
+  instruction; missing inputs refuse execution. Draft repository Skills remain
+  unavailable until separate adoption review. Registered legacy `--meta` paths
+  are invocation aliases; supported external legacy Skills retain their interface.
 - Start a Skill Run with the returned runtime envelope, preserve its `run_log`
   and definition identity, and do not materialize or execute the method until
   the run and ExecutionBinding succeed.

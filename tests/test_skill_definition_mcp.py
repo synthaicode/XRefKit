@@ -128,6 +128,23 @@ def test_definition_configuration_is_bounded_and_collision_checked(tmp_path):
         XRefCatalog.build(tmp_path, skill_definition_paths=[tmp_path.parent / "outside.md"])
 
 
+def test_selected_definition_without_version_map_returns_exact_compatibility_body(tmp_path):
+    definition, raw = _write_definition(tmp_path)
+    catalog = XRefCatalog.build(tmp_path, skill_definition_paths=[definition])
+
+    selected = catalog.get_skill("sample_skill")
+    assert selected["skill_content"].encode("utf-8") == raw
+    assert selected["definition_content_hash"] == hashlib.sha256(raw).hexdigest()
+    conditional = catalog.get_skill("sample_skill", {})["documents"][0]
+    assert selected["skill_content"] == conditional["content"]
+    cached = catalog.get_skill("sample_skill", {
+        conditional["xid"]: conditional["content_hash"],
+    })
+    assert cached["skill_content"] is None
+    assert cached["documents"][0]["content_omitted"] is True
+    assert catalog.list_skills(include_content=True)[0]["skill_content"] == ""
+
+
 def test_definition_governance_projects_maturity_without_changing_format(tmp_path):
     definition, _ = _write_definition(tmp_path)
     governance = _write_governance(tmp_path, definition)

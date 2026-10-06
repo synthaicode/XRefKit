@@ -583,6 +583,12 @@ class XRefCatalog:
         result["client_tool_download"] = _client_tool_download_policy(entry)
         result["content_resolution"] = _mcp_content_resolution_policy()
         if known_document_versions is None:
+            if entry.definition_format == "skill_definition_v1":
+                source_root = Path(entry.source_root) if entry.source_root else self.repo_root
+                document = _raw_skill_definition_document(
+                    source_root / entry.path, entry.path, entry,
+                )
+                result["skill_content"] = document.content
             return result
 
         documents: list[dict] = []
