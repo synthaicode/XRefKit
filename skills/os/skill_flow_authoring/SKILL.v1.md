@@ -27,7 +27,11 @@ criteria:
 - id: source_obligation_retention
   statement: Skill-specific source applicability, required Knowledge, prohibitions, procedures, outputs, and completion gates retain their original conditions and strength; summaries do not relax them.
   verification: Inspect the preserved source obligations and source-specific declarations, including all conditional stops, handoffs, and completion requirements. Runtime and shared-control authority follow the active startup/adoption contracts.
-knowledge_needs: []
+knowledge_needs:
+- id: domain_knowledge_ontology_rules
+  query: domain knowledge ontology rules for extracted or materially revised Knowledge
+  required_when: Required when authoring introduces or materially revises canonical domain Knowledge.
+  seed_xids: [5803607419B9]
 control_refs: []
 aliases:
 - C1B7A42D8E53
@@ -51,6 +55,45 @@ aliases:
 ## Stop and handoff
 
 Stop for unsupported maturity, missing anti-forgetting structure, absent Flow YAML, unresolved semantic boundary conflicts, or unauthorized public release. Hand domain facts to Knowledge publication, workflow control to the Flow owner, and adoption or release decisions to the human authority.
+
+## Ontology assessment during authoring
+
+When creating or evolving a Skill extracts new or materially revised domain
+Knowledge, apply [Domain Knowledge Ontology Rules](../../../knowledge/organization/200_domain_knowledge_ontology_rules.md#xid-5803607419B9)
+before deciding a canonical target. This step implements that existing curation
+contract; it does not change the preserved Skill or Flow obligations below.
+Mechanical edits and reuse of unchanged Knowledge do not require a new concept.
+
+1. Search the proposed primary concept, synonyms, competing terms, and scope;
+   resolve plausible existing XIDs. Compare applicability, version, constraints,
+   and source authority before deciding whether the proposal is a new concept,
+   a synonym, a specialization, or knowledge with different conditions. These
+   comparison labels are review evidence, not additional concept decisions.
+   Keep the contract's `create`, `extend`, `split`, `supersede`, or
+   `reject_duplicate` decision separate and record its source-backed rationale.
+2. Record the ontology assessment required by that contract under `work/`.
+   Explicitly justify typed semantic relations or why no relation is justified.
+   Skill `knowledge_needs`, runtime load dependencies, and navigation links do
+   not themselves establish a semantic `depends_on` or `related_to` relation.
+   Keep them separate; never add an edge merely to avoid an empty graph.
+3. Keep semantic conflicts and missing source evidence explicit. Do not merge,
+   delete, supersede, or invent relations from wording similarity. Preserve
+   distinct versions, applicability, constraints, and source authority unless
+   the evidence and authorized semantic decision justify a change.
+4. Route extracted Knowledge through `knowledge_ontology_management` and the
+   configured publication owner. Before authorized canonical publication,
+   validate the machine-checkable assessment evidence sidecar:
+
+```powershell
+python skills/os/knowledge_ontology_management/scripts/validate_ontology_assessment.py <assessment.json> --for-publication
+python skills/os/knowledge_ontology_management/scripts/validate_knowledge_relations.py
+```
+
+The sidecar fields are documented beside the validator in
+[Ontology assessment evidence](../knowledge_ontology_management/scripts/ontology_assessment_evidence.md#xid-D93FA1068B27).
+They do not prescribe a human report format. Deterministic success checks
+structure, references, and recorded conflict state; it does not verify meaning,
+source truth, or approve publication. Retain human semantic review and authority.
 
 ## Additional bound references retained at repository cutover
 

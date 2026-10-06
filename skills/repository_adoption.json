@@ -1628,7 +1628,7 @@
       "skill_id": "skill_flow_authoring",
       "definition_path": "skills/os/skill_flow_authoring/SKILL.v1.md",
       "definition_xid": "B8D1A4C7E260",
-      "definition_sha256": "1eb46adc1ddba120b4562671890655cf90be851bfbba3b3f407d86cf077ba572",
+      "definition_sha256": "e90382b11741bebd87c1b1a519b1fda7fa98f3c56e167cdc8decd005698bccc9",
       "legacy_ids": [],
       "legacy_sources": [
         {

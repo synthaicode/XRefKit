@@ -60,6 +60,24 @@ class KnowledgeRelationsValidatorTests(unittest.TestCase):
                 any("missing from knowledge/000_index.md" in error for error in errors)
             )
 
+    def test_resolves_relationship_to_repository_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write(root, "knowledge/000_index.md", "<!-- xid: INDEX -->\n# Index\n- [A](a.md#xid-A)\n")
+            self._write(root, "knowledge/a.md", "<!-- xid: A -->\n# A\n\n## Knowledge Relations\n- applies_to: [Contract](../docs/contract.md#xid-CONTRACT)\n")
+            self._write(root, "docs/contract.md", "<!-- xid: CONTRACT -->\n# Contract\n")
+            self.assertEqual([], VALIDATOR.validate(root))
+
+    def test_duplicate_contract_owners_are_ambiguous_but_same_file_repeat_is_allowed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write(root, "knowledge/000_index.md", "<!-- xid: INDEX -->\n# Index\n- [A](a.md#xid-A)\n")
+            self._write(root, "knowledge/a.md", "<!-- xid: A -->\n# A\n\n## Knowledge Relations\n- applies_to: [Contract](../docs/c1.md#xid-CONTRACT)\n")
+            self._write(root, "docs/c1.md", "<!-- xid: CONTRACT -->\n# Contract\n<!-- xid: CONTRACT -->\n")
+            self.assertEqual([], VALIDATOR.validate(root))
+            self._write(root, "docs/c2.md", "<!-- xid: CONTRACT -->\n# Other Contract\n")
+            self.assertTrue(any("ambiguous target XID 'CONTRACT'" in e for e in VALIDATOR.validate(root)))
+
     def test_reports_duplicate_primary_titles(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

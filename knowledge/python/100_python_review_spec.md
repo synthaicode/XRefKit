@@ -8,7 +8,9 @@ This fragment defines the canonical Python-specific overlay for source review.
 ## Scope Boundary
 
 - Apply the language-neutral criteria in
-  [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001).
+  [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+  core, then each active category's linked topic below. Screen all required axes;
+  the headline purpose does not disable them. Links are not recursive loads.
 - Exclude issues already covered by the configured static baseline such as
   type checker, formatter, linter, dependency scanner, or test diagnostics.
 - Hand security findings to `security_review`; hand design-assumption findings
@@ -67,6 +69,9 @@ run log.
 
 ## Resource Efficiency Checks
 
+Apply [Resource Efficiency Review](../source_analysis/101_resource_efficiency_review.md#xid-5F21C8A41101)
+for the language-neutral criteria of this active axis.
+
 For Python, also check:
 
 - unbounded materialization of generators, query results, files, or responses
@@ -79,6 +84,9 @@ For Python, also check:
 - large in-memory buffering where streaming or bounded batches are required
 
 ## Operational Resilience Checks
+
+Apply [Operational resilience review](../source_analysis/102_operational_resilience_review.md#xid-5F21C8A41102)
+for the language-neutral criteria of this active axis.
 
 For Python, also check:
 
@@ -94,6 +102,9 @@ For Python, also check:
 
 ## Synchronization And Concurrency Checks
 
+Apply [Synchronization And Concurrency Review](../source_analysis/103_synchronization_concurrency_review.md#xid-5F21C8A41103)
+for the language-neutral criteria of this active axis.
+
 For Python, also check:
 
 - blocking I/O or CPU-heavy work inside `async` event-loop paths
@@ -107,6 +118,9 @@ For Python, also check:
 
 ## Required Business Input Integrity Checks
 
+Apply [Required Input Integrity Review](../source_analysis/104_required_input_integrity_review.md#xid-5F21C8A41104)
+for the language-neutral criteria of this active axis.
+
 For Python, common silent fallback forms include:
 
 - `dict.get(..., default)` for required values
@@ -119,6 +133,9 @@ For Python, common silent fallback forms include:
 Distinguish explicitly configured defaults from values invented by code.
 
 ## Error Handling And Exception Path Checks
+
+Apply [Error Handling And Exception Path Review](../source_analysis/105_error_exception_path_review.md#xid-5F21C8A41105)
+for the language-neutral criteria of this active axis.
 
 For Python, also check:
 
@@ -134,6 +151,9 @@ For Python, also check:
 
 ## Time, Locale, And Encoding Checks
 
+Apply [Time And Culture Review](../source_analysis/106_time_culture_review.md#xid-5F21C8A41106)
+for the language-neutral criteria of this active axis.
+
 For Python, also check:
 
 - naive and timezone-aware `datetime` mixing
@@ -146,6 +166,9 @@ For Python, also check:
 
 ## State And Determinism Boundary Checks
 
+Apply [State And Determinism Boundary Review](../source_analysis/107_state_determinism_review.md#xid-5F21C8A41107)
+for the language-neutral criteria of this active axis.
+
 For Python, also check:
 
 - module-level mutable state, singleton clients, caches, monkey patches, random
@@ -157,7 +180,7 @@ For Python, also check:
 
 ## Uncertainty And Escalation Path Checks
 
-Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+Apply [Uncertainty And Escalation Path Review](../source_analysis/108_uncertainty_escalation_review.md#xid-5F21C8A41108)
 for language-neutral uncertainty and escalation path review.
 
 For Python, also check:
@@ -180,6 +203,9 @@ For Python, also check:
 
 ## Contract And Schema Resilience Checks
 
+Apply [Contract And Schema Resilience Review](../source_analysis/109_contract_schema_resilience_review.md#xid-5F21C8A41109)
+for the language-neutral criteria of this active axis.
+
 For Python, also check:
 
 - Pydantic, dataclass, attrs, marshmallow, Django/DRF, FastAPI, JSON, YAML,
@@ -191,6 +217,9 @@ For Python, also check:
   quarantine, unknown, or handoff path
 
 ## Traceability And Context Propagation Checks
+
+Apply [Traceability And Context Propagation Review](../source_analysis/112_trace_context_propagation_review.md#xid-5F21C8A41110)
+for the language-neutral criteria of this active axis.
 
 For Python, also check:
 

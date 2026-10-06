@@ -10,6 +10,13 @@ This page builds on:
 - [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
 - [Custom framework common criteria](../source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002)
 
+For framework structure analysis, the common criteria reference selects its
+structural core and Planning / Unknown rules. Load an additional review topic
+from that entry point only when its axis is needed for the current boundary
+investigation; a full source review still follows the language review spec and
+all its active categories. This does not infer public-framework semantics or
+expand structure analysis into defect judgment.
+
 ## C#-Specific Viewpoints
 
 | Viewpoint | What to confirm |

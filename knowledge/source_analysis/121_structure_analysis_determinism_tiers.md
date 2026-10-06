@@ -96,6 +96,11 @@ skill with per-case proposal and approval (never bulk auto-apply), consistent
 with [Roslyn analyzer quality-check applicability](150_roslyn_analyzer_quality_check_applicability.md#xid-A1B243BF7D5D)
 and [Common source analysis criteria](100_common_source_analysis_criteria.md#xid-5F21C8A41001).
 
+The common criteria reference above supplies the structural core and its
+Planning / Unknown rules. Its review-topic links are not a default load set for
+this candidate-extraction classification. Load extra criteria only for a scoped
+boundary question; extractor output remains candidate evidence, not a verdict.
+
 ## Tooling Handoff
 
 Deterministic extractors backing this classification:

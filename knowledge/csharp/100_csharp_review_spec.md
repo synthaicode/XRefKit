@@ -5,6 +5,11 @@
 
 This fragment defines the canonical review scope for manual C# checks.
 
+Use [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001) for the structural core and
+Planning / Unknown prerequisites. Screen every required category by its own axis;
+load the linked language-neutral topic for each active category before disposition.
+Navigation links do not require loading unrelated topics.
+
 ## Scope Boundary
 
 - Primary boundary: exclude concerns that Roslyn diagnostics already detect.
@@ -70,7 +75,7 @@ Apply this sequence per attribute usage under review:
 
 ## Resource Efficiency Checks
 
-Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+Apply [Resource Efficiency Review](../source_analysis/101_resource_efficiency_review.md#xid-5F21C8A41101)
 for language-neutral resource efficiency review.
 
 For C#, also check common allocation and lifetime patterns such as strings,
@@ -82,7 +87,7 @@ operational failure path.
 
 ## Operational Resilience Checks
 
-Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+Apply [Operational resilience review](../source_analysis/102_operational_resilience_review.md#xid-5F21C8A41102)
 for language-neutral operational resilience review, including the operational
 hazard taxonomy, operational escalation rule, and source/import worker review.
 
@@ -99,7 +104,7 @@ For C#, also check at least the following:
 
 ## Synchronization Checks
 
-Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+Apply [Synchronization And Concurrency Review](../source_analysis/103_synchronization_concurrency_review.md#xid-5F21C8A41103)
 for language-neutral synchronization and concurrency review.
 
 For C#, also check at least the following:
@@ -117,7 +122,7 @@ adopted patterns in
 
 ## Required Business Input Integrity Checks
 
-Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+Apply [Required Input Integrity Review](../source_analysis/104_required_input_integrity_review.md#xid-5F21C8A41104)
 for language-neutral required input integrity review.
 
 For C#, common silent fallback forms include `return 0`, `false`, empty
@@ -128,14 +133,14 @@ charge/payment until disposition is explicit.
 
 When emitting detector facts for this category, preserve the report-ready
 fields defined in
-[Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001):
+[Required Input Integrity Review](../source_analysis/104_required_input_integrity_review.md#xid-5F21C8A41104):
 input/candidate, decision gated, source, missing/invalid behavior, default
 provenance, disposition, and status. The human-facing report shape is owned by
 `review_report_composition`.
 
 ## Error Handling and Exception Path Checks
 
-Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+Apply [Error Handling And Exception Path Review](../source_analysis/105_error_exception_path_review.md#xid-5F21C8A41105)
 for language-neutral error handling and exception path review.
 
 For C#, also check at least the following:
@@ -155,7 +160,7 @@ For C#, also check at least the following:
 
 ## Time and Culture Checks
 
-Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+Apply [Time And Culture Review](../source_analysis/106_time_culture_review.md#xid-5F21C8A41106)
 for language-neutral time and culture review.
 
 For C#, also check at least the following:
@@ -170,7 +175,7 @@ For C#, also check at least the following:
 
 ## State and Determinism Boundary Checks
 
-Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+Apply [State And Determinism Boundary Review](../source_analysis/107_state_determinism_review.md#xid-5F21C8A41107)
 for language-neutral state and determinism boundary review.
 
 For C#, also check at least the following:
@@ -188,7 +193,7 @@ For C#, also check at least the following:
 
 ## Uncertainty and Escalation Path Checks
 
-Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+Apply [Uncertainty And Escalation Path Review](../source_analysis/108_uncertainty_escalation_review.md#xid-5F21C8A41108)
 for language-neutral uncertainty and escalation path review.
 
 For C#, also check at least the following:
@@ -207,7 +212,7 @@ For C#, also check at least the following:
 
 ## Contract and Schema Resilience Checks
 
-Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+Apply [Contract And Schema Resilience Review](../source_analysis/109_contract_schema_resilience_review.md#xid-5F21C8A41109)
 for language-neutral contract and schema resilience review.
 
 For C#, also check at least the following:
@@ -225,7 +230,7 @@ For C#, also check at least the following:
 
 ## Traceability and Context Propagation Checks
 
-Apply [Common source analysis criteria](../source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+Apply [Traceability And Context Propagation Review](../source_analysis/112_trace_context_propagation_review.md#xid-5F21C8A41110)
 for language-neutral traceability and context propagation review.
 
 For C#, also check at least the following:
