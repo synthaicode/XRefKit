@@ -2632,31 +2632,22 @@ def _workflow_protocol() -> dict[str, object]:
 
 def _reporting_protocol() -> dict[str, object]:
     return {
-        "version": "1",
+        "version": "2",
         "source": "xrefkit.mcp",
         "contract_xid": "6B2D9F4A1C73",
         "activation": (
             "human-facing Skill or workflow reports only when the conversation "
             "has an established decision framework"
         ),
-        "required_sections": [
-            "Report",
-            "Status",
-            "Reason",
-            "Result",
-            "Evidence",
-            "Open Items",
-            "Handoff",
-        ],
-        "japanese_sections": [
-            "報告",
-            "結論",
-            "状態",
-            "理由",
-            "確認したこと",
-            "残っている課題",
-            "次にすること",
-        ],
+        # Keep legacy keys available; no universal headings are required in v2.
+        "required_sections": [],
+        "japanese_sections": [],
+        "format_owner": "user_request_and_active_task_or_skill",
+        "profiles_required": False,
+        "example_sections": {
+            "english": ["Report", "Status", "Reason", "Result", "Evidence", "Open Items", "Handoff"],
+            "japanese": ["報告", "結論", "状態", "理由", "確認したこと", "残っている課題", "次にすること"],
+        },
         "status_values": ["done", "partial", "blocked", "escalated"],
         "profiles": [
             "summary_first",
@@ -2671,8 +2662,12 @@ def _reporting_protocol() -> dict[str, object]:
             "without a decision framework, use ordinary conversational form without required report headings or status labels",
             "do not invent criteria or a decision framework merely to apply this protocol",
             "reporting applicability does not waive runtime recording, verification, closure, or uncertainty obligations",
-            "summary_first",
-            "attach a brief reader perspective near the conclusion within Result (Japanese: 結論), without adding required sections or changing report order",
+            "make the conclusion, material uncertainty, evidence, and required next action easy to find in the task format",
+            "the user request and active task or Skill own headings, order, detail, and artifact type",
+            "profiles and example sections are optional; do not prepend universal headings or force empty sections",
+            "generic legacy common-heading scaffolding is an example; task-specific checklists and criteria remain required",
+            "explain partial, blocked, escalated, or needs-review results next to the affected result; no separate Reason heading is required",
+            "attach a brief reader perspective near the conclusion in the task format, without requiring an additional section",
             "ground the perspective in the user purpose and established decision framework; name the relationship, distinction, or change to focus on and why it matters for the next judgment",
             "when perspectives have an established or evidence-supported priority, include the priority order and a brief reason grounded in the user purpose and decision framework; do not invent a ranking, and do not treat lower priority as exclusion or exemption from required checks",
             "when relevant, distinguish what evidence establishes from remaining human judgment and state the condition requiring reconsideration; keep supporting evidence reachable",

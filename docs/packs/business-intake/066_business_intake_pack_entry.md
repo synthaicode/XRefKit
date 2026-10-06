@@ -44,7 +44,7 @@ when the missing boundary and next confirmation point are explicit.
 
 The machine-checkable definition of this pack is its manifest:
 
-- `skills/packs/business-intake/pack.md`
+- [canonical pack manifest](../../../skills/packs/business-intake/pack.md#xid-A08CBDFB082D)
 
 The manifest declares what the pack OWNS (exclusive) versus what it USES (shared
 references that may live anywhere, including the OS core), and pins the OS-core
@@ -56,10 +56,8 @@ membership and boundary.
 
 ### Skills
 
-- `skills/packs/business-intake/business_learning_interview/`
-- `skills/packs/business-intake/business_intake_scoping/`
-- `skills/packs/business-intake/conversation_topic_branch_mapping/`
-- `skills/packs/business-intake/decision_topology_analysis/`
+Skill membership is declared in the [canonical pack manifest](../../../skills/packs/business-intake/pack.md#xid-A08CBDFB082D).
+Use that list when validating or changing the pack; this page describes its role.
 
 ### Knowledge
 
@@ -82,14 +80,10 @@ The pack depends on shared OS-core controls and must not redefine them.
 
 ### Shared Runtime Surface
 
-- `xrefkit skill run`
-- `xrefkit skill workitem`
-- `xrefkit skill artifact`
-- `xrefkit skill concern`
-- `xrefkit skill phase`
-- `xrefkit skill close`
-- `xrefkit xref search`
-- `xrefkit xref show`
+Use the [pack-to-core contract surface](065_business_intake_pack_dependency_design.md#xid-D334C1964342)
+for the required commands and revalidation condition. The
+[Skill operating contract](../../core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61)
+owns their execution rules; this entry does not restate them.
 
 ## Stage-3 Status
 

@@ -450,3 +450,71 @@ def test_legacy_selection_receipt_keeps_prompt_flow(tmp_path):
     result = asyncio.run(read_mcp_subagent_startup(log, binding, call))
     assert result["initial_protocol_selection"]["selected"] == ["prompt_flow", "workflow"]
     assert result["receipt"]["selection"]["selection_mode"] == "legacy_include"
+
+
+@pytest.mark.parametrize("version", ["1", "2"])
+def test_reporting_versions_keep_startup_receipt_compatible(tmp_path, version):
+    from xrefkit.mcp.catalog import _reporting_protocol
+
+    log, run_id = _run_log(tmp_path)
+    binding = _binding(run_id, protocols=["workflow", "reporting"])
+    context = _context(binding)
+    if version == "2":
+        context["reporting_protocol"] = _reporting_protocol()
+
+    async def call(name, args):
+        if name == "get_startup_context":
+            return context
+        if name == "bind_skill_run":
+            return {**args, "repository_fingerprint": "repo-fp", "mcp_session_id": "s", "audit_enabled": True}
+        raise AssertionError(name)
+
+    result = asyncio.run(read_mcp_subagent_startup(log, binding, call))
+    assert result["ok"] is True
+    assert "subagent.startup.read" in log.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("mutate", [
+    lambda p: p.update(version="3"),
+    lambda p: p.update(required_sections=["Report"]),
+    lambda p: p.pop("japanese_sections"),
+    lambda p: p.update(profiles_required=True),
+    lambda p: p.update(format_owner="universal"),
+])
+def test_invalid_reporting_v2_rejects_before_bind_or_receipt(tmp_path, mutate):
+    from xrefkit.mcp.catalog import _reporting_protocol
+
+    log, run_id = _run_log(tmp_path)
+    binding = _binding(run_id, protocols=["workflow", "reporting"])
+    context = _context(binding)
+    context["reporting_protocol"] = _reporting_protocol()
+    mutate(context["reporting_protocol"])
+    calls = []
+
+    async def call(name, args):
+        calls.append(name)
+        if name == "get_startup_context":
+            return context
+        raise AssertionError(name)
+
+    with pytest.raises(McpSubagentStartupError):
+        asyncio.run(read_mcp_subagent_startup(log, binding, call))
+    assert calls == ["get_startup_context"]
+    assert "subagent.startup.read" not in log.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("name", ["workflow_protocol", "prompt_flow_protocol"])
+def test_other_protocols_still_reject_version_two(tmp_path, name):
+    log, run_id = _run_log(tmp_path)
+    binding = _binding(run_id, protocols=["workflow", "prompt_flow"])
+    context = _context(binding)
+    context[name]["version"] = "2"
+
+    async def call(tool, args):
+        if tool == "get_startup_context":
+            return context
+        raise AssertionError(tool)
+
+    with pytest.raises(McpSubagentStartupError, match="unsupported"):
+        asyncio.run(read_mcp_subagent_startup(log, binding, call))
+    assert "subagent.startup.read" not in log.read_text(encoding="utf-8")

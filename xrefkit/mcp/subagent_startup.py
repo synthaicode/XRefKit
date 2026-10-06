@@ -221,8 +221,15 @@ async def read_mcp_subagent_startup(
                 _bad(f"unselected {name} present")
             continue
         protocol = _object(protocol, name)
-        if protocol.get("version") != "1":
+        supported_versions = ("1", "2") if name == "reporting_protocol" else ("1",)
+        if protocol.get("version") not in supported_versions:
             _bad(f"unsupported {name} version")
+        if name == "reporting_protocol" and protocol["version"] == "2":
+            if (protocol.get("required_sections") != []
+                    or protocol.get("japanese_sections") != []
+                    or protocol.get("profiles_required") is not False
+                    or protocol.get("format_owner") != "user_request_and_active_task_or_skill"):
+                _bad("invalid task-owned reporting protocol")
         if name == "prompt_flow_protocol":
             reconciliation = _object(protocol.get("reconciliation"), "reconciliation")
             if reconciliation.get("default") != "report_only":

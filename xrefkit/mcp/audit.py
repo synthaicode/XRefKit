@@ -37,13 +37,14 @@ def _process_lock(path: Path):
     locked = False
     try:
         if os.name == "nt":
-            if os.fstat(fd).st_size == 0:
-                _write_all(fd, b"\0")
+            # Windows can lock beyond EOF; initialization must also be serialized.
             os.lseek(fd, 0, os.SEEK_SET)
             msvcrt.locking(fd, msvcrt.LK_LOCK, 1)
         else:
             fcntl.flock(fd, fcntl.LOCK_EX)
         locked = True
+        if os.name == "nt" and os.fstat(fd).st_size == 0:
+            _write_all(fd, b"\0")
         yield
     finally:
         if locked:

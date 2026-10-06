@@ -50,10 +50,9 @@ It does not include:
 
 ### Pack Skills
 
-- `skills/packs/business-intake/business_learning_interview/`
-- `skills/packs/business-intake/business_intake_scoping/`
-- `skills/packs/business-intake/conversation_topic_branch_mapping/`
-- `skills/packs/business-intake/decision_topology_analysis/`
+The [canonical pack manifest](../../../skills/packs/business-intake/pack.md#xid-A08CBDFB082D)
+owns the Skill membership list. The dependency map below explains the roles
+and progression of the learning and scoping Skills.
 
 ### Pack Guides
 

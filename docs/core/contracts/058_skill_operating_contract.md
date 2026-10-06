@@ -69,17 +69,11 @@ handoff deltas belong in `lifecycle`, `constraints`, `closure`, or check
 artifacts. (The legacy `role_responsibilities.executor` value is still accepted
 as the responsibility, but new Skills declare `responsibility` directly.)
 
-Every Skill must expose a recognizable human-facing report. The report must
-use the common `Report`, `Status`, `Result`, `Evidence`, `Open Items`, and
-`Handoff` labels and order defined in
-`docs/core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73`.
-Each Skill should declare one reporting profile: `summary_first`,
-`gate_verdict`, `checklist_verdict`, `phase_summary`, or
-`artifact_traceability`. Domain-specific
-output shapes may follow the common section; they must not replace or hide it.
-Human-facing report text follows the user's language. Runtime section keys,
-status enums, IDs, paths, commands, and other machine-facing identifiers remain
-stable; localize their explanations rather than changing the identifiers.
+Human-facing reports follow the applicability and shared principles in the
+[Skill Reporting Contract](081_skill_reporting_contract.md#xid-6B2D9F4A1C73).
+The user request and active Skill's outputs, method, and criteria own the format;
+this operating contract adds no universal headings or required profile. Keep
+machine-readable runtime records and identifiers stable.
 
 ## Required Legacy Meta Block
 

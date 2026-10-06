@@ -260,3 +260,37 @@ def test_mcp_startup_rejects_definition_identity_mismatch(tmp_path):
         asyncio.run(read_mcp_subagent_startup(log, binding, call))
     assert hashlib.sha256(raw).hexdigest() == binding["definition_identity"]["sha256"]
     assert "subagent.startup.read" not in log.read_text(encoding="utf-8")
+
+
+def test_task_owned_formats_survive_reporting_policy_without_implicit_loading(tmp_path):
+    cases = [
+        ("checklist_task", "ABCDEF123451", "checklist table", "# Checks\n| Check | Evidence |\n"),
+        ("narrative_task", "ABCDEF123452", "investigation narrative", "# Findings\nExplain the observed cause.\n"),
+    ]
+    paths = []
+    expected = {}
+    for skill_id, xid, output, method in cases:
+        path, _ = _write_definition(tmp_path, skill_id=skill_id, xid=xid)
+        raw = _definition(skill_id, xid).replace(
+            '\"outputs\": [\"report\"]', json.dumps("outputs") + ": " + json.dumps([output])
+        ).replace("# Definition method\r\nSECRET_METHOD_SENTINEL\r\n", method).encode("utf-8")
+        path.write_bytes(raw)
+        paths.append(path)
+        expected[skill_id] = (raw, output)
+
+    catalog = XRefCatalog.build(tmp_path, skill_definition_paths=paths)
+    context = catalog.get_startup_context()
+    policy = context["reporting_protocol"]
+    assert policy["version"] == "2"
+    assert policy["required_sections"] == policy["japanese_sections"] == []
+    assert policy["profiles_required"] is False
+    entries = {entry.skill_id: entry for entry in catalog.skills}
+    for skill_id, (raw, output) in expected.items():
+        assert entries[skill_id].outputs == [output]
+        selected = catalog.get_skill(skill_id, {})
+        # Task method remains byte-exact and knowledge is resolved separately.
+        assert len(selected["documents"]) == 1
+        assert selected["documents"][0]["content"].encode("utf-8") == raw
+        assert selected["documents"][0]["content_hash"] == hashlib.sha256(raw).hexdigest()
+        cached = catalog.get_skill(skill_id, {selected["documents"][0]["xid"]: hashlib.sha256(raw).hexdigest()})
+        assert cached["documents"][0]["content_omitted"] is True

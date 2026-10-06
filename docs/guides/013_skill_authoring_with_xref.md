@@ -52,10 +52,21 @@ Use this decomposition pass before writing or revising a Skill:
    specific delta.
 7. For each `judgment` in a SkillDefinition v1 document, declare the domain
    knowledge it may need through `knowledge_needs` with `id`, `query`,
-   `required_when`, and optional `seed_xids`. The parent evaluates
+   `required_when`, and the required `seed_xids` array (use `[]` when no seed
+   is known), as defined in the
+   [SkillDefinition contract](../core/contracts/096_skill_definition_contract.md#xid-E6A19D4B72C3). The parent evaluates
    `required_when`, passes the active need IDs, and resolves only the required
    XID bodies. Legacy split Skills may retain `knowledge_slots` during
    migration; do not copy that format into a new v1 definition.
+
+### Human-Facing Output
+
+Define the report purpose, audience, artifact type, and required content in the
+Skill's outputs, method, and applicable criteria. Choose the format for that
+work, following the user's request. Reference the
+[shared reporting principles](../core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73)
+instead of copying a universal heading list. Keep runtime recording separate
+from the visible report; task-specific format does not waive required checks.
 
 ### Target Catalog And Lazy Selection
 

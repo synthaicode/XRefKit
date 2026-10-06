@@ -999,6 +999,14 @@ Duplicate external body.
         self.assertEqual(context["workflow_protocol"]["phase_order"][0], "startup")
         self.assertEqual(context["reporting_protocol"]["contract_xid"], "6B2D9F4A1C73")
         reporting = context["reporting_protocol"]
+        self.assertEqual(reporting["version"], "2")
+        self.assertEqual(reporting["required_sections"], [])
+        self.assertEqual(reporting["japanese_sections"], [])
+        self.assertEqual(reporting["format_owner"], "user_request_and_active_task_or_skill")
+        self.assertIs(reporting["profiles_required"], False)
+        self.assertIn("Report", reporting["example_sections"]["english"])
+        self.assertTrue(any("task-specific checklists and criteria remain required" in rule
+                            for rule in reporting["rules"]))
         self.assertIn("only when the conversation", reporting["activation"])
         self.assertIn("established decision framework", reporting["activation"])
         self.assertIn(
