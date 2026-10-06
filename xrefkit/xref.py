@@ -11,6 +11,8 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
+from .repository_skills import load_repository_adoption
+from .skill_definition import load_skill_definition
 
 
 XID_COMMENT_RE = re.compile(r"<!--\s*xid\s*:\s*([A-Za-z0-9_-]{1,64})\s*-->", re.IGNORECASE)
@@ -31,7 +33,7 @@ BARE_MANAGED_REF_RE = re.compile(
     r"#xid-(?P<xid>[A-Za-z0-9_-]{6,64})\b"
 )
 _PLACEHOLDER_XIDS = {"TBD", "TODO", "TEMP", "PLACEHOLDER"}
-_XID_INDEX_CACHE_VERSION = 2
+_XID_INDEX_CACHE_VERSION = 3
 _XID_RELATION_SECTION_TITLE = "互換性（XID関係）"
 XREF_SOURCE_SUFFIXES = {
     ".py",
@@ -410,20 +412,28 @@ def build_index(cfg: XrefConfig) -> tuple[dict[str, DocInfo], list[dict[str, str
     root = cfg.resolved_root()
     include = cfg.resolved_include()
     exclude_names = cfg.resolved_exclude()
+    adoption = load_repository_adoption(root)
+    retired = {s["path"] for e in adoption["entries"] for s in e["legacy_sources"]} if adoption else set()
 
     fingerprints = _collect_fingerprints(root=root, include=include, exclude_names=exclude_names)
+    if adoption:
+        stat = (root / adoption["path"]).stat()
+        fingerprints.append({"path": adoption["path"], "mtime_ns": stat.st_mtime_ns, "size": stat.st_size})
+        fingerprints.sort(key=lambda item: str(item["path"]))
     cached = _try_load_cached_index(
         root=root,
         include=include,
         exclude_names=exclude_names,
         fingerprints=fingerprints,
     )
-    if cached is not None:
+    if cached is not None and adoption is None:
         return cached
 
     index: dict[str, DocInfo] = {}
     issues: list[dict[str, str]] = []
     for path in _iter_xref_files(root, include, exclude_names):
+        if path.relative_to(root).as_posix() in retired:
+            continue
         text = _read_text(path)
         xid = _extract_xid(text)
         if xid is None:
@@ -451,6 +461,24 @@ def build_index(cfg: XrefConfig) -> tuple[dict[str, DocInfo], list[dict[str, str
             )
             continue
         index[xid] = DocInfo(path=path, xid=xid, title=title, content_hash=chash)
+
+    if adoption:
+        for entry in adoption["entries"]:
+            path = root / entry["definition_path"]
+            definition = load_skill_definition(path)
+            if entry["definition_xid"] not in index:
+                continue  # Respect configured include/exclude boundaries.
+            original = index[entry["definition_xid"]]
+            canonical = DocInfo(path=path, xid=entry["definition_xid"], title=original.title,
+                                content_hash=definition["content_hash"])
+            index[canonical.xid] = canonical
+            for alias in definition["metadata"].get("aliases", []):
+                if alias in index:
+                    issues.append({"type": "duplicate_xid", "xid": alias,
+                                   "path_a": str(index[alias].path.relative_to(root)),
+                                   "path_b": entry["definition_path"]})
+                else:
+                    index[alias] = canonical
 
     _write_index_cache(
         root=root,
@@ -527,10 +555,11 @@ def _rewrite_managed_links_in_text(
                 )
                 return m.group(0)
             target_path = index[xid].path
+            resolved_xid = index[xid].xid
             if target_path.resolve() == source_path.resolve():
-                new_url = f"#xid-{xid}"
+                new_url = f"#xid-{resolved_xid}"
             else:
-                new_url = _relative_url(source_path, target_path) + f"#xid-{xid}"
+                new_url = _relative_url(source_path, target_path) + f"#xid-{resolved_xid}"
             # Preserve any trailing title part: (url "title")
             return m.group(0).replace(url + rest, new_url + rest, 1)
 
@@ -554,7 +583,7 @@ def _rewrite_managed_links_in_text(
                 root=root,
                 original_path=m.group("path"),
             )
-            return f"{new_path}#xid-{xid}"
+            return f"{new_path}#xid-{index[xid].xid}"
 
         rewritten = BARE_MANAGED_REF_RE.sub(repl_bare, rewritten)
 
@@ -573,9 +602,9 @@ def _rewrite_managed_links_in_text(
             target = index[xid]
             label = target.title or xid
             if target.path.resolve() == source_path.resolve():
-                url = f"#xid-{xid}"
+                url = f"#xid-{target.xid}"
             else:
-                url = _relative_url(source_path, target.path) + f"#xid-{xid}"
+                url = _relative_url(source_path, target.path) + f"#xid-{target.xid}"
             return f"[{label}]({url})"
 
         rewritten = WIKI_XREF_RE.sub(repl_wiki, rewritten)

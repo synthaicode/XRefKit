@@ -1,3 +1,4 @@
+from repository_skill_receipts import assert_preserved_source_boundary
 from pathlib import Path
 
 from xrefkit.mcp.catalog import XRefCatalog
@@ -12,8 +13,7 @@ def test_editorial_intake_v1_aliases_catalog_knowledge_and_legacy_body():
     assert metadata["xid"] == "7C4E9A2D6F81"
     assert set(metadata["aliases"]) == {"77F7D4CB9F99", "54437A84B3D0"}
     assert "capability" not in metadata
-    assert "## Context Direction Guard" not in definition["method"]
-    assert "## Reporting Contract" not in definition["method"]
+    assert_preserved_source_boundary(definition)
     catalog = XRefCatalog.build(repo, skill_definition_paths=[relative])
     entries = [entry for entry in catalog.skills if entry.skill_id == "editorial_intake"]
     assert len(entries) == 1
@@ -23,6 +23,6 @@ def test_editorial_intake_v1_aliases_catalog_knowledge_and_legacy_body():
     assert resolved["unresolved_activation"] == []
     assert resolved["unsatisfied_required"] == []
     assert all(need["satisfied"] is True for need in resolved["needs"])
-    legacy = (repo / "skills/packs/editorial-ops/editorial_intake/SKILL.md").read_text(encoding="utf-8")
-    assert "<!-- xid: 77F7D4CB9F99 -->" in legacy
-    assert "skill_doc: `./SKILL.md`" in (repo / "skills/packs/editorial-ops/editorial_intake/meta.md").read_text(encoding="utf-8")
+    from repository_skill_receipts import assert_legacy_receipt
+    assert assert_legacy_receipt(repo / "skills/packs/editorial-ops/editorial_intake/SKILL.md")["xid"] == "77F7D4CB9F99"
+    assert_legacy_receipt(repo / "skills/packs/editorial-ops/editorial_intake/meta.md")

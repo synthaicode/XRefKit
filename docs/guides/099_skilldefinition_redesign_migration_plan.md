@@ -91,3 +91,7 @@ Lunaなどのlow-level modelへ渡すwork itemは、一つの判断境界と決�
 production既定sourceの一括切替には、代表的な複雑Skillの利用観測、管理adoption経路のlive検証、
 外部v1 maturity/promotion recordの運用観測、人によるactive source切替判断が必要である。
 それまではtracked v1の追加と明示実行による検証を続け、legacy経路を削除しない。
+
+## Repository source adoption approved 2026-10-06
+
+The user approved v1-only repository sources with explicit input for missing capability, retained draft refusal, stable legacy ID/path aliases, and unchanged public YAML/third-party APIs. The adopted boundary and audit requirements are defined in [SkillDefinition contract](../core/contracts/096_skill_definition_contract.md#xid-E6A19D4B72C3). Earlier legacy-kept rows above describe conversion history, not the current default. Source adoption does not promote maturity; draft candidates remain unavailable and governance-less adopted definitions remain unassessed. Retirement follows semantic/reference verification and recoverable retention.

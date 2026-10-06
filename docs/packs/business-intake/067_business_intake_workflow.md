@@ -38,9 +38,9 @@ flowchart TD
 ## Business Activities and Skills
 
 - Business learning from fragments:
-  - executed by [business_learning_interview](../../../skills/packs/business-intake/business_learning_interview/SKILL.md#xid-4D8E1A7C5B92)
+  - executed by [business_learning_interview](../../../skills/packs/business-intake/business_learning_interview/SKILL.v1.md#xid-B6C4E9A2D781)
 - Scope-ready responsibility shaping:
-  - executed by [business_intake_scoping](../../../skills/packs/business-intake/business_intake_scoping/SKILL.md#xid-6F2A9C41E8B3)
+  - executed by [business_intake_scoping](../../../skills/packs/business-intake/business_intake_scoping/SKILL.v1.md#xid-B6C4E9A2D782)
 - Shared OS-core runtime control provides the runtime envelope, guard, and
   closure that both Skills depend on.
 
@@ -86,8 +86,8 @@ flowchart TD
 
 ## Related Skills
 
-- [business_learning_interview](../../../skills/packs/business-intake/business_learning_interview/SKILL.md#xid-4D8E1A7C5B92)
-- [business_intake_scoping](../../../skills/packs/business-intake/business_intake_scoping/SKILL.md#xid-6F2A9C41E8B3)
+- [business_learning_interview](../../../skills/packs/business-intake/business_learning_interview/SKILL.v1.md#xid-B6C4E9A2D781)
+- [business_intake_scoping](../../../skills/packs/business-intake/business_intake_scoping/SKILL.v1.md#xid-B6C4E9A2D782)
 
 The context direction guard is base control applied inside every Skill run
 via `CAP-MGT-004` and the guard knowledge rules above; it is not a separate

@@ -3,17 +3,16 @@
 
 # Skills by Task
 
-Categories list skill ids only. Resolve summaries and `meta.md` /
-`SKILL.md` paths from the canonical catalog
+Categories list skill ids only. Resolve summaries and `SKILL.v1.md` paths from the canonical catalog
 [skills/_index.md](../_index.md#xid-8D91F66DDBB7).
 
 - import: `import_skill`, `xlsx_spec_traceability`, `pptx_spec_traceability`,
   `legacy_flow_skill_migration`
-- review: `csharp_review`, `python_review`, `manufacturing_self_check`, `batch-impact-regression`,
+- review: `csharp_review`, `python_review`, `manufacturing_self_check`, `batch_impact_regression`,
   `qa_gate_review`, `security_review`, `cab_review_flow`,
   `code_constraint_derivation`, `cross_constraint_derivation`,
   `integration_scenario_derivation`
-- investigate: `dotnet_change_analysis`, `db_current_state_analysis`, `csharp_error_policy_extraction`, `batch-impact-regression`,
+- investigate: `dotnet_change_analysis`, `db_current_state_analysis`, `csharp_error_policy_extraction`, `batch_impact_regression`,
   `investigation_flow`,
   `consultation_research_mapping`, `business_learning_interview`,
   `conversation_topic_branch_mapping`, `decision_topology_analysis`,
@@ -22,8 +21,8 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
 - define-requirements: `requirements_flow`
 - plan: `planning_flow`, `release_planning_flow`, `business_intake_scoping`,
   `brownfield_workflow`
-- design: `design_flow`, `db_current_state_analysis`, `db_design`, `test_flow`, `test_tool_catalog_preparation`, `batch-impact-regression`, `brownfield_workflow`, `marketing_slide_png`,
-  `marketing-explainer-video`, `skill_flow_authoring`,
+- design: `design_flow`, `db_current_state_analysis`, `db_design`, `test_flow`, `test_tool_catalog_preparation`, `batch_impact_regression`, `brownfield_workflow`, `marketing_slide_png`,
+  `marketing_explainer_video`, `skill_flow_authoring`,
   `constraint_derivation_index`, `design_constraint_derivation`,
   `ui_constraint_derivation`, `logic_constraint_derivation`,
   `integration_constraint_derivation`, `async_constraint_derivation`,
@@ -32,7 +31,7 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
   `integration_scenario_derivation`, `editorial_ops_index`,
   `draft_authoring`
 - implement: `implementation_flow`, `python_implementation_flow`, `brownfield_workflow`,
-  `marketing-explainer-video`
+  `marketing_explainer_video`
 - release: `crosspost_release`
 - control: `doc_ship`, `retro`, `knowledge_ontology_management`,
   `source_structure_findings_registration`,

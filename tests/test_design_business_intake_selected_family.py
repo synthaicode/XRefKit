@@ -1,3 +1,4 @@
+from repository_skill_receipts import assert_preserved_source_boundary
 from pathlib import Path
 
 from xrefkit.mcp.catalog import XRefCatalog
@@ -26,7 +27,7 @@ def test_design_and_business_intake_batch_selects_without_identity_collision():
 
     assert len(xids) == len(set(xids))
     assert set(xids).isdisjoint(aliases)
-    assert all("CAP-" not in definition["method"] for definition in definitions)
+    assert all(assert_preserved_source_boundary(definition) for definition in definitions)
 
     catalog = XRefCatalog.build(repo, skill_definition_paths=PATHS)
     expected = {definition["metadata"]["skill_id"] for definition in definitions}

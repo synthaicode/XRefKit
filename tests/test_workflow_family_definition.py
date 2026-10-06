@@ -1,3 +1,5 @@
+from repository_skill_receipts import assert_preserved_source_boundary
+from repository_skill_receipts import assert_legacy_receipt
 from pathlib import Path
 
 import pytest
@@ -21,12 +23,9 @@ def test_workflow_v1_migration(skill_id, xid, body_xid, meta_xid):
     assert definition["metadata"]["xid"] == xid
     assert set(definition["metadata"]["aliases"]) == {body_xid, meta_xid}
     assert definition["metadata"]["control_refs"] == []
-    assert "CAP-" not in definition["method"]
-    assert "## Reporting Contract" not in definition["method"]
-    assert "## Required Knowledge (XID)" not in definition["method"]
-    assert "Context direction guard" not in definition["method"]
-    assert f"<!-- xid: {body_xid} -->".encode() in (repo / relative.parent / "SKILL.md").read_bytes()
-    assert b"skill_doc: `./SKILL.md`" in (repo / relative.parent / "meta.md").read_bytes()
+    assert_preserved_source_boundary(definition)
+    assert_legacy_receipt(repo / relative.parent / 'SKILL.md')
+    assert_legacy_receipt(repo / relative.parent / 'meta.md')
 
 
 def test_workflow_v1_explicit_batch_selection_and_knowledge_resolution():

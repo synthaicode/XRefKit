@@ -1,3 +1,4 @@
+from repository_skill_receipts import assert_legacy_receipt
 from pathlib import Path
 
 from xrefkit.mcp.catalog import XRefCatalog
@@ -43,13 +44,11 @@ def test_business_intake_v1_definitions_parse_select_resolve_and_preserve_legacy
         assert resolved["unsatisfied_required"] == []
         assert resolved["needs"][0]["satisfied"] is True
 
-        legacy = (directory / "SKILL.md").read_text(encoding="utf-8")
-        meta = (directory / "meta.md").read_text(encoding="utf-8")
-        assert f"<!-- xid: {body_xid} -->" in legacy
-        assert f"<!-- xid: {meta_xid} -->" in meta
-        assert "skill_doc: `./SKILL.md`" in meta
+        assert_legacy_receipt(directory / 'SKILL.md')
+        assert_legacy_receipt(directory / 'meta.md')
 
     catalog = XRefCatalog.build(repo, skill_definition_paths=paths)
-    assert {entry.skill_id for entry in catalog.skills if entry.definition_format == "skill_definition_v1"} == {
-        "business_learning_interview", "business_intake_scoping"
+    assert {"business_learning_interview", "business_intake_scoping"} <= {
+        entry.skill_id for entry in catalog.skills if entry.definition_format == "skill_definition_v1"
     }
+    assert len(catalog.skills) == 62

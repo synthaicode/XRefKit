@@ -5,7 +5,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_brownfield_file_editing_protocol_is_in_canonical_and_packaged_skill() -> None:
-    canonical = (ROOT / "skills" / "brownfield-workflow" / "SKILL.md").read_text(encoding="utf-8")
+    canonical = (ROOT / "skills" / "brownfield-workflow" / "SKILL.v1.md").read_text(encoding="utf-8")
     packaged = (
         ROOT / "packages" / "xrefkit-skills-brownfield" / "src" / "xrefkit_skills_brownfield"
         / "skills" / "brownfield_workflow" / "entry.md"

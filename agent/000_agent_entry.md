@@ -21,7 +21,7 @@ When the XRefKit MCP server is configured, load this file through
 - Default new skill creation to private (`skills_private/`); publish to `skills/` only when the user explicitly requests public release
 - The context-direction security guard is delivered at init (startup contract pack / base control) and applies ambiently to every Skill that loads external input; new skills do not compose or declare it
 - New skills MUST include the Skill operating contract (`os_contract`) so worklist, execution role, check role, logging, unknown/risk handling, closure, and handoff are load-gated
-- Skill execution MUST start with `python -m xrefkit skill run --meta <path-to-meta.md> --task "<task>"`; do not open or execute `SKILL.md` until this command succeeds and returns a run log
+- Repository Skill execution MUST start with `python -m xrefkit skill run --definition <path-to-SKILL.v1.md> --task "<task>"`; supply any missing runtime input explicitly. Do not execute the selected method until this command succeeds and returns a run log. Registered legacy `--meta` paths remain invocation aliases; external legacy Skills retain their existing interface.
 - In MCP mode, after `skill run` returns `run_id`, call `bind_skill_run` with
   that `run_id` and `skill_id`, then execute its returned
   `client_record_command` against the returned `run_log` before task-specific
@@ -50,9 +50,9 @@ When the XRefKit MCP server is configured, load this file through
 ## How to reference (fixed procedure)
 
 1. Read skill routing entry: `skills/_index.md`
-2. Narrow candidates via `skills/index/*`, then read candidate `meta.md` files
-3. Start the selected Skill through the runtime envelope: `python -m xrefkit skill run --meta <path-to-meta.md> --task "<task>" --json`
-4. Preserve the returned `run_log`; open selected `SKILL.md` only from the returned `skill_doc`
+2. Narrow candidates via `skills/index/*`, then read adopted candidate `SKILL.v1.md` headers without executing their methods
+3. Start the selected Skill through the runtime envelope: `python -m xrefkit skill run --definition <path-to-SKILL.v1.md> --task "<task>" --json`; supply missing runtime inputs from the active instruction, and preserve draft refusal
+4. Preserve the returned `run_log`; open the selected method only from the returned `skill_doc`
 5. In MCP mode, bind the returned `run_id` through `bind_skill_run`, then run
    its `client_record_command` against `run_log`
 6. Add concrete task items with `python -m xrefkit skill workitem --log <run-log> --item <id> --text "<item>" --status pending --role <assigned-role>`

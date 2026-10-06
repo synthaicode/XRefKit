@@ -1,6 +1,7 @@
 import json
 import shutil
 from pathlib import Path
+from repository_skill_receipts import assert_preserved_source_boundary
 
 import pytest
 
@@ -12,7 +13,7 @@ from xrefkit.skillmeta import _parse_meta_lines
 
 def test_representative_conversion_is_lossless_and_nonactivating(tmp_path):
     repo = Path(__file__).resolve().parents[1]
-    source = repo / "skills/dotnet_change_analysis"
+    source = repo / "tests/fixtures/legacy_dotnet_skill"
     dest = tmp_path / "skills/dotnet_change_analysis"
     shutil.copytree(source, dest)
     before = {p.name: p.read_bytes() for p in [dest / "SKILL.md", dest / "meta.md"]}
@@ -85,7 +86,8 @@ def test_tracked_v1_definition_resolves_knowledge_and_explicit_selection_is_sing
     assert definition["metadata"]["xid"] == "9883EF4E8CA9"
     assert set(definition["metadata"]["aliases"]) == {"D94E3B3A7C11", "1F4A6D20B8E1"}
     migrated_method = definition["method"].replace("9883EF4E8CA9", "D94E3B3A7C11")
-    assert migrated_method.splitlines() == candidate["method"].splitlines()
+    assert migrated_method.split("## Preserved source obligations", 1)[0].rstrip().splitlines() == candidate["method"].rstrip().splitlines()
+    assert_preserved_source_boundary(definition)
     catalog = XRefCatalog.build(repo, skill_definition_paths=[relative])
     entries = [entry for entry in catalog.skills if entry.skill_id == "dotnet_change_analysis"]
     assert len(entries) == 1
@@ -99,5 +101,5 @@ def test_tracked_v1_definition_resolves_knowledge_and_explicit_selection_is_sing
 
 def test_legacy_meta_still_points_to_legacy_body():
     repo = Path(__file__).resolve().parents[1]
-    meta = (repo / "skills/dotnet_change_analysis/meta.md").read_text(encoding="utf-8")
-    assert "skill_doc: `./SKILL.md`" in meta
+    from repository_skill_receipts import assert_legacy_receipt
+    assert_legacy_receipt(repo / "skills/dotnet_change_analysis/meta.md")

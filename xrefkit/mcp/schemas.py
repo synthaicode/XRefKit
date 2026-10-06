@@ -115,6 +115,8 @@ class SkillCatalogEntry:
     definition_xid: str | None = None
     definition_content_hash: str | None = None
     maturity_governance: dict[str, Any] | None = None
+    legacy_skill_ids: list[str] = field(default_factory=list)
+    repository_adoption: dict[str, Any] | None = None
 
     def to_dict(self, *, include_tools: bool = True) -> dict[str, Any]:
         data = asdict(self)

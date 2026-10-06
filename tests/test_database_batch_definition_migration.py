@@ -1,3 +1,5 @@
+from repository_skill_receipts import assert_preserved_source_boundary
+from repository_skill_receipts import assert_legacy_receipt
 from pathlib import Path
 
 from xrefkit.mcp.catalog import XRefCatalog
@@ -34,12 +36,10 @@ def test_database_batch_v1_definitions_parse_with_aliases_and_preserve_legacy():
         assert set(metadata["aliases"]) == {body_xid, meta_xid}
         assert metadata["control_refs"] == []
         assert not {"capability", "tuning", "responsibility", "execution_mode", "model", "maturity"} & metadata.keys()
-        assert "CAP-" not in definition["method"]
-        assert "Skill operating contract" not in definition["method"]
-        assert "Context direction guard" not in definition["method"]
+        assert_preserved_source_boundary(definition)
         legacy_dir = repo / relative.parent
-        assert f"<!-- xid: {body_xid} -->" in (legacy_dir / "SKILL.md").read_text(encoding="utf-8")
-        assert f"<!-- xid: {meta_xid} -->" in (legacy_dir / "meta.md").read_text(encoding="utf-8")
+        assert_legacy_receipt(legacy_dir / 'SKILL.md')
+        assert_legacy_receipt(legacy_dir / 'meta.md')
 
 
 def test_database_batch_combined_explicit_catalog_and_knowledge_resolution():

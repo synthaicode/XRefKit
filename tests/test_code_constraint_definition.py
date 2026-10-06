@@ -1,3 +1,4 @@
+from repository_skill_receipts import assert_preserved_source_boundary
 from pathlib import Path
 
 from xrefkit.mcp.catalog import XRefCatalog
@@ -38,10 +39,8 @@ def test_code_constraint_v1_resolves_selected_knowledge_and_legacy_files_are_unc
     assert all(need["activation_state"] == "active" for need in result["needs"])
     assert all(need["satisfied"] is True for need in result["needs"])
 
-    meta = (repo / "skills/packs/constraint-derivation/code_constraint_derivation/meta.md").read_text(encoding="utf-8")
-    legacy = (repo / "skills/packs/constraint-derivation/code_constraint_derivation/SKILL.md").read_text(encoding="utf-8")
-    assert "skill_doc: `./SKILL.md`" in meta
-    assert "<!-- xid: D4701BFC6EA4 -->" in meta
-    assert "<!-- xid: D4701BFC6EA5 -->" in legacy
-    assert "## Reporting Contract" not in definition["method"]
+    from repository_skill_receipts import assert_legacy_receipt
+    assert assert_legacy_receipt(repo / "skills/packs/constraint-derivation/code_constraint_derivation/meta.md")["xid"] == "D4701BFC6EA4"
+    assert assert_legacy_receipt(repo / "skills/packs/constraint-derivation/code_constraint_derivation/SKILL.md")["xid"] == "D4701BFC6EA5"
+    assert_preserved_source_boundary(definition)
     assert "111D282CA0EA" in definition["metadata"]["control_refs"]

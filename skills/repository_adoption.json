@@ -1,0 +1,4183 @@
+{
+  "schema_version": 1,
+  "adoption": {
+    "authority": "repository user",
+    "date": "2026-10-06",
+    "basis": "Explicit OK to v1-only repository source with preserved declared settings and ID references, required explicit missing capability, draft refusal, and unchanged public YAML/third-party APIs. This is source adoption, not Skill promotion.",
+    "missing_runtime_policy": "require_explicit_input"
+  },
+  "entries": [
+    {
+      "skill_id": "brownfield_workflow",
+      "definition_path": "skills/brownfield-workflow/SKILL.v1.md",
+      "definition_xid": "E1A7C4D9B260",
+      "definition_sha256": "d49fa83aea56e6c8ea3268aaf24c3618570c1ed27e856df1c8c8c60b6301e00a",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/brownfield-workflow/meta.md",
+          "xid": "9B3D7A1C4E20",
+          "sha256": "3a5abd773275622b21ec3496b71c45bddd0cf6d72db148450f24e4fff9f972d5"
+        },
+        {
+          "path": "skills/brownfield-workflow/SKILL.md",
+          "xid": "A17C4E8B2D91",
+          "sha256": "d962026399afe1e3b06f3071834ba5ed8d72696f305a3227de4dc2edef6454aa"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/brownfield-workflow/meta.md",
+          "source_xid": "9B3D7A1C4E20",
+          "source_sha256": "3a5abd773275622b21ec3496b71c45bddd0cf6d72db148450f24e4fff9f972d5",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "brownfield_phase_reorganization",
+          "source_path": "skills/brownfield-workflow/meta.md",
+          "source_xid": "9B3D7A1C4E20",
+          "source_sha256": "3a5abd773275622b21ec3496b71c45bddd0cf6d72db148450f24e4fff9f972d5",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "preserve traceability from upstream items through requirements, planning, design, manufacturing, and testing while making reusable Knowledge and local-pattern conformity explicit",
+          "source_path": "skills/brownfield-workflow/meta.md",
+          "source_xid": "9B3D7A1C4E20",
+          "source_sha256": "3a5abd773275622b21ec3496b71c45bddd0cf6d72db148450f24e4fff9f972d5",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/brownfield-workflow/meta.md",
+          "source_xid": "9B3D7A1C4E20",
+          "source_sha256": "3a5abd773275622b21ec3496b71c45bddd0cf6d72db148450f24e4fff9f972d5",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/brownfield-workflow/meta.md",
+          "source_xid": "9B3D7A1C4E20",
+          "source_sha256": "3a5abd773275622b21ec3496b71c45bddd0cf6d72db148450f24e4fff9f972d5",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/brownfield-workflow/meta.md",
+          "source_xid": "9B3D7A1C4E20",
+          "source_sha256": "3a5abd773275622b21ec3496b71c45bddd0cf6d72db148450f24e4fff9f972d5",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "cab_review_flow",
+      "definition_path": "skills/cab_review_flow/SKILL.v1.md",
+      "definition_xid": "C7A4E9B2D610",
+      "definition_sha256": "592826538fc5b7ee1b1ee831533c2a1c739b1ac2efc12e319ddd1f1159c43ea0",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/cab_review_flow/meta.md",
+          "xid": "AE3979CD83C0",
+          "sha256": "1500096ff614acf7e8b52eb6c408922d191953a7ea2973d14ff793638f7d712b"
+        },
+        {
+          "path": "skills/cab_review_flow/SKILL.md",
+          "xid": "33D0A3A01B47",
+          "sha256": "eee3eaa659bac3e01efbd6d7aaddc3a4a9a4d588018e2aa35fd718501fe3e509"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/cab_review_flow/meta.md",
+          "source_xid": "AE3979CD83C0",
+          "source_sha256": "1500096ff614acf7e8b52eb6c408922d191953a7ea2973d14ff793638f7d712b",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "execute CAB business activities through reusable quality, operational-readiness, and value-alignment evaluation capabilities",
+          "source_path": "skills/cab_review_flow/meta.md",
+          "source_xid": "AE3979CD83C0",
+          "source_sha256": "1500096ff614acf7e8b52eb6c408922d191953a7ea2973d14ff793638f7d712b",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "user needs CAB-style evaluation before release confirmation",
+          "source_path": "skills/cab_review_flow/meta.md",
+          "source_xid": "AE3979CD83C0",
+          "source_sha256": "1500096ff614acf7e8b52eb6c408922d191953a7ea2973d14ff793638f7d712b",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "subagent_preferred",
+          "source_path": "skills/cab_review_flow/meta.md",
+          "source_xid": "AE3979CD83C0",
+          "source_sha256": "1500096ff614acf7e8b52eb6c408922d191953a7ea2973d14ff793638f7d712b",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/cab_review_flow/meta.md",
+          "source_xid": "AE3979CD83C0",
+          "source_sha256": "1500096ff614acf7e8b52eb6c408922d191953a7ea2973d14ff793638f7d712b",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/cab_review_flow/meta.md",
+          "source_xid": "AE3979CD83C0",
+          "source_sha256": "1500096ff614acf7e8b52eb6c408922d191953a7ea2973d14ff793638f7d712b",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "csharp_error_policy_extraction",
+      "definition_path": "skills/csharp_error_policy_extraction/SKILL.v1.md",
+      "definition_xid": "F2B8D5A1C370",
+      "definition_sha256": "de57fcb4ffe1fba1e6d2901cdf8794afed9523a89003421e853bf8be314918bc",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/csharp_error_policy_extraction/meta.md",
+          "xid": "B150A2A54169",
+          "sha256": "7cc9c0d6f61ebe0b1657a8436a6f1e89ddb37e041d5eee7fd9f984f9524f75d7"
+        },
+        {
+          "path": "skills/csharp_error_policy_extraction/SKILL.md",
+          "xid": "FE342FB520D0",
+          "sha256": "1d7ba341cad7e382b23340bf471fbc65711b5ad47e9902efbd6574e8b0bb5506"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/csharp_error_policy_extraction/meta.md",
+          "source_xid": "B150A2A54169",
+          "source_sha256": "7cc9c0d6f61ebe0b1657a8436a6f1e89ddb37e041d5eee7fd9f984f9524f75d7",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "extract the existing de-facto error policy from C# source as an inventory, a category-by-disposition matrix, detected contradictions, and explicit coverage limits",
+          "source_path": "skills/csharp_error_policy_extraction/meta.md",
+          "source_xid": "B150A2A54169",
+          "source_sha256": "7cc9c0d6f61ebe0b1657a8436a6f1e89ddb37e041d5eee7fd9f984f9524f75d7",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "user needs the implemented error policy of a C# codebase made explicit before changing error handling, unifying conventions, or arbitrating inconsistent failure behavior — a deep-dive of the error-handling-contract viewpoint of `dotnet_change_analysis`, not a defect review",
+          "source_path": "skills/csharp_error_policy_extraction/meta.md",
+          "source_xid": "B150A2A54169",
+          "source_sha256": "7cc9c0d6f61ebe0b1657a8436a6f1e89ddb37e041d5eee7fd9f984f9524f75d7",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/csharp_error_policy_extraction/meta.md",
+          "source_xid": "B150A2A54169",
+          "source_sha256": "7cc9c0d6f61ebe0b1657a8436a6f1e89ddb37e041d5eee7fd9f984f9524f75d7",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/csharp_error_policy_extraction/meta.md",
+          "source_xid": "B150A2A54169",
+          "source_sha256": "7cc9c0d6f61ebe0b1657a8436a6f1e89ddb37e041d5eee7fd9f984f9524f75d7",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/csharp_error_policy_extraction/meta.md",
+          "source_xid": "B150A2A54169",
+          "source_sha256": "7cc9c0d6f61ebe0b1657a8436a6f1e89ddb37e041d5eee7fd9f984f9524f75d7",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "csharp_review",
+      "definition_path": "skills/csharp_review/SKILL.v1.md",
+      "definition_xid": "F1A7C3D9E240",
+      "definition_sha256": "cfa0c5b01b9949a4906a15359ceca8ac3e444dafc8cdfb63504d6468f567f3a6",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/csharp_review/meta.md",
+          "xid": "218463E0F3ED",
+          "sha256": "da8a201bea68f499df23821650d5cd16ba43999dd09ab734d75412984c635d15"
+        },
+        {
+          "path": "skills/csharp_review/SKILL.md",
+          "xid": "466B980B8ED3",
+          "sha256": "e312a424e6bbcce429d24453a02576de29b6576b0ce0c81d1182e668bc730a5e"
+        }
+      ],
+      "legacy_maturity": "stable",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": "software_development",
+          "source_path": "skills/csharp_review/meta.md",
+          "source_xid": "218463E0F3ED",
+          "source_sha256": "da8a201bea68f499df23821650d5cd16ba43999dd09ab734d75412984c635d15",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "C#",
+          "source_path": "skills/csharp_review/meta.md",
+          "source_xid": "218463E0F3ED",
+          "source_sha256": "da8a201bea68f499df23821650d5cd16ba43999dd09ab734d75412984c635d15",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "quality check",
+          "source_path": "skills/csharp_review/meta.md",
+          "source_xid": "218463E0F3ED",
+          "source_sha256": "da8a201bea68f499df23821650d5cd16ba43999dd09ab734d75412984c635d15",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "subagent_preferred",
+          "source_path": "skills/csharp_review/meta.md",
+          "source_xid": "218463E0F3ED",
+          "source_sha256": "da8a201bea68f499df23821650d5cd16ba43999dd09ab734d75412984c635d15",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/csharp_review/meta.md",
+          "source_xid": "218463E0F3ED",
+          "source_sha256": "da8a201bea68f499df23821650d5cd16ba43999dd09ab734d75412984c635d15",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/csharp_review/meta.md",
+          "source_xid": "218463E0F3ED",
+          "source_sha256": "da8a201bea68f499df23821650d5cd16ba43999dd09ab734d75412984c635d15",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "db_current_state_analysis",
+      "definition_path": "skills/db_current_state_analysis/SKILL.v1.md",
+      "definition_xid": "B6D4A1E9C730",
+      "definition_sha256": "01cd3e5c3de788af7ba51cb260ab2d6a2da7f142478113ca68a4a0d6d63d49c9",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/db_current_state_analysis/meta.md",
+          "xid": "6B8C70DA119E",
+          "sha256": "aa99b62280f76351f1205a0bee88cca13ed9c5d9afd0b4523bb69d77b0a1083c"
+        },
+        {
+          "path": "skills/db_current_state_analysis/SKILL.md",
+          "xid": "C48A0E2D91F5",
+          "sha256": "8b34889bf0e9ee1feeed878038ac9ec522a04e154ce2328f39f7abe37d4b5a5d"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": "database current-state analysis",
+          "source_path": "skills/db_current_state_analysis/meta.md",
+          "source_xid": "6B8C70DA119E",
+          "source_sha256": "aa99b62280f76351f1205a0bee88cca13ed9c5d9afd0b4523bb69d77b0a1083c",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "DB-unit SQL-export-first brownfield DB and persistence analysis before DB design",
+          "source_path": "skills/db_current_state_analysis/meta.md",
+          "source_xid": "6B8C70DA119E",
+          "source_sha256": "aa99b62280f76351f1205a0bee88cca13ed9c5d9afd0b4523bb69d77b0a1083c",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "create a reusable current-state basis for database design without guessing from incomplete schema or ORM evidence",
+          "source_path": "skills/db_current_state_analysis/meta.md",
+          "source_xid": "6B8C70DA119E",
+          "source_sha256": "aa99b62280f76351f1205a0bee88cca13ed9c5d9afd0b4523bb69d77b0a1083c",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/db_current_state_analysis/meta.md",
+          "source_xid": "6B8C70DA119E",
+          "source_sha256": "aa99b62280f76351f1205a0bee88cca13ed9c5d9afd0b4523bb69d77b0a1083c",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/db_current_state_analysis/meta.md",
+          "source_xid": "6B8C70DA119E",
+          "source_sha256": "aa99b62280f76351f1205a0bee88cca13ed9c5d9afd0b4523bb69d77b0a1083c",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": [
+            "name=current_source_structure_finding; accepts=current-source-structure-findings,source-structure-overview; purpose=required-application-structure-context",
+            "name=prior_db_knowledge; accepts=database-current-state-analysis,database-design-package,source-structure-overview; purpose=optional-prior-db-context"
+          ],
+          "source_path": "skills/db_current_state_analysis/meta.md",
+          "source_xid": "6B8C70DA119E",
+          "source_sha256": "aa99b62280f76351f1205a0bee88cca13ed9c5d9afd0b4523bb69d77b0a1083c",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "db_design",
+      "definition_path": "skills/db_design/SKILL.v1.md",
+      "definition_xid": "C7E5B2F0D841",
+      "definition_sha256": "8b1755f2d606b1f7aefafc45e7a290c0e68ac0c6fb5e56d255495693dbe48736",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/db_design/meta.md",
+          "xid": "5D7C2A90B631",
+          "sha256": "4f418ceb9f477ca903c9bc918a33abed8ea23bd28da9c7f19f937d4216956199"
+        },
+        {
+          "path": "skills/db_design/SKILL.md",
+          "xid": "A68F54D72C19",
+          "sha256": "f7d56514c523379da9c161ca2537a3e1e77eabcd213a7043c32f9d633e2e91f9"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": "database design",
+          "source_path": "skills/db_design/meta.md",
+          "source_xid": "5D7C2A90B631",
+          "source_sha256": "4f418ceb9f477ca903c9bc918a33abed8ea23bd28da9c7f19f937d4216956199",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "brownfield database design before implementation",
+          "source_path": "skills/db_design/meta.md",
+          "source_xid": "5D7C2A90B631",
+          "source_sha256": "4f418ceb9f477ca903c9bc918a33abed8ea23bd28da9c7f19f937d4216956199",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "create implementation-ready database design while keeping requirement confirmations, source-structure evidence, and migration risks explicit",
+          "source_path": "skills/db_design/meta.md",
+          "source_xid": "5D7C2A90B631",
+          "source_sha256": "4f418ceb9f477ca903c9bc918a33abed8ea23bd28da9c7f19f937d4216956199",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/db_design/meta.md",
+          "source_xid": "5D7C2A90B631",
+          "source_sha256": "4f418ceb9f477ca903c9bc918a33abed8ea23bd28da9c7f19f937d4216956199",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/db_design/meta.md",
+          "source_xid": "5D7C2A90B631",
+          "source_sha256": "4f418ceb9f477ca903c9bc918a33abed8ea23bd28da9c7f19f937d4216956199",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": [
+            "name=current_source_structure_finding; accepts=current-source-structure-findings,source-structure-overview; purpose=required-source-analysis-basis",
+            "name=current_database_state_analysis; accepts=database-current-state-analysis,database-current-state-findings; purpose=required-db-current-state-basis",
+            "name=constraint_derivation_outputs; accepts=design-constraint-derivation,cross-constraint-derivation,integration-constraint-derivation,async-constraint-derivation,commonality-derivation; purpose=confirmed-behavior-basis"
+          ],
+          "source_path": "skills/db_design/meta.md",
+          "source_xid": "5D7C2A90B631",
+          "source_sha256": "4f418ceb9f477ca903c9bc918a33abed8ea23bd28da9c7f19f937d4216956199",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "design_flow",
+      "definition_path": "skills/design_flow/SKILL.v1.md",
+      "definition_xid": "6A4F8C2D1E70",
+      "definition_sha256": "eb007fd4e5ff20d58a37941d550b9fd46f0172ca1aede109cddf9ecde34314b5",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/design_flow/meta.md",
+          "xid": "1B28D96E4C11",
+          "sha256": "e431e966b487a43b1f67063691e3aff09dc83a3b9708e2649fe31e2f78ec22cb"
+        },
+        {
+          "path": "skills/design_flow/SKILL.md",
+          "xid": "3D7A91B54210",
+          "sha256": "1c32b62140e26b87097e35d573e9617cd57f69cf850b9398699a0d28184a05a7"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/design_flow/meta.md",
+          "source_xid": "1B28D96E4C11",
+          "source_sha256": "e431e966b487a43b1f67063691e3aff09dc83a3b9708e2649fe31e2f78ec22cb",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "execute design business activity through reusable solution-design capability",
+          "source_path": "skills/design_flow/meta.md",
+          "source_xid": "1B28D96E4C11",
+          "source_sha256": "e431e966b487a43b1f67063691e3aff09dc83a3b9708e2649fe31e2f78ec22cb",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "user needs implementation-ready design after planning outputs are approved",
+          "source_path": "skills/design_flow/meta.md",
+          "source_xid": "1B28D96E4C11",
+          "source_sha256": "e431e966b487a43b1f67063691e3aff09dc83a3b9708e2649fe31e2f78ec22cb",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/design_flow/meta.md",
+          "source_xid": "1B28D96E4C11",
+          "source_sha256": "e431e966b487a43b1f67063691e3aff09dc83a3b9708e2649fe31e2f78ec22cb",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/design_flow/meta.md",
+          "source_xid": "1B28D96E4C11",
+          "source_sha256": "e431e966b487a43b1f67063691e3aff09dc83a3b9708e2649fe31e2f78ec22cb",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/design_flow/meta.md",
+          "source_xid": "1B28D96E4C11",
+          "source_sha256": "e431e966b487a43b1f67063691e3aff09dc83a3b9708e2649fe31e2f78ec22cb",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "dotnet_change_analysis",
+      "definition_path": "skills/dotnet_change_analysis/SKILL.v1.md",
+      "definition_xid": "9883EF4E8CA9",
+      "definition_sha256": "328709d2dc9909a8ea2c744ffb506941179e17a37b1b6f33b4c02c531e4684f7",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/dotnet_change_analysis/meta.md",
+          "xid": "1F4A6D20B8E1",
+          "sha256": "8141b751211703291508b116697ca53f0f9db22031675ca379faf24e689f1b5e"
+        },
+        {
+          "path": "skills/dotnet_change_analysis/SKILL.md",
+          "xid": "D94E3B3A7C11",
+          "sha256": "fbb75a1dafea020c96f46af40b947b5693b69649a645f29e73c3669f5aabd984"
+        }
+      ],
+      "legacy_maturity": "stable",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/dotnet_change_analysis/meta.md",
+          "source_xid": "1F4A6D20B8E1",
+          "source_sha256": "8141b751211703291508b116697ca53f0f9db22031675ca379faf24e689f1b5e",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "analyze .NET application structure and generate a Markdown change-analysis note for later design or implementation work",
+          "source_path": "skills/dotnet_change_analysis/meta.md",
+          "source_xid": "1F4A6D20B8E1",
+          "source_sha256": "8141b751211703291508b116697ca53f0f9db22031675ca379faf24e689f1b5e",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "user needs repository-based .NET structure analysis, impact investigation, or a Markdown change-analysis note before changing code, especially brownfield code where responsibility separation is not documented and must be read from the code",
+          "source_path": "skills/dotnet_change_analysis/meta.md",
+          "source_xid": "1F4A6D20B8E1",
+          "source_sha256": "8141b751211703291508b116697ca53f0f9db22031675ca379faf24e689f1b5e",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "subagent_preferred",
+          "source_path": "skills/dotnet_change_analysis/meta.md",
+          "source_xid": "1F4A6D20B8E1",
+          "source_sha256": "8141b751211703291508b116697ca53f0f9db22031675ca379faf24e689f1b5e",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/dotnet_change_analysis/meta.md",
+          "source_xid": "1F4A6D20B8E1",
+          "source_sha256": "8141b751211703291508b116697ca53f0f9db22031675ca379faf24e689f1b5e",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/dotnet_change_analysis/meta.md",
+          "source_xid": "1F4A6D20B8E1",
+          "source_sha256": "8141b751211703291508b116697ca53f0f9db22031675ca379faf24e689f1b5e",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "estimation_flow",
+      "definition_path": "skills/estimation_flow/SKILL.v1.md",
+      "definition_xid": "E2B7D9F4A130",
+      "definition_sha256": "1005995a84dcfc1eb3dd771b2c48a187135a828c9320945b69fbf7756328e792",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/estimation_flow/meta.md",
+          "xid": "EA208AA244DF",
+          "sha256": "7253dbae35403474ebc53bc1b70f8e59baa02a34764462973a4c895bd6541f2d"
+        },
+        {
+          "path": "skills/estimation_flow/SKILL.md",
+          "xid": "FB65EC653F0F",
+          "sha256": "b1e3044cfe045fce9db5c7230cac1f1d5c12f91e5f3498541b213072499bd9fe"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/estimation_flow/meta.md",
+          "source_xid": "EA208AA244DF",
+          "source_sha256": "7253dbae35403474ebc53bc1b70f8e59baa02a34764462973a4c895bd6541f2d",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "execute estimation business activities through reusable comparison, projection, option-structuring, and ambiguity-classification capabilities",
+          "source_path": "skills/estimation_flow/meta.md",
+          "source_xid": "EA208AA244DF",
+          "source_sha256": "7253dbae35403474ebc53bc1b70f8e59baa02a34764462973a4c895bd6541f2d",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "user needs estimate options, supplier checks, or assumption clarification before requirements",
+          "source_path": "skills/estimation_flow/meta.md",
+          "source_xid": "EA208AA244DF",
+          "source_sha256": "7253dbae35403474ebc53bc1b70f8e59baa02a34764462973a4c895bd6541f2d",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/estimation_flow/meta.md",
+          "source_xid": "EA208AA244DF",
+          "source_sha256": "7253dbae35403474ebc53bc1b70f8e59baa02a34764462973a4c895bd6541f2d",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/estimation_flow/meta.md",
+          "source_xid": "EA208AA244DF",
+          "source_sha256": "7253dbae35403474ebc53bc1b70f8e59baa02a34764462973a4c895bd6541f2d",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/estimation_flow/meta.md",
+          "source_xid": "EA208AA244DF",
+          "source_sha256": "7253dbae35403474ebc53bc1b70f8e59baa02a34764462973a4c895bd6541f2d",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "implementation_flow",
+      "definition_path": "skills/implementation_flow/SKILL.v1.md",
+      "definition_xid": "D7B4E9A2C610",
+      "definition_sha256": "b1e09961cb0eb8c37611efb7b8afed0bf102b25a2497c7f113dfc191791330f0",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/implementation_flow/meta.md",
+          "xid": "1832ADA8D6D4",
+          "sha256": "c484cd056778b9aec8d1fe01cc3d222dd6f7757b682f81f012975b04101a3adb"
+        },
+        {
+          "path": "skills/implementation_flow/SKILL.md",
+          "xid": "0ACF69A599D3",
+          "sha256": "88894b947aba9020f1b59daece74ef2828f0a289cdcbe28b3a0e63dd012599b7"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": "software_development",
+          "source_path": "skills/implementation_flow/meta.md",
+          "source_xid": "1832ADA8D6D4",
+          "source_sha256": "c484cd056778b9aec8d1fe01cc3d222dd6f7757b682f81f012975b04101a3adb",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "C#",
+          "source_path": "skills/implementation_flow/meta.md",
+          "source_xid": "1832ADA8D6D4",
+          "source_sha256": "c484cd056778b9aec8d1fe01cc3d222dd6f7757b682f81f012975b04101a3adb",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "implementation",
+          "source_path": "skills/implementation_flow/meta.md",
+          "source_xid": "1832ADA8D6D4",
+          "source_sha256": "c484cd056778b9aec8d1fe01cc3d222dd6f7757b682f81f012975b04101a3adb",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/implementation_flow/meta.md",
+          "source_xid": "1832ADA8D6D4",
+          "source_sha256": "c484cd056778b9aec8d1fe01cc3d222dd6f7757b682f81f012975b04101a3adb",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/implementation_flow/meta.md",
+          "source_xid": "1832ADA8D6D4",
+          "source_sha256": "c484cd056778b9aec8d1fe01cc3d222dd6f7757b682f81f012975b04101a3adb",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/implementation_flow/meta.md",
+          "source_xid": "1832ADA8D6D4",
+          "source_sha256": "c484cd056778b9aec8d1fe01cc3d222dd6f7757b682f81f012975b04101a3adb",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "import_skill",
+      "definition_path": "skills/import_skill/SKILL.v1.md",
+      "definition_xid": "D5A8C1E6B740",
+      "definition_sha256": "d0e470aed57f73681799045f8ad67c169bec58443c6ae9ce1937570958f6651a",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/import_skill/meta.md",
+          "xid": "1DF4555E1B02",
+          "sha256": "1c8aaaeebf016246446d487b4d83c50fed589fda8d81527ccc3b7c7c60a4cb5f"
+        },
+        {
+          "path": "skills/import_skill/SKILL.md",
+          "xid": "7C2A492D2B72",
+          "sha256": "66140a0ef05027df72b6d8ba6a8d8b791f1bf8aac122a59255ae04b6d6e738c7"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/import_skill/meta.md",
+          "source_xid": "1DF4555E1B02",
+          "source_sha256": "1c8aaaeebf016246446d487b4d83c50fed589fda8d81527ccc3b7c7c60a4cb5f",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "import external skill content into this repository split model",
+          "source_path": "skills/import_skill/meta.md",
+          "source_xid": "1DF4555E1B02",
+          "source_sha256": "1c8aaaeebf016246446d487b4d83c50fed589fda8d81527ccc3b7c7c60a4cb5f",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "external skill needs to be made runnable in this repo",
+          "source_path": "skills/import_skill/meta.md",
+          "source_xid": "1DF4555E1B02",
+          "source_sha256": "1c8aaaeebf016246446d487b4d83c50fed589fda8d81527ccc3b7c7c60a4cb5f",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/import_skill/meta.md",
+          "source_xid": "1DF4555E1B02",
+          "source_sha256": "1c8aaaeebf016246446d487b4d83c50fed589fda8d81527ccc3b7c7c60a4cb5f",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/import_skill/meta.md",
+          "source_xid": "1DF4555E1B02",
+          "source_sha256": "1c8aaaeebf016246446d487b4d83c50fed589fda8d81527ccc3b7c7c60a4cb5f",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/import_skill/meta.md",
+          "source_xid": "1DF4555E1B02",
+          "source_sha256": "1c8aaaeebf016246446d487b4d83c50fed589fda8d81527ccc3b7c7c60a4cb5f",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "investigation_flow",
+      "definition_path": "skills/investigation_flow/SKILL.v1.md",
+      "definition_xid": "E8B2D6A4C190",
+      "definition_sha256": "ac4a5fb1782a49e1446ae2fc89271930d21e5817291d43952516f29bcd141c5a",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/investigation_flow/meta.md",
+          "xid": "3C06EF778A20",
+          "sha256": "650e68f2c83d9197032b48c22b37f04450303fa99e28b6afe631d10ea0742e27"
+        },
+        {
+          "path": "skills/investigation_flow/SKILL.md",
+          "xid": "9C0115875B0C",
+          "sha256": "e414ddfd3779d1d975bcf3c18b9cd9afdc069d97cafb4f6c7ace168358f959ae"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/investigation_flow/meta.md",
+          "source_xid": "3C06EF778A20",
+          "source_sha256": "650e68f2c83d9197032b48c22b37f04450303fa99e28b6afe631d10ea0742e27",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "execute the investigation workflow from service catalog analysis through change-target summary using reusable investigation capabilities",
+          "source_path": "skills/investigation_flow/meta.md",
+          "source_xid": "3C06EF778A20",
+          "source_sha256": "650e68f2c83d9197032b48c22b37f04450303fa99e28b6afe631d10ea0742e27",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "user needs impact investigation before estimation or design",
+          "source_path": "skills/investigation_flow/meta.md",
+          "source_xid": "3C06EF778A20",
+          "source_sha256": "650e68f2c83d9197032b48c22b37f04450303fa99e28b6afe631d10ea0742e27",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/investigation_flow/meta.md",
+          "source_xid": "3C06EF778A20",
+          "source_sha256": "650e68f2c83d9197032b48c22b37f04450303fa99e28b6afe631d10ea0742e27",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/investigation_flow/meta.md",
+          "source_xid": "3C06EF778A20",
+          "source_sha256": "650e68f2c83d9197032b48c22b37f04450303fa99e28b6afe631d10ea0742e27",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/investigation_flow/meta.md",
+          "source_xid": "3C06EF778A20",
+          "source_sha256": "650e68f2c83d9197032b48c22b37f04450303fa99e28b6afe631d10ea0742e27",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "manufacturing_self_check",
+      "definition_path": "skills/manufacturing_self_check/SKILL.v1.md",
+      "definition_xid": "F1C8A3E6B270",
+      "definition_sha256": "fb6228894041371339c3a3c7dceb0ec607540d3dfa956c05f0cb978563a1cf0e",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/manufacturing_self_check/meta.md",
+          "xid": "60B1B69B0984",
+          "sha256": "8fca1c01392c26ad5796a3f71379faa6223cef3bd0665382a0867c73d9ab7102"
+        },
+        {
+          "path": "skills/manufacturing_self_check/SKILL.md",
+          "xid": "5D4E91B0D110",
+          "sha256": "67a7bc243f92a0160c39b922fa08e7459da3b304c656d0858f13cdedd66edada"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/manufacturing_self_check/meta.md",
+          "source_xid": "60B1B69B0984",
+          "source_sha256": "8fca1c01392c26ad5796a3f71379faa6223cef3bd0665382a0867c73d9ab7102",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "execute manufacturing self-check business activity through reusable design-alignment self-evaluation capability",
+          "source_path": "skills/manufacturing_self_check/meta.md",
+          "source_xid": "60B1B69B0984",
+          "source_sha256": "8fca1c01392c26ad5796a3f71379faa6223cef3bd0665382a0867c73d9ab7102",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "code, DB, or persistence implementation and unit testing are complete and manufacturing needs an internal alignment check",
+          "source_path": "skills/manufacturing_self_check/meta.md",
+          "source_xid": "60B1B69B0984",
+          "source_sha256": "8fca1c01392c26ad5796a3f71379faa6223cef3bd0665382a0867c73d9ab7102",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "subagent_preferred",
+          "source_path": "skills/manufacturing_self_check/meta.md",
+          "source_xid": "60B1B69B0984",
+          "source_sha256": "8fca1c01392c26ad5796a3f71379faa6223cef3bd0665382a0867c73d9ab7102",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/manufacturing_self_check/meta.md",
+          "source_xid": "60B1B69B0984",
+          "source_sha256": "8fca1c01392c26ad5796a3f71379faa6223cef3bd0665382a0867c73d9ab7102",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/manufacturing_self_check/meta.md",
+          "source_xid": "60B1B69B0984",
+          "source_sha256": "8fca1c01392c26ad5796a3f71379faa6223cef3bd0665382a0867c73d9ab7102",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "marketing_explainer_video",
+      "definition_path": "skills/marketing-explainer-video/SKILL.v1.md",
+      "definition_xid": "B8F1A6C4D720",
+      "definition_sha256": "261eb534c056bf4997aea05532ae326299da14ec40579e3f551441b61c5685d8",
+      "legacy_ids": [
+        "marketing-explainer-video"
+      ],
+      "legacy_sources": [
+        {
+          "path": "skills/marketing-explainer-video/meta.md",
+          "xid": "A6B923E41178",
+          "sha256": "ed67c324b9b1e58db5ad43d4b30d94550355b4e0d758ad1e4dfdfd8e3b4d8b38"
+        },
+        {
+          "path": "skills/marketing-explainer-video/SKILL.md",
+          "xid": "5E147B19D33D",
+          "sha256": "642b0cd19ee73b3c69b09a42b8eec9124cc610acf3dc3d9f405ba071249200bd"
+        }
+      ],
+      "legacy_maturity": "stable",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/marketing-explainer-video/meta.md",
+          "source_xid": "A6B923E41178",
+          "source_sha256": "ed67c324b9b1e58db5ad43d4b30d94550355b4e0d758ad1e4dfdfd8e3b4d8b38",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "create repository-ready narrated marketing explainer videos with staged slide reveals, TTS audio, licensing credits, previews, and README placement",
+          "source_path": "skills/marketing-explainer-video/meta.md",
+          "source_xid": "A6B923E41178",
+          "source_sha256": "ed67c324b9b1e58db5ad43d4b30d94550355b4e0d758ad1e4dfdfd8e3b4d8b38",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "user needs a short product overview video, AI/team explainer video, narrated slide video, Japanese or English marketing video, README-linked MP4, or conversion of a message flow into a video package",
+          "source_path": "skills/marketing-explainer-video/meta.md",
+          "source_xid": "A6B923E41178",
+          "source_sha256": "ed67c324b9b1e58db5ad43d4b30d94550355b4e0d758ad1e4dfdfd8e3b4d8b38",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/marketing-explainer-video/meta.md",
+          "source_xid": "A6B923E41178",
+          "source_sha256": "ed67c324b9b1e58db5ad43d4b30d94550355b4e0d758ad1e4dfdfd8e3b4d8b38",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/marketing-explainer-video/meta.md",
+          "source_xid": "A6B923E41178",
+          "source_sha256": "ed67c324b9b1e58db5ad43d4b30d94550355b4e0d758ad1e4dfdfd8e3b4d8b38",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/marketing-explainer-video/meta.md",
+          "source_xid": "A6B923E41178",
+          "source_sha256": "ed67c324b9b1e58db5ad43d4b30d94550355b4e0d758ad1e4dfdfd8e3b4d8b38",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "marketing_slide_png",
+      "definition_path": "skills/marketing_slide_png/SKILL.v1.md",
+      "definition_xid": "C2E7B9F5A130",
+      "definition_sha256": "7300b21dbdfd7bcefd2d026d17fc1a8c13db806e47c643705c333a67dc5820f9",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/marketing_slide_png/meta.md",
+          "xid": "5E2C4A90D711",
+          "sha256": "45c2d8692426a0a2b23cc7e42f8853c83295bfb29725effd671d68bb255fd11b"
+        },
+        {
+          "path": "skills/marketing_slide_png/SKILL.md",
+          "xid": "91B67D4AC2F3",
+          "sha256": "141eef49ade65b470c745f13fd65588b22e9bf57f43645fe4c5533822c65f194"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/marketing_slide_png/meta.md",
+          "source_xid": "5E2C4A90D711",
+          "source_sha256": "45c2d8692426a0a2b23cc7e42f8853c83295bfb29725effd671d68bb255fd11b",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "create marketing-group slide visuals or standalone repository infographics by rendering CSS/HTML diagrams to PNG",
+          "source_path": "skills/marketing_slide_png/meta.md",
+          "source_xid": "5E2C4A90D711",
+          "source_sha256": "45c2d8692426a0a2b23cc7e42f8853c83295bfb29725effd671d68bb255fd11b",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "user needs presentation diagrams, figure-first slides, or a one-page repository explainer image where the final visual must be readable and rerenderable",
+          "source_path": "skills/marketing_slide_png/meta.md",
+          "source_xid": "5E2C4A90D711",
+          "source_sha256": "45c2d8692426a0a2b23cc7e42f8853c83295bfb29725effd671d68bb255fd11b",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/marketing_slide_png/meta.md",
+          "source_xid": "5E2C4A90D711",
+          "source_sha256": "45c2d8692426a0a2b23cc7e42f8853c83295bfb29725effd671d68bb255fd11b",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/marketing_slide_png/meta.md",
+          "source_xid": "5E2C4A90D711",
+          "source_sha256": "45c2d8692426a0a2b23cc7e42f8853c83295bfb29725effd671d68bb255fd11b",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/marketing_slide_png/meta.md",
+          "source_xid": "5E2C4A90D711",
+          "source_sha256": "45c2d8692426a0a2b23cc7e42f8853c83295bfb29725effd671d68bb255fd11b",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "consultation_research_mapping",
+      "definition_path": "skills/os/consultation_research_mapping/SKILL.v1.md",
+      "definition_xid": "A4D7B2E9C610",
+      "definition_sha256": "c0f33d7226669c5b7c391aa1deebee5791817e7497a75b5bbc56c8c3ea19429c",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/os/consultation_research_mapping/meta.md",
+          "xid": "0985CDA7359E",
+          "sha256": "4e5194ed43c0591381441a1cce4e21c38d114cf253005e2ba0718cb5d7e24f26"
+        },
+        {
+          "path": "skills/os/consultation_research_mapping/SKILL.md",
+          "xid": "0EE4E8E8223E",
+          "sha256": "eacae9dac953b113e3dfbad273d6b80b47c3217afb2c0976422d847258f73d08"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/os/consultation_research_mapping/meta.md",
+          "source_xid": "0985CDA7359E",
+          "source_sha256": "4e5194ed43c0591381441a1cce4e21c38d114cf253005e2ba0718cb5d7e24f26",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "map a consultation topic to prior research, known reusable patterns, deterministic extraction work, and the remaining non-deterministic judgment space",
+          "source_path": "skills/os/consultation_research_mapping/meta.md",
+          "source_xid": "0985CDA7359E",
+          "source_sha256": "4e5194ed43c0591381441a1cce4e21c38d114cf253005e2ba0718cb5d7e24f26",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "a user brings a consultation, design question, strategy question, or vague technical/business topic and wants to avoid reinventing the wheel by first identifying prior art, established approaches, reusable methods, and which parts should be handled deterministically versus left to LLM or human judgment",
+          "source_path": "skills/os/consultation_research_mapping/meta.md",
+          "source_xid": "0985CDA7359E",
+          "source_sha256": "4e5194ed43c0591381441a1cce4e21c38d114cf253005e2ba0718cb5d7e24f26",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "subagent_preferred",
+          "source_path": "skills/os/consultation_research_mapping/meta.md",
+          "source_xid": "0985CDA7359E",
+          "source_sha256": "4e5194ed43c0591381441a1cce4e21c38d114cf253005e2ba0718cb5d7e24f26",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/os/consultation_research_mapping/meta.md",
+          "source_xid": "0985CDA7359E",
+          "source_sha256": "4e5194ed43c0591381441a1cce4e21c38d114cf253005e2ba0718cb5d7e24f26",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/os/consultation_research_mapping/meta.md",
+          "source_xid": "0985CDA7359E",
+          "source_sha256": "4e5194ed43c0591381441a1cce4e21c38d114cf253005e2ba0718cb5d7e24f26",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "doc_ship",
+      "definition_path": "skills/os/doc_ship/SKILL.v1.md",
+      "definition_xid": "B4E8A1C7D260",
+      "definition_sha256": "8d994660ef69501f08e5cd21fe49140c188f7999437a0e718ccc6e042620fb05",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/os/doc_ship/meta.md",
+          "xid": "9F38C7A15D4E",
+          "sha256": "f1fdc12bed4f12ab8f3b4e506006646419adbbb03426773065af955e23b3b4a9"
+        },
+        {
+          "path": "skills/os/doc_ship/SKILL.md",
+          "xid": "E4B61C9027AF",
+          "sha256": "084c268b747806c6ec84eaa13350a10df7b54617366ac63c787b0d5d04eb83a8"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/os/doc_ship/meta.md",
+          "source_xid": "9F38C7A15D4E",
+          "source_sha256": "f1fdc12bed4f12ab8f3b4e506006646419adbbb03426773065af955e23b3b4a9",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "apply approved promotion candidates from `work/` into canonical repository assets and leave traceable moved-to pointers",
+          "source_path": "skills/os/doc_ship/meta.md",
+          "source_xid": "9F38C7A15D4E",
+          "source_sha256": "f1fdc12bed4f12ab8f3b4e506006646419adbbb03426773065af955e23b3b4a9",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "retro` or an equivalent review has identified stable promotion candidates and the user wants those candidates reflected in `docs/`, `knowledge/`, `skills/`, or `agent/",
+          "source_path": "skills/os/doc_ship/meta.md",
+          "source_xid": "9F38C7A15D4E",
+          "source_sha256": "f1fdc12bed4f12ab8f3b4e506006646419adbbb03426773065af955e23b3b4a9",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/os/doc_ship/meta.md",
+          "source_xid": "9F38C7A15D4E",
+          "source_sha256": "f1fdc12bed4f12ab8f3b4e506006646419adbbb03426773065af955e23b3b4a9",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/os/doc_ship/meta.md",
+          "source_xid": "9F38C7A15D4E",
+          "source_sha256": "f1fdc12bed4f12ab8f3b4e506006646419adbbb03426773065af955e23b3b4a9",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/os/doc_ship/meta.md",
+          "source_xid": "9F38C7A15D4E",
+          "source_sha256": "f1fdc12bed4f12ab8f3b4e506006646419adbbb03426773065af955e23b3b4a9",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "domain_knowledge_catalog_preparation",
+      "definition_path": "skills/os/domain_knowledge_catalog_preparation/SKILL.v1.md",
+      "definition_xid": "A7C9E2D4F610",
+      "definition_sha256": "bdf784246dc0165f22060afdf69b3cdf2c6c3783c842b3de030639e8aac99966",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/os/domain_knowledge_catalog_preparation/meta.md",
+          "xid": "A409BACC6918",
+          "sha256": "bca04d529b5b7fdb4724f14b576d03d0742947b92887a9111bab113266750130"
+        },
+        {
+          "path": "skills/os/domain_knowledge_catalog_preparation/SKILL.md",
+          "xid": "EE95165681E8",
+          "sha256": "32fe35413ab91cababb7b3f49e4200674d6a6604c8e8b2001fb014bbfebb8639"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/os/domain_knowledge_catalog_preparation/meta.md",
+          "source_xid": "A409BACC6918",
+          "source_sha256": "bca04d529b5b7fdb4724f14b576d03d0742947b92887a9111bab113266750130",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "prepare MCP domain-knowledge supply for Skill runtime selection without importing external XID-bearing knowledge into this repository",
+          "source_path": "skills/os/domain_knowledge_catalog_preparation/meta.md",
+          "source_xid": "A409BACC6918",
+          "source_sha256": "bca04d529b5b7fdb4724f14b576d03d0742947b92887a9111bab113266750130",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "list and summarize MCP-ingested domain knowledge, validate XID/selectability metadata, and make repository plus external domain knowledge available as one XID-addressable supply for downstream Skills",
+          "source_path": "skills/os/domain_knowledge_catalog_preparation/meta.md",
+          "source_xid": "A409BACC6918",
+          "source_sha256": "bca04d529b5b7fdb4724f14b576d03d0742947b92887a9111bab113266750130",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/os/domain_knowledge_catalog_preparation/meta.md",
+          "source_xid": "A409BACC6918",
+          "source_sha256": "bca04d529b5b7fdb4724f14b576d03d0742947b92887a9111bab113266750130",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/os/domain_knowledge_catalog_preparation/meta.md",
+          "source_xid": "A409BACC6918",
+          "source_sha256": "bca04d529b5b7fdb4724f14b576d03d0742947b92887a9111bab113266750130",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/os/domain_knowledge_catalog_preparation/meta.md",
+          "source_xid": "A409BACC6918",
+          "source_sha256": "bca04d529b5b7fdb4724f14b576d03d0742947b92887a9111bab113266750130",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "goal_mode",
+      "definition_path": "skills/os/goal_mode/SKILL.v1.md",
+      "definition_xid": "E6A2C9F4B710",
+      "definition_sha256": "cdda5bc0cd01865a571964abd5ae78509a222f77a56dda746f283bd8d661e522",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/os/goal_mode/meta.md",
+          "xid": "5C2D7A91E4F3",
+          "sha256": "874e3701b9a43260f13905337f182f8704352a616341dfcb334996882cbe3424"
+        },
+        {
+          "path": "skills/os/goal_mode/SKILL.md",
+          "xid": "8E17D4C2B6A5",
+          "sha256": "20c4eccd5f31911f6fac99e70ad9fde3ec89f00248a41fd470083c0a2522aef7"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/os/goal_mode/meta.md",
+          "source_xid": "5C2D7A91E4F3",
+          "source_sha256": "874e3701b9a43260f13905337f182f8704352a616341dfcb334996882cbe3424",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "preserve task state, wait for Codex usage recovery, and resume the same goal after the next 5-hour or weekly reset",
+          "source_path": "skills/os/goal_mode/meta.md",
+          "source_xid": "5C2D7A91E4F3",
+          "source_sha256": "874e3701b9a43260f13905337f182f8704352a616341dfcb334996882cbe3424",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "a user wants Codex work to continue toward the same goal even when usage remaining can reach `0%`, and the repository must preserve a restart-ready continuation packet instead of silently stopping",
+          "source_path": "skills/os/goal_mode/meta.md",
+          "source_xid": "5C2D7A91E4F3",
+          "source_sha256": "874e3701b9a43260f13905337f182f8704352a616341dfcb334996882cbe3424",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/os/goal_mode/meta.md",
+          "source_xid": "5C2D7A91E4F3",
+          "source_sha256": "874e3701b9a43260f13905337f182f8704352a616341dfcb334996882cbe3424",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/os/goal_mode/meta.md",
+          "source_xid": "5C2D7A91E4F3",
+          "source_sha256": "874e3701b9a43260f13905337f182f8704352a616341dfcb334996882cbe3424",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/os/goal_mode/meta.md",
+          "source_xid": "5C2D7A91E4F3",
+          "source_sha256": "874e3701b9a43260f13905337f182f8704352a616341dfcb334996882cbe3424",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "judgment_log",
+      "definition_path": "skills/os/judgment_log/SKILL.v1.md",
+      "definition_xid": "C6A2E9B4D170",
+      "definition_sha256": "0283350eb86c6091bd882887f67e50b98915afd4f7dcf9da52adcaa958bea633",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/os/judgment_log/meta.md",
+          "xid": "E3C8A16D4B02",
+          "sha256": "36f9a4a1a04cd58043824f79a9c625cedc95d08e195bddb8b8371c47fd1042da"
+        },
+        {
+          "path": "skills/os/judgment_log/SKILL.md",
+          "xid": "2A9E4C71D5F2",
+          "sha256": "1842a0a9acc7e18a19852c50d519a468667772d3f4d677c6163ad6f2bbcbcd8d"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/os/judgment_log/meta.md",
+          "source_xid": "E3C8A16D4B02",
+          "source_sha256": "36f9a4a1a04cd58043824f79a9c625cedc95d08e195bddb8b8371c47fd1042da",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "write a judgment log that records decision, evidence, inference boundary, confidence, and next verification step",
+          "source_path": "skills/os/judgment_log/meta.md",
+          "source_xid": "E3C8A16D4B02",
+          "source_sha256": "36f9a4a1a04cd58043824f79a9c625cedc95d08e195bddb8b8371c47fd1042da",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "a task produces a non-trivial judgment that should be inspectable or reusable later, especially when confidence is mixed or alternatives exist",
+          "source_path": "skills/os/judgment_log/meta.md",
+          "source_xid": "E3C8A16D4B02",
+          "source_sha256": "36f9a4a1a04cd58043824f79a9c625cedc95d08e195bddb8b8371c47fd1042da",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/os/judgment_log/meta.md",
+          "source_xid": "E3C8A16D4B02",
+          "source_sha256": "36f9a4a1a04cd58043824f79a9c625cedc95d08e195bddb8b8371c47fd1042da",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/os/judgment_log/meta.md",
+          "source_xid": "E3C8A16D4B02",
+          "source_sha256": "36f9a4a1a04cd58043824f79a9c625cedc95d08e195bddb8b8371c47fd1042da",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/os/judgment_log/meta.md",
+          "source_xid": "E3C8A16D4B02",
+          "source_sha256": "36f9a4a1a04cd58043824f79a9c625cedc95d08e195bddb8b8371c47fd1042da",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "knowledge_ontology_management",
+      "definition_path": "skills/os/knowledge_ontology_management/SKILL.v1.md",
+      "definition_xid": "F8A2C6D1B370",
+      "definition_sha256": "433237393de28ca5658d5ead9bbf75b6bca9930070a12ad3754facded8604370",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/os/knowledge_ontology_management/meta.md",
+          "xid": "83EDDDB5E158",
+          "sha256": "34afb4155a9733b9e7d0a12ef1135c644e79906c93337ae2c10edd5fc49ed1c6"
+        },
+        {
+          "path": "skills/os/knowledge_ontology_management/SKILL.md",
+          "xid": "EB78A6EAFBCC",
+          "sha256": "79280997d328e1722470fd8e59847be6b298b0bd8d29c3732f2ab2b11befdc51"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/os/knowledge_ontology_management/meta.md",
+          "source_xid": "83EDDDB5E158",
+          "source_sha256": "34afb4155a9733b9e7d0a12ef1135c644e79906c93337ae2c10edd5fc49ed1c6",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "curate new or materially revised domain knowledge through concept identity, duplication, split, replacement, and typed-relationship assessment before canonical publication",
+          "source_path": "skills/os/knowledge_ontology_management/meta.md",
+          "source_xid": "83EDDDB5E158",
+          "source_sha256": "34afb4155a9733b9e7d0a12ef1135c644e79906c93337ae2c10edd5fc49ed1c6",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "a user or workflow will add a new canonical fragment under `knowledge/`, promote source material into domain knowledge, or materially revise the meaning, scope, applicability, or relationships of existing domain knowledge; do not use for typo-only, formatting-only, or mechanical XID-link maintenance",
+          "source_path": "skills/os/knowledge_ontology_management/meta.md",
+          "source_xid": "83EDDDB5E158",
+          "source_sha256": "34afb4155a9733b9e7d0a12ef1135c644e79906c93337ae2c10edd5fc49ed1c6",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/os/knowledge_ontology_management/meta.md",
+          "source_xid": "83EDDDB5E158",
+          "source_sha256": "34afb4155a9733b9e7d0a12ef1135c644e79906c93337ae2c10edd5fc49ed1c6",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/os/knowledge_ontology_management/meta.md",
+          "source_xid": "83EDDDB5E158",
+          "source_sha256": "34afb4155a9733b9e7d0a12ef1135c644e79906c93337ae2c10edd5fc49ed1c6",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/os/knowledge_ontology_management/meta.md",
+          "source_xid": "83EDDDB5E158",
+          "source_sha256": "34afb4155a9733b9e7d0a12ef1135c644e79906c93337ae2c10edd5fc49ed1c6",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "legacy_flow_skill_migration",
+      "definition_path": "skills/os/legacy_flow_skill_migration/SKILL.v1.md",
+      "definition_xid": "F8C1A5D3E920",
+      "definition_sha256": "46af209e3dc82bcebbc15185770054b841cfd71cc0cf7466e068ed8b39a63d8a",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/os/legacy_flow_skill_migration/meta.md",
+          "xid": "8F1D7A2C4B63",
+          "sha256": "435632e1d9cf4131d199e1304058e8ea5cdf108439609012f9487f1b47995e46"
+        },
+        {
+          "path": "skills/os/legacy_flow_skill_migration/SKILL.md",
+          "xid": "C5E2A7D19F84",
+          "sha256": "f033dd14a30ca5b73638e6dc0cbaca978cca36990d82d9f92e4b6ecfa4f1a455"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/os/legacy_flow_skill_migration/meta.md",
+          "source_xid": "8F1D7A2C4B63",
+          "source_sha256": "435632e1d9cf4131d199e1304058e8ea5cdf108439609012f9487f1b47995e46",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "analyze a Flow / Skill from an older XRefKit state and generate a current trial-first migration scaffold",
+          "source_path": "skills/os/legacy_flow_skill_migration/meta.md",
+          "source_xid": "8F1D7A2C4B63",
+          "source_sha256": "435632e1d9cf4131d199e1304058e8ea5cdf108439609012f9487f1b47995e46",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "a user has a Flow / Skill created on an older XRefKit state and wants to migrate it into the current repository structure without hand-mapping everything from scratch",
+          "source_path": "skills/os/legacy_flow_skill_migration/meta.md",
+          "source_xid": "8F1D7A2C4B63",
+          "source_sha256": "435632e1d9cf4131d199e1304058e8ea5cdf108439609012f9487f1b47995e46",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/os/legacy_flow_skill_migration/meta.md",
+          "source_xid": "8F1D7A2C4B63",
+          "source_sha256": "435632e1d9cf4131d199e1304058e8ea5cdf108439609012f9487f1b47995e46",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/os/legacy_flow_skill_migration/meta.md",
+          "source_xid": "8F1D7A2C4B63",
+          "source_sha256": "435632e1d9cf4131d199e1304058e8ea5cdf108439609012f9487f1b47995e46",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/os/legacy_flow_skill_migration/meta.md",
+          "source_xid": "8F1D7A2C4B63",
+          "source_sha256": "435632e1d9cf4131d199e1304058e8ea5cdf108439609012f9487f1b47995e46",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "retro",
+      "definition_path": "skills/os/retro/SKILL.v1.md",
+      "definition_xid": "D7F1A4C9B280",
+      "definition_sha256": "d8c1caf63b56870944ea7d24ce19d2de00ee2b6572342285f8377a6d376d62c0",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/os/retro/meta.md",
+          "xid": "6E8296A4C2D1",
+          "sha256": "2afc5f9deed8d3b1d68a05aff5c3bac291482414bcc2155a98ac16896521a49a"
+        },
+        {
+          "path": "skills/os/retro/SKILL.md",
+          "xid": "C17B52E8F4A3",
+          "sha256": "7ae8f561a5093dbdb0262ead5605fb56a79a0661a422ed05c3d18ebcf1626938"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/os/retro/meta.md",
+          "source_xid": "6E8296A4C2D1",
+          "source_sha256": "2afc5f9deed8d3b1d68a05aff5c3bac291482414bcc2155a98ac16896521a49a",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "review session logs and current work artifacts, then propose promotion candidates from `work/` into canonical repository assets",
+          "source_path": "skills/os/retro/meta.md",
+          "source_xid": "6E8296A4C2D1",
+          "source_sha256": "2afc5f9deed8d3b1d68a05aff5c3bac291482414bcc2155a98ac16896521a49a",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "a task or work session is ending and the agent should determine whether stable rules, knowledge, or procedures must be promoted out of `work/",
+          "source_path": "skills/os/retro/meta.md",
+          "source_xid": "6E8296A4C2D1",
+          "source_sha256": "2afc5f9deed8d3b1d68a05aff5c3bac291482414bcc2155a98ac16896521a49a",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/os/retro/meta.md",
+          "source_xid": "6E8296A4C2D1",
+          "source_sha256": "2afc5f9deed8d3b1d68a05aff5c3bac291482414bcc2155a98ac16896521a49a",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/os/retro/meta.md",
+          "source_xid": "6E8296A4C2D1",
+          "source_sha256": "2afc5f9deed8d3b1d68a05aff5c3bac291482414bcc2155a98ac16896521a49a",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/os/retro/meta.md",
+          "source_xid": "6E8296A4C2D1",
+          "source_sha256": "2afc5f9deed8d3b1d68a05aff5c3bac291482414bcc2155a98ac16896521a49a",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "skill_calibration_evaluation",
+      "definition_path": "skills/os/skill_calibration_evaluation/SKILL.v1.md",
+      "definition_xid": "E3B7A1C8D490",
+      "definition_sha256": "ad97581b72490563baadb2114675e68546206bfc3c0e475a3dd72ab97489e617",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/os/skill_calibration_evaluation/meta.md",
+          "xid": "6F3A9C2D7B10",
+          "sha256": "b1e7313b6677a6360a5b2319c0911b1ac1314c4dd28d3e8134424b67de3c5369"
+        },
+        {
+          "path": "skills/os/skill_calibration_evaluation/SKILL.md",
+          "xid": "720938921D2C",
+          "sha256": "e4c0c25600c1628f2718d18863e2b2a32d1e39fa53533e60ab8994485bbb6956"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": "quality_assurance",
+          "source_path": "skills/os/skill_calibration_evaluation/meta.md",
+          "source_xid": "6F3A9C2D7B10",
+          "source_sha256": "b1e7313b6677a6360a5b2319c0911b1ac1314c4dd28d3e8134424b67de3c5369",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "package_skill_calibration",
+          "source_path": "skills/os/skill_calibration_evaluation/meta.md",
+          "source_xid": "6F3A9C2D7B10",
+          "source_sha256": "b1e7313b6677a6360a5b2319c0911b1ac1314c4dd28d3e8134424b67de3c5369",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "independent calibration evaluation of published Skill outputs",
+          "source_path": "skills/os/skill_calibration_evaluation/meta.md",
+          "source_xid": "6F3A9C2D7B10",
+          "source_sha256": "b1e7313b6677a6360a5b2319c0911b1ac1314c4dd28d3e8134424b67de3c5369",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "subagent_preferred",
+          "source_path": "skills/os/skill_calibration_evaluation/meta.md",
+          "source_xid": "6F3A9C2D7B10",
+          "source_sha256": "b1e7313b6677a6360a5b2319c0911b1ac1314c4dd28d3e8134424b67de3c5369",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/os/skill_calibration_evaluation/meta.md",
+          "source_xid": "6F3A9C2D7B10",
+          "source_sha256": "b1e7313b6677a6360a5b2319c0911b1ac1314c4dd28d3e8134424b67de3c5369",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/os/skill_calibration_evaluation/meta.md",
+          "source_xid": "6F3A9C2D7B10",
+          "source_sha256": "b1e7313b6677a6360a5b2319c0911b1ac1314c4dd28d3e8134424b67de3c5369",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "skill_flow_authoring",
+      "definition_path": "skills/os/skill_flow_authoring/SKILL.v1.md",
+      "definition_xid": "B8D1A4C7E260",
+      "definition_sha256": "1eb46adc1ddba120b4562671890655cf90be851bfbba3b3f407d86cf077ba572",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/os/skill_flow_authoring/meta.md",
+          "xid": "D37E2B5C8A41",
+          "sha256": "131f0a2fcf8d0cbdcbabea13627071d8ee25be01f7dcb801d9ac8af7a257d324"
+        },
+        {
+          "path": "skills/os/skill_flow_authoring/SKILL.md",
+          "xid": "C1B7A42D8E53",
+          "sha256": "db6fe4fc32a384933be15ff0e062f908784afce24853ccc3976e60ff76b5aa4c"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/os/skill_flow_authoring/meta.md",
+          "source_xid": "D37E2B5C8A41",
+          "source_sha256": "131f0a2fcf8d0cbdcbabea13627071d8ee25be01f7dcb801d9ac8af7a257d324",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "create or evolve repository-native Skill / Flow assets in XRefKit through scaffold, gap diagnosis, human revision, trial promotion, observation, and validation",
+          "source_path": "skills/os/skill_flow_authoring/meta.md",
+          "source_xid": "D37E2B5C8A41",
+          "source_sha256": "131f0a2fcf8d0cbdcbabea13627071d8ee25be01f7dcb801d9ac8af7a257d324",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "a user wants to create a new Skill, a new Flow, or both in this repository, especially when the work must be reusable, publicly published under the correct `skills/` family path, aligned with `flows/` as machine-readable workflow control, and forced to carry anti-forgetting structure for later AI reuse",
+          "source_path": "skills/os/skill_flow_authoring/meta.md",
+          "source_xid": "D37E2B5C8A41",
+          "source_sha256": "131f0a2fcf8d0cbdcbabea13627071d8ee25be01f7dcb801d9ac8af7a257d324",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/os/skill_flow_authoring/meta.md",
+          "source_xid": "D37E2B5C8A41",
+          "source_sha256": "131f0a2fcf8d0cbdcbabea13627071d8ee25be01f7dcb801d9ac8af7a257d324",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/os/skill_flow_authoring/meta.md",
+          "source_xid": "D37E2B5C8A41",
+          "source_sha256": "131f0a2fcf8d0cbdcbabea13627071d8ee25be01f7dcb801d9ac8af7a257d324",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/os/skill_flow_authoring/meta.md",
+          "source_xid": "D37E2B5C8A41",
+          "source_sha256": "131f0a2fcf8d0cbdcbabea13627071d8ee25be01f7dcb801d9ac8af7a257d324",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "source_structure_findings_registration",
+      "definition_path": "skills/os/source_structure_findings_registration/SKILL.v1.md",
+      "definition_xid": "A9C4E1B7D260",
+      "definition_sha256": "98909ab917c2b782a8176af31013edf408cd52acbfd6ddc43463b42a5c00decb",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/os/source_structure_findings_registration/meta.md",
+          "xid": "E42C9F1A6B70",
+          "sha256": "3801a46431204025c0c39e9e69af9ec12802585761e269b80d74b90e8b59bdac"
+        },
+        {
+          "path": "skills/os/source_structure_findings_registration/SKILL.md",
+          "xid": "C8D4E7A19F62",
+          "sha256": "bd578c8683beb529a7b5331bc1fbb1c5543bef3fa98bb270ef9873a2159f74ad"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/os/source_structure_findings_registration/meta.md",
+          "source_xid": "E42C9F1A6B70",
+          "source_sha256": "3801a46431204025c0c39e9e69af9ec12802585761e269b80d74b90e8b59bdac",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "register existing source-analysis Markdown into canonical source-structure knowledge without re-running structure analysis",
+          "source_path": "skills/os/source_structure_findings_registration/meta.md",
+          "source_xid": "E42C9F1A6B70",
+          "source_sha256": "3801a46431204025c0c39e9e69af9ec12802585761e269b80d74b90e8b59bdac",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "read an existing analysis Markdown artifact, extract the reusable current-source finding metadata, and prepare or apply the corresponding canonical knowledge registration",
+          "source_path": "skills/os/source_structure_findings_registration/meta.md",
+          "source_xid": "E42C9F1A6B70",
+          "source_sha256": "3801a46431204025c0c39e9e69af9ec12802585761e269b80d74b90e8b59bdac",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/os/source_structure_findings_registration/meta.md",
+          "source_xid": "E42C9F1A6B70",
+          "source_sha256": "3801a46431204025c0c39e9e69af9ec12802585761e269b80d74b90e8b59bdac",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/os/source_structure_findings_registration/meta.md",
+          "source_xid": "E42C9F1A6B70",
+          "source_sha256": "3801a46431204025c0c39e9e69af9ec12802585761e269b80d74b90e8b59bdac",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/os/source_structure_findings_registration/meta.md",
+          "source_xid": "E42C9F1A6B70",
+          "source_sha256": "3801a46431204025c0c39e9e69af9ec12802585761e269b80d74b90e8b59bdac",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "batch_impact_regression",
+      "definition_path": "skills/packs/batch-regression/batch-impact-regression/SKILL.v1.md",
+      "definition_xid": "E8F6C3A1D952",
+      "definition_sha256": "a369ab4882e480338089e3866e1c731443a1af6a0081b7de6c5c023d900b9de4",
+      "legacy_ids": [
+        "batch-impact-regression"
+      ],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/batch-regression/batch-impact-regression/meta.md",
+          "xid": "9D2E6A4C7B81",
+          "sha256": "0ba4ecc0c0fd415fcdf3a89b6286d497fb9419f453b25a7b6c23953ca2fc52d1"
+        },
+        {
+          "path": "skills/packs/batch-regression/batch-impact-regression/SKILL.md",
+          "xid": "517E99B3082E",
+          "sha256": "ea20a00ec310104458f222ebbcacf0a32039cf1dfc0fad1d7739f7280825220b"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": "combination-based batch impact analysis and regression comparison",
+          "source_path": "skills/packs/batch-regression/batch-impact-regression/meta.md",
+          "source_xid": "9D2E6A4C7B81",
+          "source_sha256": "0ba4ecc0c0fd415fcdf3a89b6286d497fb9419f453b25a7b6c23953ca2fc52d1",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "C# plus SQL Server stored-procedure execution-path tracing with safe isolated execution",
+          "source_path": "skills/packs/batch-regression/batch-impact-regression/meta.md",
+          "source_xid": "9D2E6A4C7B81",
+          "source_sha256": "0ba4ecc0c0fd415fcdf3a89b6286d497fb9419f453b25a7b6c23953ca2fc52d1",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "execute evidence-backed change-impact analysis and prepare human-reviewable regression evidence",
+          "source_path": "skills/packs/batch-regression/batch-impact-regression/meta.md",
+          "source_xid": "9D2E6A4C7B81",
+          "source_sha256": "0ba4ecc0c0fd415fcdf3a89b6286d497fb9419f453b25a7b6c23953ca2fc52d1",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/packs/batch-regression/batch-impact-regression/meta.md",
+          "source_xid": "9D2E6A4C7B81",
+          "source_sha256": "0ba4ecc0c0fd415fcdf3a89b6286d497fb9419f453b25a7b6c23953ca2fc52d1",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/packs/batch-regression/batch-impact-regression/meta.md",
+          "source_xid": "9D2E6A4C7B81",
+          "source_sha256": "0ba4ecc0c0fd415fcdf3a89b6286d497fb9419f453b25a7b6c23953ca2fc52d1",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/batch-regression/batch-impact-regression/meta.md",
+          "source_xid": "9D2E6A4C7B81",
+          "source_sha256": "0ba4ecc0c0fd415fcdf3a89b6286d497fb9419f453b25a7b6c23953ca2fc52d1",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "business_intake_scoping",
+      "definition_path": "skills/packs/business-intake/business_intake_scoping/SKILL.v1.md",
+      "definition_xid": "B6C4E9A2D782",
+      "definition_sha256": "16e14e363f271dcf3b89549965e7bf325839f48b9cd683f2a6ec2d9ceac9cde3",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/business-intake/business_intake_scoping/meta.md",
+          "xid": "4E9B2C18D740",
+          "sha256": "428f66359df251f3ca6ab17a7139090247b42cd52fe5fc348ff93c09eca9f257"
+        },
+        {
+          "path": "skills/packs/business-intake/business_intake_scoping/SKILL.md",
+          "xid": "6F2A9C41E8B3",
+          "sha256": "b1da541b5eefc4c435ab3274932078b5c928023c2091f02174c18767429b4d64"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/business-intake/business_intake_scoping/meta.md",
+          "source_xid": "4E9B2C18D740",
+          "source_sha256": "428f66359df251f3ca6ab17a7139090247b42cd52fe5fc348ff93c09eca9f257",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "discover and scope one business task into a boundary-visible responsibility unit even when the user only knows partial materials or structure",
+          "source_path": "skills/packs/business-intake/business_intake_scoping/meta.md",
+          "source_xid": "4E9B2C18D740",
+          "source_sha256": "428f66359df251f3ca6ab17a7139090247b42cd52fe5fc348ff93c09eca9f257",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "a user wants to import business work into this repository, but only knows fragments such as a task name, one owner, one artifact, one trouble point, or a partial handoff and needs the AI to build the first usable scope",
+          "source_path": "skills/packs/business-intake/business_intake_scoping/meta.md",
+          "source_xid": "4E9B2C18D740",
+          "source_sha256": "428f66359df251f3ca6ab17a7139090247b42cd52fe5fc348ff93c09eca9f257",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/packs/business-intake/business_intake_scoping/meta.md",
+          "source_xid": "4E9B2C18D740",
+          "source_sha256": "428f66359df251f3ca6ab17a7139090247b42cd52fe5fc348ff93c09eca9f257",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/packs/business-intake/business_intake_scoping/meta.md",
+          "source_xid": "4E9B2C18D740",
+          "source_sha256": "428f66359df251f3ca6ab17a7139090247b42cd52fe5fc348ff93c09eca9f257",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/business-intake/business_intake_scoping/meta.md",
+          "source_xid": "4E9B2C18D740",
+          "source_sha256": "428f66359df251f3ca6ab17a7139090247b42cd52fe5fc348ff93c09eca9f257",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "business_learning_interview",
+      "definition_path": "skills/packs/business-intake/business_learning_interview/SKILL.v1.md",
+      "definition_xid": "B6C4E9A2D781",
+      "definition_sha256": "e698e16c28803049ff10f9971526bde3e8bad4b8e824337cf414be7bb0ccd884",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/business-intake/business_learning_interview/meta.md",
+          "xid": "2B6D4F18A3C1",
+          "sha256": "c6f563ea02f78ae6f8d23a9057c4e77c3a41f0eefbd97cd1dd6df66992262cf7"
+        },
+        {
+          "path": "skills/packs/business-intake/business_learning_interview/SKILL.md",
+          "xid": "4D8E1A7C5B92",
+          "sha256": "147d39dbbb87ad50625e2f5fa17711670710dd0c52ed918b252f389d86be0e26"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/business-intake/business_learning_interview/meta.md",
+          "source_xid": "2B6D4F18A3C1",
+          "source_sha256": "c6f563ea02f78ae6f8d23a9057c4e77c3a41f0eefbd97cd1dd6df66992262cf7",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "learn a business task from a human through goal-first interview and convert partial fragments into a structured business hypothesis",
+          "source_path": "skills/packs/business-intake/business_learning_interview/meta.md",
+          "source_xid": "2B6D4F18A3C1",
+          "source_sha256": "c6f563ea02f78ae6f8d23a9057c4e77c3a41f0eefbd97cd1dd6df66992262cf7",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "a user wants to teach the AI about a business task conversationally, but can better explain the intended goal than the full process, or only knows fragments, tacit operational knowledge, bottlenecks, or partial handoffs",
+          "source_path": "skills/packs/business-intake/business_learning_interview/meta.md",
+          "source_xid": "2B6D4F18A3C1",
+          "source_sha256": "c6f563ea02f78ae6f8d23a9057c4e77c3a41f0eefbd97cd1dd6df66992262cf7",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/packs/business-intake/business_learning_interview/meta.md",
+          "source_xid": "2B6D4F18A3C1",
+          "source_sha256": "c6f563ea02f78ae6f8d23a9057c4e77c3a41f0eefbd97cd1dd6df66992262cf7",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "heavy",
+          "source_path": "skills/packs/business-intake/business_learning_interview/meta.md",
+          "source_xid": "2B6D4F18A3C1",
+          "source_sha256": "c6f563ea02f78ae6f8d23a9057c4e77c3a41f0eefbd97cd1dd6df66992262cf7",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/business-intake/business_learning_interview/meta.md",
+          "source_xid": "2B6D4F18A3C1",
+          "source_sha256": "c6f563ea02f78ae6f8d23a9057c4e77c3a41f0eefbd97cd1dd6df66992262cf7",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "conversation_topic_branch_mapping",
+      "definition_path": "skills/packs/business-intake/conversation_topic_branch_mapping/SKILL.v1.md",
+      "definition_xid": "9D6A4F2B1C80",
+      "definition_sha256": "57168fdb3e80fdd282b3436a53ae8fe78c80e524c88e06081b98a18229e68bf6",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/business-intake/conversation_topic_branch_mapping/meta.md",
+          "xid": "59777C84933D",
+          "sha256": "7dc07f5ec0a27c5b1f36dc25157deb74d2bd29a01d66a391a0a72ff3f48ae0a0"
+        },
+        {
+          "path": "skills/packs/business-intake/conversation_topic_branch_mapping/SKILL.md",
+          "xid": "2E755FFA0A86",
+          "sha256": "0b28313182282bc1e36fd8e7de9ba280d84061185cbada43600135d12c660d19"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/business-intake/conversation_topic_branch_mapping/meta.md",
+          "source_xid": "59777C84933D",
+          "source_sha256": "7dc07f5ec0a27c5b1f36dc25157deb74d2bd29a01d66a391a0a72ff3f48ae0a0",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "map business conversation topics across days and show each topic's current state, participant involvement, central coordination candidates, unknowns, and ontology-promotion candidates",
+          "source_path": "skills/packs/business-intake/conversation_topic_branch_mapping/meta.md",
+          "source_xid": "59777C84933D",
+          "source_sha256": "7dc07f5ec0a27c5b1f36dc25157deb74d2bd29a01d66a391a0a72ff3f48ae0a0",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "a user provides already-collected Teams, Slack, email, GitHub, Jira, Backlog, or transcript messages where business topics continue across days, branch into related subtopics, or need a topic-by-topic view of who is involved, how strongly they are involved, who currently matters for coordination, and which local terms or patterns may later be routed to ontology management",
+          "source_path": "skills/packs/business-intake/conversation_topic_branch_mapping/meta.md",
+          "source_xid": "59777C84933D",
+          "source_sha256": "7dc07f5ec0a27c5b1f36dc25157deb74d2bd29a01d66a391a0a72ff3f48ae0a0",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "subagent_preferred",
+          "source_path": "skills/packs/business-intake/conversation_topic_branch_mapping/meta.md",
+          "source_xid": "59777C84933D",
+          "source_sha256": "7dc07f5ec0a27c5b1f36dc25157deb74d2bd29a01d66a391a0a72ff3f48ae0a0",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/packs/business-intake/conversation_topic_branch_mapping/meta.md",
+          "source_xid": "59777C84933D",
+          "source_sha256": "7dc07f5ec0a27c5b1f36dc25157deb74d2bd29a01d66a391a0a72ff3f48ae0a0",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/business-intake/conversation_topic_branch_mapping/meta.md",
+          "source_xid": "59777C84933D",
+          "source_sha256": "7dc07f5ec0a27c5b1f36dc25157deb74d2bd29a01d66a391a0a72ff3f48ae0a0",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "decision_topology_analysis",
+      "definition_path": "skills/packs/business-intake/decision_topology_analysis/SKILL.v1.md",
+      "definition_xid": "B7E3C1A9D640",
+      "definition_sha256": "5bbb4588efc1d83edce51ef467073b5c289ad91fdb2e12e69937814e90082572",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/business-intake/decision_topology_analysis/meta.md",
+          "xid": "2C927E868B25",
+          "sha256": "891421ee994149fbb2e02d655bcd51c5ad2d26501c29b7199fc2e9d050c20f24"
+        },
+        {
+          "path": "skills/packs/business-intake/decision_topology_analysis/SKILL.md",
+          "xid": "502BB91D25FA",
+          "sha256": "9fe86fab43568fc435fe473d9e1d5b878a5dd852b15aaa14036af53c563c7380"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/business-intake/decision_topology_analysis/meta.md",
+          "source_xid": "2C927E868B25",
+          "source_sha256": "891421ee994149fbb2e02d655bcd51c5ad2d26501c29b7199fc2e9d050c20f24",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "convert normalized online business conversation evidence into an evidence-bound Decision Topology and Stakeholder Influence Map for choosing the next business action",
+          "source_path": "skills/packs/business-intake/decision_topology_analysis/meta.md",
+          "source_xid": "2C927E868B25",
+          "source_sha256": "891421ee994149fbb2e02d655bcd51c5ad2d26501c29b7199fc2e9d050c20f24",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "a user provides already-collected Teams, Slack, email, GitHub, Jira, Backlog, or transcript messages and wants to identify topic-specific decision influence, blockers, gatekeepers, concern owners, approval dependencies, unresolved issues, missing Domain Grounding, and the next evidence-supported business action",
+          "source_path": "skills/packs/business-intake/decision_topology_analysis/meta.md",
+          "source_xid": "2C927E868B25",
+          "source_sha256": "891421ee994149fbb2e02d655bcd51c5ad2d26501c29b7199fc2e9d050c20f24",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "subagent_preferred",
+          "source_path": "skills/packs/business-intake/decision_topology_analysis/meta.md",
+          "source_xid": "2C927E868B25",
+          "source_sha256": "891421ee994149fbb2e02d655bcd51c5ad2d26501c29b7199fc2e9d050c20f24",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/packs/business-intake/decision_topology_analysis/meta.md",
+          "source_xid": "2C927E868B25",
+          "source_sha256": "891421ee994149fbb2e02d655bcd51c5ad2d26501c29b7199fc2e9d050c20f24",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/business-intake/decision_topology_analysis/meta.md",
+          "source_xid": "2C927E868B25",
+          "source_sha256": "891421ee994149fbb2e02d655bcd51c5ad2d26501c29b7199fc2e9d050c20f24",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "async_constraint_derivation",
+      "definition_path": "skills/packs/constraint-derivation/async_constraint_derivation/SKILL.v1.md",
+      "definition_xid": "9A4C7E1D2B60",
+      "definition_sha256": "db42e0d571080cbc2211b9ac724e2533700ce7855b6ede03d3c6fdd32b90d229",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/constraint-derivation/async_constraint_derivation/meta.md",
+          "xid": "F6580A1C2345",
+          "sha256": "65ea84776f906f801d7c1a2e8b011def8f110801d7d1b89aa0e496826d7b96a9"
+        },
+        {
+          "path": "skills/packs/constraint-derivation/async_constraint_derivation/SKILL.md",
+          "xid": "F6580A1C2346",
+          "sha256": "f50b4d57d2ef0dbd4446b42e1065cba29a1772d203d65f39fe62d3cb528edec3"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/async_constraint_derivation/meta.md",
+          "source_xid": "F6580A1C2345",
+          "source_sha256": "65ea84776f906f801d7c1a2e8b011def8f110801d7d1b89aa0e496826d7b96a9",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "derive requirement confirmation gates from asynchronous jobs, queues, schedules, and batch execution structure",
+          "source_path": "skills/packs/constraint-derivation/async_constraint_derivation/meta.md",
+          "source_xid": "F6580A1C2345",
+          "source_sha256": "65ea84776f906f801d7c1a2e8b011def8f110801d7d1b89aa0e496826d7b96a9",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "queue, job, or batch specs may leave retry, restart, duplicate-run, or partial-failure behavior to implicit AI completion",
+          "source_path": "skills/packs/constraint-derivation/async_constraint_derivation/meta.md",
+          "source_xid": "F6580A1C2345",
+          "source_sha256": "65ea84776f906f801d7c1a2e8b011def8f110801d7d1b89aa0e496826d7b96a9",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/packs/constraint-derivation/async_constraint_derivation/meta.md",
+          "source_xid": "F6580A1C2345",
+          "source_sha256": "65ea84776f906f801d7c1a2e8b011def8f110801d7d1b89aa0e496826d7b96a9",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/packs/constraint-derivation/async_constraint_derivation/meta.md",
+          "source_xid": "F6580A1C2345",
+          "source_sha256": "65ea84776f906f801d7c1a2e8b011def8f110801d7d1b89aa0e496826d7b96a9",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/async_constraint_derivation/meta.md",
+          "source_xid": "F6580A1C2345",
+          "source_sha256": "65ea84776f906f801d7c1a2e8b011def8f110801d7d1b89aa0e496826d7b96a9",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "auth_constraint_derivation",
+      "definition_path": "skills/packs/constraint-derivation/auth_constraint_derivation/SKILL.v1.md",
+      "definition_xid": "C8F2A6D1E430",
+      "definition_sha256": "707e0788f735a1eaa8a09d87f2867cf8cb13a5c2d3d10a07db1f69457431af1c",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/constraint-derivation/auth_constraint_derivation/meta.md",
+          "xid": "A7691B2D3456",
+          "sha256": "b2ff80cc5f10c43ac5015e83ab2e2d42eabe34bdea492b1ab874681a333e2e16"
+        },
+        {
+          "path": "skills/packs/constraint-derivation/auth_constraint_derivation/SKILL.md",
+          "xid": "A7691B2D3457",
+          "sha256": "34499a477630b5e374cf514ae2d781231d4259c110a5d04aa6cdebbd4809518b"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/auth_constraint_derivation/meta.md",
+          "source_xid": "A7691B2D3456",
+          "source_sha256": "b2ff80cc5f10c43ac5015e83ab2e2d42eabe34bdea492b1ab874681a333e2e16",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "derive requirement confirmation gates from authentication, authorization, and account-governance structure",
+          "source_path": "skills/packs/constraint-derivation/auth_constraint_derivation/meta.md",
+          "source_xid": "A7691B2D3456",
+          "source_sha256": "b2ff80cc5f10c43ac5015e83ab2e2d42eabe34bdea492b1ab874681a333e2e16",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "auth or permission specs may leave session, role, or access-boundary behavior to implicit AI completion",
+          "source_path": "skills/packs/constraint-derivation/auth_constraint_derivation/meta.md",
+          "source_xid": "A7691B2D3456",
+          "source_sha256": "b2ff80cc5f10c43ac5015e83ab2e2d42eabe34bdea492b1ab874681a333e2e16",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/packs/constraint-derivation/auth_constraint_derivation/meta.md",
+          "source_xid": "A7691B2D3456",
+          "source_sha256": "b2ff80cc5f10c43ac5015e83ab2e2d42eabe34bdea492b1ab874681a333e2e16",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/packs/constraint-derivation/auth_constraint_derivation/meta.md",
+          "source_xid": "A7691B2D3456",
+          "source_sha256": "b2ff80cc5f10c43ac5015e83ab2e2d42eabe34bdea492b1ab874681a333e2e16",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/auth_constraint_derivation/meta.md",
+          "source_xid": "A7691B2D3456",
+          "source_sha256": "b2ff80cc5f10c43ac5015e83ab2e2d42eabe34bdea492b1ab874681a333e2e16",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "code_constraint_derivation",
+      "definition_path": "skills/packs/constraint-derivation/code_constraint_derivation/SKILL.v1.md",
+      "definition_xid": "7C4E9A1B2D60",
+      "definition_sha256": "9759e93a79ba9b67f23cd6768cd89042d1cb44adff3849eb2a6ea18ecae43c06",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/constraint-derivation/code_constraint_derivation/meta.md",
+          "xid": "D4701BFC6EA4",
+          "sha256": "ba07592aa2ef5d57ff91f6ddf3a9ff3cdb084c9ac5d273ed4800e76fef1d1e55"
+        },
+        {
+          "path": "skills/packs/constraint-derivation/code_constraint_derivation/SKILL.md",
+          "xid": "D4701BFC6EA5",
+          "sha256": "ad6256ea1f0a926c44895a8776a6b8969488fd03c751c010c5f6a9612799d5a9"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/code_constraint_derivation/meta.md",
+          "source_xid": "D4701BFC6EA4",
+          "source_sha256": "ba07592aa2ef5d57ff91f6ddf3a9ff3cdb084c9ac5d273ed4800e76fef1d1e55",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "derive hidden assumptions and selected business constraints from generated or reviewed C# code",
+          "source_path": "skills/packs/constraint-derivation/code_constraint_derivation/meta.md",
+          "source_xid": "D4701BFC6EA4",
+          "source_sha256": "ba07592aa2ef5d57ff91f6ddf3a9ff3cdb084c9ac5d273ed4800e76fef1d1e55",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "AI-generated or manually reviewed C# code may embed asymmetric branches, implicit preconditions, or hidden business thresholds that need human confirmation",
+          "source_path": "skills/packs/constraint-derivation/code_constraint_derivation/meta.md",
+          "source_xid": "D4701BFC6EA4",
+          "source_sha256": "ba07592aa2ef5d57ff91f6ddf3a9ff3cdb084c9ac5d273ed4800e76fef1d1e55",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/packs/constraint-derivation/code_constraint_derivation/meta.md",
+          "source_xid": "D4701BFC6EA4",
+          "source_sha256": "ba07592aa2ef5d57ff91f6ddf3a9ff3cdb084c9ac5d273ed4800e76fef1d1e55",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/packs/constraint-derivation/code_constraint_derivation/meta.md",
+          "source_xid": "D4701BFC6EA4",
+          "source_sha256": "ba07592aa2ef5d57ff91f6ddf3a9ff3cdb084c9ac5d273ed4800e76fef1d1e55",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/code_constraint_derivation/meta.md",
+          "source_xid": "D4701BFC6EA4",
+          "source_sha256": "ba07592aa2ef5d57ff91f6ddf3a9ff3cdb084c9ac5d273ed4800e76fef1d1e55",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "commonality_derivation",
+      "definition_path": "skills/packs/constraint-derivation/commonality_derivation/SKILL.v1.md",
+      "definition_xid": "E7B3C951A2D0",
+      "definition_sha256": "5bb4d4cbd600f817da2df5f728b88b5967fbef3f5965e35223ef07b6c8524751",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/constraint-derivation/commonality_derivation/meta.md",
+          "xid": "B87A2C3E4567",
+          "sha256": "531fca966930974f02a6f37c3f2790e0e800e2ee25448e18d135e8b76ef11e87"
+        },
+        {
+          "path": "skills/packs/constraint-derivation/commonality_derivation/SKILL.md",
+          "xid": "B87A2C3E4568",
+          "sha256": "48f063a922b0f7853bd5def3e4a4e8bdaee937a8b459ae802e710a4fb807dc41"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/commonality_derivation/meta.md",
+          "source_xid": "B87A2C3E4567",
+          "source_sha256": "531fca966930974f02a6f37c3f2790e0e800e2ee25448e18d135e8b76ef11e87",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "derive cross-cutting commonality candidates from completed primary constraint-derivation outputs",
+          "source_path": "skills/packs/constraint-derivation/commonality_derivation/meta.md",
+          "source_xid": "B87A2C3E4567",
+          "source_sha256": "531fca966930974f02a6f37c3f2790e0e800e2ee25448e18d135e8b76ef11e87",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "multiple primary derivation outputs exist and the user needs a second pass for shared implementation candidates or scope-boundary checks",
+          "source_path": "skills/packs/constraint-derivation/commonality_derivation/meta.md",
+          "source_xid": "B87A2C3E4567",
+          "source_sha256": "531fca966930974f02a6f37c3f2790e0e800e2ee25448e18d135e8b76ef11e87",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/packs/constraint-derivation/commonality_derivation/meta.md",
+          "source_xid": "B87A2C3E4567",
+          "source_sha256": "531fca966930974f02a6f37c3f2790e0e800e2ee25448e18d135e8b76ef11e87",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/packs/constraint-derivation/commonality_derivation/meta.md",
+          "source_xid": "B87A2C3E4567",
+          "source_sha256": "531fca966930974f02a6f37c3f2790e0e800e2ee25448e18d135e8b76ef11e87",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/commonality_derivation/meta.md",
+          "source_xid": "B87A2C3E4567",
+          "source_sha256": "531fca966930974f02a6f37c3f2790e0e800e2ee25448e18d135e8b76ef11e87",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "constraint_derivation_index",
+      "definition_path": "skills/packs/constraint-derivation/constraint_derivation_index/SKILL.v1.md",
+      "definition_xid": "A4C9E2B7D160",
+      "definition_sha256": "aa7b6a70ccb08672e3bacf4dcc97b49b824246d7b94bc9fdca111fb3b85bb0b9",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/constraint-derivation/constraint_derivation_index/meta.md",
+          "xid": "A103B5C7D900",
+          "sha256": "d7daaf8cf648c3e76ab834e90ff72195ef688f39a0ce8427e4a1f0563a03e0d8"
+        },
+        {
+          "path": "skills/packs/constraint-derivation/constraint_derivation_index/SKILL.md",
+          "xid": "A103B5C7D901",
+          "sha256": "44e0119590fc9458b24ebde8475cca54ca438f36274b0d5f7ec51ebee4f0247b"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/constraint_derivation_index/meta.md",
+          "source_xid": "A103B5C7D900",
+          "source_sha256": "d7daaf8cf648c3e76ab834e90ff72195ef688f39a0ce8427e4a1f0563a03e0d8",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "route design or implementation artifacts to the correct bidirectional constraint-derivation Skills and sequence the secondary commonality pass",
+          "source_path": "skills/packs/constraint-derivation/constraint_derivation_index/meta.md",
+          "source_xid": "A103B5C7D900",
+          "source_sha256": "d7daaf8cf648c3e76ab834e90ff72195ef688f39a0ce8427e4a1f0563a03e0d8",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "design specifications or implementation artifacts need derivation of missing confirmations, hidden assumptions, or boundary scenarios without implicit AI completion",
+          "source_path": "skills/packs/constraint-derivation/constraint_derivation_index/meta.md",
+          "source_xid": "A103B5C7D900",
+          "source_sha256": "d7daaf8cf648c3e76ab834e90ff72195ef688f39a0ce8427e4a1f0563a03e0d8",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/packs/constraint-derivation/constraint_derivation_index/meta.md",
+          "source_xid": "A103B5C7D900",
+          "source_sha256": "d7daaf8cf648c3e76ab834e90ff72195ef688f39a0ce8427e4a1f0563a03e0d8",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "light",
+          "source_path": "skills/packs/constraint-derivation/constraint_derivation_index/meta.md",
+          "source_xid": "A103B5C7D900",
+          "source_sha256": "d7daaf8cf648c3e76ab834e90ff72195ef688f39a0ce8427e4a1f0563a03e0d8",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/constraint_derivation_index/meta.md",
+          "source_xid": "A103B5C7D900",
+          "source_sha256": "d7daaf8cf648c3e76ab834e90ff72195ef688f39a0ce8427e4a1f0563a03e0d8",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "cross_constraint_derivation",
+      "definition_path": "skills/packs/constraint-derivation/cross_constraint_derivation/SKILL.v1.md",
+      "definition_xid": "F4A8D2C6B190",
+      "definition_sha256": "8c2da3f187a63cabf275ff84057c55f586bb592ffec4740ca264d35ca72cfb63",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/constraint-derivation/cross_constraint_derivation/meta.md",
+          "xid": "E5812C0D7FB6",
+          "sha256": "6dbccc5ff987035d8641ba38ed57126ebfbc75415e3e2976184726e4e9a21b17"
+        },
+        {
+          "path": "skills/packs/constraint-derivation/cross_constraint_derivation/SKILL.md",
+          "xid": "E5812C0D7FB7",
+          "sha256": "a74be574f3108da9d241a44a9c67b1fe23a2061de2906de63a220ed6d1dad7c3"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/cross_constraint_derivation/meta.md",
+          "source_xid": "E5812C0D7FB6",
+          "source_sha256": "6dbccc5ff987035d8641ba38ed57126ebfbc75415e3e2976184726e4e9a21b17",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "compare DDL structure and C# processing structure to surface missing flows, implicit assumptions, and duplicated rule ownership",
+          "source_path": "skills/packs/constraint-derivation/cross_constraint_derivation/meta.md",
+          "source_xid": "E5812C0D7FB6",
+          "source_sha256": "6dbccc5ff987035d8641ba38ed57126ebfbc75415e3e2976184726e4e9a21b17",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "DDL and corresponding C# code both exist and their mismatch may expose missing use-case handling or undocumented assumptions",
+          "source_path": "skills/packs/constraint-derivation/cross_constraint_derivation/meta.md",
+          "source_xid": "E5812C0D7FB6",
+          "source_sha256": "6dbccc5ff987035d8641ba38ed57126ebfbc75415e3e2976184726e4e9a21b17",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/packs/constraint-derivation/cross_constraint_derivation/meta.md",
+          "source_xid": "E5812C0D7FB6",
+          "source_sha256": "6dbccc5ff987035d8641ba38ed57126ebfbc75415e3e2976184726e4e9a21b17",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "heavy",
+          "source_path": "skills/packs/constraint-derivation/cross_constraint_derivation/meta.md",
+          "source_xid": "E5812C0D7FB6",
+          "source_sha256": "6dbccc5ff987035d8641ba38ed57126ebfbc75415e3e2976184726e4e9a21b17",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/cross_constraint_derivation/meta.md",
+          "source_xid": "E5812C0D7FB6",
+          "source_sha256": "6dbccc5ff987035d8641ba38ed57126ebfbc75415e3e2976184726e4e9a21b17",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "design_constraint_derivation",
+      "definition_path": "skills/packs/constraint-derivation/design_constraint_derivation/SKILL.v1.md",
+      "definition_xid": "A6D9F3B1C720",
+      "definition_sha256": "2868cecd1a4e19736963e445081ea42524fa153b2d0faf20ed34ae1d4b39e7a2",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/constraint-derivation/design_constraint_derivation/meta.md",
+          "xid": "B214C6D8E011",
+          "sha256": "2ede90595a451a3360974fdad37d15c36bdbaf8670217091d3a55c95598938bf"
+        },
+        {
+          "path": "skills/packs/constraint-derivation/design_constraint_derivation/SKILL.md",
+          "xid": "B214C6D8E012",
+          "sha256": "8c63483cbe3e4585f45465240734fe10fa8aad819d431b0faf812c31b9e0df2c"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/design_constraint_derivation/meta.md",
+          "source_xid": "B214C6D8E011",
+          "source_sha256": "2ede90595a451a3360974fdad37d15c36bdbaf8670217091d3a55c95598938bf",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "derive requirement confirmation gates from data-structure, database, relationship, and operation design",
+          "source_path": "skills/packs/constraint-derivation/design_constraint_derivation/meta.md",
+          "source_xid": "B214C6D8E011",
+          "source_sha256": "2ede90595a451a3360974fdad37d15c36bdbaf8670217091d3a55c95598938bf",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "DDL, schema, ER, or CRUD-oriented design structures may hide unresolved behavior that AI would otherwise complete implicitly",
+          "source_path": "skills/packs/constraint-derivation/design_constraint_derivation/meta.md",
+          "source_xid": "B214C6D8E011",
+          "source_sha256": "2ede90595a451a3360974fdad37d15c36bdbaf8670217091d3a55c95598938bf",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/packs/constraint-derivation/design_constraint_derivation/meta.md",
+          "source_xid": "B214C6D8E011",
+          "source_sha256": "2ede90595a451a3360974fdad37d15c36bdbaf8670217091d3a55c95598938bf",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/packs/constraint-derivation/design_constraint_derivation/meta.md",
+          "source_xid": "B214C6D8E011",
+          "source_sha256": "2ede90595a451a3360974fdad37d15c36bdbaf8670217091d3a55c95598938bf",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/design_constraint_derivation/meta.md",
+          "source_xid": "B214C6D8E011",
+          "source_sha256": "2ede90595a451a3360974fdad37d15c36bdbaf8670217091d3a55c95598938bf",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "integration_constraint_derivation",
+      "definition_path": "skills/packs/constraint-derivation/integration_constraint_derivation/SKILL.v1.md",
+      "definition_xid": "9A1C4E7D2B60",
+      "definition_sha256": "f7ad4032bee77d48872f7a6475e14d73172647ad893847ee155b63fba75ffaa0",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/constraint-derivation/integration_constraint_derivation/meta.md",
+          "xid": "E547F90B1234",
+          "sha256": "4c70a6c73fa71cf8ddfaf821f38e15e92759a48142e050c44c51c13529813168"
+        },
+        {
+          "path": "skills/packs/constraint-derivation/integration_constraint_derivation/SKILL.md",
+          "xid": "E547F90B1235",
+          "sha256": "6af44c2f34891fa08e9f1b088ab4b6f9af2d32125eba1eadda0cf74c5cee5ebd"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/integration_constraint_derivation/meta.md",
+          "source_xid": "E547F90B1234",
+          "source_sha256": "4c70a6c73fa71cf8ddfaf821f38e15e92759a48142e050c44c51c13529813168",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "derive requirement confirmation gates from external APIs, webhooks, files, and messaging integration structure",
+          "source_path": "skills/packs/constraint-derivation/integration_constraint_derivation/meta.md",
+          "source_xid": "E547F90B1234",
+          "source_sha256": "4c70a6c73fa71cf8ddfaf821f38e15e92759a48142e050c44c51c13529813168",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "external integration specs may leave failure, timing, retry, or idempotency behavior to implicit AI completion",
+          "source_path": "skills/packs/constraint-derivation/integration_constraint_derivation/meta.md",
+          "source_xid": "E547F90B1234",
+          "source_sha256": "4c70a6c73fa71cf8ddfaf821f38e15e92759a48142e050c44c51c13529813168",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/packs/constraint-derivation/integration_constraint_derivation/meta.md",
+          "source_xid": "E547F90B1234",
+          "source_sha256": "4c70a6c73fa71cf8ddfaf821f38e15e92759a48142e050c44c51c13529813168",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/packs/constraint-derivation/integration_constraint_derivation/meta.md",
+          "source_xid": "E547F90B1234",
+          "source_sha256": "4c70a6c73fa71cf8ddfaf821f38e15e92759a48142e050c44c51c13529813168",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/integration_constraint_derivation/meta.md",
+          "source_xid": "E547F90B1234",
+          "source_sha256": "4c70a6c73fa71cf8ddfaf821f38e15e92759a48142e050c44c51c13529813168",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "integration_scenario_derivation",
+      "definition_path": "skills/packs/constraint-derivation/integration_scenario_derivation/SKILL.v1.md",
+      "definition_xid": "5F8B2D6A1C90",
+      "definition_sha256": "51c57592010bb79e71566548a5ebb5c04be947f7733af5ca94f9d531f3a20fea",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/constraint-derivation/integration_scenario_derivation/meta.md",
+          "xid": "F6923D1E80C8",
+          "sha256": "f87c1cb554883426424a5a071f65a3f04c4f21e7dcfc649d2d02fffbb17e3edb"
+        },
+        {
+          "path": "skills/packs/constraint-derivation/integration_scenario_derivation/SKILL.md",
+          "xid": "F6923D1E80C9",
+          "sha256": "d8ada48dae6e0679749086f9d3391a2fb4b6b92c90a285a2bb0ed8c9d66628c1"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/integration_scenario_derivation/meta.md",
+          "source_xid": "F6923D1E80C8",
+          "source_sha256": "f87c1cb554883426424a5a071f65a3f04c4f21e7dcfc649d2d02fffbb17e3edb",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "derive integration-only failure and compensation scenarios from DDL, processing order, and external system boundaries",
+          "source_path": "skills/packs/constraint-derivation/integration_scenario_derivation/meta.md",
+          "source_xid": "F6923D1E80C8",
+          "source_sha256": "f87c1cb554883426424a5a071f65a3f04c4f21e7dcfc649d2d02fffbb17e3edb",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "DDL, code, and external-boundary specs together may hide partial-failure, retry, or compensation scenarios that unit-level reasoning misses",
+          "source_path": "skills/packs/constraint-derivation/integration_scenario_derivation/meta.md",
+          "source_xid": "F6923D1E80C8",
+          "source_sha256": "f87c1cb554883426424a5a071f65a3f04c4f21e7dcfc649d2d02fffbb17e3edb",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/packs/constraint-derivation/integration_scenario_derivation/meta.md",
+          "source_xid": "F6923D1E80C8",
+          "source_sha256": "f87c1cb554883426424a5a071f65a3f04c4f21e7dcfc649d2d02fffbb17e3edb",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "heavy",
+          "source_path": "skills/packs/constraint-derivation/integration_scenario_derivation/meta.md",
+          "source_xid": "F6923D1E80C8",
+          "source_sha256": "f87c1cb554883426424a5a071f65a3f04c4f21e7dcfc649d2d02fffbb17e3edb",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/integration_scenario_derivation/meta.md",
+          "source_xid": "F6923D1E80C8",
+          "source_sha256": "f87c1cb554883426424a5a071f65a3f04c4f21e7dcfc649d2d02fffbb17e3edb",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "logic_constraint_derivation",
+      "definition_path": "skills/packs/constraint-derivation/logic_constraint_derivation/SKILL.v1.md",
+      "definition_xid": "3D7A9E2B4C60",
+      "definition_sha256": "93f01ba029e3c07c8ef819f056caaf5ce851e748dbba62d49b356af4406502ab",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/constraint-derivation/logic_constraint_derivation/meta.md",
+          "xid": "D436E8FA0123",
+          "sha256": "fce29a0422c6f77b8f2843ebf6be32d666faec6aeee9c4d3060cae1e725d9ed4"
+        },
+        {
+          "path": "skills/packs/constraint-derivation/logic_constraint_derivation/SKILL.md",
+          "xid": "D436E8FA0124",
+          "sha256": "f1d894500bdd817b01d3d6b1f6c26a7483a5b89c9a9d01413698c088b391190c"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/logic_constraint_derivation/meta.md",
+          "source_xid": "D436E8FA0123",
+          "source_sha256": "fce29a0422c6f77b8f2843ebf6be32d666faec6aeee9c4d3060cae1e725d9ed4",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "derive requirement confirmation gates from branching, calculations, state transitions, and approval logic",
+          "source_path": "skills/packs/constraint-derivation/logic_constraint_derivation/meta.md",
+          "source_xid": "D436E8FA0123",
+          "source_sha256": "fce29a0422c6f77b8f2843ebf6be32d666faec6aeee9c4d3060cae1e725d9ed4",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "business-logic specs may leave boundary, exception, or transition behavior to implicit AI completion",
+          "source_path": "skills/packs/constraint-derivation/logic_constraint_derivation/meta.md",
+          "source_xid": "D436E8FA0123",
+          "source_sha256": "fce29a0422c6f77b8f2843ebf6be32d666faec6aeee9c4d3060cae1e725d9ed4",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/packs/constraint-derivation/logic_constraint_derivation/meta.md",
+          "source_xid": "D436E8FA0123",
+          "source_sha256": "fce29a0422c6f77b8f2843ebf6be32d666faec6aeee9c4d3060cae1e725d9ed4",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/packs/constraint-derivation/logic_constraint_derivation/meta.md",
+          "source_xid": "D436E8FA0123",
+          "source_sha256": "fce29a0422c6f77b8f2843ebf6be32d666faec6aeee9c4d3060cae1e725d9ed4",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/logic_constraint_derivation/meta.md",
+          "source_xid": "D436E8FA0123",
+          "source_sha256": "fce29a0422c6f77b8f2843ebf6be32d666faec6aeee9c4d3060cae1e725d9ed4",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "ui_constraint_derivation",
+      "definition_path": "skills/packs/constraint-derivation/ui_constraint_derivation/SKILL.v1.md",
+      "definition_xid": "6B1F8D3A5E20",
+      "definition_sha256": "01151472c0d81e059f34fee1b695df75358a8ac9a7d5c162aa4be4c331eb58bb",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/constraint-derivation/ui_constraint_derivation/meta.md",
+          "xid": "C325D7E9F122",
+          "sha256": "179233b5214af25b0054143e14b6c49f2c5683980eaf3c2ceb975b1e5703b56f"
+        },
+        {
+          "path": "skills/packs/constraint-derivation/ui_constraint_derivation/SKILL.md",
+          "xid": "C325D7E9F123",
+          "sha256": "b5525ac63927e86e1c890743d936afa6d230737ef740425972f3e896fa5e776a"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/ui_constraint_derivation/meta.md",
+          "source_xid": "C325D7E9F122",
+          "source_sha256": "179233b5214af25b0054143e14b6c49f2c5683980eaf3c2ceb975b1e5703b56f",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "derive requirement confirmation gates from UI structure, interaction states, and screen transitions",
+          "source_path": "skills/packs/constraint-derivation/ui_constraint_derivation/meta.md",
+          "source_xid": "C325D7E9F122",
+          "source_sha256": "179233b5214af25b0054143e14b6c49f2c5683980eaf3c2ceb975b1e5703b56f",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "screen specifications, wireframes, or UI behavior notes may leave states or transitions to implicit AI completion",
+          "source_path": "skills/packs/constraint-derivation/ui_constraint_derivation/meta.md",
+          "source_xid": "C325D7E9F122",
+          "source_sha256": "179233b5214af25b0054143e14b6c49f2c5683980eaf3c2ceb975b1e5703b56f",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/packs/constraint-derivation/ui_constraint_derivation/meta.md",
+          "source_xid": "C325D7E9F122",
+          "source_sha256": "179233b5214af25b0054143e14b6c49f2c5683980eaf3c2ceb975b1e5703b56f",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/packs/constraint-derivation/ui_constraint_derivation/meta.md",
+          "source_xid": "C325D7E9F122",
+          "source_sha256": "179233b5214af25b0054143e14b6c49f2c5683980eaf3c2ceb975b1e5703b56f",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/constraint-derivation/ui_constraint_derivation/meta.md",
+          "source_xid": "C325D7E9F122",
+          "source_sha256": "179233b5214af25b0054143e14b6c49f2c5683980eaf3c2ceb975b1e5703b56f",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "crosspost_release",
+      "definition_path": "skills/packs/editorial-ops/crosspost_release/SKILL.v1.md",
+      "definition_xid": "B7D2A9F4C160",
+      "definition_sha256": "35cd00bf5ed4c8689c999befd2b0ea0f9b29e98188ec1e6328a61833386e2678",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/editorial-ops/crosspost_release/meta.md",
+          "xid": "E2E73BDF143A",
+          "sha256": "143fd54cd2d20c32fa0f900f52797c79c8789e49ef045d3af0537057a2302754"
+        },
+        {
+          "path": "skills/packs/editorial-ops/crosspost_release/SKILL.md",
+          "xid": "A3FD70D101B7",
+          "sha256": "19f9da9b88462f63bc12ec387d1cea17b490c18c0987fa25df62f19539b0f3e2"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/editorial-ops/crosspost_release/meta.md",
+          "source_xid": "E2E73BDF143A",
+          "source_sha256": "143fd54cd2d20c32fa0f900f52797c79c8789e49ef045d3af0537057a2302754",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "prepare a reviewed article for per-channel publication with explicit adaptation notes, release blockers, and final human sign-off boundary",
+          "source_path": "skills/packs/editorial-ops/crosspost_release/meta.md",
+          "source_xid": "E2E73BDF143A",
+          "source_sha256": "143fd54cd2d20c32fa0f900f52797c79c8789e49ef045d3af0537057a2302754",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "intake, drafting, and both reviews are complete enough that a release package or crosspost plan is needed",
+          "source_path": "skills/packs/editorial-ops/crosspost_release/meta.md",
+          "source_xid": "E2E73BDF143A",
+          "source_sha256": "143fd54cd2d20c32fa0f900f52797c79c8789e49ef045d3af0537057a2302754",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/packs/editorial-ops/crosspost_release/meta.md",
+          "source_xid": "E2E73BDF143A",
+          "source_sha256": "143fd54cd2d20c32fa0f900f52797c79c8789e49ef045d3af0537057a2302754",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "light",
+          "source_path": "skills/packs/editorial-ops/crosspost_release/meta.md",
+          "source_xid": "E2E73BDF143A",
+          "source_sha256": "143fd54cd2d20c32fa0f900f52797c79c8789e49ef045d3af0537057a2302754",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/editorial-ops/crosspost_release/meta.md",
+          "source_xid": "E2E73BDF143A",
+          "source_sha256": "143fd54cd2d20c32fa0f900f52797c79c8789e49ef045d3af0537057a2302754",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "draft_authoring",
+      "definition_path": "skills/packs/editorial-ops/draft_authoring/SKILL.v1.md",
+      "definition_xid": "B6A9D3F1C720",
+      "definition_sha256": "98f139d40155b2c491b36d0d7f8ad83d59007b3eb328d176d8d5c137299096e0",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/editorial-ops/draft_authoring/meta.md",
+          "xid": "51FDA8671D61",
+          "sha256": "65b3c4c6fbb3eb49b00e2d145e2ae08817d2fe35e66e26c5e74d4bf19e656565"
+        },
+        {
+          "path": "skills/packs/editorial-ops/draft_authoring/SKILL.md",
+          "xid": "BFEF855AAA8D",
+          "sha256": "476878659405123e984fe5e43749e39a90e2821415bd51b641076b35402a3e8b"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/editorial-ops/draft_authoring/meta.md",
+          "source_xid": "51FDA8671D61",
+          "source_sha256": "65b3c4c6fbb3eb49b00e2d145e2ae08817d2fe35e66e26c5e74d4bf19e656565",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "produce an article draft from explicit intake framing and source basis without hiding unsupported claims",
+          "source_path": "skills/packs/editorial-ops/draft_authoring/meta.md",
+          "source_xid": "51FDA8671D61",
+          "source_sha256": "65b3c4c6fbb3eb49b00e2d145e2ae08817d2fe35e66e26c5e74d4bf19e656565",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "intake has already defined the article boundary and a first draft or revision draft is needed",
+          "source_path": "skills/packs/editorial-ops/draft_authoring/meta.md",
+          "source_xid": "51FDA8671D61",
+          "source_sha256": "65b3c4c6fbb3eb49b00e2d145e2ae08817d2fe35e66e26c5e74d4bf19e656565",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/packs/editorial-ops/draft_authoring/meta.md",
+          "source_xid": "51FDA8671D61",
+          "source_sha256": "65b3c4c6fbb3eb49b00e2d145e2ae08817d2fe35e66e26c5e74d4bf19e656565",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "heavy",
+          "source_path": "skills/packs/editorial-ops/draft_authoring/meta.md",
+          "source_xid": "51FDA8671D61",
+          "source_sha256": "65b3c4c6fbb3eb49b00e2d145e2ae08817d2fe35e66e26c5e74d4bf19e656565",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/editorial-ops/draft_authoring/meta.md",
+          "source_xid": "51FDA8671D61",
+          "source_sha256": "65b3c4c6fbb3eb49b00e2d145e2ae08817d2fe35e66e26c5e74d4bf19e656565",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "editorial_intake",
+      "definition_path": "skills/packs/editorial-ops/editorial_intake/SKILL.v1.md",
+      "definition_xid": "7C4E9A2D6F81",
+      "definition_sha256": "d0322bc6a09978031ae312974d3e9ccd6ce2f2cf4fddf7f1c59b3cd919cfdf78",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/editorial-ops/editorial_intake/meta.md",
+          "xid": "54437A84B3D0",
+          "sha256": "6b041f16a17ef11a5de436c621b1733fb225c9d4aba7ecd4d63f94c4e18453a8"
+        },
+        {
+          "path": "skills/packs/editorial-ops/editorial_intake/SKILL.md",
+          "xid": "77F7D4CB9F99",
+          "sha256": "d410cca4b8bacdfced83b1fe9b75fa26d42c376d5e90c1ef58899c8f3caf2e03"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/editorial-ops/editorial_intake/meta.md",
+          "source_xid": "54437A84B3D0",
+          "source_sha256": "6b041f16a17ef11a5de436c621b1733fb225c9d4aba7ecd4d63f94c4e18453a8",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "scope an article task into topic, audience, evidence basis, quality target, and publication boundary before drafting",
+          "source_path": "skills/packs/editorial-ops/editorial_intake/meta.md",
+          "source_xid": "54437A84B3D0",
+          "source_sha256": "6b041f16a17ef11a5de436c621b1733fb225c9d4aba7ecd4d63f94c4e18453a8",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "article work starts from fragments, loose notes, or vague publication intent and the execution target is not yet stable enough for drafting",
+          "source_path": "skills/packs/editorial-ops/editorial_intake/meta.md",
+          "source_xid": "54437A84B3D0",
+          "source_sha256": "6b041f16a17ef11a5de436c621b1733fb225c9d4aba7ecd4d63f94c4e18453a8",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/packs/editorial-ops/editorial_intake/meta.md",
+          "source_xid": "54437A84B3D0",
+          "source_sha256": "6b041f16a17ef11a5de436c621b1733fb225c9d4aba7ecd4d63f94c4e18453a8",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "light",
+          "source_path": "skills/packs/editorial-ops/editorial_intake/meta.md",
+          "source_xid": "54437A84B3D0",
+          "source_sha256": "6b041f16a17ef11a5de436c621b1733fb225c9d4aba7ecd4d63f94c4e18453a8",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/editorial-ops/editorial_intake/meta.md",
+          "source_xid": "54437A84B3D0",
+          "source_sha256": "6b041f16a17ef11a5de436c621b1733fb225c9d4aba7ecd4d63f94c4e18453a8",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "editorial_ops_index",
+      "definition_path": "skills/packs/editorial-ops/editorial_ops_index/SKILL.v1.md",
+      "definition_xid": "C8E1A6D3B270",
+      "definition_sha256": "3d7bcb470b0d20743b9000e9a52320c37b85f851783db29af8b194beb4c9b076",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/editorial-ops/editorial_ops_index/meta.md",
+          "xid": "14BEA21097F6",
+          "sha256": "f5027525cf9259ce0ec6424d330fb694d2b5762f2b7559d1efc5d3c0a9d6885d"
+        },
+        {
+          "path": "skills/packs/editorial-ops/editorial_ops_index/SKILL.md",
+          "xid": "67179146EEB3",
+          "sha256": "36d34e3e133b3a474b68102344aa49d144415253d63386161a52999b074de297"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/editorial-ops/editorial_ops_index/meta.md",
+          "source_xid": "14BEA21097F6",
+          "source_sha256": "f5027525cf9259ce0ec6424d330fb694d2b5762f2b7559d1efc5d3c0a9d6885d",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "route editorial requests to the correct editorial-ops Skills and keep review and release stages explicit",
+          "source_path": "skills/packs/editorial-ops/editorial_ops_index/meta.md",
+          "source_xid": "14BEA21097F6",
+          "source_sha256": "f5027525cf9259ce0ec6424d330fb694d2b5762f2b7559d1efc5d3c0a9d6885d",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "a user asks to turn notes, sources, or a draft into a managed article workflow instead of one-shot prompting",
+          "source_path": "skills/packs/editorial-ops/editorial_ops_index/meta.md",
+          "source_xid": "14BEA21097F6",
+          "source_sha256": "f5027525cf9259ce0ec6424d330fb694d2b5762f2b7559d1efc5d3c0a9d6885d",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/packs/editorial-ops/editorial_ops_index/meta.md",
+          "source_xid": "14BEA21097F6",
+          "source_sha256": "f5027525cf9259ce0ec6424d330fb694d2b5762f2b7559d1efc5d3c0a9d6885d",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "light",
+          "source_path": "skills/packs/editorial-ops/editorial_ops_index/meta.md",
+          "source_xid": "14BEA21097F6",
+          "source_sha256": "f5027525cf9259ce0ec6424d330fb694d2b5762f2b7559d1efc5d3c0a9d6885d",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/editorial-ops/editorial_ops_index/meta.md",
+          "source_xid": "14BEA21097F6",
+          "source_sha256": "f5027525cf9259ce0ec6424d330fb694d2b5762f2b7559d1efc5d3c0a9d6885d",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "fact_review",
+      "definition_path": "skills/packs/editorial-ops/fact_review/SKILL.v1.md",
+      "definition_xid": "D4E8B2A6F190",
+      "definition_sha256": "0116b31ab44a1a53a45ca1bc72f3507b395379d6bcd0cac4e326554b775095f4",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/editorial-ops/fact_review/meta.md",
+          "xid": "7687FD352C4C",
+          "sha256": "105232a7f3caa170fca6824315d8150a6b34ce3fe1375252843758b684edfd07"
+        },
+        {
+          "path": "skills/packs/editorial-ops/fact_review/SKILL.md",
+          "xid": "0AA2CEC66CB2",
+          "sha256": "f06b4e86f12578b40f3f75d3e95343fa43485dd4c03ee793b96bb33e195462db"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/editorial-ops/fact_review/meta.md",
+          "source_xid": "7687FD352C4C",
+          "source_sha256": "105232a7f3caa170fca6824315d8150a6b34ce3fe1375252843758b684edfd07",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "review article claims for factual separation, source support, names, numbers, links, and channel-sensitive wording risks",
+          "source_path": "skills/packs/editorial-ops/fact_review/meta.md",
+          "source_xid": "7687FD352C4C",
+          "source_sha256": "105232a7f3caa170fca6824315d8150a6b34ce3fe1375252843758b684edfd07",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "a draft exists and the article needs evidence-backed checking before release or before further polishing",
+          "source_path": "skills/packs/editorial-ops/fact_review/meta.md",
+          "source_xid": "7687FD352C4C",
+          "source_sha256": "105232a7f3caa170fca6824315d8150a6b34ce3fe1375252843758b684edfd07",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "subagent_preferred",
+          "source_path": "skills/packs/editorial-ops/fact_review/meta.md",
+          "source_xid": "7687FD352C4C",
+          "source_sha256": "105232a7f3caa170fca6824315d8150a6b34ce3fe1375252843758b684edfd07",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/packs/editorial-ops/fact_review/meta.md",
+          "source_xid": "7687FD352C4C",
+          "source_sha256": "105232a7f3caa170fca6824315d8150a6b34ce3fe1375252843758b684edfd07",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/editorial-ops/fact_review/meta.md",
+          "source_xid": "7687FD352C4C",
+          "source_sha256": "105232a7f3caa170fca6824315d8150a6b34ce3fe1375252843758b684edfd07",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "reader_experience_review",
+      "definition_path": "skills/packs/editorial-ops/reader_experience_review/SKILL.v1.md",
+      "definition_xid": "E1C7A5D9B430",
+      "definition_sha256": "027dd9919df78d7a8e879f389c0977d6cab9ded39bb3786c317c6b509228484b",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/packs/editorial-ops/reader_experience_review/meta.md",
+          "xid": "79372C67DBA0",
+          "sha256": "491f408a5b4b64b2dd227be83901b1c9e677c7a479f3b00aecf6bb6bd2659cd5"
+        },
+        {
+          "path": "skills/packs/editorial-ops/reader_experience_review/SKILL.md",
+          "xid": "D84028E6F515",
+          "sha256": "7b499b2f64b8a5ec20c70f0e3b6aae54243d511af762818eeb5326fc861358ab"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/packs/editorial-ops/reader_experience_review/meta.md",
+          "source_xid": "79372C67DBA0",
+          "source_sha256": "491f408a5b4b64b2dd227be83901b1c9e677c7a479f3b00aecf6bb6bd2659cd5",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "review a draft from the target reader perspective to surface confusion, drop-off points, context gaps, and pacing issues",
+          "source_path": "skills/packs/editorial-ops/reader_experience_review/meta.md",
+          "source_xid": "79372C67DBA0",
+          "source_sha256": "491f408a5b4b64b2dd227be83901b1c9e677c7a479f3b00aecf6bb6bd2659cd5",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "a draft exists and the team needs reader-side feedback before release or before final restructuring",
+          "source_path": "skills/packs/editorial-ops/reader_experience_review/meta.md",
+          "source_xid": "79372C67DBA0",
+          "source_sha256": "491f408a5b4b64b2dd227be83901b1c9e677c7a479f3b00aecf6bb6bd2659cd5",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "subagent_preferred",
+          "source_path": "skills/packs/editorial-ops/reader_experience_review/meta.md",
+          "source_xid": "79372C67DBA0",
+          "source_sha256": "491f408a5b4b64b2dd227be83901b1c9e677c7a479f3b00aecf6bb6bd2659cd5",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/packs/editorial-ops/reader_experience_review/meta.md",
+          "source_xid": "79372C67DBA0",
+          "source_sha256": "491f408a5b4b64b2dd227be83901b1c9e677c7a479f3b00aecf6bb6bd2659cd5",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/packs/editorial-ops/reader_experience_review/meta.md",
+          "source_xid": "79372C67DBA0",
+          "source_sha256": "491f408a5b4b64b2dd227be83901b1c9e677c7a479f3b00aecf6bb6bd2659cd5",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "planning_flow",
+      "definition_path": "skills/planning_flow/SKILL.v1.md",
+      "definition_xid": "6A4F8C2D1E71",
+      "definition_sha256": "ab4ce9713e1334f13562e8bac00c092fe6fb1104539c9b61a45db1f0b07369e7",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/planning_flow/meta.md",
+          "xid": "E3F2F376922F",
+          "sha256": "89564b6d77180f884b7a8a2401d242a11d0a31979ced8395eaddf12ee16597b8"
+        },
+        {
+          "path": "skills/planning_flow/SKILL.md",
+          "xid": "486C9EEE8A9D",
+          "sha256": "9144e7c3276b2555de569e04e43d34bea05f7d080d35c7730f3a78697826b31f"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/planning_flow/meta.md",
+          "source_xid": "E3F2F376922F",
+          "source_sha256": "89564b6d77180f884b7a8a2401d242a11d0a31979ced8395eaddf12ee16597b8",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "execute planning business activity through reusable work-and-policy planning capability grounded in domain knowledge and current-source findings",
+          "source_path": "skills/planning_flow/meta.md",
+          "source_xid": "E3F2F376922F",
+          "source_sha256": "89564b6d77180f884b7a8a2401d242a11d0a31979ced8395eaddf12ee16597b8",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "user needs planning after requirements are approved",
+          "source_path": "skills/planning_flow/meta.md",
+          "source_xid": "E3F2F376922F",
+          "source_sha256": "89564b6d77180f884b7a8a2401d242a11d0a31979ced8395eaddf12ee16597b8",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/planning_flow/meta.md",
+          "source_xid": "E3F2F376922F",
+          "source_sha256": "89564b6d77180f884b7a8a2401d242a11d0a31979ced8395eaddf12ee16597b8",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/planning_flow/meta.md",
+          "source_xid": "E3F2F376922F",
+          "source_sha256": "89564b6d77180f884b7a8a2401d242a11d0a31979ced8395eaddf12ee16597b8",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/planning_flow/meta.md",
+          "source_xid": "E3F2F376922F",
+          "source_sha256": "89564b6d77180f884b7a8a2401d242a11d0a31979ced8395eaddf12ee16597b8",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "pptx_spec_traceability",
+      "definition_path": "skills/pptx_spec_traceability/SKILL.v1.md",
+      "definition_xid": "A6D3F8B1C520",
+      "definition_sha256": "4d478c77100249e270b4252e979c73af7547e423499444b40b233042851da791",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/pptx_spec_traceability/meta.md",
+          "xid": "7F4C1A2D9E60",
+          "sha256": "4943b64599c23cebadcd106d1a76588824fb486e1ed9f17b2b05741ac21aa354"
+        },
+        {
+          "path": "skills/pptx_spec_traceability/SKILL.md",
+          "xid": "4C8E2B1F6A20",
+          "sha256": "2241741e8ba5823df452348e7f324600a559b426b11e96bd072fd9fcdd282403"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/pptx_spec_traceability/meta.md",
+          "source_xid": "7F4C1A2D9E60",
+          "source_sha256": "4943b64599c23cebadcd106d1a76588824fb486e1ed9f17b2b05741ac21aa354",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "extract presentation specifications into Markdown, assign traceability IDs, connect slide images and shapes to nearby explanatory text, and write the IDs back into the deck",
+          "source_path": "skills/pptx_spec_traceability/meta.md",
+          "source_xid": "7F4C1A2D9E60",
+          "source_sha256": "4943b64599c23cebadcd106d1a76588824fb486e1ed9f17b2b05741ac21aa354",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "user needs to convert PowerPoint-based specifications into Markdown artifacts while preserving slide-level traceability and reducing review burden in the original deck",
+          "source_path": "skills/pptx_spec_traceability/meta.md",
+          "source_xid": "7F4C1A2D9E60",
+          "source_sha256": "4943b64599c23cebadcd106d1a76588824fb486e1ed9f17b2b05741ac21aa354",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/pptx_spec_traceability/meta.md",
+          "source_xid": "7F4C1A2D9E60",
+          "source_sha256": "4943b64599c23cebadcd106d1a76588824fb486e1ed9f17b2b05741ac21aa354",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/pptx_spec_traceability/meta.md",
+          "source_xid": "7F4C1A2D9E60",
+          "source_sha256": "4943b64599c23cebadcd106d1a76588824fb486e1ed9f17b2b05741ac21aa354",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/pptx_spec_traceability/meta.md",
+          "source_xid": "7F4C1A2D9E60",
+          "source_sha256": "4943b64599c23cebadcd106d1a76588824fb486e1ed9f17b2b05741ac21aa354",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "presentation_flow_review",
+      "definition_path": "skills/presentation_flow_review/SKILL.v1.md",
+      "definition_xid": "D8F1A6C3B520",
+      "definition_sha256": "bf4096d9bee2b1bf71fa270a3b19ec9bb22f169f83855c10afd98ceab02b4db6",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/presentation_flow_review/meta.md",
+          "xid": "A1E4C7B29D53",
+          "sha256": "cfbd7343558f8bc17ed8e715f0f9304cdf5e1eb089651ca32582d910601df21b"
+        },
+        {
+          "path": "skills/presentation_flow_review/SKILL.md",
+          "xid": "B2F5D8C31E64",
+          "sha256": "3c67b6f40fdb7607c49b0bbccb4c6f4ee7c0cd0a904431793b88bfe9cb621968"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": "review and restructure explanatory narrative flow",
+          "source_path": "skills/presentation_flow_review/meta.md",
+          "source_xid": "A1E4C7B29D53",
+          "source_sha256": "cfbd7343558f8bc17ed8e715f0f9304cdf5e1eb089651ca32582d910601df21b",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "presentation-level causal ordering, premise introduction, and slide-to-slide transitions",
+          "source_path": "skills/presentation_flow_review/meta.md",
+          "source_xid": "A1E4C7B29D53",
+          "source_sha256": "cfbd7343558f8bc17ed8e715f0f9304cdf5e1eb089651ca32582d910601df21b",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "make an explanatory deck understandable as a connected argument before slide visuals or narration are finalized",
+          "source_path": "skills/presentation_flow_review/meta.md",
+          "source_xid": "A1E4C7B29D53",
+          "source_sha256": "cfbd7343558f8bc17ed8e715f0f9304cdf5e1eb089651ca32582d910601df21b",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "subagent_preferred",
+          "source_path": "skills/presentation_flow_review/meta.md",
+          "source_xid": "A1E4C7B29D53",
+          "source_sha256": "cfbd7343558f8bc17ed8e715f0f9304cdf5e1eb089651ca32582d910601df21b",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/presentation_flow_review/meta.md",
+          "source_xid": "A1E4C7B29D53",
+          "source_sha256": "cfbd7343558f8bc17ed8e715f0f9304cdf5e1eb089651ca32582d910601df21b",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/presentation_flow_review/meta.md",
+          "source_xid": "A1E4C7B29D53",
+          "source_sha256": "cfbd7343558f8bc17ed8e715f0f9304cdf5e1eb089651ca32582d910601df21b",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "python_implementation_flow",
+      "definition_path": "skills/python_implementation_flow/SKILL.v1.md",
+      "definition_xid": "E8C1A7D4B920",
+      "definition_sha256": "1ea2911fd499ace1469143f28c54324e3bfe32759b82ebdc5b57f7314ee36b13",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/python_implementation_flow/meta.md",
+          "xid": "C5D6E7F8A9B0",
+          "sha256": "7dc3fb87b07c58dda8436b38e9cbe74f0703b72e3e28fe09f5c3e253861a1135"
+        },
+        {
+          "path": "skills/python_implementation_flow/SKILL.md",
+          "xid": "C5D6E7F8A9B1",
+          "sha256": "c0b50b75cd1f6cd0befecd7dffccb47cef4e6ef1b4d2f6a8c262a7feee5f1698"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": "software_development",
+          "source_path": "skills/python_implementation_flow/meta.md",
+          "source_xid": "C5D6E7F8A9B0",
+          "source_sha256": "7dc3fb87b07c58dda8436b38e9cbe74f0703b72e3e28fe09f5c3e253861a1135",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "Python",
+          "source_path": "skills/python_implementation_flow/meta.md",
+          "source_xid": "C5D6E7F8A9B0",
+          "source_sha256": "7dc3fb87b07c58dda8436b38e9cbe74f0703b72e3e28fe09f5c3e253861a1135",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "implementation",
+          "source_path": "skills/python_implementation_flow/meta.md",
+          "source_xid": "C5D6E7F8A9B0",
+          "source_sha256": "7dc3fb87b07c58dda8436b38e9cbe74f0703b72e3e28fe09f5c3e253861a1135",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/python_implementation_flow/meta.md",
+          "source_xid": "C5D6E7F8A9B0",
+          "source_sha256": "7dc3fb87b07c58dda8436b38e9cbe74f0703b72e3e28fe09f5c3e253861a1135",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/python_implementation_flow/meta.md",
+          "source_xid": "C5D6E7F8A9B0",
+          "source_sha256": "7dc3fb87b07c58dda8436b38e9cbe74f0703b72e3e28fe09f5c3e253861a1135",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/python_implementation_flow/meta.md",
+          "source_xid": "C5D6E7F8A9B0",
+          "source_sha256": "7dc3fb87b07c58dda8436b38e9cbe74f0703b72e3e28fe09f5c3e253861a1135",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "python_review",
+      "definition_path": "skills/python_review/SKILL.v1.md",
+      "definition_xid": "F1A7C3D9E241",
+      "definition_sha256": "d50cced748cd75425be9bb4f902cc40b1c7d7171848c6d24b29fef3ecb1de1ae",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/python_review/meta.md",
+          "xid": "B4C1D2E3F4A5",
+          "sha256": "25160e33cb0c9ad81f9f17ed0b33c54cbfed3a9bdcfe69a93207b8c2ce37c7fb"
+        },
+        {
+          "path": "skills/python_review/SKILL.md",
+          "xid": "B4C1D2E3F4A6",
+          "sha256": "682e56a898d904a8c08425c86b1699f93f9f6a2d7c5f09a7194c88bfca23e5a3"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": "software_development",
+          "source_path": "skills/python_review/meta.md",
+          "source_xid": "B4C1D2E3F4A5",
+          "source_sha256": "25160e33cb0c9ad81f9f17ed0b33c54cbfed3a9bdcfe69a93207b8c2ce37c7fb",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "Python",
+          "source_path": "skills/python_review/meta.md",
+          "source_xid": "B4C1D2E3F4A5",
+          "source_sha256": "25160e33cb0c9ad81f9f17ed0b33c54cbfed3a9bdcfe69a93207b8c2ce37c7fb",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "quality check",
+          "source_path": "skills/python_review/meta.md",
+          "source_xid": "B4C1D2E3F4A5",
+          "source_sha256": "25160e33cb0c9ad81f9f17ed0b33c54cbfed3a9bdcfe69a93207b8c2ce37c7fb",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "subagent_preferred",
+          "source_path": "skills/python_review/meta.md",
+          "source_xid": "B4C1D2E3F4A5",
+          "source_sha256": "25160e33cb0c9ad81f9f17ed0b33c54cbfed3a9bdcfe69a93207b8c2ce37c7fb",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/python_review/meta.md",
+          "source_xid": "B4C1D2E3F4A5",
+          "source_sha256": "25160e33cb0c9ad81f9f17ed0b33c54cbfed3a9bdcfe69a93207b8c2ce37c7fb",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/python_review/meta.md",
+          "source_xid": "B4C1D2E3F4A5",
+          "source_sha256": "25160e33cb0c9ad81f9f17ed0b33c54cbfed3a9bdcfe69a93207b8c2ce37c7fb",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "qa_gate_review",
+      "definition_path": "skills/qa_gate_review/SKILL.v1.md",
+      "definition_xid": "A1B2C3D4E5F6",
+      "definition_sha256": "511f9283d6c85959d0886883b64d77d99ecea77ce741101b3b4431c3358d7316",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/qa_gate_review/meta.md",
+          "xid": "6655C6BD6238",
+          "sha256": "8c5f1089ebc682cc0450cce65c12c311b463eb2ac42163c2db14d1eb08fb660f"
+        },
+        {
+          "path": "skills/qa_gate_review/SKILL.md",
+          "xid": "09B250B1A8FB",
+          "sha256": "5f9970a4c1029bc3809dff4b8eaf9b94ad0349d5dc4e437bbd334b21b15f6c3b"
+        }
+      ],
+      "legacy_maturity": "stable",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/qa_gate_review/meta.md",
+          "source_xid": "6655C6BD6238",
+          "source_sha256": "8c5f1089ebc682cc0450cce65c12c311b463eb2ac42163c2db14d1eb08fb660f",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "execute XDDP trace-continuity, domain QA, and system-impact review",
+          "source_path": "skills/qa_gate_review/meta.md",
+          "source_xid": "6655C6BD6238",
+          "source_sha256": "8c5f1089ebc682cc0450cce65c12c311b463eb2ac42163c2db14d1eb08fb660f",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "user asks for QA review against design, performance, security, or license expectations",
+          "source_path": "skills/qa_gate_review/meta.md",
+          "source_xid": "6655C6BD6238",
+          "source_sha256": "8c5f1089ebc682cc0450cce65c12c311b463eb2ac42163c2db14d1eb08fb660f",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "subagent_required",
+          "source_path": "skills/qa_gate_review/meta.md",
+          "source_xid": "6655C6BD6238",
+          "source_sha256": "8c5f1089ebc682cc0450cce65c12c311b463eb2ac42163c2db14d1eb08fb660f",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/qa_gate_review/meta.md",
+          "source_xid": "6655C6BD6238",
+          "source_sha256": "8c5f1089ebc682cc0450cce65c12c311b463eb2ac42163c2db14d1eb08fb660f",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/qa_gate_review/meta.md",
+          "source_xid": "6655C6BD6238",
+          "source_sha256": "8c5f1089ebc682cc0450cce65c12c311b463eb2ac42163c2db14d1eb08fb660f",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "release_planning_flow",
+      "definition_path": "skills/release_planning_flow/SKILL.v1.md",
+      "definition_xid": "F5C8A2E6B710",
+      "definition_sha256": "bf52c636bf2e3e2c2aea26a570b7be4c05ec4b4b54cd023065f44d9c01a7f1b3",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/release_planning_flow/meta.md",
+          "xid": "22DE60C2BBCB",
+          "sha256": "8090c4ed7cc0e809d86c045134dd454b123bd39847dd281a948e71ad7cac83cd"
+        },
+        {
+          "path": "skills/release_planning_flow/SKILL.md",
+          "xid": "D216FD3C726C",
+          "sha256": "40aa5076c8ed0fea2823c480cdf4e8199701ed7ca49992d7addcea81732c6151"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/release_planning_flow/meta.md",
+          "source_xid": "22DE60C2BBCB",
+          "source_sha256": "8090c4ed7cc0e809d86c045134dd454b123bd39847dd281a948e71ad7cac83cd",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "execute release-planning business activities through reusable release-material, release-procedure, release-confirmation, signal-specification, response-structuring, and readiness-evaluation capabilities",
+          "source_path": "skills/release_planning_flow/meta.md",
+          "source_xid": "22DE60C2BBCB",
+          "source_sha256": "8090c4ed7cc0e809d86c045134dd454b123bd39847dd281a948e71ad7cac83cd",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "user needs release-planning work after manufacturing and testing",
+          "source_path": "skills/release_planning_flow/meta.md",
+          "source_xid": "22DE60C2BBCB",
+          "source_sha256": "8090c4ed7cc0e809d86c045134dd454b123bd39847dd281a948e71ad7cac83cd",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/release_planning_flow/meta.md",
+          "source_xid": "22DE60C2BBCB",
+          "source_sha256": "8090c4ed7cc0e809d86c045134dd454b123bd39847dd281a948e71ad7cac83cd",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/release_planning_flow/meta.md",
+          "source_xid": "22DE60C2BBCB",
+          "source_sha256": "8090c4ed7cc0e809d86c045134dd454b123bd39847dd281a948e71ad7cac83cd",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/release_planning_flow/meta.md",
+          "source_xid": "22DE60C2BBCB",
+          "source_sha256": "8090c4ed7cc0e809d86c045134dd454b123bd39847dd281a948e71ad7cac83cd",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "requirements_flow",
+      "definition_path": "skills/requirements_flow/SKILL.v1.md",
+      "definition_xid": "D4A7C91E2B60",
+      "definition_sha256": "63e5ad6958b3ca6f318c1fee2ff403cc523f5ed1d4cb41cf33d15fdb8fc98811",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/requirements_flow/meta.md",
+          "xid": "6720268498FD",
+          "sha256": "74b29f89b61d93a828f302a770914b262ff35196051e535d3ee3e01e9e75af90"
+        },
+        {
+          "path": "skills/requirements_flow/SKILL.md",
+          "xid": "2B70BBF7B7BB",
+          "sha256": "050e7a2d645f72ca21c2f4333c1680e8db08e50dc69a83099baa54f8bfea371c"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/requirements_flow/meta.md",
+          "source_xid": "6720268498FD",
+          "source_sha256": "74b29f89b61d93a828f302a770914b262ff35196051e535d3ee3e01e9e75af90",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "execute requirements business activities through reusable requirement and performance-constraint structuring capabilities",
+          "source_path": "skills/requirements_flow/meta.md",
+          "source_xid": "6720268498FD",
+          "source_sha256": "74b29f89b61d93a828f302a770914b262ff35196051e535d3ee3e01e9e75af90",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "user needs requirement drafting after investigation and estimation",
+          "source_path": "skills/requirements_flow/meta.md",
+          "source_xid": "6720268498FD",
+          "source_sha256": "74b29f89b61d93a828f302a770914b262ff35196051e535d3ee3e01e9e75af90",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/requirements_flow/meta.md",
+          "source_xid": "6720268498FD",
+          "source_sha256": "74b29f89b61d93a828f302a770914b262ff35196051e535d3ee3e01e9e75af90",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/requirements_flow/meta.md",
+          "source_xid": "6720268498FD",
+          "source_sha256": "74b29f89b61d93a828f302a770914b262ff35196051e535d3ee3e01e9e75af90",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/requirements_flow/meta.md",
+          "source_xid": "6720268498FD",
+          "source_sha256": "74b29f89b61d93a828f302a770914b262ff35196051e535d3ee3e01e9e75af90",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "review_report_composition",
+      "definition_path": "skills/review_report_composition/SKILL.v1.md",
+      "definition_xid": "B1C2D3E4F5A6",
+      "definition_sha256": "8ce6ec3bdeecb1ac8cc6b7f9c67e1bf1e6c190c14db135484296d8fc15c4e762",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/review_report_composition/meta.md",
+          "xid": "8F312706C5F0",
+          "sha256": "e7b892c5ffc6c12606ebdfb281de0bc4ca09a706001adf05509930cd14bd3ad7"
+        },
+        {
+          "path": "skills/review_report_composition/SKILL.md",
+          "xid": "02E852427ED9",
+          "sha256": "7b3b66324f9d39e021ea93406cf991e29f5a065991929bdf4613dc1182ec61df"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": "documentation",
+          "source_path": "skills/review_report_composition/meta.md",
+          "source_xid": "8F312706C5F0",
+          "source_sha256": "e7b892c5ffc6c12606ebdfb281de0bc4ca09a706001adf05509930cd14bd3ad7",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "review_report",
+          "source_path": "skills/review_report_composition/meta.md",
+          "source_xid": "8F312706C5F0",
+          "source_sha256": "e7b892c5ffc6c12606ebdfb281de0bc4ca09a706001adf05509930cd14bd3ad7",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "report composition",
+          "source_path": "skills/review_report_composition/meta.md",
+          "source_xid": "8F312706C5F0",
+          "source_sha256": "e7b892c5ffc6c12606ebdfb281de0bc4ca09a706001adf05509930cd14bd3ad7",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "direct",
+          "source_path": "skills/review_report_composition/meta.md",
+          "source_xid": "8F312706C5F0",
+          "source_sha256": "e7b892c5ffc6c12606ebdfb281de0bc4ca09a706001adf05509930cd14bd3ad7",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/review_report_composition/meta.md",
+          "source_xid": "8F312706C5F0",
+          "source_sha256": "e7b892c5ffc6c12606ebdfb281de0bc4ca09a706001adf05509930cd14bd3ad7",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/review_report_composition/meta.md",
+          "source_xid": "8F312706C5F0",
+          "source_sha256": "e7b892c5ffc6c12606ebdfb281de0bc4ca09a706001adf05509930cd14bd3ad7",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "security_review",
+      "definition_path": "skills/security_review/SKILL.v1.md",
+      "definition_xid": "7C4E9A2D1F60",
+      "definition_sha256": "674ba08df0e23fe43ad33969741f6a1aa6d6a59fafcbdd015702390ecae65338",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/security_review/meta.md",
+          "xid": "1BCE02850126",
+          "sha256": "9aff5f8a8f2cde24311a5e04b4aecc89a53c54023cf53578e1eba8ce3ab1b37f"
+        },
+        {
+          "path": "skills/security_review/SKILL.md",
+          "xid": "3575A687EBCA",
+          "sha256": "c988694a1ed5a181ffe215cfa7e89f3b2baa3af0555eb3786adfe576e4a6bfc1"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/security_review/meta.md",
+          "source_xid": "1BCE02850126",
+          "source_sha256": "9aff5f8a8f2cde24311a5e04b4aecc89a53c54023cf53578e1eba8ce3ab1b37f",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "review C# code and evidence for security risks",
+          "source_path": "skills/security_review/meta.md",
+          "source_xid": "1BCE02850126",
+          "source_sha256": "9aff5f8a8f2cde24311a5e04b4aecc89a53c54023cf53578e1eba8ce3ab1b37f",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "user needs focused security validation",
+          "source_path": "skills/security_review/meta.md",
+          "source_xid": "1BCE02850126",
+          "source_sha256": "9aff5f8a8f2cde24311a5e04b4aecc89a53c54023cf53578e1eba8ce3ab1b37f",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "subagent_preferred",
+          "source_path": "skills/security_review/meta.md",
+          "source_xid": "1BCE02850126",
+          "source_sha256": "9aff5f8a8f2cde24311a5e04b4aecc89a53c54023cf53578e1eba8ce3ab1b37f",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/security_review/meta.md",
+          "source_xid": "1BCE02850126",
+          "source_sha256": "9aff5f8a8f2cde24311a5e04b4aecc89a53c54023cf53578e1eba8ce3ab1b37f",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/security_review/meta.md",
+          "source_xid": "1BCE02850126",
+          "source_sha256": "9aff5f8a8f2cde24311a5e04b4aecc89a53c54023cf53578e1eba8ce3ab1b37f",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "source_structure_overview",
+      "definition_path": "skills/source_structure_overview/SKILL.v1.md",
+      "definition_xid": "A6E3C9F2B470",
+      "definition_sha256": "05c9a4d73b1392708363a6fe9e4527d6efd3493fee3cb979e77e8387ac5f1eda",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/source_structure_overview/meta.md",
+          "xid": "907B100F9F9D",
+          "sha256": "a30b10fb15a36a1dbeee2908f459c748f40e2a944f1cfe7a5f929d4ccd883fbc"
+        },
+        {
+          "path": "skills/source_structure_overview/SKILL.md",
+          "xid": "423C8B8F8AD0",
+          "sha256": "98ef66a3e3ca33d0e4923feaec7d2ab22228d5a72756c6b9648b3652e68b290e"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": "source structure analysis",
+          "source_path": "skills/source_structure_overview/meta.md",
+          "source_xid": "907B100F9F9D",
+          "source_sha256": "a30b10fb15a36a1dbeee2908f459c748f40e2a944f1cfe7a5f929d4ccd883fbc",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "whole-system .NET source-structure overview without a specific change proposition",
+          "source_path": "skills/source_structure_overview/meta.md",
+          "source_xid": "907B100F9F9D",
+          "source_sha256": "a30b10fb15a36a1dbeee2908f459c748f40e2a944f1cfe7a5f929d4ccd883fbc",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "create reusable current source-structure knowledge that later proposition-specific analysis Skills can select by XID as target domain knowledge",
+          "source_path": "skills/source_structure_overview/meta.md",
+          "source_xid": "907B100F9F9D",
+          "source_sha256": "a30b10fb15a36a1dbeee2908f459c748f40e2a944f1cfe7a5f929d4ccd883fbc",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "subagent_preferred",
+          "source_path": "skills/source_structure_overview/meta.md",
+          "source_xid": "907B100F9F9D",
+          "source_sha256": "a30b10fb15a36a1dbeee2908f459c748f40e2a944f1cfe7a5f929d4ccd883fbc",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/source_structure_overview/meta.md",
+          "source_xid": "907B100F9F9D",
+          "source_sha256": "a30b10fb15a36a1dbeee2908f459c748f40e2a944f1cfe7a5f929d4ccd883fbc",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": [
+            "name=target_domain_context; accepts=source-structure-overview,current-source-structure-findings,module-map,service-map,architecture-note; purpose=optional-prior-structure-context"
+          ],
+          "source_path": "skills/source_structure_overview/meta.md",
+          "source_xid": "907B100F9F9D",
+          "source_sha256": "a30b10fb15a36a1dbeee2908f459c748f40e2a944f1cfe7a5f929d4ccd883fbc",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "test_flow",
+      "definition_path": "skills/test_flow/SKILL.v1.md",
+      "definition_xid": "F9D2B6E5C130",
+      "definition_sha256": "25f4773c66a8134731ee28b9bc267c037a8f342d6da10098520ad2e5d71e9970",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/test_flow/meta.md",
+          "xid": "2D7B0A661990",
+          "sha256": "a48be457b8490b5b6dd3e926454393d5222881594707013630117fd00862ce87"
+        },
+        {
+          "path": "skills/test_flow/SKILL.md",
+          "xid": "62F9F44D7711",
+          "sha256": "11d1d05cd1d208a18f341ab6ad483fa8b0d837e9ab23df51b1ae2ecfec290fca"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/test_flow/meta.md",
+          "source_xid": "2D7B0A661990",
+          "source_sha256": "a48be457b8490b5b6dd3e926454393d5222881594707013630117fd00862ce87",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "execute test-planning, test-item structuring, integration/regression test design, and manufacturing-side test-method review",
+          "source_path": "skills/test_flow/meta.md",
+          "source_xid": "2D7B0A661990",
+          "source_sha256": "a48be457b8490b5b6dd3e926454393d5222881594707013630117fd00862ce87",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "user needs a reviewed test package from planning outputs, requirements, and design evidence",
+          "source_path": "skills/test_flow/meta.md",
+          "source_xid": "2D7B0A661990",
+          "source_sha256": "a48be457b8490b5b6dd3e926454393d5222881594707013630117fd00862ce87",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "subagent_preferred",
+          "source_path": "skills/test_flow/meta.md",
+          "source_xid": "2D7B0A661990",
+          "source_sha256": "a48be457b8490b5b6dd3e926454393d5222881594707013630117fd00862ce87",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/test_flow/meta.md",
+          "source_xid": "2D7B0A661990",
+          "source_sha256": "a48be457b8490b5b6dd3e926454393d5222881594707013630117fd00862ce87",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": [
+            "name=domain_environment_test_tool_catalog; required=false; accepts=test-tool-catalog,environment-test-tool-policy,domain-test-automation-map,local-test-runner-guide; purpose=select-test-tools-for-plan-and-test-design"
+          ],
+          "source_path": "skills/test_flow/meta.md",
+          "source_xid": "2D7B0A661990",
+          "source_sha256": "a48be457b8490b5b6dd3e926454393d5222881594707013630117fd00862ce87",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "test_tool_catalog_preparation",
+      "definition_path": "skills/test_tool_catalog_preparation/SKILL.v1.md",
+      "definition_xid": "C9E2B5D8F370",
+      "definition_sha256": "b7b0140953a743629a639c320d1125adeb272105206cfc9ba0e369018c43e538",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/test_tool_catalog_preparation/meta.md",
+          "xid": "F2A36B52C0EB",
+          "sha256": "6de797795924dd734f3e19c0797f10de2348a4d4a5643fa21ecaf4d46fdb0539"
+        },
+        {
+          "path": "skills/test_tool_catalog_preparation/SKILL.md",
+          "xid": "DE815228B04C",
+          "sha256": "9e0547a683bc039bed1d30fbe0d9e44f2cd33d19aef14da6d162bf2087291678"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": "test tool catalog preparation",
+          "source_path": "skills/test_tool_catalog_preparation/meta.md",
+          "source_xid": "F2A36B52C0EB",
+          "source_sha256": "6de797795924dd734f3e19c0797f10de2348a4d4a5643fa21ecaf4d46fdb0539",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "domain/environment test-tool cataloging for downstream test planning",
+          "source_path": "skills/test_tool_catalog_preparation/meta.md",
+          "source_xid": "F2A36B52C0EB",
+          "source_sha256": "6de797795924dd734f3e19c0797f10de2348a4d4a5643fa21ecaf4d46fdb0539",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "create reusable test-tool selection knowledge so `test_flow` can select tools by XID instead of guessing from local environment assumptions",
+          "source_path": "skills/test_tool_catalog_preparation/meta.md",
+          "source_xid": "F2A36B52C0EB",
+          "source_sha256": "6de797795924dd734f3e19c0797f10de2348a4d4a5643fa21ecaf4d46fdb0539",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "subagent_preferred",
+          "source_path": "skills/test_tool_catalog_preparation/meta.md",
+          "source_xid": "F2A36B52C0EB",
+          "source_sha256": "6de797795924dd734f3e19c0797f10de2348a4d4a5643fa21ecaf4d46fdb0539",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": "standard",
+          "source_path": "skills/test_tool_catalog_preparation/meta.md",
+          "source_xid": "F2A36B52C0EB",
+          "source_sha256": "6de797795924dd734f3e19c0797f10de2348a4d4a5643fa21ecaf4d46fdb0539",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": [
+            "name=current_source_structure_finding; accepts=current-source-structure-findings,source-structure-overview,module-map,service-map; purpose=optional-tool-location-and-runtime-context",
+            "name=current_db_state_finding; accepts=database-current-state-analysis,database-design-package; purpose=optional-db-test-tool-context"
+          ],
+          "source_path": "skills/test_tool_catalog_preparation/meta.md",
+          "source_xid": "F2A36B52C0EB",
+          "source_sha256": "6de797795924dd734f3e19c0797f10de2348a4d4a5643fa21ecaf4d46fdb0539",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    },
+    {
+      "skill_id": "xlsx_spec_traceability",
+      "definition_path": "skills/xlsx_spec_traceability/SKILL.v1.md",
+      "definition_xid": "A7C3E9D2F610",
+      "definition_sha256": "cad06fcd1fb618144272a770c5bb51f286db16f6af4dd3e1933e2b33b1554f5f",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/xlsx_spec_traceability/meta.md",
+          "xid": "5A7C2D4E9130",
+          "sha256": "97174bbedef84ff4d8b85e50893b5a007e253891fda0e9e3bfafe18d2c730b3d"
+        },
+        {
+          "path": "skills/xlsx_spec_traceability/SKILL.md",
+          "xid": "2D1B6A9E7C40",
+          "sha256": "dfc43dfe7a250272bebfdc180935c9b9c0768a32f482349d87a512559a4f9a17"
+        }
+      ],
+      "legacy_maturity": "draft",
+      "adopted": false,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/xlsx_spec_traceability/meta.md",
+          "source_xid": "5A7C2D4E9130",
+          "source_sha256": "97174bbedef84ff4d8b85e50893b5a007e253891fda0e9e3bfafe18d2c730b3d",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "extract spreadsheet specifications into Markdown, assign traceability IDs, connect embedded images to nearby specification text, and write the IDs back into the workbook",
+          "source_path": "skills/xlsx_spec_traceability/meta.md",
+          "source_xid": "5A7C2D4E9130",
+          "source_sha256": "97174bbedef84ff4d8b85e50893b5a007e253891fda0e9e3bfafe18d2c730b3d",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "user needs to convert Excel-based specifications into Markdown artifacts while preserving source traceability and reducing review burden in the original workbook",
+          "source_path": "skills/xlsx_spec_traceability/meta.md",
+          "source_xid": "5A7C2D4E9130",
+          "source_sha256": "97174bbedef84ff4d8b85e50893b5a007e253891fda0e9e3bfafe18d2c730b3d",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/xlsx_spec_traceability/meta.md",
+          "source_xid": "5A7C2D4E9130",
+          "source_sha256": "97174bbedef84ff4d8b85e50893b5a007e253891fda0e9e3bfafe18d2c730b3d",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/xlsx_spec_traceability/meta.md",
+          "source_xid": "5A7C2D4E9130",
+          "source_sha256": "97174bbedef84ff4d8b85e50893b5a007e253891fda0e9e3bfafe18d2c730b3d",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/xlsx_spec_traceability/meta.md",
+          "source_xid": "5A7C2D4E9130",
+          "source_sha256": "97174bbedef84ff4d8b85e50893b5a007e253891fda0e9e3bfafe18d2c730b3d",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    }
+  ]
+}

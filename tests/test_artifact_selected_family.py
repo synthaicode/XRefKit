@@ -1,3 +1,5 @@
+from repository_skill_receipts import assert_preserved_source_boundary
+from repository_skill_receipts import assert_legacy_receipt
 from pathlib import Path
 
 import pytest
@@ -25,9 +27,8 @@ def test_artifact_v1_parse_concrete_metadata_and_legacy(directory, skill_id, xid
     assert set(metadata["aliases"]) == {body_xid, meta_xid}
     assert metadata["inputs"] and metadata["outputs"]
     assert metadata["control_refs"] == []
-    assert "CAP-" not in definition["method"]
-    assert "## Reporting Contract" not in definition["method"]
-    assert "skill_doc: `./SKILL.md`" in (repo / relative.parent / "meta.md").read_text()
+    assert_preserved_source_boundary(definition)
+    assert_legacy_receipt(repo / relative.parent / 'meta.md')
 
 
 def test_artifact_v1_explicit_batch_selection_and_knowledge_resolution():

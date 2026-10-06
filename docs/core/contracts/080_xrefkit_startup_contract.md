@@ -64,9 +64,13 @@ After startup, route work by user intent:
 
 - Use `skills/_index.md` and needed `skills/index/*` files only when a Skill
   must be selected.
-- Select the Skill semantically before direct `--meta <path>` execution.
-- Create the runtime envelope with `python -m xrefkit skill run --meta <path> --task
-  "<task>" --json` before opening or executing `SKILL.md`.
+- Select the Skill semantically from adopted `SKILL.v1.md` headers.
+- Create the runtime envelope with `python -m xrefkit skill run --definition <path> --task
+  "<task>" --json` before opening or executing the selected method. Repository
+  adoption supplies only explicitly recorded runtime values; supply missing
+  `--capability` from the active instruction. Missing input refuses execution.
+  Recorded legacy `--meta` paths are invocation aliases, not split sources.
+  Draft repository Skills remain unavailable until separate adoption review.
 - Load selected knowledge, workflow, and linked documents only when the active
   task or selected Skill requires them.
 

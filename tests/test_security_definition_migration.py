@@ -1,3 +1,4 @@
+from repository_skill_receipts import assert_preserved_source_boundary
 from pathlib import Path
 
 from xrefkit.mcp.catalog import XRefCatalog
@@ -11,10 +12,7 @@ def test_security_review_v1_migration_and_legacy_body_are_preserved():
 
     assert definition["metadata"]["xid"] == "7C4E9A2D1F60"
     assert set(definition["metadata"]["aliases"]) == {"3575A687EBCA", "1BCE02850126"}
-    assert "CAP-QA-007" not in definition["method"]
-    assert "## Required Capability Definitions" not in definition["method"]
-    assert "## Required Knowledge (XID)" not in definition["method"]
-    assert "## Reporting Contract" not in definition["method"]
+    assert_preserved_source_boundary(definition)
     assert [need["id"] for need in definition["metadata"]["knowledge_needs"]] == ["csharp_quality_review_criteria"]
 
     catalog = XRefCatalog.build(repo, skill_definition_paths=[definition_path])
@@ -30,8 +28,6 @@ def test_security_review_v1_migration_and_legacy_body_are_preserved():
     assert [need["id"] for need in resolved["needs"]] == need_ids
     assert all(need["satisfied"] is True for need in resolved["needs"])
 
-    legacy = (repo / "skills/security_review/SKILL.md").read_bytes()
-    assert legacy.startswith(b"<!-- xid: 3575A687EBCA -->")
-    assert b"CAP-QA-007" in legacy
-    meta = (repo / "skills/security_review/meta.md").read_text(encoding="utf-8")
-    assert "skill_doc: `./SKILL.md`" in meta
+    from repository_skill_receipts import assert_legacy_receipt
+    assert assert_legacy_receipt(repo / "skills/security_review/SKILL.md")["xid"] == "3575A687EBCA"
+    assert_legacy_receipt(repo / "skills/security_review/meta.md")

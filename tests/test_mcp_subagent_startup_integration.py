@@ -39,7 +39,9 @@ def test_stdio_startup_receipt_and_reference(tmp_path, protocols, skill_id):
     else:
         shutil.copytree(repo / "skills" / skill_id, tmp_path / "skills" / skill_id)
         run = command("skill", "run", "--root", str(tmp_path), "--out", str(log),
-                      "--meta", f"skills/{skill_id}/meta.md", "--task", "MCP integration", "--json")
+                      "--definition", f"skills/{skill_id}/SKILL.v1.md", "--task", "MCP integration",
+                      "--capability", "read", "--tuning", "bounded",
+                      "--responsibility", "verify receipt", "--execution-mode", "subagent_preferred", "--json")
     command("skill", "workitem", "--log", str(log), "--item", "WI-1", "--text", "read",
             "--completion-criterion", "verified", "--status", "pending", "--role", f"{skill_id}:executor", "--json")
     catalog = XRefCatalog.build(repo, discover_packages=False)
@@ -88,7 +90,7 @@ def test_stdio_startup_receipt_and_reference(tmp_path, protocols, skill_id):
     assert calls == ["get_startup_context", "bind_skill_run", *(
         ["get_skill"] if skill_id != "instruction" else []), "get_document_by_xid"]
     if skill_id != "instruction":
-        assert len([d for d in result["documents"] if d["kind"] == "skill"]) == 2
+        assert len([d for d in result["documents"] if d["kind"] == "skill"]) == 1
     assert any(d["xid"] == doc["xid"] and d["body"] == doc["content"] for d in result["documents"])
     assert "subagent.startup.read" in log.read_text(encoding="utf-8")
     events = [json.loads(line) for line in audit.read_text(encoding="utf-8").splitlines()]

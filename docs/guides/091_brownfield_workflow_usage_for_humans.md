@@ -351,7 +351,7 @@ AIは調査、整理、ケース生成、反復実行、比較、証拠化を支
 
 - 参考：[IPA「システム再構築を成功に導くユーザガイド 第2版」](https://www.ipa.go.jp/archive/publish/secbooks20180223.html)
 - IPAの観点は、目的・現行状態・新規要求からリスクを明らかにし、対策を合意して計画へ落とすための人間向けレビュー軸として使います。Repositoryの判断は、証拠、差分、owner、gate、human decisionとして記録します。
-- [Brownfield Workflow Skill](../../skills/brownfield-workflow/SKILL.md#xid-A17C4E8B2D91)
+- [Brownfield Workflow Skill](../../skills/brownfield-workflow/SKILL.v1.md#xid-E1A7C4D9B260)
 - [フェーズ手順](../../skills/brownfield-workflow/references/phase-workflow.md#xid-B4F1C8D2A601)
 - [既存Requirementの検証](../../skills/brownfield-workflow/references/requirements-validation.md#xid-B4F1C8D2A608)
 - [仕様整合性の確認](../../skills/brownfield-workflow/references/specification-reconciliation.md#xid-B4F1C8D2A609)

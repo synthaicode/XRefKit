@@ -415,7 +415,7 @@ Maturity and load readiness are defined in
 
 - If only skill behavior changed: update skill file, keep references.
 - If canonical domain knowledge is added or materially changed: route the work
-  through `skills/os/knowledge_ontology_management/meta.md#xid-83EDDDB5E158`,
+  through `skills/os/knowledge_ontology_management/SKILL.v1.md#xid-F8A2C6D1B370`,
   then verify Skill references still point to valid XIDs.
 - If the knowledge change is only wording, formatting, or mechanical XID-link
   maintenance: update the fragment directly and verify references; ontology

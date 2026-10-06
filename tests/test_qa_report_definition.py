@@ -1,5 +1,6 @@
+from repository_skill_receipts import assert_preserved_source_boundary
 from pathlib import Path
-import subprocess
+from repository_skill_receipts import assert_legacy_receipt
 
 from xrefkit.mcp.catalog import XRefCatalog
 from xrefkit.skill_definition import load_skill_definition
@@ -22,17 +23,10 @@ def test_qa_report_v1_parse_aliases_boundaries_and_legacy_bytes():
         assert metadata["control_refs"] == []
         forbidden = ("capability", "tuning", "responsibility", "execution_mode", "model", "maturity")
         assert not any(key in metadata for key in forbidden)
-        assert "## Reporting Contract" not in definition["method"]
-        assert "## Required Knowledge (XID)" not in definition["method"]
+        assert_preserved_source_boundary(definition)
         for legacy in ("SKILL.md", "meta.md"):
-            current = (directory / legacy).read_bytes()
-            original = subprocess.run(
-                ["git", "show", f"HEAD:skills/{skill_id}/{legacy}"],
-                cwd=repo,
-                check=True,
-                capture_output=True,
-            ).stdout
-            assert current.replace(b"\r\n", b"\n") == original.replace(b"\r\n", b"\n")
+            receipt = assert_legacy_receipt(directory / legacy)
+            assert receipt["xid"] == (body_xid if legacy == "SKILL.md" else meta_xid)
 
 
 def test_qa_report_v1_explicit_catalog_selection_and_knowledge_resolution():

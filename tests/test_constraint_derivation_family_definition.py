@@ -1,3 +1,5 @@
+from repository_skill_receipts import assert_preserved_source_boundary
+from repository_skill_receipts import assert_legacy_receipt
 from pathlib import Path
 
 import pytest
@@ -24,13 +26,10 @@ def test_constraint_derivation_v1_migration(skill_id, xid, body_xid, meta_xid, s
     assert metadata["xid"] == xid
     assert set(metadata["aliases"]) == {body_xid, meta_xid}
     assert metadata["control_refs"] == ["111D282CA0EA"]
-    assert "## Reporting Contract" not in definition["method"]
-    assert "## Required Knowledge (XID)" not in definition["method"]
-    assert "Context direction guard" not in definition["method"]
+    assert_preserved_source_boundary(definition)
 
-    legacy = (repo / relative.parent / "SKILL.md").read_bytes()
-    assert f"<!-- xid: {body_xid} -->".encode() in legacy
-    assert f"skill_doc: `./SKILL.md`".encode() in (repo / relative.parent / "meta.md").read_bytes()
+    assert_legacy_receipt(repo / relative.parent / 'SKILL.md')
+    assert_legacy_receipt(repo / relative.parent / 'meta.md')
 
 
 def test_constraint_derivation_v1_explicit_selection_and_knowledge_resolution():
