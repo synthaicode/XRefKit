@@ -2,6 +2,7 @@
 import asyncio
 import contextlib
 import io
+import hashlib
 import json
 import sys
 import shutil
@@ -90,7 +91,23 @@ def test_stdio_startup_receipt_and_reference(tmp_path, protocols, skill_id):
     assert calls == ["get_startup_context", "bind_skill_run", *(
         ["get_skill"] if skill_id != "instruction" else []), "get_document_by_xid"]
     if skill_id != "instruction":
-        assert len([d for d in result["documents"] if d["kind"] == "skill"]) == 1
+        # Contract 096 and ExecutionBinding pin the single raw v1 definition.
+        identity = binding["definition_identity"]
+        assert identity["path"] == f"skills/{skill_id}/SKILL.v1.md"
+        raw = (repo / identity["path"]).read_bytes()
+        assert hashlib.sha256(raw).hexdigest() == identity["sha256"]
+        definitions = [d for d in result["documents"] if d["kind"] in {"skill", "skill_definition"}]
+        assert len(definitions) == 1
+        definition = definitions[0]
+        assert definition["kind"] == "skill_definition"
+        assert definition["xid"] == identity["xid"]
+        assert definition["content_hash"] == identity["sha256"]
+        assert definition["body"].encode("utf-8") == raw
+        assert sum(d["xid"] == identity["xid"] for d in result["documents"]) == 1
+        reads = [d for d in result["receipt"]["reads"] if d["xid"] == identity["xid"]]
+        assert len(reads) == 1
+        assert reads[0]["kind"] == "skill_definition"
+        assert reads[0]["content_hash"] == identity["sha256"]
     assert any(d["xid"] == doc["xid"] and d["body"] == doc["content"] for d in result["documents"])
     assert "subagent.startup.read" in log.read_text(encoding="utf-8")
     events = [json.loads(line) for line in audit.read_text(encoding="utf-8").splitlines()]

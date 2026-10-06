@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import contextlib
+import hashlib
 import io
 import json
 import tempfile
@@ -313,7 +314,19 @@ class McpClientIntegrationTests(unittest.TestCase):
                     cache_aware_skill = cache_aware_skill_result.structuredContent
                     self.assertIsNone(cache_aware_skill["meta_content"])
                     self.assertIsNone(cache_aware_skill["skill_content"])
-                    self.assertEqual(len(cache_aware_skill["documents"]), 2)
+                    # Contract 096: adopted v1 transfers the one raw definition,
+                    # identified by the same source receipt as the selected entry.
+                    self.assertEqual(cache_aware_skill["definition_format"], "skill_definition_v1")
+                    self.assertEqual(len(cache_aware_skill["documents"]), 1)
+                    definition = cache_aware_skill["documents"][0]
+                    source_path = "skills/csharp_review/SKILL.v1.md"
+                    raw = (Path(__file__).resolve().parents[1] / source_path).read_bytes()
+                    self.assertEqual(cache_aware_skill["path"], source_path)
+                    self.assertEqual(definition["xid"], skill["definition_xid"])
+                    self.assertEqual(definition["content"].encode("utf-8"), raw)
+                    self.assertEqual(definition["content"], skill["skill_content"])
+                    self.assertEqual(definition["content_hash"], hashlib.sha256(raw).hexdigest())
+                    self.assertEqual(definition["content_hash"], skill["definition_content_hash"])
                     skill_versions = {
                         document["xid"]: document["content_hash"]
                         for document in cache_aware_skill["documents"]
@@ -326,6 +339,12 @@ class McpClientIntegrationTests(unittest.TestCase):
                         },
                     )
                     cached_skill = cached_skill_result.structuredContent
+                    self.assertEqual(
+                        [(d["xid"], d["content_hash"], d["repository_fingerprint"]) for d in cached_skill["documents"]],
+                        [(definition["xid"], definition["content_hash"], definition["repository_fingerprint"])],
+                    )
+                    self.assertEqual(cached_skill["path"], source_path)
+                    self.assertIs(cached_skill["documents"][0]["content_omitted"], True)
                     self.assertTrue(
                         all(
                             document["cache_status"] == "not_modified"
