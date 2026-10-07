@@ -491,7 +491,13 @@ class XRefCatalog:
                 f"Skill source is ambiguous for {skill_id!r}; provide package_id when needed"
             )
         entry = candidates[0]
-        current_skill_hash = stable_hash(entry.skill_content)
+        if entry.definition_format == "skill_definition_v1":
+            source_root = Path(entry.source_root) if entry.source_root else self.repo_root
+            current_skill_hash = _raw_skill_definition_document(
+                source_root / entry.path, entry.path, entry,
+            ).content_hash
+        else:
+            current_skill_hash = stable_hash(entry.skill_content)
         if skill_content_hash != current_skill_hash:
             raise ValueError("skill_content_hash does not match the current MCP Skill body")
         package_version = None

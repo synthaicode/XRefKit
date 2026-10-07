@@ -39,6 +39,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Work record types](reference/019_work_record_types.md#xid-4F8C21B7D4A2)
 - [Document update policy](policies/074_document_update_policy.md#xid-B1D42A6F90C3)
 - [Project quality baseline](reference/056_project_quality_baseline.md#xid-1C4B72D5E901)
+- [Core release compatibility with official Skill packages](guides/112_core_skill_release_compatibility.md#xid-0C41A7D389B2)
 
 ## XRefKit Routing And Authoring
 
@@ -97,4 +98,4 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - Agent entry: [Agent Entry](../agent/000_agent_entry.md#xid-0B5C58B5E5B2)
 - Domain knowledge entry: [Knowledge Index](../knowledge/000_index.md#xid-23059118FBB9)
 
-- [Core release compatibility with official Skill packages](guides/112_core_skill_release_compatibility.md#xid-0C41A7D389B2)
+

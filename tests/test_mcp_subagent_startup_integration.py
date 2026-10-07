@@ -26,6 +26,7 @@ def test_stdio_startup_receipt_and_reference(tmp_path, protocols, skill_id):
     from xrefkit.mcp.catalog import XRefCatalog
 
     repo = Path(__file__).resolve().parents[1]
+    server_repo = repo
     log = tmp_path / "run.md"
     def command(*args):
         output = io.StringIO()
@@ -37,12 +38,16 @@ def test_stdio_startup_receipt_and_reference(tmp_path, protocols, skill_id):
         run = command("workflow", "run", "--root", str(tmp_path), "--out", str(log),
                       "--task", "MCP integration", "--completion-condition", "verified", "--json")
     else:
-        shutil.copytree(repo / "skills" / skill_id, tmp_path / "skills" / skill_id)
+        # External legacy coverage uses an intentional fixture, independently
+        # from the adopted repository's canonical default and identity.
+        shutil.copytree(repo / "tests" / "fixtures" / "legacy_python_review",
+                        tmp_path / "skills" / skill_id)
+        server_repo = tmp_path
         run = command("skill", "run", "--root", str(tmp_path), "--out", str(log),
                       "--meta", f"skills/{skill_id}/meta.md", "--task", "MCP integration", "--json")
     command("skill", "workitem", "--log", str(log), "--item", "WI-1", "--text", "read",
             "--completion-criterion", "verified", "--status", "pending", "--role", f"{skill_id}:executor", "--json")
-    catalog = XRefCatalog.build(repo, discover_packages=False)
+    catalog = XRefCatalog.build(server_repo, discover_packages=False)
     doc = catalog.get_document_by_xid("8A666C1FD121")
     if hasattr(doc, "to_dict"):
         doc = doc.to_dict()
@@ -65,7 +70,7 @@ def test_stdio_startup_receipt_and_reference(tmp_path, protocols, skill_id):
     audit = tmp_path / "audit.jsonl"
     calls = []
     async def scenario():
-        args = ["-m", "xrefkit.mcp.server", "--repo", str(repo), "--audit-log", str(audit)]
+        args = ["-m", "xrefkit.mcp.server", "--repo", str(server_repo), "--audit-log", str(audit)]
         for protocol in protocols:
             args.extend(["--initial-protocol", protocol])
         server = StdioServerParameters(command=sys.executable, args=args, cwd=str(repo))

@@ -153,6 +153,23 @@ def test_selected_definition_without_version_map_returns_exact_compatibility_bod
     assert catalog.list_skills(include_content=True)[0]["skill_content"] == ""
 
 
+def test_contribution_snapshot_uses_selected_canonical_raw_body_hash(tmp_path):
+    definition, raw = _write_definition(tmp_path)
+    catalog = XRefCatalog.build(tmp_path, skill_definition_paths=[definition])
+    selected = catalog.get_skill("sample_skill")
+    expected = hashlib.sha256(raw).hexdigest()
+    assert hashlib.sha256(selected["skill_content"].encode("utf-8")).hexdigest() == expected
+    arguments = {
+        "skill_id": "sample_skill", "package_id": None,
+        "skill_content_hash": expected, "knowledge_versions": [],
+        "provider_version": "0.6.2",
+    }
+    snapshot = catalog.contribution_source_snapshot(**arguments)
+    assert snapshot["skill_content_hash"] == expected
+    with pytest.raises(ValueError, match="does not match the current MCP Skill body"):
+        catalog.contribution_source_snapshot(**{**arguments, "skill_content_hash": hashlib.sha256(b"").hexdigest()})
+
+
 def test_definition_governance_projects_maturity_without_changing_format(tmp_path):
     definition, _ = _write_definition(tmp_path)
     governance = _write_governance(tmp_path, definition)
