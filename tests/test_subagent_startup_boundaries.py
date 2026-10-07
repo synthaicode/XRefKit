@@ -108,7 +108,7 @@ def test_total_context_size_limit_blocks_without_acknowledgement(startup):
 
 def test_symlink_reference_cannot_escape_root(startup, tmp_path):
     root, log, binding_path, binding = startup
-    outside = tmp_path / "outside.md"
+    outside = tmp_path.parent / f"{tmp_path.name}-outside.md"
     outside.write_text("outside", encoding="utf-8")
     link = root / "link.md"
     try:

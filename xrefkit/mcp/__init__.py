@@ -17,6 +17,10 @@ def main(argv: list[str] | None = None) -> int:
     from .server import main as server_main
 
     args = list(argv or [])
+    if args and args[0] == "migrate":
+        from .legacy_migration import main as migration_main
+
+        return migration_main(args[1:])
     if args and args[0] == "setup":
         from .setup import main as setup_main
 

@@ -213,7 +213,11 @@ def _parse_document(text: str) -> tuple[dict[str, Any], str]:
         for event in yaml.parse(header_text, Loader=_StrictSafeLoader):
             if isinstance(event, AliasEvent) or getattr(event, "anchor", None) is not None:
                 raise _error("YAML aliases and anchors are not allowed")
-        metadata = yaml.load(header_text, Loader=_StrictSafeLoader)
+        loader = _StrictSafeLoader(header_text)
+        try:
+            metadata = loader.get_single_data()
+        finally:
+            loader.dispose()
     except ValueError:
         raise
     except RecursionError as exc:

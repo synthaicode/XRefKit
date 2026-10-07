@@ -1,0 +1,230 @@
+{
+  "$defs": {
+    "Edge": {
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "target": {
+          "title": "Target",
+          "type": "string"
+        },
+        "evidence": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Evidence",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "target",
+        "evidence"
+      ],
+      "title": "Edge",
+      "type": "object"
+    },
+    "Item": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "goal",
+            "constraint",
+            "decision",
+            "question",
+            "exception",
+            "history",
+            "conflict"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "source": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        },
+        "status": {
+          "default": "active",
+          "enum": [
+            "active",
+            "done",
+            "archived"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "depth": {
+          "default": 0,
+          "maximum": 20,
+          "minimum": 0,
+          "title": "Depth",
+          "type": "integer"
+        },
+        "fixed": {
+          "default": false,
+          "title": "Fixed",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "text",
+        "source"
+      ],
+      "title": "Item",
+      "type": "object"
+    },
+    "Observation": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "validated",
+            "repeated_error",
+            "correction_ignored",
+            "misread_explanation",
+            "decision_contradiction",
+            "intent_drift",
+            "no_improvement",
+            "repeated_failure"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "evidence": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Evidence",
+          "type": "string"
+        },
+        "context": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Context",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "evidence",
+        "context"
+      ],
+      "title": "Observation",
+      "type": "object"
+    },
+    "Turn": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 10000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/Item"
+          },
+          "maxItems": 500,
+          "title": "Items",
+          "type": "array"
+        },
+        "dependencies": {
+          "items": {
+            "$ref": "#/$defs/Edge"
+          },
+          "maxItems": 2000,
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "observations": {
+          "items": {
+            "$ref": "#/$defs/Observation"
+          },
+          "maxItems": 500,
+          "title": "Observations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "text"
+      ],
+      "title": "Turn",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "taskId": {
+      "title": "Taskid",
+      "type": "string"
+    },
+    "contextId": {
+      "title": "Contextid",
+      "type": "string"
+    },
+    "observedAt": {
+      "minimum": 0,
+      "title": "Observedat",
+      "type": "number"
+    },
+    "coverage": {
+      "default": "partial",
+      "enum": [
+        "partial",
+        "reviewed"
+      ],
+      "title": "Coverage",
+      "type": "string"
+    },
+    "turns": {
+      "items": {
+        "$ref": "#/$defs/Turn"
+      },
+      "maxItems": 200,
+      "minItems": 1,
+      "title": "Turns",
+      "type": "array"
+    }
+  },
+  "required": [
+    "taskId",
+    "contextId",
+    "observedAt",
+    "turns"
+  ],
+  "title": "Conversation",
+  "type": "object"
+}

@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-2d3aa251-0a2f-4757-969f-b4d843884c3d",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-09-18T09:17:30Z",
+  "git_commit": "800cf9d3df7da004c6828ab709cb09e9058673a2",
+  "purpose": "before AI workflow run 2d3aa251-0a2f-4757-969f-b4d843884c3d",
+  "work_item_id": "WI-docs-alignment",
+  "run_id": "2d3aa251-0a2f-4757-969f-b4d843884c3d",
+  "context_policy": "current-only",
+  "human_approved": false
+}

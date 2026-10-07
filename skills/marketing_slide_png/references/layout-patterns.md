@@ -36,6 +36,11 @@ Use when showing ordered handoff or dependency.
   - chevrons between steps
   - optional summary panel under the flow
 
+When an arrow connects distinct stages, enclose its source and destination in
+visible blocks. Place the arrow in the gap between their borders, aligned with
+the blocks' vertical midpoint. Keep any arrow label close to the connection
+without letting it cross a block border.
+
 ## 4. Hub And Spoke
 
 Use when one central concept is supported by multiple surrounding elements.
@@ -68,6 +73,10 @@ Use when emphasizing repeatable operational control.
 - structure:
   - closed loop or repeated sequence
   - each step has one clear label
+
+Apply the same bounded-block and centered-connector rule to arrows between
+adjacent steps. Route a return arrow outside the blocks so it reads as feedback
+rather than another forward step; its path need not cross the blocks' midpoints.
 
 ## 8. Closing Summary
 

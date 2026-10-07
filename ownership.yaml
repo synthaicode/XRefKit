@@ -58,11 +58,3 @@ zones:
     distribution: false
     base_sync: false
     shadowing: false
-  - id: delivery
-    owner: base
-    paths:
-      - handoff/
-    catalog: false
-    distribution: true
-    base_sync: true
-    shadowing: false

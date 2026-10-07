@@ -1,467 +1,175 @@
 <!-- xid: E179D62EA4F4 -->
 <a id="xid-E179D62EA4F4"></a>
 
-# XRefKit v2 MVP
+# XRefKit v2: Current Architecture and MVP Boundary
 
-This document describes the implemented XRefKit v2 MVP surface.
-
-The MVP is intentionally narrow. It proves the vertical path from a text-only
-Skill Package to a Project Local Skill, resolver output, CLI display, package
-discovery, and JSONL run-log validation.
+This document describes the current XRefKit architecture and the compatibility
+surface retained from the original v2 package/resolver MVP. The repository has
+grown beyond that first resolver-only prototype: the active runtime includes
+Skill execution, workflow binding, MCP distribution, execution observation,
+decision trace, local overlays, and human-controlled adoption paths.
 
 ## Purpose
 
-XRefKit v2 is a shared context supply and governance base for AI work.
+XRefKit supplies referenceable Knowledge, executable Skill procedures, and
+governance controls for AI work. Its central problem is judgment-material
+resolution: make the relevant method, Knowledge, evidence, runtime boundary,
+and unresolved conditions available without silently turning references into
+authority or guesses into facts.
 
-It is not only RAG, not only a prompt collection, and not only an MCP tool
-gateway. The MVP focuses on:
-
-- loading repository-independent Skill Packages
-- mounting Project Local assets
-- resolving a Local Domain Skill that extends a Pack Skill
-- cataloging available domain knowledge during Skill extension resolution
-- including reusable text fragments by XID without changing inheritance
-- generating an `EffectiveSkillBundle`
-- keeping source trace and content hashes visible
-- separating referenced, loaded, and used XIDs
-
-## Responsibility Boundaries
-
-### Core
-
-Core is executable Python code.
-
-Current MVP Core responsibilities:
-
-- Pydantic v2 models
-- file loaders
-- Python entry point discovery
-- package, skill, knowledge, and XID registries
-- single-inheritance resolver
-- `EffectiveSkillBundle` builder for entry bundles
-- CLI display for tree and resolved JSON
-- JSONL run-log reader/writer and aggregate validation
-- minimal MCP-tool-shaped facade without SDK wiring
-
-Core must not contain project-specific domain knowledge or technical judgment
-criteria such as C# rules, SQL Server rules, or site-specific templates.
-
-### Skill Package
-
-A Skill Package is a reusable text asset package.
-
-The MVP assumes text-only packages:
-
-- Skill definitions
-- Skill entry text
-- required fragments
-- reusable include fragments
-- on-demand branches
-- knowledge
-- review axes
-- schemas
-- `package_manifest.yaml`
-
-Python packaging is used for distribution and discovery only. The MVP does not
-execute package code as a tool.
-
-### Project Local
-
-Project Local contains project-specific assets:
-
-- Local Domain Skills
-- project knowledge
-- output templates
-- project schemas
-- project review axes
-- `local_manifest.yaml`
-
-Project Local can extend Pack Skills, inject project knowledge, and bind output
-templates. It cannot weaken Core contracts or Pack Skill contracts.
-
-### Shared MCP
-
-Shared MCP is the intended team-facing runtime surface.
-
-The current MVP does not yet wire an actual MCP SDK server. It provides a thin
-MCP-tool-shaped facade that calls the resolver. This is deliberately not a tool
-gateway for arbitrary package execution.
-
-## Python Distribution Model
-
-The implemented sample package is:
-
-- distribution name: `xrefkit-skills-xddp-design`
-- import package: `xrefkit_skills_xddp_design`
-- XRefKit package id: `xrefkit.skills.xddp.design`
-- entry point group: `xrefkit.skill_packages`
-- entry point: `xddp_design = xrefkit_skills_xddp_design:package_root`
-
-`package_root()` returns the package asset root containing
-`package_manifest.yaml`.
-
-Installed packages are only discovered. Discovery does not enable them for
-resolver use. A package must be explicitly enabled by package id before it is
-registered for resolution.
-
-## xrefkit.skills.xddp.design Structure
-
-The sample package lives at:
+The current path is:
 
 ```text
-packages/xrefkit-skills-xddp-design/
-├─ pyproject.toml
-├─ README.md
-└─ src/
-   └─ xrefkit_skills_xddp_design/
-      ├─ __init__.py
-      ├─ package_manifest.yaml
-      ├─ skills/
-      │  ├─ change_design.skill.yaml
-      │  ├─ common/
-      │  │  └─ traceability_instruction.md
-      │  └─ change_design/
-      │     ├─ entry.md
-      │     ├─ fragments/
-      │     │  ├─ traceability_required.md
-      │     │  └─ unknowns_required.md
-      │     └─ branches/
-      │        ├─ db_schema_change.md
-      │        └─ external_interface_change.md
-      ├─ knowledge/
-      │  ├─ traceability_principles.md
-      │  └─ unknown_handling_principles.md
-      ├─ review_axes/
-      │  ├─ traceability_completeness.yaml
-      │  └─ unknown_visibility.yaml
-      └─ schemas/
-         └─ change_design.schema.json
+instruction
+  -> semantic Skill or workflow routing
+  -> instruction-derived runtime binding
+  -> on-demand XID Knowledge resolution
+  -> client-side execution and observation
+  -> deterministic checks and human adoption decision
 ```
 
-The package provides:
+Knowledge is supplied on demand. A resolved XID proves repository resolution;
+it does not by itself prove that the body entered model context or that the
+content was used as judgment evidence. Run records preserve those distinctions.
 
-- package id: `xrefkit.skills.xddp.design`
-- skill id: `xddp.design.change_design`
-- required outputs:
-  - `traceability`
-  - `unknowns`
-  - `assumptions`
-  - `used_xids`
-  - `change_design`
+## Responsibility boundaries
 
-The Skill entry and required fragments are `required_inline`.
-Branches are `on_demand`.
+### Core runtime
 
-Reusable instruction fragments that may be loaded by `includes` must be
-published through `package_manifest.yaml` `provides.fragments`.
+The Python runtime owns contracts, discovery, routing inputs, Skill Run and
+workflow records, execution binding, XID resolution, deterministic checks,
+MCP tool contracts, and observation surfaces. It does not decide the semantic
+validity or business adoption of an output.
 
-Example:
+### Skill and Knowledge
 
-```yaml
-provides:
-  fragments:
-    - id: xddp.traceability_instruction
-      xid: xid-include-xddp-traceability-instruction
-      path: skills/common/traceability_instruction.md
-```
+Skill definitions carry executable procedure and Skill-specific boundaries.
+Knowledge carries reusable evidence, rules, and domain criteria. Routing uses
+the current instruction and catalog metadata, then applies the
+[Workflow Runtime Binding contract](core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F)
+for the work-item runtime fields. `model_requirements` remains the separate
+model-eligibility input.
+Knowledge bodies are loaded only for selected XIDs, with content hashes and
+source trace retained in the resulting bundle or run record.
 
-This is intentionally different from skill-internal required fragments such as
-`skills/change_design/fragments/traceability_required.md`. Required fragments
-belong to the Skill contract and are loaded through the Skill definition.
-Reusable include fragments are package-level assets published for explicit
-`includes` loading.
+### Client and human boundary
 
-## Local Skill Extends Example
+The client or orchestrator performs the work after the runtime envelope and
+execution binding succeed. It records execution observations and preserves
+unknowns. A human remains accountable for output acceptance, canonical
+Skill/Knowledge adoption, and other authority decisions.
 
-Sample Project Local:
+## Runtime surfaces
 
-```text
-samples/xrefkit-v2/order-system/xrefkit.local/
-├─ local_manifest.yaml
-├─ skills/
-│  └─ order_change_design.skill.yaml
-├─ knowledge/
-│  └─ current_spec.md
-└─ templates/
-   └─ change_design_report.md
-```
+The active runtime includes:
 
-The Local Domain Skill extends the Pack Skill:
+- `xrefkit skill run` for Skill-backed execution and `xrefkit workflow run` for
+  instruction-backed work;
+- execution binding that validates source mode, repository identity, Skill
+  identity, work-item context, and MCP correlation;
+- SkillDefinition v1 package assets plus legacy split `meta.md` / `SKILL.md`
+  compatibility during migration;
+- XID catalog, on-demand document and Knowledge resolution, and selected
+  context construction;
+- MCP stdio, SSE, and streamable HTTP server transports, startup context,
+  protocol blocks, Skill distribution, local Skill edits, local Knowledge,
+  contribution return, review, and adoption tools;
+- workflow phases, work items, artifacts, concerns, verification, closure,
+  reporting, and human evaluation records;
+- dashboard data and proposal-only boundary analysis;
+- decision-trace checkpoints, events, impact analysis, return checks, and
+  human evaluation boundaries;
+- goal-mode continuation packets, wake observations, and per-goal leases.
 
-```yaml
-skill_id: project.order_change_design
-xid: xid-project-skill-order-change-design
-type: domain_skill_wrapper
+The MCP server distributes inert definitions and records boundary events. It
+does not execute a Skill method or make the human adoption decision.
 
-xrefkit:
-  extends:
-    - ref: xrefkit.skills.xddp.design::xddp.design.change_design
-      xid: xid-skill-xddp-design-change-design
-      version: ">=0.1.0 <1.0.0"
-      mode: contract_inheritance
+## Legacy package and resolver compatibility
 
-  includes:
-    - xid: xid-include-xddp-traceability-instruction
+The original v2 package model remains supported for compatibility and for
+package-first distribution:
 
-  injects:
-    knowledge:
-      - xid-project-order-current-spec
+- a package can publish Skill definitions, entry text, reusable fragments,
+  Knowledge, review axes, schemas, templates, and a `package_manifest.yaml`;
+- Python entry points discover packages, but discovery does not enable a
+  package for resolution until the package is explicitly selected;
+- a Project Local manifest can extend a package Skill and add local Knowledge,
+  templates, schemas, and review axes;
+- the resolver builds an `EffectiveSkillBundle` with effective identity,
+  inherited contracts, selected loaded text, available Knowledge metadata,
+  required outputs, conflicts, and source trace;
+- `referenced_xids`, `loaded_xids`, and `used_xids` remain distinct. Used XIDs
+  are runtime evidence and must be loaded before they can be marked used.
 
-  output:
-    template_xid: xid-template-project-order-change-design-report
+The single-inheritance resolver and package registry are compatibility
+surfaces. They do not replace the active MCP catalog, runtime binding, or
+workflow protocols.
 
-  required_outputs:
-    - applied_skills
-```
+## Execution observation
 
-`extends` expresses contract inheritance.
-The XID identifies the referenced Skill asset; it does not represent
-inheritance itself.
+Run logs and dashboard data are evidence of what the runtime observed. They
+retain run identity, source hashes, XID references, loaded and used Knowledge,
+work-item and phase state, artifacts, concerns, checks, closure, handoff, and
+where available host or model observations.
 
-`includes` loads reusable text fragments by XID. It is mechanical context
-assembly, not contract inheritance and not domain knowledge injection. In the
-MVP, include order follows YAML list order, and duplicate include XIDs within
-one bundle build are skipped with an `info` conflict entry.
+The boundary-analysis command consumes dashboard JSON and produces a
+deterministic proposal-only report. Host-specific Copilot telemetry adapters,
+full OpenTelemetry normalization, and generative analysis Skills remain
+separate future work. Observation does not authorize a canonical change.
 
-Included fragments become `loaded_xids` with load reason `include_fragment` and
-must appear in fragment-level `source_trace`. They do not become `used_xids`
-unless the runtime later records that the loaded fragment was actually used as
-judgment basis.
+## MCP and contribution boundary
 
-### Includeable Assets
+MCP is both a distribution and audit boundary. Startup establishes the
+repository identity and required context before guarded tools are available.
+The server resolves XIDs and transfers selected definitions; the client keeps
+the execution record and invokes returned client commands where required.
 
-`includes` can target only reusable instruction fragments that are published by
-a package manifest under `provides.fragments`.
+Local Skill edits preserve source identity and provenance without overwriting
+existing edits. Local Knowledge is separately registered and exported. A
+contribution return is staged, sealed, reviewed with human authority, and only
+then adopted through the repository-owned transport boundary. Review, adoption,
+publication, distribution, and live verification remain separate states.
 
-The XID registry stores file-backed assets with:
+## Goal-mode boundary
 
-- `asset_type`
-- `includeable`
+Goal mode now stores append-only continuation packets, explicit wake events,
+and one active lease per goal. These records support safe later inspection and
+prevent concurrent lease holders. Provider quota observation, automatic wake
+scheduling, and automatic session re-entry remain outside the implemented
+runtime.
 
-MVP `asset_type` values are:
+## Compatibility and not-yet-complete work
 
-- `skill`
-- `fragment`
-- `knowledge`
-- `review_axis`
-- `schema`
-- `template`
+Retained compatibility includes legacy split Skills, Skill Package discovery,
+Project Local manifests, the single-inheritance resolver, and the original
+effective-bundle/source-trace model. Current architecture adds the runtime and
+MCP boundaries around those assets.
 
-In the MVP, `includeable=true` is set only for assets declared in
-`provides.fragments`. Skill-internal entry, required fragments, and branches are
-file-backed assets for source trace and content hashing, but they are not
-include targets.
+The following remain incomplete or intentionally bounded:
 
-The following assets must not be loaded through `includes`:
+- automatic discovery-time package installation or activation; `xrefkit skills
+  sync` remains an explicit administrator operation;
+- multiple inheritance and general-purpose executable package code;
+- automatic provider quota watcher and unattended goal re-entry;
+- full host-specific Copilot OTel ingestion and universal host-log parsing;
+- automatic semantic Skill merge, split, deletion, or canonical rewrite;
+- automatic human approval or adoption of analysis proposals;
+- causal claims about business outcomes from Knowledge usage alone.
 
-- knowledge: use `injects`
-- template: use `output`
-- schema: use `output`
-- review axis: use `review_axes`
+These are boundaries of implementation, not instructions to infer missing
+behavior. New capabilities must pass the relevant runtime, evidence, review,
+and human adoption contracts before becoming canonical.
 
-If a Local Domain Skill specifies an include XID that is not an includeable
-fragment, resolution fails with an error that identifies the XID and the actual
-asset type. This is a resolution error, not an error conflict entry.
-
-Duplicate include XIDs in one resolution are skipped as `info` conflicts with
-code `include_skipped_duplicate`. The first occurrence remains loaded.
-
-## CLI Examples
-
-Package discovery:
+## Representative commands
 
 ```powershell
-python -m xrefkit package discover
-python -m xrefkit package discover --json
+python -m xrefkit skill run --definition <path-to-SKILL.v1.md> --task "<task>" --capability "<capability>" --tuning "<tuning>" --responsibility "<responsibility>" --execution-mode <mode> --json
+# Legacy split compatibility only:
+python -m xrefkit skill run --meta <path-to-meta.md> --task "<task>" --json
+python -m xrefkit workflow run --task "<task>" --completion-condition "<condition>" --json
+python -m xrefkit xref search "<query>"
+python -m xrefkit xref show <XID>
+python -m xrefkit dashboard data --root .
+python -m xrefkit analysis boundary report --input <dashboard-json> --out <report>
+python -m xrefkit xref check
 ```
-
-Package list with explicit enabled package:
-
-```powershell
-python -m xrefkit package list --enabled-package xrefkit.skills.xddp.design
-python -m xrefkit package list --json --enabled-package xrefkit.skills.xddp.design
-```
-
-Show effective Skill as a tree:
-
-```powershell
-python -m xrefkit show effective-skill project.order_change_design `
-  --mode tree `
-  --package-manifest packages/xrefkit-skills-xddp-design/src/xrefkit_skills_xddp_design/package_manifest.yaml `
-  --local-manifest samples/xrefkit-v2/order-system/xrefkit.local/local_manifest.yaml
-```
-
-Show resolved `EffectiveSkillBundle` JSON:
-
-```powershell
-python -m xrefkit show effective-skill project.order_change_design `
-  --mode resolved-json `
-  --package-manifest packages/xrefkit-skills-xddp-design/src/xrefkit_skills_xddp_design/package_manifest.yaml `
-  --local-manifest samples/xrefkit-v2/order-system/xrefkit.local/local_manifest.yaml
-```
-
-`resolved-json` is not full materialization. The word `full` is reserved for
-true full materialize.
-
-## Extension-Time Domain Knowledge Catalog
-
-When a Local Domain Skill extends a Pack Skill, the resolver builds a
-metadata-only `available_domain_knowledge` catalog from registered package and
-local knowledge.
-
-The catalog is automatic at Skill extension resolution time. It exists because
-the inherited judgment method may be uniform while the concrete target can be
-one of many local or package knowledge entries. Loading every possible target
-body would pollute the Skill context.
-
-Each catalog entry contains:
-
-- knowledge id
-- XID
-- source type
-- content hash
-- package or local identity
-- whether the XID is already selected by the effective Skill references
-- selection reason when selected
-
-The catalog does not load knowledge bodies into `loaded_texts.knowledge`. Body
-loading remains a later selected-XID operation. The intended shape is:
-
-```text
-available_domain_knowledge metadata -> select XID -> load selected body
-```
-
-This mirrors the MCP-facing shape:
-
-```text
-metadata list -> choose XID -> get_document_by_xid(XID)
-```
-
-If a target-specific body was initially embedded in a draft or early-trial
-Skill, it must be extracted through maintenance before the Skill is treated as
-stable. After extraction and registration as package or local knowledge, the
-same extension-time cataloging exposes it through `available_domain_knowledge`.
-
-## EffectiveSkillBundle
-
-`EffectiveSkillBundle` is the resolver output for the current Skill resolution.
-
-In the MVP it contains:
-
-- effective Skill id
-- resolution mode
-- base contracts
-- loaded text references with content hashes and load reasons
-- included reusable fragments loaded by XID
-- available domain knowledge metadata for package and local knowledge
-- referenced knowledge, templates, schemas, review axes, and branches
-- required outputs after merge
-- fragment-level source trace
-- conflict and warning slots
-
-The bundle does not contain `used_xids`. Used XIDs are runtime evidence records
-and belong in the Run Log.
-
-## Run Log JSONL
-
-Run Log JSONL is the canonical event-log format.
-
-Each line is one event. Examples of event types:
-
-- `run.start`
-- `context.resolved`
-- `xids.referenced`
-- `xids.loaded`
-- `xids.used`
-- `unknowns.reported`
-- `assumptions.reported`
-- `branch.loaded`
-- `conflict.detected`
-- `run.complete`
-
-`RunLogAggregate` validates run-level consistency, including:
-
-- all events share the same `run_id`
-- `run.start` exists
-- `run.complete` appears at most once
-- event timestamps are monotonic
-- `used_xids` is a subset of `loaded_xids`
-
-YAML or Markdown run-log views are human exports, not the canonical format.
-
-## referenced_xids / loaded_xids / used_xids
-
-`referenced_xids`:
-
-- XIDs presented as candidates or references.
-- Body text may not be loaded.
-- Useful for navigation and possible follow-up loading.
-- `available_domain_knowledge` entries are referenced candidates until selected
-  and loaded.
-
-`loaded_xids`:
-
-- XIDs whose body text was loaded into resolver or execution context.
-- Each loaded XID carries a content hash and load reason.
-- Loading does not mean the source was used as judgment basis.
-- Included fragments are loaded XIDs with load reason `include_fragment`.
-
-`used_xids`:
-
-- XIDs actually used as evidence or judgment basis.
-- Must be loaded first.
-- `used_xids` belongs to Run Log events, not `EffectiveSkillBundle`.
-
-## Not Implemented In MVP
-
-The following are intentionally not implemented:
-
-- true full materialize
-- actual MCP SDK server wiring
-- executable Skill Package
-- SSO/OAuth
-- automatic package install
-- automatic package download
-- multiple inheritance
-- automatic extraction of embedded Skill text into domain-knowledge catalog
-- advanced branch condition DSL
-- full workflow engine
-
-True full materialize is reserved for a future mode and must include:
-
-- all branch bodies
-- referenced knowledge bodies
-- output template and schema bodies
-- review axis bodies
-- source trace and content hash for every materialized asset
-- `human_full_only` assets
-
-## Wheel Build Verification
-
-The `xrefkit-skills-xddp-design` package was verified as buildable with:
-
-```powershell
-python -m pip wheel --no-deps --wheel-dir .tmp/xrefkit-skills-xddp-design-dist packages/xrefkit-skills-xddp-design
-```
-
-Verified wheel contents:
-
-- `xrefkit_skills_xddp_design/__init__.py`
-- `xrefkit_skills_xddp_design/package_manifest.yaml`
-- `xrefkit_skills_xddp_design/skills/change_design.skill.yaml`
-- `xrefkit_skills_xddp_design/skills/change_design/**/*.md`
-- `xrefkit_skills_xddp_design/knowledge/*.md`
-- `xrefkit_skills_xddp_design/review_axes/*.yaml`
-- `xrefkit_skills_xddp_design/schemas/*.json`
-- `.dist-info/entry_points.txt`
-
-Verified entry point:
-
-```text
-[xrefkit.skill_packages]
-xddp_design = xrefkit_skills_xddp_design:package_root
-```
-
-The wheel was also installed into an isolated virtual environment with
-`--no-deps`; `package_root()` returned the installed package asset root and
-`package_manifest.yaml` was present.

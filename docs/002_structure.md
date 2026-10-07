@@ -16,11 +16,18 @@ For the repository purpose and operating model, see [Overview](000_overview.md#x
   - `docs/designs/`: System, migration, decomposition, and integration design documents
   - `docs/policies/`: Explicit repository policies
   - `docs/reference/`: Reference definitions, source handling, naming conventions, matrices, and baselines
-  - `docs/assets/`: Shared non-Markdown documentation assets such as diagrams and PDFs
+  - `docs/presentations/`: Shareable presentation artifacts such as PowerPoint decks
 - `agent/`: Agent entry + operational contract (keep L0 short and stable)
 - `xrefkit/`: installable runtime, CLI, resolver, tools registry, and MCP adapter
 - `knowledge/`: Shared domain knowledge fragments
 - `skills/`: Executable procedures and routing index
+- `observations/`: Tracked Skill maturity and governance evidence
+- `packages/`: Installable Skill and Knowledge package sources
+- `projects/`: Executable subprojects governed by the project quality baseline
+- `tools/`: Deterministic analysis, maintenance, and quality utilities
+- `tests/`: Runtime, CLI, MCP, and contract verification
+- `work/`: Non-canonical session logs, judgments, drafts, and handoffs
+- `human-docs/`: Human-language publication trees derived from canonical assets
 - `sources/`: Original materials (PDF/Excel/Web snapshots, etc.) kept in-repo for human review
 - `.github/`: GitHub control plane (Copilot instructions, prompts, CI)
 - `.cursor/`: Cursor rules
@@ -53,11 +60,18 @@ For the repository purpose and operating model, see [Overview](000_overview.md#x
 │  ├─ designs/    # System and integration design documents
 │  ├─ policies/   # Explicit repository policies
 │  ├─ reference/  # Definitions, conventions, matrices, and baselines
-│  └─ assets/     # Non-Markdown documentation assets
+│  └─ presentations/ # Shareable presentation artifacts
 ├─ agent/         # Agent entry/contract (XID-managed)
 ├─ xrefkit/       # installable runtime and integrated MCP adapter
 ├─ knowledge/     # Shared domain knowledge
 ├─ skills/        # Executable skills
+├─ observations/  # Tracked maturity/governance evidence
+├─ packages/      # Installable Skill/Knowledge packages
+├─ projects/      # Executable subprojects
+├─ tools/         # Deterministic utilities and quality checks
+├─ tests/         # Runtime and contract verification
+├─ work/          # Non-canonical operational records
+├─ human-docs/    # Human-language publication trees
 ├─ sources/       # Original materials (PDF/Excel/Web)
 ├─ .github/       # Copilot/CI
 ├─ .cursor/       # Cursor rules

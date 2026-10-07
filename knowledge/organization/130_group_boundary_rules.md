@@ -7,10 +7,12 @@ This page records the canonical boundary rules for groups used in the business-c
 
 ## Boundary Principles
 
-- Capabilities are reusable and may be shared across multiple responsibilities.
-- Responsibility defines how a capability is exercised for a business purpose, including expected outputs, judgment criteria, and handoff behavior.
-- Tuning specializes a capability by technology, framework, domain, or quality focus.
-- A group does not own a capability in the abstract; it owns the responsibility for exercising tuned capabilities within its boundary.
+- For a concrete group work item, `capability`, `tuning`, and `responsibility`
+  use the meanings and derivation in the [Workflow Runtime Binding
+  contract](../../docs/core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F).
+- Capabilities may be reused across group boundaries. A group owns the bounded
+  work-item outcome assigned to it, not the abstract capability or human
+  adoption authority.
 - Each group also owns self-check inside that same responsibility boundary.
 - Each group runs its work with the same task lifecycle: `Startup -> Planning -> Execution -> Monitoring and Control -> Closure`.
 - Planning owns value, constraints, assumptions, and requirement-level framing.

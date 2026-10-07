@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-5f762a0d-2bde-4e40-bd8d-f8e596377c1d",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-09-18T13:32:02Z",
+  "git_commit": "88bec20e9da1a1c7157a9f7d562abe85b13a00a0",
+  "purpose": "before AI workflow run 5f762a0d-2bde-4e40-bd8d-f8e596377c1d",
+  "work_item_id": "WI-protocol-exclusion",
+  "run_id": "5f762a0d-2bde-4e40-bd8d-f8e596377c1d",
+  "context_policy": "current-only",
+  "human_approved": false
+}

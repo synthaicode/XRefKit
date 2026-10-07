@@ -36,7 +36,8 @@ jobs:
           python -m pip install -e "${PACKAGE_ROOT}"
           python -m pip install bandit pip-audit
       - name: Run existing Skill Package tests
-        run: python -m pytest "${PACKAGE_ROOT}/tests" -q
+        working-directory: ${{ runner.temp }}
+        run: python -m pytest "${GITHUB_WORKSPACE}/${PACKAGE_ROOT}/tests" --import-mode=importlib -o pythonpath= -q
       - name: Run Bandit source security scan
         run: |
           # -ll makes medium/high findings release-blocking. The two current
@@ -210,6 +211,8 @@ jobs:
             --import-module "${PACKAGE_MODULE}" \
             --import-module "${PACKAGE_MODULE}.cli"
           "$venv/bin/xrefkit-batch-regression" --help
+          "$venv/bin/python" -m pip install pytest
+          "$venv/bin/python" -m pytest "${GITHUB_WORKSPACE}/${PACKAGE_ROOT}/tests" --import-mode=importlib -o pythonpath= -q
 
   sdist-install-smoke:
     name: Clean sdist install/import
@@ -246,6 +249,8 @@ jobs:
             --import-module "${PACKAGE_MODULE}" \
             --import-module "${PACKAGE_MODULE}.cli"
           "$venv/bin/xrefkit-batch-regression" --help
+          "$venv/bin/python" -m pip install pytest
+          "$venv/bin/python" -m pytest "${GITHUB_WORKSPACE}/${PACKAGE_ROOT}/tests" --import-mode=importlib -o pythonpath= -q
 
   publish-to-pypi:
     name: Publish Skill Package to PyPI

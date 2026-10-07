@@ -13,9 +13,9 @@ routing:
 - **Skill** — executable procedure (method) and reusable SkillDefinition
   contract. The canonical v1 form carries `applies_when`, `inputs`, `outputs`,
   `criteria`, `knowledge_needs`, and optional Skill-specific `control_refs`.
-  Initialization-owned common controls are not repeated. `capability` / `tuning` /
-  `responsibility` are runtime routing and binding fields derived from the
-  instruction, not fixed Skill metadata. Lives in `skills/`.
+  Initialization-owned common controls are not repeated. Runtime binding fields
+  are owned by the [Workflow Runtime Binding contract](../contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F),
+  not by Skill metadata. Lives in `skills/`.
 - **Knowledge** — evidence, facts, domain and local rules. Resolved dynamically
   from a Skill's slots against the base+local unified catalog. Lives in
   `knowledge/`.
@@ -26,8 +26,7 @@ routing:
   and
   [Workflow protocol sequence for humans](../../guides/087_workflow_protocol_sequence_for_humans.md#xid-E8B4D2F19A63).
 - **Semantic routing** — selects a reusable SkillDefinition for a goal, then
-  creates the runtime binding by deriving `capability` / `tuning` /
-  `responsibility` from the instruction and current state.
+  creates the Workflow Runtime Binding from the instruction and current state.
 
 ## What Each Layer Holds
 
@@ -41,8 +40,8 @@ routing:
 1. identify the goal or user intent
 2. route to a SkillDefinition by matching intent and current state against
    `applies_when` and its method contract
-3. derive the runtime `capability` / `tuning` / `responsibility` binding from
-   the instruction and confirm the definition's input conditions
+3. derive the Workflow Runtime Binding from the instruction and confirm the
+   definition's input conditions
 4. run the Skill, or an instruction without an applicable Skill, inside the
    workflow protocol envelope
 5. resolve the definition's `knowledge_needs` against the XID Knowledge catalog
@@ -99,9 +98,9 @@ The Skill must not own:
 
 The reuse that is real lives in shared `knowledge/` fragments selected from the
 XID catalog. The same SkillDefinition can be executed with different runtime
-bindings when the instruction calls for different capability, tuning, or
-responsibility. Composite tuning still resolves layered common, specific, and
-cross-tuning Knowledge.
+bindings; field ownership and legacy compatibility are defined by the Workflow
+Runtime Binding contract. Composite tuning still resolves layered common,
+specific, and cross-tuning Knowledge.
 
 ## Design Rules
 
@@ -117,9 +116,9 @@ cross-tuning Knowledge.
 - When the same judgment method can apply to many targets, list candidate
   targets as metadata first, select the target set from prompt and task cues,
   and load only selected XID bodies.
-- Derive `capability` / `tuning` / `responsibility` in the runtime binding; do
-  not add a role field (executor is implicit; the checker is the deterministic
-  Workflow Protocol).
+- Use the Workflow Runtime Binding for instruction-derived work-item context;
+  do not add a role field (executor is implicit; the checker is the
+  deterministic Workflow Protocol).
 - Keep determinism in the protocol, not in Skill internals or in selection.
 
 ## Relationship Diagram

@@ -55,6 +55,48 @@ reader resume or decide. Their placement follows the task format. These details
 supplement XID-backed evidence and Run Log work items, artifacts, concerns,
 phases, verification, and closure; they do not replace them.
 
+## Auxiliary Readability Guidance
+
+This is XRefKit's own Japanese-oriented guidance, inspired by selected ASD-STE100
+principles. It applies only to expression within the active task's reporting
+requirements. Task-specific content, format, order, detail, and acceptance
+criteria take precedence. It does not alter machine Run Logs or require fixed
+headings, section order, or a reporting profile.
+
+- Use appropriately short sentences and one main point per sentence when that
+  helps the reader follow the explanation. Keep conditions and consequences
+  connected when separating them would obscure their meaning.
+- Use consistent terms for the same concept and reduce ambiguous references
+  such as an unexplained "this", "that", or "it". Name the relevant target.
+- Preserve conditions, exceptions, numbers, evidence, verification scope,
+  unverified items, uncertainty, and the distinction between facts and
+  inferences. Sentence shortening never justifies omitting them.
+- Preserve the explanation's structure and meaning. Use a longer sentence or
+  paragraph when that is necessary to express a dependency or limitation clearly.
+- Do not force English sentence limits or the English controlled dictionary
+  onto Japanese. Do not claim strict ASD-STE100 compliance, an "80% compliant"
+  score, or AI-generated compliance assurance from applying these principles.
+
+For example, a task-specific verification report can say:
+
+> 本体0.6.2のwheelで公開済みSkill 3件を検証しました。個別導入と同時導入は成功しました。
+> XDDPは未公開候補として別に検証しました。確認範囲はPython 3.12です。他のPython版は未確認です。
+
+The example demonstrates expression only; it is not evidence that these checks
+have actually run. "互換性確認済みです。問題ありません。" is an inadequate shortening:
+it removes the exact artifact/version, publication distinction, scope, and
+unverified conditions. Similarly, shortening "再試行はHTTP 429の場合だけ行います。
+認証失敗の場合は停止します。" to "失敗したら再試行します。" changes the rule and is
+not permitted. These examples are not a universal report template.
+
+Sources: [ASD-STE100 Issue 9](https://www.asd-ste100.org/assets/files/ASD-STE100_ISSUE9.pdf)
+(2025-01-15) defines English procedure/explanation conventions, including
+20/25-word sentence limits and preserving necessary words.
+[Official STE downloads guidance](https://asd-ste100.org/STE_downloads.html)
+does not guarantee AI-output compliance. These sources describe ASD-STE100;
+the scoped guidance above is an independent XRefKit policy inspired by its
+principles, not certification or a Japanese translation of that standard.
+
 ## Reader Perspective
 
 When this protocol applies, every report MUST attach a brief reader perspective

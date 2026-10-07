@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-7745d211-7332-418d-843e-ca957166cfa5",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-09-18T07:08:57Z",
+  "git_commit": "5b1170c1a9c99a3cfc5a44587a9c9bd2be97e61c",
+  "purpose": "before AI workflow run 7745d211-7332-418d-843e-ca957166cfa5",
+  "work_item_id": "WI-DOC",
+  "run_id": "7745d211-7332-418d-843e-ca957166cfa5",
+  "context_policy": "current-only",
+  "human_approved": false
+}

@@ -1,0 +1,182 @@
+{
+  "status": "migration_candidate",
+  "runtime_activated": false,
+  "source_skill": "skills/dotnet_change_analysis/SKILL.md",
+  "source_meta": "skills/dotnet_change_analysis/meta.md",
+  "source_method_sha256": "7b7cb2194608b705b26b7d29db22f97cdf164722653b84df49438e399e036c2d",
+  "source_meta_sha256": "8141b751211703291508b116697ca53f0f9db22031675ca379faf24e689f1b5e",
+  "method_preserved_byte_for_byte": false,
+  "simplification_coverage_map": {
+    "removed_common_sections": ["Required Knowledge (XID)", "Context Direction Guard", "Worklist", "Execution Role", "Check Role", "Logging", "Reporting Contract (共通報告)", "Failure Handling"],
+    "retained_skill_specific_sections": ["Purpose", "Optional References", "Inputs", "Outputs", "Startup", "Planning", "Where Impacted-Boundary Analysis (grep-first)", "Semantic-Inventory Mode (deterministic pack — grep-weak questions only)", "Execution", "Skill-Specific Monitoring and Control", "Skill-Specific Unknowns And Risks", "Closure Gate", "Handoff", "Rules"],
+    "coverage_sources": {"workflow_workitems_roles_logging_unknown_risk_closure": "control_refs:B7A2C94F0E61", "context_direction_guard": "control_refs:A7F3C92D4E11", "reporting": "control_refs:6B2D9F4A1C73"}
+  },
+  "source_sections": [
+    "Purpose\r",
+    "Required Knowledge (XID)\r",
+    "Optional References\r",
+    "Inputs\r",
+    "Outputs\r",
+    "Startup\r",
+    "Context Direction Guard\r",
+    "Worklist\r",
+    "Execution Role\r",
+    "Check Role\r",
+    "Logging\r",
+    "Planning\r",
+    "Where Impacted-Boundary Analysis (grep-first)\r",
+    "Semantic-Inventory Mode (deterministic pack — grep-weak questions only)\r",
+    "Execution\r",
+    "Monitoring and Control\r",
+    "Unknowns And Risks\r",
+    "Closure Gate\r",
+    "Handoff\r",
+    "Rules\r",
+    "Failure Handling\r",
+    "Reporting Contract (共通報告)\r"
+  ],
+  "meta_coverage": [
+    {
+      "source_key": "skill_id",
+      "source_value": "dotnet_change_analysis",
+      "destination": "header.skill_id",
+      "state": "mapped"
+    },
+    {
+      "source_key": "summary",
+      "source_value": "analyze .NET application structure and generate a Markdown change-analysis note for later design or implementation work",
+      "destination": "header.summary",
+      "state": "mapped"
+    },
+    {
+      "source_key": "use_when",
+      "source_value": "user needs repository-based .NET structure analysis, impact investigation, or a Markdown change-analysis note before changing code, especially brownfield code where responsibility separation is not documented and must be read from the code",
+      "destination": "header.applies_when",
+      "state": "mapped"
+    },
+    {
+      "source_key": "input",
+      "source_value": "target path, change request or analysis objective, optional scope filters, optional output path",
+      "destination": "header.inputs",
+      "state": "mapped"
+    },
+    {
+      "source_key": "output",
+      "source_value": "Markdown change-analysis note, scoped target list, impacted boundary list, structure pivot inventory, route/usecase trace matrix, implicit runtime binding inventory, domain-knowledge candidate metadata for later `knowledge_ontology_management` publication, uncertainty list, viewpoint check results, change placement basis, prohibited-changes list derived from extracted local rules, and a handoff list for defect-level or security-scope discoveries",
+      "destination": "header.outputs",
+      "state": "mapped"
+    },
+    {
+      "source_key": "maturity",
+      "source_value": "stable",
+      "destination": "migration provenance (not active routing metadata)",
+      "state": "retained_in_provenance"
+    },
+    {
+      "source_key": "execution_mode",
+      "source_value": "subagent_preferred",
+      "destination": "runtime binding/routing responsibility; legacy value retained only in provenance",
+      "state": "runtime_cutover_pending"
+    },
+    {
+      "source_key": "model_tier",
+      "source_value": "standard",
+      "destination": "runtime binding/routing responsibility; legacy value retained only in provenance",
+      "state": "runtime_cutover_pending"
+    },
+    {
+      "source_key": "capability_layering",
+      "source_value": "required",
+      "destination": "runtime binding/routing responsibility; legacy value retained only in provenance",
+      "state": "runtime_cutover_pending"
+    },
+    {
+      "source_key": "workflow_protocol",
+      "source_value": "required",
+      "destination": "header.control_refs -> existing Workflow Protocol",
+      "state": "mapped"
+    },
+    {
+      "source_key": "tuning",
+      "source_value": "analyze .NET application structure and generate a Markdown change-analysis note for later design or implementation work",
+      "destination": "runtime binding/routing responsibility; legacy value retained only in provenance",
+      "state": "runtime_cutover_pending"
+    },
+    {
+      "source_key": "responsibility",
+      "source_value": "user needs repository-based .NET structure analysis, impact investigation, or a Markdown change-analysis note before changing code, especially brownfield code where responsibility separation is not documented and must be read from the code",
+      "destination": "runtime binding/routing responsibility; legacy value retained only in provenance",
+      "state": "runtime_cutover_pending"
+    },
+    {
+      "source_key": "os_contract",
+      "source_value": "v1",
+      "destination": "header.control_refs -> Skill Operating Contract",
+      "state": "mapped"
+    },
+    {
+      "source_key": "constraints",
+      "source_value": "do not decide implementation policy by default; record unknowns explicitly; confirm custom-attribute activation instead of stopping at inventory; record structure and change impact only — defect-level findings hand off to csharp_review and vulnerability assessment hands off to security_review",
+      "destination": "method Purpose/Rules/Context Direction Guard",
+      "state": "mapped"
+    },
+    {
+      "source_key": "lifecycle",
+      "source_value": [
+        "startup: confirm target path, change objective, scope, and required viewpoints",
+        "planning: define scope, output path, viewpoint buckets, and safe scope split for read-only analysis",
+        "execution: extract the de-facto responsibility split from behavior evidence, analyze structure pivots, representative route/usecase traces, implicit runtime bindings, boundaries, DI registration lifetimes, local pipeline structure and ordering rules, convention-based discovery, build-configuration variants, error-handling contract, security boundary placement, logging, attributes, concurrency, performance, resources, tests, record the change placement basis, derive the prohibited-changes list from the extracted rules, and generate a Markdown note",
+        "monitoring_and_control: treat unrecorded viewpoints as leaks and downgrade weak conclusions to `unknown",
+        "closure: return the Markdown note, impacted boundaries, and unresolved items with reasons"
+      ],
+      "destination": "method Startup/Planning/Execution/Monitoring and Control/Closure Gate",
+      "state": "mapped"
+    },
+    {
+      "source_key": "tags",
+      "source_value": "dotnet`, `csharp`, `analysis`, `investigation`, `markdown",
+      "destination": "migration provenance (not active routing metadata)",
+      "state": "retained_in_provenance"
+    },
+    {
+      "source_key": "skill_doc",
+      "source_value": "./SKILL.md",
+      "destination": "inline method",
+      "state": "mapped"
+    },
+    {
+      "source_key": "knowledge_slots",
+      "source_value": [
+        "name=common_source_analysis_criteria; bind=5F21C8A41001",
+        "name=custom_framework_common_criteria; bind=5F21C8A41002",
+        "name=dotnet_change_analysis_viewpoints; bind=2E7B5A1FD201",
+        "name=structure_analysis_determinism_tiers; bind=5301B897BA41",
+        "name=structure_graph_tm_backstop; bind=163AD9936979"
+      ],
+      "destination": "header.knowledge_needs",
+      "state": "mapped"
+    },
+    {
+      "source_key": "observation_refs",
+      "source_value": [
+        "../../observations/2026-06-11_skill_improvement_note_dotnet_change_analysis.md",
+        "../../observations/2026-06-11_skill_run_dotnet_change_analysis.md"
+      ],
+      "destination": "migration provenance (not active routing metadata)",
+      "state": "retained_in_provenance"
+    },
+    {
+      "source_key": "governance_refs",
+      "source_value": [
+        "../../work/reports/2026-06-11_promotion_record_dotnet_change_analysis.md"
+      ],
+      "destination": "migration provenance (not active routing metadata)",
+      "state": "retained_in_provenance"
+    }
+  ],
+  "remaining": [
+    "Human adoption decision before replacing the legacy active source",
+    "Align management-upload adoption and package discovery with the one-document format",
+    "Use observed complex-Flow evidence before planning bulk conversion"
+  ]
+}

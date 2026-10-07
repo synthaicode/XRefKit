@@ -71,6 +71,11 @@ def test_instruction_workflow_uses_default_conditions_and_shared_protocol(tmp_pa
     text = out.read_text(encoding="utf-8")
     assert "# Workflow Run Log" in text
     assert "## Run Load Gate" in text
+    assert "## Workflow Runtime Binding" in text
+    assert "- source: `instruction_derived`" in text
+    assert "- owner: `workflow_protocol`" in text
+    assert "- instruction_basis: `run.task`" in text
+    assert "legacy_capability_layering" not in text
     assert "- basis: `default`" in text
     assert "- quality_policy: `human_acceptance`" in text
 

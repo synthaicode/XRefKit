@@ -7,10 +7,13 @@ name = "xrefkit-skills-xddp-design"
 version = "0.1.0"
 description = "Text-only XRefKit XDDP design Skill Package"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
-  "xrefkit>=2.0,<3.0"
+  "xrefkit>=0.6.1,<0.7.0"
 ]
+
+[project.optional-dependencies]
+test = ["pytest>=8", "jsonschema>=4,<5"]
 
 [project.entry-points."xrefkit.skill_packages"]
 xddp_design = "xrefkit_skills_xddp_design:package_root"

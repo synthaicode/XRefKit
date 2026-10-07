@@ -5,6 +5,21 @@ import pytest
 from xrefkit_skills_batch_regression.mcp_materialize import materialize
 
 
+def test_evaluation_manifest_includes_migrated_public_cases() -> None:
+    evaluation = Path(__file__).parents[1] / "src" / "xrefkit_skills_batch_regression" / "evaluation"
+    manifest = (evaluation / "manifest.yaml").read_text(encoding="utf-8")
+    for case in (
+        "cases/case-001-regional-order-change",
+        "cases/case-002-dynamic-dispatch-unknown",
+        "cases/case-003-classification-precedence",
+        "cases/case-004-reduction-and-feasibility",
+        "cases/case-005-safety-stop",
+    ):
+        assert case in manifest
+    assert "coverage: coverage.yaml" in manifest
+    assert (evaluation / "coverage.yaml").is_file()
+
+
 def test_materialize_creates_folder_based_mcp_skill(tmp_path: Path) -> None:
     result = materialize(tmp_path)
     skill_root = tmp_path / "skills" / "packs" / "batch-regression" / "batch-impact-regression"

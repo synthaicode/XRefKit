@@ -48,9 +48,10 @@ phase.
    - A v1 Skill is selected from header identity and `applies_when`; a legacy
      split Skill retains its meta identity and applicability path.
 
-3. Main AI / harness opens the runtime envelope.
-   For SkillDefinition v1, derive the runtime binding from the instruction:
-   python -m xrefkit skill run --definition <SKILL.md> --task "<task>" --capability "<capability>" --tuning "<tuning>" --responsibility "<responsibility>" --execution-mode <mode> --json
+3. Main AI / harness opens the runtime envelope. The Workflow Protocol owns
+   the runtime binding semantics; derive the fields from the instruction as
+   specified by [Workflow Runtime Binding](../core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F):
+   python -m xrefkit skill run --definition <SKILL.v1.md> --task "<task>" --capability "<capability>" --tuning "<tuning>" --responsibility "<responsibility>" --execution-mode <mode> --json
    For a legacy split Skill, use its compatibility metadata:
    python -m xrefkit skill run --meta <skill-meta> --task "<task>" --json
 
@@ -94,10 +95,10 @@ phase.
      field; it does not become SkillDefinition v1 metadata.
 
 6. Main AI / harness records concrete work items.
-   python -m xrefkit skill workitem --log <run-log> --item WI-001 --text "<work>" --status pending --role "<skill>:executor"
+   python -m xrefkit skill workitem --log <run-log> --item WI-001 --text "<work>" --completion-criterion "<observable condition>" --status pending --role "<skill>:executor"
 
 7. Executor completes work items and records status.
-   python -m xrefkit skill workitem --log <run-log> --item WI-001 --status done --role "<skill>:executor"
+   python -m xrefkit skill workitem --log <run-log> --item WI-001 --completion-criterion "<observable condition>" --status done --role "<skill>:executor"
 
 8. Main AI / harness records outputs and evidence.
    python -m xrefkit skill artifact --log <run-log> --artifact OUT-001 --kind output --target "<path>" --item WI-001 --status done --role "<skill>:executor"

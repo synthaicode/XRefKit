@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Attention Pet · 作業の見通し</title><link rel="stylesheet" href="/pet.css"></head>
+<body>
+<div id="error" role="alert" hidden></div>
+<aside class="pet-dock" id="dock" data-expression="unknown">
+  <section id="panel" class="panel" aria-label="実行プロファイルの適合" data-i18n-aria="panelAria">
+    <div class="panel-top"><span class="eyebrow" data-i18n="eyebrow">実行条件とコストの配分</span></div>
+    <h2 id="state-title" data-i18n="waiting">観測を待っています</h2><p id="state-note" data-i18n="loadWork">作業内容を読み込んでください。</p><p id="panel-model-guide" class="model-guide"></p><p id="model-guide-detail" class="guide-detail"></p>
+    <p id="source-detail" class="source-detail" data-i18n="checkingChat">接続先のチャットを確認中</p><p id="source-model" class="source-model"></p><p class="calibration" data-i18n="calibration">実験値・未校正 — 実測の能力・料金ではありません</p>
+    <dl class="fit-summary"><dt data-i18n="modelFit">能力の判定 / Profile Fit</dt><dd id="model-fit" data-i18n="undetermined">未判定</dd><dt data-i18n="costFit">コストの比較 / Cost Fit</dt><dd id="cost-fit" data-i18n="undetermined">未判定</dd><dt data-i18n="coverage">入力の範囲 / Coverage</dt><dd id="fit-coverage" data-i18n="noInput">入力なし</dd><dt data-i18n="confidence">評価の確からしさ / Confidence</dt><dd id="fit-confidence" data-i18n="confidenceUnknown">未評価 / Unknown</dd></dl>
+    <p id="action-hint" class="action-hint"></p>
+    <section class="model-settings" aria-label="モデルの設定" data-i18n-aria="settingsAria">
+      <label><span data-i18n="estimateModel">試算するモデル</span><select id="model-profile"><option value="" data-i18n="chooseModel">モデルを選ぶ</option><option value="luna" data-i18n="lunaProfile">Luna（実験プロファイル）</option><option value="terra" data-i18n="terraProfile">Terra（実験プロファイル）</option><option value="sol" data-i18n="solProfile">Sol（実験プロファイル）</option><option value="astra" data-i18n="astraProfile">Astra（実験プロファイル）</option></select></label>
+      <label><span data-i18n="estimateDepth">試算する深さ</span><select id="reasoning-effort"><option value="low">low</option><option value="medium">medium</option><option value="high">high</option><option value="xhigh">xhigh</option><option value="max">max</option></select></label>
+      <p id="model-help" data-i18n="modelHelp">通常はアクティブなチャットの実行条件で試算します。手動の比較条件は試算だけに反映され、Codexのモデルや考える深さは切り替わりません。モデル世代や料金プランの違いは未反映です。</p>
+    </section>
+    <details id="evaluation-details"><summary data-i18n="showEvaluation">数値・候補・評価理由を見る</summary>
+    <p id="detail-reason"></p>
+    <div class="metrics"><div><span data-i18n="baseRal">元の複雑さ<br>Base RAL</span><strong id="ral">—</strong></div><div><span data-i18n="workExpansion">想定する作業展開</span><strong id="expansion">—</strong></div><div><span data-i18n="effectiveRal">展開後の複雑さ</span><strong id="effective">—</strong></div></div>
+    <p class="disclaimer" data-i18n="expansionDisclaimer">作業展開は仮説です。実際に項目や依存関係が増えたことを示す値ではありません。</p>
+    <h3 data-i18n="why">この評価になった理由</h3><ul id="fit-reasons"></ul>
+    <h3 data-i18n="costComparison">推論コストの比較</h3>
+    <p id="cost-note"></p><h3 data-i18n="lowerCandidates">より低い推論コストの適合候補</h3><ul id="lower-cost-candidates"></ul>
+    <p class="disclaimer" data-i18n="costDisclaimer">総コスト ＝ 推論 ＋ 再試行 ＋ 修正 ＋ 待ち時間 ＋ 失敗による損失。金額・回数・成功確率は未推定です。より低い推論コストでも、実品質の同等性や総コストの低下は未検証です。候補がない場合も、現在の実行条件の品質や総コスト上の優位性は確認していません。</p>
+    <details><summary data-i18n="showCapabilities">必要能力と比較候補を見る</summary>
+      <table class="fit-table"><thead><tr><th data-i18n="capabilityItem">能力の項目</th><th data-i18n="requiredEstimated">必要（仮）</th><th data-i18n="selectedEstimated">選択した組合せ（仮）</th></tr></thead><tbody id="capability-rows"></tbody></table>
+      <p data-i18n="sameDepth">対応するモデルと考える深さの組合せを横断比較。各候補自身の作業展開を含めた試算です。</p>
+      <table class="fit-table"><thead><tr><th data-i18n="candidate">候補</th><th data-i18n="expanded">展開後</th><th data-i18n="requiredCapability">必要能力</th><th data-i18n="relativeCost">相対推論コスト</th></tr></thead><tbody id="candidate-rows"></tbody></table>
+      <h3 data-i18n="behaviorHypothesis">選択したモデルの挙動（仮説・0〜1）</h3><ul id="behaviors"></ul><p id="depth-effects"></p>
+    </details>
+    <p id="delta"></p>
+    <div class="trend"><span id="trend-label" data-i18n="changeHistory">変化の履歴</span><svg id="chart" viewBox="0 0 300 55" role="img" aria-label="負荷の変化" data-i18n-aria="loadChange"><path id="trend-line" d=""/></svg></div>
+    <label class="motion-setting"><input id="motion" type="checkbox" checked> <span data-i18n="animatePet">ペットを動かす</span></label><p id="motion-status" role="status"></p>
+    <details id="details"><summary data-i18n="showRal">RALの内訳・根拠を見る</summary><h3 data-i18n="sixContributions">全6項目の寄与 / 最大点</h3><ul id="causes"></ul><h3 data-i18n="changesSincePrevious">前回からの変化</h3><ul id="changes"></ul><h3 data-i18n="outcomeRecords">対応結果の記録</h3><ul id="observations"></ul><p id="coverage"></p><p id="sample-time"></p></details>
+    </details>
+  </section>
+  <div class="pet-row"><div class="pet-labels"><span id="pet-caption" role="status" data-i18n="loadingEvaluation">評価を読み込み中</span><span id="pet-model-guide" hidden></span></div><div id="pet" role="img" aria-label="Attention Pet：評価を読み込み中" data-i18n-aria="petLoading">
+  <svg viewBox="0 0 160 160" aria-hidden="true"><ellipse class="shadow" cx="80" cy="144" rx="39" ry="6"/><g class="creature"><path class="ear" d="M41 60Q20 17 56 34L69 53M99 49Q133 13 129 60"/><path class="body" d="M33 76Q27 49 80 46Q133 47 129 80L138 111Q136 141 80 140Q24 142 23 115Z"/><ellipse class="cheek" cx="44" cy="103" rx="11" ry="6"/><ellipse class="cheek" cx="115" cy="103" rx="11" ry="6"/><g class="eyes"><path class="eye left" d="M53 84L53 93"/><path class="eye right" d="M105 84L105 93"/></g><g class="focus-eyes"><path d="M45 86L62 90M98 90L115 86"/></g><g class="tired-eyes"><path d="M45 92L62 92M98 92L115 92"/></g><path class="brow left" d="M44 72L61 69"/><path class="brow right" d="M96 69L114 72"/><path class="mouth calm" d="M68 108Q80 119 92 108"/><path class="mouth worry" d="M68 113Q80 102 92 113"/><path class="mouth flat" d="M69 112L91 112"/><path class="sweat" d="M128 66Q113 88 128 88Q143 88 128 66"/><g class="lost"><path d="M45 83L61 97M61 83L45 97M97 83L113 97M113 83L97 97"/></g><path class="arm" d="M30 111L46 118M127 110L113 118"/></g><g class="symbol"><circle cx="133" cy="31" r="19"/><text id="symbol" x="133" y="38" text-anchor="middle">?</text></g></svg>
+  </div></div>
+</aside>
+<script type="module" src="/pet.js"></script></body></html>

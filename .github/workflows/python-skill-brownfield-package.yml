@@ -28,9 +28,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install pytest pyyaml
-          python -m pip install -e "${PACKAGE_ROOT}"
+          python -m pip install "${PACKAGE_ROOT}"
       - name: Run package tests
-        run: python -m pytest "${PACKAGE_ROOT}/tests" -q
+        working-directory: ${{ runner.temp }}
+        run: python -m pytest "${GITHUB_WORKSPACE}/${PACKAGE_ROOT}/tests" --import-mode=importlib -o pythonpath= -q
 
   build-distribution:
     name: Build Skill Package
@@ -148,6 +149,33 @@ jobs:
           from xrefkit_skills_brownfield import package_root
           assert (package_root() / "package_manifest.yaml").is_file()
           PY
+      - name: Verify installed workflow and references with released Core
+        working-directory: ${{ runner.temp }}
+        run: |
+          python -m pip install pytest
+          python -m pytest "${GITHUB_WORKSPACE}/${PACKAGE_ROOT}/tests" --import-mode=importlib -o pythonpath= -q
+
+  sdist-install-smoke:
+    name: Clean sdist install and workflow compatibility
+    needs: build-distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
+        with:
+          name: xrefkit-skills-brownfield-distribution
+          path: dist
+      - name: Install sdist and run installed-package tests
+        working-directory: ${{ runner.temp }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdist="$(find "${GITHUB_WORKSPACE}/dist" -name 'xrefkit_skills_brownfield-*.tar.gz' -print -quit)"
+          python -m pip install "$sdist" pytest
+          python -m pytest "${GITHUB_WORKSPACE}/${PACKAGE_ROOT}/tests" --import-mode=importlib -o pythonpath= -q
 
   publish-to-pypi:
     name: Publish Skill Package to PyPI
@@ -156,6 +184,7 @@ jobs:
       - build-distribution
       - artifact-inspection
       - install-smoke-test
+      - sdist-install-smoke
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/xrefkit-skills-brownfield-v')
     runs-on: ubuntu-latest
     environment:

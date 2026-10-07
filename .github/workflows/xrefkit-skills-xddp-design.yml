@@ -1,0 +1,89 @@
+name: xrefkit-skills-xddp-design-candidate
+
+on:
+  pull_request:
+    paths:
+      - "packages/xrefkit-skills-xddp-design/**"
+      - ".github/workflows/xrefkit-skills-xddp-design.yml"
+      - "tools/inspect_python_artifacts.py"
+  push:
+    branches: [main]
+    paths:
+      - "packages/xrefkit-skills-xddp-design/**"
+      - ".github/workflows/xrefkit-skills-xddp-design.yml"
+      - "tools/inspect_python_artifacts.py"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and inspect unpublished XDDP candidate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12"
+      - run: python -m pip install build twine
+      - run: python -m build packages/xrefkit-skills-xddp-design --outdir dist
+      - run: python -m twine check dist/*
+      - name: Inspect both archives and metadata
+        run: |
+          python tools/inspect_python_artifacts.py --dist dist \
+            --project-name xrefkit-skills-xddp-design \
+            --package-module xrefkit_skills_xddp_design \
+            --required-member xrefkit_skills_xddp_design/package_manifest.yaml \
+            --required-member xrefkit_skills_xddp_design/skills/change_design.skill.yaml \
+            --required-member xrefkit_skills_xddp_design/schemas/change_design.schema.json \
+            --manifest-output xddp-artifact-manifest.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: xddp-unpublished-distribution
+          path: |
+            dist/
+            xddp-artifact-manifest.txt
+          if-no-files-found: error
+
+  installed-regressions:
+    name: Installed XDDP ${{ matrix.format }} regressions with public Core 0.6.1
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        format: [wheel, sdist]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
+        with:
+          name: xddp-unpublished-distribution
+          path: candidate-artifacts
+      - name: Run real installed-runtime tests outside the repository
+        working-directory: ${{ runner.temp }}
+        env:
+          CANDIDATE_FORMAT: ${{ matrix.format }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m venv "$RUNNER_TEMP/xddp-venv"
+          python="$RUNNER_TEMP/xddp-venv/bin/python"
+          extension="*.whl"
+          if [[ "$CANDIDATE_FORMAT" == "sdist" ]]; then extension="*.tar.gz"; fi
+          artifact="$(find "$GITHUB_WORKSPACE/candidate-artifacts" -name "$extension" -print -quit)"
+          test -f "$artifact"
+          "$python" -m pip install --index-url https://pypi.org/simple 'xrefkit==0.6.1' "$artifact[test]"
+          "$python" -m pip check
+          "$python" -I -m pytest "$GITHUB_WORKSPACE/packages/xrefkit-skills-xddp-design/tests" \
+            --import-mode=importlib -o pythonpath= -p no:cacheprovider \
+            --junitxml "$RUNNER_TEMP/xddp-regression.xml" -q
+      - name: Preserve executed test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: xddp-${{ matrix.format }}-regressions
+          path: ${{ runner.temp }}/xddp-regression.xml
+          if-no-files-found: error

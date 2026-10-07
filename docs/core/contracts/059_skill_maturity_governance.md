@@ -86,10 +86,22 @@ source adoption remains a separate human decision.
 
 ```powershell
 python -m xrefkit skill definition-check `
-  --path skills/<skill>/SKILL.md `
+  --path skills/<skill>/SKILL.v1.md `
   --governance governance/skills/<skill>.json `
   --json
 ```
+
+For SkillDefinition v1, improve the method, criteria, applicability,
+exclusions, Knowledge needs, and Skill-specific stop/handoff conditions from
+observed evidence. Reassess the external governance record against the exact
+new content hash. Do not add Workflow Runtime Binding values to the definition
+as part of promotion.
+
+## Legacy Split Maturity Requirements
+
+The remaining field lists and templates in this section apply only to
+`legacy_split_v1`. They document the existing validator and promotion
+transport; they do not define canonical SkillDefinition identity.
 
 ### Draft Minimum
 
@@ -196,11 +208,13 @@ explicit governance linkage:
 ```md
 - governance_refs:
   - `../../docs/<governance-doc>.md#xid-...`
-  - `../../work/<promotion-or-review-record>.md`
+  - `../../docs/core/contracts/<promotion-or-review-record>.md#xid-...`
 ```
 
-`governance_refs` should point to the policy, approval, audit basis, or review
-record that justifies governed status.
+`governance_refs` should point to a committed repository file containing the
+policy, approval, audit basis, or review record that justifies governed status.
+Local `work/` records must be promoted to a tracked location before they are
+used as governance references.
 
 ## Check Modes
 
@@ -230,7 +244,7 @@ For a legacy `trial`, runtime decisions may still be provisional in meaning,
 but its legacy runtime fields must be explicit before it is load-ready.
 SkillDefinition v1 receives those fields at run start.
 
-## Improvement Flow
+## Legacy Split Improvement Flow
 
 1. Create the Skill as `draft`.
 2. Add a first `SKILL.md` procedure and promote to `trial`.
@@ -243,7 +257,59 @@ SkillDefinition v1 receives those fields at run start.
 7. Add governance and audit basis through `governance_refs`.
 8. Promote to `governed` only after the stricter check passes.
 
-## Draft Template
+## MCP Observation Return And Promotion
+
+An MCP client cannot change provider-side `maturity` directly. After using an
+MCP-provided Skill, it may return one inert `skill_observation` contribution
+containing the exact selected Skill hash, bound `run_id`, maturity at use,
+bounded client/environment/model identifiers, outcome, retry count, evidence
+identities, ambiguities, optional human evaluation, and an optional
+`proposed_maturity`. Prompt bodies, credentials, tokens, secrets, and unknown
+metadata fields are rejected.
+
+`proposed_maturity` is evidence only. WebDAV or the local adoption adapter may
+transport the reviewed Markdown record only to `observations/`; neither has
+maturity authority. Evidence adoption and maturity mutation are separate human
+decisions:
+
+```text
+submit/review/adopt skill_observation
+  -> commit the observations/ record to Git
+  -> assess_skill_maturity
+  -> propose_skill_maturity
+  -> review_skill_maturity_proposal
+  -> apply_skill_maturity_proposal
+```
+
+Assessment starts only after every selected adopted observation exists in
+`HEAD` with the adopted hash. This prevents an uncommitted WebDAV/local arrival
+from becoming promotion evidence in the same operation. Assessment aggregates
+multiple clients, environments, models, outcomes, retries, ambiguities, and
+human evaluations. It rejects duplicate or previously consumed `run_id`,
+`evidence_id`, and evidence `content_hash` values. This contract does not invent
+a minimum sample count; the signed human review decides whether the reported
+diversity is sufficient.
+
+The promotion tools resolve exactly one repository-owned canonical Skill under
+`skills/` or shared `packs/*/skills/`. Package-only, external, `packs/local/`,
+local-overlay, missing, and ambiguous identities fail closed. The current
+canonical Skill body, maturity, `meta.md`, committed observation hashes, and
+proposal hashes are checked again immediately before mutation. For a
+`governed` proposal, each `governance_ref` and its committed content hash are
+sealed into the proposal and checked again before apply. A canonical
+`meta.md` with duplicate `maturity` / legacy `status` fields is rejected.
+
+Only one-step promotion is supported: `draft -> trial -> stable -> governed`.
+Same-state changes, skipped levels, downgrade, deprecation, and restoration
+from `deprecated` require a separate governance process. The proposal runs the
+equivalent of `xrefkit skill check --level <target>` against the candidate
+`meta.md`; apply repeats that deterministic check. An accepted proposal also
+requires a new signed human assertion and one-time apply token. Successful
+apply updates `maturity`, `observation_refs`, and approved `governance_refs` in
+canonical `meta.md`, while publication, distribution, and live verification
+remain `not_performed`.
+
+## Legacy Draft Template
 
 ```md
 # Skill Meta: <skill_id>
@@ -257,7 +323,7 @@ SkillDefinition v1 receives those fields at run start.
 - maturity: `draft`
 ```
 
-## Trial Upgrade Template
+## Legacy Trial Upgrade Template
 
 ```md
 - maturity: `trial`
@@ -275,7 +341,7 @@ SkillDefinition v1 receives those fields at run start.
 review, and handoff ownership are defined by the Skill Operating Contract, not
 by Skill-local `role_responsibilities`.
 
-## Stable Upgrade Template
+## Legacy Stable Upgrade Template
 
 ```md
 - maturity: `stable`
@@ -320,9 +386,9 @@ Use a small Markdown note or session entry when refining a Skill:
 - promotion_effect: <does this support trial/stable/governed promotion?>
 ```
 
-## Promotion Questions
+## Legacy Promotion Questions
 
-Before promoting a Skill, ask:
+Before promoting a legacy split Skill, ask:
 
 - Is the current `use_when` based on actual use rather than only an initial idea?
 - Are the declared inputs and outputs specific enough for repeatable use?

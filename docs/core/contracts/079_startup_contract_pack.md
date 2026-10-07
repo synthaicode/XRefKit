@@ -23,8 +23,8 @@ as stale to every client when they diverge.
 
 - pack_version: 1
 - 0B5C58B5E5B2: `7c7a138032567258edf9e9c2f4fcaf84701f35c616d11e441f60425d114d78f8`
-- 5A1C8E4D2F90: `f6e9bad07a66f4e11a5e94224bdbbacc17bccf83e4306caf4c157a3d9d74a12f`
-- 6C0B62D6366A: `a49541d1d93598ecf8042b331aa826417dde285e9a8f5026c78e7a35d87119b4`
+- 5A1C8E4D2F90: `4d85ea9ba71cb30d1271e363a071a4a03c19f869f3f50019c3677370bca457c8`
+- 6C0B62D6366A: `b3f4950c87f689fd5f51379380413fbd16be6f6c8fcf79ae27d0cd24c88aaaf5`
 - 8A666C1FD121: `ff3f5e3b7b83a738edb5e99195a79e664db33a514e7a8d1fe0129e6787f994a2`
 - A7F3C92D4E11: `5732f45b041b60ec643ae4ff2c94dcc2e15376cb77f12b39dc2dafbf3614a0a4`
 - 4A423E72D2ED: `75fa96411be95fcc5657ce1d13fee204c1d8e43ab789ca4ac6e79aef2d25654a`
@@ -40,32 +40,36 @@ Sources:
 
 ## Global startup invariants
 
+- In an adopted repository, use `skills/repository_adoption.json` as the explicit
+  canonical source/provenance boundary. Start selected Skills with
+  `python -m xrefkit skill run --definition <path-to-SKILL.v1.md>` and the
+  instruction-derived runtime inputs. Recorded repository legacy invocation
+  aliases may supply audited compatibility values; explicit inputs take
+  precedence and missing inputs refuse execution. External legacy interfaces
+  and Workflow Runtime Binding ownership remain supported.
+- Draft repository Skills remain unavailable until separate adoption review.
+
 - MCP-only governance is authoritative when configured. Do not read local XRefKit governance Markdown, local Skill files, or filesystem Markdown links to bypass MCP.
 - Apply control in this order: base control -> XRefKit routing -> task-specific workflow/Skill execution.
 - Use XIDs as primary keys. Resolve needed XID links through get_document_by_xid. Do not recursively load related links at startup.
 - In MCP mode, `path#xid-...` values are lookup handles and diagnostic locations, not client filesystem instructions. The client calls get_document_by_xid with the XID; server-side resolution maps the XID to content.
 - Keep Skill procedure, domain knowledge, and work logs separate.
-- Treat knowledge/ as shared evidence fragments and Skill definitions as executable methods with declared knowledge needs. Bind runtime inputs from the current instruction and explicitly recorded repository adoption values; do not infer missing inputs from method text.
+- Treat knowledge/ as shared evidence fragments and Skill definitions as executable methods with declared knowledge needs. Apply the [Workflow Runtime Binding contract](111_workflow_runtime_binding.md#xid-8D50A972BA9F) to derive runtime fields from the current instruction at run start.
 - Treat docs/ indexes as lookup/navigation handles, not mandatory startup body loads.
 - Do not guess missing governance or task facts. Find and read the relevant XIDs first.
 
 ## Protocol boundary and runtime routing
 
 The live `get_startup_context` response returns `prompt_flow_protocol`,
-`workflow_protocol`, and the selected `reporting_protocol` as separate response
-blocks. Each protocol owns its correlation, orchestration, reporting,
-verification, closure, and applicability details; this startup body does not
-duplicate those procedures.
+`workflow_protocol`, and `reporting_protocol` as separate response blocks.
+Each selected protocol has a body; each excluded protocol body is `null`.
+The effective selection is recorded in `initial_protocol_selection`. Each
+protocol owns its correlation, orchestration, reporting, verification,
+closure, and applicability details; this startup body does not duplicate
+those procedures.
 
 - Route dynamically from the active Skill catalog and the current instruction.
-  The selected method and instruction determine the runtime
-  capability/tuning/responsibility/execution-mode binding.
-- For adopted repository Skills, select `SKILL.v1.md` headers and start with
-  `python -m xrefkit skill run --definition <path-to-SKILL.v1.md> --task
-  "<task>" --json`. Supply missing runtime inputs explicitly from the active
-  instruction; missing inputs refuse execution. Draft repository Skills remain
-  unavailable until separate adoption review. Registered legacy `--meta` paths
-  are invocation aliases; supported external legacy Skills retain their interface.
+  The selected method and instruction determine the Workflow Runtime Binding.
 - Start a Skill Run with the returned runtime envelope, preserve its `run_log`
   and definition identity, and do not materialize or execute the method until
   the run and ExecutionBinding succeed.

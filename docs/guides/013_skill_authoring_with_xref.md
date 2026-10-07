@@ -52,21 +52,10 @@ Use this decomposition pass before writing or revising a Skill:
    specific delta.
 7. For each `judgment` in a SkillDefinition v1 document, declare the domain
    knowledge it may need through `knowledge_needs` with `id`, `query`,
-   `required_when`, and the required `seed_xids` array (use `[]` when no seed
-   is known), as defined in the
-   [SkillDefinition contract](../core/contracts/096_skill_definition_contract.md#xid-E6A19D4B72C3). The parent evaluates
+   `required_when`, and required `seed_xids`. The parent evaluates
    `required_when`, passes the active need IDs, and resolves only the required
    XID bodies. Legacy split Skills may retain `knowledge_slots` during
    migration; do not copy that format into a new v1 definition.
-
-### Human-Facing Output
-
-Define the report purpose, audience, artifact type, and required content in the
-Skill's outputs, method, and applicable criteria. Choose the format for that
-work, following the user's request. Reference the
-[shared reporting principles](../core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73)
-instead of copying a universal heading list. Keep runtime recording separate
-from the visible report; task-specific format does not waive required checks.
 
 ### Target Catalog And Lazy Selection
 
@@ -169,7 +158,7 @@ Before authoring the final files, write down the split as a compact map:
 ```md
 ## Skill Boundary
 - skill_id:
-- capability / tuning / responsibility:
+- runtime binding fields (field names only):
 - reusable judgment method:
 - inputs:
 - outputs:
@@ -231,15 +220,16 @@ reference, and no SKILL.md guard section.
   rule says otherwise; the ambient guard enforces the direction.
 - See `docs/core/contracts/053_context_direction_security_guard.md#xid-A7F3C92D4E11`
   for the guard contract and
-  `docs/core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8`
+  `../core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8`
   for the current Skill/Knowledge operating model.
 
 ## Runtime Field Ownership
 
 For SkillDefinition v1, `capability`, `tuning`, `responsibility`,
 `execution_mode`, model name, and model tier are not authoring fields. The
-parent derives them from the instruction and current state, and the runtime
-captures them in the ExecutionBinding and run log.
+Workflow Runtime Binding contract owns their meanings and derivation. The
+parent derives the binding from the instruction and current state, and the
+runtime captures it in the ExecutionBinding and run log.
 
 The following `execution_mode` values remain available as runtime choices:
 
@@ -261,8 +251,8 @@ Keep the authoring split simple:
 
 - `capability_layering` and `workflow_protocol` bind the run to repository
   runtime controls.
-- `capability`, `tuning`, and `responsibility` describe the legacy Skill's base
-  ability, specialization, and business use (the legacy
+- `capability`, `tuning`, and `responsibility` are legacy compatibility inputs
+  mapped into the Workflow Runtime Binding (the legacy
   `role_responsibilities.executor` value is still accepted as the responsibility).
 - `role_responsibilities` must not define `checker`, `quality_reviewer`, or
   `handoff_owner`; those roles are protocol-owned.
@@ -276,8 +266,8 @@ Keep the authoring split simple:
   tuning — use a `query` slot so the right per-tuning knowledge is selected at
   runtime.
 
-The canonical capability / tuning / responsibility definitions are in
-`docs/reference/031_capability_layering.md#xid-8D50A972BA9F`.
+The Workflow Protocol owns the canonical meanings and derivation:
+[Workflow Runtime Binding](../core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F).
 
 Keep Skill bodies reusable: put the judgment or execution method in
 `SKILL.md`, and put language-specific rules, framework behavior, API facts,
@@ -415,9 +405,21 @@ Maturity and load readiness are defined in
 
 - If only skill behavior changed: update skill file, keep references.
 - If canonical domain knowledge is added or materially changed: route the work
-  through `skills/os/knowledge_ontology_management/SKILL.v1.md#xid-F8A2C6D1B370`,
+  through `skills/os/knowledge_ontology_management/SKILL.v1.md#xid-83EDDDB5E158`,
   then verify Skill references still point to valid XIDs.
 - If the knowledge change is only wording, formatting, or mechanical XID-link
   maintenance: update the fragment directly and verify references; ontology
   routing is not required.
 - If a concept became semantically different: create a new XID and preserve compatibility via `xref deprecate`.
+
+## Knowledge ontology assessment during authoring
+
+For new or materially changed canonical domain knowledge, use
+[Knowledge ontology management](../../skills/os/knowledge_ontology_management/SKILL.v1.md#xid-F8A2C6D1B370).
+Record source-backed concept identity, synonym/specialization/different-condition
+relationships, conditions, versions, constraints, and source authority as
+reviewable evidence. Its bounded structural validator does not certify semantic
+truth or authorize merging. Wording, formatting, and mechanical XID maintenance
+do not require this semantic assessment. Preserve the required `seed_xids` array
+(use `[]` when none is known). Keep semantic relations separate from runtime
+load dependencies and retain the reviewed evidence and human judgment boundary.

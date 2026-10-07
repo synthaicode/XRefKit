@@ -2,29 +2,46 @@
 schema_version: 1
 skill_id: marketing_slide_png
 xid: C2E7B9F5A130
-summary: create readable and rerenderable CSS/HTML slide visuals or standalone repository infographics as PNG assets
+summary: create readable and rerenderable CSS/HTML slide visuals or standalone repository
+  infographics as PNG assets
 applies_when:
-- user needs presentation diagrams, figure-first slides, or a one-page repository explainer image where the final visual must be readable and rerenderable
+- user needs presentation diagrams, figure-first slides, or a one-page repository
+  explainer image where the final visual must be readable and rerenderable
 exclusions:
 - Human acceptance or publication approval remains with the requester
 - Unsupported facts, claims, or interpretation remain explicit as unknown
 inputs:
-- target deck markdown path or target infographic path, target asset directory, slide messages or central infographic claim, diagram structure, repository fact map, and branding constraints
+- target deck markdown path or target infographic path, target asset directory, slide
+  messages or central infographic claim, diagram structure, repository fact map, and
+  branding constraints
 outputs:
-- slide-ready PNG diagrams or a standalone infographic PNG, reusable `diagram.css`, reusable `render.mjs`, and updated deck markdown when the output is a deck
+- slide-ready PNG diagrams or a standalone infographic PNG, reusable `diagram.css`,
+  reusable `render.mjs`, and updated deck markdown when the output is a deck
 criteria:
 - id: artifact_traceability
-  statement: Produced artifacts retain the source pointers, reproducible inputs, and verification evidence required by this Skill
+  statement: Produced artifacts retain the source pointers, reproducible inputs, and
+    verification evidence required by this Skill
   verification: Inspect the artifact paths, source links, and verification record
 - id: acceptance_boundary
-  statement: Human acceptance and publication decisions remain explicit and are not inferred from successful generation
+  statement: Human acceptance and publication decisions remain explicit and are not
+    inferred from successful generation
   verification: Check the handoff and acceptance boundary before closure
 - id: output_closure
   statement: The declared artifact output exists and unresolved items are returned
   verification: Check output paths, open items, and handoff
 - id: source_obligation_retention
-  statement: Skill-specific source applicability, required Knowledge, prohibitions, procedures, outputs, and completion gates retain their original conditions and strength; summaries do not relax them.
-  verification: Inspect the preserved source obligations and source-specific declarations, including all conditional stops, handoffs, and completion requirements. Runtime and shared-control authority follow the active startup/adoption contracts.
+  statement: Skill-specific source applicability, required Knowledge, prohibitions,
+    procedures, outputs, and completion gates retain their original conditions and
+    strength; summaries do not relax them.
+  verification: Inspect the preserved source obligations and source-specific declarations,
+    including all conditional stops, handoffs, and completion requirements. Runtime
+    and shared-control authority follow the active startup/adoption contracts.
+- id: diagram_connector_alignment
+  statement: Arrows between distinct content blocks have visibly bounded endpoints
+    and run between the blocks at their vertical midpoint; return arrows read as a
+    separate feedback path
+  verification: Inspect the rendered diagram at slide size for bounded endpoints,
+    centered forward arrows, clear labels, and an unambiguous return path
 knowledge_needs: []
 control_refs: []
 aliases:
@@ -180,6 +197,14 @@ npx --yes playwright screenshot --browser chromium --viewport-size "1600,900" fi
 - Do not duplicate the same title and bullets in both Markdown and PNG.
 - Do not create over-decorated diagrams. Favor clarity over novelty.
 - Do not use this skill for official announcements; that belongs to PR Group.
+
+## Released 0.6.1 source additions
+
+These released requirements also apply. Canonical authoring uses a single definition and instruction-derived Workflow Runtime Binding; historical split-authoring clauses below apply only to explicit legacy maintenance. Shared reporting control comes from the active reporting contract. The original adoption receipts remain unchanged.
+
+- For a flow or loop, identify which blocks each arrow connects and how a feedback arrow differs from a forward step before writing the render source.
+- For arrows between distinct blocks, check the rendered PNG: both endpoints are visibly enclosed, each forward arrow lies between borders at the blocks' vertical midpoint, and labels do not collide with borders. Keep return arrows outside the blocks with a clearly visible direction.
+- Retain observation `../../observations/2026-09-26_arrow_block_alignment.md`.
 
 ## Preserved source obligations
 

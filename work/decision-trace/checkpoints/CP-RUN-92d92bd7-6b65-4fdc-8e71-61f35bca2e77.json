@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-92d92bd7-6b65-4fdc-8e71-61f35bca2e77",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-09-18T13:13:29Z",
+  "git_commit": "3ae35dae877dd5edcbb7876aca8b02fc985b766e",
+  "purpose": "before AI workflow run 92d92bd7-6b65-4fdc-8e71-61f35bca2e77",
+  "work_item_id": "WI-startup-pack-dedup",
+  "run_id": "92d92bd7-6b65-4fdc-8e71-61f35bca2e77",
+  "context_policy": "current-only",
+  "human_approved": false
+}

@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-480b51f5-d3ad-4b68-aac1-13f49a308cf2",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-09-18T12:41:56Z",
+  "git_commit": "468f7b6e6338d5357e4ee7f939dc536322ceb8ac",
+  "purpose": "before AI workflow run 480b51f5-d3ad-4b68-aac1-13f49a308cf2",
+  "work_item_id": "WI-final-skill-v1",
+  "run_id": "480b51f5-d3ad-4b68-aac1-13f49a308cf2",
+  "context_policy": "current-only",
+  "human_approved": false
+}

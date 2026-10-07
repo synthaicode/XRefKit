@@ -18,6 +18,7 @@ def _print_help() -> None:
         "  xref       manage XIDs and references\n"
         "  wbs        validate and summarize a Markdown WBS\n"
         "  ctx        build compact context packs\n"
+        "  gateway    prepare inputs, route model work, and evaluate retry feedback\n"
         "  skill      discover, validate, run, verify, and close Skills\n"
         "  workflow   run the generic protocol for instructions without a Skill\n"
         "  host       run host-compatibility evidence checks\n"
@@ -29,6 +30,7 @@ def _print_help() -> None:
         "  dashboard  inspect runtime state\n"
         "  analysis   generate proposal-only observation reports\n"
         "  trace      AI protocol adapter for decision changes and Git checkpoints\n"
+        "  attention-pet  run the local workload observability experiment\n"
         "  mcp        start the MCP server or initialize a client Prompt Flow\n"
         "  skills     synchronize released Skill and Knowledge bundles\n"
         "  package    inspect installed Skill packages\n"
@@ -43,6 +45,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
 
     command = args[0]
+    if command == "gateway":
+        from .gateway import main as gateway_main
+
+        return gateway_main(args[1:])
     if command == "pack" and len(args) > 1 and args[1] in {"build-base", "verify-base"}:
         from .contracts import main as contracts_main
 
@@ -79,6 +85,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         from .mcp import main as mcp_main
 
         return mcp_main(args[1:])
+    if command == "attention-pet":
+        from .attention_pet.__main__ import main as attention_pet_main
+
+        return attention_pet_main(args[1:])
     if command == "skills":
         from .skills_sync import main as skills_main
 

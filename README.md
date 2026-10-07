@@ -8,6 +8,44 @@ record evidence, preserve human judgment, and apply explicit completion checks.
 
 ## Why XRefKit?
 
+Experimental local tool: [Attention Pet](projects/attention-pet/README.en.md) helps
+people assess capability sufficiency and lower inference-cost candidates separately.
+Its Model Fit / Cost Fit estimates use uncalibrated profiles; it does not measure internal
+attention or switch models automatically.
+
+### Codex-only preview: Attention Pet
+
+Attention Pet is a small local companion for Codex work. It reads the current
+Codex chat's local session record, estimates whether the selected model meets
+the visible work requirements, and shows the result through a compact animated
+pet. It also shows lower inference-cost comparison candidates when the
+experimental profiles support one. The estimate is observational and does not
+change the Codex model, reasoning level, or chat.
+
+It does not measure token usage. It estimates the structural complexity of the
+work context the AI must handle, including retained items, dependencies,
+constraints, decision depth, conflicts, and dispersed evidence. It does not
+read model-internal attention or remaining context-window capacity.
+
+Run it from a Codex terminal in this repository so `CODEX_THREAD_ID` identifies
+the current chat:
+
+```powershell
+python -m xrefkit.attention_pet serve --port 8769
+```
+
+Open the printed `http://127.0.0.1:8769/` address in the Codex browser panel.
+The display follows the browser's preferred language: Japanese is used for a
+Japanese preference, with English as the fallback. Stop the process with
+Ctrl+C.
+
+This Codex preview is bound to the chat that launched it. Selecting another
+chat does not move the Pet automatically; launch it again from that chat when
+you want a separate view. The model and reasoning dropdowns only compare
+estimates and do not change the active Codex settings. See the
+[Attention Pet guide](projects/attention-pet/README.en.md) for interpretation,
+limitations, client integration, and API details.
+
 Using AI for real work creates recurring operating problems:
 
 ![Why XRefKit is needed](human-docs/en/assets/why_xrefkit_needed/whatis_xrefkit.png)
@@ -40,10 +78,11 @@ tools, and an optional MCP adapter.
 
 Current Skill authoring targets the one-document `skill_definition_v1` format.
 Existing `legacy_split_v1` Skills and unversioned historical run logs remain
-readable during migration. `capability`, `tuning`, `responsibility`, and
-`execution_mode` are derived for each run and captured in its runtime binding;
-they are not fixed properties of a SkillDefinition. Knowledge used by a Skill
-remains separate and is resolved from the XID catalog when needed.
+readable during migration. The [Workflow Runtime Binding](docs/core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F)
+defines how instruction-derived `capability`, `tuning`, `responsibility`, and
+`execution_mode` are captured; these are not fixed SkillDefinition properties.
+Knowledge used by a Skill remains separate and is resolved from the XID catalog
+when needed.
 
 The [Skill Run Dashboard](docs/guides/086_skill_run_observation_dashboard_usage.md#xid-4A4763A2DE63)
 helps people inspect recorded XID retrieval and use together with the run's
@@ -78,6 +117,20 @@ This command starts the optional catalog and runtime MCP adapter. This checkout
 does not implement management upload, staging, sealing, review, or adoption of
 uploaded SkillDefinition bytes into the active catalog.
 
+To connect VS Code/Copilot, run from your target workspace:
+
+```powershell
+python -m pip install "xrefkit[mcp]"
+python -m xrefkit mcp setup --repo . --output .xrefkit/setup-review
+python -m xrefkit mcp setup apply --repo . --source .xrefkit/setup-review
+```
+
+Review the generated files before applying them, open the workspace in VS Code,
+and start the `xrefkit` MCP server. In Copilot chat, ask: "Call XRefKit's
+get_startup_context and help me get started." The AI receives any needed legacy
+migration guidance; you can describe your goal without specifying Skill names.
+Opening VS Code alone does not guarantee an AI conversation starts.
+
 ## Where to go next
 
 - [Install XRefKit and register Skill Packages](docs/guides/089_xrefkit_package_first_registration.md#xid-4F8C2A7D1E90)
@@ -94,3 +147,13 @@ XRefKit does not require provider API keys to explore or install the package.
 Do not commit secrets, API keys, access tokens, `.env` files, or provider
 credentials. Authenticate external AI tools through their official provider
 mechanisms.
+
+## Repository Skill adoption and scoped source-analysis knowledge
+
+This repository uses the audited canonical Skill sources listed in
+`skills/repository_adoption.json`. Legacy source identities remain aliases;
+external legacy split Skills and YAML Skill Packages remain supported. See
+[SkillDefinition adoption](docs/core/contracts/096_skill_definition_contract.md#xid-E6A19D4B72C3).
+The source-analysis common XID remains stable and routes coherent criteria
+fragments on demand. Narrow tasks avoid unrelated bodies; full reviews retain
+every required axis. No similarity-based knowledge merge or deletion occurs.

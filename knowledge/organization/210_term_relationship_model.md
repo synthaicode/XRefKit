@@ -80,22 +80,22 @@ Every accepted relationship must state its effect. Use one or more of:
 The relationship is not complete if a reader still has to infer why the
 companion term matters.
 
-## Example: Skill Identity
+## Example: Skill And Runtime Binding
 
-The term `Skill` is not fully interpreted by a standalone definition. Its
-relationship with `capability`, `tuning`, and `responsibility` establishes the
-routing identity:
+The term `Skill` identifies a reusable method. Its relationship with the
+Workflow Runtime Binding explains how that method is applied to one work item
+without turning runtime values into Skill identity:
 
 | term | companion term | relation | scope | meaning effect |
 | --- | --- | --- | --- | --- |
-| `Skill` | `capability` | `composed_with` | Skill metadata | identifies the reusable base ability |
-| `Skill` | `tuning` | `composed_with` | Skill metadata | identifies the specialization that shapes the method |
-| `Skill` | `responsibility` | `composed_with` | Skill metadata | identifies the business use and viewpoint |
-| `capability` | `responsibility` | `contrasts_with` | routing | prevents a business activity from being treated as a reusable ability |
+| `Skill run` | `capability` | `composed_with` | Workflow Runtime Binding | identifies the reusable ability needed for this work item |
+| `Skill run` | `tuning` | `composed_with` | Workflow Runtime Binding | identifies the specialization applied for this work item |
+| `Skill run` | `responsibility` | `composed_with` | Workflow Runtime Binding | identifies the bounded outcome assigned for this work item |
+| `SkillDefinition` | `Workflow Runtime Binding` | `contrasts_with` | routing | keeps reusable method identity separate from instruction-derived execution context |
 
 These relationships are consistent with the
-[Capability Layering](../../docs/reference/031_capability_layering.md#xid-8D50A972BA9F)
-definition. They do not create a new Skill identity model.
+[Workflow Runtime Binding](../../docs/core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F)
+contract. They do not make runtime values part of Skill identity.
 
 ## Example: Evidence and Authority
 
@@ -161,5 +161,5 @@ This model organizes term usage. It does not replace:
 
 - constrains: [Knowledge Index](../000_index.md#xid-23059118FBB9)
 - depends_on: [Domain Knowledge Ontology Rules](200_domain_knowledge_ontology_rules.md#xid-5803607419B9)
-- depends_on: [Capability Layering](../../docs/reference/031_capability_layering.md#xid-8D50A972BA9F)
+- depends_on: [Workflow Runtime Binding](../../docs/core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F)
 - depends_on: [Skill and Knowledge Operating Model](../../docs/core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)

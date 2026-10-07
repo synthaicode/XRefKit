@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-4620cafc-1dac-4f68-880e-be5240a709a7",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-09-18T10:56:21Z",
+  "git_commit": "f96c7dbcfc82230f77cbe859263586015b7a4c76",
+  "purpose": "before AI workflow run 4620cafc-1dac-4f68-880e-be5240a709a7",
+  "work_item_id": "WI-existing-skill-batch-1",
+  "run_id": "4620cafc-1dac-4f68-880e-be5240a709a7",
+  "context_policy": "current-only",
+  "human_approved": false
+}

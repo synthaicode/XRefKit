@@ -6,6 +6,11 @@ cases:
     target: cases/change_design_basic/fixture
     expected: cases/change_design_basic/expected.yaml
     calibration: cases/change_design_basic/calibration.yaml
+  - id: xddp.design.change_design.compatibility-field
+    skill_id: xddp.design.change_design
+    target: cases/change_design_compatibility_field/fixture
+    expected: cases/change_design_compatibility_field/expected.yaml
+    calibration: cases/change_design_compatibility_field/calibration.yaml
 run_policy:
   target_isolation: required
   expected_answers_are_not_in_target: true
