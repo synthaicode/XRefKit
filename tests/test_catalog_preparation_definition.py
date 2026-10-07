@@ -1,3 +1,5 @@
+from repository_skill_receipts import assert_preserved_source_boundary
+from repository_skill_receipts import assert_legacy_receipt
 from pathlib import Path
 
 import pytest
@@ -25,11 +27,9 @@ def test_v1_definitions_parse_with_aliases_and_concrete_metadata(skill_id, folde
     assert metadata["inputs"] and metadata["outputs"]
     assert metadata["control_refs"] == []
     assert not any(key in metadata for key in ("capability", "tuning", "responsibility", "execution_mode", "model", "model_tier", "maturity"))
-    assert "CAP-" not in definition["method"]
-    assert "## Reporting Contract" not in definition["method"]
-    assert "## Required Knowledge (XID)" not in definition["method"]
-    assert (repo / folder / "SKILL.md").read_text(encoding="utf-8").startswith("<!-- xid: ")
-    assert (repo / folder / "meta.md").read_text(encoding="utf-8").startswith("<!-- xid: ")
+    assert_preserved_source_boundary(definition)
+    assert_legacy_receipt(repo / folder / 'SKILL.md')
+    assert_legacy_receipt(repo / folder / 'meta.md')
 
 
 def test_explicit_catalog_and_knowledge_resolution_cover_the_trio():

@@ -51,7 +51,7 @@ def relation_lines(text: str) -> list[tuple[int, str]]:
 def validate(root: Path) -> list[str]:
     knowledge = root / "knowledge"
     documents: dict[Path, tuple[str | None, str]] = {}
-    known_xids: set[str] = set()
+    xid_owners: dict[str, set[Path]] = {}
     titles: dict[str, list[Path]] = {}
     errors: list[str] = []
 
@@ -60,14 +60,24 @@ def validate(root: Path) -> list[str]:
         match = XID_RE.search(text)
         xid = match.group(1) if match else None
         documents[path] = (xid, text)
-        if xid:
-            known_xids.add(xid)
+        for declared_xid in XID_RE.findall(text):
+            xid_owners.setdefault(declared_xid, set()).add(path.resolve())
         title_match = TITLE_RE.search(text)
         if title_match and path.name != "000_index.md":
             title = title_match.group(1).strip().casefold()
             titles.setdefault(title, []).append(path)
 
     index_text = (knowledge / "000_index.md").read_text(encoding="utf-8")
+    # Semantic targets may be repository contracts or models, not only domain
+    # fragments. Only knowledge owns the index/title checks above.
+    for folder in ("docs", "agent", "capabilities", "skills", "tools"):
+        for path in sorted((root / folder).rglob("*.md")):
+            for xid in XID_RE.findall(path.read_text(encoding="utf-8-sig")):
+                xid_owners.setdefault(xid, set()).add(path.resolve())
+    for xid, owners in sorted(xid_owners.items()):
+        if len(owners) > 1:
+            rendered = ", ".join(str(path.relative_to(root.resolve())) for path in sorted(owners))
+            errors.append(f"ambiguous target XID '{xid}': {rendered}")
     for path, (xid, _) in documents.items():
         if path == knowledge / "000_index.md" or not xid:
             continue
@@ -99,7 +109,7 @@ def validate(root: Path) -> list[str]:
                 continue
             target_xid = target_match.group(1) or target_match.group(2)
             pair = (relation, target_xid)
-            if target_xid not in known_xids:
+            if target_xid not in xid_owners:
                 errors.append(f"{location}: unknown target XID '{target_xid}'")
             if source_xid == target_xid:
                 errors.append(f"{location}: self relationship is not allowed")

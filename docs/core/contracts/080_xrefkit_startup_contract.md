@@ -105,3 +105,13 @@ to content is an MCP server-side responsibility.
 
 This is the MCP mode for clients. It does not change the repository-native rule
 that XRefKit's own startup contract must be valid without MCP.
+
+## Adopted repository source
+
+The approved repository adoption is recorded in `skills/repository_adoption.json`.
+Its canonical sources are `SKILL.v1.md`; recorded legacy invocation paths and XIDs
+are compatibility aliases, not additional active source documents. Runtime inputs
+retain their explicit provenance, missing capability requires explicit input, and
+draft Skills remain refused. This does not change external split/YAML APIs or
+Workflow Runtime Binding ownership. See
+[SkillDefinition adoption](096_skill_definition_contract.md#xid-E6A19D4B72C3).

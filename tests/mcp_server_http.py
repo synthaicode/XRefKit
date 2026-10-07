@@ -3,6 +3,8 @@ from __future__ import annotations
 import unittest
 import json
 import multiprocessing
+import os
+from unittest.mock import patch
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -15,7 +17,7 @@ from xrefkit.mcp.server import (
     _validate_distribution_configuration,
     _validate_tls_configuration,
 )
-from xrefkit.mcp.audit import McpAuditLog, SessionRunBinding, SessionRunRegistry, _write_all
+from xrefkit.mcp.audit import McpAuditLog, SessionRunBinding, SessionRunRegistry, _write_all, _process_lock
 
 
 def _append_audit_events(path: str, run_id: str) -> None:
@@ -155,6 +157,39 @@ class ServerXidQueryLogTests(unittest.TestCase):
         _write_all(0, b"abcdef", write=short_write)
 
         self.assertEqual([b"abcdef", b"cdef", b"ef"], writes)
+
+    @unittest.skipUnless(os.name == "nt", "Windows byte-range lock semantics")
+    def test_empty_lock_initialization_waits_for_existing_owner(self) -> None:
+        import msvcrt
+
+        with TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "audit.jsonl"
+            lock_path = path.with_suffix(".jsonl.lock")
+            owner = os.open(lock_path, os.O_RDWR | os.O_CREAT, 0o600)
+            real_locking = msvcrt.locking
+            owner_locked = False
+            try:
+                # Another handle owns the first byte even before it exists.
+                real_locking(owner, msvcrt.LK_LOCK, 1)
+                owner_locked = True
+
+                def release_owner_then_acquire(fd, mode, length):
+                    nonlocal owner_locked
+                    if mode == msvcrt.LK_LOCK and owner_locked:
+                        os.lseek(owner, 0, os.SEEK_SET)
+                        real_locking(owner, msvcrt.LK_UNLCK, 1)
+                        owner_locked = False
+                    return real_locking(fd, mode, length)
+
+                with patch("xrefkit.mcp.audit.msvcrt.locking", release_owner_then_acquire):
+                    with _process_lock(path):
+                        self.assertFalse(owner_locked)
+                        self.assertEqual(1, lock_path.stat().st_size)
+            finally:
+                if owner_locked:
+                    os.lseek(owner, 0, os.SEEK_SET)
+                    real_locking(owner, msvcrt.LK_UNLCK, 1)
+                os.close(owner)
 
     def test_audit_log_is_parseable_after_concurrent_process_appends(self) -> None:
         with TemporaryDirectory() as temp_dir:

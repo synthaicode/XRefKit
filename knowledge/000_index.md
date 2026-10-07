@@ -58,6 +58,7 @@ Skills should reference these pages by XID and load only what is needed.
 - [Agent diff review gate design](organization/180_agent_diff_review_gate_design.md#xid-7A2F4C8D1801)
 - [Quality feedback return rules](organization/190_quality_feedback_return_rules.md#xid-7A2F4C8D1901)
 - [Domain knowledge ontology rules](organization/200_domain_knowledge_ontology_rules.md#xid-5803607419B9)
+- [Term Relationship Model](organization/210_term_relationship_model.md#xid-7A2F4C8D2101)
 
 ### Business Pack Knowledge
 
@@ -91,9 +92,24 @@ Skills should reference these pages by XID and load only what is needed.
 - [Test design criteria](quality/110_test_design_criteria.md#xid-8C4D2A7E5102)
 - [IPA test viewpoint supplement](quality/120_ipa_test_viewpoint_supplement.md#xid-8C4D2A7E5103)
 
-### Source Analysis
+### Python
+
+- [Python Custom Framework Analysis Criteria](python/110_custom_framework_analysis_criteria.md#xid-A9B7C6D5E4F2)
+- [Python Review Spec](python/100_python_review_spec.md#xid-A9B7C6D5E4F1)
+## Source Analysis
 
 - [Common source analysis criteria](source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001)
+- [Resource Efficiency Review](source_analysis/101_resource_efficiency_review.md#xid-5F21C8A41101)
+- [Operational resilience review](source_analysis/102_operational_resilience_review.md#xid-5F21C8A41102)
+- [Synchronization And Concurrency Review](source_analysis/103_synchronization_concurrency_review.md#xid-5F21C8A41103)
+- [Required Input Integrity Review](source_analysis/104_required_input_integrity_review.md#xid-5F21C8A41104)
+- [Error Handling And Exception Path Review](source_analysis/105_error_exception_path_review.md#xid-5F21C8A41105)
+- [Time And Culture Review](source_analysis/106_time_culture_review.md#xid-5F21C8A41106)
+- [State And Determinism Boundary Review](source_analysis/107_state_determinism_review.md#xid-5F21C8A41107)
+- [Uncertainty And Escalation Path Review](source_analysis/108_uncertainty_escalation_review.md#xid-5F21C8A41108)
+- [Contract And Schema Resilience Review](source_analysis/109_contract_schema_resilience_review.md#xid-5F21C8A41109)
+- [Traceability And Context Propagation Review](source_analysis/112_trace_context_propagation_review.md#xid-5F21C8A41110)
+- [Overload and resource-control source basis](source_analysis/113_overload_resource_source_basis.md#xid-5F21C8A41111)
 - [Custom framework common criteria](source_analysis/110_custom_framework_common_criteria.md#xid-5F21C8A41002)
 - [Dotnet change analysis viewpoints](source_analysis/120_dotnet_change_analysis_viewpoints.md#xid-2E7B5A1FD201)
 - [Structure-analysis determinism tiers](source_analysis/121_structure_analysis_determinism_tiers.md#xid-5301B897BA41)
@@ -104,6 +120,7 @@ Skills should reference these pages by XID and load only what is needed.
 - [C# naming-convention extraction (brownfield)](source_analysis/140_csharp_naming_convention_extraction.md#xid-B4F7E1A2C903)
 - [Roslyn analyzer quality-check applicability](source_analysis/150_roslyn_analyzer_quality_check_applicability.md#xid-A1B243BF7D5D)
 - [Structure graph as TM coverage backstop](source_analysis/160_structure_graph_tm_backstop.md#xid-163AD9936979)
+- [Source Structure Target Catalog](source_analysis/169_source_structure_target_catalog.md#xid-E9A4C7B21069)
 - [Current source structure findings catalog](source_analysis/170_current_source_structure_findings_catalog.md#xid-A9E742B1C6D0)
 - [Maverick.NET Friendbook XML-command structure findings](source_analysis/171_maverick_net_friendbook_structure_findings.md#xid-B4F8D2A91C03)
 - [Modular Monolith with DDD API structure findings](source_analysis/172_modular_monolith_ddd_api_structure_findings.md#xid-D8F2A6C91B74)

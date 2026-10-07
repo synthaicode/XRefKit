@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from xrefkit.ownership import load_optional_ownership
+from xrefkit.skill_definition import load_skill_definition
 from xrefkit.skillmeta import (
     REQUIRED_OS_CONTRACT,
     VALID_MATURITY_LEVELS,
@@ -123,7 +124,12 @@ def validate_pack_manifest(manifest_path: Path, *, root: Path) -> PackManifestRe
     for skill_ref in owns["owns_skills"]:
         norm = skill_ref.replace("\\", "/")
         skill_dir = (root / norm).resolve()
-        if not (skill_dir / "meta.md").exists():
+        if (skill_dir / "SKILL.v1.md").is_file() and not (skill_dir / "meta.md").exists():
+            try:
+                load_skill_definition(skill_dir / "SKILL.v1.md")
+            except (ValueError, OSError) as exc:
+                errors.append(f"invalid owned SkillDefinition: {skill_ref}: {exc}")
+        elif not (skill_dir / "meta.md").exists():
             errors.append(f"owned skill has no meta.md: {skill_ref}")
         if norm.startswith(OS_CORE_SKILL_PREFIX):
             errors.append(f"owned skill lives in OS core (boundary violation): {skill_ref}")
@@ -167,7 +173,12 @@ def list_packs(root: Path) -> list[dict[str, object]]:
             meta = (root / skill_ref.replace("\\", "/") / "meta.md")
             skill_id = skill_ref.rsplit("/", 1)[-1]
             summary = ""
-            if meta.exists():
+            definition = meta.parent / "SKILL.v1.md"
+            if definition.is_file() and not meta.exists():
+                smeta = load_skill_definition(definition)["metadata"]
+                skill_id = smeta["skill_id"]
+                summary = smeta["summary"]
+            elif meta.exists():
                 smeta = _parse_meta_lines(meta.read_text(encoding="utf-8"))
                 skill_id = str(smeta.get("skill_id") or skill_id)
                 summary = str(smeta.get("summary") or "")
@@ -219,10 +230,10 @@ def _discover_manifests(root: Path) -> list[Path]:
 
 def _physical_skill_dirs(root: Path, pack_dir: Path) -> list[str]:
     dirs: list[str] = []
-    for meta_path in sorted(pack_dir.rglob("meta.md")):
+    for meta_path in sorted(set(pack_dir.rglob("meta.md")) | set(pack_dir.rglob("SKILL.v1.md"))):
         rel = meta_path.parent.relative_to(root).as_posix()
         dirs.append(rel)
-    return dirs
+    return sorted(set(dirs))
 
 
 def cmd_pack_lint(args) -> int:

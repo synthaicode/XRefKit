@@ -52,7 +52,7 @@ Use this decomposition pass before writing or revising a Skill:
    specific delta.
 7. For each `judgment` in a SkillDefinition v1 document, declare the domain
    knowledge it may need through `knowledge_needs` with `id`, `query`,
-   `required_when`, and optional `seed_xids`. The parent evaluates
+   `required_when`, and required `seed_xids`. The parent evaluates
    `required_when`, passes the active need IDs, and resolves only the required
    XID bodies. Legacy split Skills may retain `knowledge_slots` during
    migration; do not copy that format into a new v1 definition.
@@ -405,9 +405,21 @@ Maturity and load readiness are defined in
 
 - If only skill behavior changed: update skill file, keep references.
 - If canonical domain knowledge is added or materially changed: route the work
-  through `skills/os/knowledge_ontology_management/meta.md#xid-83EDDDB5E158`,
+  through `skills/os/knowledge_ontology_management/SKILL.v1.md#xid-83EDDDB5E158`,
   then verify Skill references still point to valid XIDs.
 - If the knowledge change is only wording, formatting, or mechanical XID-link
   maintenance: update the fragment directly and verify references; ontology
   routing is not required.
 - If a concept became semantically different: create a new XID and preserve compatibility via `xref deprecate`.
+
+## Knowledge ontology assessment during authoring
+
+For new or materially changed canonical domain knowledge, use
+[Knowledge ontology management](../../skills/os/knowledge_ontology_management/SKILL.v1.md#xid-F8A2C6D1B370).
+Record source-backed concept identity, synonym/specialization/different-condition
+relationships, conditions, versions, constraints, and source authority as
+reviewable evidence. Its bounded structural validator does not certify semantic
+truth or authorize merging. Wording, formatting, and mechanical XID maintenance
+do not require this semantic assessment. Preserve the required `seed_xids` array
+(use `[]` when none is known). Keep semantic relations separate from runtime
+load dependencies and retain the reviewed evidence and human judgment boundary.

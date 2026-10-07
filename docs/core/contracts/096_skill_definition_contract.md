@@ -236,3 +236,50 @@ following separately before switching the production default:
 
 [Workflow Protocol](../../guides/088_instruction_workflow_protocol.md#xid-9F4C2A7D1B60)'s
 verify/close and human judgment of output quality and adoption remain separate.
+
+## Repository adoption and invocation compatibility
+
+### Source-obligation preservation
+
+Repository adoption preserves the complete Skill-specific source procedure and
+declarations in the canonical definition. Routing and method summaries do not
+relax the original applicability, required Knowledge, prohibitions, outputs,
+or completion gates, and do not add different requirements. Source-specific
+reporting profiles continue to reference the shared reporting contract.
+Common control policy remains supplied by startup rather than redefined here.
+
+The adoption manifest also records source receipts for the original
+`model_tier` quality policy and `knowledge_inputs` declarations. Runtime uses
+these recorded values before generating quality roles, closure gates, and
+domain-input requirements. Standard/heavy quality gates remain mandatory;
+missing values remain missing. This preserves runtime policy without choosing
+a model for the active session or adding routing fields to the definition
+header. Invalid policy types, tiers, or source provenance refuse adoption.
+
+Existing source contradictions are recorded explicitly: historical per-Skill
+guard composition cannot override the ambient guard contract, split authoring
+remains supported for external legacy assets, and historical metadata summaries
+cannot weaken the detailed source procedure. These exceptions do not authorize
+maturity promotion, publication, or inferred capability.
+
+2026-10-06 のユーザー承認により、この repository の既定 source は
+`skills/repository_adoption.json` に列挙された one-document `SKILL.v1.md` とする。
+この source adoption は maturity promotion や新しい実行権限の付与ではない。
+公開 YAML Skill Package と第三者 repository の legacy API は維持する。
+
+- Manifest は canonical ID/path/XID/raw SHA-256、旧 ID/path/XID/source hash、
+  旧 maturity、採用状態、4 runtime field の値と各値の出典 field を記録する。
+  definition revision、ID/alias の衝突、出典の不整合は拒否する。
+- 明記済み runtime 値だけを実行入力へ引き継ぐ。呼出しの明示入力はその出典を
+  `explicit_input` として記録し、不足 capability は明示入力を要求する。
+  title、周辺 Skill、本文の類似性、`not declared` から能力を作らない。
+- 旧 `--meta` path は記録済みの場合だけ v1 invocation alias として扱う。
+  旧 source を fallback 実行せず、新形式の必須入力・拒否条件を適用する。
+- draft 26件は採用・実行しない。旧 trial/stable を v1 promotion と推定しない。
+  正当な外部 governance record がない採用済み定義は `unassessed` とする。
+- 2つの旧 ID は明示 mapping で同一 catalog entry に解決し、一般的な ID 正規化を
+  行わない。旧文書 XID は宣言済み aliases で canonical definition に解決する。
+  canonical/alias の文書取得は同じ raw bytes/hash を返し、旧要求 XID を記録する。
+- 意味保持と参照 coverage を検証してから、旧 repository split files は hash付き
+  receipt とともに復元可能に退避する。意図的な legacy API test fixture は
+  active catalog source と区別する。Knowledge の意味統合・一括削除は対象外。

@@ -8,7 +8,7 @@
 - maturity: `trial`
 - depends_on:
   - os_contract_version: `1`
-- entry: `skills/packs/batch-regression/batch-impact-regression/SKILL.md`
+- entry: `skills/packs/batch-regression/batch-impact-regression/SKILL.v1.md`
 - owns_skills:
   - `skills/packs/batch-regression/batch-impact-regression`
 - uses_knowledge:

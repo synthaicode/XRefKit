@@ -31,6 +31,7 @@ from xrefkit.skillmeta import (
 )
 from xrefkit.models.human_evaluation import HumanEvaluation
 from xrefkit.skill_definition import load_skill_definition
+from xrefkit.repository_skills import load_repository_adoption, repository_skill, RUNTIME_FIELDS
 from xrefkit.skill_definition_governance import load_governance_record, match_definition
 
 
@@ -2593,6 +2594,16 @@ def run_skill(args) -> SkillRunResult:
     meta_arg = getattr(args, "meta", None)
     if bool(definition_arg) == bool(meta_arg):
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=["exactly one of --meta or --definition is required"])
+    try:
+        adoption = load_repository_adoption(root)
+        adapter = repository_skill(root, definition_arg or meta_arg, adoption) if adoption else None
+    except (ValueError, OSError) as exc:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[str(exc)])
+    if adapter:
+        if not adapter["adopted"]:
+            return SkillRunResult(ok=False, skill_id=adapter["skill_id"], skill_doc=None, run_log=None,
+                                  errors=["draft or deprecated repository Skills are not adopted and cannot execute"])
+        definition_arg = adapter["definition_path"]
     if not definition_arg and (governance_arg or any(
         getattr(args, key, None)
         for key in ("capability", "tuning", "responsibility", "execution_mode")
@@ -2630,6 +2641,12 @@ def run_skill(args) -> SkillRunResult:
             "path": definition_relpath,
             "sha256": str(definition["content_hash"]),
         }
+        if adapter:
+            definition_identity.update({
+                "adoption_path": adoption["path"], "adoption_sha256": adoption["sha256"],
+                "invocation_path": str(meta_arg or getattr(args, "definition", "")),
+                "runtime_provenance": json.dumps(adapter["runtime"], sort_keys=True),
+            })
         definition_maturity = "unassessed"
         if governance_arg:
             governance_path = (root / governance_arg).resolve()
@@ -2650,10 +2667,17 @@ def run_skill(args) -> SkillRunResult:
                 "governance_sha256": str(governance["_content_hash"]),
                 "promotion_decision": str(governance["promotion"]["decision"]),
             })
-        capability = str(getattr(args, "capability", "") or "").strip()
-        tuning = str(getattr(args, "tuning", "") or "").strip()
-        responsibility = str(getattr(args, "responsibility", "") or "").strip()
-        execution_mode_arg = str(getattr(args, "execution_mode", "") or "").strip()
+        runtime = {key: str(getattr(args, key, "") or
+                   (adapter["runtime"][key]["value"] if adapter else "") or "").strip()
+                   for key in RUNTIME_FIELDS}
+        capability, tuning, responsibility, execution_mode_arg = [runtime[key] for key in RUNTIME_FIELDS]
+        if adapter:
+            definition_identity["runtime_provenance"] = json.dumps({
+                key: {"selected_value": runtime[key],
+                      "origin": "explicit_input" if getattr(args, key, None) else "legacy_declared",
+                      "legacy_receipt": adapter["runtime"][key]}
+                for key in RUNTIME_FIELDS
+            }, sort_keys=True)
         if not capability or not tuning or not responsibility or not execution_mode_arg:
             return SkillRunResult(ok=False, skill_id=skill_id, skill_doc=str(meta_path), run_log=None,
                                   errors=["definition-backed runs require --capability, --tuning, --responsibility, and --execution-mode"])
@@ -2661,6 +2685,9 @@ def run_skill(args) -> SkillRunResult:
                        "guard_policy": "required", "capability_layering": "required", "workflow_protocol": "required",
                        "capability": capability, "tuning": tuning,
                        "role_responsibilities": [f"executor: {responsibility}"]})
+        if adapter:
+            parsed.update({key: receipt["value"] for key, receipt in adapter["legacy_runtime_policy"].items()})
+            definition_identity["legacy_policy_provenance"] = json.dumps(adapter["legacy_runtime_policy"], sort_keys=True)
     else:
         parsed = _parse_meta_lines(meta_path.read_text(encoding="utf-8"))
     domain_knowledge, domain_knowledge_errors = _prepare_domain_knowledge_context(

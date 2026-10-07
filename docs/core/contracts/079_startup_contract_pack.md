@@ -22,7 +22,7 @@ as stale to every client when they diverge.
 ## Based On
 
 - pack_version: 1
-- 0B5C58B5E5B2: `8cb20f071fe988d8ef552dcf83db0470ba02ce0d4fc5efb9257091f4a9980515`
+- 0B5C58B5E5B2: `7c7a138032567258edf9e9c2f4fcaf84701f35c616d11e441f60425d114d78f8`
 - 5A1C8E4D2F90: `4d85ea9ba71cb30d1271e363a071a4a03c19f869f3f50019c3677370bca457c8`
 - 6C0B62D6366A: `b3f4950c87f689fd5f51379380413fbd16be6f6c8fcf79ae27d0cd24c88aaaf5`
 - 8A666C1FD121: `ff3f5e3b7b83a738edb5e99195a79e664db33a514e7a8d1fe0129e6787f994a2`
@@ -39,6 +39,15 @@ Sources:
 - 4A423E72D2ED Shared Memory Operations
 
 ## Global startup invariants
+
+- In an adopted repository, use `skills/repository_adoption.json` as the explicit
+  canonical source/provenance boundary. Start selected Skills with
+  `python -m xrefkit skill run --definition <path-to-SKILL.v1.md>` and the
+  instruction-derived runtime inputs. Recorded repository legacy invocation
+  aliases may supply audited compatibility values; explicit inputs take
+  precedence and missing inputs refuse execution. External legacy interfaces
+  and Workflow Runtime Binding ownership remain supported.
+- Draft repository Skills remain unavailable until separate adoption review.
 
 - MCP-only governance is authoritative when configured. Do not read local XRefKit governance Markdown, local Skill files, or filesystem Markdown links to bypass MCP.
 - Apply control in this order: base control -> XRefKit routing -> task-specific workflow/Skill execution.

@@ -6,8 +6,8 @@
 This contract makes the result of every Skill recognizable to a human and to
 the next Skill in a workflow. It uses frontloaded, scan-friendly reporting:
 the decision-relevant summary comes first, while detailed evidence remains
-available below it. When this contract applies, a Skill may add domain-specific sections, but it must keep
-the common summary visible in its human-facing report.
+available through the task output and its evidence links. This contract defines
+shared reporting principles; the active task and Skill own the visible format.
 
 ## Applicability
 
@@ -24,116 +24,84 @@ framework merely to apply the protocol.
 This condition governs human-facing reporting only. Existing runtime recording,
 verification, closure, and uncertainty obligations remain in force.
 
-## Required Report Shape
+## Task-Owned Report Shape
 
-When this protocol applies, a human-facing Skill or workflow report starts with a `## Report` section containing
-these headings:
+The user's requested format takes precedence. Otherwise the active task and
+Skill define headings, order, detail, and artifact type through their outputs,
+method, and applicable criteria. A review table, an investigation narrative,
+and a design artifact may therefore have different shapes. Do not prepend a
+universal `Report` block or force empty sections into every output.
 
-```md
-## Report
+When this protocol applies, make the conclusion, material uncertainty or
+blocker, supporting evidence, and any required next action easy to find in the
+task's own format. Explain partial, blocked, escalated, or needs-review results
+next to the result they qualify; a separate `Reason` heading is optional.
+Keep workflow status distinct from a domain verdict when both are relevant.
 
-### Status
-`done` / `partial` / `blocked` / `escalated`
+Use the user's language for headings and prose. Stable runtime field names,
+status enums, XIDs, paths, commands, and schema values retain their exact spelling.
+There is no mandatory English or Japanese heading sequence.
 
-### Reason
-<required when Status is `partial`, `blocked`, `escalated`, or
-`needs-review`; state the concrete condition that caused the status>
+Generic common-heading scaffolding in legacy Skills is a reporting example,
+not a universal display requirement. This does not remove task-specific
+checklists, evidence, coverage, acceptance criteria, or handoff obligations.
+No declaration in this section changes the machine-readable Run Log format.
 
-### Result
-<what was produced or decided, in one or two sentences>
+### Operational checkpoint details
 
-### Evidence
-- <output or evidence artifact, source, check, or XID>
+For resumable work, include the purpose, completion conditions, scope,
+validation conditions, current step, blocker, and next step when they help the
+reader resume or decide. Their placement follows the task format. These details
+supplement XID-backed evidence and Run Log work items, artifacts, concerns,
+phases, verification, and closure; they do not replace them.
 
-### Open Items
-- <unknown, risk, judgment, or `なし`>
+## Auxiliary Readability Guidance
 
-### Handoff
-- Next owner: <role or human>
-- Next action: <action or `なし`>
-```
+This is XRefKit's own Japanese-oriented guidance, inspired by selected ASD-STE100
+principles. It applies only to expression within the active task's reporting
+requirements. Task-specific content, format, order, detail, and acceptance
+criteria take precedence. It does not alter machine Run Logs or require fixed
+headings, section order, or a reporting profile.
 
-Keep the canonical field order stable, but express human-facing headings,
-prose, reasons, open items, and handoff text in the user's language. The
-canonical English field names may remain alongside a localized label when a
-machine-readable bridge is needed, for example `Status / 状態`. If a section
-has no content, use the user's equivalent of `なし` instead of omitting the
-section. The report is summary-first; detailed domain sections and tables
-follow it.
+- Use appropriately short sentences and one main point per sentence when that
+  helps the reader follow the explanation. Keep conditions and consequences
+  connected when separating them would obscure their meaning.
+- Use consistent terms for the same concept and reduce ambiguous references
+  such as an unexplained "this", "that", or "it". Name the relevant target.
+- Preserve conditions, exceptions, numbers, evidence, verification scope,
+  unverified items, uncertainty, and the distinction between facts and
+  inferences. Sentence shortening never justifies omitting them.
+- Preserve the explanation's structure and meaning. Use a longer sentence or
+  paragraph when that is necessary to express a dependency or limitation clearly.
+- Do not force English sentence limits or the English controlled dictionary
+  onto Japanese. Do not claim strict ASD-STE100 compliance, an "80% compliant"
+  score, or AI-generated compliance assurance from applying these principles.
 
-### Japanese human-facing format
+For example, a task-specific verification report can say:
 
-When the latest clear user request is in Japanese, the human-facing report
-MUST use the following overall form and heading order. This is the display
-format for Japanese readers; it does not change Run Log keys, status enum
-values, Skill IDs, XIDs, artifact IDs, paths, commands, or schema values.
+> 本体0.6.2のwheelで公開済みSkill 3件を検証しました。個別導入と同時導入は成功しました。
+> XDDPは未公開候補として別に検証しました。確認範囲はPython 3.12です。他のPython版は未確認です。
 
-```md
-## 報告
+The example demonstrates expression only; it is not evidence that these checks
+have actually run. "互換性確認済みです。問題ありません。" is an inadequate shortening:
+it removes the exact artifact/version, publication distinction, scope, and
+unverified conditions. Similarly, shortening "再試行はHTTP 429の場合だけ行います。
+認証失敗の場合は停止します。" to "失敗したら再試行します。" changes the rule and is
+not permitted. These examples are not a universal report template.
 
-### 結論
-<what was found, produced, or decided>
-
-### 状態
-完了 / 一部完了 / 停止中 / 判断待ち
-
-### 理由
-<required for 一部完了, 停止中, 判断待ち>
-
-### 確認したこと
-- <facts, outputs, checks, sources, or XIDs>
-
-### 残っている課題
-- <unknown, risk, judgment, or `なし`>
-
-### 次にすること
-- 担当: <role or human>
-- 作業: <next action or `なし`>
-```
-
-Use Japanese labels rather than English labels in the visible report. When a
-stable machine value is important, show it beside the Japanese value, for
-example `完了 (done)` or `判断待ち (needs-review)`. Keep `理由` immediately
-after `状態` when it is required. Translate profile-specific sections as
-follows while preserving their meaning: `Gate Verdict` becomes `判定`,
-`Checks Performed` becomes `確認したこと`, `Coverage` becomes `確認範囲`,
-`Phase Summary` becomes `段階ごとの結果`, and `Artifact Traceability`
-becomes `成果物と根拠の対応`.
-### Operational checkpoint extension
-
-For multi-step or resumable work, a report may add the following operational
-details after the common summary and handoff. These details make the current
-execution state visible without changing the common report order:
-
-```md
-### 作業境界
-- 目的:
-- 完了条件:
-- 対象範囲:
-- 対象外:
-
-### 検証条件
-- コマンド or check:
-- 期待結果:
-- 最新結果:
-
-### 現在の checkpoint
-- 現在の step:
-- 判断・ブロッカー:
-- 次の step:
-```
-
-Use this extension only when the work can span meaningful steps, sessions,
-agents, or verification gates. It supplements the Run Log and does not replace
-XID-backed evidence, work items, artifacts, concerns, phases, `skill verify`,
-or `skill close`.
+Sources: [ASD-STE100 Issue 9](https://www.asd-ste100.org/assets/files/ASD-STE100_ISSUE9.pdf)
+(2025-01-15) defines English procedure/explanation conventions, including
+20/25-word sentence limits and preserving necessary words.
+[Official STE downloads guidance](https://asd-ste100.org/STE_downloads.html)
+does not guarantee AI-output compliance. These sources describe ASD-STE100;
+the scoped guidance above is an independent XRefKit policy inspired by its
+principles, not certification or a Japanese translation of that standard.
 
 ## Reader Perspective
 
 When this protocol applies, every report MUST attach a brief reader perspective
-near the conclusion, within `Result` (Japanese: `結論`). A short inline label
-such as `Perspective:` / `視点:` may be used; do not add a required top-level
-section or change the existing report order.
+near the conclusion in the task's format. A short inline label such as
+`Perspective:` / `視点:` may be used; no additional heading is required.
 
 Ground the perspective in the user's purpose and the established decision
 framework. State which relationship, distinction, or change the reader should
@@ -222,23 +190,23 @@ support the current decision, and link to the full artifact or Run Log for
 detail.
 
 When the workflow or gate status is `needs-review` / `要確認`, the report must
-state the reason immediately after `Status` (or `状態`). Do not make the
-reader infer the reason from a later findings table. The reason must name the
+state the reason next to the affected result or verdict in its task format.
+Do not make the reader infer the reason from a later findings table. The reason must name the
 conditions that caused the downgrade, such as an active `major` finding, an
 unavailable validation boundary, or an unresolved ownership decision, and may
 link to the relevant finding anchors.
 
 ## Reporting Profiles
 
-Each Skill selects one reporting profile. The profile changes the detail after
-the common summary; it does not remove the common status, result, evidence,
-open-item, or handoff fields.
+Profiles are optional patterns for task authors, not required universal output
+formats. Select or adapt a pattern only when it fits the task. The headings and
+tables below are examples; required content comes from applicable task criteria.
 
 ### `summary_first`
 
 Use for ordinary investigation, planning, design, authoring, and operational
-work. Put the conclusion and the next action in `Result` and `Handoff`, then
-follow with the detailed report.
+work. Put the conclusion and any next action where the reader can find them
+before supporting detail, using the task's headings or prose.
 
 ### `gate_verdict`
 
@@ -257,8 +225,7 @@ Do not collapse a gate verdict into the runtime status.
 
 ### `checklist_verdict`
 
-Use for checklist-based review and self-check Skills. In addition to the
-common summary, explicitly list every check that was performed, its target,
+Use for checklist-based review and self-check Skills. Explicitly list every check that was performed, its target,
 its result, and its evidence. Do not report only failed items; an omitted
 check is indistinguishable from a check that was never performed.
 
@@ -285,21 +252,20 @@ coverage and approval.
 
 ### `phase_summary`
 
-Use for multi-phase workflows. The common `Result` is the overall conclusion;
-phase-level summaries follow it and retain their own blockers and handoffs.
+Use for multi-phase workflows. Make the overall conclusion easy to find;
+phase-level summaries retain their own blockers and handoffs.
 
 ### `artifact_traceability`
 
 Use when the main output is a structured design, analysis, traceability map,
-or other reusable artifact. The human-facing report has the common summary
-first, while the artifact keeps its established title, schema, and detailed
-section order. Do not prepend Markdown headings to a binary or machine-readable
+or other reusable artifact. The artifact keeps its established title, schema,
+and detailed section order; accompanying prose follows the task format. Do not prepend Markdown headings to a binary or machine-readable
 artifact; report the summary beside it and link the artifact as evidence.
 
 ## Audience And Actionability
 
 Write for the next decision, not for exhaustive narration. When applicable,
-make the following explicit in `Result`, `Open Items`, or `Handoff`:
+make the following explicit wherever the task format presents them:
 
 - what changed or was produced;
 - what is at risk or blocked, including impact;
@@ -327,12 +293,26 @@ machine-readable record of work items, artifacts, concerns, phases, checks,
 closure, and handoff. A report must point to the relevant artifacts or run log;
 it does not replace runtime recording or `skill close`.
 
+## MCP Compatibility
+
+The MCP reporting payload uses version `2` for task-owned display. Existing
+`required_sections` and `japanese_sections` keys remain arrays, both empty;
+`example_sections` contains optional examples. `format_owner` identifies the
+user request and active task or Skill, and `profiles_required` is `false`.
+Runtime status values and CLI interfaces are unchanged.
+
+The startup adapter accepts reporting versions `1` and `2`, validates the v2
+format ownership fields, and rejects unknown versions. Workflow and prompt-flow
+protocols retain their own version `1` restriction. A consumer that accepts only
+reporting version `1` must be updated before receiving version `2`; an old
+consumer's acceptance is not implied by retaining field names.
+
 ## Domain Extensions
 
-Existing domain-specific output shapes remain valid after the common `Report`
-section. A gate, review, analysis, or publication Skill may add its own verdict,
-tables, or detailed sections after `Handoff`, provided the common status,
-result, evidence, open-item, and handoff information remains easy to find.
+Task-specific output shapes are owned by the Skill or artifact schema. Declare
+report purpose, audience, output type, and required content in that task's
+outputs, method, or criteria. Reference this contract for shared principles
+instead of copying a common heading sequence into every Skill.
 
 ## Research Basis
 

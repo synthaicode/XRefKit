@@ -1,3 +1,5 @@
+from repository_skill_receipts import assert_preserved_source_boundary
+from repository_skill_receipts import assert_legacy_receipt
 from pathlib import Path
 
 from xrefkit.mcp.catalog import XRefCatalog
@@ -21,10 +23,9 @@ def test_business_intake_v1_definitions_parse_aliases_and_preserve_legacy():
         assert metadata["control_refs"] == []
         for forbidden in ("capability", "tuning", "responsibility", "execution_mode", "model", "maturity"):
             assert forbidden not in metadata
-        assert "## Context Direction Guard" not in definition["method"]
-        assert "## Reporting Contract" not in definition["method"]
-        assert f"<!-- xid: {body_xid} -->" in (repo / relative.parent / "SKILL.md").read_text(encoding="utf-8")
-        assert f"skill_doc: `./SKILL.md`" in (repo / relative.parent / "meta.md").read_text(encoding="utf-8")
+        assert_preserved_source_boundary(definition)
+        assert_legacy_receipt(repo / relative.parent / 'SKILL.md')
+        assert_legacy_receipt(repo / relative.parent / 'meta.md')
 
 
 def test_business_intake_v1_explicit_catalog_selection_and_knowledge_resolution():

@@ -1,3 +1,4 @@
+from repository_skill_receipts import assert_preserved_source_boundary
 from pathlib import Path
 
 from xrefkit.mcp.catalog import XRefCatalog
@@ -29,7 +30,7 @@ def test_final_batch_selects_together_without_identity_or_common_control_leaks()
 
     assert len(xids) == len(set(xids))
     assert set(xids).isdisjoint(aliases)
-    assert all("CAP-" not in definition["method"] for definition in definitions)
+    assert all(assert_preserved_source_boundary(definition) for definition in definitions)
     assert all(
         "7A2F4C8D1601"
         not in [xid for need in definition["metadata"]["knowledge_needs"] for xid in need["seed_xids"]]

@@ -109,3 +109,12 @@ Related contracts:
 - [Skill Operating Contract](058_skill_operating_contract.md#xid-B7A2C94F0E61)
 - [SkillDefinition v1](096_skill_definition_contract.md#xid-E6A19D4B72C3)
 - [Work-item model routing](110_work_item_model_routing.md#xid-F2C91B7E4A60)
+
+## Audited repository legacy adoption
+
+The explicitly approved repository adoption adapter may supply recorded legacy
+values as compatibility inputs for an adopted definition or retired invocation
+alias. Explicit instruction inputs take precedence. Values and their source
+receipts remain in ExecutionBinding provenance; they are not canonical Skill
+identity or inferred abilities. Missing inputs and draft refusal still gate
+execution. Workflow Protocol remains the owner of the resulting binding.

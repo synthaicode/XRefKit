@@ -1,3 +1,5 @@
+from repository_skill_receipts import assert_preserved_source_boundary
+from repository_skill_receipts import assert_legacy_receipt
 from pathlib import Path
 
 import pytest
@@ -32,14 +34,11 @@ def test_language_review_v1_metadata_aliases_boundaries_and_legacy(skill_id, xid
         "## Check Role",
         "## Quality Gate",
     ):
-        assert common_section not in definition["method"]
+        assert_preserved_source_boundary(definition)
     assert "unknown" in definition["method"]
     assert "handoff" in definition["method"]
-    legacy = (repo / relative.parent / "SKILL.md").read_bytes()
-    assert legacy.startswith(f"<!-- xid: {body_xid} -->".encode())
-    meta = (repo / relative.parent / "meta.md").read_text(encoding="utf-8")
-    assert f"<a id=\"xid-{meta_xid}\"></a>" in meta
-    assert "skill_doc: `./SKILL.md`" in meta
+    assert_legacy_receipt(repo / relative.parent / 'SKILL.md')
+    assert_legacy_receipt(repo / relative.parent / 'meta.md')
 
 
 def test_language_review_v1_explicit_catalog_selection_and_knowledge_resolution():

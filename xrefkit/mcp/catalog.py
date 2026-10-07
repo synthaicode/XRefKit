@@ -5,7 +5,7 @@ import io
 import json
 import re
 import zipfile
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from .contracts import builtin_tool_contracts
@@ -17,6 +17,7 @@ from ..skill_definition import (
     parse_skill_definition as parse_markdown_skill_definition,
 )
 from ..skill_definition_catalog import build_definition_catalog
+from ..repository_skills import load_repository_adoption
 from .ownership import Ownership, load_ownership, validate_ownership
 from .skill_edits import (
     active_edit,
@@ -264,6 +265,7 @@ class XRefCatalog:
     discovered_packages: tuple[DiscoveredSkillPackage, ...] = ()
     skill_definition_paths: tuple[Path, ...] = ()
     skill_governance_paths: tuple[Path, ...] = ()
+    repository_adoption_required: bool = False
 
     @classmethod
     def build(
@@ -286,6 +288,13 @@ class XRefCatalog:
         )
         if len(definition_paths) != len(set(definition_paths)):
             raise ValueError("skill_definition_paths contains duplicates")
+        adoption = load_repository_adoption(root)
+        if adoption:
+            explicit_ids = {load_markdown_skill_definition(p)["metadata"]["skill_id"] for p in definition_paths}
+            definition_paths = tuple(dict.fromkeys([
+                *[(root / e["definition_path"]).resolve() for e in adoption["entries"] if e["skill_id"] not in explicit_ids],
+                *definition_paths,
+            ]))
         governance_paths = tuple(
             _resolve_skill_governance_path(root, path)
             for path in (skill_governance_paths or [])
@@ -308,6 +317,7 @@ class XRefCatalog:
             discovered_packages=tuple(discover_skill_packages()) if discover_packages else (),
             skill_definition_paths=definition_paths,
             skill_governance_paths=governance_paths,
+            repository_adoption_required=adoption is not None,
         )
 
     # knowledge, skills, and catalog_version are rebuilt from the live
@@ -323,7 +333,10 @@ class XRefCatalog:
 
     @property
     def skills(self) -> list[SkillCatalogEntry]:
-        entries = _build_skills(self.repo_root, self.ownership)
+        adoption = load_repository_adoption(self.repo_root)
+        if self.repository_adoption_required and adoption is None:
+            raise ValueError("active repository adoption record is missing; refusing stale Skill routing")
+        entries = [] if adoption else _build_skills(self.repo_root, self.ownership)
         for package in self.discovered_packages:
             entries.extend(_build_package_skills(package))
         entries = self._apply_skill_edits(entries)
@@ -337,6 +350,19 @@ class XRefCatalog:
             replaced = {entry.skill_id for entry in definitions}
             entries = [entry for entry in entries if entry.skill_id not in replaced]
             entries.extend(definitions)
+        if adoption:
+            receipts = {e["skill_id"]: e for e in adoption["entries"]}
+            entries = [replace(
+                entry,
+                legacy_skill_ids=list(receipts[entry.skill_id]["legacy_ids"]),
+                maturity="draft" if not receipts[entry.skill_id]["adopted"] else entry.maturity,
+                repository_adoption={"path": adoption["path"], "sha256": adoption["sha256"],
+                                     "adopted": receipts[entry.skill_id]["adopted"],
+                                     "runtime": receipts[entry.skill_id]["runtime"],
+                                     "legacy_runtime_policy": receipts[entry.skill_id]["legacy_runtime_policy"]},
+            ) if entry.skill_id in receipts and entry.path == receipts[entry.skill_id]["definition_path"]
+              and entry.definition_format == "skill_definition_v1"
+              and entry.package_id is None else entry for entry in entries]
         return entries
 
     def _apply_skill_edits(self, entries: list[SkillCatalogEntry]) -> list[SkillCatalogEntry]:
@@ -465,7 +491,13 @@ class XRefCatalog:
                 f"Skill source is ambiguous for {skill_id!r}; provide package_id when needed"
             )
         entry = candidates[0]
-        current_skill_hash = stable_hash(entry.skill_content)
+        if entry.definition_format == "skill_definition_v1":
+            source_root = Path(entry.source_root) if entry.source_root else self.repo_root
+            current_skill_hash = _raw_skill_definition_document(
+                source_root / entry.path, entry.path, entry,
+            ).content_hash
+        else:
+            current_skill_hash = stable_hash(entry.skill_content)
         if skill_content_hash != current_skill_hash:
             raise ValueError("skill_content_hash does not match the current MCP Skill body")
         package_version = None
@@ -598,6 +630,7 @@ class XRefCatalog:
                 + entry.summary
                 + stable_hash(entry.meta_content + "\n" + entry.skill_content)
                 + (entry.definition_content_hash or "")
+                + ((entry.repository_adoption or {}).get("sha256") or "")
                 for entry in self.skills
             ]
             + [
@@ -719,6 +752,12 @@ class XRefCatalog:
         result["client_tool_download"] = _client_tool_download_policy(entry)
         result["content_resolution"] = _mcp_content_resolution_policy()
         if known_document_versions is None:
+            if entry.definition_format == "skill_definition_v1":
+                source_root = Path(entry.source_root) if entry.source_root else self.repo_root
+                document = _raw_skill_definition_document(
+                    source_root / entry.path, entry.path, entry,
+                )
+                result["skill_content"] = document.content
             return result
 
         documents: list[dict] = []
@@ -954,6 +993,14 @@ class XRefCatalog:
                 "missing_tool_contracts": missing_tools,
                 "declared_preconditions": skill.preconditions,
             }
+            if skill.repository_adoption:
+                missing_runtime = [key for key, receipt in skill.repository_adoption["runtime"].items()
+                                   if receipt["value"] is None]
+                readiness.update({
+                    "runnable": not missing_tools and skill.repository_adoption["adopted"] and not missing_runtime,
+                    "required_runtime_inputs": missing_runtime,
+                    "repository_adopted": skill.repository_adoption["adopted"],
+                })
             if score <= 0:
                 continue
             results.append(
@@ -1119,6 +1166,17 @@ class XRefCatalog:
                 if path.resolve() not in overlay_source_paths
             ]
             matches.extend(overlay_matches)
+        if matches and self.repository_adoption_required:
+            # Adoption gives retired aliases an explicit repository owner.
+            # An unrelated live declaration must not silently hijack that ID.
+            for entry in self.skills:
+                if entry.definition_format != "skill_definition_v1" or entry.package_id is not None:
+                    continue
+                path = self.repo_root / entry.path
+                definition = load_markdown_skill_definition(path)
+                if xid in definition["metadata"].get("aliases", []):
+                    document = _raw_skill_definition_document(path, entry.path, entry)
+                    matches.append((path, document.content))
         if len(matches) > 1:
             return {
                 "ok": False,
@@ -1132,11 +1190,40 @@ class XRefCatalog:
             }
         if len(matches) == 1:
             path, text = matches[0]
+            for entry in (self.skills if self.skill_definition_paths else []):
+                if (entry.definition_format == "skill_definition_v1"
+                        and entry.package_id is None
+                        and (self.repo_root / entry.path).resolve() in self.skill_definition_paths
+                        and (self.repo_root / entry.path).resolve() == path.resolve()):
+                    return _conditional_document_response(
+                        _raw_skill_definition_document(path, entry.path, entry),
+                        known_version,
+                        self.repository_fingerprint,
+                    )
             return _conditional_document_response(
                 _xref_document_for_catalog(self.repo_root, self.domain_knowledge_roots, path, text),
                 known_version,
                 self.repository_fingerprint,
             )
+        # Explicit definitions may preserve retired document identities as aliases.
+        # A still-present document remains authoritative; aliases are a fallback,
+        # never permission to replace its content or hide a declaration conflict.
+        for entry in (self.skills if self.skill_definition_paths else []):
+            if entry.definition_format != "skill_definition_v1" or entry.package_id is not None:
+                continue
+            path = self.repo_root / entry.path
+            if path.resolve() not in self.skill_definition_paths:
+                continue
+            definition = load_markdown_skill_definition(path)
+            if xid not in definition["metadata"].get("aliases", []):
+                continue
+            document = _raw_skill_definition_document(path, entry.path, entry)
+            response = _conditional_document_response(
+                document, known_version, self.repository_fingerprint,
+            )
+            response["requested_xid"] = xid
+            response["resolved_via"] = "definition_alias"
+            return response
         embedded = _embedded_startup_document(xid)
         if embedded is not None:
             return _conditional_document_response(
@@ -1318,7 +1405,7 @@ class XRefCatalog:
         raise KeyError(f"knowledge xid not found: {xid}")
 
     def _skill_by_id(self, skill_id: str) -> SkillCatalogEntry:
-        matches = [entry for entry in self.skills if entry.skill_id == skill_id]
+        matches = [entry for entry in self.skills if entry.skill_id == skill_id or skill_id in entry.legacy_skill_ids]
         if len(matches) > 1:
             paths = [entry.meta_path for entry in matches]
             raise ValueError(
@@ -1520,6 +1607,10 @@ def _managed_markdown_files(root: Path, ownership: Ownership | None = None) -> l
             and path.suffix.lower() in XID_DOCUMENT_SUFFIXES
             and _catalog_enabled(root, ownership, path)
         )
+    adoption = load_repository_adoption(root)
+    if adoption:
+        retired = {s["path"] for e in adoption["entries"] for s in e["legacy_sources"]}
+        files = [p for p in files if relative_to_repo(p, root) not in retired]
     return files
 
 
@@ -2832,31 +2923,28 @@ def _workflow_protocol() -> dict[str, object]:
 
 def _reporting_protocol() -> dict[str, object]:
     return {
-        "version": "1",
+        "version": "2",
         "source": "xrefkit.mcp",
         "contract_xid": "6B2D9F4A1C73",
+        "readability_guidance": {
+            "contract_xid": "6B2D9F4A1C73",
+            "section": "auxiliary-readability-guidance",
+            "scope": "expression_within_task_specific_reporting_requirements",
+            "compliance_claim": "none",
+        },
         "activation": (
             "human-facing Skill or workflow reports only when the conversation "
             "has an established decision framework"
         ),
-        "required_sections": [
-            "Report",
-            "Status",
-            "Reason",
-            "Result",
-            "Evidence",
-            "Open Items",
-            "Handoff",
-        ],
-        "japanese_sections": [
-            "報告",
-            "結論",
-            "状態",
-            "理由",
-            "確認したこと",
-            "残っている課題",
-            "次にすること",
-        ],
+        # Keep legacy keys available; no universal headings are required in v2.
+        "required_sections": [],
+        "japanese_sections": [],
+        "format_owner": "user_request_and_active_task_or_skill",
+        "profiles_required": False,
+        "example_sections": {
+            "english": ["Report", "Status", "Reason", "Result", "Evidence", "Open Items", "Handoff"],
+            "japanese": ["報告", "結論", "状態", "理由", "確認したこと", "残っている課題", "次にすること"],
+        },
         "status_values": ["done", "partial", "blocked", "escalated"],
         "profiles": [
             "summary_first",
@@ -2871,8 +2959,12 @@ def _reporting_protocol() -> dict[str, object]:
             "without a decision framework, use ordinary conversational form without required report headings or status labels",
             "do not invent criteria or a decision framework merely to apply this protocol",
             "reporting applicability does not waive runtime recording, verification, closure, or uncertainty obligations",
-            "summary_first",
-            "attach a brief reader perspective near the conclusion within Result (Japanese: 結論), without adding required sections or changing report order",
+            "make the conclusion, material uncertainty, evidence, and required next action easy to find in the task format",
+            "the user request and active task or Skill own headings, order, detail, and artifact type",
+            "profiles and example sections are optional; do not prepend universal headings or force empty sections",
+            "generic legacy common-heading scaffolding is an example; task-specific checklists and criteria remain required",
+            "explain partial, blocked, escalated, or needs-review results next to the affected result; no separate Reason heading is required",
+            "attach a brief reader perspective near the conclusion in the task format, without requiring an additional section",
             "ground the perspective in the user purpose and established decision framework; name the relationship, distinction, or change to focus on and why it matters for the next judgment",
             "when perspectives have an established or evidence-supported priority, include the priority order and a brief reason grounded in the user purpose and decision framework; do not invent a ranking, and do not treat lower priority as exclusion or exemption from required checks",
             "when relevant, distinguish what evidence establishes from remaining human judgment and state the condition requiring reconsideration; keep supporting evidence reachable",

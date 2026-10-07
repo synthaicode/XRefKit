@@ -14,7 +14,7 @@ For the Business Pack concept see
 - maturity: `trial`
 - depends_on:
   - os_contract_version: `1`
-- entry: `skills/packs/constraint-derivation/constraint_derivation_index/SKILL.md`
+- entry: `skills/packs/constraint-derivation/constraint_derivation_index/SKILL.v1.md`
 - owns_skills:
   - `skills/packs/constraint-derivation/constraint_derivation_index`
   - `skills/packs/constraint-derivation/design_constraint_derivation`

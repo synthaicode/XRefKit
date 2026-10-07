@@ -3,18 +3,17 @@
 
 # Skills by Tool
 
-Categories list skill ids only. Resolve summaries and `meta.md` /
-`SKILL.md` paths from the canonical catalog
+Categories list skill ids only. Resolve summaries and `SKILL.v1.md` paths from the canonical catalog
 [skills/_index.md](../_index.md#xid-8D91F66DDBB7).
 
 - xref: `import_skill`, `knowledge_ontology_management`,
   `source_structure_findings_registration`,
   `xlsx_spec_traceability`, `pptx_spec_traceability`
-- .NET: `csharp_review`, `dotnet_change_analysis`, `batch-impact-regression`, `db_current_state_analysis`,
+- .NET: `csharp_review`, `dotnet_change_analysis`, `batch_impact_regression`, `db_current_state_analysis`,
   `csharp_error_policy_extraction`, `code_constraint_derivation`,
   `cross_constraint_derivation`, `integration_scenario_derivation`
 - Python: `python_review`, `python_implementation_flow`
-- SQL Server: `batch-impact-regression`, `db_current_state_analysis`, `db_design`
+- SQL Server: `batch_impact_regression`, `db_current_state_analysis`, `db_design`
 - repository: `doc_ship`, `retro`, `knowledge_ontology_management`,
   `consultation_research_mapping`, `judgment_log`, `skill_flow_authoring`,
   `skill_calibration_evaluation`,
@@ -36,5 +35,5 @@ Categories list skill ids only. Resolve summaries and `meta.md` /
   `async_constraint_derivation`, `auth_constraint_derivation`,
   `commonality_derivation`, `code_constraint_derivation`,
   `cross_constraint_derivation`, `integration_scenario_derivation`
-- html-css-png: `marketing_slide_png`, `marketing-explainer-video`
-- video-tts: `marketing-explainer-video`
+- html-css-png: `marketing_slide_png`, `marketing_explainer_video`
+- video-tts: `marketing_explainer_video`

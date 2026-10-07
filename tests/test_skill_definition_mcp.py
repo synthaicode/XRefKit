@@ -112,11 +112,19 @@ def test_opt_in_definition_replaces_legacy_and_transfers_one_exact_document(tmp_
     assert selected["path"] == "definitions/sample_skill/SKILL.md"
     assert len(selected["documents"]) == 1
     document = selected["documents"][0]
+    assert selected["path"] == "definitions/sample_skill/SKILL.md"
     assert document["xid"] == "ABCDEF123456"
     assert document["content"].encode("utf-8") == raw
     assert document["content_hash"] == hashlib.sha256(raw).hexdigest()
     cached = catalog.get_skill("sample_skill", {document["xid"]: document["content_hash"]})
     assert cached["documents"][0]["content_omitted"] is True
+    assert "content" not in cached["documents"][0]
+    assert cached["path"] == selected["path"]
+    assert [(d["xid"], d["content_hash"], d["repository_fingerprint"]) for d in cached["documents"]] == [
+        (document["xid"], document["content_hash"], document["repository_fingerprint"]),
+    ]
+    changed = catalog.get_skill("sample_skill", {document["xid"]: "0" * 64})
+    assert changed["documents"][0]["content"].encode("utf-8") == raw
 
 
 def test_definition_configuration_is_bounded_and_collision_checked(tmp_path):
@@ -126,6 +134,40 @@ def test_definition_configuration_is_bounded_and_collision_checked(tmp_path):
         XRefCatalog.build(tmp_path, skill_definition_paths=[one, two]).skills
     with pytest.raises(ValueError, match="within the repository"):
         XRefCatalog.build(tmp_path, skill_definition_paths=[tmp_path.parent / "outside.md"])
+
+
+def test_selected_definition_without_version_map_returns_exact_compatibility_body(tmp_path):
+    definition, raw = _write_definition(tmp_path)
+    catalog = XRefCatalog.build(tmp_path, skill_definition_paths=[definition])
+
+    selected = catalog.get_skill("sample_skill")
+    assert selected["skill_content"].encode("utf-8") == raw
+    assert selected["definition_content_hash"] == hashlib.sha256(raw).hexdigest()
+    conditional = catalog.get_skill("sample_skill", {})["documents"][0]
+    assert selected["skill_content"] == conditional["content"]
+    cached = catalog.get_skill("sample_skill", {
+        conditional["xid"]: conditional["content_hash"],
+    })
+    assert cached["skill_content"] is None
+    assert cached["documents"][0]["content_omitted"] is True
+    assert catalog.list_skills(include_content=True)[0]["skill_content"] == ""
+
+
+def test_contribution_snapshot_uses_selected_canonical_raw_body_hash(tmp_path):
+    definition, raw = _write_definition(tmp_path)
+    catalog = XRefCatalog.build(tmp_path, skill_definition_paths=[definition])
+    selected = catalog.get_skill("sample_skill")
+    expected = hashlib.sha256(raw).hexdigest()
+    assert hashlib.sha256(selected["skill_content"].encode("utf-8")).hexdigest() == expected
+    arguments = {
+        "skill_id": "sample_skill", "package_id": None,
+        "skill_content_hash": expected, "knowledge_versions": [],
+        "provider_version": "0.6.2",
+    }
+    snapshot = catalog.contribution_source_snapshot(**arguments)
+    assert snapshot["skill_content_hash"] == expected
+    with pytest.raises(ValueError, match="does not match the current MCP Skill body"):
+        catalog.contribution_source_snapshot(**{**arguments, "skill_content_hash": hashlib.sha256(b"").hexdigest()})
 
 
 def test_definition_governance_projects_maturity_without_changing_format(tmp_path):
@@ -172,7 +214,7 @@ def test_definition_knowledge_activation_is_explicit_and_validated(tmp_path):
 
 
 def test_mcp_startup_materializes_exact_definition_document(tmp_path):
-    definition, _ = _write_definition(tmp_path)
+    definition, raw = _write_definition(tmp_path)
     log = tmp_path / "work" / "run.md"
     code, output = _command(
         "skill", "run", "--root", str(tmp_path),
@@ -217,10 +259,24 @@ def test_mcp_startup_materializes_exact_definition_document(tmp_path):
     assert calls == ["get_startup_context", "bind_skill_run", "get_skill"]
     assert [item["kind"] for item in result["documents"]].count("skill_definition") == 1
     assert result["documents"][-1]["content_hash"] == binding["definition_identity"]["sha256"]
+    identity = binding["definition_identity"]
+    assert identity["path"] == "definitions/sample_skill/SKILL.md"
+    matching = [d for d in result["documents"] if d["xid"] == identity["xid"]]
+    assert len(matching) == 1
+    assert matching[0]["kind"] == "skill_definition"
+    assert matching[0]["body"].encode("utf-8") == raw
+    assert matching[0]["content_hash"] == hashlib.sha256(raw).hexdigest()
+    assert [d for d in result["receipt"]["reads"] if d["xid"] == identity["xid"]] == [
+        {k: matching[0][k] for k in ("xid", "content_hash", "bytes", "kind")},
+    ]
     assert "subagent.startup.read" in log.read_text(encoding="utf-8")
 
 
-def test_mcp_startup_rejects_definition_identity_mismatch(tmp_path):
+@pytest.mark.parametrize("fault", [
+    "identity_hash", "source_path", "missing_document", "duplicate_document",
+    "missing_body", "corrupt_body", "cached_body_omitted", "document_xid",
+])
+def test_mcp_startup_rejects_definition_identity_mismatch(tmp_path, fault):
     definition, raw = _write_definition(tmp_path)
     log = tmp_path / "work" / "run.md"
     code, output = _command(
@@ -252,11 +308,62 @@ def test_mcp_startup_rejects_definition_identity_mismatch(tmp_path):
                     "mcp_session_id": "session", "audit_enabled": True}
         if name == "get_skill":
             result = catalog.get_skill("sample_skill", {})
-            result["definition_content_hash"] = "0" * 64
+            if fault == "identity_hash":
+                result["definition_content_hash"] = "0" * 64
+            elif fault == "source_path":
+                result["path"] = "definitions/another/SKILL.md"
+            elif fault == "missing_document":
+                result["documents"] = []
+            elif fault == "duplicate_document":
+                result["documents"] *= 2
+            elif fault == "missing_body":
+                result["documents"][0]["content"] = ""
+            elif fault == "corrupt_body":
+                result["documents"][0]["content"] += "altered"
+            elif fault == "cached_body_omitted":
+                result = catalog.get_skill("sample_skill", {
+                    binding["definition_identity"]["xid"]: binding["definition_identity"]["sha256"],
+                })
+            elif fault == "document_xid":
+                result["documents"][0]["xid"] = "123456ABCDEF"
             return result
         raise AssertionError(name)
 
-    with pytest.raises(McpSubagentStartupError, match="identity"):
+    with pytest.raises(McpSubagentStartupError):
         asyncio.run(read_mcp_subagent_startup(log, binding, call))
     assert hashlib.sha256(raw).hexdigest() == binding["definition_identity"]["sha256"]
     assert "subagent.startup.read" not in log.read_text(encoding="utf-8")
+
+
+def test_task_owned_formats_survive_reporting_policy_without_implicit_loading(tmp_path):
+    cases = [
+        ("checklist_task", "ABCDEF123451", "checklist table", "# Checks\n| Check | Evidence |\n"),
+        ("narrative_task", "ABCDEF123452", "investigation narrative", "# Findings\nExplain the observed cause.\n"),
+    ]
+    paths = []
+    expected = {}
+    for skill_id, xid, output, method in cases:
+        path, _ = _write_definition(tmp_path, skill_id=skill_id, xid=xid)
+        raw = _definition(skill_id, xid).replace(
+            '\"outputs\": [\"report\"]', json.dumps("outputs") + ": " + json.dumps([output])
+        ).replace("# Definition method\r\nSECRET_METHOD_SENTINEL\r\n", method).encode("utf-8")
+        path.write_bytes(raw)
+        paths.append(path)
+        expected[skill_id] = (raw, output)
+
+    catalog = XRefCatalog.build(tmp_path, skill_definition_paths=paths)
+    context = catalog.get_startup_context()
+    policy = context["reporting_protocol"]
+    assert policy["version"] == "2"
+    assert policy["required_sections"] == policy["japanese_sections"] == []
+    assert policy["profiles_required"] is False
+    entries = {entry.skill_id: entry for entry in catalog.skills}
+    for skill_id, (raw, output) in expected.items():
+        assert entries[skill_id].outputs == [output]
+        selected = catalog.get_skill(skill_id, {})
+        # Task method remains byte-exact and knowledge is resolved separately.
+        assert len(selected["documents"]) == 1
+        assert selected["documents"][0]["content"].encode("utf-8") == raw
+        assert selected["documents"][0]["content_hash"] == hashlib.sha256(raw).hexdigest()
+        cached = catalog.get_skill(skill_id, {selected["documents"][0]["xid"]: hashlib.sha256(raw).hexdigest()})
+        assert cached["documents"][0]["content_omitted"] is True

@@ -1,3 +1,5 @@
+from repository_skill_receipts import assert_preserved_source_boundary
+from repository_skill_receipts import assert_legacy_receipt
 from pathlib import Path
 
 import pytest
@@ -43,7 +45,7 @@ def test_flow_definition_omits_runtime_and_common_control_metadata(case) -> None
     metadata = definition["metadata"]
     forbidden = {"capability", "tuning", "responsibility", "execution_mode", "model", "maturity"}
     assert forbidden.isdisjoint(metadata)
-    assert "## Reporting Contract" not in definition["method"]
+    assert_preserved_source_boundary(definition)
 
 
 def test_flow_definitions_are_explicitly_catalog_selected_and_knowledge_resolves() -> None:
@@ -67,9 +69,5 @@ def test_legacy_files_remain_readable_and_retain_original_xids(
     skill_id: str, xid: str, body_xid: str, meta_xid: str
 ) -> None:
     repo = Path(__file__).resolve().parents[1]
-    body = (repo / "skills" / skill_id / "SKILL.md").read_text(encoding="utf-8")
-    meta = (repo / "skills" / skill_id / "meta.md").read_text(encoding="utf-8")
-    assert f"xid-{body_xid}" in body
-    assert f"xid-{meta_xid}" in meta
-    assert f"# Skill: {skill_id}" in body
-    assert f"# Skill Meta: {skill_id}" in meta
+    assert_legacy_receipt(repo / 'skills' / skill_id / 'SKILL.md')
+    assert_legacy_receipt(repo / 'skills' / skill_id / 'meta.md')

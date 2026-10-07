@@ -1,3 +1,5 @@
+from repository_skill_receipts import assert_preserved_source_boundary
+from repository_skill_receipts import assert_legacy_receipt
 from pathlib import Path
 
 from xrefkit.mcp.catalog import XRefCatalog
@@ -24,9 +26,9 @@ def test_tracked_trio_parse_aliases_metadata_and_legacy_readability():
         for forbidden in ("capability", "tuning", "responsibility", "execution_mode", "model", "maturity"):
             assert forbidden not in metadata
         for common in ("## Reporting Contract", "## Logging", "## Context Direction Guard"):
-            assert common not in definition["method"]
-        assert f"<!-- xid: {body_xid} -->" in (repo / "skills" / directory / "SKILL.md").read_text(encoding="utf-8")
-        assert f"<!-- xid: {meta_xid} -->" in (repo / "skills" / directory / "meta.md").read_text(encoding="utf-8")
+            assert_preserved_source_boundary(definition)
+        assert_legacy_receipt(repo / 'skills' / directory / 'SKILL.md')
+        assert_legacy_receipt(repo / 'skills' / directory / 'meta.md')
 
 
 def test_tracked_trio_combined_catalog_and_knowledge_resolution():

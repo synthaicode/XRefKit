@@ -14,7 +14,7 @@ For the Business Pack concept see
 - maturity: `trial`
 - depends_on:
   - os_contract_version: `1`
-- entry: `skills/packs/editorial-ops/editorial_ops_index/SKILL.md`
+- entry: `skills/packs/editorial-ops/editorial_ops_index/SKILL.v1.md`
 - owns_skills:
   - `skills/packs/editorial-ops/editorial_ops_index`
   - `skills/packs/editorial-ops/editorial_intake`

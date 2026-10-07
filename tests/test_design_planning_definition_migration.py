@@ -1,3 +1,5 @@
+from repository_skill_receipts import assert_preserved_source_boundary
+from repository_skill_receipts import assert_legacy_receipt
 from pathlib import Path
 
 import pytest
@@ -36,7 +38,7 @@ def test_pair_omits_runtime_and_common_control_metadata(case):
     definition = load_skill_definition(repo / "skills" / skill_id / "SKILL.v1.md")
     forbidden = {"capability", "tuning", "responsibility", "execution_mode", "model", "maturity"}
     assert forbidden.isdisjoint(definition["metadata"])
-    assert "## Reporting Contract" not in definition["method"]
+    assert_preserved_source_boundary(definition)
 
 
 def test_pair_is_explicitly_catalog_selected_and_knowledge_resolves():
@@ -63,10 +65,6 @@ def test_pair_is_explicitly_catalog_selected_and_knowledge_resolves():
 def test_legacy_files_remain_readable_and_unchanged_identity(case):
     skill_id = case[0]
     repo = Path(__file__).resolve().parents[1]
-    body = (repo / "skills" / skill_id / "SKILL.md").read_text(encoding="utf-8")
-    meta = (repo / "skills" / skill_id / "meta.md").read_text(encoding="utf-8")
+    assert_legacy_receipt(repo / 'skills' / skill_id / 'SKILL.md')
+    assert_legacy_receipt(repo / 'skills' / skill_id / 'meta.md')
     expected = next(item for item in CASES if item[0] == skill_id)
-    assert f"xid-{expected[2]}" in body
-    assert f"xid-{expected[3]}" in meta
-    assert f"# Skill: {skill_id}" in body
-    assert f"# Skill Meta: {skill_id}" in meta

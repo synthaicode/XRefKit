@@ -147,3 +147,13 @@ XRefKit does not require provider API keys to explore or install the package.
 Do not commit secrets, API keys, access tokens, `.env` files, or provider
 credentials. Authenticate external AI tools through their official provider
 mechanisms.
+
+## Repository Skill adoption and scoped source-analysis knowledge
+
+This repository uses the audited canonical Skill sources listed in
+`skills/repository_adoption.json`. Legacy source identities remain aliases;
+external legacy split Skills and YAML Skill Packages remain supported. See
+[SkillDefinition adoption](docs/core/contracts/096_skill_definition_contract.md#xid-E6A19D4B72C3).
+The source-analysis common XID remains stable and routes coherent criteria
+fragments on demand. Narrow tasks avoid unrelated bodies; full reviews retain
+every required axis. No similarity-based knowledge merge or deletion occurs.
