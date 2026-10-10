@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-9199c285-81fd-4ad6-8ab4-352efc06fb3b",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-10-10T15:50:53Z",
+  "git_commit": "06be1467a3e4ec67ab77bf6d31c0e41c445cf5fc",
+  "purpose": "before AI Skill run design_constraint_derivation",
+  "work_item_id": "DESIGN",
+  "run_id": "9199c285-81fd-4ad6-8ab4-352efc06fb3b",
+  "context_policy": "current-only",
+  "human_approved": false
+}
