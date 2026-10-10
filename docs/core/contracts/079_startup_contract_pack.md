@@ -22,7 +22,7 @@ as stale to every client when they diverge.
 ## Based On
 
 - pack_version: 1
-- 0B5C58B5E5B2: `7c7a138032567258edf9e9c2f4fcaf84701f35c616d11e441f60425d114d78f8`
+- 0B5C58B5E5B2: `e2ee39cca54edae92641b720ed8a1ccbf8c9691edc6899773201de205ff620fa`
 - 5A1C8E4D2F90: `4d85ea9ba71cb30d1271e363a071a4a03c19f869f3f50019c3677370bca457c8`
 - 6C0B62D6366A: `b3f4950c87f689fd5f51379380413fbd16be6f6c8fcf79ae27d0cd24c88aaaf5`
 - 8A666C1FD121: `ff3f5e3b7b83a738edb5e99195a79e664db33a514e7a8d1fe0129e6787f994a2`
@@ -47,6 +47,7 @@ Sources:
   aliases may supply audited compatibility values; explicit inputs take
   precedence and missing inputs refuse execution. External legacy interfaces
   and Workflow Runtime Binding ownership remain supported.
+- For Skill/Knowledge creation or update, use the shared governance kickoff returned by the authoring or ingress route and hand staged candidates to its governed reflection endpoint; detailed checks are delegated on demand.
 - Draft repository Skills remain unavailable until separate adoption review.
 
 - MCP-only governance is authoritative when configured. Do not read local XRefKit governance Markdown, local Skill files, or filesystem Markdown links to bypass MCP.

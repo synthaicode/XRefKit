@@ -68,6 +68,11 @@ def _payload(root: Path, kind: str, payload: dict, materials: list[str], *, froz
         raise ValueError("payload must be an object")
     if kind == "asset_update":
         required = {"candidate", "target", "rules", "specialist_evidence", "checks"}
+        endpoint = payload.get("endpoint")
+        if endpoint is not None:
+            required.update({"endpoint", "candidate_files"})
+            if endpoint not in {"skill_overlay_activation", "knowledge_overlay_activation", "knowledge_canonical_adoption"}:
+                raise ValueError("unsupported governed update endpoint")
         if frozen:
             required.add("expected_target_hash")
         if set(payload) != required:
@@ -75,10 +80,27 @@ def _payload(root: Path, kind: str, payload: dict, materials: list[str], *, froz
         target = _text(payload["target"], "target")
         _inside(root, target)
         _inside(root, payload["candidate"])
-        if (Path(target).parts[0] not in {"skills", "skills_private", "knowledge"}
-                or _inside(root, target).relative_to(root.resolve()).parts[0] not in {"skills", "skills_private", "knowledge"}
+        allowed = {"skills", "skills_private", "knowledge"} if endpoint is None or endpoint == "knowledge_canonical_adoption" else {".xrefkit"}
+        if (Path(target).parts[0] not in allowed
+                or _inside(root, target).relative_to(root.resolve()).parts[0] not in allowed
                 or not target.endswith(".md")):
             raise ValueError("trial target must be Skill or Knowledge Markdown")
+        if endpoint is not None:
+            rows = payload["candidate_files"]
+            if not isinstance(rows, list) or not rows:
+                raise ValueError("endpoint candidate bundle required")
+            targets = []
+            for row in rows:
+                keys = {"candidate", "target", "expected_target_hash"} if frozen else {"candidate", "target"}
+                if not isinstance(row, dict) or set(row) != keys or row["candidate"] not in materials:
+                    raise ValueError("invalid endpoint candidate bundle")
+                source, destination = _inside(root, row["candidate"]), _inside(root, row["target"])
+                prefix = {"skill_overlay_activation": ".xrefkit/skill-edits/", "knowledge_overlay_activation": ".xrefkit/knowledge-edits/", "knowledge_canonical_adoption": "knowledge/"}[endpoint]
+                if not row["target"].startswith(prefix) or not destination.relative_to(root.resolve()).as_posix().startswith(prefix) or source == destination:
+                    raise ValueError("endpoint target boundary mismatch")
+                targets.append(str(destination))
+            if len(set(targets)) != len(targets) or target not in [r["target"] for r in rows]:
+                raise ValueError("endpoint bundle targets must be unique and include primary target")
         if _inside(root, target) == _inside(root, payload["candidate"]):
             raise ValueError("candidate must be separate from target")
         _strings(payload["rules"], "rules")
@@ -118,13 +140,15 @@ def prepare(root: Path, *, kind: str, log: str, binding_request: dict,
     _payload(root, kind, payload, materials, frozen=False)
     if kind == "asset_update":
         payload = {**payload, "expected_target_hash": _current(root, payload["target"])}
+        if "endpoint" in payload:
+            payload["candidate_files"] = [{**row, "expected_target_hash": _current(root, row["target"])} for row in payload["candidate_files"]]
     body = {"schema": SCHEMA, "kind": kind, "log": log, "binding": binding,
             "materials": [snapshot(root, name) for name in sorted(materials)], "payload": payload,
             "dispatch_owner": "client_host", "parent_execution": "prohibited"}
     return {**body, "packet_hash": digest(body)}
 
 
-def revalidate(root: Path, packet: dict) -> None:
+def revalidate(root: Path, packet: dict, *, _recovery_targets: dict[str, bytes] | None = None) -> None:
     if not isinstance(packet, dict) or set(packet) != {"schema", "kind", "log", "binding", "materials", "payload", "dispatch_owner", "parent_execution", "packet_hash"}:
         raise ValueError("invalid governance packet fields")
     materials = packet["materials"]
@@ -149,8 +173,37 @@ def revalidate(root: Path, packet: dict) -> None:
         payload = packet["payload"]
         if not CORE_CHECKS <= set(payload["checks"]):
             raise ValueError("mandatory common check coverage missing")
-        if _current(root, payload["target"]) != payload["expected_target_hash"]:
+        def baseline_matches(target, expected):
+            current = _current(root, target)
+            return current == expected or (_recovery_targets is not None and target in _recovery_targets
+                and current == hashlib.sha256(_recovery_targets[target]).hexdigest())
+        if not baseline_matches(payload["target"], payload["expected_target_hash"]):
             raise ValueError("target baseline changed")
+        for row in payload.get("candidate_files", []):
+            if not baseline_matches(row["target"], row["expected_target_hash"]):
+                raise ValueError("endpoint target baseline changed")
+
+
+def validate_endpoint(root: Path, packet: dict, receipt: dict, *, endpoint: str,
+                      candidates: dict[str, bytes], host_verifier: HumanApprovalVerifier,
+                      _recovery_targets: dict[str, bytes] | None = None) -> dict:
+    """Called by the actual endpoint under its mutation lock, never a caller checkbox."""
+    if host_verifier is None:
+        raise RuntimeError("trusted governance host verifier is not configured")
+    result = validate_result(root, packet, receipt, host_verifier, _recovery_targets=_recovery_targets)
+    payload = packet["payload"]
+    if packet["kind"] != "asset_update" or payload.get("endpoint") != endpoint:
+        raise ValueError("governance receipt belongs to a different endpoint")
+    rows = payload["candidate_files"]
+    if set(candidates) != {row["target"] for row in rows}:
+        raise ValueError("actual endpoint bundle differs from analyzed targets")
+    frozen = {row["path"]: row["sha256"] for row in packet["materials"]}
+    for row in rows:
+        if hashlib.sha256(candidates[row["target"]]).hexdigest() != frozen[row["candidate"]]:
+            raise ValueError("actual endpoint bytes differ from analyzed candidates")
+    if result["unknowns"] or any(row["result"] not in {"pass", "not_applicable"} for row in result["findings"]):
+        raise ValueError("unresolved or failed gate findings block endpoint reflection")
+    return result
 
 
 def dispatch(root: Path, packet: dict, host_dispatch: Callable[[dict], dict],
@@ -163,8 +216,8 @@ def dispatch(root: Path, packet: dict, host_dispatch: Callable[[dict], dict],
 
 
 def validate_result(root: Path, packet: dict, receipt: dict,
-                    host_verifier: HumanApprovalVerifier) -> dict:
-    revalidate(root, packet)
+                    host_verifier: HumanApprovalVerifier, *, _recovery_targets: dict[str, bytes] | None = None) -> dict:
+    revalidate(root, packet, _recovery_targets=_recovery_targets)
     if not isinstance(receipt, dict) or set(receipt) != {"event", "signature"}:
         raise ValueError("trusted host execution receipt required")
     event = receipt["event"]
@@ -288,6 +341,8 @@ def apply_update(root: Path, packet: dict, receipt: dict, *,
     if packet["kind"] != "asset_update":
         raise ValueError("analysis consent cannot authorize publication")
     payload = packet["payload"]
+    if "endpoint" in payload:
+        raise ValueError("endpoint packets must enter their selected integrated endpoint")
     target = _inside(root, payload["target"])
     lock = root / ".xrefkit" / "governance-locks" / (digest(str(target).casefold()) + ".lock")
     lock.parent.mkdir(parents=True, exist_ok=True)

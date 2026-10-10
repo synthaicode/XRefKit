@@ -6,7 +6,8 @@
 This contract governs the selected Skill/Knowledge governance entry. It is
 loaded when preparing or analyzing that entry, not as a startup-wide rule corpus.
 Its scope is explicitly integrated application endpoints; raw filesystem edits,
-all Docs, other publication routes and runtime activation are not intercepted.
+all Docs and other publication routes are not intercepted. Selected local overlay
+activation is included only through its explicit governed endpoint.
 
 ## Responsibilities and required evidence
 
@@ -79,3 +80,31 @@ Corrections analyzed by a retrospective remain work evidence until explicit
 human adoption enters an eligible update route. Retrospective consent alone
 never grants application. Source-role fields and obligation results are this
 entry's records, not new Workflow/Human Evaluation status meanings.
+
+## Connected intake and reflection
+
+Authoring and ingress routes issue a persisted shared kickoff obligation before
+material binding. Intake stages content and establishes the receiving endpoint;
+it does not certify a candidate that does not yet exist. The isolated gate
+receives the completed frozen candidate and specialist evidence before reflection.
+Individual authoring methods call this handoff without duplicating common criteria.
+
+Selected connections are Skill edit preparation followed by explicit governed
+overlay activation, local Knowledge staging followed by governed activation, and
+accepted Knowledge contribution canonical adoption. Preparation keeps staged
+files inactive. Activation binds the actual complete file bundle and target
+identities, validates its receipt under the cooperating endpoint lock, and
+records activated hashes. Later file drift invalidates the active binding.
+A receipt for one file never authorizes a two-file Skill overlay.
+
+Contribution adoption preserves the existing signed human review and create-only
+transport. The common gate binds stored payload, approved target and review
+identity immediately before actual promotion. Historical idempotent replay is
+not a new gate execution. Missing trusted host dispatch or verification refuses
+new activation/promotion. Endpoint packets cannot use generic single-file apply.
+
+These connections do not intercept arbitrary file writes. Authoring prepares a
+work candidate and uses the selected governed reflection route; direct canonical
+file writes are outside mechanical coverage and cannot be reported as governed
+reflection. Flow-only work and mechanical maintenance retain explicit applicable
+scope decisions rather than invented ontology acceptance.

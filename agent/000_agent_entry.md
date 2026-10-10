@@ -26,6 +26,7 @@ When the XRefKit MCP server is configured, load this file through
   that `run_id` and `skill_id`, then execute its returned
   `client_record_command` against the returned `run_log` before task-specific
   XID access
+- For Skill/Knowledge creation or update, use the shared governance kickoff returned by the authoring or ingress route and hand staged candidates to its governed reflection endpoint; detailed checks are delegated on demand.
 - Skill-backed work MUST add concrete task items with `python -m xrefkit skill workitem --log <run-log> --item <id> --status <status> --role <assigned-role>` before closure
 - Skill-backed work MUST record outputs and evidence with `python -m xrefkit skill artifact --log <run-log> --artifact <id> --kind <kind> --target <target> --status <status> --role <assigned-role>` before closure
 - Skill-backed work MUST record closure-relevant unknowns, risks, and non-trivial judgments with `python -m xrefkit skill concern --log <run-log> --concern <id> --kind <unknown|risk|judgment> --status <open|resolved|escalated> --role <assigned-role>` before closure when they exist

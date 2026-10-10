@@ -81,6 +81,25 @@ def _open_run(tmp_path):
     return definition, log
 
 
+@pytest.mark.parametrize("skill_id", ["skill_flow_authoring", "knowledge_ontology_management"])
+def test_authoring_intake_returns_and_persists_scoped_shared_kickoff(tmp_path, skill_id):
+    definition = tmp_path / "skills" / skill_id / "SKILL.v1.md"
+    definition.parent.mkdir(parents=True)
+    definition.write_text(_definition().replace("definition_sample", skill_id), encoding="utf-8")
+    log = tmp_path / "work" / "run.md"
+    code, output = command("skill", "run", "--root", str(tmp_path), "--definition", str(definition),
+        "--task", "Stage a semantic update", "--out", str(log), "--capability", "authoring",
+        "--tuning", "bounded", "--responsibility", "stage and hand off", "--execution-mode", "subagent_required", "--json")
+    assert code == 0, output
+    kickoff = json.loads(output)["update_gate_kickoff"]
+    assert kickoff["entry"] == "prepare_update_gate"
+    assert kickoff["selected_skill"] == "shared_asset_update_gate"
+    assert kickoff["dispatch_owner"] == "client_host"
+    assert "Shared Update Gate Kickoff" in log.read_text()
+    assert "pending_applicability_and_entry" in log.read_text()
+    assert "candidate_identity" not in json.dumps(kickoff)
+
+
 def test_definition_run_records_dynamic_routing_and_exact_revision(tmp_path):
     definition, log = _open_run(tmp_path)
     text = log.read_text(encoding="utf-8")

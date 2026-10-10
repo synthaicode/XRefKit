@@ -55,10 +55,8 @@ def load_registry(root: Path) -> dict[str, dict[str, Any]]:
 def _write_registry(root: Path, edits: dict[str, dict[str, Any]]) -> None:
     path = registry_path(root)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps({"schema_version": 1, "edits": edits}, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+    from ..skillrun import _atomic_write_text
+    _atomic_write_text(path, json.dumps({"schema_version": 1, "edits": edits}, ensure_ascii=False, indent=2) + "\n")
 
 
 def local_files(root: Path, *, active_only: bool = True) -> list[tuple[str, Path]]:
@@ -67,6 +65,9 @@ def local_files(root: Path, *, active_only: bool = True) -> list[tuple[str, Path
         if active_only and record.get("active", True) is not True:
             continue
         path = _local_path(root, record.get("path", ""))
+        if active_only and (not path.is_file() or not isinstance(record.get("accepted_files"), dict) or
+                            record["accepted_files"].get(record.get("path")) != hashlib.sha256(path.read_bytes()).hexdigest()):
+            continue
         if path.exists():
             result.append((xid, path))
     return result
@@ -80,6 +81,14 @@ def create_local_knowledge(
     filename: str | None = None,
     domain: str | None = None,
 ) -> dict[str, Any]:
+    from .audit import _process_lock
+    (root / ".xrefkit").mkdir(parents=True, exist_ok=True)
+    with _process_lock(root / ".xrefkit" / "overlay-registry"):
+        return _create_local_knowledge(root, xid=xid, content=content, filename=filename, domain=domain)
+
+
+def _create_local_knowledge(root: Path, *, xid: str, content: str,
+                            filename: str | None = None, domain: str | None = None) -> dict[str, Any]:
     if not re.fullmatch(r"[A-Za-z0-9_-]+", xid):
         raise ValueError("xid must contain only letters, digits, underscore, or hyphen")
     if first_xid(content) != xid:
@@ -93,12 +102,14 @@ def create_local_knowledge(
     if not name.lower().endswith(".md"):
         name += ".md"
     target = content_root(root) / name
+    if target.exists():
+        raise FileExistsError("staged Knowledge already exists; edit its preserved file and revalidate before activation")
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(content, encoding="utf-8")
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     record = {
         "xid": xid,
-        "active": True,
+        "active": False,
         "path": target.relative_to(root).as_posix(),
         "domain": domain or "local",
         "content_hash": hashlib.sha256(content.encode("utf-8")).hexdigest(),
@@ -124,8 +135,8 @@ def list_local_knowledge(root: Path) -> list[dict[str, Any]]:
 
 def export_local_knowledge(root: Path, xid: str, *, write_patch: bool = False) -> dict[str, Any]:
     record = load_registry(root).get(xid)
-    if not record or record.get("active", True) is not True:
-        raise KeyError(f"active local Knowledge not found: {xid}")
+    if not record:
+        raise KeyError(f"local Knowledge not found: {xid}")
     target = _local_path(root, record["path"])
     content = target.read_text(encoding="utf-8") if target.exists() else ""
     patch = "".join(
@@ -153,6 +164,13 @@ def export_local_knowledge(root: Path, xid: str, *, write_patch: bool = False) -
 
 
 def deactivate_local_knowledge(root: Path, xid: str) -> dict[str, Any]:
+    from .audit import _process_lock
+    (root / ".xrefkit").mkdir(parents=True, exist_ok=True)
+    with _process_lock(root / ".xrefkit" / "overlay-registry"):
+        return _deactivate_local_knowledge(root, xid)
+
+
+def _deactivate_local_knowledge(root: Path, xid: str) -> dict[str, Any]:
     edits = load_registry(root)
     if xid not in edits:
         raise KeyError(f"local Knowledge not found: {xid}")

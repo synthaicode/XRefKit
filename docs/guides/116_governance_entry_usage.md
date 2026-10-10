@@ -94,11 +94,46 @@ but saving that evidence fails, it returns exit code `3` and reports that the
 canonical application completed, with the reflected target hash. Inspect the
 target and recover the evidence before retrying; this is not an unapplied rejection.
 
-The selected CLI/API application endpoint is integrated. MCP edit-overlay
-activation, Knowledge contribution adoption, generators, direct filesystem
-edits, alternate checkouts and bulk companion files are **not** integrated by
-this trial. Existing HMAC contribution approvals and atomic transports remain
-unchanged. Do not report this route as coverage of those paths.
+## Connected Existing Routes
+
+Skill edit preparation and local Knowledge creation stage inactive content.
+Use their explicit governed activation route after the host has actually
+dispatched the shared analyst on the final bundle. Both Skill metadata and
+procedure belong to the same frozen bundle; edits after activation invalidate
+its binding. Preparation is not publication acceptance.
+
+Accepted Knowledge contribution adoption checks the common receipt immediately
+before its existing canonical transport while preserving signed human review,
+create-only semantics and immutable replay. Missing trusted host integration
+refuses new activation/adoption. The Python server never invents a host launcher.
+Endpoint bundle packets are separate from ordinary single-target CLI apply.
+
+Authoring intake returns the shared kickoff obligation; specialist methods retain
+their existing semantic checks and hand staged candidates to governed reflection.
+Only selected routes are connected. Raw edits, generators, alternate checkouts,
+all Docs and unrelated companion-file publication remain outside interception.
+`prepare_update_gate` takes `kind` (`skill`, `knowledge`, or
+`knowledge_contribution`), `identity`, `log`, `binding_request` and
+`specialist_evidence`. It derives common checks and freezes actual candidates;
+the main agent does not construct the common rule list. MCP uses the bound
+parent run. For contribution intake, the server verifies the existing signed
+human review before preparing the gate packet.
+
+`activate_skill_edit` takes `skill_id`, `packet`, `receipt` and
+`approval_assertion`; `activate_local_knowledge` substitutes `xid` for
+`skill_id`. The assertion action is `activate_governed_overlay`, bound to
+`endpoint`, `identity`, `packet_hash` and `result_hash`. Canonical contribution
+adoption accepts `governance_packet` and `governance_receipt` alongside its
+existing human review/token fields.
+
+Local catalog CLI calls use `python -m xrefkit.mcp.cli prepare-update-gate
+--repo <root> --kind <kind> --identity <id> --request-file <request.json>`;
+the request file contains `log`, `binding_request` and `specialist_evidence`.
+`activate-skill-edit` and `activate-local-knowledge` use `--repo`, `--identity`,
+`--packet-file`, `--receipt-file` and `--approval-file`. Configure
+`XREFKIT_GOVERNANCE_HOST_SECRET` separately from
+`XREFKIT_CONTRIBUTION_APPROVAL_SECRET`; missing trusted authority blocks
+reflection. These calls do not launch the host analyst or issue signatures.
 
 ## Retrospective Suggestions
 

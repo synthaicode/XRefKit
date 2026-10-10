@@ -1360,7 +1360,7 @@
       "skill_id": "knowledge_ontology_management",
       "definition_path": "skills/os/knowledge_ontology_management/SKILL.v1.md",
       "definition_xid": "F8A2C6D1B370",
-      "definition_sha256": "433237393de28ca5658d5ead9bbf75b6bca9930070a12ad3754facded8604370",
+      "definition_sha256": "eb9407149c5e5c8526032186185dd1c4add3ddd9becdf384bb5374d4a92095fb",
       "legacy_ids": [],
       "legacy_sources": [
         {
@@ -1628,7 +1628,7 @@
       "skill_id": "skill_flow_authoring",
       "definition_path": "skills/os/skill_flow_authoring/SKILL.v1.md",
       "definition_xid": "B8D1A4C7E260",
-      "definition_sha256": "b99f6995773800de8b701858babed7dba3e1adb2fb92ce2d6feecacb49c5b1d3",
+      "definition_sha256": "be52ca0762bc899e3e68d29d38b3bb9f3875d408f30f2ce22db9ba6062a5f52e",
       "legacy_ids": [],
       "legacy_sources": [
         {
@@ -4183,7 +4183,7 @@
       "skill_id": "shared_asset_update_gate",
       "definition_path": "skills/os/shared_asset_update_gate/SKILL.v1.md",
       "definition_xid": "6EA2C74D91B8",
-      "definition_sha256": "9bc52a049836fa4ab094c6e5b100cb890570f1ea263a6a8a94a18eccee0fed02",
+      "definition_sha256": "99fb16da331de5ee4d735e3ed91e67d9da510d7167fe06186bddc7c8ca0c9755",
       "source_kind": "native_v1",
       "adopted": true,
       "adoption": {

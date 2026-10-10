@@ -51,7 +51,8 @@ operating contract for work items, logging, deterministic verification, separate
 quality when required, closure and handoff; do not assume the producer owns the
 protocol's checker or quality role.
 
-Confirm `kind=asset_update`, packet hash, target and candidate, rule/evidence
+Confirm `kind=asset_update`, packet hash, target and candidate (or every
+`candidate_files` row for a selected `endpoint` bundle), rule/evidence
 identities, designated output and child correlation. Consume only the selected
 bounded materials. Revalidate through the configured entry before accepting
 identities; changed, missing or inaccessible material is an explicit finding.
@@ -70,7 +71,9 @@ management source, not a caller-replaceable checklist.
 
 ## Execution
 
-1. Inspect the actual candidate and its intended target/baseline. Check whether
+1. Inspect the actual candidate and its intended target/baseline. For endpoint
+   bundles inspect every `candidate_files` row (`candidate`, `target`,
+   `expected_target_hash`) and endpoint identity, not only the manifest. Check whether
    the scoped requested change, candidate identity and evidence correspond.
 2. Compare the applicable common rules with supplied evidence. `authority`
    checks scope and existing decision routes, not whether this analyst can
@@ -148,3 +151,9 @@ Passing findings are management evidence only; target application, human
 adoption, XID/catalog/adoption consistency and runtime activation belong to
 their existing owners. Public source existence and structural validation do
 not establish trial maturity, host deployment or public release.
+
+For a selected endpoint bundle, inspect every frozen candidate file against its
+explicit target and expected baseline. The manifest is not a substitute for
+actual metadata/procedure or Knowledge payload content. Bind findings to the
+whole bundle and endpoint identity; a single-file result does not authorize
+overlay activation. Intake kickoff alone is not final application evidence.

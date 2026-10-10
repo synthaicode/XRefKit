@@ -48,7 +48,7 @@ Curate materially new or revised domain knowledge before canonical publication, 
 1. Confirm semantic scope, source class, publication mode, and authority; use `proposal_only` absent authorized `apply`.
 2. Resolve ontology Knowledge, apply the source-handling rules and document-update policy, then search canonical concepts, aliases, scope, and relationships.
 3. Create one work item per fragment and classify `create`, `extend`, `split`, `supersede`, or `reject_duplicate`.
-4. Preserve source linkage, record identity and relationship judgments, and prepare or apply one coherent current fragment.
+4. Preserve source linkage, record identity and relationship judgments, and stage one coherent current fragment for governed reflection when authorized.
 5. Validate relations and XIDs, update indexes only when authorized, and return paths, decisions, evidence, unresolved items, and handoff.
 
 ## Stop and handoff
@@ -117,6 +117,8 @@ relationships to existing XID-backed knowledge.
 
 ## Startup
 
+- Use the shared governance kickoff for applicable Skill/Knowledge updates; prepare a work candidate and hand the completed specialist evidence to the selected governed reflection endpoint before canonical reflection. Common criteria remain in [the shared gate contract](../../../docs/core/contracts/115_shared_asset_update_gate.md#xid-0F8E2A6C94D1).
+
 1. Start this Skill through `xrefkit skill run` before opening or modifying canonical
    knowledge.
 2. Confirm that the request adds knowledge or materially changes its meaning,
@@ -163,7 +165,9 @@ python -m xrefkit xref search "<relationship terms and neighboring concepts>"
 3. In `proposal_only`, create a reviewable candidate under `work/` and do not
    modify `knowledge/`.
 4. In `apply`:
-   - create or update one coherent canonical fragment
+   - prepare one coherent candidate under `work/`; submit its ontology assessment
+     and source evidence through the shared handoff, then use the selected
+     governed reflection endpoint to create or update the canonical fragment
    - keep only the current authoritative state in the fragment
    - preserve its XID for wording or scope refinement that retains identity
    - use a new XID plus `xref deprecate` for semantic replacement

@@ -71,6 +71,71 @@ def approval(packet, receipt):
     })
 
 
+@pytest.mark.parametrize("kind", ["skill", "knowledge", "native_skill"])
+def test_real_overlay_intake_dispatch_activation_and_drift(case, kind):
+    from test_skill_edits import _repo
+    from xrefkit.mcp.catalog import XRefCatalog
+    root, _, request = case
+    _repo(root)
+    if kind == "native_skill":
+        from test_skill_definition_mcp import _definition
+        definition = root / "skills/sample/SKILL.v1.md"
+        definition.write_bytes(_definition("sample").encode("utf-8"))
+        catalog = XRefCatalog.build(root, skill_definition_paths=[definition.relative_to(root)])
+        kind = "skill"
+    else:
+        catalog = XRefCatalog.build(root)
+    if kind == "skill":
+        staged = catalog.prepare_skill_edit("sample")
+        identity = "sample"
+        target = staged["overlay_skill_path"]
+    else:
+        identity = "LOCAL-KNOWLEDGE"
+        staged = catalog.create_local_knowledge(identity, "<!-- xid: LOCAL-KNOWLEDGE -->\n# Local\n")
+        target = staged["path"]
+    assert staged["active"] is False
+    intake = catalog.prepare_update_gate(kind, identity, log="work/run.md",
+        binding_request=request, specialist_evidence=["work/specialist.md"])
+    assert intake["dispatch_required"] and intake["dispatch_owner"] == "client_host"
+    packet = intake["packet"]
+    assert set(packet["payload"]["checks"]) == CORE_CHECKS
+    activate = catalog.activate_skill_edit if kind == "skill" else catalog.activate_local_knowledge
+    with pytest.raises(RuntimeError, match="host verifier"):
+        activate(identity, packet=packet, receipt={}, host_verifier=None,
+            approval_verifier=HmacHumanApprovalVerifier(HUMAN_KEY), approval_assertion="not approved")
+    failed = host_receipt(root, packet, failed=True)
+    with pytest.raises(ValueError, match="failed gate"):
+        activate(identity, packet=packet, receipt=failed, host_verifier=HmacHumanApprovalVerifier(HOST_KEY),
+            approval_verifier=HmacHumanApprovalVerifier(HUMAN_KEY), approval_assertion="not approved")
+    seen = []
+    receipt = dispatch(root, packet, lambda frozen: (seen.append(frozen["packet_hash"]) or host_receipt(root, frozen)),
+                       HmacHumanApprovalVerifier(HOST_KEY))
+    assert seen == [packet["packet_hash"]]
+    with pytest.raises(ValueError, match="signature|claim"):
+        activate(identity, packet=packet, receipt=receipt, host_verifier=HmacHumanApprovalVerifier(HOST_KEY),
+            approval_verifier=HmacHumanApprovalVerifier(HUMAN_KEY), approval_assertion=approval(packet, receipt))
+    assertion = issue_hmac_approval_assertion(HUMAN_KEY, {
+        "action": "activate_governed_overlay", "endpoint": packet["payload"]["endpoint"],
+        "identity": identity, "packet_hash": packet["packet_hash"],
+        "result_hash": digest(receipt["event"]["result"]),
+    })
+    with pytest.raises(ValueError, match="integrated endpoint"):
+        apply_update(root, packet, receipt, host_verifier=HmacHumanApprovalVerifier(HOST_KEY),
+            approval_verifier=HmacHumanApprovalVerifier(HUMAN_KEY), approval_assertion=assertion)
+    result = activate(identity, packet=packet, receipt=receipt, host_verifier=HmacHumanApprovalVerifier(HOST_KEY),
+        approval_verifier=HmacHumanApprovalVerifier(HUMAN_KEY), approval_assertion=assertion)
+    assert result["active"] is True
+    if kind == "skill":
+        assert catalog.get_skill(identity)["zone_metadata"]["local_edit"] is True
+    else:
+        assert identity in [row["xid"] for row in catalog.list_knowledge_catalog()]
+    (root / target).write_bytes((root / target).read_bytes() + b"\nUnreviewed mutation\n")
+    if kind == "skill":
+        assert not catalog.get_skill(identity)["zone_metadata"].get("local_edit")
+    else:
+        assert identity not in [row["xid"] for row in catalog.list_knowledge_catalog()]
+
+
 def test_trusted_host_dispatch_then_separate_human_application(case):
     root, packet, _ = case
     called = []
