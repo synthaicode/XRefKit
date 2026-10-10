@@ -214,3 +214,17 @@ body { background: #f5f6f4; }
 .site-interior .deck-card h2 { font-size:26px; font-weight:600; letter-spacing:-.035em; }
 .site-interior .deck-card .deck-question { font-size:16px; font-weight:600; }
 .site-interior .deck-tag { font-size:11px; font-weight:600; }
+
+.foundation-capabilities { margin:38px 0 56px; }
+.foundation-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.foundation-grid article { display:flex; flex-direction:column; align-items:start; padding:28px; background:#e9eee3; border:1px solid #d1ddc5; border-radius:12px; }
+.foundation-grid article > span { font:10px/1.6 Consolas,monospace; letter-spacing:.09em; color:#59714c; }
+.foundation-grid h3 { margin:18px 0 10px; font-size:25px; font-weight:600; letter-spacing:-.035em; }
+.foundation-grid p { margin:0 0 20px; color:#627065; font-size:14px; line-height:1.8; }
+.foundation-grid a { margin-top:auto; font-size:12px; color:#344b3a; text-decoration:none; }
+.foundation-grid a:hover { text-decoration:underline; }
+.foundation-status { padding-top:30px; border-top:1px solid #d7ded4; }
+.delivery-detail { margin-top:24px; padding:18px 22px; border:1px solid #d7ded4; border-radius:10px; background:#fafbf8; }
+.delivery-detail summary { cursor:pointer; color:#344b3a; font-size:14px; font-weight:600; }
+.delivery-detail .distribution-object { margin-top:24px; }
+@media(max-width:720px) { .foundation-grid { grid-template-columns:1fr; } .foundation-grid article { padding:24px; } }
