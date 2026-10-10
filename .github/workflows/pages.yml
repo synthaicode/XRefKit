@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+  release:
+    types: [published, edited, released, deleted, unpublished]
+  # Releases created with GITHUB_TOKEN do not emit downstream release runs.
+  workflow_run:
+    workflows: [python-package]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -13,10 +19,15 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -24,6 +35,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Release events point at a tag. Always publish current site sources.
+          ref: main
+          persist-credentials: false
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -37,6 +52,14 @@ jobs:
         run: |
           python tools/site_build.py --output .generated-site --json
           python tools/site_build.py --output site --check --json
+
+      - name: Render current stable release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_REPOSITORY: ${{ github.repository }}
+        run: |
+          gh api "repos/$RELEASE_REPOSITORY/releases/latest" > "$RUNNER_TEMP/site-release.json"
+          python tools/site_release_metadata.py --site .generated-site --release-json "$RUNNER_TEMP/site-release.json" --repository "$RELEASE_REPOSITORY"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
