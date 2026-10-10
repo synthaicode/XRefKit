@@ -1717,3 +1717,20 @@ body {
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
+
+.operating-overview { margin: 24px 0 0; text-align: left; }
+.operating-overview figcaption { margin-bottom: 16px; font-weight: 700; color: var(--muted); }
+.operating-stages { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; padding: 0; margin: 0; list-style: none; counter-reset: operating-stage; }
+.operating-stages li { min-width: 0; padding: 22px; border: 1px solid var(--line); border-top: 5px solid var(--accent); border-radius: 12px; background: var(--panel); counter-increment: operating-stage; }
+.operating-stages .stage-owner::before { content: counter(operating-stage) ". "; }
+.operating-stages .stage-owner { color: var(--accent-strong); font-size: 14px; font-weight: 700; }
+.operating-stages h3 { margin: 12px 0 10px; font-size: 21px; line-height: 1.3; }
+.operating-stages p { margin: 0; color: var(--muted); line-height: 1.65; }
+.operating-stages .ai-stage { border-top-color: var(--ok); }
+.operating-stages .control-stage { border-top-color: var(--warn); }
+.operating-return { padding: 18px 22px; border-left: 4px solid var(--accent); background: var(--accent-soft); line-height: 1.65; }
+.operating-reference { color: var(--muted); line-height: 1.65; }
+.detail-page .landing-section:first-of-type { margin-top: 32px; }
+@media (max-width: 720px) { .operating-stages { grid-template-columns: 1fr; } }
+
+.detail-page .section-heading h1 { margin: 0; font-size: clamp(30px, 4vw, 42px); line-height: 1.2; }

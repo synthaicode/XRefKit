@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Individual Skills | XRefKit</title><meta name="description" content="Work-specific methods and their responsibilities within the shared foundation." /><link rel="stylesheet" href="../assets/common.css" /><script src="../assets/inline-svg.js" defer></script></head>
+<body><main class="landing detail-page"><nav class="page-header" aria-label="Page navigation"><a href="../">← XRefKit Top</a><a href="../common/">Common foundation</a><a href="../protocols/">Common protocols</a><a href="../skills/">Individual Skills</a></nav>
+    <section class="landing-section" id="skills" aria-labelledby="skills-heading">
+      <div class="section-heading">
+        <p class="concept-label">Methods for particular work</p>
+        <h1 id="skills-heading">Individual Skills</h1>
+        <p>Each Skill defines when it applies, its inputs, method, outputs, and Skill-specific criteria. It declares the Knowledge it needs; domain facts and local rules remain in reusable Knowledge. Common workflow controls are supplied by the <a href="../common/">common foundation</a>.</p>
+      </div>
+      <div class="learning-tiers">
+        <section class="learning-tier"><span aria-hidden="true">1</span><div><h3>Review C# beyond compiler diagnostics</h3><p><code>csharp_review</code> inspects language-dependent defects and system-boundary risks. It produces category results, evidence-backed findings, and an explicit handoff for issues outside its scope.</p><div class="tier-links"><a href="https://github.com/synthaicode/XRefKit/blob/main/skills/csharp_review/SKILL.v1.md#xid-F1A7C3D9E240">Read the Skill definition</a><a href="#csharp-example">See the responsibility split</a></div></div></section>
+        <section class="learning-tier"><span aria-hidden="true">2</span><div><h3>Find missing confirmations before implementation</h3><p><code>constraint_derivation_index</code> selects the applicable constraint-derivation Skills for design and code artifacts, then sequences the commonality pass. The selected Skills expose hidden assumptions and confirmation needs; their outputs do not approve requirements.</p><div class="tier-links"><a href="https://github.com/synthaicode/XRefKit/blob/main/skills/packs/constraint-derivation/constraint_derivation_index/SKILL.v1.md#xid-A4C9E2B7D160">Read the Skill definition</a></div></div></section>
+        <section class="learning-tier"><span aria-hidden="true">3</span><div><h3>Learn a business task through conversation</h3><p><code>business_learning_interview</code> starts from the desired result and turns partial explanations into a provisional business hypothesis. It keeps human-stated facts, AI hypotheses, and open questions distinguishable, then hands off for scoping when the boundary is ready.</p><div class="tier-links"><a href="https://github.com/synthaicode/XRefKit/blob/main/skills/packs/business-intake/business_learning_interview/SKILL.v1.md#xid-B6C4E9A2D781">Read the Skill definition</a></div></div></section>
+      </div>
+      <p class="improvement-note">These are examples from the repository catalog. Each Skill has its own applicability and maturity; a catalog entry alone does not establish readiness for every task.</p>
+      <p class="section-cta"><a href="https://github.com/synthaicode/XRefKit/blob/main/skills/_index.md#xid-8D91F66DDBB7">Explore the Skill catalog</a></p>
+    </section>    <section class="landing-section" id="csharp-example" aria-labelledby="csharp-example-heading">
+      <div class="section-heading"><p class="concept-label">Individual Skill · worked example</p><h2 id="csharp-example-heading">What belongs to csharp_review?</h2><p>The review method is specific to this Skill. Execution management comes from the common foundation; people retain acceptance authority.</p></div>
+      <div class="concept-table-wrap">
+        <table class="concept-table landing-responsive-table">
+          <caption>Responsibilities in a C# review</caption>
+          <thead><tr><th scope="col">Individual Skill and its selected Knowledge</th><th scope="col">Common foundation</th></tr></thead>
+          <tbody>
+            <tr><td data-label="Individual Skill and its selected Knowledge"><strong>Review method:</strong> establish the Roslyn baseline, avoid duplicate findings, and inspect applicable language, lifecycle, exception, synchronization, and system-boundary behavior.</td><td data-label="Common foundation"><strong>Start and route:</strong> capture the work instruction and its boundary, select the Skill, and record the runtime binding.</td></tr>
+            <tr><td data-label="Individual Skill and its selected Knowledge"><strong>Review material:</strong> the Skill declares its Knowledge needs. Resolve the relevant <a href="https://github.com/synthaicode/XRefKit/blob/main/knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4F6F3AA">C# criteria</a> and <a href="https://github.com/synthaicode/XRefKit/blob/main/knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001">common source-analysis criteria</a>; those facts and rules remain in Knowledge.</td><td data-label="Common foundation"><strong>Reference delivery:</strong> discover and resolve the selected Knowledge by XID and preserve its identity in the execution record.</td></tr>
+            <tr><td data-label="Individual Skill and its selected Knowledge"><strong>Review output:</strong> category results, severity, supporting evidence, rationale, remediation direction, unconfirmed items, and the next owner for out-of-scope findings.</td><td data-label="Common foundation"><strong>Record and check:</strong> track work items, artifacts, concerns, judgments, and handoff. Deterministic <code>verify</code> and <code>close</code> check the workflow record; they do not judge whether the review findings are correct.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="improvement-note">An independent quality review assesses the output when required. A person reviews the findings and evidence, decides which remediation to adopt, and accepts the result or returns it for repair.</p>
+    </section>
+</main></body></html>

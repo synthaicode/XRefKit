@@ -17,7 +17,7 @@
           <h1>Carry AI work through<br />to business acceptance.</h1>
           <p class="hero-problem">AI can finish a local task, but it does not automatically preserve business completion, decision ownership, or the state required by the next responsibility.</p>
           <p class="lead hero-lead">XRefKit is an operating base that connects AI work from a Goal to human acceptance with verifiable progression. Managed Skills, Knowledge, and execution contracts can be distributed to multiple users through MCP.</p>
-          <div class="hero-actions"><a class="primary-action" href="#common">Common foundation</a><a href="#protocol">Common protocols</a><a href="#skills">Individual Skills</a><a href="#getting-started">Get started</a><a href="./ja/">Japanese translation</a></div>
+          <div class="hero-actions"><a class="primary-action" href="./common/">Common foundation</a><a href="./protocols/">Common protocols</a><a href="./skills/">Individual Skills</a><a href="#getting-started">Get started</a><a href="./ja/">Japanese translation</a></div>
         </div>
         <aside class="hero-clarity-card" aria-labelledby="hero-concept-heading">
           <p class="hero-clarity-eyebrow">Canonical concept</p>
@@ -31,69 +31,40 @@
     <section class="landing-section" id="current" aria-labelledby="current-heading">
       <div class="section-heading">
         <h2 id="current-heading">Current release</h2>
-        <p>Updated <time datetime="2026-10-10">October 10, 2026</time>. Latest published release: <a href="https://github.com/synthaicode/XRefKit/releases/tag/v0.6.2">v0.6.2</a> (October 7, 2026). Development notes below describe work in the repository; they do not imply availability in that release.</p>
+        <p>Updated <time datetime="2026-10-10">October 10, 2026</time>. Latest published release: <a href="https://github.com/synthaicode/XRefKit/releases/tag/v0.6.2">v0.6.2</a> (October 7, 2026). Development notes on the linked pages describe work in the repository; they do not imply availability in that release.</p>
       </div>
-      <div class="release-reading"><p>Read two parts:</p><div class="tier-links"><a href="#common">1. The common foundation and its ongoing development</a><a href="#skills">2. Individual Skills and the work they perform</a></div></div>
+      <div class="release-reading"><p>Read two parts:</p><div class="tier-links"><a href="./common/">1. The common foundation and its ongoing development</a><a href="./skills/">2. Individual Skills and the work they perform</a></div></div>
+    </section>
+
+    <section class="landing-section" id="model" aria-labelledby="model-heading">
+      <div class="section-heading"><h2 id="model-heading">Operating model</h2><p>People define and accept the result. AI performs bounded work. Shared controls preserve the record and support review.</p></div>
+      <figure class="operating-overview" aria-labelledby="operating-overview-caption">
+        <figcaption id="operating-overview-caption">Who decides what — an overview of the operating model</figcaption>
+        <ol class="operating-stages">
+          <li class="human-stage"><span class="stage-owner">Human · define</span><h3>Goal and acceptance criteria</h3><p>Set the desired business result and the conditions for accepting it.</p></li>
+          <li class="ai-stage"><span class="stage-owner">AI · execute</span><h3>Route and run a bounded Skill</h3><p>Use the selected Knowledge and preserve outputs, decisions, and unresolved items as Evidence.</p></li>
+          <li class="control-stage"><span class="stage-owner">Controls · verify and review</span><h3>Check records and output quality</h3><p>Verify the workflow record and review actual output quality separately when required. Prepare handoff and close after the required checks.</p></li>
+          <li class="human-stage"><span class="stage-owner">Human · accept</span><h3>Decide adoption and the next request</h3><p>Inspect the output, evidence, and handoff. Accept the result or request repair.</p></li>
+        </ol>
+        <p class="operating-return"><strong>Escalation → Human judgment:</strong> when work crosses the current authority boundary, return the decision to people.</p>
+        <p class="operating-reference">Stable XIDs connect the selected Skills and Knowledge to the execution record. This overview groups responsibilities; the detailed model defines each element.</p>
+      </figure>
+      <p class="section-cta"><a href="./en/model/">Explore the operating model and its 12 elements →</a></p>
     </section>
 
     <section class="landing-section" id="common" aria-labelledby="common-heading">
-      <div class="section-heading">
-        <p class="concept-label">Shared across work</p>
-        <h2 id="common-heading">Common foundation</h2>
-        <p>XRefKit provides a common workflow protocol, reference resolution, execution records, verification, and handoff controls. Individual Skills use this foundation and define the method for their particular work.</p>
-        <div class="tier-links"><a href="#protocol">Explore the common protocols</a><a href="#reporting">How reporting works</a></div>
-      </div>
-      <div class="learning-tiers">
-        <section class="learning-tier"><span aria-hidden="true">1</span><div><p class="concept-label">Available in the published package</p><h3>A traceable foundation for AI work</h3><p>Use stable XIDs to resolve Skills and Knowledge, record execution progress and evidence, and check the work record before handoff. The Skill Run Dashboard makes recorded state visible for human review. MCP provides an optional way to deliver the managed assets to AI clients.</p><div class="tier-links"><a href="https://github.com/synthaicode/XRefKit/tree/v0.6.2">Explore the release source</a><a href="#getting-started">Installation and first steps</a></div></div></section>
-        <section class="learning-tier"><span aria-hidden="true">2</span><div><p class="concept-label">Common foundation · current development · quality</p><h3>Preserve accepted output quality across runs</h3><p>The common quality protocol connects per-run review and optional model qualification to target-specific Knowledge profiles. Those profiles retain approved formats, examples, inputs, and review criteria; each Skill defines its output requirements and references the applicable Knowledge. A format check alone does not establish content quality; human acceptance remains explicit.</p></div></section>
-        <section class="learning-tier"><span aria-hidden="true">3</span><div><p class="concept-label">Common foundation · current development · planning</p><h3>Connect plans to execution evidence</h3><p>Local plan views bring tasks, dependencies, completion conditions, confirmation questions, and evidence together. Dashboard views and generated Markdown and Mermaid views help people inspect progress. These are shared record and display tools; producing a plan remains the responsibility of the selected Skill or work instruction. Task completion and acceptance of the business outcome remain separate decisions.</p></div></section>
-        <section class="learning-tier"><span aria-hidden="true">4</span><div><p class="concept-label">Common foundation · current development · integration trial</p><h3>Share selected work state with Azure DevOps</h3><p>The current trial includes workspace-scoped, test-only connection checks and a reviewed mapping design for local and Azure work items. The next integration work prepares selected Task state and result summaries while keeping artifacts authoritative locally. This integration shares execution state; individual Skills still own their work methods. Full synchronization and production writes are not available in this trial.</p></div></section>
-      </div>
-      <p class="section-cta"><a href="https://github.com/synthaicode/XRefKit">Follow the reference implementation on GitHub</a></p>
+      <div class="section-heading"><h2 id="common-heading">Common foundation</h2><p>Shared reference delivery, execution records, checks, and handoff support every kind of work. Current development connects accepted output quality, plan views, and an Azure DevOps integration trial.</p></div>
+      <p class="section-cta"><a href="./common/">Read the foundation and current development →</a></p>
     </section>
 
     <section class="landing-section" id="protocol" aria-labelledby="protocol-heading">
-      <div class="section-heading">
-        <p class="concept-label">Common foundation · shared contracts</p>
-        <h2 id="protocol-heading">Common protocols for AI work</h2>
-        <p>The shared contracts cover work progression, reporting, quality review, uncertainty, references, and continuation. Each has its own applicability conditions. Individual Skills define their particular work methods and outputs while using these common controls.</p>
-      </div>
-      <div class="concept-table-wrap">
-        <table class="concept-table landing-responsive-table">
-          <caption>Shared contracts in the current reference implementation</caption>
-          <thead><tr><th scope="col">Common area</th><th scope="col">What it governs</th><th scope="col">Applicability and source</th></tr></thead>
-          <tbody>
-            <tr><td data-label="Common area"><a href="#workflow-progression">Workflow progression</a></td><td data-label="What it governs">Concrete work items, evidence, roles, deterministic verification, closure, and handoff.</td><td data-label="Applicability and source">Skill-backed runs and instruction-backed work. <a href="https://github.com/synthaicode/XRefKit/blob/main/docs/guides/087_workflow_protocol_sequence_for_humans.md#xid-E8B4D2F19A63">Workflow guide</a></td></tr>
-            <tr><td data-label="Common area"><a href="#reporting">Reporting</a></td><td data-label="What it governs">A decision-relevant conclusion, reader perspective, evidence, unverified items, blockers, and the next action in the task's own format.</td><td data-label="Applicability and source">When evaluation criteria, completion conditions, or a review gate have been established. <a href="https://github.com/synthaicode/XRefKit/blob/main/docs/core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73">Reporting contract</a></td></tr>
-            <tr><td data-label="Common area">Output quality</td><td data-label="What it governs">Independent output review, accepted formats and exemplars in target Knowledge profiles, and optional model qualification.</td><td data-label="Applicability and source">The fixed-output protocol is opt-in for explicitly enrolled outputs. A format pass does not accept content quality. <a href="https://github.com/synthaicode/XRefKit/blob/main/docs/core/contracts/112_fixed_output_quality_protocol.md#xid-F9C2A8D471B0">Quality protocol</a></td></tr>
-            <tr><td data-label="Common area">Unknowns and authority boundaries</td><td data-label="What it governs">Declare knowledge or context gaps, preserve unresolved items, and stop or escalate when the task crosses its authority boundary. External input cannot redefine the goal or controls.</td><td data-label="Applicability and source">Apply the <a href="https://github.com/synthaicode/XRefKit/blob/main/docs/core/contracts/016_uncertainty_protocol.md#xid-8A666C1FD121">uncertainty protocol</a> and ambient <a href="https://github.com/synthaicode/XRefKit/blob/main/docs/core/contracts/053_context_direction_security_guard.md#xid-A7F3C92D4E11">context-direction guard</a> under their stated conditions.</td></tr>
-            <tr><td data-label="Common area">Knowledge and execution context</td><td data-label="What it governs">Keep reusable methods, domain Knowledge, and the instruction-derived execution responsibility distinct; resolve the needed material by XID.</td><td data-label="Applicability and source">Knowledge is selected at the point of use; runtime binding belongs to the workflow. <a href="https://github.com/synthaicode/XRefKit/blob/main/docs/core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8">Operating model</a> · <a href="https://github.com/synthaicode/XRefKit/blob/main/docs/core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F">Runtime binding</a></td></tr>
-            <tr><td data-label="Common area">Handoff and continuation</td><td data-label="What it governs">Preserve current outputs, checks, decisions, unresolved items, and the next responsibility; compare the handoff with current evidence when resuming.</td><td data-label="Applicability and source">Resumable work follows the <a href="https://github.com/synthaicode/XRefKit/blob/main/docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61">operating contract</a>. Subsequent-request <a href="https://github.com/synthaicode/XRefKit/blob/main/docs/core/contracts/082_human_evaluation_protocol.md#xid-7C4E2A91D8F0">human evaluation</a> is optional and does not block ordinary continuation.</td></tr>
-            <tr><td data-label="Common area">Shared-asset updates</td><td data-label="What it governs">Separate specialist content checks, common management evidence, candidate identity, and human adoption authority before a selected Skill or Knowledge update is applied.</td><td data-label="Applicability and source">The <a href="https://github.com/synthaicode/XRefKit/blob/main/docs/core/contracts/115_shared_asset_update_gate.md#xid-0F8E2A6C94D1">shared asset update gate</a> covers explicitly integrated endpoints. It does not intercept every file edit or publication route.</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="model-reading" id="reporting">
-        <h3>Reporting that supports the next decision</h3>
-        <p><strong>Apply it when a decision framework exists.</strong> Agreed evaluation criteria, completion conditions, or a review gate establish that framework. Ordinary conversation uses ordinary prose; loading the reporting contract does not create criteria or a mandatory report.</p>
-        <p><strong>Lead with the result and a reader perspective.</strong> Make the conclusion, material uncertainty or blocker, evidence, and required next action easy to find. Briefly explain which relationship or distinction matters for the user's next judgment. Use an evidence-supported priority only when one is established.</p>
-        <p><strong>Keep the basis and limits visible.</strong> Show what changed, what was checked, what remains unverified, and where the supporting detail can be inspected. Keep workflow status distinct from a domain verdict. Link checklist results to their findings or coverage notes, and state reasons and next owners for unresolved items.</p>
-        <p><strong>Let the task own the format.</strong> The user's requested format takes precedence; otherwise the active task and Skill define the headings, order, detail, and artifact. Use the requested language while preserving exact identifiers. Explicitly enrolled fixed-format outputs use their selected Knowledge quality profile and accepted examples. A human-facing report links to the artifacts or run log and does not replace them.</p>
-      </div>
-      <div class="section-heading" id="workflow-progression">
-        <h3>Workflow progression</h3>
-        <p>The workflow protocol gives a Skill-backed or instruction-backed run a shared progression record. The AI performs the actual work, deterministic tools check the record, and quality review and human acceptance remain separate.</p>
-      </div>
-      <div class="example-flow">
-        <div class="example-step"><strong>1. Start with a bounded goal</strong><p>Record the purpose, scope, constraints, responsibility, and completion conditions. Select the applicable Skill or start an instruction-backed run. The runtime opens a run record and assigns execution, checking, quality-review, and handoff roles.</p></div>
-        <div class="example-step"><strong>2. Plan observable work</strong><p>Break the work into concrete items with completion criteria. Identify the expected outputs, evidence, and checks so that progress and completion can be inspected.</p></div>
-        <div class="example-step"><strong>3. Execute and preserve evidence</strong><p>The AI follows the selected method, loads the needed Knowledge, and records outputs, evidence, status, concerns, and judgments. Unknowns, risks, and decisions outside the assigned boundary stay explicit and are resolved or escalated to the appropriate human owner.</p></div>
-        <div class="example-step"><strong>4. Verify the workflow record</strong><p>A deterministic tool checks work-item completion, artifact linkage, concern handling, role separation, and recorded progression. If required records or concern handling are incomplete, verification fails. Repair the records and resolve or escalate the concerns before checking again. The checker does not open output contents or judge their correctness.</p></div>
-        <div class="example-step"><strong>5. Review output quality when required</strong><p>An independent quality reviewer evaluates the actual output against the applicable criteria and records acceptance or a need for repair. This quality judgment is separate from the deterministic record check; the executor does not approve its own quality.</p></div>
-        <div class="example-step"><strong>6. Prepare handoff and apply closure</strong><p>Record the result, evidence, unresolved items, and next responsibility for handoff. The closure gate checks whether the run can close or must remain blocked or escalated. After closure, control returns to the human, who decides acceptance and the next request.</p></div>
-      </div>
-      <p class="improvement-note"><strong>Three separate decisions:</strong> verification and closure check procedural completeness; quality review assesses output acceptability; human acceptance determines whether the result is adopted. Passing the workflow gates alone does not prove that the business goal has been accepted.</p>
-      <p class="section-cta"><a href="https://github.com/synthaicode/XRefKit/blob/main/docs/guides/087_workflow_protocol_sequence_for_humans.md#xid-E8B4D2F19A63">Read the full workflow protocol guide</a></p>
+      <div class="section-heading"><h2 id="protocol-heading">Common protocols</h2><p>Workflow progression, reporting, output quality, uncertainty and authority, Knowledge and execution context, handoff, and shared-asset updates. Each contract has its own applicability conditions.</p></div>
+      <div class="tier-links"><a href="./protocols/">Explore the shared contracts →</a><a href="./protocols/#reporting">How reporting works →</a></div>
+    </section>
+
+    <section class="landing-section" id="skills" aria-labelledby="skills-heading">
+      <div class="section-heading"><h2 id="skills-heading">Individual Skills</h2><p>Skills define the method and outputs for a particular job. Examples include C# review, constraint derivation, and business learning through interviews. They use the common foundation while keeping their own scope and criteria.</p></div>
+      <div class="tier-links"><a href="./skills/">Explore individual Skill examples →</a><a href="./skills/#csharp-example">See the C# responsibility split →</a></div>
     </section>
 
     <section class="landing-section" id="getting-started" aria-labelledby="getting-started-heading">
@@ -105,88 +76,7 @@ xrefkit --help</code></pre></div>
         <div class="example-step"><strong>3. Connect an AI client if needed</strong><p>MCP is optional. Follow the repository's setup guide for your client and review the generated configuration before applying it.</p><a href="https://github.com/synthaicode/XRefKit#quick-start">Read the setup and MCP instructions</a></div>
       </div>
     </section>
-
-    <section class="landing-section model-main" aria-labelledby="model-heading">
-      <div class="section-heading">
-        <p class="concept-label">Common foundation</p>
-        <h2 id="model-heading">Operating model</h2>
-        <p>The runtime responsibility boundary that connects one AI work unit from Goal definition to human acceptance.</p>
-      </div>
-      <div class="model-inline" data-inline-svg="./assets/xrefkit_model_en.svg"><a href="./assets/xrefkit_model_en.svg">Open the XRefKit operating model</a></div>
-      <div class="model-reading">
-        <h3>What the model shows</h3>
-        <p>The model is not primarily a task sequence. It shows <strong>where decisions belong</strong> when work is delegated to AI. Before execution, people define business completion and acceptance conditions as a <a href="./en/slides/063_ai_organization_explainer_clear/#goal">Goal</a>. During execution, a <a href="./en/slides/063_ai_organization_explainer_clear/#skill">Skill</a> bounds the AI responsibility. Decisions outside that boundary return to people through <a href="./en/slides/064_ai_team_operating_boundary/#escalation">Escalation</a> instead of being filled by assumption.</p>
-        <p>The <a href="./en/slides/063_ai_organization_explainer_clear/#workflow-protocol">workflow protocol</a> records progression and evidence. <a href="./en/slides/064_ai_team_operating_boundary/#closure">Closure</a> deterministically checks whether the execution record is complete, but it does not decide whether the result is correct or should be adopted. Accountability returns to people through <a href="./en/slides/064_ai_team_operating_boundary/#acceptance">human acceptance</a>. Decisions, unresolved items, and sources remain as <a href="./en/slides/063_ai_organization_explainer_clear/#evidence">Evidence</a> and can be traced through <a href="./en/slides/065_xrefkit_repository_overview/#xid">XIDs</a>.</p>
-      </div>
-      <p class="improvement-note">Evidence is input to human improvement decisions. XRefKit does not let AI rewrite organizational rules automatically from execution results.</p>
-      <p class="section-cta"><a href="./en/model/">Read the canonical definitions of the 12 model elements</a></p>
-    </section>
-
-    <section class="landing-section distribution-main" aria-labelledby="distribution-heading">
-      <div class="section-heading">
-        <p class="concept-label">Common foundation</p>
-        <h2 id="distribution-heading">Sharing the operating base</h2>
-        <p>MCP delivers the same managed Skills, Knowledge, and execution contracts to AI clients used by multiple people.</p>
-      </div>
-      <object class="distribution-object" data="./assets/xrefkit_mcp_en.svg" type="image/svg+xml" aria-label="MCP selects managed XRefKit assets and distributes them to multiple AI clients">
-        <a href="./assets/xrefkit_mcp_en.svg">Open the XRefKit MCP distribution model</a>
-      </object>
-      <div class="model-reading">
-        <h3>What MCP shares</h3>
-        <p>An organization maintains Skills, Knowledge, execution contracts, catalogs, and XIDs as managed XRefKit assets. MCP presents the catalogs, then selects and resolves only the assets needed for the current purpose. Users receive the same identifiers and managed versions without loading the entire repository into every AI context.</p>
-        <p>MCP is a read boundary for discovery, selection, resolution, and delivery. Skill execution, client-side tool side effects, Evidence recording, and closure remain on each user's client. People can therefore share the same Knowledge and procedures without merging their execution permissions or work records.</p>
-      </div>
-      <p class="improvement-note">MCP shares managed definitions and Knowledge. The MCP server does not perform business work on behalf of its users.</p>
-    </section>
-
-    <section class="landing-section">
-      <div class="section-heading"><p class="concept-label">Common foundation · reading guide</p><h2>Choose by purpose</h2><p>Start from the canonical model, then read only the depth required for the current question.</p></div>
-      <div class="learning-tiers">
-        <section class="learning-tier"><span>1</span><div><h3>Understand the need and the model</h3><p>See which AI characteristics require an operating structure and learn the canonical elements.</p><div class="tier-links"><a href="./en/slides/why-ai-organization-needed/">Turning AI Use into Continuous Business Execution</a><a href="./en/model/">Operating Model and 12 Element Definitions</a></div></div></section>
-        <section class="learning-tier"><span>2</span><div><h3>Operate AI work</h3><p>Understand how bounded responsibilities connect and where tool, AI, and human decisions belong.</p><div class="tier-links"><a href="./en/slides/063_ai_organization_explainer_clear/">XRefKit Business Execution Model</a><a href="./en/slides/064_ai_team_operating_boundary/">AI Work Operating Boundary</a></div></div></section>
-        <section class="learning-tier"><span>3</span><div><h3>Implement, improve, and distribute</h3><p>Connect the repository structure to evidence-led improvement and distribution of the next version.</p><div class="tier-links"><a href="./en/slides/065_xrefkit_repository_overview/">XRefKit Repository Overview</a><a href="./en/slides/073_xrefkit_organization_distribution/">XRefKit Improvement and Distribution</a></div></div></section>
-      </div>
-    </section>
-
-    <section class="landing-section" aria-labelledby="concepts-heading">
-      <div class="section-heading"><p class="concept-label">Common foundation · concepts</p><h2 id="concepts-heading">Canonical concepts</h2><p>Permanent concept pages define the problems XRefKit is intended to solve and connect them to the operating model.</p></div>
-      <div class="learning-tier canonical-concept"><span>→</span><div><p class="concept-label">Permanent problem definition</p><h3><a href="./concepts/judgment-replication/">Judgment Replication</a></h3><p>Organizations do not scale by adding processing capacity alone. They scale by replicating judgment—and traditional organizations do this slowly, lossily, and repeatedly. XRefKit replaces judgment retransmission with stable, versioned reference distribution.</p></div></div>
-    </section>
-
-    <section class="landing-section" id="skills" aria-labelledby="skills-heading">
-      <div class="section-heading">
-        <p class="concept-label">Methods for particular work</p>
-        <h2 id="skills-heading">Individual Skills</h2>
-        <p>Each Skill defines when it applies, its inputs, method, outputs, and Skill-specific criteria. It declares the Knowledge it needs; domain facts and local rules remain in reusable Knowledge. Common workflow controls are supplied by the foundation above.</p>
-      </div>
-      <div class="learning-tiers">
-        <section class="learning-tier"><span aria-hidden="true">1</span><div><h3>Review C# beyond compiler diagnostics</h3><p><code>csharp_review</code> inspects language-dependent defects and system-boundary risks. It produces category results, evidence-backed findings, and an explicit handoff for issues outside its scope.</p><div class="tier-links"><a href="https://github.com/synthaicode/XRefKit/blob/main/skills/csharp_review/SKILL.v1.md#xid-F1A7C3D9E240">Read the Skill definition</a><a href="#csharp-example">See the responsibility split</a></div></div></section>
-        <section class="learning-tier"><span aria-hidden="true">2</span><div><h3>Find missing confirmations before implementation</h3><p><code>constraint_derivation_index</code> selects the applicable constraint-derivation Skills for design and code artifacts, then sequences the commonality pass. The selected Skills expose hidden assumptions and confirmation needs; their outputs do not approve requirements.</p><div class="tier-links"><a href="https://github.com/synthaicode/XRefKit/blob/main/skills/packs/constraint-derivation/constraint_derivation_index/SKILL.v1.md#xid-A4C9E2B7D160">Read the Skill definition</a></div></div></section>
-        <section class="learning-tier"><span aria-hidden="true">3</span><div><h3>Learn a business task through conversation</h3><p><code>business_learning_interview</code> starts from the desired result and turns partial explanations into a provisional business hypothesis. It keeps human-stated facts, AI hypotheses, and open questions distinguishable, then hands off for scoping when the boundary is ready.</p><div class="tier-links"><a href="https://github.com/synthaicode/XRefKit/blob/main/skills/packs/business-intake/business_learning_interview/SKILL.v1.md#xid-B6C4E9A2D781">Read the Skill definition</a></div></div></section>
-      </div>
-      <p class="improvement-note">These are examples from the repository catalog. Each Skill has its own applicability and maturity; a catalog entry alone does not establish readiness for every task.</p>
-      <p class="section-cta"><a href="https://github.com/synthaicode/XRefKit/blob/main/skills/_index.md#xid-8D91F66DDBB7">Explore the Skill catalog</a></p>
-    </section>
-
-    <section class="landing-section" id="csharp-example" aria-labelledby="csharp-example-heading">
-      <div class="section-heading"><p class="concept-label">Individual Skill · worked example</p><h2 id="csharp-example-heading">What belongs to csharp_review?</h2><p>The review method is specific to this Skill. Execution management comes from the common foundation; people retain acceptance authority.</p></div>
-      <div class="concept-table-wrap">
-        <table class="concept-table landing-responsive-table">
-          <caption>Responsibilities in a C# review</caption>
-          <thead><tr><th scope="col">Individual Skill and its selected Knowledge</th><th scope="col">Common foundation</th></tr></thead>
-          <tbody>
-            <tr><td data-label="Individual Skill and its selected Knowledge"><strong>Review method:</strong> establish the Roslyn baseline, avoid duplicate findings, and inspect applicable language, lifecycle, exception, synchronization, and system-boundary behavior.</td><td data-label="Common foundation"><strong>Start and route:</strong> capture the work instruction and its boundary, select the Skill, and record the runtime binding.</td></tr>
-            <tr><td data-label="Individual Skill and its selected Knowledge"><strong>Review material:</strong> the Skill declares its Knowledge needs. Resolve the relevant <a href="https://github.com/synthaicode/XRefKit/blob/main/knowledge/csharp/100_csharp_review_spec.md#xid-30E6A4F6F3AA">C# criteria</a> and <a href="https://github.com/synthaicode/XRefKit/blob/main/knowledge/source_analysis/100_common_source_analysis_criteria.md#xid-5F21C8A41001">common source-analysis criteria</a>; those facts and rules remain in Knowledge.</td><td data-label="Common foundation"><strong>Reference delivery:</strong> discover and resolve the selected Knowledge by XID and preserve its identity in the execution record.</td></tr>
-            <tr><td data-label="Individual Skill and its selected Knowledge"><strong>Review output:</strong> category results, severity, supporting evidence, rationale, remediation direction, unconfirmed items, and the next owner for out-of-scope findings.</td><td data-label="Common foundation"><strong>Record and check:</strong> track work items, artifacts, concerns, judgments, and handoff. Deterministic <code>verify</code> and <code>close</code> check the workflow record; they do not judge whether the review findings are correct.</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="improvement-note">An independent quality review assesses the output when required. A person reviews the findings and evidence, decides which remediation to adopt, and accepts the result or returns it for repair.</p>
-    </section>
-
-    <section class="landing-section">
-      <div class="catalog-directory-links"><span>Find a deck</span><a href="./en/">English catalog</a><a href="./ja/">Japanese translation catalog</a><a href="https://github.com/synthaicode/XRefKit">GitHub</a></div>
-    </section>
+    <nav class="page-header landing-section" aria-label="Further reading"><a href="./en/">English deck catalog</a><a href="./ja/">Japanese translation catalog</a><a href="https://github.com/synthaicode/XRefKit">GitHub</a></nav>
   </main>
 </body>
 </html>
