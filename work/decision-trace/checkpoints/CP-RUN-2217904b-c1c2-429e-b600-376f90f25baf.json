@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-2217904b-c1c2-429e-b600-376f90f25baf",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-10-10T23:49:14Z",
+  "git_commit": "c9fb993293752b6daefe05750af0e4e0eaee26c7",
+  "purpose": "before AI Skill run knowledge_ontology_management",
+  "work_item_id": null,
+  "run_id": "2217904b-c1c2-429e-b600-376f90f25baf",
+  "context_policy": "current-only",
+  "human_approved": false
+}
