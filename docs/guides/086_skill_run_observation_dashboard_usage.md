@@ -1032,3 +1032,13 @@ python -m xrefkit.azure_recovery reconcile --root . --workspace-id xrefkit-local
 再開は、確認済みで現在の内容も一致する記録を `previous_reconciliation_id` で明示した新しい送信入力だけに接続します。`previous_report_id` と同時には指定できません。新しいローカル観測版と通常の送信前検査が必要です。同じ元の送信から複数の後続を作れません。他の未解決の送信があれば停止します。確認の保存時点で再開可能だったことと、現在の後続記録を踏まえた案内は別に表示します。
 
 保存先は `work/integrations/deliveries/reconciliations` です。元の送信予定・結果、計画、取り込み、対応付け、プロファイルは書き換えません。ロックを自動削除せず、競合の判断は利用者に残します。古い結果の `recorded_at` は処理開始時刻なので、確認時刻に読み替えません。新しい確認記録の `verified_at` と、元の `receipt_recorded_at` を区別します。
+
+## Local-primary management route
+
+Use [local_work_management](../../skills/os/local_work_management/SKILL.v1.md#xid-E7C4A916B280)
+for approved local plan persistence, Markdown/Mermaid and explicit observations.
+Its [operating model](../../knowledge/operations/161_local_client_work_management.md#xid-F3A8D602C951)
+requires no Azure profile, PAT or monitor. JSON is authoritative; Markdown is a
+derived view. Inspect saved JSON and projection results separately, and render
+from stored JSON. Select the separate Azure adapter only when authorized;
+connection availability never triggers synchronization.

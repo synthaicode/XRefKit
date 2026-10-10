@@ -13,6 +13,14 @@ process specification. The operation method belongs to
 [azure_work_item_integration](../../skills/os/azure_work_item_integration/SKILL.v1.md#xid-A19E6D4C82B7).
 Public repository content does not authorize operations against a project.
 
+## Local-primary boundary
+
+[Local client work management](161_local_client_work_management.md#xid-F3A8D602C951)
+owns local plan persistence, projections and observations independently. Azure
+operations are optional, explicitly authorized adapter operations. Connection
+availability is not an instruction to synchronize. Local completion does not
+require a profile, PAT, remote read/write or monitor.
+
 ## Ownership and identities
 
 Shared MCP distributes stable procedures and domain context. The client owns

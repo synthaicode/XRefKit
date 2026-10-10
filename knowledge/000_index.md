@@ -135,3 +135,5 @@ Private domain knowledge lives in `knowledge_private/` (gitignored).
 See `knowledge_private/000_index.local.md` for entries. <!-- private-ref-ok: boundary-convention pointer; target is gitignored and no private content is exposed -->
 
 - [XRefKit Python Client Work Management Structure Findings](source_analysis/173_xrefkit_python_client_work_structure_findings.md#xid-D4B4C2657A63)
+
+- [Local client work management operating model](operations/161_local_client_work_management.md#xid-F3A8D602C951)

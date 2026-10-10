@@ -42,6 +42,14 @@ control_refs: []
 
 # Skill: azure_work_item_integration
 
+## Local-primary boundary
+
+Local planning, Markdown/Mermaid and observations are independently handled by
+[local_work_management](../local_work_management/SKILL.v1.md#xid-E7C4A916B280).
+This Skill is an optional explicitly authorized adapter. A configured connection
+does not trigger it; it does not own or regenerate local plan state. Complete
+local work without invoking this Skill when Azure integration is not requested.
+
 ## Startup and selection
 
 Use the repository Skill runtime envelope and its operating contract. Load the

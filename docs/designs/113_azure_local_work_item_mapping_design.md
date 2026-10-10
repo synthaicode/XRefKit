@@ -5,6 +5,16 @@
 
 Status: accepted trial mapping with verified read-only import/binding and selected test Task21 State/History delivery. Task22 read-only reconciliation is also verified against current and exact historical successful delivery records. Independent source review, actual product API/readback/replay checks and the repository quality gate passed; recovery fault scenarios and resumed-write chains were tested in isolation. Automatic retries, real-service fault recovery, broader targets, production and PBI acceptance are not claimed. Task23 is explicitly deferred. This document does not itself expand profiles or execute requests.
 
+## Local-primary architecture
+
+[Local work management](../../skills/os/local_work_management/SKILL.v1.md#xid-E7C4A916B280)
+completes plan persistence, Markdown/Mermaid, execution observations and local
+verification without Azure. A local PBI has its own recorded purpose and
+acceptance owner. This document applies only when the human separately selects
+an Azure integration and approves explicit mapping. Connection availability
+never triggers synchronization. The Azure/human definition authority below
+applies to connected imported items, not every local PBI.
+
 ## Identity and item mapping
 
 Bind workspace_id + connection_id + organization + project + external item ID + observed remote revision. Local references retain plan_id, immutable plan_revision, step_id/PBI ID and observation_revision. Same numeric item ID elsewhere is not a match. Explicitly select shared Tasks; retries and fine-grained local steps remain local. One external Task may explicitly bind several included local steps. The binding enumerates stable step IDs and its own completion criterion; retries remain execution records. Export Done only when the external Task criterion is confirmed, every included step is explicitly complete and none has outstanding revalidation or unknown/unrecognized state. Counts alone never decide completion.

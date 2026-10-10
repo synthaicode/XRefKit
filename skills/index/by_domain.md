@@ -32,3 +32,5 @@ Categories list skill ids only. Resolve summaries and `SKILL.v1.md` paths from t
   `planning_flow`, `xlsx_spec_traceability`, `pptx_spec_traceability`
 - marketing: `marketing_slide_png`, `marketing_explainer_video`,
   `draft_authoring`, `fact_review`, `reader_experience_review`
+
+- local client work: `local_work_management`

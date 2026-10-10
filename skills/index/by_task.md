@@ -39,3 +39,5 @@ Categories list skill ids only. Resolve summaries and `SKILL.v1.md` paths from t
   `consultation_research_mapping`, `judgment_log`,
   `goal_mode`, `fact_review`, `skill_calibration_evaluation`,
   `reader_experience_review`
+
+- local work management: `local_work_management`

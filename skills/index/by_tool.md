@@ -38,3 +38,5 @@ Categories list skill ids only. Resolve summaries and `SKILL.v1.md` paths from t
   `cross_constraint_derivation`, `integration_scenario_derivation`
 - html-css-png: `marketing_slide_png`, `marketing_explainer_video`
 - video-tts: `marketing_explainer_video`
+
+- local JSON and Markdown/Mermaid: `local_work_management`

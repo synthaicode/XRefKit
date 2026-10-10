@@ -351,6 +351,11 @@ Current family paths:
   - meta: `skills/os/azure_work_item_integration/SKILL.v1.md`
   - skill_doc: `skills/os/azure_work_item_integration/SKILL.v1.md`
 
+- `local_work_management`:
+  - summary: local approved-plan persistence, Markdown/Mermaid and explicit observations independent of Azure
+  - meta: `skills/os/local_work_management/SKILL.v1.md`
+  - skill_doc: `skills/os/local_work_management/SKILL.v1.md`
+
 ## Notes
 
 - Keep this file lightweight; adopted metadata and method belong in `SKILL.v1.md`.
@@ -366,3 +371,5 @@ not a legacy-migration adoption receipt. Inspect it using explicit
 and run the selected source with `skill run --definition`. The adoption-derived
 `skill list` does not currently enumerate this native addition; public placement
 does not imply maturity promotion or MCP distribution.
+
+The native `local_work_management` public routing entry uses explicit definition-catalog/run selection, remains unassessed without promotion evidence, and is not a fabricated legacy adoption receipt. Azure integration is an optional separately authorized route.
