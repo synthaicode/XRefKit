@@ -157,3 +157,29 @@ external legacy split Skills and YAML Skill Packages remain supported. See
 The source-analysis common XID remains stable and routes coherent criteria
 fragments on demand. Narrow tasks avoid unrelated bodies; full reviews retain
 every required axis. No similarity-based knowledge merge or deletion occurs.
+
+## Public website release metadata
+
+The Pages workflow builds from `main`, verifies the checked-in site against
+`site/sources`, then fetches GitHub's latest published stable release and runs
+`tools/site_release_metadata.py` on the deployment artifact. It updates the
+homepage version, UTC publication date and release link, plus the foundation
+page's release-source link. The checked-in HTML is an offline snapshot; it is
+not rewritten or committed by deployment. Editorial development notes are
+maintained separately and are not inferred from release metadata.
+
+Pages runs on main pushes, release publication/changes, manual dispatch, and
+successful repository push runs of `python-package`. The last trigger covers
+releases created using `GITHUB_TOKEN`, which do not trigger another release
+workflow. Deployment always checks out main, never a workflow-run/PR artifact.
+API failure, a draft/prerelease, an unexpected version tag, or missing page
+markers stops publication and leaves the previous deployed site in place.
+
+To reproduce the rendering after building a site into a separate directory:
+
+```sh
+gh api repos/synthaicode/XRefKit/releases/latest > release.json
+python tools/site_release_metadata.py --site .generated-site --release-json release.json --repository synthaicode/XRefKit
+```
+
+Use the Pages workflow's manual dispatch to retry a failed metadata fetch.
