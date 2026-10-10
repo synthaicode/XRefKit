@@ -166,3 +166,51 @@ body { background: #f5f6f4; }
 .trace-dossier figcaption { margin-top: 20px; color: #d6e5db; font-size: 10px; line-height: 1.9; }
 .trace-dossier figcaption span { color: #8fa8ad; font-size: 9px; }
 @media (max-width:720px) { .trace-dossier { padding: 20px 16px; } .trace-output h2 { font-size: 24px; } .trace-heading { font-size: 7px; } }
+
+/* Shared editorial surfaces: homepage, reference pages and material catalogs. */
+.site-interior { --bg:#f4f5f1; --panel:#fafbf8; --line:#d7ded4; --muted:#627065; --accent:#476539; --accent-soft:#e9eee3; --accent-strong:#37582c; background:#f4f5f1; }
+.site-interior > main { width:min(1280px,calc(100% - 64px)); margin:0 auto; padding:0 0 80px; }
+.site-interior .site-masthead nav a[aria-current="page"] { color:#213923; text-decoration:underline; text-decoration-color:#82a65b; text-underline-offset:7px; }
+.site-interior .page-header { padding:4px 4px 22px; margin:0; font-size:12px; }
+.site-interior .detail-page > .landing-section:first-of-type { margin-top:0; padding-top:0; border-top:0; }
+.site-interior .interior-hero { display:block; padding:44px 48px; margin:0 0 32px; border:0; border-radius:18px; background:radial-gradient(ellipse at 100% 0%,#214c47,#122833 40%,#101e2c 80%); color:#eef5ef; box-shadow:none; }
+.site-interior .interior-hero h1 { max-width:24ch; margin:12px 0 20px; font-size:clamp(32px,4.5vw,58px); font-weight:600; line-height:1.1; letter-spacing:-.05em; color:#eef5ef; }
+.site-interior .interior-hero p { max-width:78ch; color:#b4c6cc; font-size:15px; line-height:1.8; }
+.site-interior .interior-hero .eyebrow, .site-interior .interior-hero .concept-label, .site-interior .interior-hero .concept-series { color:#c0ef91; font:10px/1.7 Consolas,monospace; letter-spacing:.1em; }
+.site-interior .interior-hero a { color:#d8f8b9; }
+.site-interior .interior-hero .tier-links a { border-color:#9bbbae55; border-radius:5px; padding:10px 14px; background:#c0ef9108; }
+.site-interior .interior-hero .tier-links a:hover { background:#c0ef91; color:#17291d; }
+.site-interior .learning-tier { padding:28px; border:1px solid #d7ded4; border-radius:12px; background:#fafbf8; gap:22px; }
+.site-interior .learning-tier > span { border:1px solid #c4d3b6; border-radius:8px; background:#e9eee3; color:#476539; font:13px/1 Consolas,monospace; }
+.site-interior .learning-tier h3 { font-size:24px; letter-spacing:-.035em; font-weight:600; }
+.site-interior .learning-tier p { max-width:90ch; line-height:1.85; font-size:15px; }
+.site-interior .model-reading, .site-interior .improvement-note { background:#e9eee3; border:1px solid #d7ded4; border-radius:12px; box-shadow:none; }
+.site-interior .concept-table-wrap { border-color:#d7ded4; border-radius:12px; box-shadow:none; background:#fafbf8; }
+.site-interior .concept-table th { background:#e9eee3; color:#344b3a; }
+.site-interior .concept-table td { background:#fafbf8; font-size:14px; line-height:1.8; }
+.site-interior .deck-card { background:#fafbf8; border:1px solid #d7ded4; border-radius:12px; box-shadow:none; }
+.site-interior .deck-card:hover { border-color:#91ab76; background:#eff5e7; }
+.site-interior .deck-tag { background:#e9eee3; color:#476539; }
+.site-interior .model-doc-grid > section { background:#fafbf8; border-color:#d7ded4; border-radius:12px; box-shadow:none; }
+.site-interior .operating-stages { background:transparent; border:0; gap:12px; }
+.site-interior .operating-stages li { border:1px solid #d7ded4; border-radius:9px; background:#fafbf8; }
+.site-interior .operating-stages .ai-stage { background:#e9eee3; }
+.site-interior .tier-links a, .site-interior .section-cta a { border-radius:5px; }
+@media (max-width:720px) {
+ .site-interior > main { width:calc(100% - 28px); }
+ .site-interior .site-masthead nav a:nth-child(-n+2) { display:inline; }
+ .site-interior .site-masthead { flex-wrap:wrap; gap:16px; }
+ .site-interior .site-masthead nav { flex-wrap:wrap; gap:16px; font-size:11px; }
+ .site-interior .interior-hero { padding:30px 24px; }
+ .site-interior .interior-hero h1 { font-size:36px; overflow-wrap:anywhere; }
+ .site-interior .interior-hero p { font-size:14px; }
+ .site-interior .learning-tier { grid-template-columns:28px minmax(0,1fr); padding:22px 18px; gap:14px; }
+ .site-interior .learning-tier > span { width:28px; height:28px; }
+ .site-interior .learning-tier h3 { font-size:22px; }
+ .site-interior .learning-tier p { font-size:14px; }
+}
+.site-interior .interior-hero .concept-meta { color:#a9bdc4; }
+.site-interior .learning-tier .concept-label { font:10px/1.7 Consolas,monospace; letter-spacing:.08em; color:#65765b; margin:0 0 10px; }
+.site-interior .deck-card h2 { font-size:26px; font-weight:600; letter-spacing:-.035em; }
+.site-interior .deck-card .deck-question { font-size:16px; font-weight:600; }
+.site-interior .deck-tag { font-size:11px; font-weight:600; }
