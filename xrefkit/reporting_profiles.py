@@ -60,10 +60,13 @@ def profile_metadata(path: Path) -> dict:
         raise ValueError("Knowledge quality profile requires YAML front matter")
     if len(match.group(1).encode("utf-8")) > 64_000:
         raise ValueError("quality profile exceeds header size limit")
+    loader = _ProfileLoader(match.group(1))
     try:
-        profile = yaml.load(match.group(1), Loader=_ProfileLoader)
+        profile = loader.get_single_data()
     except RecursionError as exc:
         raise ValueError("quality profile nesting exceeds parser limit") from exc
+    finally:
+        loader.dispose()
     required = {"schema", "xid", "profile_id", "revision", "target", "applicability", "approval",
                 "exemplars", "input_samples", "repetitions", "knowledge_refs", "format", "subjective"}
     if not isinstance(profile, dict) or set(profile) != required or profile["schema"] != PROFILE_SCHEMA:
