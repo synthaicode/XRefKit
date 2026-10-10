@@ -4178,6 +4178,32 @@
           "source_field": "knowledge_inputs"
         }
       }
+    },
+    {
+      "skill_id": "shared_asset_update_gate",
+      "definition_path": "skills/os/shared_asset_update_gate/SKILL.v1.md",
+      "definition_xid": "6EA2C74D91B8",
+      "definition_sha256": "9bc52a049836fa4ab094c6e5b100cb890570f1ea263a6a8a94a18eccee0fed02",
+      "source_kind": "native_v1",
+      "adopted": true,
+      "adoption": {
+        "authority": "repository user",
+        "date": "2026-10-10",
+        "basis": "Explicit human instruction to provide both common analyst Skills publicly; source registration only, no maturity promotion. Runtime inputs remain instruction-derived and explicit."
+      }
+    },
+    {
+      "skill_id": "correction_retrospective_analyst",
+      "definition_path": "skills/os/correction_retrospective_analyst/SKILL.v1.md",
+      "definition_xid": "4BC7E192A6D0",
+      "definition_sha256": "08b4936ecbad8c4e4583bddd184f95d679601b7c47c681619f5b4b82f3cd2e69",
+      "source_kind": "native_v1",
+      "adopted": true,
+      "adoption": {
+        "authority": "repository user",
+        "date": "2026-10-10",
+        "basis": "Explicit human instruction to provide both common analyst Skills publicly; source registration only, no maturity promotion. Runtime inputs remain instruction-derived and explicit."
+      }
     }
   ]
 }

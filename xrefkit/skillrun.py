@@ -2672,10 +2672,12 @@ def run_skill(args) -> SkillRunResult:
                    for key in RUNTIME_FIELDS}
         capability, tuning, responsibility, execution_mode_arg = [runtime[key] for key in RUNTIME_FIELDS]
         if adapter:
+            native_adapter = adapter.get("source_kind") == "native_v1"
             definition_identity["runtime_provenance"] = json.dumps({
                 key: {"selected_value": runtime[key],
                       "origin": "explicit_input" if getattr(args, key, None) else "legacy_declared",
-                      "legacy_receipt": adapter["runtime"][key]}
+                      **({"native_source": adapter["adoption"]} if native_adapter
+                         else {"legacy_receipt": adapter["runtime"][key]})}
                 for key in RUNTIME_FIELDS
             }, sort_keys=True)
         if not capability or not tuning or not responsibility or not execution_mode_arg:
@@ -2685,7 +2687,7 @@ def run_skill(args) -> SkillRunResult:
                        "guard_policy": "required", "capability_layering": "required", "workflow_protocol": "required",
                        "capability": capability, "tuning": tuning,
                        "role_responsibilities": [f"executor: {responsibility}"]})
-        if adapter:
+        if adapter and adapter.get("source_kind") != "native_v1":
             parsed.update({key: receipt["value"] for key, receipt in adapter["legacy_runtime_policy"].items()})
             definition_identity["legacy_policy_provenance"] = json.dumps(adapter["legacy_runtime_policy"], sort_keys=True)
     else:
