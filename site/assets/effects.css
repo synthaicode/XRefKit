@@ -133,3 +133,33 @@ body { background: #f5f6f4; }
 @media (prefers-reduced-motion: no-preference) { .map-signal { animation: reference-signal 5s linear infinite; } @keyframes reference-signal { to { stroke-dashoffset: -216; } } }
 @media (max-width: 1000px) { .home-page .hero-shell { padding: 38px 30px 0; } .home-page .hero-grid { gap: 24px; } .home-page .hero-copy h1 { font-size: 48px; } .home-page .hero-lead { font-size: 13px; } .home-page .hero-actions a { padding: 12px; font-size: 11px; gap: 12px; } .explore-grid { gap: 12px; } .explore-grid .landing-section { padding: 24px 18px; } .explore-grid h2 { font-size: 22px; } }
 @media (max-width: 720px) { .home-page .landing { width: calc(100% - 28px); } .site-masthead { padding: 22px 2px; } .site-brand { font-size: 20px; } .site-masthead nav { gap: 14px; } .site-masthead nav a:nth-child(-n+2) { display: none; } .site-masthead .nav-github { padding-left: 12px; } .home-page .hero-shell { padding: 32px 24px 0; } .home-page .hero-grid { grid-template-columns: 1fr; gap: 8px; } .home-page .hero-copy h1 { font-size: clamp(40px,10.5vw,64px); } .desktop-break { display: none; } .home-page .hero-lead { font-size: 14px; } .home-page .hero-actions a { font-size: 12px; } .hero-footnote { font-size: 8px; gap: 8px; } .reference-map { padding: 14px 12px; } .map-header { font-size: 8px; } .hero-bottom { flex-direction: column; align-items: start; gap: 8px; } .home-page #current { grid-template-columns: 1fr; gap: 18px; padding: 24px 6px; } .explore-section { margin: 48px 0; } .explore-grid { grid-template-columns: 1fr; } .explore-grid .landing-section { padding: 26px; } .topic-index { margin-bottom: 4px; } .explore-grid h2 { font-size: 28px; } .home-page #model > .section-heading { grid-template-columns: 1fr; gap: 12px; } .home-page #getting-started { padding: 26px; } .home-page #getting-started .example-flow { grid-template-columns: 1fr; } }
+
+/* Signature reference field: decorative motion never represents runtime status. */
+.home-page .hero-shell { background: radial-gradient(ellipse at 100% 0%, #214c47 0%, #122833 35%, #101e2c 70%); }
+.home-page .hero-copy h1 span { text-shadow: 0 0 46px #c0ef9125; }
+.reference-map { position: relative; isolation: isolate; background: linear-gradient(145deg,#203c4266,#0b192e99); border-color: #93c4b542; box-shadow: 0 30px 80px #0003, inset 0 1px 0 #d3f5db12; }
+.reference-map::before { content: ""; position: absolute; inset: 12% -8%; z-index: -1; pointer-events: none; background: radial-gradient(ellipse,#a6f07320,transparent 66%); }
+.map-aura { filter: blur(30px); }
+.map-orbit-trace { opacity: .65; transform-origin: 260px 218px; }
+.map-core { filter: drop-shadow(0 0 12px #b9ef7644); }
+.map-node { stroke-width: 1.5; }
+.map-motion { display: flex; align-items: center; gap: 7px; width: fit-content; margin-top: 14px; color: #afc4cc; font: 9px/1.6 Consolas,monospace; cursor: pointer; }
+.map-motion input { width: 12px; height: 12px; margin: 0; accent-color: #c0ef91; cursor: pointer; }
+.map-motion input:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+.explore-grid .landing-section { position: relative; overflow: hidden; }
+.explore-grid .topic-index::after { content: "↗"; float: right; font: 24px/1 sans-serif; color: #658752; }
+.explore-grid .landing-section:focus-within { border-color: #608243; box-shadow: 0 0 0 2px #608243; }
+@media (hover: hover) { .explore-grid .landing-section:hover { border-color: #91ab76; background: #eff5e7; box-shadow: 0 16px 35px #2038170d; } }
+@media (prefers-reduced-motion: no-preference) {
+  .reference-map .map-orbit-trace { animation: map-orbit 22s linear infinite; }
+  .reference-map .map-node { animation: map-node-light 7s ease-in-out infinite; }
+  .reference-map .map-core { animation-delay: 1.3s; }
+  .reference-map .map-evidence { animation-delay: 2.6s; }
+  .reference-map .map-aura { animation: map-breathe 7s ease-in-out infinite; }
+  .reference-map:has(.map-motion input:not(:checked)) * { animation-play-state: paused !important; }
+  .explore-grid .landing-section { transition: border-color .25s, background .25s, box-shadow .25s; }
+  @keyframes map-orbit { to { transform: rotate(360deg); } }
+  @keyframes map-node-light { 0%,40%,100% { stroke: #58746c; } 15%,25% { stroke: #c9ff92; filter: drop-shadow(0 0 9px #b9ef7670); } }
+  @keyframes map-breathe { 0%,100% { opacity: .08; } 40% { opacity: .23; } }
+}
+@media (prefers-reduced-motion: reduce) { .map-motion { display: none; } .map-orbit-trace { opacity: .3; } }
