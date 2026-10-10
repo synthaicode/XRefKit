@@ -1007,3 +1007,22 @@ Blocked・DueDate を含む欄と親の確認値を比較します。
 新しいローカル観測版を用います。更新時刻で前回記録を選びません。
 前回記録から複数に分岐した送信や、同じ観測版の重複送信も拒否します。
 認証・権限・サービス規則は実際の送信時に評価され、読み取り成功や状態遷移情報だけでは書き込み可能と判断しません。
+
+### Task22: 送信結果の確認と明示的な再開
+
+送信の応答を受け取れなかった場合は、元の送信記録を残したまま、読み取り専用の確認記録を別に保存します。確認処理は送信しません。Task23 は対象外です。
+
+```powershell
+python -m xrefkit.azure_recovery status --root . --workspace-id xrefkit-local --report-id REPORT_ID
+python -m xrefkit.azure_recovery reconcile --root . --workspace-id xrefkit-local --input REQUEST.json
+```
+
+確認入力は `schema_version: 1` と `reconciliation_id`、`report_id`、読み取り用 `connection_id`、元の送信用 `source_connection_id`、`binding_id`、現在の `expected_observation_revision`、明示的な `approval_refs` を指定します。確認対象は既存のテスト用 Task21 です。読み取り用プロファイルは PBI10 と Task21 を許可する必要があります。
+
+現在の版と、送信予定だった特定の履歴版を照合します。予定の要約全文、状態、保護対象の欄、対象と親の一致が必要です。履歴に反映を確認できても、その後の状態が変わっていれば `applied_remote_changed` として再開を止めます。履歴の印だけ、現在見つからないことだけでは未送信と判断しません。
+
+同じ確認IDと同じ入力の再実行は保存済みの結果を返し、認証情報も通信も使いません。これは過去の確認結果です。新しい確認には新しいIDを指定します。途中の読み取り失敗も記録し、自動再試行は行いません。
+
+再開は、確認済みで現在の内容も一致する記録を `previous_reconciliation_id` で明示した新しい送信入力だけに接続します。`previous_report_id` と同時には指定できません。新しいローカル観測版と通常の送信前検査が必要です。同じ元の送信から複数の後続を作れません。他の未解決の送信があれば停止します。確認の保存時点で再開可能だったことと、現在の後続記録を踏まえた案内は別に表示します。
+
+保存先は `work/integrations/deliveries/reconciliations` です。元の送信予定・結果、計画、取り込み、対応付け、プロファイルは書き換えません。ロックを自動削除せず、競合の判断は利用者に残します。古い結果の `recorded_at` は処理開始時刻なので、確認時刻に読み替えません。新しい確認記録の `verified_at` と、元の `receipt_recorded_at` を区別します。

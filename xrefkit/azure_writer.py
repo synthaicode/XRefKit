@@ -14,7 +14,7 @@ from urllib.parse import quote, urlencode
 from urllib.request import ProxyHandler, Request, build_opener
 
 from . import azure_import as importer
-from .azure_connection import TIMEOUT_SECONDS, _NoRedirect, _SafeParser, _workspace, load_connection
+from .azure_connection import TIMEOUT_SECONDS, _NoRedirect, _SafeParser, _http_code, _workspace, load_connection
 from .azure_update_candidate import build_candidate, MAX_SUMMARY_BYTES
 from .work_management import MAX_BYTES, MAX_RECORDS, _unique, plan_definition, read_json, writer_lock
 
@@ -45,10 +45,12 @@ def _now():
 
 def _request(value):
     required = {"schema_version", "report_id", "connection_id", "source_connection_id", "write_approval_refs", "binding_id", "item_id", "expected_observation_revision", "completion", "work_authorization"}
-    if not isinstance(value, dict) or not required.issubset(value) or set(value) - required - {"previous_report_id", "artifacts"} or type(value["schema_version"]) is not int or value["schema_version"] != 1:
+    if not isinstance(value, dict) or not required.issubset(value) or set(value) - required - {"previous_report_id", "previous_reconciliation_id", "artifacts"} or type(value["schema_version"]) is not int or value["schema_version"] != 1:
         _fail("writer_request_invalid")
     if value.get("previous_report_id") is not None and not importer._id(value["previous_report_id"]):
         _fail("writer_identity_invalid")
+    if value.get("previous_reconciliation_id") is not None and (not importer._id(value["previous_reconciliation_id"]) or value.get("previous_report_id") is not None):
+        _fail("writer_recovery_predecessor_invalid")
     if any(not importer._id(value[k]) for k in ["report_id", "connection_id", "source_connection_id", "binding_id"]):
         _fail("writer_identity_invalid")
     if not importer._number(value["item_id"]) or not importer._number(value["expected_observation_revision"]):
@@ -108,7 +110,7 @@ def _metadata(value):
     return {"work_item_type": "Task", "states": names, "transitions": projected}
 
 
-def _transport(profile, token, resource, *, method="GET", patch=None):
+def _transport(profile, token, resource, *, method="GET", patch=None, detailed_read_errors=False):
     encoded = base64.b64encode((":" + token).encode("ascii")).decode("ascii")
     query = {"api-version": "7.1"}
     if method == "GET" and resource.startswith("workitems/"):
@@ -137,6 +139,8 @@ def _transport(profile, token, resource, *, method="GET", patch=None):
     except HTTPError as exc:
         code = exc.code
         exc.close()
+        if method == "GET" and detailed_read_errors:
+            _fail(_http_code(code))
         if method == "PATCH":
             if code in {409, 412}:
                 _fail("revision_rejected")
@@ -212,7 +216,9 @@ def _validate(value, workspace_id, kind):
         source, baseline, before, metadata = value["source"], value["baseline"], value["before"], value["metadata"]
         if not _digest(value["binding_sha256"]) or not isinstance(source, dict) or set(source) != {"plan_id", "plan_revision", "plan_definition_sha256", "plan_snapshot_sha256", "observation_revision"} or any(not importer._id(source[k]) for k in ["plan_id", "plan_revision"]) or any(not _digest(source[k]) for k in ["plan_definition_sha256", "plan_snapshot_sha256"]) or type(source["observation_revision"]) is not int or source["observation_revision"] != value["request"]["expected_observation_revision"]:
             _fail("delivery_record_invalid")
-        if not isinstance(baseline, dict) or set(baseline) != {"kind", "record_id", "record_sha256", "revision", "state"} or baseline["kind"] not in {"import", "success"} or not importer._id(baseline["record_id"]) or not _digest(baseline["record_sha256"]) or not importer._number(baseline["revision"]) or not importer._text(baseline["state"]) or (baseline["kind"] == "success") != (value["request"].get("previous_report_id") is not None) or (baseline["kind"] == "success" and baseline["record_id"] != value["request"]["previous_report_id"]):
+        kind_expected = "recovery" if value["request"].get("previous_reconciliation_id") is not None else "success" if value["request"].get("previous_report_id") is not None else "import"
+        predecessor_id = value["request"].get("previous_reconciliation_id") or value["request"].get("previous_report_id")
+        if not isinstance(baseline, dict) or set(baseline) != {"kind", "record_id", "record_sha256", "revision", "state"} or baseline["kind"] != kind_expected or not importer._id(baseline["record_id"]) or not _digest(baseline["record_sha256"]) or not importer._number(baseline["revision"]) or not importer._text(baseline["state"]) or (predecessor_id is not None and baseline["record_id"] != predecessor_id):
             _fail("delivery_record_invalid")
         if not isinstance(before, dict) or set(before) != {"revision", "state"} or before != {k: baseline[k] for k in ["revision", "state"]}:
             _fail("delivery_record_invalid")
@@ -282,7 +288,8 @@ def _rows(directory, workspace_id, kind):
     return values
 
 
-def _pairs(intents, terminals):
+def _pairs(intents, terminals, recoveries=None):
+    recoveries = {} if recoveries is None else recoveries
     successors, observations = set(), set()
     for _, intent in intents.values():
         observation = (importer._hash(intent["target"]), intent["source"]["plan_id"], intent["source"]["plan_revision"], intent["source"]["observation_revision"])
@@ -290,13 +297,25 @@ def _pairs(intents, terminals):
             _fail("delivery_observation_ambiguous")
         observations.add(observation)
         baseline = intent["baseline"]
-        if baseline["kind"] == "success":
-            if baseline["record_id"] in successors:
+        if baseline["kind"] in {"success", "recovery"}:
+            if baseline["kind"] == "recovery":
+                recovery_pair = recoveries.get(baseline["record_id"])
+                if not recovery_pair:
+                    _fail("delivery_recovery_missing")
+                proof = recovery_pair[1]
+                origin = proof["request"]["report_id"]
+                original = intents.get(origin)
+                if not original or proof["record_sha256"] != baseline["record_sha256"] or proof["outcome"] != "confirmed_applied" or not proof["resume_ready"] or proof["target"] != intent["target"] or proof["request"]["binding_id"] != intent["request"]["binding_id"] or {k: proof["applied"][k] for k in ["revision", "state"]} != {k: baseline[k] for k in ["revision", "state"]} or original[1]["source"]["observation_revision"] >= intent["source"]["observation_revision"]:
+                    _fail("delivery_recovery_provenance_invalid")
+            else:
+                origin = baseline["record_id"]
+            if origin in successors:
                 _fail("delivery_successor_ambiguous")
-            successors.add(baseline["record_id"])
-            predecessor = terminals.get(baseline["record_id"])
-            if not predecessor or predecessor[1]["outcome"] != "success" or predecessor[1]["record_sha256"] != baseline["record_sha256"] or predecessor[1]["after"] != {k: baseline[k] for k in ["revision", "state"]} or predecessor[1]["target"] != intent["target"] or predecessor[1]["request"]["binding_id"] != intent["request"]["binding_id"] or predecessor[1]["request"]["expected_observation_revision"] >= intent["source"]["observation_revision"]:
-                _fail("delivery_baseline_provenance_invalid")
+            successors.add(origin)
+            if baseline["kind"] == "success":
+                predecessor = terminals.get(baseline["record_id"])
+                if not predecessor or predecessor[1]["outcome"] != "success" or predecessor[1]["record_sha256"] != baseline["record_sha256"] or predecessor[1]["after"] != {k: baseline[k] for k in ["revision", "state"]} or predecessor[1]["target"] != intent["target"] or predecessor[1]["request"]["binding_id"] != intent["request"]["binding_id"] or predecessor[1]["request"]["expected_observation_revision"] >= intent["source"]["observation_revision"]:
+                    _fail("delivery_baseline_provenance_invalid")
     for identity, (_, terminal) in terminals.items():
         intent = intents.get(identity)
         if terminal["intent_sha256"] is not None:
@@ -353,8 +372,10 @@ def publish(root: Path, workspace_id: str, request: dict) -> dict:
         except (ValueError, OSError, RuntimeError):
             _fail("delivery_directory_unavailable")
     with writer_lock(workspace / "work/plans/.records.lock"), writer_lock(base_dir / ".deliveries.lock"):
+        from . import azure_recovery as recovery
         intents, terminals = _rows(intent_dir, workspace_id, "intent"), _rows(terminal_dir, workspace_id, "terminal")
-        _pairs(intents, terminals)
+        reconciliations = recovery.load_records(workspace, workspace_id, intents, terminals)
+        _pairs(intents, terminals, reconciliations)
         for _, intent in intents.values():
             if intent["request"]["binding_id"] == binding["record_id"] and (intent["binding_sha256"] != binding["record_sha256"] or intent["source"]["plan_definition_sha256"] != binding["source"]["plan_definition_sha256"] or (intent["source"]["plan_id"], intent["source"]["plan_revision"]) != (binding["request"]["plan_id"], binding["request"]["plan_revision"])):
                 _fail("delivery_binding_provenance_invalid")
@@ -368,18 +389,24 @@ def publish(root: Path, workspace_id: str, request: dict) -> dict:
             if old[1]["request"] != request or old[1]["target"] != target:
                 _fail("writer_report_identity_conflict")
             return _result(old[1], old[0], True)
-        for other_id, (_, intent) in intents.items():
-            if intent["target"] == target:
-                terminal = terminals.get(other_id)
-                if terminal is None or terminal[1]["outcome"] == "unknown":
-                    _fail("writer_target_unresolved")
-                if (intent["source"]["plan_id"], intent["source"]["plan_revision"]) == (binding["request"]["plan_id"], binding["request"]["plan_revision"]) and intent["request"]["expected_observation_revision"] == request["expected_observation_revision"]:
-                    _fail("writer_observation_already_dispatched")
         successes = [v for _, v in terminals.values() if v["target"] == target and v["outcome"] == "success"]
         previous = request.get("previous_report_id")
+        previous_reconciliation = request.get("previous_reconciliation_id")
+        selected_recovery = None
+        discharged = set()
         selected = next(r["observation"] for r in capture["items"] if r["item_id"] == 21)
         baseline = {"kind": "import", "record_id": capture["record_id"], "record_sha256": capture["record_sha256"], "revision": selected["revision"], "state": selected["state"]}
-        if previous is None:
+        if previous_reconciliation is not None:
+            selected_recovery = reconciliations.get(previous_reconciliation)
+            if not selected_recovery:
+                _fail("writer_recovery_predecessor_missing")
+            proof = selected_recovery[1]
+            origin = intents.get(proof["request"]["report_id"])
+            if not origin or proof["target"] != target or proof["request"]["binding_id"] != request["binding_id"] or request["expected_observation_revision"] <= origin[1]["source"]["observation_revision"] or not recovery.eligible(proof, intents, terminals, reconciliations):
+                _fail("writer_recovery_predecessor_unavailable")
+            discharged = {origin[1]["record_id"]} | recovery.ancestry_before(origin[1], intents, terminals, reconciliations)
+            baseline = {"kind": "recovery", "record_id": previous_reconciliation, "record_sha256": proof["record_sha256"], **{k: proof["applied"][k] for k in ["revision", "state"]}}
+        elif previous is None:
             if successes:
                 _fail("writer_success_predecessor_required")
         else:
@@ -389,6 +416,14 @@ def publish(root: Path, workspace_id: str, request: dict) -> dict:
             if any(v["request"].get("previous_report_id") == previous for _, v in intents.values()):
                 _fail("writer_success_predecessor_consumed")
             baseline = {"kind": "success", "record_id": previous, "record_sha256": predecessor[1]["record_sha256"], **predecessor[1]["after"]}
+            discharged = recovery.ancestry(previous, intents, terminals, reconciliations)
+        for other_id, (_, intent) in intents.items():
+            if intent["target"] == target:
+                terminal = terminals.get(other_id)
+                if other_id not in discharged and (terminal is None or terminal[1]["outcome"] == "unknown"):
+                    _fail("writer_target_unresolved")
+                if (intent["source"]["plan_id"], intent["source"]["plan_revision"]) == (binding["request"]["plan_id"], binding["request"]["plan_revision"]) and intent["request"]["expected_observation_revision"] == request["expected_observation_revision"]:
+                    _fail("writer_observation_already_dispatched")
         if len(intents) >= MAX_RECORDS or len(terminals) >= MAX_RECORDS or any(importer._target(d, identity).exists() for d in [intent_dir, terminal_dir]):
             _fail("delivery_capacity_unavailable")
         plan = importer._plan(workspace, workspace_id, binding["request"]["plan_id"], binding["request"]["plan_revision"], request["expected_observation_revision"], root)
@@ -423,12 +458,16 @@ def publish(root: Path, workspace_id: str, request: dict) -> dict:
             observation = _observation(before_value, context, 21, token, anchor)
             metadata = _metadata(_transport(profile, token, "workitemtypes/Task"))
             protected = _protected(before_value, observation)
+            recovered_projection = recovery._projection(before_value, observation) if selected_recovery is not None else None
         except (WriterError, ValueError, TypeError, KeyError, RecursionError) as exc:
             terminal["diagnostic_code"] = "metadata_invalid" if str(exc) == "metadata_invalid" else "fresh_read_failed"
             return finish()
+        if selected_recovery is not None and recovered_projection != selected_recovery[1]["applied"]:
+            terminal.update(outcome="conflict", diagnostic_code="candidate_conflict")
+            return finish()
         stamp = _now()
         snapshot = {"organization": context["organization"], "project": context["project"], "item_id": 21, "work_item_type": "Task", "revision": observation["revision"], "state": observation["state"], "observed_at": stamp}
-        envelope = {"schema_version": 1, "report_id": identity, "target": {"workspace_id": workspace_id, "connection_id": profile["connection_id"], "organization": context["organization"], "project": context["project"], "item_id": 21}, "binding": {"plan_id": plan["plan_id"], "plan_revision": plan["plan_revision"], "included_step_ids": group["included_step_ids"], "completion_criterion": group["completion_criterion"], "initial_binding": previous is None}, "local_snapshot": plan, "expected_observation_revision": request["expected_observation_revision"], "completion": request["completion"], "work_authorization": request["work_authorization"], "remote_snapshot": snapshot, "baseline": {**snapshot, "revision": baseline["revision"], "state": baseline["state"]}, "metadata": metadata, "artifacts": request.get("artifacts", [])}
+        envelope = {"schema_version": 1, "report_id": identity, "target": {"workspace_id": workspace_id, "connection_id": profile["connection_id"], "organization": context["organization"], "project": context["project"], "item_id": 21}, "binding": {"plan_id": plan["plan_id"], "plan_revision": plan["plan_revision"], "included_step_ids": group["included_step_ids"], "completion_criterion": group["completion_criterion"], "initial_binding": baseline["kind"] == "import"}, "local_snapshot": plan, "expected_observation_revision": request["expected_observation_revision"], "completion": request["completion"], "work_authorization": request["work_authorization"], "remote_snapshot": snapshot, "baseline": {**snapshot, "revision": baseline["revision"], "state": baseline["state"]}, "metadata": metadata, "artifacts": request.get("artifacts", [])}
         candidate = build_candidate(envelope)
         if candidate["outcome"] != "candidate":
             terminal.update(outcome="conflict" if candidate["outcome"] == "conflict" else "hold", diagnostic_code="candidate_" + candidate["outcome"])
