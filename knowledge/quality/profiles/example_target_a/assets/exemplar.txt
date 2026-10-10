@@ -1,0 +1,15 @@
+# Acceptance Report
+
+## Decision
+
+Verdict: The observed ordinary-input result matches the expectation.
+
+## Results
+
+| Item | Outcome | Evidence |
+| --- | --- | --- |
+| Ordinary input | match | Input 10; expected 20; observed 20 |
+
+## Unknowns
+
+Scope: One ordinary input only. The upper boundary was not executed.

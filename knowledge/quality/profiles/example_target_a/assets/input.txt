@@ -1,0 +1,2 @@
+Prepare the Target A acceptance report using the selected target quality profile.
+Ordinary input 10, expected output 20, observed output 20. Upper boundary untested.

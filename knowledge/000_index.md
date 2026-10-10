@@ -91,6 +91,9 @@ Skills should reference these pages by XID and load only what is needed.
 - [C# quality review criteria](quality/100_csharp_quality_review_criteria.md#xid-8C4D2A7E5101)
 - [Test design criteria](quality/110_test_design_criteria.md#xid-8C4D2A7E5102)
 - [IPA test viewpoint supplement](quality/120_ipa_test_viewpoint_supplement.md#xid-8C4D2A7E5103)
+- [Target output quality profiles](quality/130_target_output_quality_profiles.md#xid-D6A9F3B821C4)
+- [Example Target A acceptance quality](quality/profiles/example_target_a/profile.md#xid-A7D2C9E461B0)
+- [Example Target B acceptance quality](quality/profiles/example_target_b/profile.md#xid-B8E3D0F572C1)
 
 ### Python
 

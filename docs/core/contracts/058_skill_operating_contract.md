@@ -75,6 +75,11 @@ The user request and active Skill outputs, method, and criteria own the format;
 common principles do not impose universal headings or mandatory profiles.
 Machine Run Log keys, status enums, IDs, paths, and commands remain stable.
 
+For enrolled fixed-format outputs, the opt-in
+[Fixed Output Quality Protocol](112_fixed_output_quality_protocol.md#xid-F9C2A8D471B0)
+supplies approved format/criteria to existing per-run review. Optional model
+qualification does not replace output-content acceptance.
+
 ## Required Legacy Meta Block
 
 For `legacy_split_v1`, the compact declaration is the version shorthand:

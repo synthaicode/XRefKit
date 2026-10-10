@@ -45,6 +45,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
 
     command = args[0]
+    if args[:2] == ["skill", "reporting"]:
+        from .reporting import main as reporting_main
+
+        return reporting_main(args[2:])
     if command == "gateway":
         from .gateway import main as gateway_main
 

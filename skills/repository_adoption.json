@@ -1561,7 +1561,7 @@
       "skill_id": "skill_calibration_evaluation",
       "definition_path": "skills/os/skill_calibration_evaluation/SKILL.v1.md",
       "definition_xid": "E3B7A1C8D490",
-      "definition_sha256": "ad97581b72490563baadb2114675e68546206bfc3c0e475a3dd72ab97489e617",
+      "definition_sha256": "168d2bbdfe07a1b53a5f178002be65e8cb3d4dd6e8f9bdfb62b4c0f2ae2e10ab",
       "legacy_ids": [],
       "legacy_sources": [
         {
@@ -1628,7 +1628,7 @@
       "skill_id": "skill_flow_authoring",
       "definition_path": "skills/os/skill_flow_authoring/SKILL.v1.md",
       "definition_xid": "B8D1A4C7E260",
-      "definition_sha256": "135602be9f208e2b20c0a25a84009459478f6f4c67a9fe7cd1ad78f49b581e68",
+      "definition_sha256": "b99f6995773800de8b701858babed7dba3e1adb2fb92ce2d6feecacb49c5b1d3",
       "legacy_ids": [],
       "legacy_sources": [
         {
