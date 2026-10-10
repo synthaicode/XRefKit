@@ -27,7 +27,7 @@ Bind workspace_id + connection_id + organization + project + external item ID + 
 
 User confirmed automatic reflection of selected Task state/summary after applicable completion criteria are checked. PBI acceptance, assignee/deadline changes and conflict overwrites are excluded. Current trial human owner for PBI acceptance, conflict resolution and new Bug registration is the user. Future project-specific delegation requires an explicit recorded change.
 
-Summary contains exact source tuple/revision, factual outcome, confirmation/revalidation reason where relevant, and team-accessible evidence links. Keep secrets, raw logs and local absolute paths out. Preserve human descriptions. System.History is append-only result history, not a replacement for the current-state document.
+Summary contains exact source tuple/revision, factual outcome, confirmation/revalidation reason where relevant, and safe artifact IDs/versions marked availability=local_only. Artifacts are authoritative in the local project workspace. Do not upload attachments or invent shared URLs by default. Remote readers cannot automatically open local artifacts; no teammate-access claim is made. Keep secrets, raw logs and local absolute paths out. Preserve human descriptions. System.History is append-only result history, not a replacement for the current-state document.
 
 ## State projection
 
