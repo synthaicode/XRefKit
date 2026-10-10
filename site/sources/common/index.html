@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Common foundation | XRefKit</title><meta name="description" content="Shared infrastructure, current development, and reference delivery." /><link rel="stylesheet" href="../assets/common.css" /><script src="../assets/inline-svg.js" defer></script></head>
+<body><main class="landing detail-page"><nav class="page-header" aria-label="Page navigation"><a href="../">← XRefKit Top</a><a href="../common/">Common foundation</a><a href="../protocols/">Common protocols</a><a href="../skills/">Individual Skills</a></nav>
+    <section class="landing-section" id="common" aria-labelledby="common-heading">
+      <div class="section-heading">
+        <p class="concept-label">Shared across work</p>
+        <h1 id="common-heading">Common foundation</h1>
+        <p>XRefKit provides a common workflow protocol, reference resolution, execution records, verification, and handoff controls. Individual Skills use this foundation and define the method for their particular work.</p>
+        <div class="tier-links"><a href="../protocols/#protocol">Explore the common protocols</a><a href="../protocols/#reporting">How reporting works</a></div>
+      </div>
+      <div class="learning-tiers">
+        <section class="learning-tier"><span aria-hidden="true">1</span><div><p class="concept-label">Available in the published package</p><h3>A traceable foundation for AI work</h3><p>Use stable XIDs to resolve Skills and Knowledge, record execution progress and evidence, and check the work record before handoff. The Skill Run Dashboard makes recorded state visible for human review. MCP provides an optional way to deliver the managed assets to AI clients.</p><div class="tier-links"><a href="https://github.com/synthaicode/XRefKit/tree/v0.6.2">Explore the release source</a><a href="../#getting-started">Installation and first steps</a></div></div></section>
+        <section class="learning-tier"><span aria-hidden="true">2</span><div><p class="concept-label">Common foundation · current development · quality</p><h3>Preserve accepted output quality across runs</h3><p>The common quality protocol connects per-run review and optional model qualification to target-specific Knowledge profiles. Those profiles retain approved formats, examples, inputs, and review criteria; each Skill defines its output requirements and references the applicable Knowledge. A format check alone does not establish content quality; human acceptance remains explicit.</p></div></section>
+        <section class="learning-tier"><span aria-hidden="true">3</span><div><p class="concept-label">Common foundation · current development · planning</p><h3>Connect plans to execution evidence</h3><p>Local plan views bring tasks, dependencies, completion conditions, confirmation questions, and evidence together. Dashboard views and generated Markdown and Mermaid views help people inspect progress. These are shared record and display tools; producing a plan remains the responsibility of the selected Skill or work instruction. Task completion and acceptance of the business outcome remain separate decisions.</p></div></section>
+        <section class="learning-tier"><span aria-hidden="true">4</span><div><p class="concept-label">Common foundation · current development · integration trial</p><h3>Share selected work state with Azure DevOps</h3><p>The current trial includes workspace-scoped, test-only connection checks and a reviewed mapping design for local and Azure work items. The next integration work prepares selected Task state and result summaries while keeping artifacts authoritative locally. This integration shares execution state; individual Skills still own their work methods. Full synchronization and production writes are not available in this trial.</p></div></section>
+      </div>
+      <p class="section-cta"><a href="https://github.com/synthaicode/XRefKit">Follow the reference implementation on GitHub</a></p>
+    </section>    <section class="landing-section distribution-main" aria-labelledby="distribution-heading">
+      <div class="section-heading">
+        <p class="concept-label">Common foundation</p>
+        <h2 id="distribution-heading">Sharing the operating base</h2>
+        <p>MCP delivers the same managed Skills, Knowledge, and execution contracts to AI clients used by multiple people.</p>
+      </div>
+      <object class="distribution-object" data="../assets/xrefkit_mcp_en.svg" type="image/svg+xml" aria-label="MCP selects managed XRefKit assets and distributes them to multiple AI clients">
+        <a href="../assets/xrefkit_mcp_en.svg">Open the XRefKit MCP distribution model</a>
+      </object>
+      <div class="model-reading">
+        <h3>What MCP shares</h3>
+        <p>An organization maintains Skills, Knowledge, execution contracts, catalogs, and XIDs as managed XRefKit assets. MCP presents the catalogs, then selects and resolves only the assets needed for the current purpose. Users receive the same identifiers and managed versions without loading the entire repository into every AI context.</p>
+        <p>MCP is a read boundary for discovery, selection, resolution, and delivery. Skill execution, client-side tool side effects, Evidence recording, and closure remain on each user's client. People can therefore share the same Knowledge and procedures without merging their execution permissions or work records.</p>
+      </div>
+      <p class="improvement-note">MCP shares managed definitions and Knowledge. The MCP server does not perform business work on behalf of its users.</p>
+    </section>    <section class="landing-section">
+      <div class="section-heading"><p class="concept-label">Common foundation · reading guide</p><h2>Choose by purpose</h2><p>Start from the canonical model, then read only the depth required for the current question.</p></div>
+      <div class="learning-tiers">
+        <section class="learning-tier"><span>1</span><div><h3>Understand the need and the model</h3><p>See which AI characteristics require an operating structure and learn the canonical elements.</p><div class="tier-links"><a href="../en/slides/why-ai-organization-needed/">Turning AI Use into Continuous Business Execution</a><a href="../en/model/">Operating Model and 12 Element Definitions</a></div></div></section>
+        <section class="learning-tier"><span>2</span><div><h3>Operate AI work</h3><p>Understand how bounded responsibilities connect and where tool, AI, and human decisions belong.</p><div class="tier-links"><a href="../en/slides/063_ai_organization_explainer_clear/">XRefKit Business Execution Model</a><a href="../en/slides/064_ai_team_operating_boundary/">AI Work Operating Boundary</a></div></div></section>
+        <section class="learning-tier"><span>3</span><div><h3>Implement, improve, and distribute</h3><p>Connect the repository structure to evidence-led improvement and distribution of the next version.</p><div class="tier-links"><a href="../en/slides/065_xrefkit_repository_overview/">XRefKit Repository Overview</a><a href="../en/slides/073_xrefkit_organization_distribution/">XRefKit Improvement and Distribution</a></div></div></section>
+      </div>
+    </section>    <section class="landing-section" aria-labelledby="concepts-heading">
+      <div class="section-heading"><p class="concept-label">Common foundation · concepts</p><h2 id="concepts-heading">Canonical concepts</h2><p>Permanent concept pages define the problems XRefKit is intended to solve and connect them to the operating model.</p></div>
+      <div class="learning-tier canonical-concept"><span>→</span><div><p class="concept-label">Permanent problem definition</p><h3><a href="../concepts/judgment-replication/">Judgment Replication</a></h3><p>Organizations do not scale by adding processing capacity alone. They scale by replicating judgment—and traditional organizations do this slowly, lossily, and repeatedly. XRefKit replaces judgment retransmission with stable, versioned reference distribution.</p></div></div>
+    </section>
+</main></body></html>
