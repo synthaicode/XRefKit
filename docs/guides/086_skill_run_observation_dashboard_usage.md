@@ -869,3 +869,75 @@ Git の追跡対象である `observations/` 内の根拠とその SHA-256 が�
 インストールされたパッケージの実行可否や共有配布には適用しません。
 試行可能であることと、実際の計画の完了・承認は別の記録です。
 計画の実行時には通常の入力、Knowledge、品質確認と実行ログを引き続き必要とします。
+
+## Azure の読み取り専用取り込みと計画への対応付け
+
+取り込みと対応付けは別の操作です。取り込み結果はワークスペース内の
+`work/integrations/imports/`、対応付けは `work/integrations/bindings/` に保存します。
+既存の計画 JSON・Markdown・進捗・承認や、以前の接続プロファイルを変更しません。
+読み取りが成功しても、書き込み権限や PBI の受入を確認したことにはなりません。
+
+承認された test 接続に、読み取る PBI とすべての Task ID が明示されていることが必要です。
+接続はワークスペースから選び、別の接続や production へ自動で切り替えません。
+資格情報は接続に記録された環境変数名だけを使います。PAT を入力 JSON や引数に書かないでください。
+
+取り込み入力の例です。`import_id` は一回の取得を識別します。
+
+```json
+{
+  "schema_version": 1,
+  "import_id": "pbi10-import-001",
+  "connection_id": "ai01-scrum-pbi10-import-test",
+  "organization": "seijim0pattern01",
+  "project": "AI01-Scrum",
+  "pbi_id": 10,
+  "task_ids": [19, 21, 22, 23]
+}
+```
+
+```powershell
+python -m xrefkit.azure_import capture --root . --workspace-id xrefkit-local --input import-input.json
+```
+
+同じ ID と入力で再実行すると保存済みの取得結果を返し、新しい通信を行いません。
+これは新しい情報の確認ではありません。新しく取得する場合は別の `import_id` を指定します。
+一部の取得が失敗した場合も成功した観測は残しますが、不完全な取得結果は対応付けに使えません。
+認証が拒否された後の残り項目は「未取得」と記録します。
+
+対応付け入力は `schema_version: 1`、`binding_id`、`import_id`、`plan_id`、
+`plan_revision`、`expected_observation_revision`、`approval_refs`、`mapping` を指定します。
+`mapping` の各行は `item_id`、重複のない `included_step_ids`、
+`completion_criterion` を持ちます。たとえば Task19 は I1/I2/I3 に対応します。
+すべての選択 Task を一度ずつ指定し、同じ工程を複数の Task に割り当てません。
+完了条件と対応付けの承認根拠は入力に明記し、状態や件数から推測しません。
+`expected_observation_revision` は実際の保存済み計画を確認して指定します。
+
+```powershell
+python -m xrefkit.azure_import bind --root . --workspace-id xrefkit-local --input binding-input.json
+```
+
+対応付けは取得結果のハッシュ、外部 ID・観測 revision、計画の版・観測 revision・
+定義のハッシュを保存します。同じ入力の再実行は保存済み記録を返し、
+同じ ID で内容が異なる入力は拒否します。取り込み後に対応付けを拒否しても、
+取得結果は失われません。二つの操作を一つの保存処理とみなす保証はありません。
+
+基準との比較では、新しい取り込み入力に `comparison_binding_id` と
+現在の `expected_observation_revision` を追加します。基準は指定した対応付けから選び、
+最新のファイルや更新時刻で推測しません。ローカルの観測版が進んだ場合も、
+明示した版が一致すれば再取得できます。最初の対応付けの観測記録は保持します。
+外部の revision・状態・取得した項目が変わった場合は `changed` / `needs_resolution: true`
+として前後の差分を保存し、元の基準や計画を置き換えません。
+
+各 ID は一回の GET で取得し、再試行・全プロジェクト検索・関連 URL の追跡は行いません。
+30秒はソケット操作のタイムアウトで、全体の終了時間の保証ではありません。
+一応答と一保存記録はそれぞれ 1 MiB、選択 Task と保存記録数はそれぞれ最大200です。
+上限超過では保存を拒否し、以前の取得記録を自動削除しません。
+説明や受入条件の HTML は未信頼の文字列として JSON に保存し、実行・表示しません。
+CLI は項目 ID と結果・診断コードを返し、拒否した本文や資格情報を表示しません。
+
+Azure の関連 URL がプロジェクト GUID を使う場合は、先に取得・検証した PBI の
+自己 URL からだけ GUID を確認します。Task の自己 URL と親 PBI の URL も
+同じ GUID・組織・指定 ID に一致する必要があり、Task だけで別の GUID を採用しません。
+検証できた GUID と正規化した URL は取得記録に保持し、URL を追跡しません。
+GUID を確認できない場合は、従来の組織または指定プロジェクト名の形式に限ります。
+以前の取得記録で URL の確認欄がない場合は「未記録」として読み、書き換えません。

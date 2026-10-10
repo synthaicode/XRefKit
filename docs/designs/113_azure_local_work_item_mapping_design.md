@@ -3,7 +3,7 @@
 
 # Azure Local Work Item Mapping Design
 
-Status: accepted trial mapping contract, independently reviewed. This is the downstream integration contract. Implemented Task17 remains test-only read; this document does not expand any connection profile or execute writes.
+Status: accepted trial mapping and read-only importer contract. Test-only connection reading and deterministic offline update candidates are verified; Task19 product import/binding has passed independent source review, permitted live API checks and the repository quality gate. Live update publication and recovery remain future work. This document does not itself expand profiles or execute requests.
 
 ## Identity and item mapping
 
@@ -44,11 +44,57 @@ Summary contains exact source tuple/revision, factual outcome, confirmation/reva
 
 An expected difference between a new local candidate and unchanged remote baseline is a normal update, not a conflict. Remote raw state is an observation; it does not replace local execution state or prove PBI acceptance. Remaining step counts continue the existing local projection. Do not manufacture effort/time estimates or RemainingWork=0 from task counts.
 
+## Read-Only Product Import and Explicit Binding
+
+The authorized test target is workspace `xrefkit-local`, organization
+`seijim0pattern01`, project `AI01-Scrum`, PBI10 and selected Tasks19/21/22/23.
+Use a separate explicitly registered read-only profile. The existing
+`ai01-scrum-test` PBI10-only profile stays unchanged. Current plan is
+`pbi10-remaining-integration/v2`; each operation supplies the expected current
+observation revision instead of assuming a permanently fixed revision.
+
+Import and binding are separate actions with separate success outcomes. Import
+performs bounded per-ID GETs with exact project/type/ID and Task parent-PBI
+validation, recording an immutable receipt and per-item outcomes. No discovery,
+relation traversal, attachments or remote mutation is implied. A partial or
+failed receipt retains truthful evidence and cannot be bound. Replaying an
+import ID returns the captured receipt, not a fresh observation.
+
+GUID-qualified response URLs are accepted only using the validated root PBI's
+canonical self URL as the project GUID anchor, together with exact configured
+TeamProject, organization, type and ID checks. Every GUID-qualified Task self
+URL and parent relation must match that anchor and the expected item ID.
+Task URLs cannot establish an independent project authority. Existing named
+project and organization-only routes retain their checks. Response URLs are
+never followed. Preserve the sanitized anchor in the receipt; absent and null
+legacy anchors both mean unknown during comparison, without rewriting receipts.
+
+Binding consumes a complete receipt and the actual current plan under revision
+and lock checks, with explicit approval references and external Task criteria.
+The selected groups are Task19 to I1/I2/I3,21 to W1/W2/W3,22 to R1/R2/R3 and23
+to A1/A2/A3. Save binding separately and immutably; do not update local plan
+status, approval, definitions or run records from remote fields.
+
+A later import may compare against an explicitly selected binding baseline.
+Remote changes produce differences and a resolution requirement; neither the
+baseline nor local plan is silently replaced. A legitimate later local
+observation is permitted only when its supplied expected revision matches the
+actual record. Original binding provenance remains unchanged. There is no
+multi-file atomic success claim when import succeeds but binding fails.
+
+Implementation acceptance requires negative scope/hierarchy/partial-failure
+checks plus actual permitted API import and binding evidence. Independent source review and permitted live import/binding checks passed.
+Final-source replay and fresh acquisition at local observation revision 4
+preserved the plan and old profile; see task19-product-live-proof.json and
+task19-final-source-live-proof.json under work/evidence/client-work-management.
+The repository-wide gate passed (1226 tests, 4 platform skips, 83 subtests), and implementation/review runtimes are closed. These results do
+not prove remote write permission or complete synchronization.
+
 ## Synchronization boundary
 
 Before a future write, resolve exact binding, allowed operations, selected item, latest local observation and expected remote revision. Check/CAS the expected local observation_revision immediately before publication so concurrent revalidation invalidates a stale Done candidate. Recheck metadata transition and send only permitted State/History changes together with a JSON Patch test on /rev for optimistic revision protection. A conflict does not overwrite either side. Keep the candidate, observed differences and user's resolution. Repeated report identity must not append duplicate history; an ambiguous timeout requires remote reconciliation, not blind retry. Partial results are per item, never a batch-wide success claim. Saved local records remain authoritative even when sharing fails.
 
-Task18 settles mapping, not implementation of retries, outbox, transport or write permissions. Future writer must implement the above acceptance obligations before being enabled. Task17 profile remains read_work_item/PBI10 only; this contract does not authorize profile replacement or production use.
+This mapping and read-only import contract does not implement write retries, outbox, delivery reconciliation or write permissions. Future writer must implement the above acceptance obligations before being enabled. Task17 profile remains read_work_item/PBI10 only; this contract does not authorize profile replacement or production use.
 
 ## Validation and Implementation Boundary
 
@@ -56,7 +102,7 @@ The Task18 mapping proposal contains the captured Scrum metadata, required-field
 
 Task states in the accepted trial are To Do, In Progress, Done and Removed. PBI/Bug states are New, Approved, Committed, Done and Removed. Do not assume another project's process uses these names. Task has no AcceptanceCriteria field in the captured process; its completion criterion stays in the local plan/binding.
 
-Current executable capabilities are workspace-scoped test read and deterministic offline update-candidate generation from explicit captured snapshots. The offline generator validates grouped bindings and emits candidate/hold/conflict/invalid with not_sent and publish_ready=false; it does not fetch, send or certify evidence. Automatic synchronization, live grouped-binding publication, profile expansion and production activation remain downstream implementation. Contract acceptance does not enable them.
+Current executable capabilities are workspace-scoped test read, bounded read-only product import with explicit immutable binding, and deterministic offline update-candidate generation from explicit captured snapshots. The offline generator validates grouped bindings and emits candidate/hold/conflict/invalid with not_sent and publish_ready=false; it does not fetch, send or certify evidence. Automatic synchronization, live grouped-binding publication, profile expansion and production activation remain downstream implementation. Contract acceptance does not enable them.
 
 Metadata `alwaysRequired` fields (not a complete create/update payload specification):
 
