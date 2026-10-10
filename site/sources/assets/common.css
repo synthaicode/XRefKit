@@ -1638,3 +1638,59 @@ body {
     grid-row: 2;
   }
 }
+
+/* Landing comparisons keep every column readable on narrow screens. */
+.landing-section code {
+  overflow-wrap: anywhere;
+}
+
+.landing-responsive-table caption {
+  padding: 12px 15px;
+  color: var(--muted);
+  text-align: left;
+}
+
+@media (max-width: 720px) {
+  .landing-responsive-table {
+    display: block;
+    min-width: 0;
+  }
+
+  .landing-responsive-table caption,
+  .landing-responsive-table tbody,
+  .landing-responsive-table tr,
+  .landing-responsive-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .landing-responsive-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .landing-responsive-table tr + tr {
+    border-top: 4px solid var(--accent-soft);
+  }
+
+  .landing-responsive-table td {
+    border: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .landing-responsive-table td + td {
+    border-top: 1px solid var(--line);
+  }
+
+  .landing-responsive-table td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 6px;
+    color: var(--accent-strong);
+    font-size: 13px;
+    font-weight: 700;
+  }
+}
