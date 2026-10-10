@@ -546,6 +546,76 @@ not execute or promote the draft planning Skill.
 The protocol follows Microsoft's [PAT authentication guidance](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops)
 and [Get Work Item API 7.1](https://learn.microsoft.com/en-us/rest/api/azure/devops/wit/work-items/get-work-item?view=azure-devops-rest-7.1).
 
+## Offline Azure update candidate: Task21 preparation
+
+`xrefkit.azure_update_candidate.build_candidate(envelope)` is a pure local
+projection. It uses explicit recorded assertions and captured snapshots; it
+does not call AI, inspect credentials, contact Azure, change profiles, write
+files or certify completion criteria/evidence. This is a preparation slice,
+not the completed Task21 synchronization workflow. Import/binding, evidence
+policy and the authorized writer remain publication prerequisites.
+
+```powershell
+python -m xrefkit.azure_update_candidate --input <offline-envelope.json>
+```
+
+The CLI reads one named JSON and prints canonical ASCII-escaped JSON, so
+Unicode project names work with Windows console encodings. Repeated identical
+input produces identical output bytes, without clock/random values. An invalid
+input exits 1 with a fixed safe diagnostic; `candidate`, `hold` and `conflict`
+exit 0 as evaluated outcomes, **not** successful delivery. Input errors never
+echo arbitrary producer values. The input file is not modified.
+
+Strict envelope version 1 contains these required fields:
+
+| Field | Recorded data |
+|---|---|
+| `report_id`, `target` | Stable report ID; exact workspace/connection/organization/project/item identity |
+| `binding` | Plan ID/revision, unique included step IDs, external Task completion criterion, explicit initial-binding flag |
+| `local_snapshot`, `expected_observation_revision` | Valid stored v2 snapshot and positive expected observation revision; no live reread claim |
+| `completion` | Explicit criterion-confirmed boolean and local assertion refs; true requires refs |
+| `work_authorization` | Explicit active/rework booleans and refs; rework requires active; true requires refs |
+| `remote_snapshot`, `baseline` | Same exact Task identity, state/revision and timezone-aware `observed_at`, representing captured current and last agreed observations |
+| `metadata` | Captured Task states and explicit allowed transitions; no effective-permission claim |
+| `artifacts` (optional) | Unique `(artifact_id, version)` tuples, always `availability=local_only`; no path, URL or contents |
+
+The JSON file has the existing 1 MiB read bound and duplicate-key rejection.
+Included steps/refs/artifacts are bounded to 200. This generator's source and
+report IDs/versions accept at most 128 ASCII letters/digits/underscore/dot/
+hyphen; it does not change the general v2 schema. Target text is bounded to
+256 characters without controls or separators, refs to 2048 characters. Output
+History is HTML-escaped and bounded to 32 KiB; exceeding bounds rejects without
+silently truncating. Artifact summaries sort ID/version tuples canonically.
+
+The ordered decision compares exact identities first, then local observation
+and remote baseline. A stale local observation holds; remote state/revision
+change conflicts even if the desired state matches; Removed conflicts.
+Missing/unknown/unrecognized/blocked/escalated included steps hold. All included
+steps must be explicitly done, without outstanding revalidation, and the
+external criterion must be recorded confirmed before a Done candidate exists.
+Missing revalidation flags remain unrecorded; they do not invent a new local
+completion policy. In Progress requires actual active work and explicit
+authority; reopening Done additionally requires explicit rework. Pending does
+not roll an advanced remote state backward. Proposed transitions, including
+same-state transitions, must exist in supplied metadata.
+
+Every result remains `delivery_status=not_sent`, `network_performed=false`,
+`remote_freshness_verified=false`, `write_permission_verified=false` and
+`publish_ready=false`. Only a `candidate` includes a preview: `test /rev`,
+optional `add /fields/System.State` when different, and
+`add /fields/System.History`. Other outcomes have an empty patch. PBI/Bug,
+assignees, deadlines, estimates, RemainingWork, descriptions and relations are
+never proposed. Holds do not produce sendable History-only patches in this
+slice.
+
+History includes fixed reason codes, safe source tuples/revisions and status
+labels plus optional local artifact ID/version. Titles, raw errors, criteria
+prose, paths and assertion refs are never exported. No attachment/upload or
+accessible shared URL is inferred. Supplied assertions are not proof that refs
+were opened, sufficient or approved. Repeated report IDs do not prove delivery
+or deduplication; real publication requires current local/remote checks and the
+separately authorized writer.
+
 ## Default readable view: Markdown and Mermaid
 
 For local v2 work records, the primary readable view is a generated Markdown

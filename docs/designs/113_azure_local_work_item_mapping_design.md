@@ -56,7 +56,7 @@ The Task18 mapping proposal contains the captured Scrum metadata, required-field
 
 Task states in the accepted trial are To Do, In Progress, Done and Removed. PBI/Bug states are New, Approved, Committed, Done and Removed. Do not assume another project's process uses these names. Task has no AcceptanceCriteria field in the captured process; its completion criterion stays in the local plan/binding.
 
-Current executable capability is workspace-scoped test read only. Automatic synchronization, grouped-binding execution, profile expansion and production activation remain downstream implementation. Contract acceptance does not enable them.
+Current executable capabilities are workspace-scoped test read and deterministic offline update-candidate generation from explicit captured snapshots. The offline generator validates grouped bindings and emits candidate/hold/conflict/invalid with not_sent and publish_ready=false; it does not fetch, send or certify evidence. Automatic synchronization, live grouped-binding publication, profile expansion and production activation remain downstream implementation. Contract acceptance does not enable them.
 
 Metadata `alwaysRequired` fields (not a complete create/update payload specification):
 
