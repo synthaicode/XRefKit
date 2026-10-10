@@ -24,28 +24,15 @@
           <div class="hero-actions"><a class="primary-action" href="#getting-started">Start with XRefKit <span aria-hidden="true">↗</span></a><a class="secondary-action" href="#model">Explore the model <span aria-hidden="true">↓</span></a></div>
           <div class="hero-footnote"><span>REPOSITORY-NATIVE</span><span>STABLE REFERENCES</span><span>HUMAN ACCEPTANCE</span></div>
         </div>
-        <figure class="reference-map" aria-labelledby="reference-map-caption">
-          <div class="map-header"><span>THE REFERENCE GRAPH</span><span class="map-index">01 / XREFKIT</span></div>
-          <svg viewBox="0 0 520 430" role="img" aria-labelledby="map-title map-desc" xmlns="http://www.w3.org/2000/svg">
-            <title id="map-title">From Goal to human acceptance</title><desc id="map-desc">A schematic overview: a Goal leads to a bounded Skill. Knowledge supports the Skill, Evidence records the work, and human acceptance remains a separate decision.</desc>
-            <defs><pattern id="map-grid" width="26" height="26" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#426078" opacity=".5" /></pattern><linearGradient id="map-core" x2="1" y2="1"><stop stop-color="#254f5c"/><stop offset="1" stop-color="#172e42"/></linearGradient></defs>
-            <rect width="520" height="430" fill="url(#map-grid)"/>
-            <g class="map-orbits" aria-hidden="true" fill="none" stroke="#b9ef76">
-              <circle cx="260" cy="218" r="112" opacity=".12"/><circle cx="260" cy="218" r="166" opacity=".08"/>
-              <circle class="map-orbit-trace" cx="260" cy="218" r="166" stroke-width="2" stroke-dasharray="70 973"/>
-            </g>
-            <circle class="map-aura" aria-hidden="true" cx="260" cy="218" r="82" fill="#b9ef76" opacity=".1"/>
-            <g class="map-links" fill="none" stroke="#526d80" stroke-width="1.5"><path d="M260 104V176"/><path d="M150 218H185"/><path d="M335 218H370"/><path d="M260 260V330"/><path d="M370 237V306H280" stroke-dasharray="4 5"/></g>
-            <g class="map-signal" fill="none" stroke="#c2f879" stroke-width="2"><path d="M260 104V176"/><path d="M150 218H185"/><path d="M335 218H370"/><path d="M260 260V330"/></g>
-            <rect class="map-node map-goal" x="183" y="45" width="154" height="59" rx="10" fill="#17293b" stroke="#3b5368"/><circle cx="208" cy="74" r="4" fill="#b9ef76"/><text x="226" y="81" fill="#e9f1f7" font-size="19">Goal</text>
-            <rect class="map-core map-node" x="185" y="176" width="150" height="84" rx="12" fill="url(#map-core)" stroke="#b9ef76"/><text x="260" y="207" text-anchor="middle" fill="#b9ef76" font-size="10" letter-spacing="2">BOUNDED WORK</text><text x="260" y="236" text-anchor="middle" fill="#fff" font-size="25" font-weight="600">Skill</text>
-            <rect x="10" y="188" width="140" height="60" rx="10" fill="#17293b" stroke="#3b5368"/><text x="80" y="225" text-anchor="middle" fill="#c3d2df" font-size="17">Knowledge</text>
-            <rect class="map-node map-evidence" x="370" y="188" width="140" height="60" rx="10" fill="#17293b" stroke="#3b5368"/><text x="440" y="225" text-anchor="middle" fill="#c3d2df" font-size="17">Evidence</text>
-            <rect x="153" y="330" width="214" height="59" rx="10" fill="#b9ef76"/><text x="260" y="366" text-anchor="middle" fill="#14271f" font-size="18" font-weight="600">Human acceptance</text>
-            <text x="279" y="142" fill="#7d98ad" font-size="10" letter-spacing="1">ROUTE</text><text x="279" y="294" fill="#7d98ad" font-size="10" letter-spacing="1">CHECK · REVIEW · HANDOFF</text>
-          </svg>
-          <figcaption id="reference-map-caption"><span class="map-caption-mark" aria-hidden="true">↳</span> Shared references. Traceable work. <span>Accountable decisions.</span></figcaption>
-          <label class="map-motion"><input type="checkbox" checked aria-label="Animate reference diagram" /><span aria-hidden="true"></span> Animate diagram</label>
+        <figure class="trace-dossier" aria-labelledby="trace-caption">
+          <div class="trace-heading"><span>FOLLOW THE EVIDENCE</span><span>ILLUSTRATIVE EXAMPLE</span></div>
+          <div class="trace-output"><div class="output-icon" aria-hidden="true">↗</div><div><span class="trace-label">OUTPUT / C# REVIEW</span><h2>A finding you can inspect.</h2><p>The finding, its rationale, and unresolved items travel together.</p></div></div>
+          <div class="trace-thread">
+            <details class="trace-record" name="output-trace" open><summary><span class="trace-number">01</span><span>Trace the references<small>Skill + selected Knowledge</small></span><span class="trace-expand" aria-hidden="true">+</span></summary><div class="trace-body"><p>Which procedure and criteria informed this finding?</p><div class="reference-tags"><a href="./skills/#csharp-example">C# review Skill ↗</a><a href="./en/model/#knowledge">Selected Knowledge ↗</a></div><p class="trace-note">Used XIDs connect the record to stable references.</p></div></details>
+            <details class="trace-record" name="output-trace"><summary><span class="trace-number">02</span><span>Inspect the checks<small>Record verification + output review</small></span><span class="trace-expand" aria-hidden="true">+</span></summary><div class="trace-body"><p>Check the execution record. Review output validity separately when required. Keep unresolved items visible.</p><a href="./protocols/#reporting">Explore reporting and evidence ↗</a></div></details>
+            <details class="trace-record" name="output-trace"><summary><span class="trace-number">03</span><span>Keep the decision human<small>Acceptance against the Goal</small></span><span class="trace-expand" aria-hidden="true">+</span></summary><div class="trace-body"><p>A person inspects the output and Evidence against acceptance conditions, then accepts, returns, stops, or routes the work onward.</p><a href="./en/model/#acceptance">Explore human acceptance ↗</a></div></details>
+          </div>
+          <figcaption id="trace-caption">One output. Its references, checks, and decision context.<br /><span>A schematic example, not a live execution record.</span></figcaption>
         </figure>
       </div>
       <div class="hero-bottom"><span>Built around a simple idea</span><a href="./concepts/judgment-replication/">Organizations scale by replicating judgment. <span aria-hidden="true">↗</span></a></div>
