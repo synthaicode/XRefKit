@@ -1694,3 +1694,26 @@ body {
     font-weight: 700;
   }
 }
+
+.release-reading p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.release-reading .tier-links {
+  align-items: stretch;
+}
+
+.release-reading .tier-links a {
+  display: block;
+  max-width: 100%;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.section-cta a {
+  display: inline-block;
+  max-width: 100%;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
