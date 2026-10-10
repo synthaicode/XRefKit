@@ -3,7 +3,7 @@
 
 # Azure Local Work Item Mapping Design
 
-Status: accepted trial mapping and read-only importer contract. Test-only connection reading and deterministic offline update candidates are verified; Task19 product import/binding has passed independent source review, permitted live API checks and the repository quality gate. Live update publication and recovery remain future work. This document does not itself expand profiles or execute requests.
+Status: accepted trial mapping with verified read-only import/binding and selected test Task21 State/History delivery. Independent source review, actual product API/readback/replay checks and the repository quality gate passed. Automated recovery, broader targets, production and PBI acceptance remain outside this verified scope. This document does not itself expand profiles or execute requests.
 
 ## Identity and item mapping
 
@@ -92,17 +92,50 @@ not prove remote write permission or complete synchronization.
 
 ## Synchronization boundary
 
-Before a future write, resolve exact binding, allowed operations, selected item, latest local observation and expected remote revision. Check/CAS the expected local observation_revision immediately before publication so concurrent revalidation invalidates a stale Done candidate. Recheck metadata transition and send only permitted State/History changes together with a JSON Patch test on /rev for optimistic revision protection. A conflict does not overwrite either side. Keep the candidate, observed differences and user's resolution. Repeated report identity must not append duplicate history; an ambiguous timeout requires remote reconciliation, not blind retry. Partial results are per item, never a batch-wide success claim. Saved local records remain authoritative even when sharing fails.
+The bounded writer targets the explicitly selected test Task21. It uses a
+new immutable write profile with explicit source read-profile identity and
+approval references; existing read profiles remain unchanged. The actual
+import binding supplies the plan identity, grouped steps and completion
+criterion. Caller-supplied patches or copied offline previews are not authority.
 
-This mapping and read-only import contract does not implement write retries, outbox, delivery reconciliation or write permissions. Future writer must implement the above acceptance obligations before being enabled. Task17 profile remains read_work_item/PBI10 only; this contract does not authorize profile replacement or production use.
+The writer rereads the exact current local observation under the plan lock,
+fetches selected remote identity/revision and Task metadata, then uses the
+unchanged pure reducer. Only a valid candidate can produce a deterministic
+wire summary and the allowlisted State/History patch. Offline preview flags
+remain unchanged. Root PBI is read context only; no PBI or nonselected Task
+update is permitted.
+
+A durable immutable intent precedes the single PATCH. Its terminal receipt
+requires validated response and readback. An interrupted or ambiguous result
+remains unknown and blocks further reports for that target; no automatic resend
+is allowed. Same-report replay requires no credentials or network. A later
+delivery may explicitly reference a confirmed successful predecessor for the
+same binding/target, with a newer local observation and no competing successor.
+This own-write chain does not resolve a human conflict or rewrite the initial
+import baseline. Automated reconciliation and recovery remain Task22 work.
+
+The bounded writer is independently reviewed and verified by actual product
+State/History delivery and readback. The test Task21 is confirmed Done at
+revision5. The trial verified an In Progress report before W3 completion, then
+used its explicit successful receipt for the Done report. Each report replay
+made no network/write attempt or extra revision. Protected fields, relations,
+PBI revision7 and local plan/import/binding/read profiles were preserved during
+each delivery. The repository gate passed with1298 tests,4 platform skips and
+83 subtests. Evidence: task21-product-live-inprogress-proof.json,
+task21-product-live-done-proof.json and task21-quality-gate-final.txt under
+work/evidence/client-work-management. These results do not accept the PBI.
+
+Before each write, resolve exact binding, allowed operations, selected item, latest local observation and expected remote revision. Check/CAS the expected local observation_revision immediately before publication so concurrent revalidation invalidates a stale Done candidate. Recheck metadata transition and send only permitted State/History changes together with a JSON Patch test on /rev for optimistic revision protection. A conflict does not overwrite either side. Keep the candidate, observed differences and user's resolution. Repeated report identity must not append duplicate history; an ambiguous timeout requires remote reconciliation, not blind retry. Partial results are per item, never a batch-wide success claim. Saved local records remain authoritative even when sharing fails.
+
+Automatic retries, background outbox processing and delivery reconciliation remain unimplemented. Verified selected test delivery does not establish broader write permissions. Task17 profile remains read_work_item/PBI10 only; this contract does not authorize profile replacement or production use.
 
 ## Validation and Implementation Boundary
 
-The Task18 mapping proposal contains the captured Scrum metadata, required-field/default table, transition and failure examples, and independently reviewed validation evidence. Those observations do not prove universal conditional rules or production write authority. Future writer implementation must test the state/ownership/revision/replay obligations above against the selected project's current metadata and permissions.
+The Task18 mapping proposal contains the captured Scrum metadata, required-field/default table, transition and failure examples, and independently reviewed validation evidence. Those observations do not prove universal conditional rules or production write authority. Any extension must verify the state/ownership/revision/replay obligations against its explicitly selected project metadata and permissions.
 
 Task states in the accepted trial are To Do, In Progress, Done and Removed. PBI/Bug states are New, Approved, Committed, Done and Removed. Do not assume another project's process uses these names. Task has no AcceptanceCriteria field in the captured process; its completion criterion stays in the local plan/binding.
 
-Current executable capabilities are workspace-scoped test read, bounded read-only product import with explicit immutable binding, and deterministic offline update-candidate generation from explicit captured snapshots. The offline generator validates grouped bindings and emits candidate/hold/conflict/invalid with not_sent and publish_ready=false; it does not fetch, send or certify evidence. Automatic synchronization, live grouped-binding publication, profile expansion and production activation remain downstream implementation. Contract acceptance does not enable them.
+Current executable capabilities are workspace-scoped test read, bounded read-only product import with explicit immutable binding, deterministic offline update-candidate generation from explicit captured snapshots, and the explicitly selected test Task21 writer. The offline generator validates grouped bindings and emits candidate/hold/conflict/invalid with not_sent and publish_ready=false; it does not fetch, send or certify evidence. Background synchronization, automatic recovery, broader target/profile expansion and production activation remain downstream work. Verified selected delivery does not enable them.
 
 Metadata `alwaysRequired` fields (not a complete create/update payload specification):
 

@@ -941,3 +941,69 @@ Azure の関連 URL がプロジェクト GUID を使う場合は、先に取得
 検証できた GUID と正規化した URL は取得記録に保持し、URL を追跡しません。
 GUID を確認できない場合は、従来の組織または指定プロジェクト名の形式に限ります。
 以前の取得記録で URL の確認欄がない場合は「未記録」として読み、書き換えません。
+
+## 選択した Task21 の状態と結果要約を反映する
+
+現在の書き込み試行は test 環境の PBI10 に属する Task21 だけです。
+読み取り済みの対応付け、工程の現在の観測版、明示した完了確認または作業承認を使います。
+元の読み取り接続を変更せず、新しい接続に `read_work_item` と
+`update_task_state_history`、対象 ID `[10, 21]` を指定します。
+PBI10 は親の確認のために読み取るだけです。資格情報は環境変数名だけで指定します。
+
+入力には、元の接続 `source_connection_id` と、新しい接続への書き込み承認の根拠
+`write_approval_refs` を明記します。別のワークスペースや production へ切り替えません。
+次の例は形式説明です。実際の `binding_id` と現在の `expected_observation_revision` を確認して指定してください。
+
+```json
+{
+  "schema_version": 1,
+  "report_id": "task21-report-001",
+  "connection_id": "ai01-scrum-task21-write-test",
+  "source_connection_id": "ai01-scrum-pbi10-import-test",
+  "write_approval_refs": ["work/judgments/2026-10-11_azure_task21_trial_scope.md"],
+  "binding_id": "task19-live-plan-v2-guid-20261010",
+  "item_id": 21,
+  "expected_observation_revision": 7,
+  "completion": {"confirmed": false, "evidence_refs": []},
+  "work_authorization": {"active": true, "rework": false, "evidence_refs": ["work/sessions/session_azure_import.md"]},
+  "artifacts": [{"artifact_id": "writer-design", "version": "v1", "availability": "local_only"}]
+}
+```
+
+```powershell
+python -m xrefkit.azure_writer publish --root . --workspace-id xrefkit-local --input writer-input.json
+```
+
+送信前に親 PBI、選択 Task、Task の状態遷移情報を新しく取得します。
+取り込み時の Task21 の revision・状態、または明示した前回の成功記録と一致しなければ送信を止めます。
+Task19 など別の項目の更新を Task21 の基準にはしません。型が無効・遷移が未記録・
+工程状態が不明・未解決の再検証がある場合も送信しません。
+Done は対象工程すべての完了と外部 Task の完了条件の明示確認が必要です。
+進行中の反映には作業承認、Done から戻す場合には再作業の承認も必要です。
+
+送信するのは revision の照合、必要な場合だけの `System.State`、一つの `System.History` です。
+結果要約には送信番号、計画と観測版、工程 ID と記録された状態、ローカル成果物の ID・版を含めます。
+成果物のアップロード、絶対パス、証拠の参照文字列、任意の本文は送信しません。
+担当者・説明・期限・見積もり・関連リンク・PBI の受入は変更しません。
+オフライン候補生成は引き続き純粋なプレビューで、この操作とは別です。
+
+`work/integrations/deliveries/intents/` に送信前の記録を確実に保存してから一回だけ PATCH します。
+成功した応答に加えて再読み取りで revision・状態・同じ要約を照合し、説明・担当者・残作業・
+Blocked・DueDate を含む欄と親の確認値を比較します。
+確認できた結果は `deliveries/receipts/` に保存します。計画 JSON・Markdown、対応付けや元の取り込み結果は変更しません。
+一つの保存記録は最大1 MiB、送信前記録と結果記録は各200件までで、自動削除しません。
+30秒は各リクエストのソケット操作のタイムアウトです。全体の終了時間を保証する値ではありません。
+
+結果が `success` のときだけ `sent_confirmed: true` になります。
+`hold` / `conflict` は前提の不足や不一致、`rejected` はサービスによる明示拒否、
+`unknown` は送信または結果を確認しきれない状態です。
+`network_attempted`、`remote_write_attempted`、`possibly_sent` はそれぞれ別の情報です。
+同じ送信番号・入力の再実行は保存記録を返し、資格情報の取得や新しい通信を行いません。
+同じ番号で入力が異なる場合は拒否します。送信前記録だけ残った場合や `unknown` では、
+別の送信番号・接続・対応付けでも同じ外部 Task への送信を止めます。
+残ったロックも自動で解除しません。記録を削除して再送する回復手順は本機能に含みません。
+
+次の反映には、`previous_report_id` に同じ対応付け・対象の確認済み成功記録を指定し、
+新しいローカル観測版を用います。更新時刻で前回記録を選びません。
+前回記録から複数に分岐した送信や、同じ観測版の重複送信も拒否します。
+認証・権限・サービス規則は実際の送信時に評価され、読み取り成功や状態遷移情報だけでは書き込み可能と判断しません。

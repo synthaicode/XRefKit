@@ -48,11 +48,13 @@ def validate_profile(value: object) -> None:
     if not isinstance(auth, dict) or set(auth) != {"kind", "env_var"} or auth["kind"] != "pat_env" or not isinstance(auth["env_var"], str) or re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]{0,127}", auth["env_var"]) is None:
         raise ProfileError("credential_reference_invalid")
     operations = value["allowed_operations"]
-    if not isinstance(operations, list) or len(operations) > 1 or any(operation != "read_work_item" for operation in operations):
+    if not isinstance(operations, list) or len(operations) > 2 or any(not isinstance(operation, str) or operation not in {"read_work_item", "update_task_state_history"} for operation in operations) or len(set(operations)) != len(operations):
         raise ProfileError("operation_scope_invalid")
     items = value["allowed_item_ids"]
     if not isinstance(items, list) or len(items) > MAX_RECORDS or any(type(item) is not int or item <= 0 for item in items) or len(set(items)) != len(items):
         raise ProfileError("item_scope_invalid")
+    if "update_task_state_history" in operations and (value["environment"] != "test" or set(operations) != {"read_work_item", "update_task_state_history"} or set(items) != {10, 21}):
+        raise ProfileError("write_trial_scope_invalid")
     if "description" in value and (not isinstance(value["description"], str) or len(value["description"]) > 4096):
         raise ProfileError("description_invalid")
 
