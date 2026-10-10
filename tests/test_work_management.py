@@ -173,7 +173,7 @@ class WorkManagementTests(unittest.TestCase):
             with self.assertRaises(OSError):
                 self.save(update, 1)
         self.assertEqual(before, Path(first["output"]).read_bytes())
-        self.assertEqual([Path(first["output"]).name], [path.name for path in Path(first["output"]).parent.iterdir()])
+        self.assertEqual({Path(first["output"]).name, Path(first["output"]).with_suffix(".md").name}, {path.name for path in Path(first["output"]).parent.iterdir()})
         self.assertEqual(2, self.save(update, 1)["observation_revision"])
 
     def test_stale_lock_is_explicit_refusal(self):

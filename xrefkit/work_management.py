@@ -447,7 +447,7 @@ def register_workspace(root: Path, workspace: dict) -> dict:
     return {"saved": True, "replayed": False, "output": str(target)}
 
 
-def record_plan(root: Path, plan: dict, expected_revision: int) -> dict:
+def record_plan(root: Path, plan: dict, expected_revision: int, *, monitor_base: str | None = None) -> dict:
     if not isinstance(plan, dict):
         raise ValueError("plan object required")
     if any(key in plan for key in WRITER_FIELDS):
@@ -484,7 +484,8 @@ def record_plan(root: Path, plan: dict, expected_revision: int) -> dict:
             retry = next((item for item in receipts if item.get("report_id") == plan["report_id"]), None)
             if retry:
                 if retry.get("report_sha256") == fingerprint:
-                    return {"saved": False, "replayed": True, "observation_revision": existing["observation_revision"], "output": str(target)}
+                    from xrefkit.plan_markdown import publish_projection
+                    return {"saved": False, "replayed": True, "observation_revision": existing["observation_revision"], "output": str(target), "projection": publish_projection(root, target, existing, base=monitor_base)}
                 raise ValueError("report_id reused with different payload")
             if expected_revision != existing.get("observation_revision"):
                 raise ValueError("stale expected observation revision")
@@ -506,26 +507,33 @@ def record_plan(root: Path, plan: dict, expected_revision: int) -> dict:
         if issues:
             raise ValueError("; ".join(issues))
         _publish(target, snapshot)
-    return {"saved": True, "replayed": False, "observation_revision": snapshot["observation_revision"], "output": str(target)}
+        from xrefkit.plan_markdown import publish_projection
+        projection = publish_projection(root, target, snapshot, base=monitor_base)
+    return {"saved": True, "replayed": False, "observation_revision": snapshot["observation_revision"], "output": str(target), "projection": projection}
 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Register a local workspace or atomically record a structured v2 plan")
-    parser.add_argument("action", choices=("register", "record"))
+    parser.add_argument("action", choices=("register", "record", "render"))
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--expected-observation-revision", type=int)
+    parser.add_argument("--monitor-base", help="Explicit optional HTTP/HTTPS monitor deployment base; never inferred")
     args = parser.parse_args(argv)
     try:
         value = read_json(args.input)
         if args.action == "register":
             result = register_workspace(args.root, value)
+        elif args.action == "render":
+            from xrefkit.plan_markdown import regenerate
+            result = regenerate(args.root, args.input, base=args.monitor_base)
         else:
             if args.expected_observation_revision is None or args.expected_observation_revision < 0:
                 raise ValueError("record requires a nonnegative --expected-observation-revision")
-            result = record_plan(args.root, value, args.expected_observation_revision)
-        print(json.dumps({"ok": True, **result}, ensure_ascii=False))
-        return 0
+            result = record_plan(args.root, value, args.expected_observation_revision, monitor_base=args.monitor_base)
+        successful = result.get("projection", {}).get("status") != "failed"
+        print(json.dumps({"ok": successful, **result}, ensure_ascii=False))
+        return 0 if successful else 1
     except (OSError, ValueError, UnicodeError, RecursionError) as exc:
         print(json.dumps({"ok": False, "issues": [str(exc)]}, ensure_ascii=False))
         return 1

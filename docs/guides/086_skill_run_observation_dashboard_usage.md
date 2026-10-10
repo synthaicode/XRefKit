@@ -476,6 +476,55 @@ planning Skill. The repository's `planning_flow` adoption currently retains
 draft maturity, so automatic production by that Skill is unverified and must
 respect its normal gate. No Skill maturity/definition is changed here.
 
+## Default readable view: Markdown and Mermaid
+
+For local v2 work records, the primary readable view is a generated Markdown
+file beside the saved JSON with the same stem. Open the `.md` in Codex or a
+VS Code Markdown preview with Mermaid support. The Web Plans panel remains a
+supplementary view. JSON is authoritative; changing the generated document
+does not change task state or acceptance.
+
+Successful `record` operations automatically generate this view. Identical
+report retries regenerate from the **current stored observation**, including
+when the retried report is older. To regenerate an existing stored plan:
+
+```powershell
+python -m xrefkit.work_management render --root . --input work/plans/<saved-name>.json
+```
+
+The document includes task counts, stages, typed dependency diagrams, ordinary
+task-detail links, confirmation answers and their application, PBI acceptance,
+version evidence, artifact links and exact scoped Run records. File links are
+portable relative paths to existing confined files; the diagram does not need
+click support. Missing, mismatched or duplicate Run mappings stay visibly
+unavailable. Plan/revision/observation/report/hash/time identify the represented
+snapshot; absent recorded time remains unrecorded.
+
+No Web host or port is guessed. Optionally pass `--monitor-base` to `record`
+or `render`, for example `https://example.test/dashboard`. The explicit
+deployment path is preserved with a trailing slash; query and fragment bases
+are rejected. HTTP/HTTPS without credentials is accepted, unsafe destination
+characters are encoded, and exact workspace/plan/revision/task/Run parameters
+are appended. This link does not establish connectivity or perform a request.
+
+Source JSON and derived Markdown are two files and are not a single atomic
+transaction. A source save can succeed while projection fails: command JSON
+retains `saved`/`replayed` and reports `projection.status`, `output`, `issues`
+and recovery guidance separately; the command exits nonzero on projection
+failure. The old complete Markdown remains, or no Markdown exists. Resolve
+the cause and run `render` or retry the identical report. Rejected input/CAS
+does not change either file. Record, retry and manual rendering share the
+writer lock and never publish a rejected or stale caller snapshot.
+
+A generated header binds the source identity and a content digest. Existing
+handwritten Markdown, another owner's output and edited generated content
+are retained with a conflict. Copy annotations elsewhere; resolve the
+conflicting derived file explicitly before regeneration. There is no generic
+overwrite switch. The projection has an 8 MiB bound and atomic replacement
+with temporary-file cleanup. JSON's existing limits and history policy remain
+unchanged. v1 loading/serialization stays compatible; this v2 generator does
+not migrate v1 plans.
+
 ## Plans v1: From A Planning Artifact To The Monitor
 
 The **計画 / Plans** tab is the entry point for planned work, including steps
