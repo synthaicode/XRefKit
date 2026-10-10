@@ -4,16 +4,18 @@ import argparse
 import html
 import json
 import re
+import shutil
 import sys
 import webbrowser
 from dataclasses import dataclass
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from xrefkit.boundary_analysis import analyze_dashboard_payload
 from xrefkit.mcp.audit import AUDIT_SCHEMA
+from xrefkit.plan_observation import artifact_path, load_plans, plan_panel
 from xrefkit.skillrun import (
     ACCEPTED_CLOSE_STATUSES,
     PHASE_SECTIONS,
@@ -1090,6 +1092,7 @@ def build_payload(
         "recoveries": recoveries,
         "decision_trace": decision_trace,
     }
+    payload["plans"] = load_plans(root, payload["runs"])
     payload["boundary_analysis"] = analyze_dashboard_payload(
         payload,
         source_ref="dashboard://current",
@@ -1112,6 +1115,7 @@ def _html_page(payload: dict[str, object]) -> str:
     summary = payload["summary"]
     runs = payload["runs"]
     flows = payload.get("flows", [])
+    plans_html = plan_panel(Path(str(payload["root"])), payload.get("plans", []))
     decision_trace = payload.get("decision_trace", {})
     assert isinstance(summary, dict)
     assert isinstance(runs, list)
@@ -1383,6 +1387,19 @@ def _html_page(payload: dict[str, object]) -> str:
     .grid {{ display: grid; grid-template-columns: minmax(260px, 1fr) minmax(260px, 1fr); gap: 14px; margin-top: 14px; }}
     .box {{ border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: #fbfcff; }}
     .box h3 {{ margin: 0 0 8px; font-size: 14px; }}
+    body[data-panel="plans"] .controls, body[data-panel="plans"] #result-count,
+    body[data-panel="plans"] #selection-bar, body[data-panel="plans"] .audit-warning {{ display: none; }}
+    .plan-card {{ margin: 0 0 20px; padding: 20px; }}
+    .plan-card h3 {{ font-size: 20px; }}
+    .plan-card details {{ margin: 10px 0; overflow-wrap: anywhere; }}
+    .plan-dependencies {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; list-style: none; padding: 0; }}
+    .plan-step {{ width: 100%; min-height: 110px; text-align: left; padding: 16px; border: 1px solid var(--line); border-radius: 10px; background: white; color: var(--ink); cursor: pointer; }}
+    .plan-step strong, .plan-step span, .plan-step small {{ display: block; margin-bottom: 8px; overflow-wrap: anywhere; }}
+    .plan-step strong {{ font-size: 16px; }}
+    .plan-step[aria-expanded="true"] {{ border: 2px solid var(--blue); background: #f0f6ff; }}
+    .plan-step:focus-visible, .monitor-link:focus-visible {{ outline: 3px solid var(--blue); outline-offset: 3px; }}
+    .plan-step-detail {{ overflow-wrap: anywhere; margin-top: 16px; background: white; }}
+    .monitor-link {{ display: inline-block; margin: 10px 0; border-radius: 6px; padding: 9px 14px; background: #e6efff; }}
     .kv {{ display: flex; flex-wrap: wrap; gap: 8px; }}
     .pill {{ border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; color: var(--muted); background: white; font-size: 12px; }}
     .analysis-intro {{ margin: 0 0 14px; color: var(--muted); }}
@@ -1443,6 +1460,7 @@ def _html_page(payload: dict[str, object]) -> str:
   </header>
   <main>
     <nav class="tabs" aria-label="Dashboard categories">
+      <button class="tab" data-panel="plans">計画 / Plans</button>
       <button class="tab active" data-panel="overview">Overview</button>
       <button class="tab" data-panel="flows">Prompt Flows</button>
       <button class="tab" data-panel="recovery">Recovery</button>
@@ -1467,7 +1485,14 @@ def _html_page(payload: dict[str, object]) -> str:
     </section>
     <div id="selection-bar" class="selection-bar"><span id="selection-label"></span><button id="clear-selection" class="clear-selection" type="button">Show all runs</button></div>
     <p id="result-count" class="result-count"></p>
+    <p id="navigation-issue" role="status" hidden></p>
+    <p id="plan-return" hidden><a href="#">計画の工程へ戻る</a></p>
     {audit_warning}
+    <section id="plans" class="panel">
+      <p class="category-note">計画成果物 → 工程の詳細 → 実行モニタ。工程状態・プロセス進行・品質・承認は別の記録です。この画面は実行や再試行を起動しません。</p>
+      <button id="refresh-plans" class="refresh-button" type="button">計画を更新</button>
+      {plans_html}
+    </section>
     <section id="overview" class="panel active">
       <section class="metrics">{cards}</section>
       <p class="category-note">Recent Skill runs and aggregate status. Detailed records are split into the other categories.</p>
@@ -1540,16 +1565,61 @@ def _html_page(payload: dict[str, object]) -> str:
     </section>
   </main>
   <script>
-    let activePanel = "overview";
+    const navigation = new URL(window.location.href);
+    let activePanel = navigation.searchParams.get("panel") || (document.querySelector(".plan-card") ? "plans" : "overview");
     let statusFilter = "all";
     let searchQuery = "";
     let selectedRun = null;
+    let requestedRunId = navigation.searchParams.get("run_id");
+    let selectedPlan = navigation.searchParams.get("plan_id");
+    let selectedRevision = navigation.searchParams.get("plan_revision");
+    let selectedStep = navigation.searchParams.get("step_id");
+    function updateNavigation() {{
+      navigation.searchParams.set("panel", activePanel);
+      for (const [key, value] of [["run_id", requestedRunId], ["plan_id", selectedPlan], ["plan_revision", selectedRevision], ["step_id", selectedStep]]) {{
+        if (value !== null) navigation.searchParams.set(key, value); else navigation.searchParams.delete(key);
+      }}
+      window.history.replaceState(null, "", navigation);
+    }}
+    function restoreNavigation() {{
+      const issue = document.getElementById("navigation-issue");
+      let problems = [];
+      if (requestedRunId !== null) {{
+        const paths = new Set(Array.from(document.querySelectorAll(".filterable-run")).filter(run => run.dataset.runId === requestedRunId).map(run => run.dataset.runPath));
+        selectedRun = paths.size === 1 ? Array.from(paths)[0] : null;
+        if (!selectedRun) problems.push(paths.size ? "Run IDが重複しています。モニタを選択できません。" : "指定されたRunが見つかりません。モニタ利用不可（削除・対象外）。");
+        if (selectedPlan !== null || selectedRevision !== null || selectedStep !== null) {{
+          const originValid = selectedPlan && selectedRevision && selectedStep && Array.from(document.querySelectorAll(".monitor-link")).some(link => link.dataset.planId === selectedPlan && link.dataset.planRevision === selectedRevision && link.dataset.stepId === selectedStep && link.dataset.runId === requestedRunId);
+          if (!originValid) {{ selectedRun = null; problems.push("計画版・工程と指定Runの対応を確認できません。モニタ利用不可。"); }}
+        }}
+      }}
+      let details = [];
+      document.querySelectorAll(".plan-step-detail").forEach(detail => {{
+        const selected = detail.dataset.planId === selectedPlan && detail.dataset.planRevision === selectedRevision && detail.dataset.stepId === selectedStep;
+        detail.hidden = !selected;
+        if (selected) details.push(detail);
+      }});
+      document.querySelectorAll(".plan-step").forEach(button => button.setAttribute("aria-expanded", String(button.dataset.planId === selectedPlan && button.dataset.planRevision === selectedRevision && button.dataset.stepId === selectedStep)));
+      if (selectedStep && details.length !== 1) problems.push("指定された計画版・工程が見つからないか重複しています。対応確認待ちです。");
+      if (details.length !== 1) details.forEach(detail => detail.hidden = true);
+      issue.textContent = problems.join(" ");
+      issue.hidden = !problems.length;
+      const back = document.getElementById("plan-return");
+      back.hidden = !requestedRunId || !selectedPlan || !selectedRevision || !selectedStep;
+      const backUrl = new URL(window.location.href);
+      backUrl.searchParams.delete("run_id");
+      backUrl.searchParams.set("panel", "plans");
+      back.querySelector("a").href = backUrl.pathname + backUrl.search;
+    }}
     function showPanel(id) {{
+      if (!document.getElementById(id)?.classList.contains("panel")) id = "overview";
       activePanel = id;
+      document.body.dataset.panel = id;
       const tabs = Array.from(document.querySelectorAll(".tab"));
       const panels = Array.from(document.querySelectorAll(".panel"));
       tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.panel === id));
       panels.forEach((panel) => panel.classList.toggle("active", panel.id === id));
+      updateNavigation();
     }}
     function applyFilters() {{
       const query = searchQuery.trim().toLowerCase();
@@ -1559,7 +1629,7 @@ def _html_page(payload: dict[str, object]) -> str:
       runs.forEach((run) => {{
         const matchesStatus = statusFilter === "all" || run.dataset.status === statusFilter;
         const matchesSearch = !query || (run.dataset.search || "").includes(query);
-        const matchesSelection = !selectedRun || run.dataset.runPath === selectedRun;
+        const matchesSelection = requestedRunId !== null ? Boolean(selectedRun && run.dataset.runPath === selectedRun) : (!selectedRun || run.dataset.runPath === selectedRun);
         const show = matchesStatus && matchesSearch && matchesSelection;
         run.hidden = !show;
         run.classList.toggle("selected", Boolean(selectedRun && run.dataset.runPath === selectedRun));
@@ -1571,7 +1641,13 @@ def _html_page(payload: dict[str, object]) -> str:
       selectionBar.classList.toggle("active", Boolean(selectedRun));
       document.getElementById("selection-label").textContent = selectedRun ? `Focused run: ${{selectedRun}}` : "";
     }}
-    function selectRun(path) {{ selectedRun = path; applyFilters(); }}
+    function selectRun(path) {{
+      selectedRun = path;
+      const nextRunId = Array.from(document.querySelectorAll(".filterable-run")).find(run => run.dataset.runPath === path)?.dataset.runId || null;
+      if (nextRunId !== requestedRunId) {{ selectedPlan = null; selectedRevision = null; selectedStep = null; }}
+      requestedRunId = nextRunId;
+      updateNavigation(); restoreNavigation(); applyFilters();
+    }}
     function bindDashboard() {{
       document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => showPanel(tab.dataset.panel)));
       const search = document.getElementById("run-search");
@@ -1589,13 +1665,20 @@ def _html_page(payload: dict[str, object]) -> str:
         run.addEventListener("click", () => selectRun(run.dataset.runPath));
         run.addEventListener("keydown", (event) => {{ if (event.key === "Enter" || event.key === " ") selectRun(run.dataset.runPath); }});
       }});
-      document.getElementById("clear-selection").addEventListener("click", () => {{ selectedRun = null; applyFilters(); }});
+      document.querySelectorAll(".plan-step").forEach(button => button.addEventListener("click", () => {{
+        selectedPlan = button.dataset.planId; selectedRevision = button.dataset.planRevision; selectedStep = button.dataset.stepId;
+        requestedRunId = null; selectedRun = null;
+        updateNavigation(); restoreNavigation(); applyFilters();
+      }}));
+      document.getElementById("clear-selection").addEventListener("click", () => {{ selectedRun = null; requestedRunId = null; updateNavigation(); restoreNavigation(); applyFilters(); }});
       document.getElementById("refresh-runs").addEventListener("click", refreshDashboard);
+      document.getElementById("refresh-plans").addEventListener("click", refreshDashboard);
+      restoreNavigation();
       showPanel(activePanel);
       applyFilters();
     }}
-    async function refreshDashboard() {{
-      const button = document.getElementById("refresh-runs");
+    async function refreshDashboard(event) {{
+      const button = event?.currentTarget || document.getElementById("refresh-runs");
       button.disabled = true;
       button.textContent = "Refreshing";
       try {{
@@ -1954,6 +2037,7 @@ def _run_data_attributes(run: object) -> str:
     search = " ".join(str(value) for value in values if value).lower()
     return (
         f'data-run-path="{html.escape(str(run.get("path", "")), quote=True)}" '
+        f'data-run-id="{html.escape(str(run.get("run_id") or ""), quote=True)}" '
         f'data-status="{html.escape(str(run.get("status", "")), quote=True)}" '
         f'data-search="{html.escape(search, quote=True)}"'
     )
@@ -2013,6 +2097,25 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
+        if parsed.path == "/artifact":
+            values = parse_qs(parsed.query).get("path", [])
+            path = artifact_path(self.server.root, values[0]) if len(values) == 1 else None
+            if path is None:
+                _json_response(self, {"error": "artifact unavailable inside repository"}, status=404)
+                return
+            try:
+                stream = path.open("rb")
+            except OSError:
+                _json_response(self, {"error": "artifact unavailable"}, status=404)
+                return
+            with stream:
+                self.send_response(200)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.send_header("Content-Disposition", "attachment; filename=repository-artifact.txt")
+                self.send_header("X-Content-Type-Options", "nosniff")
+                self.end_headers()
+                shutil.copyfileobj(stream, self.wfile)
+            return
         if parsed.path == "/api/runs":
             payload = build_payload(self.server.root, self.server.sessions_dir, self.server.mcp_audit_log)
             _json_response(self, payload)

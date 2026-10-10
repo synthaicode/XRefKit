@@ -305,7 +305,128 @@ default `work/sessions/`:
 python -m xrefkit dashboard serve --root . --sessions-dir path\to\sessions
 ```
 
-## JSON Output
+## Plans: From A Planning Artifact To The Monitor
+
+The **計画 / Plans** tab is the entry point for planned work, including steps
+that have no Run yet. When valid plan artifacts exist, the dashboard opens
+this tab by default. Select a step in the accessible card list below the
+dependency diagram to inspect its recorded state, planned Skill, Agent,
+completion criterion, outputs, and separate Run history. Select **モニタを開く**
+to open that exact Run in **Closure**; **計画の工程へ戻る** restores the same
+plan revision and step. **計画を更新** refreshes the records without starting
+execution. Run search and audit warnings stay in the monitor panels.
+
+The planning producer supplies a UTF-8 JSON sidecar under `work/plans/*.json`
+alongside its prose artifact. This is an explicit output convention for the
+producer; the dashboard does not infer a plan from prose and does not execute
+or modify the planning Skill. The following is a schema example, not evidence
+of a planning Skill Run:
+
+```json
+{
+  "schema_version": 1,
+  "plan_id": "example-plan",
+  "plan_revision": "v1",
+  "repository_root": "C:/dev/itsm/XRefKit",
+  "title": "Example plan",
+  "source": "work/reports/example-plan.md",
+  "approval_status": null,
+  "approval_evidence": null,
+  "steps": [
+    {
+      "step_id": "implement",
+      "title": "Implement the approved change",
+      "depends_on": [],
+      "status": null,
+      "status_evidence": null,
+      "planned_skill": null,
+      "agent": null,
+      "completion_criterion": null,
+      "outputs": [],
+      "runs": []
+    }
+  ]
+}
+```
+
+The identity fields, title, and source are required nonempty strings.
+`steps`, `depends_on`, `outputs`, and `runs` are required arrays; empty arrays
+are valid. Step IDs must be unique within the revision, dependencies must
+refer to that revision's steps, and dependency cycles are rejected. The
+`(plan_id, plan_revision)` pair must be unique across input files: duplicate
+plans stay visible with disabled monitor links. Unknown fields, unsupported
+versions, malformed JSON, and duplicate JSON keys produce visible per-file
+errors while independent valid plans remain available.
+
+Optional scalar fields may be omitted or `null` and appear as **未記録**.
+State and approval are displayed as source-recorded strings with their
+evidence; displaying `approved` does not certify approval. No Skill name,
+Closure result, filename, or step ordering fills missing state, Agent,
+approval, or dependencies. Common step states are translated in the cards;
+the detail retains the original recorded value. Process, Closure, quality,
+and plan approval remain separate.
+
+A Run mapping is an object in a step's `runs` array, for example:
+
+```json
+{
+  "run_id": "an-explicit-existing-run-id",
+  "flow_id": null,
+  "work_item_id": null,
+  "node_id": null,
+  "recorded_at": "2026-10-10T09:00:00+09:00"
+}
+```
+
+The normalized, resolved `repository_root` must match the active dashboard
+root, and `run_id` must identify exactly one observed Run. Any supplied
+`flow_id`, `work_item_id`, or `node_id` must agree with that Run's header;
+membership in a Run's local Work Item list is not a substitute. An empty
+`runs` list means **未実行**; an absent/null `run_id`, a missing/deleted Run,
+a correlation conflict, or an ambiguous Run ID has its own unavailable
+reason. A different repository disables artifact and monitor links.
+Revisions keep separate mappings; no mapping transfers automatically.
+
+Multiple Runs remain independently selectable. Recorded timestamps must be
+ISO 8601 dates with a timezone and are sorted chronologically across offsets;
+missing timestamps remain last in source order. No retry/supersession
+relationship is inferred from that order. Limits for local parser reliability
+are 1 MiB per plan file, 200 plan files, 500 steps per plan, and 200 mappings
+per step. Oversized input is reported; these are implementation limits,
+not a performance SLA.
+
+The producer can validate and atomically serialize an already structured
+payload with the module command (the dashboard UI remains read-only):
+
+```powershell
+python -m xrefkit.plan_observation --root . --input work/reports/structured-plan-input.json --name example-plan.json
+```
+
+Invalid input leaves an existing destination intact. The producer owns
+accurate identities, dependencies, evidence, and explicit Run correlation.
+This command does not parse prose or generate a plan Skill Run.
+
+Monitor links use the current host and port, for example:
+
+```text
+/?panel=closure&run_id=an-explicit-existing-run-id&plan_id=example-plan&plan_revision=v1&step_id=implement
+```
+
+The origin tuple is checked against the current sidecar's enabled mapping.
+An invalid/incomplete origin or missing Run never selects a substitute.
+Refresh retains the exact identity and reports stale/deleted targets. A
+Run-only URL can focus an observed Run without claiming plan correspondence.
+
+Source, output, and evidence links are offered only for existing regular
+files whose resolved paths remain inside the active repository. Textual
+evidence references and unavailable/unsafe local paths stay visible without
+a clickable local link. The `/artifact?path=<repository-relative-path>`
+route downloads contents as plain text with an attachment disposition and
+`nosniff`; it does not execute HTML or expose files outside the root. Opening
+plans, refreshing, downloading artifacts, and following monitor links do not
+create or update workflow records.
+
+## Monitor JSON Output
 
 Use the JSON command when the dashboard data needs to be inspected by another
 local tool or test:
