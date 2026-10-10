@@ -341,6 +341,14 @@ Current family paths:
   - summary: extract spreadsheet specifications into Markdown, preserve workbook traceability, and write IDs back into the source workbook
   - meta: `skills/xlsx_spec_traceability/SKILL.v1.md`
   - skill_doc: `skills/xlsx_spec_traceability/SKILL.v1.md`
+- `shared_asset_update_gate`:
+  - summary: Analyze candidate-bound common management evidence for a selected Skill or Knowledge update without adopting or applying it.
+  - meta: `skills/os/shared_asset_update_gate/SKILL.v1.md`
+  - skill_doc: `skills/os/shared_asset_update_gate/SKILL.v1.md`
+- `correction_retrospective_analyst`:
+  - summary: Analyze a human-authorized bounded correction sequence as work evidence without executing general retrospective promotion.
+  - meta: `skills/os/correction_retrospective_analyst/SKILL.v1.md`
+  - skill_doc: `skills/os/correction_retrospective_analyst/SKILL.v1.md`
 
 ## Notes
 

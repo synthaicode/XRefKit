@@ -29,6 +29,54 @@ def test_catalog_defaults_to_one_definition_and_old_id_resolves(adopted):
     root, _ = adopted
     catalog = XRefCatalog.build(root)
     assert len(catalog.skills) == 4
+
+
+def test_native_v1_source_adoption_requires_explicit_runtime_without_legacy_receipts(adopted):
+    root, doc = adopted
+    source = next(e for e in doc["entries"] if e["skill_id"] == "python_implementation_flow")
+    native = {key: source[key] for key in ("skill_id", "definition_path", "definition_xid", "definition_sha256")}
+    native.update(source_kind="native_v1", adopted=True,
+                  adoption={"authority": "test human", "date": "2026-10-10", "basis": "Explicit native source registration"})
+    doc["entries"] = [native]
+    (root / ADOPTION_PATH).write_text(json.dumps(doc))
+    parsed = load_repository_adoption(root)["entries"][0]
+    assert parsed["legacy_sources"] == []
+    assert all(r["value"] is None for r in parsed["runtime"].values())
+    catalog = XRefCatalog.build(root)
+    assert catalog.get_skill("python_implementation_flow")["maturity"] == "unassessed"
+    log = root / "work/native.md"
+    args = ("skill", "run", "--root", str(root), "--definition", native["definition_path"],
+            "--task", "bounded native implementation", "--out", str(log), "--json")
+    code, result = command(*args)
+    assert code == 1 and "require --capability" in result
+    code, result = command(*args, "--capability", "implementation", "--tuning", "bounded",
+                           "--responsibility", "native analysis", "--execution-mode", "subagent_required")
+    assert code == 0, result
+    text = log.read_text()
+    assert '"native_source"' in text and '"legacy_receipt"' not in text
+    assert "- maturity: `unassessed`" in text
+
+
+def test_native_v1_adoption_cannot_hide_legacy_receipts_or_missing_authority(adopted):
+    root, doc = adopted
+    source = doc["entries"][0]
+    native = {key: source[key] for key in ("skill_id", "definition_path", "definition_xid", "definition_sha256")}
+    native.update(source_kind="native_v1", adopted=True,
+                  adoption={"authority": "", "date": "2026-10-10", "basis": "test"})
+    doc["entries"] = [native]
+    (root / ADOPTION_PATH).write_text(json.dumps(doc))
+    with pytest.raises(ValueError, match="source authority"):
+        load_repository_adoption(root)
+    native["adoption"]["authority"] = "test human"
+    native["legacy_sources"] = []
+    (root / ADOPTION_PATH).write_text(json.dumps(doc))
+    with pytest.raises(ValueError, match="adoption entry"):
+        load_repository_adoption(root)
+
+
+def test_existing_catalog_readiness_and_aliases_remain_unchanged(adopted):
+    root, _ = adopted
+    catalog = XRefCatalog.build(root)
     assert all(e.definition_format == "skill_definition_v1" for e in catalog.skills)
     assert catalog.get_skill("batch-impact-regression")["skill_id"] == "batch_impact_regression"
     assert catalog.get_skill("db_design")["maturity"] == "draft"
@@ -126,10 +174,17 @@ def test_manifest_is_fail_closed_on_revision_identity_or_adoption_drift(adopted,
 def test_real_repository_receipts_cover_all_old_identities():
     repo = Path(__file__).resolve().parents[1]
     doc = load_repository_adoption(repo)
-    assert len(doc["entries"]) == 62
-    assert sum(not e["adopted"] for e in doc["entries"]) == 26
-    assert sum(e["adopted"] and e["runtime"]["capability"]["value"] is None for e in doc["entries"]) == 28
-    assert len(XRefCatalog.build(repo).skills) == 62
+    migrated = [e for e in doc["entries"] if e.get("source_kind") != "native_v1"]
+    native = [e for e in doc["entries"] if e.get("source_kind") == "native_v1"]
+    assert len(migrated) == 62
+    assert sum(not e["adopted"] for e in migrated) == 26
+    assert sum(e["adopted"] and e["runtime"]["capability"]["value"] is None for e in migrated) == 28
+    assert {e["skill_id"] for e in native} == {
+        "shared_asset_update_gate", "correction_retrospective_analyst"
+    }
+    assert all(e["adopted"] and e["legacy_sources"] == [] for e in native)
+    assert all(value["value"] is None for e in native for value in e["runtime"].values())
+    assert len(XRefCatalog.build(repo).skills) == len(migrated) + len(native) == 64
 
 
 def test_removing_adoption_cannot_reuse_cached_retired_aliases(adopted):

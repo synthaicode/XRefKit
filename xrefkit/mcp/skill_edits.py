@@ -67,7 +67,8 @@ def _write_registry(root: Path, edits: dict[str, dict[str, Any]]) -> None:
     path = registry_path(root)
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {"schema_version": 1, "edits": edits}
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    from ..skillrun import _atomic_write_text
+    _atomic_write_text(path, json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
 
 
 def active_edit(root: Path, skill_id: str) -> dict[str, Any] | None:
@@ -78,7 +79,18 @@ def active_edit(root: Path, skill_id: str) -> dict[str, Any] | None:
     skill = _local_path(root, record.get("overlay_skill_path", ""))
     if not meta.exists() or not skill.exists():
         return None
+    if not _accepted_bytes(root, record):
+        return None
     return record
+
+
+def _accepted_bytes(root: Path, record: dict) -> bool:
+    accepted = record.get("accepted_files")
+    return isinstance(accepted, dict) and bool(accepted) and all(
+        _local_path(root, path).is_file()
+        and hashlib.sha256(_local_path(root, path).read_bytes()).hexdigest() == sha
+        for path, sha in accepted.items()
+    )
 
 
 def list_edits(root: Path) -> list[dict[str, Any]]:
@@ -86,7 +98,7 @@ def list_edits(root: Path) -> list[dict[str, Any]]:
     for skill_id, record in load_registry(root).items():
         item = dict(record)
         item["skill_id"] = skill_id
-        item["active"] = record.get("active", True) is True
+        item["active"] = record.get("active", False) is True and _accepted_bytes(root, record)
         item["overlay_exists"] = bool(
             _local_path(root, record.get("overlay_meta_path", "")).exists()
             and _local_path(root, record.get("overlay_skill_path", "")).exists()
@@ -96,6 +108,13 @@ def list_edits(root: Path) -> list[dict[str, Any]]:
 
 
 def prepare_edit(root: Path, entry: Any) -> dict[str, Any]:
+    from .audit import _process_lock
+    (root / ".xrefkit").mkdir(parents=True, exist_ok=True)
+    with _process_lock(root / ".xrefkit" / "overlay-registry"):
+        return _prepare_edit(root, entry)
+
+
+def _prepare_edit(root: Path, entry: Any) -> dict[str, Any]:
     """Copy one resolved catalog entry into a project-local editable overlay."""
     source_root = Path(entry.source_root) if entry.source_root else root
     source_meta = source_root / entry.meta_path
@@ -105,8 +124,9 @@ def prepare_edit(root: Path, entry: Any) -> dict[str, Any]:
 
     target = overlay_path(root, entry.skill_id)
     target.mkdir(parents=True, exist_ok=True)
-    target_meta = target / "meta.md"
-    target_skill = target / "SKILL.md"
+    native = getattr(entry, "definition_format", None) == "skill_definition_v1"
+    target_meta = target / ("SKILL.v1.md" if native else "meta.md")
+    target_skill = target_meta if native else target / "SKILL.md"
     # Do not overwrite an existing edit.  This is the protection that makes a
     # later prepare call safe after the user has started local work.
     if not target_meta.exists():
@@ -119,8 +139,9 @@ def prepare_edit(root: Path, entry: Any) -> dict[str, Any]:
     record = {
         **previous,
         "skill_id": entry.skill_id,
-        "active": True,
+        "active": False,
         "source_kind": "package" if entry.package_id else "repository",
+        "definition_format": "skill_definition_v1" if native else "legacy_split",
         "source_package_id": entry.package_id,
         "source_root": str(source_root),
         "source_meta_path": entry.meta_path,
@@ -139,6 +160,7 @@ def prepare_edit(root: Path, entry: Any) -> dict[str, Any]:
         "overlay_meta_hash": stable_hash(target_meta.read_text(encoding="utf-8")),
         "overlay_skill_hash": stable_hash(target_skill.read_text(encoding="utf-8")),
         "created": not bool(previous),
+        "next_step": "freeze final candidate bundle and invoke shared_asset_update_gate before activate_skill_edit",
     }
 
 
@@ -197,6 +219,13 @@ def export_edit(root: Path, record: dict[str, Any], *, write_patch: bool = False
 
 
 def deactivate_edit(root: Path, skill_id: str) -> dict[str, Any]:
+    from .audit import _process_lock
+    (root / ".xrefkit").mkdir(parents=True, exist_ok=True)
+    with _process_lock(root / ".xrefkit" / "overlay-registry"):
+        return _deactivate_edit(root, skill_id)
+
+
+def _deactivate_edit(root: Path, skill_id: str) -> dict[str, Any]:
     edits = load_registry(root)
     if skill_id not in edits:
         raise KeyError(f"local Skill edit not found: {skill_id}")

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 
 from .catalog import XRefCatalog
@@ -92,6 +93,19 @@ def main(argv: list[str] | None = None) -> int:
     add_repo_arguments(prepare_edit)
     prepare_edit.add_argument("--skill-id", required=True)
     prepare_edit.add_argument("--package-id")
+
+    gate = sub.add_parser("prepare-update-gate", help="freeze staged bytes and return required host gate dispatch")
+    add_repo_arguments(gate)
+    gate.add_argument("--kind", choices=["skill", "knowledge", "knowledge_contribution"], required=True)
+    gate.add_argument("--identity", required=True)
+    gate.add_argument("--request-file", required=True, help="log, binding_request and specialist_evidence JSON")
+    for command in ("activate-skill-edit", "activate-local-knowledge"):
+        activation = sub.add_parser(command, help="activate gate-reviewed bytes with separate human authority")
+        add_repo_arguments(activation)
+        activation.add_argument("--identity", required=True)
+        activation.add_argument("--packet-file", required=True)
+        activation.add_argument("--receipt-file", required=True)
+        activation.add_argument("--approval-file", required=True)
 
     edits = sub.add_parser("list-skill-edits", help="list local Skill edit overlays")
     add_repo_arguments(edits)
@@ -203,6 +217,25 @@ def main(argv: list[str] | None = None) -> int:
         payload = model.get_skill(args.skill_id)
     elif args.command == "prepare-skill-edit":
         payload = model.prepare_skill_edit(args.skill_id, args.package_id)
+    elif args.command in {"prepare-update-gate", "activate-skill-edit", "activate-local-knowledge"}:
+        from .contribution_adoption import HmacHumanApprovalVerifier
+        human_secret = os.environ.get("XREFKIT_CONTRIBUTION_APPROVAL_SECRET")
+        host_secret = os.environ.get("XREFKIT_GOVERNANCE_HOST_SECRET")
+        if human_secret and host_secret == human_secret:
+            parser.error("host execution and human approval authorities must differ")
+        human = HmacHumanApprovalVerifier(human_secret) if human_secret else None
+        host = HmacHumanApprovalVerifier(host_secret) if host_secret else None
+        if args.command == "prepare-update-gate":
+            request = json.loads(Path(args.request_file).read_text(encoding="utf-8"))
+            if args.kind == "knowledge_contribution":
+                request["approval_verifier"] = human
+            payload = model.prepare_update_gate(args.kind, args.identity, **request)
+        else:
+            activate = model.activate_skill_edit if args.command == "activate-skill-edit" else model.activate_local_knowledge
+            payload = activate(args.identity, packet=json.loads(Path(args.packet_file).read_text(encoding="utf-8")),
+                receipt=json.loads(Path(args.receipt_file).read_text(encoding="utf-8")),
+                host_verifier=host, approval_verifier=human,
+                approval_assertion=Path(args.approval_file).read_text(encoding="utf-8").strip())
     elif args.command == "list-skill-edits":
         payload = model.list_skill_edits()
     elif args.command == "export-skill-edit":

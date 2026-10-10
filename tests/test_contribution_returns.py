@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
 import sys
 import tempfile
@@ -11,6 +12,9 @@ from pathlib import Path
 import pytest
 
 from xrefkit.mcp.audit import SessionRunBinding
+from test_subagent_startup import command
+from test_governance_entry import HOST_KEY, host_receipt
+from xrefkit.governance_entry import CORE_CHECKS, RULE_SOURCES
 from xrefkit.mcp.contribution_returns import (
     MAX_EVIDENCE_ROWS,
     MAX_METADATA_BYTES,
@@ -83,6 +87,57 @@ def file(path: str, content: str) -> dict:
 def adoption_repo(tmp_path: Path) -> Path:
     (tmp_path / "ownership.yaml").write_text(OWNERSHIP, encoding="utf-8")
     return tmp_path
+
+
+def gate_parent(root: Path) -> str:
+    """Open the actual bounded generic workflow used by the test host session."""
+    work = root / "work"
+    work.mkdir(exist_ok=True)
+    log = work / "contribution-gate-run.md"
+    code, output = command("workflow", "run", "--root", str(root), "--task", "test gate fixture",
+                           "--out", str(log), "--completion-condition", "fixture verified", "--json")
+    assert code == 0, output
+    assert command("skill", "workitem", "--log", str(log), "--item", "WI-1", "--text", "test fixture",
+                   "--completion-criterion", "fixture verified", "--status", "pending", "--role", "instruction:executor")[0] == 0
+    return json.loads(output)["run_id"]
+
+
+def knowledge_gate(root: Path, contribution_id: str, *, parent_open: bool = False) -> dict:
+    """Signed TEST-only closed-child fixture; never claims real analyst execution."""
+    record = root / ".xrefkit/contribution-returns" / contribution_id
+    review = json.loads((record / "events/review.json").read_text(encoding="utf-8"))
+    if not parent_open:
+        gate_parent(root)
+    work = root / "work"
+    log = work / "contribution-gate-run.md"
+    for path in RULE_SOURCES:
+        target = root / path
+        if not target.exists():
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text("Test-only governing rule fixture", encoding="utf-8")
+    specialist = work / "specialist.md"
+    specialist.write_text("Test-only specialist evidence", encoding="utf-8")
+    target = review["approved_target_path"]
+    materials = [*sorted(RULE_SOURCES), "work/specialist.md",
+                 (record / "manifest.json").relative_to(root).as_posix(),
+                 (record / "events/review.json").relative_to(root).as_posix()]
+    request = {"work_item_id": "WI-1", "source_mode": "filesystem", "purpose": "test gate fixture",
+               "capability": "analysis", "tuning": "bounded test", "responsibility": "fixture only",
+               "instruction_basis": "Test-only fixture", "scope_in": materials, "scope_out": ["real execution"],
+               "stop_conditions": ["changed fixture"], "protocols": ["workflow"],
+               "knowledge_access": {"mode": "on_demand", "catalog": "knowledge/index.md"}}
+    intake = XRefCatalog.build(root).prepare_update_gate(
+        "knowledge_contribution", contribution_id, log=log.relative_to(root).as_posix(),
+        binding_request=request, specialist_evidence=["work/specialist.md"], approval_verifier=approval_verifier())
+    assert intake["dispatch_required"] is True
+    assert intake["dispatch_owner"] == "client_host"
+    assert intake["skill_id"] == "shared_asset_update_gate"
+    packet = intake["packet"]
+    assert packet["payload"]["target"] == target
+    assert set(packet["payload"]["checks"]) == CORE_CHECKS
+    assert set(packet["payload"]["rules"]) == RULE_SOURCES
+    return {"governance_packet": packet, "governance_receipt": host_receipt(root, packet),
+            "governance_host_verifier": HmacHumanApprovalVerifier(HOST_KEY)}
 
 
 def pending_knowledge(root: Path, *, target: str = "knowledge/adopted.md") -> tuple[str, str]:
@@ -387,6 +442,7 @@ def test_human_review_then_local_adoption_is_catalog_visible_and_auditable(
         "reviewer": "human:alice@example.test",
         "decision_evidence": "Approve server-side canonical move.",
         "approval_token": review["approval_token"],
+        **knowledge_gate(root, contribution_id),
     }
     adopted = adopt_contribution_return(**adoption_arguments, approval_verifier=approval_verifier())
     replayed = adopt_contribution_return(**adoption_arguments, approval_verifier=approval_verifier())
@@ -446,6 +502,37 @@ def test_review_requires_trusted_assertion_and_accepted_target(tmp_path: Path) -
             approval_assertion="invalid",
             approval_verifier=approval_verifier(),
         )
+
+
+@pytest.mark.parametrize("failure", ["missing_gate", "stale_result", "missing_host_verifier"])
+def test_knowledge_gate_rejection_precedes_transport_and_prepared_event(tmp_path: Path, failure: str) -> None:
+    root = adoption_repo(tmp_path)
+    contribution_id, _content = pending_knowledge(root)
+    review = signed_review(root, contribution_id=contribution_id, decision_id=str(uuid.uuid4()),
+                          decision="accepted", reviewer="human:reviewer", decision_evidence="Reviewed.",
+                          approved_target_path="knowledge/adopted.md")
+    calls = []
+
+    class RecordingTransport:
+        name = LocalCanonicalAdoptionTransport.name
+
+        def adopt(self, **kwargs):
+            calls.append(kwargs)
+            raise AssertionError("transport must not run with invalid common gate")
+
+    gate = {} if failure == "missing_gate" else knowledge_gate(root, contribution_id)
+    if failure == "stale_result":
+        (root / gate["governance_receipt"]["event"]["result"]["output"]["path"]).write_text("changed", encoding="utf-8")
+    if failure == "missing_host_verifier":
+        gate["governance_host_verifier"] = None
+    with pytest.raises((ValueError, RuntimeError), match="gate receipt required|output identity|host verifier"):
+        adopt_contribution_return(root, contribution_id=contribution_id, adoption_id=str(uuid.uuid4()),
+                                  reviewer="human:reviewer", decision_evidence="Adopt.",
+                                  approval_token=review["approval_token"], approval_verifier=approval_verifier(),
+                                  transport=RecordingTransport(), **gate)
+    assert calls == []
+    assert not (root / "knowledge/adopted.md").exists()
+    assert not (root / ".xrefkit/contribution-returns" / contribution_id / "events/adoption-prepared.json").exists()
 
 
 def test_manifest_and_signed_event_tampering_fail_closed(tmp_path: Path) -> None:
@@ -541,6 +628,7 @@ def test_adoption_recovery_rejects_a_parallel_duplicate_xid(tmp_path: Path) -> N
         decision_evidence="Adopt.",
         approval_token=review["approval_token"],
         approval_verifier=approval_verifier(),
+        **knowledge_gate(root, contribution_id),
     )
     with pytest.raises(RuntimeError, match="interrupt after move"):
         adopt_contribution_return(**arguments, transport=InterruptAfterMove())
@@ -582,6 +670,32 @@ def test_rejected_contribution_cannot_be_adopted(tmp_path: Path) -> None:
         )
     assert list_contribution_returns(root, approval_verifier())[0]["status"] == "rejected"
     assert not (root / "knowledge" / "adopted.md").exists()
+
+
+def test_gate_preserves_recovery_after_transport_moves_exact_reviewed_bytes(tmp_path: Path) -> None:
+    root = adoption_repo(tmp_path)
+    contribution_id, content = pending_knowledge(root)
+    review = signed_review(root, contribution_id=contribution_id, decision_id=str(uuid.uuid4()),
+                          decision="accepted", reviewer="human:reviewer", decision_evidence="Reviewed.",
+                          approved_target_path="knowledge/adopted.md")
+    gate = knowledge_gate(root, contribution_id)
+
+    class InterruptAfterMove:
+        name = LocalCanonicalAdoptionTransport.name
+
+        def adopt(self, **kwargs):
+            LocalCanonicalAdoptionTransport().adopt(**kwargs)
+            raise RuntimeError("test interruption after canonical reflection")
+
+    arguments = dict(root=root, contribution_id=contribution_id, adoption_id=str(uuid.uuid4()),
+                     reviewer="human:reviewer", decision_evidence="Adopt.", approval_token=review["approval_token"],
+                     approval_verifier=approval_verifier(), **gate)
+    with pytest.raises(RuntimeError, match="test interruption"):
+        adopt_contribution_return(**arguments, transport=InterruptAfterMove())
+    assert (root / "knowledge/adopted.md").read_text(encoding="utf-8") == content
+    recovered = adopt_contribution_return(**arguments)
+    assert recovered["status"] == "adopted"
+    assert adopt_contribution_return(**arguments)["idempotent_replay"] is True
 
 
 @pytest.mark.parametrize(
@@ -629,6 +743,7 @@ def test_adoption_never_overwrites_a_canonical_collision(tmp_path: Path) -> None
             decision_evidence="Move accepted content.",
             approval_token=review["approval_token"],
             approval_verifier=approval_verifier(),
+            **knowledge_gate(root, contribution_id),
         )
     assert target.read_text(encoding="utf-8") == "existing\n"
 
@@ -769,7 +884,15 @@ def test_contribution_return_over_real_mcp_stdio(tmp_path: Path) -> None:
     from mcp.client.session import ClientSession
     from mcp.client.stdio import StdioServerParameters, stdio_client
 
-    root = Path(__file__).resolve().parents[1]
+    code_root = Path(__file__).resolve().parents[1]
+    # Keep the MCP content root isolated: workflow fixture creation must never
+    # checkpoint or modify the developer's active repository.
+    root = tmp_path / "mcp-repository"
+    root.mkdir()
+    for directory in ("docs", "agent", "skills", "knowledge"):
+        shutil.copytree(code_root / directory, root / directory)
+    for name in ("ownership.yaml", "AGENTS.md"):
+        shutil.copy2(code_root / name, root / name)
     contribution_id = str(uuid.uuid4())
     xid = f"RETURN{uuid.uuid4().hex[:12].upper()}"
     target_rel = f"knowledge/mcp-adoption-test-{uuid.uuid4().hex}.md"
@@ -779,11 +902,12 @@ def test_contribution_return_over_real_mcp_stdio(tmp_path: Path) -> None:
     async def scenario(errlog) -> None:
         parameters = StdioServerParameters(
             command=sys.executable,
-            cwd=str(root),
+            cwd=str(code_root),
             args=["-m", "xrefkit.mcp.server", "--repo", str(root),
                   "--profile", "admin",
                   "--audit-log", str(tmp_path / "audit.jsonl"),
                   "--contribution-approval-secret", APPROVAL_SECRET],
+            env={**os.environ, "XREFKIT_GOVERNANCE_HOST_SECRET": HOST_KEY},
         )
         async with stdio_client(parameters, errlog=errlog) as (read, write):
             async with ClientSession(read, write) as session:
@@ -810,7 +934,7 @@ def test_contribution_return_over_real_mcp_stdio(tmp_path: Path) -> None:
                 skill = await session.call_tool("get_skill", {"skill_id": "python_review"})
                 skill_body = skill.structuredContent["skill_content"]
                 skill_hash = hashlib.sha256(skill_body.encode("utf-8")).hexdigest()
-                run_id = str(uuid.uuid4())
+                run_id = gate_parent(root)
                 bound = await session.call_tool(
                     "bind_skill_run", {"run_id": run_id, "skill_id": "python_review"}
                 )
@@ -872,6 +996,8 @@ def test_contribution_return_over_real_mcp_stdio(tmp_path: Path) -> None:
                 )
                 assert not reviewed.isError
                 token = reviewed.structuredContent["approval_token"]
+                gate = knowledge_gate(root, contribution_id, parent_open=True)
+                assert gate["governance_packet"]["binding"]["run_id"] == run_id
                 adopted = await session.call_tool(
                     "adopt_contribution_return",
                     {
@@ -880,6 +1006,8 @@ def test_contribution_return_over_real_mcp_stdio(tmp_path: Path) -> None:
                         "reviewer": "human:mcp-integration-test",
                         "decision_evidence": "Move the reviewed fixture.",
                         "approval_token": token,
+                        "governance_packet": gate["governance_packet"],
+                        "governance_receipt": gate["governance_receipt"],
                     },
                 )
                 assert not adopted.isError

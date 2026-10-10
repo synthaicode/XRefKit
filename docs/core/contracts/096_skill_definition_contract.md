@@ -3,6 +3,25 @@
 
 # SkillDefinition v1 and Derived Catalog
 
+## Native Repository Source Registration
+
+New native v1 sources may be explicitly registered in
+`skills/repository_adoption.json` without legacy migration receipts. A native
+entry has exactly `skill_id`, `definition_path`, `definition_xid`,
+`definition_sha256`, `source_kind: native_v1`, `adopted`, and
+`adoption: {authority, date, basis}`. The loader verifies the current definition
+identity/hash and the source decision. It does not infer adoption from file
+placement or structural parsing.
+
+Native entries have no legacy paths, aliases fabricated for migration, stored
+runtime defaults or inherited legacy quality settings. All Workflow Runtime
+Binding inputs are required explicitly. Runtime provenance names the native
+source decision rather than a legacy receipt. Existing migrated entries retain
+their exact two-receipt validation and legacy compatibility behavior. Native
+source registration is not maturity promotion: maturity remains `unassessed`
+unless a separate valid governance record supplies it; draft governance and
+unadopted sources remain refused by the runtime.
+
 This contract defines the candidate format accepted by the implemented
 SkillDefinition parser and catalog builder. MCP `get_skill` returns an explicitly
 selected repository definition and a definition referenced by a package manifest
