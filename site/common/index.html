@@ -36,7 +36,7 @@
       </div>
     </section>    <section class="landing-section" aria-labelledby="concepts-heading">
       <div class="section-heading"><p class="concept-label">Common foundation · concepts</p><h2 id="concepts-heading">Canonical concepts</h2><p>Permanent concept pages define the problems XRefKit is intended to solve and connect them to the operating model.</p></div>
-      <div class="learning-tier canonical-concept"><span>→</span><div><p class="concept-label">Permanent problem definition</p><h3><a href="../concepts/judgment-replication/">Judgment Replication</a></h3><p>Organizations do not scale by adding processing capacity alone. They scale by replicating judgment—and traditional organizations do this slowly, lossily, and repeatedly. XRefKit replaces judgment retransmission with stable, versioned reference distribution.</p></div></div>
+      <div class="learning-tier canonical-concept"><span>→</span><div><p class="concept-label">Permanent problem definition</p><h3><a href="../concepts/judgment-replication/">Judgment Replication</a></h3><p>Organizations do not scale by adding processing capacity alone. They scale by replicating judgment—and traditional organizations do this slowly, lossily, and repeatedly. XRefKit replaces judgment retransmission with versioned distribution of stable references. Package and Core releases carry versions; XID references do not pin a version or include history.</p></div></div>
     </section>
     <section class="landing-section optional-delivery" id="mcp-delivery" aria-labelledby="distribution-heading">
       <div class="section-heading">
@@ -46,7 +46,7 @@
       </div>
       <div class="model-reading">
         <h3>What MCP shares</h3>
-        <p>An organization maintains Skills, Knowledge, execution contracts, catalogs, and XIDs as managed XRefKit assets. MCP presents the catalogs, then selects and resolves only the assets needed for the current purpose. Users receive the same identifiers and managed versions without loading the entire repository into every AI context.</p>
+        <p>An organization maintains Skills, Knowledge, execution contracts, catalogs, and XIDs as managed XRefKit assets. MCP presents the catalogs, then selects and resolves only the assets needed for the current purpose. MCP resolves stable XIDs against the current managed content available to the configured provider, without loading the entire repository into every AI context. Versioning belongs to the distributed package or Core release, not to the XID reference; a Skill does not embed a version or history in that reference.</p>
         <p>MCP is a read boundary for discovery, selection, resolution, and delivery. Skill execution, client-side tool side effects, Evidence recording, and closure remain on each user's client. People can therefore share the same Knowledge and procedures without merging their execution permissions or work records.</p>
       </div>
       <p class="improvement-note">MCP shares managed definitions and Knowledge. The MCP server does not perform business work on behalf of its users.</p>
