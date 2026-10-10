@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>XRefKit</title>
+  <meta name="description" content="XRefKit connects AI procedures, domain knowledge, evidence, and human acceptance. Explore the current release and ongoing work on output quality, planning, and integration." />
   <link rel="stylesheet" href="./assets/common.css" />
   <script src="./assets/inline-svg.js" defer></script>
 </head>
@@ -16,7 +17,7 @@
           <h1>Carry AI work through<br />to business acceptance.</h1>
           <p class="hero-problem">AI can finish a local task, but it does not automatically preserve business completion, decision ownership, or the state required by the next responsibility.</p>
           <p class="lead hero-lead">XRefKit is an operating base that connects AI work from a Goal to human acceptance with verifiable progression. Managed Skills, Knowledge, and execution contracts can be distributed to multiple users through MCP.</p>
-          <div class="hero-actions"><a class="primary-action" href="./en/model/">Read the canonical model</a><a href="https://github.com/synthaicode/XRefKit">View the reference implementation</a><a href="./ja/">Japanese translation</a></div>
+          <div class="hero-actions"><a class="primary-action" href="#current">What's current</a><a href="./en/model/">Read the canonical model</a><a href="#getting-started">Get started</a><a href="./ja/">Japanese translation</a></div>
         </div>
         <aside class="hero-clarity-card" aria-labelledby="hero-concept-heading">
           <p class="hero-clarity-eyebrow">Canonical concept</p>
@@ -24,6 +25,30 @@
           <p>Organizations scale by replicating judgment, not processing capacity alone. XRefKit distributes that judgment as stable, versioned reference.</p>
           <a class="hero-clarity-link" href="./concepts/judgment-replication/">Read the problem definition <span aria-hidden="true">→</span></a>
         </aside>
+      </div>
+    </section>
+
+    <section class="landing-section" id="current" aria-labelledby="current-heading">
+      <div class="section-heading">
+        <h2 id="current-heading">Current release and ongoing work</h2>
+        <p>Updated <time datetime="2026-10-10">October 10, 2026</time>. Latest published release: <a href="https://github.com/synthaicode/XRefKit/releases/tag/v0.6.2">v0.6.2</a> (October 7, 2026). Development notes below describe work in the repository; they do not imply availability in that release.</p>
+      </div>
+      <div class="learning-tiers">
+        <section class="learning-tier"><span aria-hidden="true">1</span><div><p class="concept-label">Available in the published package</p><h3>A traceable foundation for AI work</h3><p>Use stable XIDs to resolve Skills and Knowledge, record execution progress and evidence, and check the work record before handoff. The Skill Run Dashboard makes recorded state visible for human review. MCP provides an optional way to deliver the managed assets to AI clients.</p><div class="tier-links"><a href="https://github.com/synthaicode/XRefKit/tree/v0.6.2">Explore the release source</a><a href="#getting-started">Installation and first steps</a></div></div></section>
+        <section class="learning-tier"><span aria-hidden="true">2</span><div><p class="concept-label">Current development · quality</p><h3>Preserve accepted output quality across runs</h3><p>Target-specific Knowledge profiles retain approved formats, examples, inputs, and review criteria for documents and reports. The work connects those profiles to per-run review and optional model qualification. A format check alone does not establish content quality; human acceptance remains explicit.</p></div></section>
+        <section class="learning-tier"><span aria-hidden="true">3</span><div><p class="concept-label">Current development · planning</p><h3>Connect plans to execution evidence</h3><p>Local plan views bring tasks, dependencies, completion conditions, confirmation questions, and evidence together. Dashboard views and generated Markdown and Mermaid views help people inspect progress. Task completion and acceptance of the business outcome remain separate decisions.</p></div></section>
+        <section class="learning-tier"><span aria-hidden="true">4</span><div><p class="concept-label">Current development · integration trial</p><h3>Share selected work state with Azure DevOps</h3><p>The current trial includes workspace-scoped, test-only connection checks and a reviewed mapping design for local and Azure work items. The next integration work prepares selected Task state and result summaries while keeping artifacts authoritative locally. Full synchronization and production writes are not available in this trial.</p></div></section>
+      </div>
+      <p class="section-cta"><a href="https://github.com/synthaicode/XRefKit">Follow the reference implementation on GitHub</a></p>
+    </section>
+
+    <section class="landing-section" id="getting-started" aria-labelledby="getting-started-heading">
+      <div class="section-heading"><h2 id="getting-started-heading">Get started</h2><p>Python 3.11 or later is required. Install XRefKit, then initialize it in your target workspace.</p></div>
+      <div class="example-flow">
+        <div class="example-step"><strong>1. Install</strong><pre><code>python -m pip install xrefkit</code></pre></div>
+        <div class="example-step"><strong>2. Initialize your workspace</strong><pre><code>xrefkit init
+xrefkit --help</code></pre></div>
+        <div class="example-step"><strong>3. Connect an AI client if needed</strong><p>MCP is optional. Follow the repository's setup guide for your client and review the generated configuration before applying it.</p><a href="https://github.com/synthaicode/XRefKit#quick-start">Read the setup and MCP instructions</a></div>
       </div>
     </section>
 
