@@ -12,8 +12,8 @@ This page explains how to request the change-analysis skill that generates Markd
   - preferred explicit definition:
     [SKILL.v1.md](../../skills/dotnet_change_analysis/SKILL.v1.md#xid-9883EF4E8CA9)
   - legacy readable definition:
-    [legacy meta identity](../../skills/dotnet_change_analysis/SKILL.v1.md#xid-1F4A6D20B8E1) +
-    [legacy method identity](../../skills/dotnet_change_analysis/SKILL.v1.md#xid-D94E3B3A7C11)
+    [legacy meta identity](../../skills/dotnet_change_analysis/SKILL.v1.md#xid-9883EF4E8CA9) +
+    [legacy method identity](../../skills/dotnet_change_analysis/SKILL.v1.md#xid-9883EF4E8CA9)
 
 Use the v1 definition only when selecting a definition explicitly. The legacy
 meta/body pair remains readable through the established `--meta` path; this

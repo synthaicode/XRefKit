@@ -8,7 +8,7 @@ applies_when:
 exclusions:
 - never use repository paths as the package contract
 - leak expected answers
-- or auto-edit a Skill from an alarm
+- or edit a Skill from an alarm without separate explicit scoped user authorization
 inputs:
 - installed Skill packages, package evaluation manifests, model configuration, repetition count, and evaluator output collection path
 outputs:
@@ -50,6 +50,15 @@ Run isolated calibration and drift evaluations from the installed PyPI Skill pac
 ## Stop and handoff
 - Stop as `blocked` on missing manifests or targets, answer leakage, package mismatch, or incomplete evidence.
 - An alarm is a human-review signal, not permission to change the Skill; hand disposition to the Skill owner with raw evidence.
+
+An explicitly authorized correction to restore approved fixed-output quality
+is a separate flow under the
+[Fixed Output Quality Protocol](../../../docs/core/contracts/112_fixed_output_quality_protocol.md#xid-F9C2A8D471B0).
+It may adjust scoped prompt/procedure wording, but cannot change accepted
+criteria/examples, bypass independent review, or expose held-out assets.
+Original no-auto-edit declarations below mean that an alarm cannot itself
+authorize edits; they do not prohibit this separately authorized corrective
+flow. Evaluation isolation and independent review remain mandatory.
 
 ## Preserved source obligations
 

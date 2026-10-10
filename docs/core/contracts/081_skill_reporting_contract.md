@@ -47,6 +47,13 @@ not a universal display requirement. This does not remove task-specific
 checklists, evidence, coverage, acceptance criteria, or handoff obligations.
 No declaration in this section changes the machine-readable Run Log format.
 
+When an output is explicitly enrolled to preserve an accepted fixed format,
+give its independent reviewer the explicitly selected target Knowledge quality
+profile, selection/applicability evidence, and preserved accepted exemplars under the
+[Fixed Output Quality Protocol](112_fixed_output_quality_protocol.md#xid-F9C2A8D471B0).
+Per-run review may suffice; optional model qualification does not replace it.
+This reference does not enroll all reports or introduce universal headings.
+
 ### Operational checkpoint details
 
 For resumable work, include the purpose, completion conditions, scope,

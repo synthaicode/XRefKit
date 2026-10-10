@@ -1,0 +1,19 @@
+# Verification Record
+
+## Conditions
+
+Environment: The ordinary-input fixture was prepared; the upper boundary was not executed.
+
+## Observations
+
+| Case | Input | Expected | Observed | Basis |
+| --- | --- | --- | --- | --- |
+| Ordinary | 10 | 20 | 20 | Recorded fixture observation |
+
+## Assessment
+
+Assessment: Expected and observed ordinary-input values match. This supports only the observed case.
+
+## Follow-up
+
+Untested: The upper boundary requires a separate run. Acceptance of boundary behavior cannot be inferred from the ordinary-input match.

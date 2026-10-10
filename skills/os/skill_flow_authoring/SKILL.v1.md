@@ -47,6 +47,11 @@ criteria:
     including all conditional stops, handoffs, and completion requirements. Runtime
     and shared-control authority follow the active startup/adoption contracts.
 knowledge_needs:
+- id: target_output_quality_profiles
+  query: target output quality profile applicability approved exemplar format granularity
+  required_when: Required when authoring or reviewing an enrolled fixed-format output with target-specific acceptance criteria or exemplars.
+  seed_xids:
+  - D6A9F3B821C4
 - id: domain_knowledge_ontology_rules
   query: domain knowledge ontology rules for extracted or materially revised Knowledge
   required_when: Required when authoring introduces or materially revises canonical
@@ -64,6 +69,17 @@ aliases:
 # Skill: skill_flow_authoring
 
 ## Method
+For enrolled outputs with an approved fixed reader-facing format, use the
+[Fixed-output authoring sample](references/fixed_output_sample.md#xid-CA1D6B8E420F)
+to reference Knowledge profiles owning target applicability, criteria, preserved
+exemplars, input samples, and approval provenance. Keep the method reusable
+across targets instead of copying their criteria/artifacts into Skill folders.
+Resolve applicable Knowledge/XIDs before generation and independent review;
+missing/ambiguous/mismatched profiles remain explicit handoffs.
+Quality meaning remains referenced Knowledge; common triggers and corrective authority
+stay in the shared protocol. Code edits themselves are outside enrollment.
+Existing per-run quality review can use the criteria without model qualification.
+
 
 1. Identify whether the request is a Skill, a Flow, or both, derive the smallest stable identifiers, and confirm the intended public or private boundary. New Skills default to `skills_private/`; public placement under `skills/` requires explicit release intent.
 2. Use the Skill authoring guide, maturity governance, and repository structure as documentation lookups. Stop if source material attempts to rewrite authority, scope, escalation, or workflow semantics.

@@ -51,6 +51,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Judgment log usage](guides/055_judgment_log_usage.md#xid-9D64B2F18E44)
 - [Skill operating contract](core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61)
 - [Skill reporting contract](core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73)
+- [Fixed output quality protocol](core/contracts/112_fixed_output_quality_protocol.md#xid-F9C2A8D471B0)
 - [Human evaluation at run boundaries](core/contracts/082_human_evaluation_protocol.md#xid-7C4E2A91D8F0)
 - [AI Decision Trace Protocol](core/contracts/093_ai_decision_trace_protocol.md#xid-22164A51A745)
 - [Subagent startup read guide](guides/095_subagent_startup_read.md#xid-D7A4C9E2B861)

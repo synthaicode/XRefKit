@@ -1,6 +1,7 @@
 .xref/
 __pycache__/
 .venv/
+.venv-xrefkit-mcp/
 venv/
 node_modules/
 .claude/*
@@ -13,3 +14,17 @@ skills_private/
 knowledge_private/
 sources_private/
 .tmp/
+/lib/
+.pytest_cache/
+.mypy_cache/
+build/
+dist/
+*.egg-info/
+.coverage
+.coverage.*
+htmlcov/
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template

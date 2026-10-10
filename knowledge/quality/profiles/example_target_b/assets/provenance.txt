@@ -1,0 +1,4 @@
+Fictional repository example, authored for the user's requested portable target-profile demonstration.
+No real target owner accepted this artifact. No model generated or was qualified against it.
+The exemplar illustrates Target B's evidence-first format and detailed reporting granularity only.
+Profile status is example and cannot be used as production acceptance authority.

@@ -21,6 +21,16 @@
     same-day runs stay distinguishable.
   - prune or replace refs that a later observation supersedes.
 - Require explicit inputs, outputs, closure, and handoff for authored Skills.
+- For enrolled fixed-format outputs, curate applicability, acceptance-time
+  exemplar provenance, inputs, heading/column order, placement, and reporting
+  granularity in target-specific Knowledge profiles, referenced by the reusable
+  Skill method, using the
+  [Fixed-output sample](fixed_output_sample.md#xid-CA1D6B8E420F).
+  Resolve applicable target/revision+Skill/output candidates by Knowledge/XID
+  routing, not a fixed Skill baseline folder. Attach selection and quality
+  evidence to per-run review. Optional qualification isolates target/profile
+  revisions and uses common control; code edits and
+  fabricated measurable criteria for subjective quality are outside it.
 - Require explicit inputs, outputs, handoff, sequence, and control rules for
   authored Flows.
 - Update public routing indexes when publishing to `skills/`.
