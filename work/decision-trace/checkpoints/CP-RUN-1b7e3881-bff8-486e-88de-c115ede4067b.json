@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-1b7e3881-bff8-486e-88de-c115ede4067b",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-10-10T15:14:23Z",
+  "git_commit": "f5617c8891835c99e7aaa87b675b9ac203347f94",
+  "purpose": "before AI Skill run integration_constraint_derivation",
+  "work_item_id": "INTEGRATION",
+  "run_id": "1b7e3881-bff8-486e-88de-c115ede4067b",
+  "context_policy": "current-only",
+  "human_approved": false
+}
