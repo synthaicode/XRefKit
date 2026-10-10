@@ -305,7 +305,178 @@ default `work/sessions/`:
 python -m xrefkit dashboard serve --root . --sessions-dir path\to\sessions
 ```
 
-## Plans: From A Planning Artifact To The Monitor
+## Local Workspace And Versioned Work Management (Plan v2)
+
+The **計画 / Plans** screen supports registered local workspaces as well as
+the repository-root v1 plans described below. A workspace is an existing
+repository-contained directory; registration does not move source files or
+copy/change the baseline. The active dashboard root is the permitted file
+boundary. A client can use a different project directory as `--root`.
+
+Register explicit workspace metadata:
+
+```json
+{
+  "schema_version": 1,
+  "workspace_id": "local-change",
+  "title": "Local change",
+  "workspace_root": "."
+}
+```
+
+```powershell
+python -m xrefkit.work_management register --root . --input work/reports/workspace-input.json
+```
+
+Registry records live in `work/workspaces/*.json`. Each workspace reads its
+own `work/plans` and `work/sessions`. Identity conflicts, duplicate roots,
+overlapping session scopes, unsafe child directories, and escaping file
+symlinks do not select a substitute workspace. Registering identical metadata
+is an idempotent no-op; changing an existing identity is refused. No baseline
+or source migration is performed.
+
+A v2 submitted plan is one self-contained structured payload. This minimal
+example illustrates the format; it is not a claim that a planning Skill ran:
+
+```json
+{
+  "schema_version": 2,
+  "workspace_id": "local-change",
+  "repository_root": "C:/dev/itsm/XRefKit",
+  "plan_id": "example-work",
+  "plan_revision": "v1",
+  "title": "Example work",
+  "source": "work/reports/example-work.md",
+  "report_id": "observation-1",
+  "recorded_at": "2026-10-10T09:00:00+09:00",
+  "project": {"project_id": "project", "title": "Project"},
+  "change": {"change_id": "change", "title": "Change"},
+  "baseline": {"baseline_id": "baseline", "code_revision": "fixed-source-revision"},
+  "stages": [{"stage_id": "design", "title": "Design"}],
+  "steps": [
+    {
+      "step_id": "task-a",
+      "title": "Review the source",
+      "stage_id": "design",
+      "dependencies": [],
+      "status": null,
+      "completion_criterion": "Record the reviewed difference",
+      "outputs": [],
+      "runs": [],
+      "pbi_ids": ["pbi-a"],
+      "revalidation_needed": null
+    }
+  ],
+  "pbis": [{"pbi_id": "pbi-a", "title": "Change objective"}],
+  "confirmations": [],
+  "external_refs": [],
+  "initial_task_ids": ["task-a"]
+}
+```
+
+`steps` are the stable task units counted by the screen; stages, retries,
+confirmation entries, and repeated PBI references are not additional tasks.
+The same selected snapshot powers totals, stage rows, dependency nodes and
+details. The view switch and refresh preserve exact selection. The graph
+groups tasks by recorded stages and renders recorded branch/merge edges;
+it never generates sequence from stage order or permission to start work.
+
+`initial_task_ids` explicitly identifies the original comparison set. Missing
+or null means original/add/delete counts are unknown; an empty array is an
+explicit original zero. Added/deleted counts compare stable IDs. Existing
+source `done` contributes to **記録上の完了**, except when an explicit
+`revalidation_needed: true` applies. Null revalidation means unrecorded, not
+verified false. Remaining is current total minus this recorded completion
+count. Missing/unrecognized source status and revalidation counts are shown
+separately. These values are not effort, dates, quality acceptance or a new
+workflow completion gate. Missing evidence stays visibly missing without
+silently changing the recorded status.
+
+Record the first observation with expected observation revision zero:
+
+```powershell
+python -m xrefkit.work_management record --root . --input work/reports/plan-input.json --expected-observation-revision 0
+```
+
+The successful acknowledgement supplies `output` and `observation_revision`.
+For another status/evidence observation, submit a new `report_id` and that
+expected revision. The writer owns `observation_revision`, `report_sha256`
+and `observation_history`; omit these fields from submitted input. It
+validates the complete input, obtains an exclusive lock, rechecks the current
+revision, appends the prior submitted payload/receipt, flushes, and atomically
+publishes one file. Reader sees a complete old or new snapshot. Runs are a
+separate observation and are not part of an atomic cross-store transaction.
+
+An exact accepted `report_id` retry is a no-op, even after later observations;
+it never rolls the current state back. Reusing a report ID with different
+content, stale expected revision, or changing the plan definition is a
+conflict. Task identities, stage/dependency structure, completion criteria,
+planning metadata and PBI definitions remain fixed within a `plan_revision`.
+A scope amendment uses a new `plan_revision` and can name
+`previous_plan_revision`/task `predecessor_step_ids`; old revision files remain.
+No history is automatically purged. Limits are 1 MiB per snapshot, 200 history
+records, 200 plan/registry files, 500 tasks and 200 entries in auxiliary
+collections; overflow refuses publication. Stale locks cause explicit
+refusal; the command does not steal a lock from another writer. Retention,
+backup, multi-user collaboration and remote synchronization policy are not
+provided by this local trial.
+
+Optional array fields may be omitted but explicit null arrays are rejected.
+Optional scalar fields may be null and remain unrecorded. Persisted snapshots
+must contain valid writer revision/history/fingerprints. Unknown fields,
+duplicate keys/IDs, malformed types and unresolved structural references are
+controlled file errors. Important optional records are:
+
+| Record | Fields |
+| --- | --- |
+| `change` | `scope_in`, `scope_out`, `assumptions`, `constraints`, `exit_criteria`, `decision_owner`, `review_owner`, `acceptance_owner`, `quality_conditions` |
+| Quality condition | `condition_id`, `title`, `verification_method`, `reviewer`, `evidence_refs` |
+| `baseline` | `source`, `docs_revision`, `code_revision`, `acquired_at`, `mismatches`, `artifacts` |
+| Versioned artifact | `kind`, `path`, `revision`, `source`, `recorded_at` |
+| Task | existing v1 task metadata and `stage_id`, `dependencies`, `pbi_ids`, `candidate_version`, `revalidation_needed`, `revalidation_evidence`, `impact_status`, `validation_records`, `artifact_refs`, `judgment_refs`, `concern_refs`, `predecessor_step_ids` |
+| Validation | `validation_id`, `target_version`, `environment`, `input_data`, `expected_result`, `result`, `reviewer`, `recorded_at`, `evidence_refs` |
+| PBI | `pbi_id`, `title`, `purpose`, `acceptance_criteria`, `priority`, `owner`, `acceptance_status`, `acceptance_evidence`, `external_ref_ids` |
+| Confirmation | `confirmation_id`, `question`, `reason`, `owner`, `resolver`, `due_at`, `step_ids`, `version_refs`, `impact`, `answer`, `application`, `judgment_refs` |
+| Answer | `text`, `responder`, `recorded_at`, `evidence_refs` |
+| Application | `target_refs`, `verified_by`, `recorded_at`, `evidence_refs` |
+| External reference | `external_ref_id`, `service`, `organization`, `project`, `item_id`, `url`, `revision`, `type_mapping`, `state_mapping`, `ownership_ref`, `last_read_at`, `last_success_at`, `sync_status`, `pending_summary` |
+
+Typed dependencies use `{"step_id":"task-a","kind":"mandatory"}` or
+`kind: optional` for a current-plan task. External dependencies use
+`{"external_ref_id":"ref-a","kind":"external"}` and do not create fake
+local nodes. Each can supply `evidence_ref`. Internal cycles are rejected.
+Run mappings retain the v1 exact correlation contract; v2 monitor/back URLs
+also carry `workspace_id`. The same Run ID in different workspace scopes
+does not resolve across that boundary.
+
+The screen separates confirmation answers from their application evidence,
+PBI acceptance from task completion, and older validation results from the
+current candidate version. Candidate impact does not automatically reopen a
+task. Existing judgments/decision-trace are linked artifacts; this feature
+does not duplicate decisions into another canonical store or create ADR
+files. Other projects' existing ADR files can be ordinary confined artifact
+references; XRefKit's internal document policy is not imposed on them.
+
+External fields are plain recorded metadata. URL links allow only HTTP/HTTPS
+without credentials and are labelled unverified references. No Azure access,
+authentication, API update, remote existence check or shared evidence export
+occurs. Recorded sync status/time does not imply that this tool synchronized
+anything; local absolute paths are not shared evidence URLs.
+
+Future Azure DevOps connections belong to each project workspace: organization,
+project, process mappings, permitted write scope and credential reference must
+be selected from that workspace. A plan reference must bind that connection
+identifier and the external item; global or another workspace's defaults are
+not fallback sources. This local schema currently stores item/reference
+metadata only; connection profiles, credential storage and live authentication
+are not implemented, and require their reviewed integration contract.
+
+The serializer supports a structured plan producer; it does not execute the
+planning Skill. The repository's `planning_flow` adoption currently retains
+draft maturity, so automatic production by that Skill is unverified and must
+respect its normal gate. No Skill maturity/definition is changed here.
+
+## Plans v1: From A Planning Artifact To The Monitor
 
 The **計画 / Plans** tab is the entry point for planned work, including steps
 that have no Run yet. When valid plan artifacts exist, the dashboard opens

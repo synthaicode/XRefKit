@@ -16,6 +16,7 @@ from urllib.parse import parse_qs, urlparse
 from xrefkit.boundary_analysis import analyze_dashboard_payload
 from xrefkit.mcp.audit import AUDIT_SCHEMA
 from xrefkit.plan_observation import artifact_path, load_plans, plan_panel
+from xrefkit.work_management import confined_directory, load_workspaces
 from xrefkit.skillrun import (
     ACCEPTED_CLOSE_STATUSES,
     PHASE_SECTIONS,
@@ -595,6 +596,7 @@ def collect_runs(
     sessions_dir: Path,
     mcp_events_by_run: dict[str, list[dict[str, object]]] | None = None,
     audit_errors: list[str] | None = None,
+    *, strict_scope: bool = False,
 ) -> list[DashboardRun]:
     root = root.resolve()
     sessions_dir = sessions_dir.resolve()
@@ -604,6 +606,13 @@ def collect_runs(
     for path in sorted(sessions_dir.rglob("*.md")):
         if not path.is_file():
             continue
+        if strict_scope:
+            try:
+                path.resolve().relative_to(sessions_dir)
+            except (OSError, ValueError, RuntimeError):
+                if audit_errors is not None:
+                    audit_errors.append(f"Workspace Run outside selected sessions scope: {path.name}")
+                continue
         run = _parse_one_run(path, root, mcp_events_by_run or {}, audit_errors if audit_errors is not None else [])
         if run is not None:
             runs.append(run)
@@ -1073,7 +1082,38 @@ def build_payload(
     audit_path = (mcp_audit_log or (root / "work" / "mcp" / "xid_audit.jsonl")).resolve()
     mcp_events_by_run, audit_errors = _load_mcp_audit(audit_path)
     runs = collect_runs(root, sessions_dir, mcp_events_by_run, audit_errors)
-    flows = collect_flows(runs)
+    base_runs = list(runs)
+    run_records = [run.to_dict() for run in runs]
+    workspace_rows = load_workspaces(root)
+    plan_rows = load_plans(root, run_records)
+    observed_paths = {run.path for run in runs}
+    for workspace_row in workspace_rows:
+        workspace = workspace_row["workspace"]
+        if workspace is None or workspace_row["issues"]:
+            continue
+        workspace_root = confined_directory(root, workspace["workspace_root"])
+        try:
+            (workspace_root / "work/sessions").resolve().relative_to(workspace_root)
+            (workspace_root / "work/plans").resolve().relative_to(workspace_root)
+        except (OSError, ValueError, RuntimeError):
+            workspace_row["issues"].append("Workspace sessions/plans directory escapes selected workspace")
+            continue
+        workspace_runs = collect_runs(root, workspace_root / "work/sessions", mcp_events_by_run, audit_errors, strict_scope=True)
+        records = [{**run.to_dict(), "workspace_id": workspace["workspace_id"]} for run in workspace_runs]
+        for run, record in zip(workspace_runs, records):
+            if run.path not in observed_paths:
+                runs.append(run)
+                run_records.append(record)
+                observed_paths.add(run.path)
+            else:
+                for existing in run_records:
+                    if existing["path"] == run.path:
+                        existing["workspace_id"] = workspace["workspace_id"]
+        directory = workspace_root / "work/plans"
+        scoped_plans = load_plans(root, records, plans_dir=directory, workspace_id=workspace["workspace_id"])
+        scoped_files = {row["file"] for row in scoped_plans}
+        plan_rows = [row for row in plan_rows if row["file"] not in scoped_files] + scoped_plans
+    flows = collect_flows(base_runs)
     recoveries = collect_recoveries(runs)
     decision_trace = _decision_trace_payload(root)
     summary = _summary(runs)
@@ -1087,12 +1127,14 @@ def build_payload(
         "summary": summary,
         "unused_xid_ranking": _unused_xid_ranking(runs),
         "missing_information_ranking": _missing_information_ranking(runs),
-        "runs": [run.to_dict() for run in runs],
+        "runs": run_records,
+        "workspaces": workspace_rows,
+        "observed_at": datetime.now().astimezone().isoformat(),
+        "plans": plan_rows,
         "flows": flows,
         "recoveries": recoveries,
         "decision_trace": decision_trace,
     }
-    payload["plans"] = load_plans(root, payload["runs"])
     payload["boundary_analysis"] = analyze_dashboard_payload(
         payload,
         source_ref="dashboard://current",
@@ -1116,6 +1158,11 @@ def _html_page(payload: dict[str, object]) -> str:
     runs = payload["runs"]
     flows = payload.get("flows", [])
     plans_html = plan_panel(Path(str(payload["root"])), payload.get("plans", []))
+    workspace_options = '<option value="">すべての作業領域</option>' + ''.join(
+        f'<option value="{html.escape(row["workspace"]["workspace_id"], quote=True)}">{html.escape(row["workspace"]["title"])}</option>'
+        for row in payload.get("workspaces", []) if row["workspace"] and not row["issues"]
+    )
+    workspace_issues = ''.join(f'<p>{html.escape(row["file"])}: {html.escape("; ".join(row["issues"]))}</p>' for row in payload.get("workspaces", []) if row["issues"])
     decision_trace = payload.get("decision_trace", {})
     assert isinstance(summary, dict)
     assert isinstance(runs, list)
@@ -1400,6 +1447,37 @@ def _html_page(payload: dict[str, object]) -> str:
     .plan-step:focus-visible, .monitor-link:focus-visible {{ outline: 3px solid var(--blue); outline-offset: 3px; }}
     .plan-step-detail {{ overflow-wrap: anywhere; margin-top: 16px; background: white; }}
     .monitor-link {{ display: inline-block; margin: 10px 0; border-radius: 6px; padding: 9px 14px; background: #e6efff; }}
+    .wm-plan {{ padding: 24px; border: 1px solid var(--line); border-radius: 14px; background: white; }}
+    .wm-sub {{ color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }}
+    .wm-metrics {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 24px 0; }}
+    .wm-metrics > div {{ border-left: 3px solid var(--line); padding-left: 16px; }}
+    .wm-metrics > div:last-child {{ border-color: var(--blue); }}
+    .wm-metrics strong {{ display: block; font-size: 34px; font-weight: 600; }}
+    .wm-metrics strong small {{ margin-left: 8px; font-size: 13px; font-weight: 400; }}
+    .wm-segmented {{ display: flex; gap: 6px; margin: 18px 0; }}
+    .wm-view-switch {{ padding: 9px 16px; border: 0; border-radius: 8px; cursor: pointer; font: inherit; }}
+    .wm-view-switch[aria-pressed="true"] {{ background: var(--ink); color: white; }}
+    .wm-legend {{ color: var(--muted); font-size: 12px; }}
+    .wm-stage {{ display: grid; grid-template-columns: minmax(150px, 1fr) 2fr 70px; align-items: center; gap: 16px; border-bottom: 1px solid var(--line); padding: 17px 0; }}
+    .wm-stage small {{ display: block; color: var(--muted); }}
+    .wm-marks {{ display: flex; gap: 5px; }}
+    .plan-step.wm-mark {{ padding: 0; min-height: 14px; height: 14px; flex: 1; border-radius: 3px; background: #e5eaf1; }}
+    .wm-task-titles {{ grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }}
+    .plan-step.wm-task-title {{ width: auto; min-height: 32px; padding: 6px 10px; font-size: 12px; }}
+    .wm-graph-scroll {{ overflow: auto; max-height: 560px; border: 1px solid var(--line); border-radius: 10px; }}
+    .wm-graph {{ position: relative; color: var(--muted); }}
+    .wm-graph svg {{ position: absolute; inset: 0; pointer-events: none; }}
+    .plan-step.wm-node {{ position: absolute; width: 175px; height: 76px; min-height: 76px; padding: 9px; text-align: left; border-radius: 9px; }}
+    .wm-node strong {{ font-size: 13px; line-height: 1.3; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }}
+    .wm-node small {{ font-size: 11px; margin: 0 0 5px; }}
+    .plan-step.done {{ background: #e2f2eb; }}
+    .plan-step.active {{ background: #fff0d3; }}
+    .plan-step.revalidation {{ background: #e8f0ff; border: 2px dashed var(--blue); }}
+    .wm-mark.done {{ background: #47856c !important; }}
+    .wm-mark.active {{ background: #d29936 !important; }}
+    .wm-detail {{ background: #f3f6fa; border-radius: 10px; margin: 20px 0; padding: 18px; }}
+    .wm-issue {{ border-left: 3px solid var(--red); padding: 8px; }}
+    [data-wm-view][hidden], .plan-card[hidden], .plan-step-detail[hidden] {{ display: none !important; }}
     .kv {{ display: flex; flex-wrap: wrap; gap: 8px; }}
     .pill {{ border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; color: var(--muted); background: white; font-size: 12px; }}
     .analysis-intro {{ margin: 0 0 14px; color: var(--muted); }}
@@ -1491,6 +1569,8 @@ def _html_page(payload: dict[str, object]) -> str:
     <section id="plans" class="panel">
       <p class="category-note">計画成果物 → 工程の詳細 → 実行モニタ。工程状態・プロセス進行・品質・承認は別の記録です。この画面は実行や再試行を起動しません。</p>
       <button id="refresh-plans" class="refresh-button" type="button">計画を更新</button>
+      <label>作業領域 <select id="workspace-select">{workspace_options}</select></label>
+      <p class="category-note">最終観測: {html.escape(str(payload.get("observed_at", "未記録")))}。計画は各ファイルの一貫したsnapshot、Runは別の観測です。{workspace_issues}</p>
       {plans_html}
     </section>
     <section id="overview" class="panel active">
@@ -1574,9 +1654,12 @@ def _html_page(payload: dict[str, object]) -> str:
     let selectedPlan = navigation.searchParams.get("plan_id");
     let selectedRevision = navigation.searchParams.get("plan_revision");
     let selectedStep = navigation.searchParams.get("step_id");
+    let selectedWorkspace = navigation.searchParams.get("workspace_id");
+    let selectedPlanView = navigation.searchParams.get("plan_view") === "stages" ? "stages" : "network";
     function updateNavigation() {{
       navigation.searchParams.set("panel", activePanel);
-      for (const [key, value] of [["run_id", requestedRunId], ["plan_id", selectedPlan], ["plan_revision", selectedRevision], ["step_id", selectedStep]]) {{
+      navigation.searchParams.set("plan_view", selectedPlanView);
+      for (const [key, value] of [["run_id", requestedRunId], ["plan_id", selectedPlan], ["plan_revision", selectedRevision], ["step_id", selectedStep], ["workspace_id", selectedWorkspace]]) {{
         if (value !== null) navigation.searchParams.set(key, value); else navigation.searchParams.delete(key);
       }}
       window.history.replaceState(null, "", navigation);
@@ -1584,22 +1667,25 @@ def _html_page(payload: dict[str, object]) -> str:
     function restoreNavigation() {{
       const issue = document.getElementById("navigation-issue");
       let problems = [];
+      document.getElementById("workspace-select").value = selectedWorkspace || "";
+      document.querySelectorAll(".plan-card").forEach(card => card.hidden = selectedWorkspace !== null && card.dataset.workspaceId !== selectedWorkspace);
+      if (selectedWorkspace !== null && !Array.from(document.querySelectorAll("#workspace-select option")).some(option => option.value === selectedWorkspace)) problems.push("指定された作業領域が利用できません（未登録・競合）。");
       if (requestedRunId !== null) {{
-        const paths = new Set(Array.from(document.querySelectorAll(".filterable-run")).filter(run => run.dataset.runId === requestedRunId).map(run => run.dataset.runPath));
+        const paths = new Set(Array.from(document.querySelectorAll(".filterable-run")).filter(run => run.dataset.runId === requestedRunId && (selectedWorkspace === null || run.dataset.workspaceId === selectedWorkspace)).map(run => run.dataset.runPath));
         selectedRun = paths.size === 1 ? Array.from(paths)[0] : null;
         if (!selectedRun) problems.push(paths.size ? "Run IDが重複しています。モニタを選択できません。" : "指定されたRunが見つかりません。モニタ利用不可（削除・対象外）。");
         if (selectedPlan !== null || selectedRevision !== null || selectedStep !== null) {{
-          const originValid = selectedPlan && selectedRevision && selectedStep && Array.from(document.querySelectorAll(".monitor-link")).some(link => link.dataset.planId === selectedPlan && link.dataset.planRevision === selectedRevision && link.dataset.stepId === selectedStep && link.dataset.runId === requestedRunId);
+          const originValid = selectedPlan && selectedRevision && selectedStep && Array.from(document.querySelectorAll(".monitor-link")).some(link => link.dataset.planId === selectedPlan && link.dataset.planRevision === selectedRevision && link.dataset.stepId === selectedStep && link.dataset.runId === requestedRunId && (link.dataset.workspaceId || null) === selectedWorkspace);
           if (!originValid) {{ selectedRun = null; problems.push("計画版・工程と指定Runの対応を確認できません。モニタ利用不可。"); }}
         }}
       }}
       let details = [];
       document.querySelectorAll(".plan-step-detail").forEach(detail => {{
-        const selected = detail.dataset.planId === selectedPlan && detail.dataset.planRevision === selectedRevision && detail.dataset.stepId === selectedStep;
+        const selected = detail.dataset.planId === selectedPlan && detail.dataset.planRevision === selectedRevision && detail.dataset.stepId === selectedStep && (detail.dataset.workspaceId || null) === selectedWorkspace;
         detail.hidden = !selected;
         if (selected) details.push(detail);
       }});
-      document.querySelectorAll(".plan-step").forEach(button => button.setAttribute("aria-expanded", String(button.dataset.planId === selectedPlan && button.dataset.planRevision === selectedRevision && button.dataset.stepId === selectedStep)));
+      document.querySelectorAll(".plan-step").forEach(button => button.setAttribute("aria-expanded", String(button.dataset.planId === selectedPlan && button.dataset.planRevision === selectedRevision && button.dataset.stepId === selectedStep && (button.dataset.workspaceId || null) === selectedWorkspace)));
       if (selectedStep && details.length !== 1) problems.push("指定された計画版・工程が見つからないか重複しています。対応確認待ちです。");
       if (details.length !== 1) details.forEach(detail => detail.hidden = true);
       issue.textContent = problems.join(" ");
@@ -1667,9 +1753,24 @@ def _html_page(payload: dict[str, object]) -> str:
       }});
       document.querySelectorAll(".plan-step").forEach(button => button.addEventListener("click", () => {{
         selectedPlan = button.dataset.planId; selectedRevision = button.dataset.planRevision; selectedStep = button.dataset.stepId;
+        selectedWorkspace = button.dataset.workspaceId || null;
         requestedRunId = null; selectedRun = null;
         updateNavigation(); restoreNavigation(); applyFilters();
       }}));
+      const workspacePicker = document.getElementById("workspace-select");
+      workspacePicker.value = selectedWorkspace || "";
+      workspacePicker.addEventListener("change", () => {{ selectedWorkspace = workspacePicker.value || null; selectedPlan = null; selectedRevision = null; selectedStep = null; requestedRunId = null; selectedRun = null; updateNavigation(); restoreNavigation(); applyFilters(); }});
+      document.querySelectorAll(".wm-view-switch").forEach(button => button.addEventListener("click", () => {{
+        selectedPlanView = button.dataset.view;
+        updateNavigation();
+        const card = button.closest(".plan-card");
+        card.querySelectorAll("[data-wm-view]").forEach(view => view.hidden = view.dataset.wmView !== button.dataset.view);
+        card.querySelectorAll(".wm-view-switch").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
+      }}));
+      document.querySelectorAll(".plan-card").forEach(card => {{
+        card.querySelectorAll("[data-wm-view]").forEach(view => view.hidden = view.dataset.wmView !== selectedPlanView);
+        card.querySelectorAll(".wm-view-switch").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.view === selectedPlanView)));
+      }});
       document.getElementById("clear-selection").addEventListener("click", () => {{ selectedRun = null; requestedRunId = null; updateNavigation(); restoreNavigation(); applyFilters(); }});
       document.getElementById("refresh-runs").addEventListener("click", refreshDashboard);
       document.getElementById("refresh-plans").addEventListener("click", refreshDashboard);
@@ -2038,6 +2139,7 @@ def _run_data_attributes(run: object) -> str:
     return (
         f'data-run-path="{html.escape(str(run.get("path", "")), quote=True)}" '
         f'data-run-id="{html.escape(str(run.get("run_id") or ""), quote=True)}" '
+        f'data-workspace-id="{html.escape(str(run.get("workspace_id") or ""), quote=True)}" '
         f'data-status="{html.escape(str(run.get("status", "")), quote=True)}" '
         f'data-search="{html.escape(search, quote=True)}"'
     )

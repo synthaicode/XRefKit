@@ -44,6 +44,9 @@ def validate_plan(plan: object) -> list[str]:
     """Validate a v1 producer payload without coercion or invented values."""
     if not isinstance(plan, dict):
         return ["計画はJSONオブジェクトである必要があります"]
+    if type(plan.get("schema_version")) is int and plan["schema_version"] == 2:
+        from xrefkit.work_management import validate_plan_v2
+        return validate_plan_v2(plan)
     issues: list[str] = []
     unknown = set(plan) - {"schema_version", "plan_id", "plan_revision", "repository_root", "title", "source", "approval_status", "approval_evidence", "steps"}
     if unknown:
@@ -189,9 +192,9 @@ def _read_plan(path: Path) -> object:
     return json.loads(data.decode("utf-8-sig"), object_pairs_hook=_unique_object)
 
 
-def load_plans(root: Path, runs: list[dict]) -> list[dict]:
+def load_plans(root: Path, runs: list[dict], *, plans_dir: Path | None = None, workspace_id: str | None = None) -> list[dict]:
     """Keep independent malformed intake visible without crashing the dashboard."""
-    directory = root.resolve() / "work" / "plans"
+    directory = plans_dir if plans_dir is not None else root.resolve() / "work" / "plans"
     if not directory.exists():
         return []
     rows: list[dict] = []
@@ -204,12 +207,15 @@ def load_plans(root: Path, runs: list[dict]) -> list[dict]:
     except OSError as exc:
         return [{"file": "work/plans", "issues": [f"計画一覧を読めません: {exc}"], "plan": None}]
     for path in paths[:MAX_PLAN_FILES]:
-        row: dict = {"file": f"work/plans/{path.name}", "issues": [], "plan": None}
+        row: dict = {"file": str(path.relative_to(root.resolve())), "issues": [], "plan": None}
         try:
             if artifact_path(root, row["file"]) is None:
                 raise ValueError("計画ファイルがリポジトリ内の通常ファイルではありません")
             plan = _read_plan(path)
             row["issues"] = validate_plan(plan)
+            if isinstance(plan, dict) and plan.get("schema_version") == 2:
+                from xrefkit.work_management import validate_plan_v2
+                row["issues"] = validate_plan_v2(plan, stored=True)
             if not row["issues"]:
                 row["plan"] = plan
         except (OSError, ValueError, UnicodeError, RecursionError) as exc:
@@ -228,6 +234,10 @@ def load_plans(root: Path, runs: list[dict]) -> list[dict]:
         plan = row["plan"]
         if plan is None:
             continue
+        if plan["schema_version"] == 2 and (workspace_id is None or plan["workspace_id"] != workspace_id):
+            row["issues"].append("作業領域の対応が未記録・不一致です。リンク利用不可。")
+        if plan["schema_version"] == 1 and directory.resolve() != root.resolve() / "work/plans":
+            row["issues"].append("v1はリポジトリ直下の計画のみ対応しています。")
         if counts[(plan["plan_id"], plan["plan_revision"])] > 1:
             row["issues"].append("計画IDと版が重複しています（対応確認待ち）")
         for step in plan["steps"]:
@@ -245,11 +255,17 @@ def load_plans(root: Path, runs: list[dict]) -> list[dict]:
                         "plan_id": plan["plan_id"], "plan_revision": plan["plan_revision"],
                         "step_id": step["step_id"],
                     })
+                    if plan["schema_version"] == 2:
+                        mapping["monitor_url"] += "&" + urlencode({"workspace_id": plan["workspace_id"]})
             step["run_observations"] = mappings
     return rows
 
 
 def _display(value: object) -> str:
+    if isinstance(value, list):
+        return "、".join(_display(item) for item in value) or "記録なし"
+    if isinstance(value, dict):
+        return " / ".join(f"{_display(key)}: {_display(item)}" for key, item in value.items()) or "記録なし"
     return html.escape(str(value)) if value is not None else "未記録"
 
 
@@ -313,6 +329,10 @@ def plan_panel(root: Path, rows: list[dict]) -> str:
         if plan is None:
             cards.append(f'<article class="box"><h3>{_display(row["file"])}</h3><p>計画表示不可</p><ul>{errors}</ul></article>')
             continue
+        if plan["schema_version"] == 2:
+            from xrefkit.work_management_view import plan_v2_card
+            cards.append(plan_v2_card(root, row))
+            continue
         attributes = ' '.join(f'data-{key.replace("_", "-")}="{html.escape(plan[key], quote=True)}"'
                               for key in ("plan_id", "plan_revision"))
         matches_root = _repository_matches(root, plan)
@@ -361,6 +381,8 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--name must be a plain .json filename")
     try:
         plan = _read_plan(args.input)
+        if isinstance(plan, dict) and plan.get("schema_version") == 2:
+            raise ValueError("v2 requires python -m xrefkit.work_management record with workspace and CAS")
         issues = validate_plan(plan)
         if issues:
             print(json.dumps({"valid": False, "issues": issues}, ensure_ascii=False))
