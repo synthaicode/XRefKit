@@ -3,80 +3,91 @@
 
 # XRefKit Python Client Work Management Structure Findings
 
-## Status and Identity
+## Status, target and source basis
 
-Current source finding independently accepted for the explicit bounded target below. This is instruction-backed analysis, not a source_structure_overview Skill run. Workflow e3f78188-2448-4ca0-9d39-736a73ebe3e7 records fallback because that Skill's applicability is .NET-only. Common source criteria5F21C8A41001 applied. Producer: instruction-backed source analysis; normalization/registration: source_structure_findings_registration (authorized apply).
+Current bounded source finding refreshed on 2026-10-11 through product implementation commit `3198070`. Target identity `E9A4C7B2106C` is `repository:XRefKit`, nine Python client-work runtime modules. Producer is instruction-backed source inspection under `skill_flow_authoring`, with `knowledge_ontology_management` authorized canonical extension. This is not a .NET source_structure_overview run or a claim of production acceptance. Checkout byte hashes below identify inspected source, including line endings rather than Git blob hashes. Unrelated Skill adoption/governance implementation is outside this finding.
 
-Repository: XRefKit, local C:/dev/itsm/XRefKit. Inspected source basis commit f83bf70d2b9da37e1833bf5e8c1d86684cfd6df7 (checkpoint commits do not alter these modules). Target scope: xrefkit/work_management.py, plan_observation.py, plan_markdown.py, azure_connection.py, azure_update_candidate.py and dashboard.py's plan/workspace loading. Tests: corresponding work_management, plan_observation, plan_markdown, azure_connection, azure_update_candidate and dashboard tests. Governance adoption modules under concurrent implementation are explicitly separate from this source finding; they are not Azure importer/writer structure. Raw working-tree byte hashes (including checkout line endings, not Git blob hashes) accompany this report in python-client-work-source-basis.json.
+## Runtime units and composition
 
-## Purpose and Runtime Units
+| Unit | Current responsibility and pivots |
+| --- | --- |
+| `xrefkit/work_management.py` | Registered workspace/v2 plan validation, confinement, immutable definition per revision, observation/hash/history and counts; `register_workspace`, `record_plan`, `task_counts` |
+| `xrefkit/plan_observation.py` | Legacy/v2 loading and exact run/repository/correlation mapping; `resolve_mapping` never invents runs or approval |
+| `xrefkit/plan_markdown.py` | Derived owned adjacent Markdown/Mermaid, provenance, confined local links and optional explicit monitor; `render_body`, `publish_projection` |
+| `xrefkit/azure_connection.py` | Immutable workspace profile, credential-name reference, operations/IDs and test probe; `validate_profile`, `register_connection`, `load_connection`, `read_check` |
+| `xrefkit/azure_update_candidate.py` | Pure supplied-input reducer and escaped unsent preview; `build_candidate`, no profile/credential/network access |
+| `xrefkit/azure_import.py` | Explicit-ID test GET capture, complete acquisition, immutable binding and baseline comparison; `capture`, `bind`, `_mapping`, `_plan` |
+| `xrefkit/azure_writer.py` | One-shot guarded State/History delivery, durable intent/receipt, live checks, replay and explicit predecessor enforcement; `publish`, `_summary`, `_patch`, `_pairs` |
+| `xrefkit/azure_recovery.py` | Local status, separate read-only full-proof confirmation and ancestry/eligibility; `inspect_status`, `reconcile`, `ancestry_before`, `eligible` |
+| `xrefkit/dashboard.py` | Supplemental plan/workspace/run presentation; not an execution scheduler or approval authority |
 
-| Unit | Current responsibility and source pivots |
-|---|---|
-| work_management | Validates registered workspace and v2 plans; confined JSON persistence, revision/hash/history, immutable definition within revision, task count projection. validate_plan_v2, record_plan, register_workspace, task_counts are main pivots. |
-| plan_observation | Legacy/v2 plan loading and exact run mapping; presentation does not invent runs/status. resolve_mapping checks repository, unique run_id and optional flow/work_item/node correlation. |
-| plan_markdown | Derived adjacent Markdown with Mermaid, source provenance, ordinary confined local links and optional explicitly supplied monitor base. render_body and publish_projection separate content from owned atomic publication. |
-| azure_connection | Workspace-scoped immutable connection profile registration, exact loader and explicit test-only GET read_check. PAT env-name reference only; current allowed operation read_work_item and explicit IDs. |
-| azure_update_candidate | Pure bounded supplied-input validation and state reducer producing unsent candidate/hold/conflict/invalid and constrained patch preview. No transport, profile access or credential lookup. |
-| dashboard | Supplemental plan/run UI. Imports plan_observation and work_management; loads registered workspace-specific plans/run records and renders plan panel. It does not make completion/approval decisions. |
+Standard-library/local function composition supplies this subsystem. There is no DI container, database migration, queue consumer, automatic background synchronization or generic delivery plugin registry here. Primary plan review uses local JSON plus generated Markdown/Mermaid; dashboard/monitor URLs are supplemental.
 
-Each persistence/transport module exposes a module CLI main. There is no new dependency injection container, job scheduler, queue consumer, database migration or background synchronization in this bounded subsystem. Python standard library and local functions compose these paths directly.
+## Route and data-flow traces
 
-## Route and Data-Flow Traces
+1. Workspace registration validates exact ID/root/session scope and repository confinement, locks the registry, refuses changed identity and atomically publishes hash-named JSON. Loaders separately confine fixed local paths; there is no global workspace fallback.
+2. Plan recording validates v2 identity and expected observation revision, locks records, checks exact report replay and immutable definition, retains bounded observations and atomically publishes JSON. Owned Markdown projection is attempted under the lock with its own outcome; hand-authored/edited Markdown is preserved. Replay regenerates from current stored JSON, not an obsolete caller snapshot.
+3. Counts project unique steps: explicit `done` without `revalidation_needed:true` counts completed. Runs/retries are not extra steps. Original/add/remove counts require `initial_task_ids`. PBI acceptance is separate. Mermaid uses safe node identities/labels and dependency edges with stage counts, source/run links and ordinary confined file links.
+4. Profile registration is immutable local publication. Read profiles allow explicitly selected test IDs. Write profiles require exactly operations `read_work_item`, `update_task_state_history` and item set `{10,21}`. Production network operations are refused before credential/network work.
+5. Read probe verifies bounded revision/type/state/project/identity through exact HTTPS API 7.1 endpoints. Capture additionally projects title, description, PBI acceptance criteria/priority, parent and safe URL data. PBI self-URL may establish project GUID; Task/self/parent identities must agree. Related URLs are not followed.
+6. Capture makes one GET per selected ID. Partial results retain acquired observations; authentication rejection stops later reads. Exact capture replay uses no new credentials/network. Local binding requires a complete capture, every selected Task once, disjoint nonempty included steps, explicit approval references and completion criteria. It seals capture/plan hashes and identities without altering the plan or observations. Comparison capture selects an explicit binding, retaining baseline and recording changes/incomplete results for resolution.
+7. Offline candidate validates supplied local plan/target/binding/baseline/remote/metadata and explicit authorization/completion assertions. State/escaped summary generation is deterministic. Candidate/hold/conflict/invalid remain unsent, not proof of fresh state or permission.
+8. Writer resolves exact test profile/capture/mapping; target is hard-coded PBI10/Task21. It validates current definition against binding and current observation against the request (observation may advance beyond initial binding), saved records and explicit ancestry under plan/delivery locks. Intent-only/unknown sends block the target across other report/connection/binding IDs. Exact replay returns historical records before credential lookup/network. Fresh execution reads parent/Task/transition metadata and applies the pure reducer; completion/work/rework authority remains recorded assertion input.
+9. Sealed durable intent precedes one PATCH: `test /rev`, optional State and one deterministic History. Matching response/fresh readback of revision, State, full summary, protected Task fields and parent checks establish success. Plan/import/binding/profiles are unchanged. Dispatch/persistence uncertainty is not retried; the intent remains evidence.
+10. Recovery status reads local records only. Reconciliation checks parent/current Task/expected historical revision using bounded GETs and seals a separate result. Complete intended summary/State/protected-fields/target/parent proof is mandatory. Historical match with changed current projection yields `applied_remote_changed`, blocking resume. Absence or a marker alone never proves not-sent. Eligible current positive proof can be explicitly selected by a subsequent new report's `previous_reconciliation_id`, with newer local observation, single-successor/full ancestry and normal fresh writer validation. Reconciliation itself never sends or changes original records.
 
-1. Workspace registration validates exact ID/workspace_root and session-scope overlap, confines root inside repository; writer/loader separately confine fixed work/plans and work/sessions, takes .registry.lock, refuses changed same-ID registration and atomically writes hash-named JSON under work/workspaces.
-2. Plan recording validates submitted v2, resolves exact workspace/directory and identity, takes .records.lock, checks report replay and expected observation revision, rejects same-plan-revision topology mutation, retains bounded prior observations, atomically replaces JSON and attempts owned Markdown projection under the same lock. JSON save and Markdown projection outcome are separate. A replay regenerates from the stored current snapshot rather than replaying an older observation.
-3. Task counts count unique steps. Completed means explicit done and revalidation_needed is not true. Retries are runs, not added tasks. Unknown initial_task_ids leaves original/add/remove counts unrecorded. PBI acceptance is a separate record.
-4. Markdown generation emits fixed generated ownership receipt/body hash, safe Mermaid node identities/labels, readable stage/dependency tables and source/run links. Existing hand-authored or edited generated Markdown is preserved with projection failure. Source JSON remains authoritative; manual regeneration uses the same lock/current reread. Optional monitor URLs are supplemental and explicitly supplied, not a guessed localhost service.
-5. Azure profile register_connection validates strict target/auth-reference/scope, resolves workspace directory, locks .connections.lock, treats identical registration as replay and changed identity as conflict. load_connection refuses missing/duplicate identity. It performs no request.
-6. Azure read_check validates exact allowed test item before env lookup; resolves named PAT, builds HTTPS dev.azure.com project/item endpoint, makes one GET7.1 selecting TeamProject/WorkItemType/State with redirect/proxy fallback disabled and bounded response. Validates response destination/project/item/revision and sanitized fields, returns read outcome only. No PBI description/criteria/relations import or local plan binding occurs.
-7. build_candidate accepts stored local plan plus exact target/binding/captured baseline/remote/metadata and explicit criterion/authorization assertions. It checks revisions, conflict and ordered states, emits deterministic escaped summary and at most test /rev plus State/History preview. Results always not_sent/publish_ready=false; local artifact IDs/versions are local_only with accessibility unverified.
+## Persistence, configuration and external boundaries
 
-## Persistence, Configuration and External Boundaries
+Fixed `work/plans` and `work/sessions` contain client definitions/observations/runs. Integration records reside in `work/integrations/connections`, `imports`, `bindings`, and `deliveries/{intents,receipts,reconciliations}` inside the selected workspace. Exclusive local locks, hashes, confinement, temporary sibling writes, fsync and atomic publication preserve complete snapshots. JSON records/responses are bounded at 1 MiB; selected Task sets and per-kind records at 200. No automatic purge or stale-lock deletion occurs; multi-host/shared-filesystem guarantees are not established.
 
-Workspace JSON defines workspace_root; writer/loader derive fixed work/plans and work/sessions; repository_root and workspace identity constrain reads/writes. No global workspace fallback. Local JSON schemas and explicit versions are extension boundaries. plan_revision is definition identity; observation_revision is state sequence; report_id/hash handles local idempotency. _publish uses temporary sibling file, fsync and os.replace. Locks use exclusive file creation, with failure rather than optimistic parallel writes; distributed lock/remote filesystem guarantees are not established.
+PAT values never belong in profiles: only environment variable names are stored. Normal TLS, 30-second socket-operation timeout, no retries/redirects/automatic proxy fallback bound transport. This is not a whole-operation deadline. Diagnostics exclude raw authorization/server bodies. Imported HTML remains inert JSON rather than executable/displayed content or instructions.
 
-Profile files contain PAT environment variable name, never a stored PAT. Current read probe only permits test; production flag is representable but refused before token lookup. HTTP errors are bounded diagnostic codes, not raw server content or inferred root causes. Generic API adapters/importer/write operations do not exist in these modules. Offline candidate captured snapshots do not prove current remote/local state or effective permission.
+Writer changes only State/History under revision checks, not assignee/description/deadline/estimate/links/PBI acceptance/Bug items. History contains artifact IDs/versions, not uploads, absolute paths, evidence reference strings or teammate access proof. Explicit test read/import selection is broader than hard-coded write/recovery scope; this implemented distinction is not a generic sync contract.
 
-No ORM/data store, tenant router or plugin registry is used here. Variation comes from registered workspace, exact connection/project/environment/item allowlist, plan versions/statuses/dependency kinds and optional monitor base. Dashboard/run matching is an observation boundary, not an execution scheduler.
+## Naming and contract surfaces
 
-## Naming and Contract Surfaces
+| Surface | Meaning |
+| --- | --- |
+| `workspace_id/connection_id/organization/project/item_id` | Exact local/remote identity; equal numeric IDs elsewhere are different targets |
+| `plan_revision/observation_revision/report_id` | Definition revision, state sequence and immutable report identity |
+| `import_id/binding_id` | Immutable acquisition and approved external/local mapping |
+| `candidate/hold/conflict/invalid` | Offline decisions, not delivery results |
+| `success/hold/conflict/rejected/unknown` | Distinct writer outcomes; success alone confirms delivery |
+| `confirmed_applied/applied_remote_changed/unresolved/retained_non_success` | Proof dispositions, not automatic retry permission |
+| `previous_report_id/previous_reconciliation_id` | Mutually exclusive explicit predecessor edges, never latest-file selection |
+| `recorded_at/verified_at` | Original receipt processing-start time versus recovery verification time |
+| `local_only` | Trace identity with accessibility unverified, not uploaded evidence |
 
-| Surface | Meaning retained |
-|---|---|
-| workspace_id/connection_id/organization/project/item_id | Exact local/external identity; same numeric external ID elsewhere is distinct |
-| plan_id/plan_revision/step_id/observation_revision/report_id | Definition, stable task, state sequence and report identity; do not conflate |
-| candidate/hold/conflict/invalid | Offline decision outcomes, not delivery results |
-| not_sent/read_verified/write_permission_verified | Separate transport/observation/authority facts |
-| completion.confirmed/work_authorization refs | Supplied assertions consumed deterministically, not evaluated as business approval |
-| artifact_id/version/local_only | Safe trace reference, not public URL or teammate accessibility |
+## Verification and limits
 
-Public CLI/API names and schema enums are contract surfaces. Existing report/run IDs, revision fields and safe-path rules must be preserved by future import/write work unless an explicit migration is designed.
+This refresh inspects current source and CLI/schema behavior. Public examples are verified offline against implementation request validators. Prior product validation recorded 1,360 tests passed, four platform skips and 83 subtests, independent review and bounded live read/write/reconciliation proof. These are attributed prior observations, not a full-suite rerun by this source refresh or a real run of the new Skill against Azure.
 
-## Existing Verification and Limits
+Import/binding, scoped writer and read-only reconciliation are implemented. Outside scope/unverified: arbitrary write IDs, production connections, real network fault injection, multi-host locking, team-accessible artifact storage, background sync, deployment and security certification. Abnormal delivery/resume was exercised with isolated transports in prior tests; it is not a live Azure fault experiment. PBI acceptance is a separate human judgment.
 
-The independently reviewed prior implementation evidence records 95 focused tests passed,3 platform skips,81 subtests for candidate/read/Markdown/work-management/observation/dashboard. Parent's actual synthetic CLI proof covers deterministic replay, source immutability, criterion hold, remote revision conflict and local-only artifact preview. This analysis did not rerun tests, call Azure, measure performance or certify transport writes. Read source confirms mechanics; those attributed tests support only their reported cases.
+## Planning use and validity
 
-Unresolved verification: actual Task19 import and binding are absent; Task21 writer, live local/remote reread, permission verification, send idempotency/reconciliation and Task22 fault recovery are absent. Test-profile expansion requires explicit new target scope. Team-accessible artifact storage is not assumed; chosen policy is local-first. Windows symlink tests have platform skips. Full multi-host/shared-filesystem locking, production runtime, security assessment and deployment are outside this finding, not passed.
+The finding supports operation selection and changes within the nine-module scope. The [operating model](../operations/160_azure_devops_client_work_integration.md#xid-C8E2A591D740) normalizes operational facts; this navigation link does not assert a semantic dependency. No relation is added merely from runtime reuse. Recheck hashes and behavior after source/schema/entry point/authentication/target guard/persistence/reducer changes. Unrelated governance changes alone do not establish source drift here.
 
-## Knowledge Relations
+## Sources
 
-No semantic relation is asserted beyond the bounded target identity. Common source criteria are methodology, not an inferred domain dependency.
-
-## Planning Use and Validity
-
-This finding supports PBI10 remaining importer/writer/recovery/acceptance planning. It states current extension points and missing capabilities; it does not decide new implementation architecture or authorize writes. Recheck whenever listed source files/schema/entry points or authentication/persistence boundaries change. Changes only to unrelated governance modules do not by themselves invalidate this bounded finding, but actual source hashes must still be matched at planning time.
-
+- source_type: repository_source
+- source_revision: `3198070`
+- source_path: nine runtime units above and corresponding tests
+- source_locator: module pivots and data-flow traces above
+- inspected_at: 2026-10-11
 
 ## Raw Working-Tree Source Hashes
 
-These are checkout bytes including line endings, not Git blob digests.
+These are checkout bytes including line endings, not Git blob hashes.
 
 | Path | SHA256 |
-|---|---|
+| --- | --- |
 | xrefkit/work_management.py | 8be833e80b80a72663688c67ccc0284942703656966863a87f14a7814313f80d |
 | xrefkit/plan_observation.py | c72d306de61c779084c8a697c93f84f8992fcfb5fa3969313c79e157a6befab4 |
 | xrefkit/plan_markdown.py | 6ddd5d9a58ce41bc94a23d1dafdb86f5225d093be849c3a04c9e78f2cbb049cb |
-| xrefkit/azure_connection.py | f0d34240fbfc6ab91e132fe3a1632680d24161c77dc298c781309744e97ba9f6 |
+| xrefkit/azure_connection.py | f0cb3d2e0b7da626fb31e42dc086430dbe7f1fd018d0346785b22fa33545fb89 |
 | xrefkit/azure_update_candidate.py | 2b091e236044370a150b01a2739c63fb194dc9c824f6e9bb9f11a264f087be01 |
+| xrefkit/azure_import.py | 312358bb150ebcb1e1f5d99c747057c3acc92bd73709c75dc71dfc13bf6e6493 |
+| xrefkit/azure_writer.py | 2deb7db8cf9e2574730b94ba08d5431330fc1ce3b49b46604ecb7ba522947097 |
+| xrefkit/azure_recovery.py | 91c3050e9799b82d9023547fd2ee877ab8c12cbdc2c1d5e64efcb1f758483d80 |
 | xrefkit/dashboard.py | e61e26d6906baa81392f70467932d96ecaf8cc0baf72077e44f6e1845de49503 |

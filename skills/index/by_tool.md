@@ -6,6 +6,7 @@
 Categories list skill ids only. Resolve summaries and `SKILL.v1.md` paths from the canonical catalog
 [skills/_index.md](../_index.md#xid-8D91F66DDBB7).
 
+- Azure DevOps Services: `azure_work_item_integration`
 - xref: `import_skill`, `knowledge_ontology_management`,
   `source_structure_findings_registration`,
   `xlsx_spec_traceability`, `pptx_spec_traceability`

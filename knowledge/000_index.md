@@ -42,6 +42,7 @@ Skills should reference these pages by XID and load only what is needed.
 - [Legacy Flow Skill migration rules](operations/130_legacy_flow_skill_migration_rules.md#xid-7B3E5D1A6104)
 - [Business card PDF generation rules](operations/140_business_card_pdf_generation_rules.md#xid-9142A8CDCF76)
 - [Marketing video TTS engine guidance](operations/150_marketing_video_tts_engine_guidance.md#xid-9C41D7B2A5E1)
+- [Azure DevOps client work integration operating model](operations/160_azure_devops_client_work_integration.md#xid-C8E2A591D740)
 
 ### Organization
 

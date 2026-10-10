@@ -335,6 +335,9 @@ symlinks do not select a substitute workspace. Registering identical metadata
 is an idempotent no-op; changing an existing identity is refused. No baseline
 or source migration is performed.
 
+`<repository-root>` is a placeholder. Before submitting the example, replace it
+with the absolute repository root resolved in the executing client environment.
+
 A v2 submitted plan is one self-contained structured payload. This minimal
 example illustrates the format; it is not a claim that a planning Skill ran:
 
@@ -342,7 +345,7 @@ example illustrates the format; it is not a claim that a planning Skill ran:
 {
   "schema_version": 2,
   "workspace_id": "local-change",
-  "repository_root": "C:/dev/itsm/XRefKit",
+  "repository_root": "<repository-root>",
   "plan_id": "example-work",
   "plan_revision": "v1",
   "title": "Example work",
@@ -682,12 +685,15 @@ producer; the dashboard does not infer a plan from prose and does not execute
 or modify the planning Skill. The following is a schema example, not evidence
 of a planning Skill Run:
 
+`<repository-root>` is a placeholder. Before submitting the example, replace it
+with the absolute repository root resolved in the executing client environment.
+
 ```json
 {
   "schema_version": 1,
   "plan_id": "example-plan",
   "plan_revision": "v1",
-  "repository_root": "C:/dev/itsm/XRefKit",
+  "repository_root": "<repository-root>",
   "title": "Example plan",
   "source": "work/reports/example-plan.md",
   "approval_status": null,

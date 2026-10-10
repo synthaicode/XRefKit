@@ -6,7 +6,7 @@
 Categories list skill ids only. Resolve summaries and `SKILL.v1.md` paths from the canonical catalog
 [skills/_index.md](../_index.md#xid-8D91F66DDBB7).
 
-- import: `import_skill`, `xlsx_spec_traceability`, `pptx_spec_traceability`,
+- import: `azure_work_item_integration`, `import_skill`, `xlsx_spec_traceability`, `pptx_spec_traceability`,
   `legacy_flow_skill_migration`
 - review: `csharp_review`, `python_review`, `manufacturing_self_check`, `batch_impact_regression`,
   `qa_gate_review`, `security_review`, `cab_review_flow`,

@@ -15,8 +15,7 @@ bounded source scope, and target kind.
 | --- | --- | --- | --- | --- |
 | `E9A4C7B2106A` | Maverick.NET Friendbook sample | `sourceforge:maverick-net-1.0` | `Friendbook sample` | `dotnet_sample` |
 | `E9A4C7B2106B` | Modular Monolith with DDD | `github:kgrzybek/modular-monolith-with-ddd` | `repository` | `dotnet_repository` |
-
-| `E9A4C7B2106C` | XRefKit Python client work management | `repository:XRefKit` | `six bounded Python client work modules` | `python_subsystem` |
+| `E9A4C7B2106C` | XRefKit Python client work management | `repository:XRefKit` | `nine bounded Python client work modules` | `python_subsystem` |
 
 The machine-readable catalog is
 `knowledge/source_analysis/source_structure_catalog.yaml`. Detailed findings

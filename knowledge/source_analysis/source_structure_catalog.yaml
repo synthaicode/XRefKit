@@ -15,7 +15,7 @@ targets:
   - target_xid: E9A4C7B2106C
     name: XRefKit Python client work management
     repository_identity: repository:XRefKit
-    source_scope: six bounded Python client work modules
+    source_scope: nine bounded Python client work modules
     target_kind: python_subsystem
     aliases: [XRefKit client work management]
 findings:
@@ -44,8 +44,8 @@ findings:
     title: XRefKit Python client work management structure findings
     analysis_kinds: [python_structure, client_work_management]
     status: current
-    source_revision: f83bf70d2b9da37e1833bf5e8c1d86684cfd6df7
-    last_verified: 2026-10-10
-    coverage: Six modules covering workspace persistence, plans, runs, Markdown, Azure test read and offline candidate.
-    unresolved_verification: Import, live writer/recovery, production and remote artifact access are not established.
+    source_revision: "3198070c3fd195e347358de0c2af1cbac86760c1"
+    last_verified: 2026-10-11
+    coverage: Nine modules covering client plans, runs, Markdown, Azure test capture/binding, offline candidate, scoped delivery and reconciliation.
+    unresolved_verification: Generic write targets, production, live fault injection, multi-host locks and shared artifact access remain unverified/outside scope.
     detail_path: knowledge/source_analysis/173_xrefkit_python_client_work_structure_findings.md
