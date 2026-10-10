@@ -458,23 +458,93 @@ files. Other projects' existing ADR files can be ordinary confined artifact
 references; XRefKit's internal document policy is not imposed on them.
 
 External fields are plain recorded metadata. URL links allow only HTTP/HTTPS
-without credentials and are labelled unverified references. No Azure access,
-authentication, API update, remote existence check or shared evidence export
-occurs. Recorded sync status/time does not imply that this tool synchronized
+without credentials and are labelled unverified references. Displaying these
+metadata views performs no Azure access, authentication, API update, remote
+existence check or shared evidence export. Recorded sync status/time does not imply that this tool synchronized
 anything; local absolute paths are not shared evidence URLs.
 
-Future Azure DevOps connections belong to each project workspace: organization,
-project, process mappings, permitted write scope and credential reference must
-be selected from that workspace. A plan reference must bind that connection
-identifier and the external item; global or another workspace's defaults are
-not fallback sources. This local schema currently stores item/reference
-metadata only; connection profiles, credential storage and live authentication
-are not implemented, and require their reviewed integration contract.
+Azure DevOps connections belong to each project workspace. The separate local
+connection profile and explicit test-only read check below are supported.
+Plan reference metadata itself is not connection authorization: later adapters
+must bind workspace connection identity and external item explicitly. Process
+mappings, permitted writes, production activation and synchronization require
+their subsequent reviewed integration contract. Global or another workspace's
+defaults are never fallback sources; credential values are not stored.
 
 The serializer supports a structured plan producer; it does not execute the
 planning Skill. The repository's `planning_flow` adoption currently retains
 draft maturity, so automatic production by that Skill is unverified and must
 respect its normal gate. No Skill maturity/definition is changed here.
+
+## Workspace-specific Azure test connection
+
+Register each connection inside the selected registered workspace. The strict
+profile is saved under `work/integrations/connections/<derived-name>.json`;
+workspace plus connection ID defines identity, independently of the filename.
+An identical registration is a local no-op. A changed profile with the same
+identity is refused; use a new explicit connection ID. Registration performs
+no network request. A profile is not proof of Azure permissions.
+
+```json
+{
+  "schema_version": 1,
+  "workspace_id": "xrefkit-local",
+  "connection_id": "ai01-scrum-test",
+  "service": "azure_devops_services",
+  "organization": "seijim0pattern01",
+  "project": "AI01-Scrum",
+  "environment": "test",
+  "auth": {"kind": "pat_env", "env_var": "AZURE_DEVOPS_PAT"},
+  "allowed_operations": ["read_work_item"],
+  "allowed_item_ids": [10]
+}
+```
+
+```powershell
+python -m xrefkit.azure_connection register --root . --workspace-id xrefkit-local --input <profile.json>
+python -m xrefkit.azure_connection read-check --root . --workspace-id xrefkit-local --connection-id ai01-scrum-test --item-id 10
+```
+
+The profile contains only the **name** of the PAT environment variable. Supply
+its value through the secure environment of the child process; do not put the
+value in command arguments, profile/plan files, transcripts, reports or Git.
+There is no `--pat` option, credential-file search or global fallback. Only the
+named variable is consulted, after workspace/environment/operation/item checks.
+Missing or empty scope allows no reads. Production profiles can be represented
+but this trial refuses their read check before credential lookup or network.
+
+The explicit probe performs one GET for the selected allowed work item through
+the constructed `https://dev.azure.com/<organization>/<project>` endpoint,
+using API 7.1 and normal TLS verification. It uses urllib's 30-second socket-operation timeout (not an end-to-end deadline), a 1 MiB
+response cap, no retries, redirects, browser login or automatic proxy fallback.
+It verifies item ID, project and required response fields; only revision/type/
+state and selected target identity are returned. Unexpected destinations,
+malformed or oversized JSON, secret echoes and project mismatches are rejected.
+No raw request, response, authorization header or server error text is logged.
+
+| Diagnostic | Meaning |
+|---|---|
+| `configuration_unavailable` | Selected workspace/profile is absent, invalid or ambiguous; no request |
+| `test_read_scope_rejected` | Not a permitted test operation/item; no credential lookup or request |
+| `credential_unavailable` | Named variable is missing, empty or invalid; no request |
+| `authentication_rejected` | HTTP 401; invalid/expired credential is possible, exact cause not proven |
+| `access_forbidden` | HTTP 403; access denied, exact cause not proven |
+| `unavailable_or_not_visible` | HTTP 404; absence versus hidden access is not established |
+| `redirect_rejected` | Redirect refused; credential never forwarded |
+| `rate_limited` / `server_failure` / `network_request_failed` | Read not verified; explicit rerun is available |
+| `read_verified` | Matching read verified at `checked_at`; writes remain unverified |
+
+Output separates `configuration_valid`, `credential_available` (null before
+lookup), `network_attempted`, `read_verified` and
+`write_permission_verified=false`. A successful check proves only that read
+at the recorded time. It neither tests write access nor updates PBI/Task state
+or acceptance. Unknown fields/duplicate identities/escaping directories fail
+closed. Profiles use the existing 1 MiB/200-record local bounds and locked
+atomic publication. This does not modify v2 plans or their Markdown, and does
+not execute or promote the draft planning Skill.
+
+The protocol follows Microsoft's [PAT authentication guidance](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops)
+and [Get Work Item API 7.1](https://learn.microsoft.com/en-us/rest/api/azure/devops/wit/work-items/get-work-item?view=azure-devops-rest-7.1).
 
 ## Default readable view: Markdown and Mermaid
 
