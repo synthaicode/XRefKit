@@ -12,6 +12,12 @@ targets:
     source_scope: repository
     target_kind: dotnet_repository
     aliases: [modular-monolith-with-ddd]
+  - target_xid: E9A4C7B2106C
+    name: XRefKit Python client work management
+    repository_identity: repository:XRefKit
+    source_scope: six bounded Python client work modules
+    target_kind: python_subsystem
+    aliases: [XRefKit client work management]
 findings:
   - finding_xid: B4F8D2A91C03
     target_xid: E9A4C7B2106A
@@ -33,3 +39,13 @@ findings:
     coverage: Business-rich API surface, module boundaries, naming, external dependencies, and prohibited changes.
     unresolved_verification: Runtime/API execution, database migration execution, security review, SQL parsing, and NuGet remediation remain out of scope.
     detail_path: knowledge/source_analysis/172_modular_monolith_ddd_api_structure_findings.md
+  - finding_xid: D4B4C2657A63
+    target_xid: E9A4C7B2106C
+    title: XRefKit Python client work management structure findings
+    analysis_kinds: [python_structure, client_work_management]
+    status: current
+    source_revision: f83bf70d2b9da37e1833bf5e8c1d86684cfd6df7
+    last_verified: 2026-10-10
+    coverage: Six modules covering workspace persistence, plans, runs, Markdown, Azure test read and offline candidate.
+    unresolved_verification: Import, live writer/recovery, production and remote artifact access are not established.
+    detail_path: knowledge/source_analysis/173_xrefkit_python_client_work_structure_findings.md

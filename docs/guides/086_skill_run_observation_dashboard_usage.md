@@ -849,3 +849,23 @@ Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8765/healthz
 
 If local XIDs do not appear, confirm the Skill run log recorded them in the
 domain-knowledge sections or as runtime evidence/artifact targets.
+
+
+## 承認された計画 Skill のローカル試行
+
+`planning_flow` は、このリポジトリに限定した現在の試行承認を
+`skills/repository_adoption.json` の `current_adoption` に記録します。
+過去の `legacy_maturity: draft` と `adopted: false` は履歴として保持します。
+現在の実行可否は、試行承認・Skill 定義・承認の根拠を照合した
+`effective_adopted` / `effective_maturity` で判断します。
+
+試行には、人の承認者・時刻、承認済み trial の governance 記録とその SHA-256、
+Git の追跡対象である `observations/` 内の根拠とその SHA-256 が必要です。
+根拠や承認記録の削除・変更、定義の変更、未承認の記録は実行を停止します。
+同じプロセス内で一度読み込んだ後も照合します。CLI とカタログは同じ判定を使います。
+明示した `--governance` が現在の承認記録と異なる場合も実行を停止します。
+
+この承認は `repository_local_trial` の範囲です。他の draft、deprecated、
+インストールされたパッケージの実行可否や共有配布には適用しません。
+試行可能であることと、実際の計画の完了・承認は別の記録です。
+計画の実行時には通常の入力、Knowledge、品質確認と実行ログを引き続き必要とします。

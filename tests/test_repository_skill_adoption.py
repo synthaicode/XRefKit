@@ -276,3 +276,227 @@ def test_registered_knowledge_input_policy_is_preserved_without_a_catalog(tmp_pa
     assert requirements == [{"name": "target_domain_context", "required": False,
                              "accepts": ["source-structure-overview", "current-source-structure-findings", "module-map", "service-map", "architecture-note"],
                              "purpose": "optional-prior-structure-context"}]
+
+
+@pytest.fixture
+def local_trial(adopted):
+    import subprocess
+    root, doc = adopted
+    entry = next(e for e in doc["entries"] if e["skill_id"] == "db_design")
+    basis = root / "observations/trial.md"
+    basis.parent.mkdir()
+    basis.write_text("# Synthetic tracked trial basis\n", encoding="utf-8")
+    subprocess.run(["git", "init", "-q", str(root)], check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(root), "add", "observations/trial.md"], check=True, capture_output=True)
+    governance = {
+        "schema_version": 1, "skill_id": entry["skill_id"], "definition_xid": entry["definition_xid"],
+        "definition_content_hash": entry["definition_sha256"], "maturity": "trial",
+        "observation_refs": ["observations/trial.md"], "governance_refs": [],
+        "promotion": {"decision": "approved", "target_maturity": "trial", "authority": "synthetic human",
+                      "decided_at": "2026-10-10T12:00:00+09:00", "basis_refs": ["observations/trial.md"]},
+    }
+    path = root / "governance/trial.json"
+    path.parent.mkdir()
+    path.write_text(json.dumps(governance), encoding="utf-8")
+    entry["current_adoption"] = {
+        "scope": "repository_local_trial", "governance_path": "governance/trial.json",
+        "governance_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        "authority": governance["promotion"]["authority"], "decided_at": governance["promotion"]["decided_at"],
+        "basis": [{"path": "observations/trial.md", "sha256": hashlib.sha256(basis.read_bytes()).hexdigest()}],
+    }
+    (root / ADOPTION_PATH).write_text(json.dumps(doc), encoding="utf-8")
+    subprocess.run(["git", "-C", str(root), "add", "."], check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(root), "-c", "user.name=Fixture", "-c", "user.email=fixture@example.test",
+                    "commit", "-qm", "Synthetic trial fixture"], check=True, capture_output=True)
+    return root, doc, entry, governance
+
+
+def trial_command(root, *extra):
+    return command("skill", "run", "--root", str(root), "--definition", "skills/db_design/SKILL.v1.md",
+                   "--task", "synthetic local trial", "--out", str(root / "work/trial.md"),
+                   "--capability", "design", "--tuning", "synthetic", "--responsibility", "bounded design",
+                   "--execution-mode", "subagent_required", "--json", *extra)
+
+
+def test_sealed_local_trial_preserves_history_and_cli_catalog_parity(local_trial):
+    root, doc, entry, _ = local_trial
+    resolved = load_repository_adoption(root)
+    effective = next(e for e in resolved["entries"] if e["skill_id"] == "db_design")
+    assert effective["adopted"] is False and effective["legacy_maturity"] == "draft"
+    assert effective["effective_adopted"] is True and effective["effective_maturity"] == "trial"
+    assert json.loads((root / ADOPTION_PATH).read_text())["entries"] == doc["entries"]
+    catalog = XRefCatalog.build(root)
+    skill = catalog.get_skill("db_design")
+    assert skill["maturity"] == "trial"
+    assert skill["maturity_governance"]["record_ref"]["content_hash"] == entry["current_adoption"]["governance_sha256"]
+    code, result = trial_command(root)
+    assert code == 0, result
+    text = (root / "work/trial.md").read_text(encoding="utf-8")
+    assert "- maturity: `trial`" in text
+    assert "definition_current_adoption_provenance" in text
+    assert entry["current_adoption"]["governance_sha256"] in text
+
+
+@pytest.mark.parametrize("mutation", ["missing_governance", "governance_edit", "basis_edit", "basis_delete", "untracked", "definition_edit"])
+def test_warmed_trial_revalidates_all_dependencies(local_trial, mutation):
+    import subprocess
+    root, _, entry, _ = local_trial
+    load_repository_adoption(root)
+    catalog = XRefCatalog.build(root)
+    if mutation == "missing_governance":
+        (root / "governance/trial.json").unlink()
+    elif mutation == "governance_edit":
+        (root / "governance/trial.json").write_text("{}", encoding="utf-8")
+    elif mutation == "basis_edit":
+        (root / "observations/trial.md").write_text("Changed", encoding="utf-8")
+    elif mutation == "basis_delete":
+        (root / "observations/trial.md").unlink()
+    elif mutation == "untracked":
+        subprocess.run(["git", "-C", str(root), "rm", "--cached", "observations/trial.md"], check=True, capture_output=True)
+    else:
+        path = root / entry["definition_path"]
+        path.write_bytes(path.read_bytes() + b"\nchanged\n")
+    with pytest.raises(ValueError):
+        load_repository_adoption(root)
+    with pytest.raises(ValueError):
+        catalog.get_skill("db_design")
+    code, _ = trial_command(root)
+    assert code == 1 and not (root / "work/trial.md").exists()
+
+
+@pytest.mark.parametrize("mutation", ["scope", "deprecated", "duplicate_basis", "timezone", "unapproved", "wrong_xid", "wrong_hash", "unsealed_ref", "wrong_authority", "nontrial", "unknown_key"])
+def test_invalid_current_trial_is_refused(local_trial, mutation):
+    root, doc, entry, governance = local_trial
+    current = entry["current_adoption"]
+    if mutation == "scope": current["scope"] = "shared"
+    elif mutation == "deprecated": entry["legacy_maturity"] = "deprecated"
+    elif mutation == "duplicate_basis": current["basis"] *= 2
+    elif mutation == "timezone": current["decided_at"] = "2026-10-10T12:00:00"
+    elif mutation == "unknown_key": current["extra"] = True
+    else:
+        if mutation == "unapproved": governance["promotion"]["decision"] = "rejected"
+        elif mutation == "wrong_xid": governance["definition_xid"] = "AAAAAAAAAAAA"
+        elif mutation == "wrong_hash": governance["definition_content_hash"] = "0" * 64
+        elif mutation == "unsealed_ref": governance["observation_refs"] = ["work/unsealed.md"]
+        elif mutation == "wrong_authority": governance["promotion"]["authority"] = "other"
+        elif mutation == "nontrial": governance["maturity"] = governance["promotion"]["target_maturity"] = "stable"
+        path = root / "governance/trial.json"
+        path.write_text(json.dumps(governance), encoding="utf-8")
+        current["governance_sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+    (root / ADOPTION_PATH).write_text(json.dumps(doc), encoding="utf-8")
+    with pytest.raises(ValueError): load_repository_adoption(root)
+    code, _ = trial_command(root)
+    assert code == 1 and not (root / "work/trial.md").exists()
+
+
+def test_explicit_other_governance_cannot_override_trial(local_trial):
+    import subprocess
+    root, _, _, _ = local_trial
+    other = root / "governance/other.json"
+    other.write_bytes((root / "governance/trial.json").read_bytes())
+    subprocess.run(["git", "-C", str(root), "add", "governance/other.json"], check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(root), "-c", "user.name=Fixture", "-c", "user.email=fixture@example.test",
+                    "commit", "-qm", "Synthetic alternate record"], check=True, capture_output=True)
+    code, result = trial_command(root, "--governance", "governance/other.json")
+    assert code == 1 and "must match" in result
+    assert not (root / "work/trial.md").exists()
+    code, result = trial_command(root, "--governance", "governance/trial.json")
+    assert code == 0, result
+
+
+def test_governance_without_current_adoption_does_not_enable_draft(local_trial):
+    root, doc, entry, _ = local_trial
+    del entry["current_adoption"]
+    (root / ADOPTION_PATH).write_text(json.dumps(doc), encoding="utf-8")
+    code, result = trial_command(root, "--governance", "governance/trial.json")
+    assert code == 1 and "not adopted" in result
+
+
+@pytest.mark.parametrize("dependency", ["governance/trial.json", "observations/trial.md"])
+def test_current_trial_rejects_resolved_dependency_escape(local_trial, monkeypatch, dependency):
+    root, _, _, _ = local_trial
+    original = Path.resolve
+    def resolve(path, *args, **kwargs):
+        if path == root / dependency:
+            return root.parent / "outside" / path.name
+        return original(path, *args, **kwargs)
+    monkeypatch.setattr(Path, "resolve", resolve)
+    with pytest.raises(ValueError, match="normalized within root"):
+        load_repository_adoption(root)
+
+
+def test_current_trial_rejects_duplicate_json_keys(local_trial):
+    root, _, _, _ = local_trial
+    path = root / ADOPTION_PATH
+    text = path.read_text(encoding="utf-8")
+    path.write_text(text.replace('"scope": "repository_local_trial"',
+                                 '"scope": "repository_local_trial", "scope": "repository_local_trial"'), encoding="utf-8")
+    with pytest.raises(ValueError, match="duplicate"):
+        load_repository_adoption(root)
+
+
+def test_current_trial_tracking_failure_is_controlled(local_trial, monkeypatch):
+    import subprocess
+    root, _, _, _ = local_trial
+    def timeout(*args, **kwargs):
+        raise subprocess.TimeoutExpired("git", 10)
+    monkeypatch.setattr(subprocess, "run", timeout)
+    with pytest.raises(ValueError, match="tracked evidence check unavailable"):
+        load_repository_adoption(root)
+
+
+def test_local_trial_does_not_project_adoption_to_package_entries(local_trial, monkeypatch):
+    from dataclasses import replace
+    from xrefkit.mcp import catalog as module
+    root, _, _, _ = local_trial
+    build = module._build_definition_skill_entries
+    def package_entries(*args, **kwargs):
+        return [replace(entry, package_id="synthetic.distributed.package") for entry in build(*args, **kwargs)]
+    monkeypatch.setattr(module, "_build_definition_skill_entries", package_entries)
+    skill = next(e for e in XRefCatalog.build(root).skills if e.skill_id == "db_design")
+    assert skill.repository_adoption is None
+    assert skill.maturity == "unassessed" and skill.maturity_governance is None
+
+
+def test_current_trial_rechecks_governance_hash_after_loading(local_trial, monkeypatch):
+    from xrefkit import repository_skills as module
+    root, _, _, _ = local_trial
+    load = module.load_governance_record
+    def changed(path):
+        record = load(path)
+        record["_content_hash"] = "0" * 64
+        return record
+    monkeypatch.setattr(module, "load_governance_record", changed)
+    with pytest.raises(ValueError, match="changed during resolution"):
+        load_repository_adoption(root)
+
+
+@pytest.mark.parametrize("operation", ["content", "rank"])
+def test_catalog_rechecks_definition_between_adoption_and_projection(local_trial, monkeypatch, operation):
+    from xrefkit.mcp import catalog as module
+    root, _, entry, _ = local_trial
+    catalog = XRefCatalog.build(root)
+    build = module._build_definition_skill_entries
+    def changed(*args, **kwargs):
+        path = root / entry["definition_path"]
+        path.write_bytes(path.read_bytes() + b"\nchanged between reads\n")
+        return build(*args, **kwargs)
+    monkeypatch.setattr(module, "_build_definition_skill_entries", changed)
+    with pytest.raises(ValueError, match="revision changed during resolution"):
+        if operation == "content":
+            catalog.get_skill("db_design")
+        else:
+            catalog.rank_skills_for_purpose("database design")
+
+
+def test_tracking_git_never_inherits_protocol_stdin(local_trial, monkeypatch):
+    import subprocess
+    root, _, _, _ = local_trial
+    run = subprocess.run
+    observed = []
+    def inspect(*args, **kwargs):
+        observed.append(kwargs.get("stdin"))
+        return run(*args, **kwargs)
+    monkeypatch.setattr(subprocess, "run", inspect)
+    load_repository_adoption(root)
+    assert observed and all(value == subprocess.DEVNULL for value in observed)

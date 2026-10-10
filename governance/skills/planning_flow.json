@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "skill_id": "planning_flow",
+  "definition_xid": "6A4F8C2D1E71",
+  "definition_content_hash": "ab4ce9713e1334f13562e8bac00c092fe6fb1104539c9b61a45db1f0b07369e7",
+  "maturity": "trial",
+  "observation_refs": [
+    "observations/2026-10-10_planning_flow_trial_basis.md"
+  ],
+  "governance_refs": [],
+  "promotion": {
+    "decision": "approved",
+    "target_maturity": "trial",
+    "authority": "human:repository-user",
+    "decided_at": "2026-10-10T13:54:59Z",
+    "basis_refs": [
+      "observations/2026-10-10_planning_flow_trial_basis.md"
+    ]
+  }
+}

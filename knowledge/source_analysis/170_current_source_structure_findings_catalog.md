@@ -51,6 +51,8 @@ before design closure.
 | `B4F8D2A91C03` | `E9A4C7B2106A` | Maverick.NET Friendbook XML-command structure findings | Maverick.NET 1.0 Friendbook sample | `dotnet_structure`, `custom_framework_xml_routing` | Current for the 2026-07-03 source snapshot | Structure pivots, route/usecase traces, implicit runtime bindings, and prohibited changes are recorded. | Build/runtime execution, browser verification, security assessment, and C# defect review remain out of scope. |
 | `D8F2A6C91B74` | `E9A4C7B2106B` | Modular Monolith with DDD API structure findings | kgrzybek/modular-monolith-with-ddd | `dotnet_structure`, `brownfield_api_naming`, `business_logic_api` | Current for commit `91c8ef24b4cb6ef558c95d8267fa07d68c7059f8` | Business-rich API surface, module boundaries, command/query naming, permission-route coupling, external dependencies, and prohibited naming changes are recorded. | Runtime/API execution, database migration execution, security review, SQL project parsing, and NuGet audit remediation remain out of scope. |
 
+| `D4B4C2657A63` | `E9A4C7B2106C` | XRefKit Python client work management structure findings | XRefKit bounded Python client subsystem | `python_structure`, `client_work_management` | Current for the2026-10-10 source hashes | Workspace/plan persistence, run links, Markdown, test-only Azure read and offline candidate boundaries | Import, live writer/recovery, production and shared access unverified/not implemented |
+
 ## Knowledge Relations
 
 - depends_on: [Dotnet change analysis viewpoints](120_dotnet_change_analysis_viewpoints.md#xid-2E7B5A1FD201)

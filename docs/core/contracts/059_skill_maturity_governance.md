@@ -97,6 +97,15 @@ observed evidence. Reassess the external governance record against the exact
 new content hash. Do not add Workflow Runtime Binding values to the definition
 as part of promotion.
 
+For repository-adopted v1 definitions, an explicit current local-trial adoption
+may bind this governance record while preserving historical draft receipts.
+The exact schema, tracked evidence sealing, shared CLI/catalog resolution and
+cache revalidation are defined by [SkillDefinition adoption](096_skill_definition_contract.md#xid-E6A19D4B72C3).
+A governance record alone does not bypass a repository adoption refusal.
+Authoring/readiness observations can seed the first trial; they must not be
+presented as evidence of an actual run. Later execution observations remain
+separate from the sealed bootstrap record.
+
 ## Legacy Split Maturity Requirements
 
 The remaining field lists and templates in this section apply only to

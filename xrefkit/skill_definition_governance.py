@@ -91,7 +91,8 @@ def validate_governance_record(value: Any) -> dict[str, Any]:
 
 def load_governance_record(path: str | Path) -> dict[str, Any]:
     path = Path(path)
-    raw = path.read_bytes()
+    with path.open("rb") as source:
+        raw = source.read(MAX_RECORD_BYTES + 1)
     if len(raw) > MAX_RECORD_BYTES:
         raise ValueError("governance record exceeds 128KB")
     try:
