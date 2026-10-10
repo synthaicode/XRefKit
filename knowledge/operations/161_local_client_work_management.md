@@ -37,6 +37,37 @@ conflicting/unowned projections are protected. Markdown is a view, not editable
 state authority. Mermaid represents recorded dependencies; compatible local
 preview support is required. Optional explicit monitor deployment is separate.
 
+## Work packages: approved planning definition
+
+A work package is a planning unit that groups tasks serving one purpose and
+result. The local hierarchy is PBI -> work package -> Task. Packages group by
+outcome: design, implementation and test may belong to the same package.
+A process stage describes the kind or phase of work and is a separate concept.
+
+Each package has a unique ID and title, purpose, output, member task IDs,
+completion criterion, dependencies on other package results and a confirmation
+owner. Each task belongs to exactly one package; the approved task set is covered
+once. A cross-package dependency does not give a task a second membership.
+
+Package nodes do not add planned steps. Planned/completed/remaining counts use
+unique tasks only. All member tasks complete and package criterion verified are
+two distinct indicators. Package verification requires its own recorded evidence
+and designated confirmation owner; PBI business acceptance remains separate.
+
+Current schema v2 accepts stages with stage_id/title and steps with stage_id;
+it has no structured work-package field or package verification storage.
+The approved package definition and verification evidence therefore live in
+separate local source Markdown referenced through plan.source. The generated
+plan Markdown and dependency Mermaid remain stage-based. A separately authored
+package hierarchy is a supplemental view, not automatic runtime projection.
+Structured package persistence and automatic projection require a future runtime
+change; assigning stage_id to a package does not implement that change.
+
+The definition basis is the user's approved work-package definition and request
+to reflect it in this Skill on 2026-10-11. Schema limitations were checked against
+validate_plan_v2/plan_definition and the current Markdown renderer. This extension
+adds planning meaning, not new runtime fields or acceptance authority.
+
 ## Status, evidence and counts
 
 Steps have stage, status, completion criterion, dependencies, outputs and exact

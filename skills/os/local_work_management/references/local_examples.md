@@ -105,3 +105,27 @@ inputs, never environment-specific public examples.
 For an actual new observation, preserve definition fields, use a new report_id,
 recorded_at, verified status/evidence and the current expected revision. Submit
 only actual evidence; render uses the stored JSON path returned by record.
+
+## Supplemental approved source layout
+
+Author this separately as source.md from actual approved input; this fictional
+layout is not a PLAN.json schema extension or recorded completion evidence.
+
+| Package ID | Title / purpose / output | Task IDs | Completion criterion | Dependencies | Confirmation owner |
+| --- | --- | --- | --- | --- | --- |
+| WP-local | Local management / persist and inspect local work / local plan and view | design, test | Local save and view verified against approved criteria | None recorded | Designated reviewer |
+
+Record task completion and package criterion verification as separate indicators
+with evidence references. The IDs must match the actual saved plan; this example
+must be adapted rather than submitted unchanged.
+
+```mermaid
+flowchart TB
+    P["PBI: approved outcome"] --> W["WP-local: local management"]
+    W --> T1["design"]
+    W --> T2["test"]
+```
+
+Arrows above show membership only, not execution order. Real task dependencies
+remain the recorded dependency graph. The current automatic projection does not
+consume this table or generate this package hierarchy.
