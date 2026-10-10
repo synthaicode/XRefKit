@@ -7,25 +7,35 @@
   <meta name="description" content="Explore XRefKit's common foundation for AI work and the individual Skills that use it, with current release information and ongoing development." />
   <link rel="stylesheet" href="./assets/common.css" />
   <script src="./assets/inline-svg.js" defer></script>
+  <link rel="stylesheet" href="./assets/effects.css" />
 </head>
-<body>
+<body class="home-page">
   <main class="landing">
+    <header class="site-masthead">
+      <a class="site-brand" href="./"><span class="brand-mark" aria-hidden="true">↗</span> XRefKit<span class="brand-dot">.</span></a>
+      <nav aria-label="Quick navigation"><a href="./common/">Foundation</a><a href="./protocols/">Protocols</a><a href="./skills/">Skills</a><a class="nav-github" href="https://github.com/synthaicode/XRefKit">GitHub <span aria-hidden="true">↗</span></a></nav>
+    </header>
     <section class="hero-shell">
       <div class="hero-grid">
         <div class="hero-copy">
-          <p class="hero-note">XRefKit | Operating model and reference implementation</p>
-          <h1>Carry AI work through<br />to business acceptance.</h1>
-          <p class="hero-problem">AI can finish a local task, but it does not automatically preserve business completion, decision ownership, or the state required by the next responsibility.</p>
-          <p class="lead hero-lead">XRefKit is an operating base that connects AI work from a Goal to human acceptance with verifiable progression. Managed Skills, Knowledge, and execution contracts can be distributed to multiple users through MCP.</p>
-          <div class="hero-actions"><a class="primary-action" href="./common/">Common foundation</a><a href="./protocols/">Common protocols</a><a href="./skills/">Individual Skills</a><a href="#getting-started">Get started</a><a href="./ja/">Japanese translation</a></div>
+          <p class="hero-note"><span aria-hidden="true"></span> THE OPERATING BASE FOR AI WORK</p>
+          <h1>From AI work.<br />To <span>accepted<br class="desktop-break" /> outcomes.</span></h1>
+          <p class="hero-lead">Connect Goals, Skills, Knowledge, and Evidence in a traceable workflow. Keep the next responsibility clear—and acceptance in human hands.</p>
+          <div class="hero-actions"><a class="primary-action" href="#getting-started">Start with XRefKit <span aria-hidden="true">↗</span></a><a class="secondary-action" href="#model">Explore the model <span aria-hidden="true">↓</span></a></div>
+          <div class="hero-footnote"><span>REPOSITORY-NATIVE</span><span>STABLE REFERENCES</span><span>HUMAN ACCEPTANCE</span></div>
         </div>
-        <aside class="hero-clarity-card" aria-labelledby="hero-concept-heading">
-          <p class="hero-clarity-eyebrow">Canonical concept</p>
-          <h2 id="hero-concept-heading"><a href="./concepts/judgment-replication/">Judgment Replication</a></h2>
-          <p>Organizations scale by replicating judgment, not processing capacity alone. XRefKit distributes that judgment as stable, versioned reference.</p>
-          <a class="hero-clarity-link" href="./concepts/judgment-replication/">Read the problem definition <span aria-hidden="true">→</span></a>
-        </aside>
+        <figure class="trace-dossier" aria-labelledby="trace-caption">
+          <div class="trace-heading"><span>FOLLOW THE EVIDENCE</span><span>ILLUSTRATIVE EXAMPLE</span></div>
+          <div class="trace-output"><div class="output-icon" aria-hidden="true">↗</div><div><span class="trace-label">OUTPUT / C# REVIEW</span><h2>A finding you can inspect.</h2><p>The finding, its rationale, and unresolved items travel together.</p></div></div>
+          <div class="trace-thread">
+            <details class="trace-record" name="output-trace" open><summary><span class="trace-number">01</span><span>Trace the references<small>Skill + selected Knowledge</small></span><span class="trace-expand" aria-hidden="true">+</span></summary><div class="trace-body"><p>Which procedure and criteria informed this finding?</p><div class="reference-tags"><a href="./skills/#csharp-example">C# review Skill ↗</a><a href="./en/model/#knowledge">Selected Knowledge ↗</a></div><p class="trace-note">Used XIDs connect the record to stable references.</p></div></details>
+            <details class="trace-record" name="output-trace"><summary><span class="trace-number">02</span><span>Inspect the checks<small>Record verification + output review</small></span><span class="trace-expand" aria-hidden="true">+</span></summary><div class="trace-body"><p>Check the execution record. Review output validity separately when required. Keep unresolved items visible.</p><a href="./protocols/#reporting">Explore reporting and evidence ↗</a></div></details>
+            <details class="trace-record" name="output-trace"><summary><span class="trace-number">03</span><span>Keep the decision human<small>Acceptance against the Goal</small></span><span class="trace-expand" aria-hidden="true">+</span></summary><div class="trace-body"><p>A person inspects the output and Evidence against acceptance conditions, then accepts, returns, stops, or routes the work onward.</p><a href="./en/model/#acceptance">Explore human acceptance ↗</a></div></details>
+          </div>
+          <figcaption id="trace-caption">One output. Its references, checks, and decision context.<br /><span>A schematic example, not a live execution record.</span></figcaption>
+        </figure>
       </div>
+      <div class="hero-bottom"><span>Built around a simple idea</span><a href="./concepts/judgment-replication/">Organizations scale by replicating judgment. <span aria-hidden="true">↗</span></a></div>
     </section>
 
     <section class="landing-section" id="current" aria-labelledby="current-heading">
@@ -33,8 +43,25 @@
         <h2 id="current-heading">Current release</h2>
         <p>Updated <time datetime="2026-10-10">October 10, 2026</time>. Latest published release: <a href="https://github.com/synthaicode/XRefKit/releases/tag/v0.6.2">v0.6.2</a> (October 7, 2026). Development notes on the linked pages describe work in the repository; they do not imply availability in that release.</p>
       </div>
-      <div class="release-reading"><p>Read two parts:</p><div class="tier-links"><a href="./common/">1. The common foundation and its ongoing development</a><a href="./skills/">2. Individual Skills and the work they perform</a></div></div>
+      <div class="release-reading"><p>Explore what is shipping and what comes next.</p><div class="tier-links"><a href="./common/">1. The common foundation and its ongoing development</a><a href="./skills/">2. Individual Skills and the work they perform</a></div></div>
     </section>
+
+<section class="explore-section" aria-labelledby="explore-heading"><div class="explore-heading"><p class="eyebrow">ONE FOUNDATION. DIFFERENT KINDS OF WORK.</p><h2 id="explore-heading">Find your way in.</h2></div><div class="explore-grid">    <section class="landing-section" id="common" aria-labelledby="common-heading">
+      <div class="section-heading"><span class="topic-index">01 / EXPLORE</span><h2 id="common-heading">Common foundation</h2><p>Shared reference delivery, execution records, checks, and handoff support every kind of work. Current development connects accepted output quality, plan views, and an Azure DevOps integration trial.</p></div>
+      <p class="section-cta"><a href="./common/">Read the foundation and current development →</a></p>
+    </section>
+
+    <section class="landing-section" id="protocol" aria-labelledby="protocol-heading">
+      <div class="section-heading"><span class="topic-index">02 / EXPLORE</span><h2 id="protocol-heading">Common protocols</h2><p>Workflow progression, reporting, output quality, uncertainty and authority, Knowledge and execution context, handoff, and shared-asset updates. Each contract has its own applicability conditions.</p></div>
+      <div class="tier-links"><a href="./protocols/">Explore the shared contracts →</a><a href="./protocols/#reporting">How reporting works →</a></div>
+    </section>
+
+    <section class="landing-section" id="skills" aria-labelledby="skills-heading">
+      <div class="section-heading"><span class="topic-index">03 / EXPLORE</span><h2 id="skills-heading">Individual Skills</h2><p>Skills define the method and outputs for a particular job. Examples include C# review, constraint derivation, and business learning through interviews. They use the common foundation while keeping their own scope and criteria.</p></div>
+      <div class="tier-links"><a href="./skills/">Explore individual Skill examples →</a><a href="./skills/#csharp-example">See the C# responsibility split →</a></div>
+    </section>
+
+</div></section>
 
     <section class="landing-section" id="model" aria-labelledby="model-heading">
       <div class="section-heading"><h2 id="model-heading">Operating model</h2><p>People define and accept the result. AI performs bounded work. Shared controls preserve the record and support review.</p></div>
@@ -50,21 +77,6 @@
         <p class="operating-reference">Stable XIDs connect the selected Skills and Knowledge to the execution record. This overview groups responsibilities; the detailed model defines each element.</p>
       </figure>
       <p class="section-cta"><a href="./en/model/">Explore the operating model and its 12 elements →</a></p>
-    </section>
-
-    <section class="landing-section" id="common" aria-labelledby="common-heading">
-      <div class="section-heading"><h2 id="common-heading">Common foundation</h2><p>Shared reference delivery, execution records, checks, and handoff support every kind of work. Current development connects accepted output quality, plan views, and an Azure DevOps integration trial.</p></div>
-      <p class="section-cta"><a href="./common/">Read the foundation and current development →</a></p>
-    </section>
-
-    <section class="landing-section" id="protocol" aria-labelledby="protocol-heading">
-      <div class="section-heading"><h2 id="protocol-heading">Common protocols</h2><p>Workflow progression, reporting, output quality, uncertainty and authority, Knowledge and execution context, handoff, and shared-asset updates. Each contract has its own applicability conditions.</p></div>
-      <div class="tier-links"><a href="./protocols/">Explore the shared contracts →</a><a href="./protocols/#reporting">How reporting works →</a></div>
-    </section>
-
-    <section class="landing-section" id="skills" aria-labelledby="skills-heading">
-      <div class="section-heading"><h2 id="skills-heading">Individual Skills</h2><p>Skills define the method and outputs for a particular job. Examples include C# review, constraint derivation, and business learning through interviews. They use the common foundation while keeping their own scope and criteria.</p></div>
-      <div class="tier-links"><a href="./skills/">Explore individual Skill examples →</a><a href="./skills/#csharp-example">See the C# responsibility split →</a></div>
     </section>
 
     <section class="landing-section" id="getting-started" aria-labelledby="getting-started-heading">
