@@ -9,16 +9,32 @@ instructions, finding the relevant rules, reconstructing progress, and interpret
 results. Reusable procedures, linked evidence, and familiar reports give that
 information a place outside your head, so you can focus on what needs judgment.
 
-## Less to remember, search for, and reconstruct
+## Why AI-assisted work can become mentally demanding
 
-| Effort you want to reduce | How XRefKit helps |
-| --- | --- |
-| Stop explaining the same process in every chat | Keep a reusable procedure in a **Skill**, with domain rules and reference material stored separately as **Knowledge**. |
-| Reconstruct the basis for a result | Keep outputs, references, judgments, and unresolved concerns together so a reviewer can follow the evidence. |
-| Get a report you can make a decision from | Connect conclusions to criteria, evidence, limitations, and next actions; reuse an approved report format when consistency matters. |
-| Continue in another session or hand work to a colleague | Record progress, remaining items, and handoff information that the next person or AI can load. |
-| Check whether work is ready to finish | Use workflow-record verification and closure checks to identify missing records and unfinished items before accepting the result. |
-| Keep references usable as documents move | Use stable document identifiers (**XIDs**) to find the procedures and knowledge a task needs. |
+Producing an answer is only part of the work. Someone still has to supply the
+rules, follow progress, interpret the result, and decide what to accept. XRefKit
+addresses recurring sources of that effort:
+
+- **Instructions have to be remembered and repeated.** When the process lives in
+  chat history, you have to reconstruct the steps and check what you forgot to
+  explain. A reusable **Skill** keeps the procedure, inputs, outputs, and criteria
+  available for the next task.
+- **Relevant rules and evidence are scattered.** You have to find the right
+  material and reconnect it to the task. Separate **Knowledge** records and stable
+  document identifiers (**XIDs**) let a Skill resolve the material it needs and
+  record references for review.
+- **A new session or handoff loses the immediate context.** You have to work out
+  what happened, what remains open, and where to resume. Explicit work items,
+  progress, concerns, and handoff records provide a starting point without
+  requiring everyone to reconstruct the conversation.
+- **A completion message leaves the scope of checking unclear.** You have to
+  determine which requirements were checked and which decisions remain yours.
+  Workflow-record verification and closure checks expose missing records and
+  unfinished items; reports distinguish those checks from output-quality review.
+- **Reports change shape or leave their reasoning implicit.** You have to locate
+  the conclusion, connect it to evidence, and discover its limits each time.
+  Decision-oriented reporting and optional approved report profiles make those
+  relationships and locations explicit, as described below.
 
 For example, a recurring review can present its conclusion, relevant criteria,
 evidence, and open questions in familiar places. The reader can focus on what
@@ -41,15 +57,11 @@ OpenAI's [harness engineering approach](https://openai.com/index/harness-enginee
 uses repository knowledge, execution plans, and automated constraints. These
 examples overlap with XRefKit's goals.
 
-XRefKit packages the following mechanisms to make that work easier to follow:
-
-| Your question | What XRefKit makes explicit | Benefit for your team |
-| --- | --- | --- |
-| Which procedure and criteria should this task use? | A SkillDefinition records applicability, inputs, outputs, criteria, and knowledge needs. | You can review and reuse the method across recurring tasks. |
-| Which rules and evidence informed the work? | Knowledge is maintained separately from procedures and resolved through stable XIDs; runs can record retrieval and use. | You can update reference material separately and inspect the recorded basis for a result. |
-| What is complete, and what still needs a decision? | Work items, artifacts, concerns, and handoffs have explicit records; `verify` and `close` check workflow-record requirements. | Reviewers can find missing records and unresolved items without reconstructing the whole chat. |
-| Will the report support the same kind of review next time? | Reporting guidance connects conclusions to their basis and limits. Opt-in Knowledge profiles preserve approved output examples, format, granularity, and criteria. | Readers can use a familiar report structure and reviewers can check against an explicit accepted baseline. |
-| Can the next person or AI use the same process? | Repository files and Skill Packages preserve methods and knowledge; CLI/MCP interfaces expose them to compatible clients. | You can carry the working materials into another session or supported client, with its setup and execution responsibilities still explicit. |
+XRefKit brings reusable procedures, separately maintained knowledge, explicit work
+records, and reporting criteria into a shared working structure. Repository files
+and Skill Packages preserve these assets; CLI/MCP interfaces expose them to
+compatible clients. This gives the team a common basis for directing and reviewing
+work when tasks, sessions, or supported clients change.
 
 For example, your coding harness can implement and test a change while XRefKit
 records the review procedure, applicable domain criteria, evidence, and remaining
@@ -70,20 +82,24 @@ for the boundaries behind this comparison.
 
 ## Reports that reduce the effort of understanding
 
-A report should help the reader form an accurate picture with less mental effort.
-It leads with the conclusion and its meaning for the agreed decision, keeps
-material limits beside the claims they qualify, and links to supporting evidence.
-Readers can follow the reasoning without piecing it together from a chat history
-or a list of files. Detail remains available when needed; reducing reading effort
-must preserve the conditions that matter to the decision.
+A report should help the reader form an accurate picture with less mental effort:
 
-For recurring reports, you can opt into a target-specific **Knowledge quality
-profile**. It preserves an approved example, sample inputs, headings, table
-structure, information placement, required detail, and review criteria. This aims
-to spare readers from relearning where information is and how to interpret it on
-every run. Give that baseline to the reviewer again when the model or session
-changes. Structural checks help detect format differences; independent review
-still judges meaning, readability, and whether the evidence supports the conclusion.
+- **When the point is buried, the reader has to decide what matters.** Lead with
+  the conclusion and what it means for the agreed decision, followed by the next
+  action. Let the task determine the appropriate report shape.
+- **When evidence and limits are detached, the reader has to rebuild the
+  reasoning.** Link summary findings to supporting detail and place material
+  uncertainty beside the conclusion it qualifies. Keep necessary conditions
+  visible and supporting detail accessible.
+- **When layout and detail vary, the reader has to relearn how to read each
+  report.** For recurring outputs, opt into a target-specific **Knowledge quality
+  profile** that preserves approved examples, sample inputs, headings, table
+  structure, information placement, required detail, and criteria. Use that
+  baseline for subsequent reviews, including after model or session changes.
+- **When a familiar layout contains weak reasoning, the reader must still detect
+  the gap.** Structural checks flag format differences; independent review checks
+  meaning, readability, and whether the evidence supports the conclusion. A
+  format pass must not stand in for that review.
 
 Consider a recurring change-review report: readers can find the affected area,
 finding, evidence, impact, and next action in the agreed places each time. If this
