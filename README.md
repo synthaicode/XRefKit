@@ -207,16 +207,3 @@ and [Workflow Runtime Binding contract](docs/core/contracts/111_workflow_runtime
 XRefKit does not require provider API keys to install or explore the package.
 Authenticate your AI tool through its provider's supported methods, and keep
 secrets and access tokens out of the repository.
-
-## References
-
-These sources inform the design principles and harness comparison above. They
-do not establish XRefKit's effectiveness or accessibility conformance.
-
-- [NN/G: AI Chatbots Discourage Error Checking](https://www.nngroup.com/articles/ai-chatbots-discourage-error-checking/) — the effort of checking AI-generated output.
-- [NN/G: Recognition vs. Recall](https://www.nngroup.com/articles/recognition-and-recall/) — keeping information available instead of requiring people to remember it.
-- [NN/G: Progressive Disclosure](https://www.nngroup.com/articles/progressive-disclosure/) — presenting an overview with access to supporting detail.
-- [W3C: Use Clear and Understandable Content](https://www.w3.org/WAI/WCAG2/supplemental/objectives/o3-clear-content/) — clear language, structure, and relationships.
-- [Anthropic: Managed Agents](https://www.anthropic.com/engineering/managed-agents) — durable sessions and execution infrastructure.
-- [Anthropic: Harness Design for Long-Running Apps](https://www.anthropic.com/engineering/harness-design-long-running-apps) — evaluation criteria and structured handoffs.
-- [OpenAI: Harness Engineering](https://openai.com/index/harness-engineering/) — repository knowledge, plans, and automated constraints.
