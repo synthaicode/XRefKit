@@ -342,6 +342,10 @@ def local_trial(adopted):
     basis.parent.mkdir()
     basis.write_text("# Synthetic tracked trial basis\n", encoding="utf-8")
     subprocess.run(["git", "init", "-q", str(root)], check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(root), "config", "--local", "user.name", "Fixture"],
+                   check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(root), "config", "--local", "user.email", "fixture@example.test"],
+                   check=True, capture_output=True)
     subprocess.run(["git", "-C", str(root), "add", "observations/trial.md"], check=True, capture_output=True)
     governance = {
         "schema_version": 1, "skill_id": entry["skill_id"], "definition_xid": entry["definition_xid"],
