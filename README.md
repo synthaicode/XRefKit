@@ -15,9 +15,8 @@ can understand and check.
 
 Generating a result leaves another task: understanding enough of it to decide
 whether to use it. You may have to reconstruct the context, identify claims,
-find supporting sources, and check the revised output again. Nielsen Norman
-Group describes this verification burden in
-[AI Chatbots Discourage Error Checking](https://www.nngroup.com/articles/ai-chatbots-discourage-error-checking/).
+find supporting sources, and check the revised output again. Faster generation
+can leave you with more material to review and more connections to reconstruct.
 
 XRefKit addresses five recurring sources of that effort:
 
@@ -42,11 +41,9 @@ XRefKit addresses five recurring sources of that effort:
   **Workflow-record checks and reporting guidance** make those boundaries
   explicit, while tests and reviewers assess the result itself.
 
-The design principle is to make needed information available for recognition,
-rather than rely on the reader to recall it—a distinction explained in
-[NN/G's recognition and recall guidance](https://www.nngroup.com/articles/recognition-and-recall/).
-These mechanisms support that goal; their effect in XRefKit still needs evaluation
-with users.
+The aim is to keep what you need visible and available, so you can check it
+without remembering or reconstructing it each time. How much these mechanisms
+reduce the effort in practice still needs evaluation with users.
 
 ## Make the report easier to understand—and easier to check
 
@@ -60,9 +57,8 @@ and the next action within the task's own format:
   explain why that evidence matters. A file list alone leaves that connection
   for the reader to make.
 - **Reduce initial overload:** present the decision-relevant summary, with
-  clear links to detailed findings. This applies
-  [progressive disclosure](https://www.nngroup.com/articles/progressive-disclosure/)
-  to report reading; essential caveats remain in the summary.
+  clear links to detailed findings, so you can inspect the supporting detail
+  when needed. Keep essential caveats in the summary.
 - **Reduce relearning:** for recurring outputs, use an approved Knowledge
   quality profile containing examples, headings, table structure, information
   placement, detail, and criteria. Structural checks detect format differences;
@@ -80,10 +76,8 @@ For illustration, a change-review summary could read:
 > **Next step:** Test the retry case and return the result for review.
 
 This example shows where the reader's attention belongs; it is not a universal
-template or a real test result. Plain words, short sections, and explicit
-relationships also follow the direction of
-[W3C's clear-content guidance](https://www.w3.org/WAI/WCAG2/supplemental/objectives/o3-clear-content/).
-That guidance informs presentation, not an accessibility-conformance claim.
+template or a real test result. Plain words, short sections, and clear connections
+between a finding and its evidence help you follow the reasoning.
 
 Reader feedback can identify a missing explanation, confusing placement, or
 insufficient evidence. The correction can then target the output, inputs,
@@ -97,11 +91,10 @@ and [fixed-output quality protocol](docs/core/contracts/112_fixed_output_quality
 
 ## How does XRefKit fit with modern agent harnesses?
 
-Modern harnesses already support more than execution. Anthropic describes
-[durable sessions and execution infrastructure](https://www.anthropic.com/engineering/managed-agents)
-as well as [evaluation criteria and structured handoffs](https://www.anthropic.com/engineering/harness-design-long-running-apps).
-OpenAI's [harness engineering approach](https://openai.com/index/harness-engineering/)
-includes repository knowledge, plans, and automated constraints.
+Modern harnesses already support more than execution. They can preserve sessions,
+organize repository knowledge and plans, and support evaluation criteria,
+automated constraints, and structured handoffs. The capabilities available to
+you depend on the harness and its configuration.
 
 XRefKit's focus is the human effort of directing, understanding, and reviewing
 that work. It packages reusable procedures, separately maintained knowledge,
@@ -214,3 +207,16 @@ and [Workflow Runtime Binding contract](docs/core/contracts/111_workflow_runtime
 XRefKit does not require provider API keys to install or explore the package.
 Authenticate your AI tool through its provider's supported methods, and keep
 secrets and access tokens out of the repository.
+
+## References
+
+These sources inform the design principles and harness comparison above. They
+do not establish XRefKit's effectiveness or accessibility conformance.
+
+- [NN/G: AI Chatbots Discourage Error Checking](https://www.nngroup.com/articles/ai-chatbots-discourage-error-checking/) — the effort of checking AI-generated output.
+- [NN/G: Recognition vs. Recall](https://www.nngroup.com/articles/recognition-and-recall/) — keeping information available instead of requiring people to remember it.
+- [NN/G: Progressive Disclosure](https://www.nngroup.com/articles/progressive-disclosure/) — presenting an overview with access to supporting detail.
+- [W3C: Use Clear and Understandable Content](https://www.w3.org/WAI/WCAG2/supplemental/objectives/o3-clear-content/) — clear language, structure, and relationships.
+- [Anthropic: Managed Agents](https://www.anthropic.com/engineering/managed-agents) — durable sessions and execution infrastructure.
+- [Anthropic: Harness Design for Long-Running Apps](https://www.anthropic.com/engineering/harness-design-long-running-apps) — evaluation criteria and structured handoffs.
+- [OpenAI: Harness Engineering](https://openai.com/index/harness-engineering/) — repository knowledge, plans, and automated constraints.
