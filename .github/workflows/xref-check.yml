@@ -2,9 +2,19 @@ name: slides-app-quality
 
 on:
   pull_request:
+    paths:
+      - "projects/slides-app/**"
+      - "tools/run_quality_gate.py"
+      - "requirements.txt"
+      - ".github/workflows/xref-check.yml"
   push:
     branches:
       - main
+    paths:
+      - "projects/slides-app/**"
+      - "tools/run_quality_gate.py"
+      - "requirements.txt"
+      - ".github/workflows/xref-check.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}

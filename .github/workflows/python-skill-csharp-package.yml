@@ -2,6 +2,10 @@ name: python-skill-csharp-package
 
 on:
   pull_request:
+    paths:
+      - "packages/xrefkit-skills-csharp/**"
+      - ".github/workflows/python-skill-csharp-package.yml"
+      - "tools/inspect_python_artifacts.py"
   push:
     tags:
       - "xrefkit-skills-csharp-v*.*.*"
