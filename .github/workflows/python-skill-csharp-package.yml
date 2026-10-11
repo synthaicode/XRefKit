@@ -6,6 +6,10 @@ on:
     tags:
       - "xrefkit-skills-csharp-v*.*.*"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   contents: read
 
@@ -17,7 +21,7 @@ env:
 
 jobs:
   quality:
-    name: Test package
+    name: CSharp / Test package
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -43,7 +47,7 @@ jobs:
           PY
 
   build-distribution:
-    name: Build Skill Package
+    name: CSharp / Build Skill Package
     needs: quality
     runs-on: ubuntu-latest
     steps:
@@ -88,7 +92,7 @@ jobs:
           if-no-files-found: error
 
   artifact-inspection:
-    name: Inspect built artifacts and scan for malware/secrets
+    name: CSharp / Inspect built artifacts and scan for malware/secrets
     needs: build-distribution
     runs-on: ubuntu-latest
     steps:
@@ -140,7 +144,7 @@ jobs:
           if-no-files-found: error
 
   install-smoke-test:
-    name: Clean wheel install/import
+    name: CSharp / Clean wheel install/import
     needs: build-distribution
     runs-on: ubuntu-latest
     steps:
@@ -167,7 +171,7 @@ jobs:
           python -m pytest "${GITHUB_WORKSPACE}/${PACKAGE_ROOT}/tests" --import-mode=importlib -o pythonpath= -q
 
   publish-to-pypi:
-    name: Publish Skill Package to PyPI
+    name: CSharp / Publish Skill Package to PyPI
     needs:
       - quality
       - build-distribution

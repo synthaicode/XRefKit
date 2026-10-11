@@ -7,20 +7,34 @@ from __future__ import annotations
 import hashlib
 import json
 import copy
-from datetime import date
+import subprocess
+from datetime import date, datetime
 from pathlib import Path
 
 from .skill_definition import load_skill_definition
+from .skill_definition_governance import load_governance_record, match_definition, governance_projection
 
 ADOPTION_PATH = "skills/repository_adoption.json"
 RUNTIME_FIELDS = ("capability", "tuning", "responsibility", "execution_mode")
 _VALIDATED: dict[Path, dict] = {}
 
 
+def _unique_pairs(pairs: list[tuple[str, object]]) -> dict:
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate repository adoption JSON key")
+        result[key] = value
+    return result
+
+
 def _relative(root: Path, value: object) -> Path:
     if not isinstance(value, str) or not value or Path(value).is_absolute():
         raise ValueError("repository adoption requires a relative path")
-    path = (root / value).resolve()
+    try:
+        path = (root / value).resolve()
+    except (OSError, RuntimeError) as exc:
+        raise ValueError("repository adoption path cannot be resolved") from exc
     if not path.is_relative_to(root) or path.relative_to(root).as_posix() != value:
         raise ValueError("repository adoption path must be normalized within root")
     return path
@@ -28,6 +42,69 @@ def _relative(root: Path, value: object) -> Path:
 
 def _digest(value: object) -> bool:
     return isinstance(value, str) and len(value) == 64 and all(c in "0123456789abcdef" for c in value)
+
+
+def _sealed_file(root: Path, path: object, digest: object, limit: int) -> Path:
+    resolved = _relative(root, path)
+    if not _digest(digest) or not resolved.is_file():
+        raise ValueError("current adoption requires an existing hash-sealed regular file")
+    with resolved.open("rb") as source:
+        body = source.read(limit + 1)
+    if len(body) > limit or hashlib.sha256(body).hexdigest() != digest:
+        raise ValueError("current adoption dependency revision mismatch or byte limit")
+    return resolved
+
+
+def _current_adoption(root: Path, entry: dict, definition: dict) -> dict:
+    current = entry["current_adoption"]
+    if (not isinstance(current, dict) or set(current) != {
+            "scope", "governance_path", "governance_sha256", "authority", "decided_at", "basis"}
+            or current["scope"] != "repository_local_trial"
+            or entry["legacy_maturity"] == "deprecated"
+            or not isinstance(current["authority"], str) or not current["authority"].strip()):
+        raise ValueError("invalid current repository local trial adoption")
+    try:
+        timestamp = datetime.fromisoformat(current["decided_at"].replace("Z", "+00:00"))
+        if timestamp.utcoffset() is None:
+            raise ValueError("timezone missing")
+    except (AttributeError, TypeError, ValueError) as exc:
+        raise ValueError("current adoption requires timezone-aware decision time") from exc
+    basis = current["basis"]
+    if not isinstance(basis, list) or not basis or len(basis) > 256:
+        raise ValueError("current adoption requires bounded sealed basis")
+    paths = set()
+    for receipt in basis:
+        if not isinstance(receipt, dict) or set(receipt) != {"path", "sha256"}:
+            raise ValueError("invalid current adoption basis receipt")
+        path = _sealed_file(root, receipt["path"], receipt["sha256"], 512_000)
+        relative = path.relative_to(root).as_posix()
+        if not relative.startswith("observations/") or relative in paths:
+            raise ValueError("current adoption basis must be unique durable observations")
+        try:
+            tracked = subprocess.run(["git", "--literal-pathspecs", "-C", str(root), "ls-files",
+                                      "--error-unmatch", "--", relative],
+                                     stdin=subprocess.DEVNULL, capture_output=True, timeout=10, check=False)
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise ValueError("current adoption tracked evidence check unavailable") from exc
+        if tracked.returncode:
+            raise ValueError("current adoption basis must be git-index tracked")
+        paths.add(relative)
+    governance_path = _sealed_file(root, current["governance_path"], current["governance_sha256"], 128 * 1024)
+    governance = load_governance_record(governance_path)
+    if governance["_content_hash"] != current["governance_sha256"]:
+        raise ValueError("current adoption governance revision changed during resolution")
+    match_definition(governance, definition)
+    promotion = governance["promotion"]
+    if (governance["maturity"] != "trial" or promotion["decision"] != "approved"
+            or promotion["target_maturity"] != "trial"
+            or promotion["authority"] != current["authority"]
+            or promotion["decided_at"] != current["decided_at"]):
+        raise ValueError("current adoption requires matching approved trial authority and time")
+    if any(ref not in paths for ref in [*governance["observation_refs"], *promotion["basis_refs"]]):
+        raise ValueError("current trial governance references must match sealed observations")
+    projection = governance_projection(governance)
+    projection["record_ref"]["path"] = current["governance_path"]
+    return projection
 
 
 def load_repository_adoption(root: Path) -> dict | None:
@@ -42,7 +119,7 @@ def load_repository_adoption(root: Path) -> dict | None:
         raise ValueError("repository adoption exceeds byte limit")
     digest = hashlib.sha256(raw).hexdigest()
     cached = _VALIDATED.get(root)
-    if cached and cached["sha256"] == digest:
+    if cached and cached["sha256"] == digest and not any("current_adoption" in e for e in cached["entries"]):
         unchanged = True
         for entry in cached["entries"]:
             with _relative(root, entry["definition_path"]).open("rb") as source:
@@ -52,7 +129,7 @@ def load_repository_adoption(root: Path) -> dict | None:
                 break
         if unchanged:
             return copy.deepcopy(cached)
-    doc = json.loads(raw.decode("utf-8"))
+    doc = json.loads(raw.decode("utf-8"), object_pairs_hook=_unique_pairs)
     if (not isinstance(doc, dict) or set(doc) != {"schema_version", "adoption", "entries"}
             or type(doc["schema_version"]) is not int or doc["schema_version"] != 1):
         raise ValueError("unsupported repository adoption schema")
@@ -75,7 +152,7 @@ def load_repository_adoption(root: Path) -> dict | None:
             "skill_id", "definition_path", "definition_xid", "definition_sha256",
             "legacy_ids", "legacy_sources", "legacy_maturity", "adopted", "runtime", "legacy_runtime_policy",
         }
-        if not isinstance(entry, dict) or set(entry) != (native_keys if native else legacy_keys):
+        if not isinstance(entry, dict) or (set(entry) != native_keys if native else set(entry) - {"current_adoption"} != legacy_keys):
             raise ValueError("invalid repository adoption entry")
         if native:
             decision = entry["adoption"]
@@ -87,6 +164,7 @@ def load_repository_adoption(root: Path) -> dict | None:
             # Runtime-only projections preserve older consumers without inventing
             # historical receipts or storing fixed runtime values in a definition.
             entry.update(legacy_ids=[], legacy_sources=[], legacy_maturity="unassessed",
+                         effective_adopted=entry["adopted"], effective_maturity="unassessed",
                          runtime={key: {"value": None, "origin": "instruction_required"} for key in RUNTIME_FIELDS},
                          legacy_runtime_policy={key: {"value": None, "origin": "not_legacy"}
                                                 for key in ("model_tier", "knowledge_inputs")})
@@ -154,6 +232,12 @@ def load_repository_adoption(root: Path) -> dict | None:
                     not isinstance(value, list) or len(value) > 256
                     or any(not isinstance(v, str) or not v.strip() for v in value)):
                 raise ValueError("invalid repository legacy knowledge inputs")
+        entry["effective_adopted"] = entry["adopted"]
+        entry["effective_maturity"] = entry["legacy_maturity"] if not entry["adopted"] else "unassessed"
+        if "current_adoption" in entry:
+            entry["current_governance"] = _current_adoption(root, entry, definition)
+            entry["effective_adopted"] = True
+            entry["effective_maturity"] = "trial"
     result = {**doc, "path": ADOPTION_PATH, "sha256": digest}
     if len(_VALIDATED) >= 32:
         _VALIDATED.pop(next(iter(_VALIDATED)))

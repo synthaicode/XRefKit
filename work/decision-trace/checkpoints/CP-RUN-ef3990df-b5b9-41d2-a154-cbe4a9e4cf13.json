@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-ef3990df-b5b9-41d2-a154-cbe4a9e4cf13",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-10-10T14:35:53Z",
+  "git_commit": "b963d9730a348dd97e74ca824b2f2a43fdfeeb64",
+  "purpose": "before AI Skill run logic_constraint_derivation",
+  "work_item_id": null,
+  "run_id": "ef3990df-b5b9-41d2-a154-cbe4a9e4cf13",
+  "context_policy": "current-only",
+  "human_approved": false
+}

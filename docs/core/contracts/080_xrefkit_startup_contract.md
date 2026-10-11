@@ -112,6 +112,6 @@ The approved repository adoption is recorded in `skills/repository_adoption.json
 Its canonical sources are `SKILL.v1.md`; recorded legacy invocation paths and XIDs
 are compatibility aliases, not additional active source documents. Runtime inputs
 retain their explicit provenance, missing capability requires explicit input, and
-draft Skills remain refused. This does not change external split/YAML APIs or
+Historical draft Skills remain refused unless a valid explicit current local-trial adoption binds approved trial governance and sealed evidence. Preserve historical receipts and use the shared effective-readiness resolver; do not infer promotion from source adoption. This does not change external split/YAML APIs or
 Workflow Runtime Binding ownership. See
 [SkillDefinition adoption](096_skill_definition_contract.md#xid-E6A19D4B72C3).

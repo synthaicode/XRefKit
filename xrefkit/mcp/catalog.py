@@ -351,12 +351,26 @@ class XRefCatalog:
             entries.extend(definitions)
         if adoption:
             receipts = {e["skill_id"]: e for e in adoption["entries"]}
+            by_path = {e["definition_path"]: e for e in adoption["entries"]}
+            for entry in entries:
+                receipt = by_path.get(entry.path) if entry.package_id is None else None
+                if receipt and entry.definition_format == "skill_definition_v1" and (
+                        entry.skill_id != receipt["skill_id"]
+                        or entry.definition_xid != receipt["definition_xid"]
+                        or entry.definition_content_hash != receipt["definition_sha256"]):
+                    raise ValueError("repository catalog definition revision changed during resolution")
             entries = [replace(
                 entry,
                 legacy_skill_ids=list(receipts[entry.skill_id]["legacy_ids"]),
-                maturity="draft" if not receipts[entry.skill_id]["adopted"] else entry.maturity,
+                maturity=(receipts[entry.skill_id]["effective_maturity"]
+                          if "current_adoption" in receipts[entry.skill_id]
+                          else "draft" if not receipts[entry.skill_id]["adopted"] else entry.maturity),
+                maturity_governance=receipts[entry.skill_id].get("current_governance", entry.maturity_governance),
                 repository_adoption={"path": adoption["path"], "sha256": adoption["sha256"],
                                      "adopted": receipts[entry.skill_id]["adopted"],
+                                     "legacy_maturity": receipts[entry.skill_id]["legacy_maturity"],
+                                     "effective_adopted": receipts[entry.skill_id]["effective_adopted"],
+                                     "current_adoption": receipts[entry.skill_id].get("current_adoption"),
                                      "runtime": receipts[entry.skill_id]["runtime"],
                                      "legacy_runtime_policy": receipts[entry.skill_id]["legacy_runtime_policy"]},
             ) if entry.skill_id in receipts and entry.path == receipts[entry.skill_id]["definition_path"]
@@ -1019,9 +1033,10 @@ class XRefCatalog:
                 missing_runtime = [key for key, receipt in skill.repository_adoption["runtime"].items()
                                    if receipt["value"] is None]
                 readiness.update({
-                    "runnable": not missing_tools and skill.repository_adoption["adopted"] and not missing_runtime,
+                    "runnable": not missing_tools and skill.repository_adoption["effective_adopted"] and not missing_runtime,
                     "required_runtime_inputs": missing_runtime,
-                    "repository_adopted": skill.repository_adoption["adopted"],
+                    "repository_adopted": skill.repository_adoption["effective_adopted"],
+                    "historical_repository_adopted": skill.repository_adoption["adopted"],
                 })
             if score <= 0:
                 continue

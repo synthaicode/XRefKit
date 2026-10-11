@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-686b47a5-62cb-4b6f-b89d-e78a7dea4f44",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-10-10T15:14:29Z",
+  "git_commit": "68a82f7c22af8e1d9a61237a752ee1614406e264",
+  "purpose": "before AI Skill run commonality_derivation",
+  "work_item_id": "COMMON",
+  "run_id": "686b47a5-62cb-4b6f-b89d-e78a7dea4f44",
+  "context_policy": "current-only",
+  "human_approved": false
+}

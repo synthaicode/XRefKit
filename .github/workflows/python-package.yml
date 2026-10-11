@@ -8,6 +8,10 @@ on:
     tags:
       - "v*.*.*"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   contents: read
 
@@ -20,7 +24,7 @@ env:
 
 jobs:
   quality:
-    name: Test and security quality
+    name: Core / Test and security quality
     runs-on: ubuntu-latest
     steps:
       # actions/checkout v4.2.2; pinned to the release commit.
@@ -71,7 +75,7 @@ jobs:
             --cache-dir "${RUNNER_TEMP}/pip-audit-local-cache"
 
   build-distribution:
-    name: Build Python wheel and sdist once
+    name: Core / Build Python wheel and sdist once
     runs-on: ubuntu-latest
     steps:
       # actions/checkout v4.2.2; pinned to the release commit.
@@ -135,7 +139,7 @@ jobs:
           if-no-files-found: error
 
   artifact-inspection:
-    name: Inspect built artifacts and scan for malware/secrets
+    name: Core / Inspect built artifacts and scan for malware/secrets
     needs: build-distribution
     runs-on: ubuntu-latest
     steps:
@@ -209,7 +213,7 @@ jobs:
           if-no-files-found: error
 
   install-smoke-test:
-    name: Clean wheel install/import / Python ${{ matrix.python-version }}
+    name: Core / Clean wheel install/import / Python ${{ matrix.python-version }}
     needs: build-distribution
     runs-on: ubuntu-latest
     strategy:
@@ -252,7 +256,7 @@ jobs:
           "$venv/bin/python" -B -m xrefkit --help
 
   sdist-install-smoke:
-    name: Clean sdist install/import
+    name: Core / Clean sdist install/import
     needs: build-distribution
     runs-on: ubuntu-latest
     steps:
@@ -290,7 +294,7 @@ jobs:
           "$venv/bin/xrefkit" --help
 
   skill-compatibility:
-    name: Official Skill compatibility with Core release wheel
+    name: Core / Official Skill compatibility with Core release wheel
     needs: build-distribution
     runs-on: ubuntu-latest
     steps:
@@ -324,7 +328,7 @@ jobs:
           if-no-files-found: warn
 
   publish-to-pypi:
-    name: Publish package to PyPI
+    name: Core / Publish package to PyPI
     needs:
       - quality
       - build-distribution

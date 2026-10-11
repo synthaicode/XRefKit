@@ -305,7 +305,494 @@ default `work/sessions/`:
 python -m xrefkit dashboard serve --root . --sessions-dir path\to\sessions
 ```
 
-## JSON Output
+## Local Workspace And Versioned Work Management (Plan v2)
+
+The **計画 / Plans** screen supports registered local workspaces as well as
+the repository-root v1 plans described below. A workspace is an existing
+repository-contained directory; registration does not move source files or
+copy/change the baseline. The active dashboard root is the permitted file
+boundary. A client can use a different project directory as `--root`.
+
+Register explicit workspace metadata:
+
+```json
+{
+  "schema_version": 1,
+  "workspace_id": "local-change",
+  "title": "Local change",
+  "workspace_root": "."
+}
+```
+
+```powershell
+python -m xrefkit.work_management register --root . --input work/reports/workspace-input.json
+```
+
+Registry records live in `work/workspaces/*.json`. Each workspace reads its
+own `work/plans` and `work/sessions`. Identity conflicts, duplicate roots,
+overlapping session scopes, unsafe child directories, and escaping file
+symlinks do not select a substitute workspace. Registering identical metadata
+is an idempotent no-op; changing an existing identity is refused. No baseline
+or source migration is performed.
+
+`<repository-root>` is a placeholder. Before submitting the example, replace it
+with the absolute repository root resolved in the executing client environment.
+
+A v2 submitted plan is one self-contained structured payload. This minimal
+example illustrates the format; it is not a claim that a planning Skill ran:
+
+```json
+{
+  "schema_version": 2,
+  "workspace_id": "local-change",
+  "repository_root": "<repository-root>",
+  "plan_id": "example-work",
+  "plan_revision": "v1",
+  "title": "Example work",
+  "source": "work/reports/example-work.md",
+  "report_id": "observation-1",
+  "recorded_at": "2026-10-10T09:00:00+09:00",
+  "project": {"project_id": "project", "title": "Project"},
+  "change": {"change_id": "change", "title": "Change"},
+  "baseline": {"baseline_id": "baseline", "code_revision": "fixed-source-revision"},
+  "stages": [{"stage_id": "design", "title": "Design"}],
+  "steps": [
+    {
+      "step_id": "task-a",
+      "title": "Review the source",
+      "stage_id": "design",
+      "dependencies": [],
+      "status": null,
+      "completion_criterion": "Record the reviewed difference",
+      "outputs": [],
+      "runs": [],
+      "pbi_ids": ["pbi-a"],
+      "revalidation_needed": null
+    }
+  ],
+  "pbis": [{"pbi_id": "pbi-a", "title": "Change objective"}],
+  "confirmations": [],
+  "external_refs": [],
+  "initial_task_ids": ["task-a"]
+}
+```
+
+`steps` are the stable task units counted by the screen; stages, retries,
+confirmation entries, and repeated PBI references are not additional tasks.
+The same selected snapshot powers totals, stage rows, dependency nodes and
+details. The view switch and refresh preserve exact selection. The graph
+groups tasks by recorded stages and renders recorded branch/merge edges;
+it never generates sequence from stage order or permission to start work.
+
+`initial_task_ids` explicitly identifies the original comparison set. Missing
+or null means original/add/delete counts are unknown; an empty array is an
+explicit original zero. Added/deleted counts compare stable IDs. Existing
+source `done` contributes to **記録上の完了**, except when an explicit
+`revalidation_needed: true` applies. Null revalidation means unrecorded, not
+verified false. Remaining is current total minus this recorded completion
+count. Missing/unrecognized source status and revalidation counts are shown
+separately. These values are not effort, dates, quality acceptance or a new
+workflow completion gate. Missing evidence stays visibly missing without
+silently changing the recorded status.
+
+Record the first observation with expected observation revision zero:
+
+```powershell
+python -m xrefkit.work_management record --root . --input work/reports/plan-input.json --expected-observation-revision 0
+```
+
+The successful acknowledgement supplies `output` and `observation_revision`.
+For another status/evidence observation, submit a new `report_id` and that
+expected revision. The writer owns `observation_revision`, `report_sha256`
+and `observation_history`; omit these fields from submitted input. It
+validates the complete input, obtains an exclusive lock, rechecks the current
+revision, appends the prior submitted payload/receipt, flushes, and atomically
+publishes one file. Reader sees a complete old or new snapshot. Runs are a
+separate observation and are not part of an atomic cross-store transaction.
+
+An exact accepted `report_id` retry is a no-op, even after later observations;
+it never rolls the current state back. Reusing a report ID with different
+content, stale expected revision, or changing the plan definition is a
+conflict. Task identities, stage/dependency structure, completion criteria,
+planning metadata and PBI definitions remain fixed within a `plan_revision`.
+A scope amendment uses a new `plan_revision` and can name
+`previous_plan_revision`/task `predecessor_step_ids`; old revision files remain.
+No history is automatically purged. Limits are 1 MiB per snapshot, 200 history
+records, 200 plan/registry files, 500 tasks and 200 entries in auxiliary
+collections; overflow refuses publication. Stale locks cause explicit
+refusal; the command does not steal a lock from another writer. Retention,
+backup, multi-user collaboration and remote synchronization policy are not
+provided by this local trial.
+
+Optional array fields may be omitted but explicit null arrays are rejected.
+Optional scalar fields may be null and remain unrecorded. Persisted snapshots
+must contain valid writer revision/history/fingerprints. Unknown fields,
+duplicate keys/IDs, malformed types and unresolved structural references are
+controlled file errors. Important optional records are:
+
+| Record | Fields |
+| --- | --- |
+| `change` | `scope_in`, `scope_out`, `assumptions`, `constraints`, `exit_criteria`, `decision_owner`, `review_owner`, `acceptance_owner`, `quality_conditions` |
+| Quality condition | `condition_id`, `title`, `verification_method`, `reviewer`, `evidence_refs` |
+| `baseline` | `source`, `docs_revision`, `code_revision`, `acquired_at`, `mismatches`, `artifacts` |
+| Versioned artifact | `kind`, `path`, `revision`, `source`, `recorded_at` |
+| Task | existing v1 task metadata and `stage_id`, `dependencies`, `pbi_ids`, `candidate_version`, `revalidation_needed`, `revalidation_evidence`, `impact_status`, `validation_records`, `artifact_refs`, `judgment_refs`, `concern_refs`, `predecessor_step_ids` |
+| Validation | `validation_id`, `target_version`, `environment`, `input_data`, `expected_result`, `result`, `reviewer`, `recorded_at`, `evidence_refs` |
+| PBI | `pbi_id`, `title`, `purpose`, `acceptance_criteria`, `priority`, `owner`, `acceptance_status`, `acceptance_evidence`, `external_ref_ids` |
+| Confirmation | `confirmation_id`, `question`, `reason`, `owner`, `resolver`, `due_at`, `step_ids`, `version_refs`, `impact`, `answer`, `application`, `judgment_refs` |
+| Answer | `text`, `responder`, `recorded_at`, `evidence_refs` |
+| Application | `target_refs`, `verified_by`, `recorded_at`, `evidence_refs` |
+| External reference | `external_ref_id`, `service`, `organization`, `project`, `item_id`, `url`, `revision`, `type_mapping`, `state_mapping`, `ownership_ref`, `last_read_at`, `last_success_at`, `sync_status`, `pending_summary` |
+
+Typed dependencies use `{"step_id":"task-a","kind":"mandatory"}` or
+`kind: optional` for a current-plan task. External dependencies use
+`{"external_ref_id":"ref-a","kind":"external"}` and do not create fake
+local nodes. Each can supply `evidence_ref`. Internal cycles are rejected.
+Run mappings retain the v1 exact correlation contract; v2 monitor/back URLs
+also carry `workspace_id`. The same Run ID in different workspace scopes
+does not resolve across that boundary.
+
+The screen separates confirmation answers from their application evidence,
+PBI acceptance from task completion, and older validation results from the
+current candidate version. Candidate impact does not automatically reopen a
+task. Existing judgments/decision-trace are linked artifacts; this feature
+does not duplicate decisions into another canonical store or create ADR
+files. Other projects' existing ADR files can be ordinary confined artifact
+references; XRefKit's internal document policy is not imposed on them.
+
+External fields are plain recorded metadata. URL links allow only HTTP/HTTPS
+without credentials and are labelled unverified references. Displaying these
+metadata views performs no Azure access, authentication, API update, remote
+existence check or shared evidence export. Recorded sync status/time does not imply that this tool synchronized
+anything; local absolute paths are not shared evidence URLs.
+
+Azure DevOps connections belong to each project workspace. The separate local
+connection profile and explicit test-only read check below are supported.
+Plan reference metadata itself is not connection authorization: later adapters
+must bind workspace connection identity and external item explicitly. Process
+mappings, permitted writes, production activation and synchronization require
+their subsequent reviewed integration contract. Global or another workspace's
+defaults are never fallback sources; credential values are not stored.
+
+The serializer supports a structured plan producer; it does not execute the
+planning Skill. The repository's `planning_flow` adoption currently retains
+draft maturity, so automatic production by that Skill is unverified and must
+respect its normal gate. No Skill maturity/definition is changed here.
+
+## Workspace-specific Azure test connection
+
+Register each connection inside the selected registered workspace. The strict
+profile is saved under `work/integrations/connections/<derived-name>.json`;
+workspace plus connection ID defines identity, independently of the filename.
+An identical registration is a local no-op. A changed profile with the same
+identity is refused; use a new explicit connection ID. Registration performs
+no network request. A profile is not proof of Azure permissions.
+
+```json
+{
+  "schema_version": 1,
+  "workspace_id": "xrefkit-local",
+  "connection_id": "ai01-scrum-test",
+  "service": "azure_devops_services",
+  "organization": "seijim0pattern01",
+  "project": "AI01-Scrum",
+  "environment": "test",
+  "auth": {"kind": "pat_env", "env_var": "AZURE_DEVOPS_PAT"},
+  "allowed_operations": ["read_work_item"],
+  "allowed_item_ids": [10]
+}
+```
+
+```powershell
+python -m xrefkit.azure_connection register --root . --workspace-id xrefkit-local --input <profile.json>
+python -m xrefkit.azure_connection read-check --root . --workspace-id xrefkit-local --connection-id ai01-scrum-test --item-id 10
+```
+
+The profile contains only the **name** of the PAT environment variable. Supply
+its value through the secure environment of the child process; do not put the
+value in command arguments, profile/plan files, transcripts, reports or Git.
+There is no `--pat` option, credential-file search or global fallback. Only the
+named variable is consulted, after workspace/environment/operation/item checks.
+Missing or empty scope allows no reads. Production profiles can be represented
+but this trial refuses their read check before credential lookup or network.
+
+The explicit probe performs one GET for the selected allowed work item through
+the constructed `https://dev.azure.com/<organization>/<project>` endpoint,
+using API 7.1 and normal TLS verification. It uses urllib's 30-second socket-operation timeout (not an end-to-end deadline), a 1 MiB
+response cap, no retries, redirects, browser login or automatic proxy fallback.
+It verifies item ID, project and required response fields; only revision/type/
+state and selected target identity are returned. Unexpected destinations,
+malformed or oversized JSON, secret echoes and project mismatches are rejected.
+No raw request, response, authorization header or server error text is logged.
+
+| Diagnostic | Meaning |
+|---|---|
+| `configuration_unavailable` | Selected workspace/profile is absent, invalid or ambiguous; no request |
+| `test_read_scope_rejected` | Not a permitted test operation/item; no credential lookup or request |
+| `credential_unavailable` | Named variable is missing, empty or invalid; no request |
+| `authentication_rejected` | HTTP 401; invalid/expired credential is possible, exact cause not proven |
+| `access_forbidden` | HTTP 403; access denied, exact cause not proven |
+| `unavailable_or_not_visible` | HTTP 404; absence versus hidden access is not established |
+| `redirect_rejected` | Redirect refused; credential never forwarded |
+| `rate_limited` / `server_failure` / `network_request_failed` | Read not verified; explicit rerun is available |
+| `read_verified` | Matching read verified at `checked_at`; writes remain unverified |
+
+Output separates `configuration_valid`, `credential_available` (null before
+lookup), `network_attempted`, `read_verified` and
+`write_permission_verified=false`. A successful check proves only that read
+at the recorded time. It neither tests write access nor updates PBI/Task state
+or acceptance. Unknown fields/duplicate identities/escaping directories fail
+closed. Profiles use the existing 1 MiB/200-record local bounds and locked
+atomic publication. This does not modify v2 plans or their Markdown, and does
+not execute or promote the draft planning Skill.
+
+The protocol follows Microsoft's [PAT authentication guidance](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops)
+and [Get Work Item API 7.1](https://learn.microsoft.com/en-us/rest/api/azure/devops/wit/work-items/get-work-item?view=azure-devops-rest-7.1).
+
+## Offline Azure update candidate: Task21 preparation
+
+`xrefkit.azure_update_candidate.build_candidate(envelope)` is a pure local
+projection. It uses explicit recorded assertions and captured snapshots; it
+does not call AI, inspect credentials, contact Azure, change profiles, write
+files or certify completion criteria/evidence. This is a preparation slice,
+not the completed Task21 synchronization workflow. Import/binding, evidence
+policy and the authorized writer remain publication prerequisites.
+
+```powershell
+python -m xrefkit.azure_update_candidate --input <offline-envelope.json>
+```
+
+The CLI reads one named JSON and prints canonical ASCII-escaped JSON, so
+Unicode project names work with Windows console encodings. Repeated identical
+input produces identical output bytes, without clock/random values. An invalid
+input exits 1 with a fixed safe diagnostic; `candidate`, `hold` and `conflict`
+exit 0 as evaluated outcomes, **not** successful delivery. Input errors never
+echo arbitrary producer values. The input file is not modified.
+
+Strict envelope version 1 contains these required fields:
+
+| Field | Recorded data |
+|---|---|
+| `report_id`, `target` | Stable report ID; exact workspace/connection/organization/project/item identity |
+| `binding` | Plan ID/revision, unique included step IDs, external Task completion criterion, explicit initial-binding flag |
+| `local_snapshot`, `expected_observation_revision` | Valid stored v2 snapshot and positive expected observation revision; no live reread claim |
+| `completion` | Explicit criterion-confirmed boolean and local assertion refs; true requires refs |
+| `work_authorization` | Explicit active/rework booleans and refs; rework requires active; true requires refs |
+| `remote_snapshot`, `baseline` | Same exact Task identity, state/revision and timezone-aware `observed_at`, representing captured current and last agreed observations |
+| `metadata` | Captured Task states and explicit allowed transitions; no effective-permission claim |
+| `artifacts` (optional) | Unique `(artifact_id, version)` tuples, always `availability=local_only`; no path, URL or contents |
+
+The JSON file has the existing 1 MiB read bound and duplicate-key rejection.
+Included steps/refs/artifacts are bounded to 200. This generator's source and
+report IDs/versions accept at most 128 ASCII letters/digits/underscore/dot/
+hyphen; it does not change the general v2 schema. Target text is bounded to
+256 characters without controls or separators, refs to 2048 characters. Output
+History is HTML-escaped and bounded to 32 KiB; exceeding bounds rejects without
+silently truncating. Artifact summaries sort ID/version tuples canonically.
+
+The ordered decision compares exact identities first, then local observation
+and remote baseline. A stale local observation holds; remote state/revision
+change conflicts even if the desired state matches; Removed conflicts.
+Missing/unknown/unrecognized/blocked/escalated included steps hold. All included
+steps must be explicitly done, without outstanding revalidation, and the
+external criterion must be recorded confirmed before a Done candidate exists.
+Missing revalidation flags remain unrecorded; they do not invent a new local
+completion policy. In Progress requires actual active work and explicit
+authority; reopening Done additionally requires explicit rework. Pending does
+not roll an advanced remote state backward. Proposed transitions, including
+same-state transitions, must exist in supplied metadata.
+
+Every result remains `delivery_status=not_sent`, `network_performed=false`,
+`remote_freshness_verified=false`, `write_permission_verified=false` and
+`publish_ready=false`. Only a `candidate` includes a preview: `test /rev`,
+optional `add /fields/System.State` when different, and
+`add /fields/System.History`. Other outcomes have an empty patch. PBI/Bug,
+assignees, deadlines, estimates, RemainingWork, descriptions and relations are
+never proposed. Holds do not produce sendable History-only patches in this
+slice.
+
+History includes fixed reason codes, safe source tuples/revisions and status
+labels plus optional local artifact ID/version. Titles, raw errors, criteria
+prose, paths and assertion refs are never exported. No attachment/upload or
+accessible shared URL is inferred. Supplied assertions are not proof that refs
+were opened, sufficient or approved. Repeated report IDs do not prove delivery
+or deduplication; real publication requires current local/remote checks and the
+separately authorized writer.
+
+## Default readable view: Markdown and Mermaid
+
+For local v2 work records, the primary readable view is a generated Markdown
+file beside the saved JSON with the same stem. Open the `.md` in Codex or a
+VS Code Markdown preview with Mermaid support. The Web Plans panel remains a
+supplementary view. JSON is authoritative; changing the generated document
+does not change task state or acceptance.
+
+Successful `record` operations automatically generate this view. Identical
+report retries regenerate from the **current stored observation**, including
+when the retried report is older. To regenerate an existing stored plan:
+
+```powershell
+python -m xrefkit.work_management render --root . --input work/plans/<saved-name>.json
+```
+
+The document includes task counts, stages, typed dependency diagrams, ordinary
+task-detail links, confirmation answers and their application, PBI acceptance,
+version evidence, artifact links and exact scoped Run records. File links are
+portable relative paths to existing confined files; the diagram does not need
+click support. Missing, mismatched or duplicate Run mappings stay visibly
+unavailable. Plan/revision/observation/report/hash/time identify the represented
+snapshot; absent recorded time remains unrecorded.
+
+No Web host or port is guessed. Optionally pass `--monitor-base` to `record`
+or `render`, for example `https://example.test/dashboard`. The explicit
+deployment path is preserved with a trailing slash; query and fragment bases
+are rejected. HTTP/HTTPS without credentials is accepted, unsafe destination
+characters are encoded, and exact workspace/plan/revision/task/Run parameters
+are appended. This link does not establish connectivity or perform a request.
+
+Source JSON and derived Markdown are two files and are not a single atomic
+transaction. A source save can succeed while projection fails: command JSON
+retains `saved`/`replayed` and reports `projection.status`, `output`, `issues`
+and recovery guidance separately; the command exits nonzero on projection
+failure. The old complete Markdown remains, or no Markdown exists. Resolve
+the cause and run `render` or retry the identical report. Rejected input/CAS
+does not change either file. Record, retry and manual rendering share the
+writer lock and never publish a rejected or stale caller snapshot.
+
+A generated header binds the source identity and a content digest. Existing
+handwritten Markdown, another owner's output and edited generated content
+are retained with a conflict. Copy annotations elsewhere; resolve the
+conflicting derived file explicitly before regeneration. There is no generic
+overwrite switch. The projection has an 8 MiB bound and atomic replacement
+with temporary-file cleanup. JSON's existing limits and history policy remain
+unchanged. v1 loading/serialization stays compatible; this v2 generator does
+not migrate v1 plans.
+
+## Plans v1: From A Planning Artifact To The Monitor
+
+The **計画 / Plans** tab is the entry point for planned work, including steps
+that have no Run yet. When valid plan artifacts exist, the dashboard opens
+this tab by default. Select a step in the accessible card list below the
+dependency diagram to inspect its recorded state, planned Skill, Agent,
+completion criterion, outputs, and separate Run history. Select **モニタを開く**
+to open that exact Run in **Closure**; **計画の工程へ戻る** restores the same
+plan revision and step. **計画を更新** refreshes the records without starting
+execution. Run search and audit warnings stay in the monitor panels.
+
+The planning producer supplies a UTF-8 JSON sidecar under `work/plans/*.json`
+alongside its prose artifact. This is an explicit output convention for the
+producer; the dashboard does not infer a plan from prose and does not execute
+or modify the planning Skill. The following is a schema example, not evidence
+of a planning Skill Run:
+
+`<repository-root>` is a placeholder. Before submitting the example, replace it
+with the absolute repository root resolved in the executing client environment.
+
+```json
+{
+  "schema_version": 1,
+  "plan_id": "example-plan",
+  "plan_revision": "v1",
+  "repository_root": "<repository-root>",
+  "title": "Example plan",
+  "source": "work/reports/example-plan.md",
+  "approval_status": null,
+  "approval_evidence": null,
+  "steps": [
+    {
+      "step_id": "implement",
+      "title": "Implement the approved change",
+      "depends_on": [],
+      "status": null,
+      "status_evidence": null,
+      "planned_skill": null,
+      "agent": null,
+      "completion_criterion": null,
+      "outputs": [],
+      "runs": []
+    }
+  ]
+}
+```
+
+The identity fields, title, and source are required nonempty strings.
+`steps`, `depends_on`, `outputs`, and `runs` are required arrays; empty arrays
+are valid. Step IDs must be unique within the revision, dependencies must
+refer to that revision's steps, and dependency cycles are rejected. The
+`(plan_id, plan_revision)` pair must be unique across input files: duplicate
+plans stay visible with disabled monitor links. Unknown fields, unsupported
+versions, malformed JSON, and duplicate JSON keys produce visible per-file
+errors while independent valid plans remain available.
+
+Optional scalar fields may be omitted or `null` and appear as **未記録**.
+State and approval are displayed as source-recorded strings with their
+evidence; displaying `approved` does not certify approval. No Skill name,
+Closure result, filename, or step ordering fills missing state, Agent,
+approval, or dependencies. Common step states are translated in the cards;
+the detail retains the original recorded value. Process, Closure, quality,
+and plan approval remain separate.
+
+A Run mapping is an object in a step's `runs` array, for example:
+
+```json
+{
+  "run_id": "an-explicit-existing-run-id",
+  "flow_id": null,
+  "work_item_id": null,
+  "node_id": null,
+  "recorded_at": "2026-10-10T09:00:00+09:00"
+}
+```
+
+The normalized, resolved `repository_root` must match the active dashboard
+root, and `run_id` must identify exactly one observed Run. Any supplied
+`flow_id`, `work_item_id`, or `node_id` must agree with that Run's header;
+membership in a Run's local Work Item list is not a substitute. An empty
+`runs` list means **未実行**; an absent/null `run_id`, a missing/deleted Run,
+a correlation conflict, or an ambiguous Run ID has its own unavailable
+reason. A different repository disables artifact and monitor links.
+Revisions keep separate mappings; no mapping transfers automatically.
+
+Multiple Runs remain independently selectable. Recorded timestamps must be
+ISO 8601 dates with a timezone and are sorted chronologically across offsets;
+missing timestamps remain last in source order. No retry/supersession
+relationship is inferred from that order. Limits for local parser reliability
+are 1 MiB per plan file, 200 plan files, 500 steps per plan, and 200 mappings
+per step. Oversized input is reported; these are implementation limits,
+not a performance SLA.
+
+The producer can validate and atomically serialize an already structured
+payload with the module command (the dashboard UI remains read-only):
+
+```powershell
+python -m xrefkit.plan_observation --root . --input work/reports/structured-plan-input.json --name example-plan.json
+```
+
+Invalid input leaves an existing destination intact. The producer owns
+accurate identities, dependencies, evidence, and explicit Run correlation.
+This command does not parse prose or generate a plan Skill Run.
+
+Monitor links use the current host and port, for example:
+
+```text
+/?panel=closure&run_id=an-explicit-existing-run-id&plan_id=example-plan&plan_revision=v1&step_id=implement
+```
+
+The origin tuple is checked against the current sidecar's enabled mapping.
+An invalid/incomplete origin or missing Run never selects a substitute.
+Refresh retains the exact identity and reports stale/deleted targets. A
+Run-only URL can focus an observed Run without claiming plan correspondence.
+
+Source, output, and evidence links are offered only for existing regular
+files whose resolved paths remain inside the active repository. Textual
+evidence references and unavailable/unsafe local paths stay visible without
+a clickable local link. The `/artifact?path=<repository-relative-path>`
+route downloads contents as plain text with an attachment disposition and
+`nosniff`; it does not execute HTML or expose files outside the root. Opening
+plans, refreshing, downloading artifacts, and following monitor links do not
+create or update workflow records.
+
+## Monitor JSON Output
 
 Use the JSON command when the dashboard data needs to be inspected by another
 local tool or test:
@@ -368,3 +855,190 @@ Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8765/healthz
 
 If local XIDs do not appear, confirm the Skill run log recorded them in the
 domain-knowledge sections or as runtime evidence/artifact targets.
+
+
+## 承認された計画 Skill のローカル試行
+
+`planning_flow` は、このリポジトリに限定した現在の試行承認を
+`skills/repository_adoption.json` の `current_adoption` に記録します。
+過去の `legacy_maturity: draft` と `adopted: false` は履歴として保持します。
+現在の実行可否は、試行承認・Skill 定義・承認の根拠を照合した
+`effective_adopted` / `effective_maturity` で判断します。
+
+試行には、人の承認者・時刻、承認済み trial の governance 記録とその SHA-256、
+Git の追跡対象である `observations/` 内の根拠とその SHA-256 が必要です。
+根拠や承認記録の削除・変更、定義の変更、未承認の記録は実行を停止します。
+同じプロセス内で一度読み込んだ後も照合します。CLI とカタログは同じ判定を使います。
+明示した `--governance` が現在の承認記録と異なる場合も実行を停止します。
+
+この承認は `repository_local_trial` の範囲です。他の draft、deprecated、
+インストールされたパッケージの実行可否や共有配布には適用しません。
+試行可能であることと、実際の計画の完了・承認は別の記録です。
+計画の実行時には通常の入力、Knowledge、品質確認と実行ログを引き続き必要とします。
+
+## Azure の読み取り専用取り込みと計画への対応付け
+
+取り込みと対応付けは別の操作です。取り込み結果はワークスペース内の
+`work/integrations/imports/`、対応付けは `work/integrations/bindings/` に保存します。
+既存の計画 JSON・Markdown・進捗・承認や、以前の接続プロファイルを変更しません。
+読み取りが成功しても、書き込み権限や PBI の受入を確認したことにはなりません。
+
+承認された test 接続に、読み取る PBI とすべての Task ID が明示されていることが必要です。
+接続はワークスペースから選び、別の接続や production へ自動で切り替えません。
+資格情報は接続に記録された環境変数名だけを使います。PAT を入力 JSON や引数に書かないでください。
+
+取り込み入力の例です。`import_id` は一回の取得を識別します。
+
+```json
+{
+  "schema_version": 1,
+  "import_id": "pbi10-import-001",
+  "connection_id": "ai01-scrum-pbi10-import-test",
+  "organization": "seijim0pattern01",
+  "project": "AI01-Scrum",
+  "pbi_id": 10,
+  "task_ids": [19, 21, 22, 23]
+}
+```
+
+```powershell
+python -m xrefkit.azure_import capture --root . --workspace-id xrefkit-local --input import-input.json
+```
+
+同じ ID と入力で再実行すると保存済みの取得結果を返し、新しい通信を行いません。
+これは新しい情報の確認ではありません。新しく取得する場合は別の `import_id` を指定します。
+一部の取得が失敗した場合も成功した観測は残しますが、不完全な取得結果は対応付けに使えません。
+認証が拒否された後の残り項目は「未取得」と記録します。
+
+対応付け入力は `schema_version: 1`、`binding_id`、`import_id`、`plan_id`、
+`plan_revision`、`expected_observation_revision`、`approval_refs`、`mapping` を指定します。
+`mapping` の各行は `item_id`、重複のない `included_step_ids`、
+`completion_criterion` を持ちます。たとえば Task19 は I1/I2/I3 に対応します。
+すべての選択 Task を一度ずつ指定し、同じ工程を複数の Task に割り当てません。
+完了条件と対応付けの承認根拠は入力に明記し、状態や件数から推測しません。
+`expected_observation_revision` は実際の保存済み計画を確認して指定します。
+
+```powershell
+python -m xrefkit.azure_import bind --root . --workspace-id xrefkit-local --input binding-input.json
+```
+
+対応付けは取得結果のハッシュ、外部 ID・観測 revision、計画の版・観測 revision・
+定義のハッシュを保存します。同じ入力の再実行は保存済み記録を返し、
+同じ ID で内容が異なる入力は拒否します。取り込み後に対応付けを拒否しても、
+取得結果は失われません。二つの操作を一つの保存処理とみなす保証はありません。
+
+基準との比較では、新しい取り込み入力に `comparison_binding_id` と
+現在の `expected_observation_revision` を追加します。基準は指定した対応付けから選び、
+最新のファイルや更新時刻で推測しません。ローカルの観測版が進んだ場合も、
+明示した版が一致すれば再取得できます。最初の対応付けの観測記録は保持します。
+外部の revision・状態・取得した項目が変わった場合は `changed` / `needs_resolution: true`
+として前後の差分を保存し、元の基準や計画を置き換えません。
+
+各 ID は一回の GET で取得し、再試行・全プロジェクト検索・関連 URL の追跡は行いません。
+30秒はソケット操作のタイムアウトで、全体の終了時間の保証ではありません。
+一応答と一保存記録はそれぞれ 1 MiB、選択 Task と保存記録数はそれぞれ最大200です。
+上限超過では保存を拒否し、以前の取得記録を自動削除しません。
+説明や受入条件の HTML は未信頼の文字列として JSON に保存し、実行・表示しません。
+CLI は項目 ID と結果・診断コードを返し、拒否した本文や資格情報を表示しません。
+
+Azure の関連 URL がプロジェクト GUID を使う場合は、先に取得・検証した PBI の
+自己 URL からだけ GUID を確認します。Task の自己 URL と親 PBI の URL も
+同じ GUID・組織・指定 ID に一致する必要があり、Task だけで別の GUID を採用しません。
+検証できた GUID と正規化した URL は取得記録に保持し、URL を追跡しません。
+GUID を確認できない場合は、従来の組織または指定プロジェクト名の形式に限ります。
+以前の取得記録で URL の確認欄がない場合は「未記録」として読み、書き換えません。
+
+## 選択した Task21 の状態と結果要約を反映する
+
+現在の書き込み試行は test 環境の PBI10 に属する Task21 だけです。
+読み取り済みの対応付け、工程の現在の観測版、明示した完了確認または作業承認を使います。
+元の読み取り接続を変更せず、新しい接続に `read_work_item` と
+`update_task_state_history`、対象 ID `[10, 21]` を指定します。
+PBI10 は親の確認のために読み取るだけです。資格情報は環境変数名だけで指定します。
+
+入力には、元の接続 `source_connection_id` と、新しい接続への書き込み承認の根拠
+`write_approval_refs` を明記します。別のワークスペースや production へ切り替えません。
+次の例は形式説明です。実際の `binding_id` と現在の `expected_observation_revision` を確認して指定してください。
+
+```json
+{
+  "schema_version": 1,
+  "report_id": "task21-report-001",
+  "connection_id": "ai01-scrum-task21-write-test",
+  "source_connection_id": "ai01-scrum-pbi10-import-test",
+  "write_approval_refs": ["work/judgments/2026-10-11_azure_task21_trial_scope.md"],
+  "binding_id": "task19-live-plan-v2-guid-20261010",
+  "item_id": 21,
+  "expected_observation_revision": 7,
+  "completion": {"confirmed": false, "evidence_refs": []},
+  "work_authorization": {"active": true, "rework": false, "evidence_refs": ["work/sessions/session_azure_import.md"]},
+  "artifacts": [{"artifact_id": "writer-design", "version": "v1", "availability": "local_only"}]
+}
+```
+
+```powershell
+python -m xrefkit.azure_writer publish --root . --workspace-id xrefkit-local --input writer-input.json
+```
+
+送信前に親 PBI、選択 Task、Task の状態遷移情報を新しく取得します。
+取り込み時の Task21 の revision・状態、または明示した前回の成功記録と一致しなければ送信を止めます。
+Task19 など別の項目の更新を Task21 の基準にはしません。型が無効・遷移が未記録・
+工程状態が不明・未解決の再検証がある場合も送信しません。
+Done は対象工程すべての完了と外部 Task の完了条件の明示確認が必要です。
+進行中の反映には作業承認、Done から戻す場合には再作業の承認も必要です。
+
+送信するのは revision の照合、必要な場合だけの `System.State`、一つの `System.History` です。
+結果要約には送信番号、計画と観測版、工程 ID と記録された状態、ローカル成果物の ID・版を含めます。
+成果物のアップロード、絶対パス、証拠の参照文字列、任意の本文は送信しません。
+担当者・説明・期限・見積もり・関連リンク・PBI の受入は変更しません。
+オフライン候補生成は引き続き純粋なプレビューで、この操作とは別です。
+
+`work/integrations/deliveries/intents/` に送信前の記録を確実に保存してから一回だけ PATCH します。
+成功した応答に加えて再読み取りで revision・状態・同じ要約を照合し、説明・担当者・残作業・
+Blocked・DueDate を含む欄と親の確認値を比較します。
+確認できた結果は `deliveries/receipts/` に保存します。計画 JSON・Markdown、対応付けや元の取り込み結果は変更しません。
+一つの保存記録は最大1 MiB、送信前記録と結果記録は各200件までで、自動削除しません。
+30秒は各リクエストのソケット操作のタイムアウトです。全体の終了時間を保証する値ではありません。
+
+結果が `success` のときだけ `sent_confirmed: true` になります。
+`hold` / `conflict` は前提の不足や不一致、`rejected` はサービスによる明示拒否、
+`unknown` は送信または結果を確認しきれない状態です。
+`network_attempted`、`remote_write_attempted`、`possibly_sent` はそれぞれ別の情報です。
+同じ送信番号・入力の再実行は保存記録を返し、資格情報の取得や新しい通信を行いません。
+同じ番号で入力が異なる場合は拒否します。送信前記録だけ残った場合や `unknown` では、
+別の送信番号・接続・対応付けでも同じ外部 Task への送信を止めます。
+残ったロックも自動で解除しません。記録を削除して再送する回復手順は本機能に含みません。
+
+次の反映には、`previous_report_id` に同じ対応付け・対象の確認済み成功記録を指定し、
+新しいローカル観測版を用います。更新時刻で前回記録を選びません。
+前回記録から複数に分岐した送信や、同じ観測版の重複送信も拒否します。
+認証・権限・サービス規則は実際の送信時に評価され、読み取り成功や状態遷移情報だけでは書き込み可能と判断しません。
+
+### Task22: 送信結果の確認と明示的な再開
+
+送信の応答を受け取れなかった場合は、元の送信記録を残したまま、読み取り専用の確認記録を別に保存します。確認処理は送信しません。Task23 は対象外です。
+
+```powershell
+python -m xrefkit.azure_recovery status --root . --workspace-id xrefkit-local --report-id REPORT_ID
+python -m xrefkit.azure_recovery reconcile --root . --workspace-id xrefkit-local --input REQUEST.json
+```
+
+確認入力は `schema_version: 1` と `reconciliation_id`、`report_id`、読み取り用 `connection_id`、元の送信用 `source_connection_id`、`binding_id`、現在の `expected_observation_revision`、明示的な `approval_refs` を指定します。確認対象は既存のテスト用 Task21 です。読み取り用プロファイルは PBI10 と Task21 を許可する必要があります。
+
+現在の版と、送信予定だった特定の履歴版を照合します。予定の要約全文、状態、保護対象の欄、対象と親の一致が必要です。履歴に反映を確認できても、その後の状態が変わっていれば `applied_remote_changed` として再開を止めます。履歴の印だけ、現在見つからないことだけでは未送信と判断しません。
+
+同じ確認IDと同じ入力の再実行は保存済みの結果を返し、認証情報も通信も使いません。これは過去の確認結果です。新しい確認には新しいIDを指定します。途中の読み取り失敗も記録し、自動再試行は行いません。
+
+再開は、確認済みで現在の内容も一致する記録を `previous_reconciliation_id` で明示した新しい送信入力だけに接続します。`previous_report_id` と同時には指定できません。新しいローカル観測版と通常の送信前検査が必要です。同じ元の送信から複数の後続を作れません。他の未解決の送信があれば停止します。確認の保存時点で再開可能だったことと、現在の後続記録を踏まえた案内は別に表示します。
+
+保存先は `work/integrations/deliveries/reconciliations` です。元の送信予定・結果、計画、取り込み、対応付け、プロファイルは書き換えません。ロックを自動削除せず、競合の判断は利用者に残します。古い結果の `recorded_at` は処理開始時刻なので、確認時刻に読み替えません。新しい確認記録の `verified_at` と、元の `receipt_recorded_at` を区別します。
+
+## Local-primary management route
+
+Use [local_work_management](../../skills/os/local_work_management/SKILL.v1.md#xid-E7C4A916B280)
+for approved local plan persistence, Markdown/Mermaid and explicit observations.
+Its [operating model](../../knowledge/operations/161_local_client_work_management.md#xid-F3A8D602C951)
+requires no Azure profile, PAT or monitor. JSON is authoritative; Markdown is a
+derived view. Inspect saved JSON and projection results separately, and render
+from stored JSON. Select the separate Azure adapter only when authorized;
+connection availability never triggers synchronization.

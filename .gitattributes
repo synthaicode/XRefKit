@@ -1,2 +1,4 @@
 *.zip binary
 skills/**/SKILL.v1.md -text
+observations/2026-10-10_planning_flow_trial_basis.md -text whitespace=cr-at-eol
+governance/skills/planning_flow.json -text whitespace=cr-at-eol

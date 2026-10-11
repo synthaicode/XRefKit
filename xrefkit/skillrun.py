@@ -2602,7 +2602,7 @@ def run_skill(args) -> SkillRunResult:
     except (ValueError, OSError) as exc:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[str(exc)])
     if adapter:
-        if not adapter["adopted"]:
+        if not adapter["effective_adopted"]:
             return SkillRunResult(ok=False, skill_id=adapter["skill_id"], skill_doc=None, run_log=None,
                                   errors=["draft or deprecated repository Skills are not adopted and cannot execute"])
         definition_arg = adapter["definition_path"]
@@ -2650,6 +2650,13 @@ def run_skill(args) -> SkillRunResult:
                 "runtime_provenance": json.dumps(adapter["runtime"], sort_keys=True),
             })
         definition_maturity = "unassessed"
+        if adapter and "current_adoption" in adapter:
+            current = adapter["current_adoption"]
+            if governance_arg and (root / governance_arg).resolve() != (root / current["governance_path"]).resolve():
+                return SkillRunResult(ok=False, skill_id=skill_id, skill_doc=str(meta_path), run_log=None,
+                                      errors=["explicit governance must match current repository adoption record"])
+            governance_arg = current["governance_path"]
+            definition_identity["current_adoption_provenance"] = json.dumps(current, sort_keys=True)
         if governance_arg:
             governance_path = (root / governance_arg).resolve()
             try:
@@ -2660,6 +2667,8 @@ def run_skill(args) -> SkillRunResult:
             try:
                 governance = load_governance_record(governance_path)
                 match_definition(governance, definition)
+                if adapter and "current_adoption" in adapter and governance["_content_hash"] != adapter["current_adoption"]["governance_sha256"]:
+                    raise ValueError("current repository governance revision changed")
             except (OSError, ValueError) as exc:
                 return SkillRunResult(ok=False, skill_id=skill_id, skill_doc=str(meta_path), run_log=None,
                                       errors=[str(exc)])

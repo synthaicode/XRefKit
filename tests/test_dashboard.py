@@ -648,7 +648,7 @@ class DashboardTests(unittest.TestCase):
             self.assertIn('id="run-search"', html)
             self.assertIn('data-status="blocked"', html)
             self.assertIn('id="refresh-runs"', html)
-            self.assertIn("async function refreshDashboard()", html)
+            self.assertIn("async function refreshDashboard(event)", html)
             self.assertIn("selectRun(run.dataset.runPath)", html)
             self.assertIn("data-run-path=", html)
 

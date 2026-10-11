@@ -889,10 +889,21 @@ def test_contribution_return_over_real_mcp_stdio(tmp_path: Path) -> None:
     # checkpoint or modify the developer's active repository.
     root = tmp_path / "mcp-repository"
     root.mkdir()
-    for directory in ("docs", "agent", "skills", "knowledge"):
+    for directory in ("docs", "agent", "skills", "knowledge", "governance", "observations"):
         shutil.copytree(code_root / directory, root / directory)
     for name in ("ownership.yaml", "AGENTS.md"):
         shutil.copy2(code_root / name, root / name)
+    # Current local-trial adoption verifies sealed evidence is Git tracked.
+    # Preserve the real boundary in this isolated content root before startup.
+    import subprocess
+    subprocess.run(["git", "-C", str(root), "init", "-q"], check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(root), "config", "--local", "user.name", "test"],
+                   check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(root), "config", "--local", "user.email", "test@example.invalid"],
+                   check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(root), "add", "."], check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(root), "-c", "user.name=test", "-c", "user.email=test@example.invalid",
+                    "commit", "-qm", "Isolated MCP governed content fixture"], check=True, capture_output=True)
     contribution_id = str(uuid.uuid4())
     xid = f"RETURN{uuid.uuid4().hex[:12].upper()}"
     target_rel = f"knowledge/mcp-adoption-test-{uuid.uuid4().hex}.md"

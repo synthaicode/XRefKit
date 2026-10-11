@@ -28,6 +28,10 @@ pack's owned Skills above. See [Business Pack model](../docs/core/models/071_bus
 
 ## Semantic Routing Cues
 
+- For authorized workspace-scoped Azure DevOps test import, explicit plan binding, Task delivery or delivery reconciliation:
+  - route to `azure_work_item_integration`
+  - the current writer/recovery only supports PBI 10 / Task 21; load its operating-model Knowledge before operation
+
 - Default business-intake route:
   - if the business structure is still incomplete, start with `business_learning_interview`
   - move to `business_intake_scoping` only after the result becomes `ready_for_scoping`
@@ -350,6 +354,16 @@ Current family paths:
   - meta: `skills/os/correction_retrospective_analyst/SKILL.v1.md`
   - skill_doc: `skills/os/correction_retrospective_analyst/SKILL.v1.md`
 
+- `azure_work_item_integration`:
+  - summary: operate workspace-scoped Azure import, explicit plan binding, guarded Task delivery and read-only reconciliation
+  - meta: `skills/os/azure_work_item_integration/SKILL.v1.md`
+  - skill_doc: `skills/os/azure_work_item_integration/SKILL.v1.md`
+
+- `local_work_management`:
+  - summary: local approved-plan persistence, Markdown/Mermaid and explicit observations independent of Azure
+  - meta: `skills/os/local_work_management/SKILL.v1.md`
+  - skill_doc: `skills/os/local_work_management/SKILL.v1.md`
+
 ## Notes
 
 - Keep this file lightweight; adopted metadata and method belong in `SKILL.v1.md`.
@@ -358,3 +372,12 @@ Current family paths:
 - For the AI Agent OS reorganization view of `skills/`, see:
   - [OS utility and business skill classification design](../docs/designs/064_os_utility_and_business_skill_classification_design.md#xid-ECF29DC3E268)
   - [Business intake pack dependency design](../docs/packs/business-intake/065_business_intake_pack_dependency_design.md#xid-D334C1964342)
+
+The new native `azure_work_item_integration` definition is a public routing entry,
+not a legacy-migration adoption receipt. Inspect it using explicit
+`skill definition-catalog --path skills/os/azure_work_item_integration/SKILL.v1.md`
+and run the selected source with `skill run --definition`. The adoption-derived
+`skill list` does not currently enumerate this native addition; public placement
+does not imply maturity promotion or MCP distribution.
+
+The native `local_work_management` public routing entry uses explicit definition-catalog/run selection, remains unassessed without promotion evidence, and is not a fabricated legacy adoption receipt. Azure integration is an optional separately authorized route.

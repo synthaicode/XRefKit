@@ -281,24 +281,52 @@ remains supported for external legacy assets, and historical metadata summaries
 cannot weaken the detailed source procedure. These exceptions do not authorize
 maturity promotion, publication, or inferred capability.
 
-2026-10-06 のユーザー承認により、この repository の既定 source は
-`skills/repository_adoption.json` に列挙された one-document `SKILL.v1.md` とする。
-この source adoption は maturity promotion や新しい実行権限の付与ではない。
-公開 YAML Skill Package と第三者 repository の legacy API は維持する。
+The repository's approved source adoption uses the one-document `SKILL.v1.md`
+entries in `skills/repository_adoption.json`. Historical source adoption is
+separate from current maturity and execution authorization. External YAML Skill
+Packages and third-party legacy APIs remain supported.
 
-- Manifest は canonical ID/path/XID/raw SHA-256、旧 ID/path/XID/source hash、
-  旧 maturity、採用状態、4 runtime field の値と各値の出典 field を記録する。
-  definition revision、ID/alias の衝突、出典の不整合は拒否する。
-- 明記済み runtime 値だけを実行入力へ引き継ぐ。呼出しの明示入力はその出典を
-  `explicit_input` として記録し、不足 capability は明示入力を要求する。
-  title、周辺 Skill、本文の類似性、`not declared` から能力を作らない。
-- 旧 `--meta` path は記録済みの場合だけ v1 invocation alias として扱う。
-  旧 source を fallback 実行せず、新形式の必須入力・拒否条件を適用する。
-- draft 26件は採用・実行しない。旧 trial/stable を v1 promotion と推定しない。
-  正当な外部 governance record がない採用済み定義は `unassessed` とする。
-- 2つの旧 ID は明示 mapping で同一 catalog entry に解決し、一般的な ID 正規化を
-  行わない。旧文書 XID は宣言済み aliases で canonical definition に解決する。
-  canonical/alias の文書取得は同じ raw bytes/hash を返し、旧要求 XID を記録する。
-- 意味保持と参照 coverage を検証してから、旧 repository split files は hash付き
-  receipt とともに復元可能に退避する。意図的な legacy API test fixture は
-  active catalog source と区別する。Knowledge の意味統合・一括削除は対象外。
+- The manifest preserves canonical ID/path/XID/raw SHA-256, legacy identity and
+  source receipts, historical maturity/adoption and four runtime-field receipts.
+  Revision, identity, alias and provenance conflicts are rejected.
+- Only explicitly recorded runtime values carry forward. Invocation overrides
+  record `explicit_input`; missing capability still requires explicit input.
+  Titles, neighboring Skills and similar prose do not establish capability.
+- Recorded legacy `--meta` paths are invocation aliases to v1 only, never a
+  fallback execution of removed legacy source.
+- Historical draft entries remain non-executable unless an explicit current
+  local-trial adoption below is valid. Legacy trial/stable is not a v1 promotion;
+  ordinary adopted definitions without governance remain `unassessed`.
+- Explicit legacy IDs and XID aliases resolve to one canonical entry and the same
+  raw bytes/hash. No general identity normalization is inferred.
+- Preserved legacy source receipts and compatibility fixtures are not active
+  catalog sources. Knowledge consolidation or bulk deletion is outside adoption.
+
+### Current Repository Local Trial Adoption
+
+An entry may add a strict `current_adoption` record without rewriting its
+historical `legacy_maturity`, `adopted` or legacy receipts. The supported scope
+is `repository_local_trial`. It contains `governance_path`, its raw
+`governance_sha256`, human `authority`, timezone-aware `decided_at`, and a
+nonempty `basis` list of repository-relative observation paths and SHA-256
+hashes. The decision timestamp records formal authorization, not an inferred
+user utterance timestamp.
+
+The governance record must match the exact definition identity/hash and contain
+approved `trial` maturity with the same authority/time. Its observation and
+promotion basis references must be sealed, tracked `observations/` files.
+Missing, changed, untracked, ambiguous or escaping records fail closed.
+Deprecated entries cannot be restored through this route. Entries without a
+valid current record retain their prior readiness; no other draft is enabled.
+
+CLI and repository catalog use the same derived effective adoption/maturity and
+retain historical fields as provenance. The bound governance is loaded
+automatically; an explicit governance argument must identify the same record
+and hash. Cache reuse rechecks definition, governance and sealed evidence, so
+revocation or edits cannot leave stale cached readiness. Runtime receipts
+record current governance/adoption provenance as well as historical receipts.
+
+This local trial mechanism does not authorize stable/governed promotion,
+package release, shared MCP publication or production activation. The initial
+planning_flow trial uses durable authoring evidence; actual planning execution
+and output acceptance remain separate required evidence.

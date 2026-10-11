@@ -3299,6 +3299,19 @@
           "source_sha256": "89564b6d77180f884b7a8a2401d242a11d0a31979ced8395eaddf12ee16597b8",
           "source_field": "knowledge_inputs"
         }
+      },
+      "current_adoption": {
+        "scope": "repository_local_trial",
+        "governance_path": "governance/skills/planning_flow.json",
+        "governance_sha256": "9ef521a5fa4c7a3b35a69047c739f005b340b2a89e7d43be67b404ce1aecde29",
+        "authority": "human:repository-user",
+        "decided_at": "2026-10-10T13:54:59Z",
+        "basis": [
+          {
+            "path": "observations/2026-10-10_planning_flow_trial_basis.md",
+            "sha256": "71edc8418ff5d372f309e8afdc1c0592c49237762fec582003bd331b803007a3"
+          }
+        ]
       }
     },
     {

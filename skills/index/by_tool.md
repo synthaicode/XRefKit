@@ -6,6 +6,7 @@
 Categories list skill ids only. Resolve summaries and `SKILL.v1.md` paths from the canonical catalog
 [skills/_index.md](../_index.md#xid-8D91F66DDBB7).
 
+- Azure DevOps Services: `azure_work_item_integration`
 - xref: `import_skill`, `knowledge_ontology_management`,
   `source_structure_findings_registration`,
   `xlsx_spec_traceability`, `pptx_spec_traceability`
@@ -38,3 +39,5 @@ Categories list skill ids only. Resolve summaries and `SKILL.v1.md` paths from t
   `cross_constraint_derivation`, `integration_scenario_derivation`
 - html-css-png: `marketing_slide_png`, `marketing_explainer_video`
 - video-tts: `marketing_explainer_video`
+
+- local JSON and Markdown/Mermaid: `local_work_management`
