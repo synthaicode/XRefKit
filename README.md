@@ -9,6 +9,8 @@ AI-assisted work. It keeps reusable procedures, relevant knowledge, progress,
 and evidence in explicit records, then helps present results in a form people
 can understand and check.
 
+![Five sources of cognitive load and XRefKit's supporting mechanisms, with reports connecting conclusion, evidence, limits, and next action.](human-docs/en/assets/why_xrefkit_needed/whatis_xrefkit.png)
+
 ## Why faster AI output can still mean more work for you
 
 Generating a result leaves another task: understanding enough of it to decide
