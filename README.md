@@ -25,6 +25,44 @@ The reviewer can then decide what to accept and what needs more work.
 XRefKit checks the completeness and consistency of recorded work. People remain
 responsible for judging whether the output is correct and suitable for its purpose.
 
+## How does it fit with modern agent harnesses?
+
+**Use XRefKit when you want a repeatable, inspectable work process alongside
+your agent's execution environment.**
+
+Modern harnesses already do much more than call a model. Anthropic's
+[Managed Agents architecture](https://www.anthropic.com/engineering/managed-agents)
+separates execution, durable sessions, and sandboxes. Its
+[application-development harness](https://www.anthropic.com/engineering/harness-design-long-running-apps)
+uses explicit evaluation criteria, independent evaluators, and structured handoffs.
+OpenAI's [harness engineering approach](https://openai.com/index/harness-engineering/)
+uses repository knowledge, execution plans, and automated constraints. These
+examples overlap with XRefKit's goals.
+
+The practical distinction is what XRefKit packages for you to reuse:
+
+| Your question | What XRefKit makes explicit | Benefit for your team |
+| --- | --- | --- |
+| Which procedure and criteria should this task use? | A SkillDefinition records applicability, inputs, outputs, criteria, and knowledge needs. | You can review and reuse the method across recurring tasks. |
+| Which rules and evidence informed the work? | Knowledge is maintained separately from procedures and resolved through stable XIDs; runs can record retrieval and use. | You can update reference material separately and inspect the recorded basis for a result. |
+| What is complete, and what still needs a decision? | Work items, artifacts, concerns, and handoffs have explicit records; `verify` and `close` check workflow-record requirements. | Reviewers can find missing records and unresolved items without reconstructing the whole chat. |
+| Can the next person or AI use the same process? | Repository files and Skill Packages preserve methods and knowledge; CLI/MCP interfaces expose them to compatible clients. | You can carry the working materials into another session or supported client, with its setup and execution responsibilities still explicit. |
+
+For example, your coding harness can implement and test a change while XRefKit
+records the review procedure, applicable domain criteria, evidence, and remaining
+concerns for the next reviewer. The client still runs the model and tools.
+XRefKit's deterministic checks validate the work record; output quality still
+needs appropriate tests and review.
+
+If your existing harness already provides these structures, the overlap may be
+enough for your needs. XRefKit is useful when you want to maintain them as explicit,
+reusable work assets. This is a comparison of mechanisms, not a demonstrated
+quality, cost, or performance advantage over the cited systems.
+
+See the [Skill and Knowledge operating model](docs/core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
+and [Skill operating contract](docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61)
+for the boundaries behind this comparison.
+
 ## Start with one recurring task
 
 Choose a task you already know how to review: a document check, an investigation,
