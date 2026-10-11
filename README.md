@@ -1,5 +1,7 @@
 # XRefKit
 
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/xrefkit?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/xrefkit)
+
 XRefKit is a framework for making AI-assisted work repeatable, reviewable, and
 handoff-ready.
 
