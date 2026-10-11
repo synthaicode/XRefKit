@@ -2,6 +2,14 @@ name: python-skill-brownfield-package
 
 on:
   pull_request:
+    paths:
+      - "packages/xrefkit-skills-brownfield/**"
+      - ".github/workflows/python-skill-brownfield-package.yml"
+      - "tools/inspect_python_artifacts.py"
+      - "xrefkit/**"
+      - "pyproject.toml"
+      - "requirements.txt"
+      - "tools/run_import_smoke.py"
   push:
     tags:
       - "xrefkit-skills-brownfield-v*.*.*"

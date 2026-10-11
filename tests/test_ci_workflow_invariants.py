@@ -51,8 +51,6 @@ def test_only_superseded_pull_request_runs_are_canceled(filename):
         assert data["on"]["push"]["branches"] == ["main"]
     else:
         assert "branches" not in data["on"]["push"]
-    assert "paths" not in data["on"]["pull_request"]
-    assert "paths" not in data["on"]["push"]
 
 
 @pytest.mark.parametrize("filename", PACKAGES)
@@ -73,3 +71,82 @@ def test_release_gates_and_unique_target_names_are_retained(filename):
     names = [job["name"] for job in jobs.values()]
     assert len(set(names)) == len(names)
     assert all(name.startswith(prefix + " / ") for name in names)
+
+
+def accepts_changes(filename, event, files):
+    from fnmatch import fnmatchcase
+
+    config = workflow(filename)["on"].get(event)
+    if config is None:
+        return False
+    if not isinstance(config, dict):
+        return True
+    if "paths" in config:
+        return any(fnmatchcase(path, pattern) for path in files for pattern in config["paths"])
+    return any(not any(fnmatchcase(path, pattern) for pattern in config.get("paths-ignore", []))
+               for path in files)
+
+
+@pytest.mark.parametrize("filename", [*PACKAGES, "xref-check.yml", "pages.yml",
+                                      "xrefkit-skills-xddp-design.yml"])
+def test_readme_only_changes_skip_unrelated_workflows(filename):
+    for event in ("pull_request", "push"):
+        # Tag pushes deliberately do not evaluate GitHub path filters.
+        if event == "push" and "branches" not in workflow(filename)["on"].get(event, {}):
+            continue
+        assert not accepts_changes(filename, event, ["README.md"])
+
+
+@pytest.mark.parametrize("path", ["xrefkit/cli.py", "docs/core/contracts/example.md",
+                                  "skills/example/SKILL.v1.md", "knowledge/example.md",
+                                  "agent/000_agent_entry.md", "tests/test_example.py"])
+def test_readme_exclusion_retains_core_and_governance_checks(path):
+    for event in ("pull_request", "push"):
+        assert accepts_changes("python-package.yml", event, [path])
+        assert accepts_changes("python-package.yml", event, ["README.md", path])
+    assert workflow("python-package.yml")["on"]["push"]["paths-ignore"] == ["README.md"]
+
+
+@pytest.mark.parametrize("package", ["batch-regression", "brownfield", "csharp"])
+def test_skill_packages_cover_own_sources_and_shared_dependencies(package):
+    filename = f"python-skill-{package}-package.yml"
+    for path in [f"packages/xrefkit-skills-{package}/tests/test_package.py",
+                 f".github/workflows/{filename}", "tools/inspect_python_artifacts.py",
+                 "xrefkit/workspace.py", "pyproject.toml", "requirements.txt"]:
+        assert accepts_changes(filename, "pull_request", [path])
+    if package in {"brownfield", "batch-regression"}:
+        assert accepts_changes(filename, "pull_request", ["tools/run_import_smoke.py"])
+    assert not accepts_changes(filename, "pull_request", ["projects/slides-app/src/App.tsx"])
+
+
+def test_slides_inputs_and_pages_manifest_inputs_are_covered():
+    import json
+
+    for event in ("pull_request", "push"):
+        for path in ["projects/slides-app/package.json", "tools/run_quality_gate.py",
+                     "requirements.txt", ".github/workflows/xref-check.yml"]:
+            assert accepts_changes("xref-check.yml", event, [path])
+        assert not accepts_changes("xref-check.yml", event, ["xrefkit/cli.py"])
+    manifest = json.loads((WORKFLOWS.parents[1] / "site/source_manifest.json").read_text())
+    for tree in manifest["trees"]:
+        assert accepts_changes("pages.yml", "push", [tree["source"] + "/index.html"])
+    for path in ["site/source_manifest.json", "site/index.html", "tools/site_build.py",
+                 "tools/site_release_metadata.py", ".github/workflows/pages.yml"]:
+        assert accepts_changes("pages.yml", "push", [path])
+    assert not accepts_changes("pages.yml", "push", ["human-docs/ja/unrelated.md"])
+    data = workflow("pages.yml")
+    assert {"release", "workflow_run", "workflow_dispatch"} <= set(data["on"])
+    condition = data["jobs"]["deploy"]["if"]
+    assert "github.event.workflow_run.conclusion == 'success'" in condition
+    assert "github.event.workflow_run.event == 'push'" in condition
+    assert "startsWith(github.event.workflow_run.head_branch, 'v')" in condition
+    assert "github.event.workflow_run.head_repository.full_name == github.repository" in condition
+
+
+def test_all_workflows_parse_and_sync_still_includes_readme_updates():
+    for path in WORKFLOWS.glob("*.yml"):
+        data = workflow(path.name)
+        assert isinstance(data["on"], dict)
+        assert isinstance(data["jobs"], dict)
+    assert accepts_changes("sync-main-without-mp4.yml", "push", ["README.md"])
+    assert workflow("sync-main-without-mp4.yml")["on"]["push"] == {"branches": ["main"]}
