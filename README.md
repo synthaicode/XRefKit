@@ -14,6 +14,7 @@ work needs to be checked, repeated, or handed to someone else.
 | --- | --- |
 | Stop explaining the same process in every chat | Keep a reusable procedure in a **Skill**, with domain rules and reference material stored separately as **Knowledge**. |
 | Review the basis for a result | Keep outputs, references, judgments, and unresolved concerns in the work record so a reviewer can inspect the evidence. |
+| Get a report you can make a decision from | Connect conclusions to criteria, evidence, limitations, and next actions; reuse an approved report format when consistency matters. |
 | Continue in another session or hand work to a colleague | Record progress, remaining items, and handoff information that the next person or AI can load. |
 | Check whether work is ready to finish | Use workflow-record verification and closure checks to identify missing records and unfinished items before accepting the result. |
 | Keep references usable as documents move | Use stable document identifiers (**XIDs**) to find the procedures and knowledge a task needs. |
@@ -27,8 +28,8 @@ responsible for judging whether the output is correct and suitable for its purpo
 
 ## How does it fit with modern agent harnesses?
 
-**Use XRefKit when you want a repeatable, inspectable work process alongside
-your agent's execution environment.**
+**Use XRefKit to make the conditions behind successful work reusable—and make
+the next result easier for people to judge.**
 
 Modern harnesses already do much more than call a model. Anthropic's
 [Managed Agents architecture](https://www.anthropic.com/engineering/managed-agents)
@@ -46,11 +47,14 @@ The practical distinction is what XRefKit packages for you to reuse:
 | Which procedure and criteria should this task use? | A SkillDefinition records applicability, inputs, outputs, criteria, and knowledge needs. | You can review and reuse the method across recurring tasks. |
 | Which rules and evidence informed the work? | Knowledge is maintained separately from procedures and resolved through stable XIDs; runs can record retrieval and use. | You can update reference material separately and inspect the recorded basis for a result. |
 | What is complete, and what still needs a decision? | Work items, artifacts, concerns, and handoffs have explicit records; `verify` and `close` check workflow-record requirements. | Reviewers can find missing records and unresolved items without reconstructing the whole chat. |
+| Will the report support the same kind of review next time? | Reporting guidance connects conclusions to their basis and limits. Opt-in Knowledge profiles preserve approved output examples, format, granularity, and criteria. | Readers can use a familiar report structure and reviewers can check against an explicit accepted baseline. |
 | Can the next person or AI use the same process? | Repository files and Skill Packages preserve methods and knowledge; CLI/MCP interfaces expose them to compatible clients. | You can carry the working materials into another session or supported client, with its setup and execution responsibilities still explicit. |
 
 For example, your coding harness can implement and test a change while XRefKit
 records the review procedure, applicable domain criteria, evidence, and remaining
-concerns for the next reviewer. The client still runs the model and tools.
+concerns for the next reviewer. The report turns those records into a conclusion
+the reviewer can assess, with the evidence and unresolved decisions close at hand.
+The client still runs the model and tools.
 XRefKit's deterministic checks validate the work record; output quality still
 needs appropriate tests and review.
 
@@ -62,6 +66,39 @@ quality, cost, or performance advantage over the cited systems.
 See the [Skill and Knowledge operating model](docs/core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
 and [Skill operating contract](docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61)
 for the boundaries behind this comparison.
+
+## Turn work records into reports people can act on
+
+A useful report tells the reader what the result supports, what remains uncertain,
+and what decision or action comes next. Once the task's criteria or review gate are
+agreed, XRefKit's reporting guidance makes those relationships explicit. A summary
+finding links to its supporting detail so readers can check the basis without
+reconstructing the conversation. The task determines the report's shape.
+
+For recurring reports, you can opt into a target-specific **Knowledge quality
+profile**. It preserves an approved example, sample inputs, headings, table
+structure, information placement, required detail, and review criteria. Give that
+baseline to the reviewer on subsequent runs, including when the model or session
+changes. Structural checks help detect format differences; independent review
+still judges meaning, readability, and whether the evidence supports the conclusion.
+
+Consider a recurring change-review report: readers can find the affected area,
+finding, evidence, impact, and next action in the agreed places each time. If this
+run lacks evidence for a conclusion, that limit belongs beside the conclusion;
+passing the format check does not make it acceptable.
+
+Feedback can then be directed to the part that needs attention: the current
+output, missing inputs, unclear criteria, or the reusable procedure. Approved
+examples and criteria remain the baseline; changing a procedure requires explicit
+authorization. This connects **execution → evidence → report → human judgment →
+authorized improvement**, giving the team a way to investigate recurring quality
+problems and assess whether a correction helped.
+
+Workflow-record completion, report format, substantive quality, and human
+acceptance remain separate judgments. The controls support repeated review against
+known conditions; they do not by themselves prove consistent quality or less rework.
+See the [reporting contract](docs/core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73)
+and [fixed-output quality protocol](docs/core/contracts/112_fixed_output_quality_protocol.md#xid-F9C2A8D471B0).
 
 ## Start with one recurring task
 
