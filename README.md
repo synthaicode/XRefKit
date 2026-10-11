@@ -2,98 +2,136 @@
 
 [![PyPI Downloads](https://static.pepy.tech/personalized-badge/xrefkit?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/xrefkit)
 
-XRefKit is a framework for making AI-assisted work repeatable, reviewable, and
-handoff-ready.
+**Less effort reconstructing AI work. More attention for the decisions that matter.**
 
-It helps teams structure domain procedures and knowledge so that work can
-record evidence, preserve human judgment, and apply explicit completion checks.
+XRefKit is designed to reduce the cognitive load of directing and reviewing
+AI-assisted work. It keeps reusable procedures, relevant knowledge, progress,
+and evidence in explicit records, then helps present results in a form people
+can understand and check.
 
-## Why XRefKit?
+![Five sources of cognitive load and XRefKit's supporting mechanisms, with reports connecting conclusion, evidence, limits, and next action.](human-docs/en/assets/why_xrefkit_needed/whatis_xrefkit.png)
 
-Experimental local tool: [Attention Pet](projects/attention-pet/README.en.md) helps
-people assess capability sufficiency and lower inference-cost candidates separately.
-Its Model Fit / Cost Fit estimates use uncalibrated profiles; it does not measure internal
-attention or switch models automatically.
+## Why faster AI output can still mean more work for you
 
-### Codex-only preview: Attention Pet
+Generating a result leaves another task: understanding enough of it to decide
+whether to use it. You may have to reconstruct the context, identify claims,
+find supporting sources, and check the revised output again. Nielsen Norman
+Group describes this verification burden in
+[AI Chatbots Discourage Error Checking](https://www.nngroup.com/articles/ai-chatbots-discourage-error-checking/).
 
-Attention Pet is a small local companion for Codex work. It reads the current
-Codex chat's local session record, estimates whether the selected model meets
-the visible work requirements, and shows the result through a compact animated
-pet. It also shows lower inference-cost comparison candidates when the
-experimental profiles support one. The estimate is observational and does not
-change the Codex model, reasoning level, or chat.
+XRefKit addresses five recurring sources of that effort:
 
-It does not measure token usage. It estimates the structural complexity of the
-work context the AI must handle, including retained items, dependencies,
-constraints, decision depth, conflicts, and dispersed evidence. It does not
-read model-internal attention or remaining context-window capacity.
+- **You have to remember what to tell the AI.** Rebuilding instructions from
+  memory makes you responsible for recalling every step and criterion.
+  **Reusable Skills** keep the procedure, required inputs, expected outputs,
+  and criteria available for the next task.
+- **You have to search for the rules behind a result.** Scattered reference
+  material makes you switch between documents and reconnect them yourself.
+  Separate **Knowledge** records and stable identifiers (**XIDs**) let a Skill
+  resolve relevant material and record references for review.
+- **You have to rebuild context after an interruption.** A conversation history
+  leaves you to discover where the work stopped.
+  **Work items and handoff records** preserve progress, open concerns, and next
+  steps that another session or colleague can pick up.
+- **You have to learn how to read each new report.** Changing headings, order,
+  or detail makes you search again for the same information.
+  **Optional approved report profiles** preserve familiar structure and
+  granularity, giving subsequent reviews an explicit baseline.
+- **You have to infer what “done” actually covers.** A completion statement can
+  leave the checks, evidence, and unresolved decisions unclear.
+  **Workflow-record checks and reporting guidance** make those boundaries
+  explicit, while tests and reviewers assess the result itself.
 
-Run it from a Codex terminal in this repository so `CODEX_THREAD_ID` identifies
-the current chat:
+The design principle is to make needed information available for recognition,
+rather than rely on the reader to recall it—a distinction explained in
+[NN/G's recognition and recall guidance](https://www.nngroup.com/articles/recognition-and-recall/).
+These mechanisms support that goal; their effect in XRefKit still needs evaluation
+with users.
 
-```powershell
-python -m xrefkit.attention_pet serve --port 8769
-```
+## Make the report easier to understand—and easier to check
 
-Open the printed `http://127.0.0.1:8769/` address in the Codex browser panel.
-The display follows the browser's preferred language: Japanese is used for a
-Japanese preference, with English as the fallback. Stop the process with
-Ctrl+C.
+A shorter report only helps if it preserves what the reader needs to decide.
+XRefKit's reporting guidance connects the conclusion, its basis, its limits,
+and the next action within the task's own format:
 
-This Codex preview is bound to the chat that launched it. Selecting another
-chat does not move the Pet automatically; launch it again from that chat when
-you want a separate view. The model and reasoning dropdowns only compare
-estimates and do not change the active Codex settings. See the
-[Attention Pet guide](projects/attention-pet/README.en.md) for interpretation,
-limitations, client integration, and API details.
+- **Reduce searching:** put the conclusion and requested decision first.
+  Keep material uncertainty beside the claim it qualifies.
+- **Reduce mental reconstruction:** connect a finding to its evidence and
+  explain why that evidence matters. A file list alone leaves that connection
+  for the reader to make.
+- **Reduce initial overload:** present the decision-relevant summary, with
+  clear links to detailed findings. This applies
+  [progressive disclosure](https://www.nngroup.com/articles/progressive-disclosure/)
+  to report reading; essential caveats remain in the summary.
+- **Reduce relearning:** for recurring outputs, use an approved Knowledge
+  quality profile containing examples, headings, table structure, information
+  placement, detail, and criteria. Structural checks detect format differences;
+  independent review still judges meaning and evidential support.
 
-Using AI for real work creates recurring operating problems:
+For illustration, a change-review summary could read:
 
-![Why XRefKit is needed](human-docs/en/assets/why_xrefkit_needed/whatis_xrefkit.png)
+> **Decision needed:** Hold acceptance until the retry case is checked.
+>
+> **Verified:** The normal path passed against the agreed criteria; the findings
+> link to the test evidence.
+>
+> **Still unknown:** Whether retrying after a timeout creates a duplicate.
+>
+> **Next step:** Test the retry case and return the result for review.
 
-- the AI can act from incomplete context or unsupported guesses
-- procedures, domain facts, and judgment criteria get mixed together in prompts
-- execution, checking, and handoff collapse into one opaque step
-- work becomes hard to continue across agents, humans, or sessions
-- outputs may lack evidence, closure discipline, or auditability
+This example shows where the reader's attention belongs; it is not a universal
+template or a real test result. Plain words, short sections, and explicit
+relationships also follow the direction of
+[W3C's clear-content guidance](https://www.w3.org/WAI/WCAG2/supplemental/objectives/o3-clear-content/).
+That guidance informs presentation, not an accessibility-conformance claim.
 
-XRefKit provides a repository and runtime model for addressing these problems.
+Reader feedback can identify a missing explanation, confusing placement, or
+insufficient evidence. The correction can then target the output, inputs,
+criteria, or procedure. Approved baselines stay intact; procedure changes require
+explicit authorization.
 
-## What it provides
+The purpose is to make informed review less demanding. A familiar layout or a
+passing record check does not establish correctness. See the
+[reporting contract](docs/core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73)
+and [fixed-output quality protocol](docs/core/contracts/112_fixed_output_quality_protocol.md#xid-F9C2A8D471B0).
 
-- **Skills** — reusable procedures expressed as SkillDefinitions
-- **Knowledge** — source-backed domain facts and local rules resolved by XID
-  when a Skill run needs them
-- **Workflow protocol** — recorded progress, deterministic workflow-record
-  verification, and closure checks
-- **Evidence and handoffs** — outputs, judgments, concerns, and decisions that
-  remain reviewable after the work is done
-- **Skill Run Dashboard** — inspect recorded Skill execution state, definition
-  identity, runtime binding, referenced XIDs, evidence, judgments, concerns,
-  and handoffs
-- **XIDs** — stable references for connecting procedures, knowledge, and
-  supporting documents
+## How does XRefKit fit with modern agent harnesses?
 
-The package includes the resolver, Skill runtime, workflow controls, client
-tools, and an optional MCP adapter.
+Modern harnesses already support more than execution. Anthropic describes
+[durable sessions and execution infrastructure](https://www.anthropic.com/engineering/managed-agents)
+as well as [evaluation criteria and structured handoffs](https://www.anthropic.com/engineering/harness-design-long-running-apps).
+OpenAI's [harness engineering approach](https://openai.com/index/harness-engineering/)
+includes repository knowledge, plans, and automated constraints.
 
-Current Skill authoring targets the one-document `skill_definition_v1` format.
-Existing `legacy_split_v1` Skills and unversioned historical run logs remain
-readable during migration. The [Workflow Runtime Binding](docs/core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F)
-defines how instruction-derived `capability`, `tuning`, `responsibility`, and
-`execution_mode` are captured; these are not fixed SkillDefinition properties.
-Knowledge used by a Skill remains separate and is resolved from the XID catalog
-when needed.
+XRefKit's focus is the human effort of directing, understanding, and reviewing
+that work. It packages reusable procedures, separately maintained knowledge,
+work records, and reporting criteria as assets the team can inspect and maintain.
+Repository files and Skill Packages preserve those assets; CLI/MCP interfaces
+make them available to compatible clients.
 
-The [Skill Run Dashboard](docs/guides/086_skill_run_observation_dashboard_usage.md#xid-4A4763A2DE63)
-helps people inspect recorded XID retrieval and use together with the run's
-evidence before a human accepts or hands off the result. The Dashboard reports
-recorded state and missing observations; it does not accept output quality.
+Your coding harness can implement and test a change while XRefKit records the
+applicable review method, references, findings, and open concerns. The report
+then helps a person decide what the result supports and what to do next.
+The client runs the model and tools; XRefKit's `verify` and `close` check
+workflow records, while substantive quality needs appropriate tests and review.
 
-## Quick start
+If your harness already provides this structure, there may be little to add.
+Use XRefKit when you want these work assets and review conventions made explicit
+and reusable. This is a difference in packaged mechanisms and emphasis, not a
+demonstrated advantage in cognitive load, quality, cost, or performance.
 
-XRefKit requires Python 3.11 or later.
+See the [Skill and Knowledge operating model](docs/core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
+and [Skill operating contract](docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61).
+
+## Start with one recurring task
+
+Choose a task you already know how to review: a document check, an investigation,
+or a development handoff. Start with one procedure and the reference material it
+needs, then use the resulting work record to decide what to improve.
+
+### 1. Prepare your workspace
+
+You need Python 3.11 or later. Run these commands in the folder where you want to work:
 
 ```powershell
 python -m pip install xrefkit
@@ -101,87 +139,78 @@ xrefkit init
 xrefkit --help
 ```
 
-For local development:
+Initialization creates the local XRefKit configuration and missing AI startup
+files while preserving existing startup files. See the
+[installation and Skill Package guide](docs/guides/089_xrefkit_package_first_registration.md#xid-4F8C2A7D1E90)
+to add reusable Skills or bring existing material into your workspace.
 
-```powershell
-python -m pip install -e .
-xrefkit init
-```
+### 2. Connect your AI tool
 
-For the optional MCP server:
-
-```powershell
-python -m pip install "xrefkit[mcp]"
-xrefkit mcp serve --repo . --transport stdio
-```
-
-This command starts the optional catalog and runtime MCP adapter. This checkout
-does not implement management upload, staging, sealing, review, or adoption of
-uploaded SkillDefinition bytes into the active catalog.
-
-To connect VS Code/Copilot, run from your target workspace:
+For VS Code/Copilot, install the optional MCP integration and generate a setup proposal:
 
 ```powershell
 python -m pip install "xrefkit[mcp]"
 python -m xrefkit mcp setup --repo . --output .xrefkit/setup-review
+```
+
+Review the generated files, then apply the setup:
+
+```powershell
 python -m xrefkit mcp setup apply --repo . --source .xrefkit/setup-review
 ```
 
-Review the generated files before applying them, open the workspace in VS Code,
-and start the `xrefkit` MCP server. In Copilot chat, ask: "Call XRefKit's
-get_startup_context and help me get started." The AI receives any needed legacy
-migration guidance; you can describe your goal without specifying Skill names.
-Opening VS Code alone does not guarantee an AI conversation starts.
+Open the workspace in VS Code, start the `xrefkit` MCP server, and ask in Copilot chat:
 
-## Where to go next
+> Call XRefKit's get_startup_context and help me get started.
 
-- [Install XRefKit and register Skill Packages](docs/guides/089_xrefkit_package_first_registration.md#xid-4F8C2A7D1E90)
-- [Understand the workflow protocol](docs/guides/087_workflow_protocol_sequence_for_humans.md#xid-E8B4D2F19A63)
-- [Use an instruction-backed workflow](docs/guides/088_instruction_workflow_protocol.md#xid-9F4C2A7D1B60)
-- [Understand Skills and Knowledge](docs/core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
-- [Read the SkillDefinition v1 contract](docs/core/contracts/096_skill_definition_contract.md#xid-E6A19D4B72C3)
-- [Author a Skill with xref](docs/guides/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B)
-- [Browse the complete documentation index](docs/000_index.md#xid-56DD6EB68343)
+Then describe the task you want to accomplish. You do not need to know a Skill
+name to ask for guidance. Opening VS Code alone does not start the conversation.
 
-## Security
+For an MCP client that accepts a local server command, the server entry point is:
 
-XRefKit does not require provider API keys to explore or install the package.
-Do not commit secrets, API keys, access tokens, `.env` files, or provider
-credentials. Authenticate external AI tools through their official provider
-mechanisms.
-
-## Repository Skill adoption and scoped source-analysis knowledge
-
-This repository uses the audited canonical Skill sources listed in
-`skills/repository_adoption.json`. Legacy source identities remain aliases;
-external legacy split Skills and YAML Skill Packages remain supported. See
-[SkillDefinition adoption](docs/core/contracts/096_skill_definition_contract.md#xid-E6A19D4B72C3).
-The source-analysis common XID remains stable and routes coherent criteria
-fragments on demand. Narrow tasks avoid unrelated bodies; full reviews retain
-every required axis. No similarity-based knowledge merge or deletion occurs.
-
-## Public website release metadata
-
-The Pages workflow builds from `main`, verifies the checked-in site against
-`site/sources`, then fetches GitHub's latest published stable release and runs
-`tools/site_release_metadata.py` on the deployment artifact. It updates the
-homepage version, UTC publication date and release link, plus the foundation
-page's release-source link. The checked-in HTML is an offline snapshot; it is
-not rewritten or committed by deployment. Editorial development notes are
-maintained separately and are not inferred from release metadata.
-
-Pages runs on main pushes, release publication/changes, manual dispatch, and
-successful repository push runs of `python-package`. The last trigger covers
-releases created using `GITHUB_TOKEN`, which do not trigger another release
-workflow. Deployment always checks out main, never a workflow-run/PR artifact.
-API failure, a draft/prerelease, an unexpected version tag, or missing page
-markers stops publication and leaves the previous deployed site in place.
-
-To reproduce the rendering after building a site into a separate directory:
-
-```sh
-gh api repos/synthaicode/XRefKit/releases/latest > release.json
-python tools/site_release_metadata.py --site .generated-site --release-json release.json --repository synthaicode/XRefKit
+```powershell
+xrefkit mcp serve --repo . --transport stdio
 ```
 
-Use the Pages workflow's manual dispatch to retry a failed metadata fetch.
+### 3. Review the work and decide what comes next
+
+Use the [Skill Run Dashboard](docs/guides/086_skill_run_observation_dashboard_usage.md#xid-4A4763A2DE63)
+to inspect recorded progress, referenced knowledge, outputs, concerns, and
+handoffs. It shows what was recorded and where observations are missing; you
+decide whether the result is ready to use.
+
+The [workflow walkthrough](docs/guides/087_workflow_protocol_sequence_for_humans.md#xid-E8B4D2F19A63)
+explains how work moves from a request to verification and handoff.
+
+## Choose your next step
+
+- **Use existing procedures:** [Install and register Skill Packages](docs/guides/089_xrefkit_package_first_registration.md#xid-4F8C2A7D1E90).
+- **Organize a task from your own instructions:** [Use an instruction-backed workflow](docs/guides/088_instruction_workflow_protocol.md#xid-9F4C2A7D1B60).
+- **Capture your team's way of working:** [Understand Skills and Knowledge](docs/core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8), then [author a Skill](docs/guides/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B).
+- **Explore the details:** [Browse the documentation](docs/000_index.md#xid-56DD6EB68343).
+
+## Optional: explore model fit with Attention Pet
+
+The experimental [Attention Pet](projects/attention-pet/README.en.md) companion
+helps Codex users inspect estimates of model suitability and compare lower-cost
+candidates using the visible work context. Run it from a Codex terminal in this repository:
+
+```powershell
+python -m xrefkit.attention_pet serve --port 8769
+```
+
+Open the printed address in the Codex browser panel. The preview follows the chat
+that launched it. Its estimates are uncalibrated; it does not measure internal
+attention or token usage, and it does not change your model settings.
+
+## Contribute or maintain a deployment
+
+For local development, install this checkout with `python -m pip install -e .`.
+The [pipeline dependency reference](docs/reference/125_pipeline_dependency_matrix.md#xid-7E4B19C2A860)
+describes CI and publication triggers. Internal authoring and runtime details are
+in the [SkillDefinition contract](docs/core/contracts/096_skill_definition_contract.md#xid-E6A19D4B72C3)
+and [Workflow Runtime Binding contract](docs/core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F).
+
+XRefKit does not require provider API keys to install or explore the package.
+Authenticate your AI tool through its provider's supported methods, and keep
+secrets and access tokens out of the repository.
