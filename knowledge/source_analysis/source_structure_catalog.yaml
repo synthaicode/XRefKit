@@ -44,8 +44,8 @@ findings:
     title: XRefKit Python client work management structure findings
     analysis_kinds: [python_structure, client_work_management]
     status: current
-    source_revision: "3198070c3fd195e347358de0c2af1cbac86760c1"
+    source_revision: "working tree based on a5e3b3549232dd5d21f998cd2cf751b6d67d4219; raw source hashes in findings"
     last_verified: 2026-10-11
-    coverage: Nine modules covering client plans, runs, Markdown, Azure test capture/binding, offline candidate, scoped delivery and reconciliation.
+    coverage: Nine modules covering client plans, optional work packages, runs, Markdown/Mermaid, Azure test capture/binding, offline candidate, scoped delivery and reconciliation.
     unresolved_verification: Generic write targets, production, live fault injection, multi-host locks and shared artifact access remain unverified/outside scope.
     detail_path: knowledge/source_analysis/173_xrefkit_python_client_work_structure_findings.md

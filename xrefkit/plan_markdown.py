@@ -13,7 +13,7 @@ from urllib.parse import quote, urlencode, urlsplit, urlunsplit
 from xrefkit.plan_observation import artifact_path, resolve_mapping
 from xrefkit.work_management import (
     confined_directory, load_workspaces, read_json, safe_external_url,
-    MAX_RECORDS, task_counts, validate_plan_v2, writer_lock,
+    MAX_RECORDS, task_counts, package_task_counts, validate_plan_v2, writer_lock,
 )
 
 PREFIX = "<!-- xrefkit-plan-projection:v1 "
@@ -21,6 +21,7 @@ MAX_PROJECTION_BYTES = 8 * 1024 * 1024
 LABELS = {"step_id": "作業ID", "status": "状態（記録値）", "status_evidence": "状態の証跡", "planned_skill": "予定Skill", "agent": "担当Agent", "completion_criterion": "完了条件", "candidate_version": "対象版", "revalidation_needed": "再検証の必要性", "revalidation_evidence": "再検証の証跡", "impact_status": "変更影響", "pbi_ids": "対応PBI", "validation_records": "検証記録", "dependencies": "依存関係", "outputs": "成果物", "artifact_refs": "参照資料", "judgment_refs": "判断記録", "concern_refs": "懸念記録", "confirmation_id": "確認ID", "question": "確認内容", "answer": "回答", "answer_ref": "回答の参照", "answer_status": "回答状態", "application_status": "反映状態", "application_evidence": "反映の証跡", "decision_ref": "判断の参照", "step_ids": "対象作業", "pbi_id": "PBI ID", "title": "名称", "purpose": "目的", "acceptance_criteria": "受入条件", "acceptance_status": "受入状態（記録値）", "acceptance_evidence": "受入の証跡", "priority": "優先度", "owner": "担当", "external_ref_ids": "外部参照ID", "external_ref_id": "外部参照ID", "service": "サービス", "organization": "組織", "project": "プロジェクト", "item_id": "項目ID", "url": "参照先", "revision": "版", "type_mapping": "種類の対応", "state_mapping": "状態の対応", "ownership_ref": "所有者の参照", "last_read_at": "読取日時", "last_success_at": "最終成功日時", "sync_status": "同期状態（記録値）", "pending_summary": "未反映内容", "recorded_at": "記録日時", "candidate_version": "対象版", "result": "検証結果（記録値）", "evidence_ref": "証跡", "baseline_id": "基準版ID", "source": "出典", "docs_revision": "文書版", "code_revision": "コード版", "acquired_at": "取得日時", "mismatches": "不一致", "artifacts": "基準資料", "change_id": "変更ID", "scope_in": "対象範囲", "scope_out": "対象外", "assumptions": "前提", "constraints": "制約", "exit_criteria": "終了条件", "decision_owner": "判断担当", "review_owner": "レビュー担当", "acceptance_owner": "受入担当", "quality_conditions": "品質条件", "condition_id": "条件ID", "verification_method": "確認方法", "reviewer": "確認担当", "evidence_refs": "証跡"}
 LINK_FIELDS = {"status_evidence", "revalidation_evidence", "answer_ref", "application_evidence", "decision_ref", "acceptance_evidence", "ownership_ref", "evidence_ref", "source"}
 LABELS.update({"reason": "確認する理由", "resolver": "回答担当", "due_at": "期限", "version_refs": "対象版", "impact": "影響", "application": "回答の反映", "text": "回答内容", "responder": "回答者", "target_refs": "反映先", "verified_by": "反映確認者", "validation_id": "検証ID", "target_version": "検証対象版", "environment": "検証環境", "input_data": "入力", "expected_result": "期待結果", "kind": "依存の種類", "recorded_at": "記録日時"})
+LABELS.update({"work_package_id": "作業パッケージID", "expected_output": "期待成果物", "depends_on": "依存するパッケージ", "verification": "成果確認（記録値）"})
 
 
 def text(value: object) -> str:
@@ -150,6 +151,40 @@ def render_body(root: Path, source: Path, plan: dict, *, base: str | None = None
               "件数は工数・残日数・品質承認ではありません。完了記録と証跡・版の確認を分けて表示します。", "", "## 工程別一覧", ""]
     lines[lines.index("## 工程別一覧"):lines.index("## 工程別一覧")] = [f"承認状態（記録値）: {text(plan.get('approval_status'))} ／ 証跡: {local_link(root, output, plan.get('approval_evidence'))}", ""]
     ids = {step["step_id"]: f"task-{index}" for index, step in enumerate(plan["steps"])}
+    packages = plan.get("work_packages")
+    if packages is not None:
+        lines.remove("## 工程別一覧")
+        lines += ["## 作業パッケージ", "", "所属Taskの完了と成果確認は別です。成果確認は記録値であり、現在の着手可否やPBI受入を意味しません。", ""]
+        for index, package in enumerate(packages):
+            c = package_task_counts(plan, package)
+            verification = package.get("verification", {}).get("status")
+            confirmed = {"verified": "確認済み", "not_verified": "未確認", "revalidation_needed": "再確認必要"}.get(verification, "未記録")
+            lines += [f"### パッケージ {index}: {text(package['title'])}", "", f"予定 {c['current']} ／ 記録上の完了 {c['completed']} ／ 残り {c['remaining']} ／ 再検証待ち {c['revalidation']}", "", f"所属Taskすべて完了: {'はい' if c['remaining'] == 0 else 'いいえ'} ／ 成果確認（記録値）: {confirmed}", ""]
+            if c["remaining"] and verification == "verified":
+                lines += ["過去の成果確認記録が残っています。未完了・再検証中のTaskがあるため、現在の成果確認済みとは読み替えません。", ""]
+            lines += record_lines(root, output, package)
+            lines += ["", "所属Task:", ""] + [f"- [{text(member)}](#{ids[member]})" for member in package["step_ids"]] + [""]
+        lines += ["## PBI・パッケージ・Taskの所属", "", "線は所属のみを示します。作業順序は別の依存図に記録します。", "", "```mermaid", "flowchart TB"]
+        pbi_nodes = {pbi["pbi_id"]: f"p{index}" for index, pbi in enumerate(plan["pbis"])}
+        for pbi in plan["pbis"]:
+            lines.append(f'  {pbi_nodes[pbi["pbi_id"]]}["PBI: {mermaid_label(pbi["title"])}"]')
+        for index, package in enumerate(packages):
+            lines.append(f'  w{index}["{mermaid_label(package["title"])}"]')
+            lines.append(f'  {pbi_nodes[package["pbi_id"]]} --- w{index}')
+            for member in package["step_ids"]:
+                lines.append(f'  w{index} --- m{ids[member].removeprefix("task-")}["{mermaid_label(member)}"]')
+        if not plan["pbis"] and not packages:
+            lines.append('  empty["所属の記録なし"]')
+        lines += ["```", "", "## パッケージ成果の依存関係", "", "矢印は明示された先行パッケージの成果への依存です。Taskの順序や着手可能性へ展開しません。", "", "```mermaid", "flowchart LR"]
+        package_nodes = {package["work_package_id"]: f"w{index}" for index, package in enumerate(packages)}
+        for package in packages:
+            lines.append(f'  {package_nodes[package["work_package_id"]]}["{mermaid_label(package["title"])}"]')
+        for package in packages:
+            for dependency in package["depends_on"]:
+                lines.append(f'  {package_nodes[dependency]} --> {package_nodes[package["work_package_id"]]}')
+        if not packages:
+            lines.append('  empty["パッケージの記録なし"]')
+        lines += ["```", "", "## 工程別一覧", ""]
     for stage in plan["stages"]:
         steps = [step for step in plan["steps"] if step["stage_id"] == stage["stage_id"]]
         c = task_counts({**plan, "steps": steps})
@@ -160,10 +195,12 @@ def render_body(root: Path, source: Path, plan: dict, *, base: str | None = None
     nodes = {step["step_id"]: f"n{index}" for index, step in enumerate(plan["steps"])}
     external = {ref["external_ref_id"]: f"e{index}" for index, ref in enumerate(plan["external_refs"])}
     used_external = {dep["external_ref_id"] for step in plan["steps"] for dep in step["dependencies"] if dep["kind"] == "external"}
-    for index, stage in enumerate(plan["stages"]):
-        lines.append(f'  subgraph s{index}["{mermaid_label(stage["title"])}"]')
+    groups = packages if packages is not None else plan["stages"]
+    for index, group in enumerate(groups):
+        lines.append(f'  subgraph s{index}["{mermaid_label(group["title"])}"]')
         for step in plan["steps"]:
-            if step["stage_id"] == stage["stage_id"]:
+            member = step["step_id"] in group["step_ids"] if packages is not None else step["stage_id"] == group["stage_id"]
+            if member:
                 label = f'{step["title"]} / {status(step.get("status"))} / 再検証:{revalidation(step.get("revalidation_needed"))}'
                 lines.append(f'    {nodes[step["step_id"]]}["{mermaid_label(label)}"]')
         lines.append("  end")

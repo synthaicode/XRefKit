@@ -17,6 +17,8 @@ MAX_TASKS = 500
 WRITER_FIELDS = {"observation_revision", "observation_history", "report_sha256"}
 PLAN_KEYS = {"schema_version", "workspace_id", "repository_root", "plan_id", "plan_revision", "title", "source", "approval_status", "approval_evidence", "project", "change", "baseline", "stages", "steps", "pbis", "confirmations", "external_refs", "initial_task_ids", "previous_plan_revision", "knowledge_refs", "report_id", "recorded_at"} | WRITER_FIELDS
 TASK_KEYS = {"step_id", "title", "stage_id", "dependencies", "status", "status_evidence", "planned_skill", "agent", "completion_criterion", "outputs", "runs", "pbi_ids", "candidate_version", "revalidation_needed", "revalidation_evidence", "impact_status", "validation_records", "judgment_refs", "concern_refs", "predecessor_step_ids", "artifact_refs"}
+PLAN_KEYS.add("work_packages")
+PACKAGE_KEYS = {"work_package_id", "title", "pbi_id", "purpose", "expected_output", "step_ids", "completion_criterion", "depends_on", "review_owner", "verification"}
 
 
 def string(value: object) -> bool:
@@ -228,6 +230,8 @@ def validate_plan_v2(plan: object, *, stored: bool = False) -> list[str]:
     stage_ids = _ids(stages, "stage_id", "stages", issues)
     pbi_ids = _ids(pbis, "pbi_id", "pbis", issues)
     step_ids = _ids(steps, "step_id", "steps", issues)
+    if "work_packages" in plan:
+        _validate_packages(plan, steps, step_ids, pbi_ids, issues)
     external_ids = _ids(external, "external_ref_id", "external refs", issues)
     _ids(confirmations, "confirmation_id", "confirmations", issues)
     for ref in external:
@@ -363,7 +367,74 @@ def plan_definition(plan: dict) -> dict:
     static_task = {"step_id", "title", "stage_id", "dependencies", "completion_criterion", "planned_skill", "pbi_ids", "predecessor_step_ids"}
     result["steps"] = [{key: value for key, value in step.items() if key in static_task} for step in plan["steps"]]
     result["pbis"] = [{key: value for key, value in pbi.items() if key not in {"acceptance_status", "acceptance_evidence"}} for pbi in plan["pbis"]]
+    if "work_packages" in plan:
+        result["work_packages"] = [{key: value for key, value in package.items() if key != "verification"} for package in plan["work_packages"]]
     return result
+
+
+def _validate_packages(plan, steps, step_ids, pbi_ids, issues):
+    packages = _records(plan, "work_packages", "plan", issues, required=True, limit=MAX_TASKS)
+    package_ids = _ids(packages, "work_package_id", "work packages", issues)
+    memberships = []
+    graph = {}
+    tasks = {step["step_id"]: step for step in steps if string(step.get("step_id"))}
+    for package in packages:
+        _object(package, PACKAGE_KEYS, PACKAGE_KEYS - {"step_ids", "depends_on", "verification"}, "work package", issues)
+        if not string(package.get("pbi_id")) or package["pbi_id"] not in pbi_ids:
+            issues.append("work package: PBI reference unavailable")
+        members = _strings(package, "step_ids", "work package", issues, required=True)
+        if not members:
+            issues.append("work package.step_ids: nonempty membership required")
+        memberships.extend(members)
+        for member in members:
+            if member not in step_ids:
+                issues.append(f"work package: missing task {member}")
+            elif isinstance(tasks[member].get("pbi_ids"), list) and tasks[member]["pbi_ids"] and package.get("pbi_id") not in tasks[member]["pbi_ids"]:
+                issues.append("work package: task PBI association conflicts with package parent")
+        dependencies = _strings(package, "depends_on", "work package", issues, required=True)
+        if len(dependencies) != len(set(dependencies)):
+            issues.append("work package.depends_on: duplicate dependency")
+        for dependency in dependencies:
+            if dependency not in package_ids:
+                issues.append(f"work package: missing dependency {dependency}")
+        if string(package.get("work_package_id")):
+            graph[package["work_package_id"]] = dependencies
+        verification = package.get("verification")
+        if "verification" in package and _object(verification, {"status", "reviewer", "recorded_at", "evidence_refs"}, {"status"}, "package verification", issues):
+            _optional_strings(verification, {"reviewer"}, "package verification", issues)
+            _time(verification.get("recorded_at"), "package verification.recorded_at", issues)
+            evidence = _strings(verification, "evidence_refs", "package verification", issues)
+            if not string(verification.get("status")) or verification["status"] not in {"verified", "not_verified", "revalidation_needed"}:
+                issues.append("package verification: unsupported status")
+            if verification.get("status") == "verified" and (not evidence or not string(verification.get("reviewer")) or verification.get("reviewer") != package.get("review_owner") or verification.get("recorded_at") is None):
+                issues.append("package verification: verified requires designated reviewer, timestamp and evidence")
+    if len(memberships) != len(set(memberships)):
+        issues.append("work packages: task membership must be unique")
+    if set(memberships) != step_ids:
+        issues.append("work packages: every current task must belong to exactly one package")
+    # Iterative traversal keeps validation bounded even at the package limit.
+    visiting, visited = set(), set()
+    for start in graph:
+        stack = [(start, False)]
+        while stack:
+            node, exiting = stack.pop()
+            if exiting:
+                visiting.discard(node)
+                visited.add(node)
+            elif node in visiting:
+                issues.append("work packages: dependency cycle")
+                return
+            elif node not in visited and node in graph:
+                visiting.add(node)
+                stack.append((node, True))
+                stack.extend((dependency, False) for dependency in reversed(graph[node]))
+
+
+def package_task_counts(plan: dict, package: dict) -> dict:
+    """Count member tasks only; no inference of package verification or acceptance."""
+    members = set(package["step_ids"])
+    subset = {"steps": [step for step in plan["steps"] if step["step_id"] in members]}
+    return task_counts(subset)
 
 
 def task_counts(plan: dict) -> dict:

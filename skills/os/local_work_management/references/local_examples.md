@@ -98,6 +98,22 @@ inputs, never environment-specific public examples.
   "initial_task_ids": [
     "design",
     "test"
+  ],
+  "work_packages": [
+    {
+      "work_package_id": "WP-local",
+      "title": "Local management",
+      "pbi_id": "local-pbi",
+      "purpose": "Persist and inspect local work",
+      "expected_output": "Local plan and readable view",
+      "step_ids": [
+        "design",
+        "test"
+      ],
+      "completion_criterion": "Local save and view verified against approved criteria",
+      "depends_on": [],
+      "review_owner": "Designated reviewer"
+    }
   ]
 }
 ```
@@ -106,26 +122,17 @@ For an actual new observation, preserve definition fields, use a new report_id,
 recorded_at, verified status/evidence and the current expected revision. Submit
 only actual evidence; render uses the stored JSON path returned by record.
 
-## Supplemental approved source layout
+## Automatic package projection
 
-Author this separately as source.md from actual approved input; this fictional
-layout is not a PLAN.json schema extension or recorded completion evidence.
+The structured package above spans design and test stages. Recording the adapted
+JSON automatically generates membership and separate dependency diagrams, package
+Task counts and explicit package verification. No supplemental diagram editing is
+needed. A legacy plan may omit work_packages and retains stage-based projection.
 
-| Package ID | Title / purpose / output | Task IDs | Completion criterion | Dependencies | Confirmation owner |
-| --- | --- | --- | --- | --- | --- |
-| WP-local | Local management / persist and inspect local work / local plan and view | design, test | Local save and view verified against approved criteria | None recorded | Designated reviewer |
-
-Record task completion and package criterion verification as separate indicators
-with evidence references. The IDs must match the actual saved plan; this example
-must be adapted rather than submitted unchanged.
-
-```mermaid
-flowchart TB
-    P["PBI: approved outcome"] --> W["WP-local: local management"]
-    W --> T1["design"]
-    W --> T2["test"]
-```
-
-Arrows above show membership only, not execution order. Real task dependencies
-remain the recorded dependency graph. The current automatic projection does not
-consume this table or generate this package hierarchy.
+For an actual package verification observation, add `verification` with status
+`verified`, reviewer exactly matching review_owner, a timezone-aware recorded_at
+and nonempty evidence_refs. These are actual reviewer/evidence declarations,
+never fictional completion proof. Task status and PBI acceptance stay separate.
+Changing member IDs, criteria or other package definition fields needs a new plan
+revision; changing verification alone uses a new report and current expected
+observation revision. Generated Markdown is a protected derived view.

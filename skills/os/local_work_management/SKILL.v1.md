@@ -14,7 +14,7 @@ outputs:
 criteria:
 - id: work_package_assignment
   statement: Approved work packages share one purpose and result; each task belongs to exactly one package, counts use tasks only, and package verification remains distinct from task completion.
-  verification: Inspect the approved source table, task membership and both completion indicators; reject unsupported structured package fields.
+  verification: Inspect saved work_packages, exact Task coverage, both completion indicators and automatic projections.
 - id: local_independence
   statement: Local registration, recording, rendering and completion verification require no Azure connection, PAT, browser or monitor.
   verification: Execute the local-only fixture and inspect imports and generated output.
@@ -53,8 +53,8 @@ Record missing approvals or evidence explicitly rather than generating them.
 Prepare concrete work items and local evidence links. Before submission, group
 the approved tasks by purpose and result using the operating model work-package
 definition. Record package ID, title, purpose, output, task IDs, completion
-criterion, dependencies and confirmation owner in a separate local approved
-breakdown Markdown. Verify unique package IDs, exactly one membership per task
+criterion, dependencies and confirmation owner in approved breakdown and the
+structured work_packages submission. Verify unique package IDs, exactly one membership per task
 and complete coverage of the approved task set. Record missing decisions explicitly.
 Use that breakdown as the plan `source`; if other approved sources exist, link
 them from the breakdown instead of discarding them. Changing an existing plan
@@ -74,10 +74,11 @@ to the selected root; examples are not authorization or completion evidence.
    source/baseline/candidate versions and evidence references. External references
    may be empty. New work definitions require a new explicit plan revision;
    preserve predecessor linkage instead of rewriting existing topology.
-   Schema v2 has no work-package field: do not add unsupported fields or rename
-   stages as packages. Keep package definitions in the approved source Markdown.
-   A supplemental authored PBI -> package -> Task Mermaid can accompany that
-   source; it is not an automatically generated or authoritative status view.
+   Store approved packages in optional `work_packages` using the operating model
+   schema, with exact PBI and Task references. When present, each Task belongs
+   exactly once; packages may span stages. Omit the field for an existing legacy
+   plan without approved grouping. Adding or changing package definitions requires
+   a new plan revision; never rename stages to represent packages.
 3. Record the initial plan with
    `python -m xrefkit.work_management record --root ROOT --input PLAN.json --expected-observation-revision 0`.
    For observations, read the current stored revision and use that exact expected
@@ -89,7 +90,8 @@ to the selected root; examples are not authorization or completion evidence.
    Read the returned stored JSON path before deciding another action. Exact replay
    retains history and projects the current stored snapshot rather than rolling back.
 5. Inspect adjacent generated Markdown: total/completed/remaining counts, stage
-   rows, dependency Mermaid, selected step evidence and confirmation links.
+   rows, package counts and explicit verification, membership and dependency
+   Mermaid, selected step evidence and confirmation links.
    To regenerate only the projection, use
    `python -m xrefkit.work_management render --root ROOT --input STORED_PLAN.json`.
    This calls `plan_markdown.regenerate`; use stored JSON, not an unsaved submission.
@@ -116,9 +118,11 @@ missing evidence alone does not rewrite recorded status.
 Before completion, verify package membership against the saved task IDs and
 report task completion counts separately from package completion verification.
 All member tasks done does not establish the package criterion or PBI acceptance.
-Read the supplemental source independently; the generated Markdown remains
-stage-based and does not currently project packages. Hand off structured package
-persistence and automatic package projection as implementation gaps when required.
+Record package verification only from actual designated-owner evidence using
+`verification`; never infer it from Task counts. Preserve historical verification
+when Tasks reopen and inspect the warning in generated Markdown. Verify PBI
+membership, package-result dependencies and Task dependencies as separate views.
+Source Markdown supplies approved planning basis; stored JSON owns live state.
 
 Before completion, verify stored JSON, current projection, preserved history
 and explicit unresolved confirmations/revalidation. Record paths, identities,

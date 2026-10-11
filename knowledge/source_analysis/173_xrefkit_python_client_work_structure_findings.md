@@ -5,13 +5,13 @@
 
 ## Status, target and source basis
 
-Current bounded source finding refreshed on 2026-10-11 through product implementation commit `3198070`. Target identity `E9A4C7B2106C` is `repository:XRefKit`, nine Python client-work runtime modules. Producer is instruction-backed source inspection under `skill_flow_authoring`, with `knowledge_ontology_management` authorized canonical extension. This is not a .NET source_structure_overview run or a claim of production acceptance. Checkout byte hashes below identify inspected source, including line endings rather than Git blob hashes. Unrelated Skill adoption/governance implementation is outside this finding.
+Current bounded source finding refreshed on 2026-10-11 against working tree based on `a5e3b354`, including the package extension. Target identity `E9A4C7B2106C` is `repository:XRefKit`, nine Python client-work runtime modules. Producer is instruction-backed source inspection under `skill_flow_authoring`, with `knowledge_ontology_management` authorized canonical extension. This is not a .NET source_structure_overview run or a claim of production acceptance. Checkout byte hashes below identify inspected source, including line endings rather than Git blob hashes. Unrelated Skill adoption/governance implementation is outside this finding.
 
 ## Runtime units and composition
 
 | Unit | Current responsibility and pivots |
 | --- | --- |
-| `xrefkit/work_management.py` | Registered workspace/v2 plan validation, confinement, immutable definition per revision, observation/hash/history and counts; `register_workspace`, `record_plan`, `task_counts` |
+| `xrefkit/work_management.py` | Registered workspace/v2 plan validation, confinement, immutable definition per revision, observation/hash/history and counts; `register_workspace`, `record_plan`, `task_counts`, `package_task_counts` |
 | `xrefkit/plan_observation.py` | Legacy/v2 loading and exact run/repository/correlation mapping; `resolve_mapping` never invents runs or approval |
 | `xrefkit/plan_markdown.py` | Derived owned adjacent Markdown/Mermaid, provenance, confined local links and optional explicit monitor; `render_body`, `publish_projection` |
 | `xrefkit/azure_connection.py` | Immutable workspace profile, credential-name reference, operations/IDs and test probe; `validate_profile`, `register_connection`, `load_connection`, `read_check` |
@@ -27,7 +27,7 @@ Standard-library/local function composition supplies this subsystem. There is no
 
 1. Workspace registration validates exact ID/root/session scope and repository confinement, locks the registry, refuses changed identity and atomically publishes hash-named JSON. Loaders separately confine fixed local paths; there is no global workspace fallback.
 2. Plan recording validates v2 identity and expected observation revision, locks records, checks exact report replay and immutable definition, retains bounded observations and atomically publishes JSON. Owned Markdown projection is attempted under the lock with its own outcome; hand-authored/edited Markdown is preserved. Replay regenerates from current stored JSON, not an obsolete caller snapshot.
-3. Counts project unique steps: explicit `done` without `revalidation_needed:true` counts completed. Runs/retries are not extra steps. Original/add/remove counts require `initial_task_ids`. PBI acceptance is separate. Mermaid uses safe node identities/labels and dependency edges with stage counts, source/run links and ordinary confined file links.
+3. Counts project unique steps: explicit `done` without `revalidation_needed:true` counts completed. Runs/retries are not extra steps. Original/add/remove counts require `initial_task_ids`. PBI acceptance is separate. Optional work_packages enforce unique exhaustive Task membership, PBI parents and acyclic package-result dependencies. Package structural fields join the immutable definition; verification is an explicit designated-owner observation. Mermaid uses safe node identities/labels, separate membership/result/Task dependency views, package groups and independent stage counts. Legacy plans without packages retain their original hashes and stage grouping.
 4. Profile registration is immutable local publication. Read profiles allow explicitly selected test IDs. Write profiles require exactly operations `read_work_item`, `update_task_state_history` and item set `{10,21}`. Production network operations are refused before credential/network work.
 5. Read probe verifies bounded revision/type/state/project/identity through exact HTTPS API 7.1 endpoints. Capture additionally projects title, description, PBI acceptance criteria/priority, parent and safe URL data. PBI self-URL may establish project GUID; Task/self/parent identities must agree. Related URLs are not followed.
 6. Capture makes one GET per selected ID. Partial results retain acquired observations; authentication rejection stops later reads. Exact capture replay uses no new credentials/network. Local binding requires a complete capture, every selected Task once, disjoint nonempty included steps, explicit approval references and completion criteria. It seals capture/plan hashes and identities without altering the plan or observations. Comparison capture selects an explicit binding, retaining baseline and recording changes/incomplete results for resolution.
@@ -71,7 +71,7 @@ The finding supports operation selection and changes within the nine-module scop
 ## Sources
 
 - source_type: repository_source
-- source_revision: `3198070`
+- source_revision: working tree based on `a5e3b354`; exact inspected checkout hashes below
 - source_path: nine runtime units above and corresponding tests
 - source_locator: module pivots and data-flow traces above
 - inspected_at: 2026-10-11
@@ -82,9 +82,9 @@ These are checkout bytes including line endings, not Git blob hashes.
 
 | Path | SHA256 |
 | --- | --- |
-| xrefkit/work_management.py | 8be833e80b80a72663688c67ccc0284942703656966863a87f14a7814313f80d |
+| xrefkit/work_management.py | b2015f1da3601258f7947aadeb142ad5ca546cb1ecfc1861d2eb2160409087e4 |
 | xrefkit/plan_observation.py | c72d306de61c779084c8a697c93f84f8992fcfb5fa3969313c79e157a6befab4 |
-| xrefkit/plan_markdown.py | 6ddd5d9a58ce41bc94a23d1dafdb86f5225d093be849c3a04c9e78f2cbb049cb |
+| xrefkit/plan_markdown.py | df9a4b89fb831d27be5b820dd2a8dd8282eaf4739543c7220c2241a24c7bd19d |
 | xrefkit/azure_connection.py | f0cb3d2e0b7da626fb31e42dc086430dbe7f1fd018d0346785b22fa33545fb89 |
 | xrefkit/azure_update_candidate.py | 2b091e236044370a150b01a2739c63fb194dc9c824f6e9bb9f11a264f087be01 |
 | xrefkit/azure_import.py | 312358bb150ebcb1e1f5d99c747057c3acc92bd73709c75dc71dfc13bf6e6493 |
