@@ -2,124 +2,124 @@
 
 [![PyPI Downloads](https://static.pepy.tech/personalized-badge/xrefkit?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/xrefkit)
 
-**Spend less effort keeping track of AI-assisted work, and focus on the decisions that need you.**
+**Less effort reconstructing AI work. More attention for the decisions that matter.**
 
-XRefKit is designed to reduce the cognitive load of working with AI: remembering
-instructions, finding the relevant rules, reconstructing progress, and interpreting
-results. Reusable procedures, linked evidence, and familiar reports give that
-information a place outside your head, so you can focus on what needs judgment.
+XRefKit is designed to reduce the cognitive load of directing and reviewing
+AI-assisted work. It keeps reusable procedures, relevant knowledge, progress,
+and evidence in explicit records, then helps present results in a form people
+can understand and check.
 
-## Why AI-assisted work can become mentally demanding
+## Why faster AI output can still mean more work for you
 
-Producing an answer is only part of the work. Someone still has to supply the
-rules, follow progress, interpret the result, and decide what to accept. XRefKit
-addresses recurring sources of that effort:
+Generating a result leaves another task: understanding enough of it to decide
+whether to use it. You may have to reconstruct the context, identify claims,
+find supporting sources, and check the revised output again. Nielsen Norman
+Group describes this verification burden in
+[AI Chatbots Discourage Error Checking](https://www.nngroup.com/articles/ai-chatbots-discourage-error-checking/).
 
-- **Instructions have to be remembered and repeated.** When the process lives in
-  chat history, you have to reconstruct the steps and check what you forgot to
-  explain. A reusable **Skill** keeps the procedure, inputs, outputs, and criteria
-  available for the next task.
-- **Relevant rules and evidence are scattered.** You have to find the right
-  material and reconnect it to the task. Separate **Knowledge** records and stable
-  document identifiers (**XIDs**) let a Skill resolve the material it needs and
-  record references for review.
-- **A new session or handoff loses the immediate context.** You have to work out
-  what happened, what remains open, and where to resume. Explicit work items,
-  progress, concerns, and handoff records provide a starting point without
-  requiring everyone to reconstruct the conversation.
-- **A completion message leaves the scope of checking unclear.** You have to
-  determine which requirements were checked and which decisions remain yours.
-  Workflow-record verification and closure checks expose missing records and
-  unfinished items; reports distinguish those checks from output-quality review.
-- **Reports change shape or leave their reasoning implicit.** You have to locate
-  the conclusion, connect it to evidence, and discover its limits each time.
-  Decision-oriented reporting and optional approved report profiles make those
-  relationships and locations explicit, as described below.
+XRefKit addresses five recurring sources of that effort:
 
-For example, a recurring review can present its conclusion, relevant criteria,
-evidence, and open questions in familiar places. The reader can focus on what
-changed and what needs a decision, with supporting detail available when needed.
+- **You have to remember what to tell the AI.** Rebuilding instructions from
+  memory makes you responsible for recalling every step and criterion.
+  **Reusable Skills** keep the procedure, required inputs, expected outputs,
+  and criteria available for the next task.
+- **You have to search for the rules behind a result.** Scattered reference
+  material makes you switch between documents and reconnect them yourself.
+  Separate **Knowledge** records and stable identifiers (**XIDs**) let a Skill
+  resolve relevant material and record references for review.
+- **You have to rebuild context after an interruption.** A conversation history
+  leaves you to discover where the work stopped.
+  **Work items and handoff records** preserve progress, open concerns, and next
+  steps that another session or colleague can pick up.
+- **You have to learn how to read each new report.** Changing headings, order,
+  or detail makes you search again for the same information.
+  **Optional approved report profiles** preserve familiar structure and
+  granularity, giving subsequent reviews an explicit baseline.
+- **You have to infer what “done” actually covers.** A completion statement can
+  leave the checks, evidence, and unresolved decisions unclear.
+  **Workflow-record checks and reporting guidance** make those boundaries
+  explicit, while tests and reviewers assess the result itself.
 
-XRefKit checks the completeness and consistency of recorded work. People remain
-responsible for judging whether the output is correct and suitable for its purpose.
+The design principle is to make needed information available for recognition,
+rather than rely on the reader to recall it—a distinction explained in
+[NN/G's recognition and recall guidance](https://www.nngroup.com/articles/recognition-and-recall/).
+These mechanisms support that goal; their effect in XRefKit still needs evaluation
+with users.
 
-## How does it fit with modern agent harnesses?
+## Make the report easier to understand—and easier to check
 
-**XRefKit focuses on the human effort required to direct, understand, and review
-agent work.** Reusable methods and reviewable records serve that purpose.
+A shorter report only helps if it preserves what the reader needs to decide.
+XRefKit's reporting guidance connects the conclusion, its basis, its limits,
+and the next action within the task's own format:
 
-Modern harnesses already do much more than call a model. Anthropic's
-[Managed Agents architecture](https://www.anthropic.com/engineering/managed-agents)
-separates execution, durable sessions, and sandboxes. Its
-[application-development harness](https://www.anthropic.com/engineering/harness-design-long-running-apps)
-uses explicit evaluation criteria, independent evaluators, and structured handoffs.
+- **Reduce searching:** put the conclusion and requested decision first.
+  Keep material uncertainty beside the claim it qualifies.
+- **Reduce mental reconstruction:** connect a finding to its evidence and
+  explain why that evidence matters. A file list alone leaves that connection
+  for the reader to make.
+- **Reduce initial overload:** present the decision-relevant summary, with
+  clear links to detailed findings. This applies
+  [progressive disclosure](https://www.nngroup.com/articles/progressive-disclosure/)
+  to report reading; essential caveats remain in the summary.
+- **Reduce relearning:** for recurring outputs, use an approved Knowledge
+  quality profile containing examples, headings, table structure, information
+  placement, detail, and criteria. Structural checks detect format differences;
+  independent review still judges meaning and evidential support.
+
+For illustration, a change-review summary could read:
+
+> **Decision needed:** Hold acceptance until the retry case is checked.
+>
+> **Verified:** The normal path passed against the agreed criteria; the findings
+> link to the test evidence.
+>
+> **Still unknown:** Whether retrying after a timeout creates a duplicate.
+>
+> **Next step:** Test the retry case and return the result for review.
+
+This example shows where the reader's attention belongs; it is not a universal
+template or a real test result. Plain words, short sections, and explicit
+relationships also follow the direction of
+[W3C's clear-content guidance](https://www.w3.org/WAI/WCAG2/supplemental/objectives/o3-clear-content/).
+That guidance informs presentation, not an accessibility-conformance claim.
+
+Reader feedback can identify a missing explanation, confusing placement, or
+insufficient evidence. The correction can then target the output, inputs,
+criteria, or procedure. Approved baselines stay intact; procedure changes require
+explicit authorization.
+
+The purpose is to make informed review less demanding. A familiar layout or a
+passing record check does not establish correctness. See the
+[reporting contract](docs/core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73)
+and [fixed-output quality protocol](docs/core/contracts/112_fixed_output_quality_protocol.md#xid-F9C2A8D471B0).
+
+## How does XRefKit fit with modern agent harnesses?
+
+Modern harnesses already support more than execution. Anthropic describes
+[durable sessions and execution infrastructure](https://www.anthropic.com/engineering/managed-agents)
+as well as [evaluation criteria and structured handoffs](https://www.anthropic.com/engineering/harness-design-long-running-apps).
 OpenAI's [harness engineering approach](https://openai.com/index/harness-engineering/)
-uses repository knowledge, execution plans, and automated constraints. These
-examples overlap with XRefKit's goals.
+includes repository knowledge, plans, and automated constraints.
 
-XRefKit brings reusable procedures, separately maintained knowledge, explicit work
-records, and reporting criteria into a shared working structure. Repository files
-and Skill Packages preserve these assets; CLI/MCP interfaces expose them to
-compatible clients. This gives the team a common basis for directing and reviewing
-work when tasks, sessions, or supported clients change.
+XRefKit's focus is the human effort of directing, understanding, and reviewing
+that work. It packages reusable procedures, separately maintained knowledge,
+work records, and reporting criteria as assets the team can inspect and maintain.
+Repository files and Skill Packages preserve those assets; CLI/MCP interfaces
+make them available to compatible clients.
 
-For example, your coding harness can implement and test a change while XRefKit
-records the review procedure, applicable domain criteria, evidence, and remaining
-concerns for the next reviewer. The report turns those records into a conclusion
-the reviewer can assess, with the evidence and unresolved decisions close at hand.
-The client still runs the model and tools.
-XRefKit's deterministic checks validate the work record; output quality still
-needs appropriate tests and review.
+Your coding harness can implement and test a change while XRefKit records the
+applicable review method, references, findings, and open concerns. The report
+then helps a person decide what the result supports and what to do next.
+The client runs the model and tools; XRefKit's `verify` and `close` check
+workflow records, while substantive quality needs appropriate tests and review.
 
-If your existing harness already provides these structures, the overlap may be
-enough for your needs. XRefKit is useful when you want to maintain them as explicit,
-reusable work assets. This is a comparison of mechanisms, not a demonstrated
-quality, cost, or performance advantage over the cited systems.
+If your harness already provides this structure, there may be little to add.
+Use XRefKit when you want these work assets and review conventions made explicit
+and reusable. This is a difference in packaged mechanisms and emphasis, not a
+demonstrated advantage in cognitive load, quality, cost, or performance.
 
 See the [Skill and Knowledge operating model](docs/core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
-and [Skill operating contract](docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61)
-for the boundaries behind this comparison.
-
-## Reports that reduce the effort of understanding
-
-A report should help the reader form an accurate picture with less mental effort:
-
-- **When the point is buried, the reader has to decide what matters.** Lead with
-  the conclusion and what it means for the agreed decision, followed by the next
-  action. Let the task determine the appropriate report shape.
-- **When evidence and limits are detached, the reader has to rebuild the
-  reasoning.** Link summary findings to supporting detail and place material
-  uncertainty beside the conclusion it qualifies. Keep necessary conditions
-  visible and supporting detail accessible.
-- **When layout and detail vary, the reader has to relearn how to read each
-  report.** For recurring outputs, opt into a target-specific **Knowledge quality
-  profile** that preserves approved examples, sample inputs, headings, table
-  structure, information placement, required detail, and criteria. Use that
-  baseline for subsequent reviews, including after model or session changes.
-- **When a familiar layout contains weak reasoning, the reader must still detect
-  the gap.** Structural checks flag format differences; independent review checks
-  meaning, readability, and whether the evidence supports the conclusion. A
-  format pass must not stand in for that review.
-
-Consider a recurring change-review report: readers can find the affected area,
-finding, evidence, impact, and next action in the agreed places each time. If this
-run lacks evidence for a conclusion, that limit belongs beside the conclusion;
-passing the format check does not make it acceptable.
-
-Feedback can then be directed to the part that needs attention: the current
-output, missing inputs, unclear criteria, or the reusable procedure. Approved
-examples and criteria remain the baseline; changing a procedure requires explicit
-authorization. This connects **execution → evidence → report → human judgment →
-authorized improvement**. Reader feedback can identify explanations, layouts, or
-missing context that made a decision harder, and guide a scoped correction for the
-next run.
-
-Workflow-record completion, report format, substantive quality, and human
-acceptance remain separate judgments. The controls support repeated review against
-known conditions. Lower cognitive load is the design goal; its effect on readers,
-decision quality, and rework still needs evaluation in actual use.
-See the [reporting contract](docs/core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73)
-and [fixed-output quality protocol](docs/core/contracts/112_fixed_output_quality_protocol.md#xid-F9C2A8D471B0).
+and [Skill operating contract](docs/core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61).
 
 ## Start with one recurring task
 
