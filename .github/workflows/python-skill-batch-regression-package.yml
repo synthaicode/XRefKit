@@ -6,9 +6,6 @@ on:
       - "packages/xrefkit-skills-batch-regression/**"
       - ".github/workflows/python-skill-batch-regression-package.yml"
       - "tools/inspect_python_artifacts.py"
-      - "xrefkit/**"
-      - "pyproject.toml"
-      - "requirements.txt"
       - "tools/run_import_smoke.py"
   push:
     tags:

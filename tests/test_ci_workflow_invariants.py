@@ -104,19 +104,22 @@ def test_readme_exclusion_retains_core_and_governance_checks(path):
     for event in ("pull_request", "push"):
         assert accepts_changes("python-package.yml", event, [path])
         assert accepts_changes("python-package.yml", event, ["README.md", path])
-    assert workflow("python-package.yml")["on"]["push"]["paths-ignore"] == ["README.md"]
+    assert workflow("python-package.yml")["on"]["pull_request"]["paths"] == workflow("python-package.yml")["on"]["push"]["paths"]
+    assert "README.md" not in workflow("python-package.yml")["on"]["push"]["paths"]
 
 
 @pytest.mark.parametrize("package", ["batch-regression", "brownfield", "csharp"])
 def test_skill_packages_cover_own_sources_and_shared_dependencies(package):
     filename = f"python-skill-{package}-package.yml"
     for path in [f"packages/xrefkit-skills-{package}/tests/test_package.py",
-                 f".github/workflows/{filename}", "tools/inspect_python_artifacts.py",
-                 "xrefkit/workspace.py", "pyproject.toml", "requirements.txt"]:
+                 f".github/workflows/{filename}", "tools/inspect_python_artifacts.py"]:
         assert accepts_changes(filename, "pull_request", [path])
     if package in {"brownfield", "batch-regression"}:
         assert accepts_changes(filename, "pull_request", ["tools/run_import_smoke.py"])
-    assert not accepts_changes(filename, "pull_request", ["projects/slides-app/src/App.tsx"])
+    for path in ["projects/slides-app/src/App.tsx", "xrefkit/workspace.py",
+                 "pyproject.toml", "requirements.txt", "docs/core/contracts/example.md"]:
+        assert not accepts_changes(filename, "pull_request", [path])
+        assert accepts_changes(filename, "pull_request", [path, f"packages/xrefkit-skills-{package}/pyproject.toml"])
 
 
 def test_slides_inputs_and_pages_manifest_inputs_are_covered():
@@ -150,3 +153,38 @@ def test_all_workflows_parse_and_sync_still_includes_readme_updates():
         assert isinstance(data["jobs"], dict)
     assert accepts_changes("sync-main-without-mp4.yml", "push", ["README.md"])
     assert workflow("sync-main-without-mp4.yml")["on"]["push"] == {"branches": ["main"]}
+
+
+@pytest.mark.parametrize("path", [
+    "xrefkit/resources/base/current.json", "tools/check_skill_compatibility.py",
+    "tools/check_installed_skill_contract.py", "tools/official_skill_packages.json",
+    "packages/xrefkit-skills-xddp-design/pyproject.toml", "packages/new-skill/pyproject.toml",
+    "governance/skills/planning_flow.json", "observations/trial_basis.md",
+    "packs/example/skills/example/SKILL.v1.md", "flows/example.yaml",
+    "work/sessions/tracked_run.md", "work/retrospectives/example.md",
+    "site/sources/index.html", "projects/attention-pet/schema/fit.schema.json",
+    "projects/new-app/package.json", "projects/new-app/package-lock.json",
+    "projects/new-app/README.md", "ownership.yaml", "xrefkit.toml", "LICENSE",
+    ".gitattributes", ".gitignore", ".github/workflows/pages.yml",
+])
+def test_core_dependency_inputs_trigger_branch_and_pr_checks(path):
+    for event in ("pull_request", "push"):
+        assert accepts_changes("python-package.yml", event, [path])
+
+
+@pytest.mark.parametrize("path", ["README.md", "CHANGELOG.md", "human-docs/ja/article.md",
+                                  "projects/slides-app/src/App.tsx", "work/plans/example.md",
+                                  "sources/unconsumed.pdf"])
+def test_unconsumed_inputs_do_not_trigger_core_but_mixed_changes_do(path):
+    for event in ("pull_request", "push"):
+        assert not accepts_changes("python-package.yml", event, [path])
+        assert accepts_changes("python-package.yml", event, [path, "xrefkit/cli.py"])
+
+
+def test_shared_tools_trigger_only_consumers():
+    assert accepts_changes("python-package.yml", "pull_request", ["tools/inspect_python_artifacts.py"])
+    for filename in list(PACKAGES)[1:] + ["xrefkit-skills-xddp-design.yml"]:
+        assert accepts_changes(filename, "pull_request", ["tools/inspect_python_artifacts.py"])
+        assert not accepts_changes(filename, "pull_request", ["tools/run_quality_gate.py"])
+    assert not accepts_changes("python-skill-csharp-package.yml", "pull_request", ["tools/run_import_smoke.py"])
+    assert not accepts_changes("xrefkit-skills-xddp-design.yml", "pull_request", ["xrefkit/cli.py"])
