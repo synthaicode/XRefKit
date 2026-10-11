@@ -475,6 +475,9 @@ def adopt_contribution_return(
     ownership: Ownership | None = None,
     existing_knowledge_xids: set[str] | None = None,
     existing_knowledge_xid_locations: dict[str, set[str]] | None = None,
+    governance_packet: dict | None = None,
+    governance_receipt: dict | None = None,
+    governance_host_verifier: HumanApprovalVerifier | None = None,
 ) -> dict[str, Any]:
     """Promote an accepted contribution through a server-owned transport."""
     repo = root.resolve()
@@ -564,9 +567,40 @@ def adopt_contribution_return(
                     ADOPTION_SCHEMA,
                     approval_verifier=approval_verifier,
                 )
+                previous_prepared = _read_event(record_dir / "events" / "adoption-prepared.json",
+                    ADOPTION_PREPARED_SCHEMA, approval_verifier=approval_verifier)
+                for key in ("governance_packet_hash", "governance_receipt_hash"):
+                    if key in previous_prepared:
+                        prepared_basis[key] = previous_prepared[key]
                 if existing.get("prepared_binding_hash") != _canonical_hash(prepared_basis):
                     raise ValueError("contribution already has a different immutable adoption")
                 return {**existing, "created": False, "idempotent_replay": True}
+            if manifest["kind"] == "knowledge":
+                from ..governance_entry import validate_endpoint, snapshot, digest
+                from .contribution_adoption import _target_paths
+                if governance_packet is None or governance_receipt is None:
+                    raise RuntimeError("shared update gate receipt required before Knowledge canonical adoption")
+                frozen = governance_packet.get("materials", [])
+                for path in (record_dir / "manifest.json", record_dir / "events" / "review.json"):
+                    relative = path.relative_to(repo).as_posix()
+                    if snapshot(repo, relative) not in frozen:
+                        raise ValueError("gate must bind immutable contribution and signed human review")
+                targets = _target_paths(target, files)
+                candidates = {path: item.content.encode("utf-8") for path, item in zip(targets, files, strict=True)}
+                recovery_targets = None
+                recovery_path = record_dir / "events" / "adoption-prepared.json"
+                if recovery_path.is_file():
+                    prior = _read_event(recovery_path, ADOPTION_PREPARED_SCHEMA, approval_verifier=approval_verifier)
+                    if (prior.get("governance_packet_hash") != governance_packet["packet_hash"]
+                            or prior.get("governance_receipt_hash") != digest(governance_receipt)):
+                        raise ValueError("recovery requires the original immutable gate execution proof")
+                    recovery_targets = candidates
+                validate_endpoint(repo, governance_packet, governance_receipt,
+                    endpoint="knowledge_canonical_adoption",
+                    candidates=candidates, host_verifier=governance_host_verifier,
+                    _recovery_targets=recovery_targets)
+                prepared_basis["governance_packet_hash"] = governance_packet["packet_hash"]
+                prepared_basis["governance_receipt_hash"] = digest(governance_receipt)
             prepared_path = record_dir / "events" / "adoption-prepared.json"
             prepared_existed = prepared_path.exists()
             if prepared_existed:

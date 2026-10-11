@@ -8,7 +8,7 @@ import hashlib
 import json
 import copy
 import subprocess
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 
 from .skill_definition import load_skill_definition
@@ -146,11 +146,28 @@ def load_repository_adoption(root: Path) -> dict | None:
     seen_paths: set[str] = set()
     seen_xids: set[str] = set()
     for entry in entries:
-        if not isinstance(entry, dict) or set(entry) - {"current_adoption"} != {
+        native = isinstance(entry, dict) and entry.get("source_kind") == "native_v1"
+        native_keys = {"skill_id", "definition_path", "definition_xid", "definition_sha256", "source_kind", "adopted", "adoption"}
+        legacy_keys = {
             "skill_id", "definition_path", "definition_xid", "definition_sha256",
             "legacy_ids", "legacy_sources", "legacy_maturity", "adopted", "runtime", "legacy_runtime_policy",
-        }:
+        }
+        if not isinstance(entry, dict) or (set(entry) != native_keys if native else set(entry) - {"current_adoption"} != legacy_keys):
             raise ValueError("invalid repository adoption entry")
+        if native:
+            decision = entry["adoption"]
+            if (type(entry["adopted"]) is not bool or not isinstance(decision, dict)
+                    or set(decision) != {"authority", "date", "basis"}
+                    or any(not isinstance(v, str) or not v.strip() for v in decision.values())):
+                raise ValueError("native v1 adoption requires explicit source authority")
+            date.fromisoformat(decision["date"])
+            # Runtime-only projections preserve older consumers without inventing
+            # historical receipts or storing fixed runtime values in a definition.
+            entry.update(legacy_ids=[], legacy_sources=[], legacy_maturity="unassessed",
+                         effective_adopted=entry["adopted"], effective_maturity="unassessed",
+                         runtime={key: {"value": None, "origin": "instruction_required"} for key in RUNTIME_FIELDS},
+                         legacy_runtime_policy={key: {"value": None, "origin": "not_legacy"}
+                                                for key in ("model_tier", "knowledge_inputs")})
         ids = [entry["skill_id"], *entry["legacy_ids"]] if isinstance(entry["legacy_ids"], list) else []
         if (not ids or any(not isinstance(v, str) or not v.strip() for v in ids)
                 or len(set(ids)) != len(ids) or seen_ids.intersection(ids)):
@@ -169,6 +186,8 @@ def load_repository_adoption(root: Path) -> dict | None:
         if seen_xids.intersection(xids):
             raise ValueError("repository definition XID or alias conflict")
         seen_xids.update(xids)
+        if native:
+            continue
         if (not isinstance(entry["legacy_maturity"], str)
                 or entry["legacy_maturity"] not in {"draft", "trial", "stable", "deprecated"}
                 or type(entry["adopted"]) is not bool

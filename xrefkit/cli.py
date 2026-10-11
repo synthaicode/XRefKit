@@ -19,6 +19,7 @@ def _print_help() -> None:
         "  wbs        validate and summarize a Markdown WBS\n"
         "  ctx        build compact context packs\n"
         "  gateway    prepare inputs, route model work, and evaluate retry feedback\n"
+        "  governance prepare bounded governance entries and validate host results\n"
         "  skill      discover, validate, run, verify, and close Skills\n"
         "  workflow   run the generic protocol for instructions without a Skill\n"
         "  host       run host-compatibility evidence checks\n"
@@ -45,6 +46,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
 
     command = args[0]
+    if command == "governance":
+        from .governance_entry_cli import main as governance_main
+
+        return governance_main(args[1:])
     if args[:2] == ["skill", "reporting"]:
         from .reporting import main as reporting_main
 

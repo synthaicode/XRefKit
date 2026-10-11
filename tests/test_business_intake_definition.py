@@ -3,6 +3,7 @@ from pathlib import Path
 
 from xrefkit.mcp.catalog import XRefCatalog
 from xrefkit.skill_definition import load_skill_definition
+from xrefkit.repository_skills import load_repository_adoption
 
 
 CASES = (
@@ -51,4 +52,9 @@ def test_business_intake_v1_definitions_parse_select_resolve_and_preserve_legacy
     assert {"business_learning_interview", "business_intake_scoping"} <= {
         entry.skill_id for entry in catalog.skills if entry.definition_format == "skill_definition_v1"
     }
-    assert len(catalog.skills) == 62
+    adopted_ids = {entry["skill_id"] for entry in load_repository_adoption(repo)["entries"]}
+    catalog_ids = [entry.skill_id for entry in catalog.skills]
+    # Explicit business definitions must not duplicate registered entries or
+    # remove newly registered native Skills from the complete catalog.
+    assert len(catalog_ids) == len(set(catalog_ids))
+    assert set(catalog_ids) == adopted_ids

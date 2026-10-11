@@ -339,7 +339,6 @@ class XRefCatalog:
         entries = [] if adoption else _build_skills(self.repo_root, self.ownership)
         for package in self.discovered_packages:
             entries.extend(_build_package_skills(package))
-        entries = self._apply_skill_edits(entries)
         definitions = _build_definition_skill_entries(
             self.repo_root,
             self.ownership,
@@ -377,7 +376,7 @@ class XRefCatalog:
             ) if entry.skill_id in receipts and entry.path == receipts[entry.skill_id]["definition_path"]
               and entry.definition_format == "skill_definition_v1"
               and entry.package_id is None else entry for entry in entries]
-        return entries
+        return self._apply_skill_edits(entries)
 
     def _apply_skill_edits(self, entries: list[SkillCatalogEntry]) -> list[SkillCatalogEntry]:
         """Replace explicitly registered source entries with local overlays."""
@@ -395,7 +394,9 @@ class XRefCatalog:
             if len(candidates) != 1:
                 continue
             overlay_meta = _local_path(self.repo_root, record["overlay_meta_path"])
-            replacement = _build_skill_entry(self.repo_root, self.ownership, overlay_meta)
+            replacement = (_build_definition_skill_entries(self.repo_root, self.ownership, (overlay_meta,), ())[0]
+                           if record.get("definition_format") == "skill_definition_v1"
+                           else _build_skill_entry(self.repo_root, self.ownership, overlay_meta))
             metadata = dict(replacement.zone_metadata)
             metadata.update(
                 {
@@ -412,6 +413,9 @@ class XRefCatalog:
                 **{
                     **replacement.__dict__,
                     "package_id": original.package_id,
+                    "repository_adoption": original.repository_adoption,
+                    "maturity": original.maturity,
+                    "legacy_skill_ids": original.legacy_skill_ids,
                     "zone_metadata": metadata,
                 }
             )
@@ -450,13 +454,31 @@ class XRefCatalog:
         return list_edits(self.repo_root)
 
     def export_skill_edit(self, skill_id: str, write_patch: bool = False) -> dict:
-        record = active_edit(self.repo_root, skill_id)
+        from .skill_edits import load_registry
+        record = load_registry(self.repo_root).get(skill_id)
         if record is None:
             raise KeyError(f"active local Skill edit not found: {skill_id}")
         return export_edit(self.repo_root, record, write_patch=write_patch)
 
     def deactivate_skill_edit(self, skill_id: str) -> dict:
         return deactivate_edit(self.repo_root, skill_id)
+
+    def activate_skill_edit(self, skill_id: str, **governance) -> dict:
+        from .governed_overlays import activate
+        return activate(self.repo_root, kind="skill", identity=skill_id, **governance)
+
+    def prepare_update_gate(self, kind: str, identity: str, **request) -> dict:
+        from .update_gate_intake import prepare_overlay_gate
+        if kind == "knowledge_contribution":
+            from .update_gate_intake import prepare_contribution_gate
+            return prepare_contribution_gate(self.repo_root, contribution_id=identity, **request)
+        if kind not in {"skill", "knowledge"}:
+            raise ValueError("update gate intake supports Skill or Knowledge overlays")
+        return prepare_overlay_gate(self.repo_root, kind=kind, identity=identity, **request)
+
+    def activate_local_knowledge(self, xid: str, **governance) -> dict:
+        from .governed_overlays import activate
+        return activate(self.repo_root, kind="knowledge", identity=xid, **governance)
 
     def create_local_knowledge(
         self,
@@ -1455,9 +1477,9 @@ def _client_instructions() -> list[str]:
         "Fetch client-side tool manifests or packages only after a selected Skill declares client-side required_tools.",
         "Send cached content_hash values as known_version or known_document_versions; when cache_status is not_modified, use the locally hash-validated body instead of downloading it again.",
         "When the user explicitly asks to improve a Skill, call prepare_skill_edit; it creates a project-local overlay without overwriting an existing edit and records source provenance.",
-        "After prepare_skill_edit, route and resolve the Skill normally; the active local overlay is selected automatically and preserves the source XIDs.",
+        "prepare_skill_edit stages an inactive overlay. Freeze the final bundle, dispatch shared_asset_update_gate through the trusted host, then use activate_skill_edit with its receipt and separate human authority; changed accepted bytes cease routing.",
         "Use list_skill_edits to inspect local overlays and export_skill_edit to produce an upstream diff. Deactivate only after the upstream provider has adopted and MCP distribution has been verified.",
-        "When the user explicitly asks to add a new Knowledge document, call create_local_knowledge with an XID-bearing Markdown body; it remains project-local until exported and adopted upstream.",
+        "create_local_knowledge stages inactive content. Use the shared update gate and activate_local_knowledge for local routing, or the existing human-approved contribution adoption with a gate receipt for canonical reflection.",
         "Use list_local_knowledge to inspect local additions and export_local_knowledge to produce an upstream addition patch. Deactivate only after the distributed XID can be resolved from MCP.",
         "After using an MCP-provided Skill, use get_contribution_return_contract and submit_contribution_return to return locally authored Knowledge, deterministic tool definitions, or Skill observations as inert pending_review material. Send exact content hashes; submission never activates, publishes, or changes Skill maturity.",
         "For Skill observations, seal the MCP-owned inbound WebDAV upload, adopt the reviewed evidence under observations/, commit it to Git, then use assess_skill_maturity, propose_skill_maturity, review_skill_maturity_proposal, and apply_skill_maturity_proposal. Client proposals and inbound upload transport have no maturity authority.",

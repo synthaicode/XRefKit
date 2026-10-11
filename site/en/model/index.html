@@ -6,9 +6,11 @@
   <title>XRefKit Operating Model and Reference Implementation</title>
   <link rel="stylesheet" href="../../assets/common.css" />
   <script src="../../assets/inline-svg.js" defer></script>
+  <link rel="stylesheet" href="../../assets/effects.css" />
 </head>
-<body>
+<body class="site-interior">
   <main class="model-doc">
+    <header class="site-masthead"><a class="site-brand" href="../../"><span class="brand-mark" aria-hidden="true">↗</span> XRefKit<span class="brand-dot">.</span></a><nav aria-label="Quick navigation"><a href="../../common/">Foundation</a><a href="../../protocols/">Protocols</a><a href="../../skills/">Skills</a><a class="nav-github" href="https://github.com/synthaicode/XRefKit">GitHub <span aria-hidden="true">↗</span></a></nav></header>
     <nav class="page-header" aria-label="Page navigation">
       <a href="../../">← XRefKit Top</a>
       <a href="../">English deck catalog</a>
@@ -16,13 +18,23 @@
       <a href="../../ja/model/">Japanese translation</a>
     </nav>
 
-    <header class="model-doc-hero">
+    <header class="model-doc-hero interior-hero">
       <p class="eyebrow">Canonical operating model</p>
       <h1>Chapter 2: Model</h1>
       <p>Defines how Goals, bounded AI responsibilities, deterministic control, escalation, handoff, and human acceptance connect.</p>
     </header>
 
-    <div class="model-doc-object" data-inline-svg="../../assets/xrefkit_model_en.svg"><a href="../../assets/xrefkit_model_en.svg">Open the XRefKit operating model</a></div>
+    <figure class="operating-overview" aria-labelledby="operating-overview-caption">
+        <figcaption id="operating-overview-caption">Who decides what — an overview of the operating model</figcaption>
+        <ol class="operating-stages">
+          <li class="human-stage"><span class="stage-owner">Human · define</span><h3>Goal and acceptance criteria</h3><p>Set the desired business result and the conditions for accepting it.</p></li>
+          <li class="ai-stage"><span class="stage-owner">AI · execute</span><h3>Route and run a bounded Skill</h3><p>Use the selected Knowledge and preserve outputs, decisions, and unresolved items as Evidence.</p></li>
+          <li class="control-stage"><span class="stage-owner">Controls · verify and review</span><h3>Check records and output quality</h3><p>Verify the workflow record and review actual output quality separately when required. Prepare handoff and close after the required checks.</p></li>
+          <li class="human-stage"><span class="stage-owner">Human · accept</span><h3>Decide adoption and the next request</h3><p>Inspect the output, evidence, and handoff. Accept the result or request repair.</p></li>
+        </ol>
+        <p class="operating-return"><strong>Escalation → Human judgment:</strong> when work crosses the current authority boundary, return the decision to people.</p>
+        <p class="operating-reference">Stable XIDs connect the selected Skills and Knowledge to the execution record. This overview groups responsibilities; the detailed model defines each element.</p>
+      </figure>
 
     <section class="model-reading model-reading-wide">
       <h2 id="reading-heading">How to read the model</h2>

@@ -21,13 +21,14 @@ def _repo(tmp_path: Path) -> Path:
     return tmp_path
 
 
-def test_prepare_edit_replaces_catalog_content_and_resolves_xid(tmp_path: Path) -> None:
+def test_prepare_edit_stages_without_activating_mutable_content(tmp_path: Path) -> None:
     root = _repo(tmp_path)
     catalog = XRefCatalog.build(root)
 
     prepared = catalog.prepare_skill_edit("sample")
     assert prepared["created"] is True
     assert prepared["source_kind"] == "repository"
+    assert prepared["active"] is False
     assert (root / ".xrefkit" / "skill-edits" / "sample" / "SKILL.md").exists()
 
     overlay = root / prepared["overlay_skill_path"]
@@ -36,10 +37,9 @@ def test_prepare_edit_replaces_catalog_content_and_resolves_xid(tmp_path: Path) 
         encoding="utf-8",
     )
     selected = catalog.get_skill("sample")
-    assert "Updated procedure" in selected["skill_content"]
-    assert selected["zone_metadata"]["local_edit"] is True
+    assert "Original procedure" in selected["skill_content"]
     document = catalog.get_document_by_xid("SAMPLE-SKILL")
-    assert "Updated procedure" in document["content"]
+    assert "Original procedure" in document["content"]
 
 
 def test_export_and_deactivate_preserve_local_files(tmp_path: Path) -> None:
@@ -58,7 +58,7 @@ def test_export_and_deactivate_preserve_local_files(tmp_path: Path) -> None:
     assert "Original procedure" in catalog.get_skill("sample")["skill_content"]
 
 
-def test_create_local_knowledge_is_cataloged_and_exportable(tmp_path: Path) -> None:
+def test_create_local_knowledge_is_inactive_and_exportable(tmp_path: Path) -> None:
     root = _repo(tmp_path)
     catalog = XRefCatalog.build(root)
     created = catalog.create_local_knowledge(
@@ -66,9 +66,8 @@ def test_create_local_knowledge_is_cataloged_and_exportable(tmp_path: Path) -> N
         "<!-- xid: LOCAL-KNOWLEDGE -->\n# Local rule\n\nUse this project rule.\n",
     )
     assert created["created"] is True
-    assert "LOCAL-KNOWLEDGE" in [entry["xid"] for entry in catalog.list_knowledge_catalog()]
-    resolved = catalog.get_document_by_xid("LOCAL-KNOWLEDGE")
-    assert "Use this project rule" in resolved["content"]
+    assert created["active"] is False
+    assert "LOCAL-KNOWLEDGE" not in [entry["xid"] for entry in catalog.list_knowledge_catalog()]
     assert "Local rule" in catalog.export_local_knowledge("LOCAL-KNOWLEDGE")["patch"]
     catalog.deactivate_local_knowledge("LOCAL-KNOWLEDGE")
     assert "LOCAL-KNOWLEDGE" not in [entry["xid"] for entry in catalog.list_knowledge_catalog()]

@@ -16,6 +16,7 @@ Categories list skill ids only. Resolve summaries and `SKILL.v1.md` paths from t
 - Python: `python_review`, `python_implementation_flow`
 - SQL Server: `batch_impact_regression`, `db_current_state_analysis`, `db_design`
 - repository: `doc_ship`, `retro`, `knowledge_ontology_management`,
+  `shared_asset_update_gate`, `correction_retrospective_analyst`,
   `consultation_research_mapping`, `judgment_log`, `skill_flow_authoring`,
   `skill_calibration_evaluation`,
   `goal_mode`, `pptx_spec_traceability`, `xlsx_spec_traceability`,

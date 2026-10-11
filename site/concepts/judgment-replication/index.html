@@ -8,16 +8,18 @@
   <meta name="keywords" content="Judgment Replication, Beyond Prompt Engineering, 判断複製, 判断配布, XRefKit" />
   <link rel="canonical" href="https://synthaicode.org/XRefKit/concepts/judgment-replication/" />
   <link rel="stylesheet" href="../../assets/common.css" />
+  <link rel="stylesheet" href="../../assets/effects.css" />
 </head>
-<body>
+<body class="site-interior">
   <main class="concept-doc">
+    <header class="site-masthead"><a class="site-brand" href="../../"><span class="brand-mark" aria-hidden="true">↗</span> XRefKit<span class="brand-dot">.</span></a><nav aria-label="Quick navigation"><a href="../../common/">Foundation</a><a href="../../protocols/">Protocols</a><a href="../../skills/">Skills</a><a class="nav-github" href="https://github.com/synthaicode/XRefKit">GitHub <span aria-hidden="true">↗</span></a></nav></header>
     <nav class="page-header" aria-label="Page navigation">
       <a href="../../">← XRefKit Top</a>
       <a href="../../en/model/">Canonical model</a>
       <a href="../../en/">English materials</a>
     </nav>
 
-    <header class="concept-doc-hero">
+    <header class="concept-doc-hero interior-hero">
       <p class="eyebrow">Canonical concept</p>
       <p class="concept-series">Beyond Prompt Engineering series</p>
       <h1>Organizations Never Scaled People. They Replicated Judgment — Badly.</h1>
@@ -116,7 +118,7 @@
 
       <section class="concept-implementation">
         <h2>How XRefKit Implements Judgment Distribution</h2>
-        <p>XRefKit turns organizational judgment into a versioned, addressable, and observable operational asset.</p>
+        <p>XRefKit makes organizational judgment addressable through stable XIDs and distributes managed assets in versioned packages and Core releases. XID references themselves do not pin a version or include history: they resolve to the current managed content available to the configured provider. Observing which content was used is separate from fixing a version in the reference.</p>
         <div class="concept-table-wrap">
           <table class="concept-table">
             <thead><tr><th>Judgment distribution concern</th><th>XRefKit implementation</th></tr></thead>

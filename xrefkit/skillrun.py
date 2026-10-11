@@ -51,6 +51,7 @@ class SkillRunResult:
     domain_knowledge: dict[str, object] | None = None
     run_id: str | None = None
     decision_trace_checkpoint: dict[str, object] | None = None
+    update_gate_kickoff: dict[str, object] | None = None
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -68,6 +69,7 @@ class SkillRunResult:
             "domain_knowledge": self.domain_knowledge or {},
             "run_id": self.run_id,
             "decision_trace_checkpoint": self.decision_trace_checkpoint or {},
+            "update_gate_kickoff": self.update_gate_kickoff or {},
         }
 
 
@@ -2681,10 +2683,12 @@ def run_skill(args) -> SkillRunResult:
                    for key in RUNTIME_FIELDS}
         capability, tuning, responsibility, execution_mode_arg = [runtime[key] for key in RUNTIME_FIELDS]
         if adapter:
+            native_adapter = adapter.get("source_kind") == "native_v1"
             definition_identity["runtime_provenance"] = json.dumps({
                 key: {"selected_value": runtime[key],
                       "origin": "explicit_input" if getattr(args, key, None) else "legacy_declared",
-                      "legacy_receipt": adapter["runtime"][key]}
+                      **({"native_source": adapter["adoption"]} if native_adapter
+                         else {"legacy_receipt": adapter["runtime"][key]})}
                 for key in RUNTIME_FIELDS
             }, sort_keys=True)
         if not capability or not tuning or not responsibility or not execution_mode_arg:
@@ -2694,7 +2698,7 @@ def run_skill(args) -> SkillRunResult:
                        "guard_policy": "required", "capability_layering": "required", "workflow_protocol": "required",
                        "capability": capability, "tuning": tuning,
                        "role_responsibilities": [f"executor: {responsibility}"]})
-        if adapter:
+        if adapter and adapter.get("source_kind") != "native_v1":
             parsed.update({key: receipt["value"] for key, receipt in adapter["legacy_runtime_policy"].items()})
             definition_identity["legacy_policy_provenance"] = json.dumps(adapter["legacy_runtime_policy"], sort_keys=True)
     else:
@@ -2902,6 +2906,15 @@ def run_skill(args) -> SkillRunResult:
         definition_identity=definition_identity,
         runtime_binding_source="instruction_derived" if definition_arg else "legacy_meta_compatibility",
     )
+    kickoff = None
+    if skill_id in {"skill_flow_authoring", "knowledge_ontology_management"}:
+        kickoff = {"required_when": "Skill or Knowledge semantic reflection",
+                   "stage": "inactive_candidate", "entry": "prepare_update_gate",
+                   "kind": "skill" if skill_id == "skill_flow_authoring" else "knowledge",
+                   "selected_skill": "shared_asset_update_gate", "dispatch_owner": "client_host",
+                   "reflection_routes": ["activate_skill_edit", "activate_local_knowledge", "adopt_contribution_return"],
+                   "nonapplicability": "Flow-only or typo-only work requires an explicit scoped reason; no gate execution is implied"}
+        log += "\n## Shared Update Gate Kickoff\n\n- obligation: `" + json.dumps(kickoff, ensure_ascii=False, sort_keys=True) + "`\n- status: `pending_applicability_and_entry`\n- rule: stage the final candidate and invoke the central entry; only a verified packet/bundle receipt satisfies reflection, never a generic artifact or dispatch plan\n"
     with _LogFileLock(out_path.with_name(f".{out_path.name}.lock")):
         _atomic_write_text(out_path, log)
 
@@ -2916,6 +2929,7 @@ def run_skill(args) -> SkillRunResult:
         domain_knowledge=domain_knowledge,
         run_id=run_id,
         decision_trace_checkpoint=checkpoint,
+        update_gate_kickoff=kickoff,
     )
 
 

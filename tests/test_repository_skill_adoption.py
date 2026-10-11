@@ -29,6 +29,54 @@ def test_catalog_defaults_to_one_definition_and_old_id_resolves(adopted):
     root, _ = adopted
     catalog = XRefCatalog.build(root)
     assert len(catalog.skills) == 4
+
+
+def test_native_v1_source_adoption_requires_explicit_runtime_without_legacy_receipts(adopted):
+    root, doc = adopted
+    source = next(e for e in doc["entries"] if e["skill_id"] == "python_implementation_flow")
+    native = {key: source[key] for key in ("skill_id", "definition_path", "definition_xid", "definition_sha256")}
+    native.update(source_kind="native_v1", adopted=True,
+                  adoption={"authority": "test human", "date": "2026-10-10", "basis": "Explicit native source registration"})
+    doc["entries"] = [native]
+    (root / ADOPTION_PATH).write_text(json.dumps(doc))
+    parsed = load_repository_adoption(root)["entries"][0]
+    assert parsed["legacy_sources"] == []
+    assert all(r["value"] is None for r in parsed["runtime"].values())
+    catalog = XRefCatalog.build(root)
+    assert catalog.get_skill("python_implementation_flow")["maturity"] == "unassessed"
+    log = root / "work/native.md"
+    args = ("skill", "run", "--root", str(root), "--definition", native["definition_path"],
+            "--task", "bounded native implementation", "--out", str(log), "--json")
+    code, result = command(*args)
+    assert code == 1 and "require --capability" in result
+    code, result = command(*args, "--capability", "implementation", "--tuning", "bounded",
+                           "--responsibility", "native analysis", "--execution-mode", "subagent_required")
+    assert code == 0, result
+    text = log.read_text()
+    assert '"native_source"' in text and '"legacy_receipt"' not in text
+    assert "- maturity: `unassessed`" in text
+
+
+def test_native_v1_adoption_cannot_hide_legacy_receipts_or_missing_authority(adopted):
+    root, doc = adopted
+    source = doc["entries"][0]
+    native = {key: source[key] for key in ("skill_id", "definition_path", "definition_xid", "definition_sha256")}
+    native.update(source_kind="native_v1", adopted=True,
+                  adoption={"authority": "", "date": "2026-10-10", "basis": "test"})
+    doc["entries"] = [native]
+    (root / ADOPTION_PATH).write_text(json.dumps(doc))
+    with pytest.raises(ValueError, match="source authority"):
+        load_repository_adoption(root)
+    native["adoption"]["authority"] = "test human"
+    native["legacy_sources"] = []
+    (root / ADOPTION_PATH).write_text(json.dumps(doc))
+    with pytest.raises(ValueError, match="adoption entry"):
+        load_repository_adoption(root)
+
+
+def test_existing_catalog_readiness_and_aliases_remain_unchanged(adopted):
+    root, _ = adopted
+    catalog = XRefCatalog.build(root)
     assert all(e.definition_format == "skill_definition_v1" for e in catalog.skills)
     assert catalog.get_skill("batch-impact-regression")["skill_id"] == "batch_impact_regression"
     assert catalog.get_skill("db_design")["maturity"] == "draft"
@@ -126,10 +174,17 @@ def test_manifest_is_fail_closed_on_revision_identity_or_adoption_drift(adopted,
 def test_real_repository_receipts_cover_all_old_identities():
     repo = Path(__file__).resolve().parents[1]
     doc = load_repository_adoption(repo)
-    assert len(doc["entries"]) == 62
-    assert sum(not e["adopted"] for e in doc["entries"]) == 26
-    assert sum(e["adopted"] and e["runtime"]["capability"]["value"] is None for e in doc["entries"]) == 28
-    assert len(XRefCatalog.build(repo).skills) == 62
+    migrated = [e for e in doc["entries"] if e.get("source_kind") != "native_v1"]
+    native = [e for e in doc["entries"] if e.get("source_kind") == "native_v1"]
+    assert len(migrated) == 62
+    assert sum(not e["adopted"] for e in migrated) == 26
+    assert sum(e["adopted"] and e["runtime"]["capability"]["value"] is None for e in migrated) == 28
+    assert {e["skill_id"] for e in native} == {
+        "shared_asset_update_gate", "correction_retrospective_analyst"
+    }
+    assert all(e["adopted"] and e["legacy_sources"] == [] for e in native)
+    assert all(value["value"] is None for e in native for value in e["runtime"].values())
+    assert len(XRefCatalog.build(repo).skills) == len(migrated) + len(native) == 64
 
 
 def test_removing_adoption_cannot_reuse_cached_retired_aliases(adopted):
@@ -500,3 +555,42 @@ def test_tracking_git_never_inherits_protocol_stdin(local_trial, monkeypatch):
     monkeypatch.setattr(subprocess, "run", inspect)
     load_repository_adoption(root)
     assert observed and all(value == subprocess.DEVNULL for value in observed)
+
+
+@pytest.mark.parametrize("invalid_native", [None, "current_adoption", "date"])
+def test_native_and_sealed_legacy_trial_coexist_without_boundary_bypass(local_trial, invalid_native):
+    root, doc, trial, _ = local_trial
+    source = next(e for e in doc["entries"] if e["skill_id"] != trial["skill_id"])
+    native = {key: source[key] for key in ("skill_id", "definition_path", "definition_xid", "definition_sha256")}
+    native.update(source_kind="native_v1", adopted=True,
+                  adoption={"authority": "test human", "date": "2026-10-10", "basis": "Explicit native source registration"})
+    if invalid_native == "current_adoption":
+        native["current_adoption"] = copy.deepcopy(trial["current_adoption"])
+    elif invalid_native == "date":
+        native["adoption"]["date"] = "not-a-date"
+    doc["entries"] = [native, trial]
+    (root / ADOPTION_PATH).write_text(json.dumps(doc), encoding="utf-8")
+    if invalid_native:
+        with pytest.raises(ValueError):
+            load_repository_adoption(root)
+        return
+    parsed = load_repository_adoption(root)["entries"]
+    assert parsed[0]["legacy_sources"] == []
+    assert all(r["value"] is None for r in parsed[0]["runtime"].values())
+    assert parsed[1]["effective_adopted"] is True
+    assert parsed[1]["effective_maturity"] == "trial"
+    assert parsed[1]["legacy_maturity"] == "draft"
+    catalog = XRefCatalog.build(root)
+    assert catalog.get_skill(native["skill_id"])["maturity"] == "unassessed"
+    assert catalog.get_skill(trial["skill_id"])["maturity"] == "trial"
+    ranked = catalog.rank_skills_for_purpose("derive Python constraints", limit=10)
+    assert any(r["skill_id"] == native["skill_id"] for r in ranked)
+    import subprocess
+    subprocess.run(["git", "-C", str(root), "add", ADOPTION_PATH], check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(root), "-c", "user.name=test", "-c", "user.email=test@example.invalid",
+                    "commit", "-qm", "Synthetic combined native and trial fixture"], check=True, capture_output=True)
+    code, result = command("skill", "run", "--root", str(root), "--definition", native["definition_path"],
+                           "--task", "mixed adoption bounded native run", "--out", str(root / "work/native-mixed.md"),
+                           "--capability", "implementation", "--tuning", "bounded",
+                           "--responsibility", "native analysis", "--execution-mode", "subagent_required", "--json")
+    assert code == 0, result

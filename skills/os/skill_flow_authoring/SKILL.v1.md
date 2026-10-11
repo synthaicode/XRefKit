@@ -239,6 +239,8 @@ carry explicit continuity structure.
 ## Startup
 
 - Confirm whether the request is for a Skill, a Flow, or both.
+- Use the shared governance kickoff for applicable Skill/Knowledge updates; prepare a work candidate and hand the completed specialist evidence to the selected governed reflection endpoint before canonical reflection. Common criteria remain in [the shared gate contract](../../../docs/core/contracts/115_shared_asset_update_gate.md#xid-0F8E2A6C94D1).
+
 - Confirm the proposed id or derive the smallest stable id.
 - Confirm publication boundary:
   - default to `skills_private/` for new Skills
@@ -301,7 +303,9 @@ carry explicit continuity structure.
      implicit memory; keep common Workflow lifecycle control ambient
    - when starting from a rough draft, record the gap diagnosis and the next
      evidence needed before claiming trial readiness
-3. For a public Skill:
+3. After governed reflection of a public Skill, perform the existing separately
+   authorized catalog/adoption synchronization; a single-file receipt does not
+   cover companion files:
    - register it in `skills/_index.md` (the only place holding summary and
      meta/SKILL paths)
    - add its skill id to the matching categories in `skills/index/by_task.md`,
@@ -595,7 +599,9 @@ carry explicit continuity structure.
 
 1. Create or update a session note in `work/sessions/` for the authoring
    observation basis.
-2. For a Skill:
+2. For a Skill, stage its definition/file set under `work/` and submit the
+   completed authoring evidence through the shared handoff before governed
+   reflection to the selected public/private target. For legacy split candidates:
    - create `meta.md`
    - create `SKILL.md`
    - add `references/` only when they reduce repeated authoring effort
@@ -603,7 +609,9 @@ carry explicit continuity structure.
      structure so later AI runs do not rely on implicit memory
    - when starting from a rough draft, record the gap diagnosis and the next
      evidence needed before claiming trial readiness
-3. For a public Skill:
+3. After governed reflection of a public Skill, perform the existing separately
+   authorized catalog/adoption synchronization; a single-file receipt does not
+   cover companion files:
    - register it in `skills/_index.md` (the only place holding summary and
      meta/SKILL paths)
    - add its skill id to the matching categories in `skills/index/by_task.md`,

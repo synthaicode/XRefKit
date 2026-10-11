@@ -113,6 +113,9 @@ _CLIENT_TOOLS_UNLOCKED_SESSIONS: "weakref.WeakSet[Any]" = weakref.WeakSet()
 _CONTEXT_CODEC: ContextTokenCodec | None = None
 _ADMIN_ONLY_INSTRUCTION_MARKERS = (
     "prepare_skill_edit",
+    "activate_skill_edit",
+    "activate_local_knowledge",
+    "prepare_update_gate",
     "list_skill_edits",
     "export_skill_edit",
     "deactivate_skill_edit",
@@ -455,6 +458,10 @@ def main(argv: list[str] | None = None) -> int:
     approval_verifier = (
         HmacHumanApprovalVerifier(approval_secret) if approval_secret else None
     )
+    governance_secret = os.environ.get("XREFKIT_GOVERNANCE_HOST_SECRET")
+    if governance_secret and governance_secret == approval_secret:
+        parser.error("governance host and human approval authorities must use different secrets")
+    governance_host_verifier = HmacHumanApprovalVerifier(governance_secret) if governance_secret else None
 
     upload_manager: InboundUploadManager | None = None
     if args.enable_inbound_webdav:
@@ -933,6 +940,44 @@ def main(argv: list[str] | None = None) -> int:
         return _with_control_reminder(result)
 
     @admin_tool()
+    def prepare_update_gate(ctx: Context, kind: str, identity: str, log: str,
+                            binding_request: dict[str, Any], specialist_evidence: list[str]) -> dict[str, Any]:
+        """Freeze actual staged update bytes and return the required host-owned gate dispatch."""
+        _require_startup_loaded(ctx, "prepare_update_gate")
+        binding = _binding_for(ctx, run_registry)
+        request = {"log": log, "binding_request": binding_request, "specialist_evidence": specialist_evidence}
+        if kind == "knowledge_contribution":
+            request["approval_verifier"] = approval_verifier
+        result = catalog.prepare_update_gate(kind, identity, **request)
+        if binding is None or result["packet"]["binding"]["run_id"] != binding.run_id:
+            raise RuntimeError("update gate intake must bind the active session run")
+        return result
+
+    @admin_tool()
+    def activate_skill_edit(ctx: Context, skill_id: str, packet: dict[str, Any],
+                            receipt: dict[str, Any], approval_assertion: str) -> dict[str, Any]:
+        """Activate exact staged bytes after isolated gate execution and human approval."""
+        _require_startup_loaded(ctx, "activate_skill_edit")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None or packet.get("binding", {}).get("run_id") != binding.run_id:
+            raise RuntimeError("governed activation must bind the active session run")
+        return catalog.activate_skill_edit(skill_id, packet=packet, receipt=receipt,
+            host_verifier=governance_host_verifier, approval_verifier=approval_verifier,
+            approval_assertion=approval_assertion)
+
+    @admin_tool()
+    def activate_local_knowledge(ctx: Context, xid: str, packet: dict[str, Any],
+                                 receipt: dict[str, Any], approval_assertion: str) -> dict[str, Any]:
+        """Activate staged Knowledge only after the common gate and separate human authority."""
+        _require_startup_loaded(ctx, "activate_local_knowledge")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None or packet.get("binding", {}).get("run_id") != binding.run_id:
+            raise RuntimeError("governed activation must bind the active session run")
+        return catalog.activate_local_knowledge(xid, packet=packet, receipt=receipt,
+            host_verifier=governance_host_verifier, approval_verifier=approval_verifier,
+            approval_assertion=approval_assertion)
+
+    @admin_tool()
     def list_skill_edits(ctx: Context) -> list[dict[str, Any]]:
         """List project-local Skill overlays and their provenance."""
         _require_startup_loaded(ctx, "list_skill_edits")
@@ -1264,6 +1309,8 @@ def main(argv: list[str] | None = None) -> int:
         reviewer: str,
         decision_evidence: str,
         approval_token: str,
+        governance_packet: dict[str, Any] | None = None,
+        governance_receipt: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Promote one human-accepted contribution through the server transport."""
         _require_startup_loaded(ctx, "adopt_contribution_return")
@@ -1272,6 +1319,8 @@ def main(argv: list[str] | None = None) -> int:
             raise RuntimeError(
                 "XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before adopt_contribution_return"
             )
+        if governance_packet is not None and governance_packet.get("binding", {}).get("run_id") != binding.run_id:
+            raise RuntimeError("governed adoption must bind the active session run")
         result = catalog.adopt_contribution_return(
             transport=adoption_transport,
             approval_verifier=approval_verifier,
@@ -1280,6 +1329,9 @@ def main(argv: list[str] | None = None) -> int:
             reviewer=reviewer,
             decision_evidence=decision_evidence,
             approval_token=approval_token,
+            governance_packet=governance_packet,
+            governance_receipt=governance_receipt,
+            governance_host_verifier=governance_host_verifier,
         )
         try:
             audit_log.append(

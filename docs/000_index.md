@@ -43,6 +43,8 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 
 ## XRefKit Routing And Authoring
 
+- [Shared asset update gate (selected entry)](core/contracts/115_shared_asset_update_gate.md#xid-0F8E2A6C94D1)
+- [Governance entry usage guide](guides/116_governance_entry_usage.md#xid-3B7A9D12E6F4)
 - [Skill authoring with xref](guides/013_skill_authoring_with_xref.md#xid-3DB05A0F5F5B)
 - [Sources (PDF/Excel/Web)](reference/020_sources.md#xid-2FAD591BF725)
 - [Skill and Knowledge operating model](core/models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
@@ -74,6 +76,8 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 
 ## Operating Models, Guides, And Designs
 
+- [Shared asset update gate design (proposal)](designs/113_shared_asset_update_gate_design.md#xid-A93D741E6BC2)
+- [Correction retrospective design (proposal)](designs/114_correction_retrospective_design.md#xid-D4F83A17B9C6)
 - [Codex MCP job inbox design](designs/050_codex_mcp_job_inbox_design.md#xid-77BCEAA247E3)
 - [OS utility and business skill classification design](designs/064_os_utility_and_business_skill_classification_design.md#xid-ECF29DC3E268)
 - [Business intake pack dependency design](packs/business-intake/065_business_intake_pack_dependency_design.md#xid-D334C1964342)
