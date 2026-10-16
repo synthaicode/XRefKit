@@ -48,7 +48,7 @@ def validate_resource_manifest(manifest: dict, files: dict[str, bytes] | None = 
         if not isinstance(row, dict):
             raise ValueError('invalid resource descriptor')
         path = relative_path(row.get('path'))
-        if path.casefold() in seen or path == MANIFEST_NAME:
+        if path.casefold() in seen or path.casefold() == MANIFEST_NAME.casefold():
             raise ValueError('duplicate or reserved resource path')
         seen.add(path.casefold())
         paths.add(path)

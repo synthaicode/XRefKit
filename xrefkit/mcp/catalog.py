@@ -301,7 +301,14 @@ class XRefCatalog:
         )
         if len(governance_paths) != len(set(governance_paths)):
             raise ValueError("skill_governance_paths contains duplicates")
-        fingerprint, fingerprint_basis = repository_identity(root)
+        builtin_root = Path(__file__).resolve().parents[1] / "resources" / "migration"
+        if root == builtin_root:
+            # This catalog is resolved inside live MCP handlers. Spawning Git
+            # there can block the Windows stdio transport's active stdin reader.
+            # Embedded resources have package identity, not checkout lineage.
+            fingerprint, fingerprint_basis = stable_hash("xrefkit-core:migration")[:32], "package_resource"
+        else:
+            fingerprint, fingerprint_basis = repository_identity(root)
         ownership = load_ownership(root)
         if ownership is not None:
             errors = validate_ownership(root, ownership)

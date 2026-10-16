@@ -61,6 +61,16 @@ def test_rejects_corrupted_download_without_publishing_cache(tmp_path):
     assert not (tmp_path / manifest['version']).exists()
 
 
+@pytest.mark.parametrize('reserved', ['legacy-resources.json', 'LEGACY-RESOURCES.JSON', 'Legacy-Resources.Json'])
+def test_reserved_manifest_case_alias_rejected_before_cache_write(tmp_path, reserved):
+    content = b'original bytes that must never be overwritten'
+    rows = [{'path': reserved, 'content_hash': hashlib.sha256(content).hexdigest(), 'size_bytes': len(content)}]
+    manifest = {'schema_version': 1, 'version': manifest_version(rows), 'files': rows, 'skills': []}
+    with pytest.raises(ValueError, match='reserved'):
+        materialize_legacy_resources(manifest, lambda path: content, tmp_path)
+    assert not (tmp_path / manifest['version']).exists()
+
+
 def test_rejects_undeclared_missing_and_case_alias_resources():
     manifest, files = fixture_bundle()
     with pytest.raises(ValueError, match='file set'):

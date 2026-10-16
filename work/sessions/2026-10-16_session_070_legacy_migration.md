@@ -56,3 +56,24 @@ Focused worker evidence: resource suite 16 passed; guidance suite 9 passed plus
 one subsequent successful workflow-closure test. Parent combined rerun stalled
 and was interrupted without a passing claim; verbose diagnostic rerun is active.
 XID maintenance reports zero issues. Full quality/build/publication remain open.
+
+## Independent findings and corrections
+
+The independent Python reviewer reproduced reserved-name case alias corruption
+and quoted credential-key inclusion, and identified ignored-directory traversal.
+The executor fixed all three and added regressions. Reviewer independently
+rechecked guidance cases (10 passed) and resource cases (4 passed); no remaining
+source finding. The full baseline remains a separate pending review condition.
+
+The stalled stdio test was traced to Git identity subprocess lookup for embedded
+bootstrap assets during a Windows live MCP request. Embedded package identity
+now avoids Git; the original stdio regression passed. The final focused suite
+passed 48 tests in 32.03 seconds. Earlier interrupted runs remain non-passing
+evidence and were replaced by this completed run.
+
+Final source wheel and sdist build succeeded. Initial artifact inspection and
+Twine metadata checks passed; configured Bandit medium/high gate found no such
+findings, and declared dependency audit found no known vulnerabilities. Full
+repository quality and exact-final-wheel official compatibility are running.
+The three prerequisite official Skill releases are publicly available on PyPI;
+their independent installed-public-wheel results are recorded separately.

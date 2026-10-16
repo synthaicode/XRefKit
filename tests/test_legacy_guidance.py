@@ -75,6 +75,62 @@ def test_inventory_preserves_shared_resources_and_excludes_secrets(tmp_path):
         prepare_legacy_bundle(root, tmp_path / "bad", skills=["skills/one"], resources=[".env"])
 
 
+@pytest.mark.parametrize("key", ["api_key", "apiKey", "access_token", "client-secret", "password"])
+def test_quoted_config_credentials_excluded_even_without_secret_filename(tmp_path, key):
+    root = tmp_path / "source"
+    root.mkdir()
+    (root / "SKILL.md").write_text("# Skill\n", encoding="utf-8")
+    (root / "settings.json").write_text(json.dumps({key: "EXAMPLE_FAKE_TEST_ONLY_123456"}), encoding="utf-8")
+    inventory = inspect_legacy_environment(root)
+    assert "settings.json" not in inventory["files"]
+    assert any(row["path"] == "settings.json" and "credential" in row["reason"] for row in inventory["excluded"])
+    result = prepare_legacy_bundle(root, tmp_path / "bundle", skills=["."], resources=[])
+    assert "settings.json" not in {row["path"] for row in result["manifest"]["files"]}
+
+
+@pytest.mark.parametrize("reserved", ["LEGACY-RESOURCES.JSON", "MIGRATION_CHECKS/TEST_PREPARATION.PY", "migration_checks/CASES.JSON"])
+def test_preparation_rejects_case_alias_of_generated_files(tmp_path, reserved):
+    root = tmp_path / "source"
+    root.mkdir()
+    (root / "SKILL.md").write_text("# Skill\n", encoding="utf-8")
+    path = root / reserved
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("{}\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="reserved"):
+        prepare_legacy_bundle(root, tmp_path / "bundle", skills=["."], resources=[])
+
+
+def test_embedded_bootstrap_lookup_never_spawns_git_inside_request(tmp_path, monkeypatch):
+    import xrefkit.mcp.catalog as catalog_module
+
+    catalog = XRefCatalog.build(tmp_path)
+    def unexpected_identity(_root):
+        raise AssertionError("live bootstrap lookup must not spawn Git identity subprocesses")
+    monkeypatch.setattr(catalog_module, "repository_identity", unexpected_identity)
+    assert catalog.get_startup_context()["legacy_migration"]["status"] == "not_started"
+    assert catalog.get_skill("legacy_flow_skill_migration")["skill_id"] == "legacy_flow_skill_migration"
+    assert catalog.get_document_by_xid("7B3E5D1A6104")["content"]
+
+
+def test_inventory_prunes_environment_directories_before_traversal(tmp_path, monkeypatch):
+    import os
+    root = tmp_path / "source"
+    root.mkdir()
+    (root / "SKILL.md").write_text("# Skill\n", encoding="utf-8")
+    ignored = {".venv", "venv", "node_modules", ".git", "__pycache__"}
+    for name in ignored:
+        (root / name).mkdir()
+        (root / name / "never_read.py").write_text("raise RuntimeError('must never inspect')", encoding="utf-8")
+    original = os.scandir
+    def guarded(path):
+        assert Path(path).name not in ignored, "excluded subtree was traversed"
+        return original(path)
+    monkeypatch.setattr(os, "scandir", guarded)
+    inventory = inspect_legacy_environment(root)
+    assert inventory["files"] == ["SKILL.md"]
+    assert {row["path"] for row in inventory["excluded"]} == {name + "/" for name in ignored}
+
+
 def test_preparation_scaffolds_do_not_execute_legacy_code(tmp_path):
     prepared_result = prepared(tmp_path)
     bundle = Path(prepared_result["bundle"])

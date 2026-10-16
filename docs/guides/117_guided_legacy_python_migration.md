@@ -61,6 +61,10 @@ Do not run arbitrary legacy scripts merely because they appear to be tests.
 Inspect side effects and establish a test environment or an explicit safe mode
 first. Never bundle real credentials, tokens or secret-bearing configuration.
 Use sanitized test data and record external dependency requirements separately.
+The inventory's credential-name and content checks are heuristics, not a proof
+that the selected files contain no secrets. Review the exact file set before
+upload. Unsupported non-UTF-8 or binary inputs are listed for separate handling;
+they are not silently converted or counted as migrated.
 
 ## Registration and distribution boundary
 
@@ -155,6 +159,17 @@ Python migration, those receipts alone do not establish complete behavior
 verification. Report registration, retrieval, client execution, baseline
 comparison and business acceptance separately, with evidence for each claimed
 result. Unavailable checks are never passing checks.
+
+After the exact manifest-bound migration work items are complete and the
+existing Skill Run passes its normal verification and closure, the administrator
+can call `register_legacy_bundle` again with the same contribution ID and the
+full closed run text in `verification_workflow`. The server rechecks the existing
+runtime closure rules and exact work-item criteria before retaining that record.
+This is record-level process evidence: it does not read external evidence
+artifacts or independently certify their business conclusions. Pending,
+escalated or unknown migration items do not satisfy normal completion. Migrated
+definitions retain the importer's draft readiness until the applicable existing
+authoring/readiness gates are satisfied; resource adoption does not promote them.
 
 See [package installation and registration](089_xrefkit_package_first_registration.md#xid-4F8C2A7D1E90),
 [Workflow runtime](087_workflow_protocol_sequence_for_humans.md#xid-E8B4D2F19A63)

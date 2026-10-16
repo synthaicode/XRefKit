@@ -11,6 +11,7 @@ import asyncio
 import base64
 import hashlib
 import json
+import os
 import re
 from pathlib import Path
 from types import SimpleNamespace
@@ -22,7 +23,7 @@ MANIFEST = "legacy-resources.json"
 _SKILL_NAMES = {"SKILL.md", "skill.md", "SKILL.v1.md"}
 _TEXT_SUFFIXES = {".py", ".md", ".txt", ".json", ".yaml", ".yml", ".toml", ".csv", ".ini", ".cfg"}
 _SECRET_NAMES = re.compile(r"(?:^|[._-])(?:secret|secrets|credentials?|tokens?|passwords?)(?:[._-]|$)", re.I)
-_SECRET_CONTENT = re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\b(?:password|api_key|access_token|client_secret)\s*[:=]\s*['\"][^'\"\s]{6,}['\"]", re.I)
+_SECRET_CONTENT = re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|[\"']?\b(?:password|api[_-]?key|access[_-]?token|client[_-]?secret)[\"']?\s*[:=]\s*['\"][^'\"\s]{6,}['\"]", re.I)
 
 
 def _digest(value: bytes) -> str:
@@ -45,7 +46,26 @@ def inspect_legacy_environment(source: Path) -> dict[str, Any]:
     if not source.is_dir():
         raise ValueError("legacy source must be an accessible client directory")
     files, excluded, skills, imports, tests, dependencies = [], [], [], {}, [], []
-    for path in sorted(source.rglob("*")):
+
+    def candidates():
+        def traversal_error(error):
+            raise error  # Inaccessible selected scope is unknown, never silently omitted.
+
+        for directory, names, filenames in os.walk(source, topdown=True, followlinks=False, onerror=traversal_error):
+            retained = []
+            for name in sorted(names):
+                path = Path(directory) / name
+                if (name.startswith(".") or name in {"__pycache__", "node_modules", "venv"}
+                        or path.is_symlink() or getattr(path, "is_junction", lambda: False)()):
+                    excluded.append({"path": path.relative_to(source).as_posix() + "/",
+                                     "reason": "excluded directory; hidden, generated, or linked subtree was not traversed"})
+                else:
+                    retained.append(name)
+            names[:] = retained
+            for name in sorted(filenames):
+                yield Path(directory) / name
+
+    for path in candidates():
         relative = path.relative_to(source).as_posix()
         if not path.is_file() and not path.is_symlink():
             continue
@@ -164,7 +184,8 @@ def prepare_legacy_bundle(source: Path, output: Path, *, skills: list[str],
         raise ValueError("selected input now contains a possible secret; inspect again")
     generated = {"migration_checks/test_preparation.py": _SCAFFOLD.encode(),
                  "migration_checks/cases.json": b'{"status":"unknown","expected_result_authority":"human_required","cases":[]}\n'}
-    if set(content).intersection(generated) or MANIFEST in content:
+    reserved = {path.casefold() for path in generated} | {MANIFEST.casefold()}
+    if any(path.casefold() in reserved for path in content):
         raise ValueError("reserved migration manifest/scaffold path collision")
     content.update(generated)
     rows = [{"path": path, "content_hash": _digest(value), "size_bytes": len(value)} for path, value in sorted(content.items())]
