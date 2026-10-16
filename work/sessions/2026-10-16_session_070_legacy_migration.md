@@ -77,3 +77,10 @@ findings, and declared dependency audit found no known vulnerabilities. Full
 repository quality and exact-final-wheel official compatibility are running.
 The three prerequisite official Skill releases are publicly available on PyPI;
 their independent installed-public-wheel results are recorded separately.
+
+The full local regression exposed an outdated adoption test that expected an
+empty initial Knowledge catalog. Packaged bootstrap Knowledge intentionally
+changes that initial state. The test now snapshots the initial XID set, proves
+pending review leaves it unchanged, and proves adoption adds exactly ADOPT123.
+The targeted test passed (1 test). No adoption implementation change was needed;
+the initial full-run failure is retained and final CI must use the corrected test.
