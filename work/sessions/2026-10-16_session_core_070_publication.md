@@ -1,0 +1,7 @@
+# Core 0.7.0 publication execution
+
+User authorized public release; parent delegates merge/tag/publication and independent public verification after final acceptance. Repository source is explicitly authoritative for this chat. Semantically selected release_planning_flow refused draft/deprecated execution, so instruction runtime 3cf3ca4f-a5e2-4d01-8c37-a7940341a4f6 records the publication work. Runtime: work/runtime/2026-10-16_core_070_publication.md. No host model policy was supplied; inherited model is used without an eligibility claim.
+
+Official compatibility prerequisite PR #162 merged and Brownfield0.1.6/CSharp0.1.2/BatchRegression0.4.4 publicly verified. XDDP remains source-only. Exact reviewed Core wheel d30ef901af4715a6a71bd2064fb849612ed15842c5637f5c66f63338819c1c72 passed all published/candidate official checks including combined environments; report work/sessions/2026-10-16_evidence_core_070_reviewed_compatibility.json. Earlier pre-fingerprint-fix wheel evidence is superseded.
+
+Core PR https://github.com/synthaicode/XRefKit/pull/163 awaits full gate and final parent acceptance. No Core tag yet. Prepared release notes: .tmp/core-070-release-notes.md. Prepared clean external-temp smoke location is recorded in .tmp/public-070-smoke-path.txt. Smoke will install xrefkit[mcp]==0.7.0 from public PyPI, assert site-packages identity/version, and run copied test-only HTTP upload/adoption/registration/resource-fetch/local-execution fixtures. No actual customer approval or environment is simulated as real evidence.
