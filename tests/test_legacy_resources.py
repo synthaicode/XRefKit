@@ -199,6 +199,11 @@ def test_empty_core_bootstrap_skill_and_client_run(tmp_path):
     assert skill['repository_adoption']['legacy_maturity'] == 'trial'
     assert catalog.get_document_by_xid('7B3E5D1A6104')['content']
     assert catalog.get_document_by_xid('9DD40488BB9D')['content']
+    for xid in ('7B3E5D1A6104', '9DD40488BB9D', '8A666C1FD121'):
+        document = catalog.get_document_by_xid(xid)
+        assert document['repository_fingerprint'] == catalog.repository_fingerprint
+        cached = catalog.get_document_by_xid(xid, document['content_hash'])
+        assert cached['repository_fingerprint'] == catalog.repository_fingerprint
     assert catalog.get_client_tool_file('tools/migrate_legacy_flow_skill.py')['content']
     definition = client / 'migration.SKILL.v1.md'
     definition.write_bytes(skill['skill_content'].encode('utf-8'))

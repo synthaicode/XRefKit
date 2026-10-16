@@ -1315,7 +1315,12 @@ class XRefCatalog:
         builtin_root = Path(__file__).resolve().parents[1] / "resources" / "migration"
         if self.repo_root != builtin_root and builtin_root.is_dir():
             try:
-                return XRefCatalog.build(builtin_root, discover_packages=False).get_document_by_xid(xid, known_version)
+                # The package supplies bytes; the active server catalog owns
+                # the document/cache identity used by bound client sessions.
+                builtin = replace(XRefCatalog.build(builtin_root, discover_packages=False),
+                                  repository_fingerprint=self.repository_fingerprint,
+                                  fingerprint_basis=self.fingerprint_basis)
+                return builtin.get_document_by_xid(xid, known_version)
             except KeyError:
                 pass
         embedded = _embedded_startup_document(xid)

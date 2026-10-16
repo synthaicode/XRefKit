@@ -28,7 +28,10 @@ def adopted(tmp_path):
 def test_catalog_defaults_to_one_definition_and_old_id_resolves(adopted):
     root, _ = adopted
     catalog = XRefCatalog.build(root)
-    assert len(catalog.skills) == 4
+    assert {entry.skill_id for entry in catalog.skills} == {
+        "python_implementation_flow", "async_constraint_derivation", "db_design",
+        "batch_impact_regression", "legacy_flow_skill_migration",
+    }
 
 
 def test_native_v1_source_adoption_requires_explicit_runtime_without_legacy_receipts(adopted):
@@ -97,7 +100,11 @@ def test_existing_catalog_readiness_and_aliases_remain_unchanged(adopted):
     candidate.mkdir()
     (candidate / "meta.md").write_text("- skill_id: `unadopted`\n", encoding="utf-8")
     (candidate / "SKILL.md").write_text("# Candidate\n", encoding="utf-8")
-    assert len(catalog.skills) == 4
+    assert {entry.skill_id for entry in catalog.skills} == {
+        "python_implementation_flow", "async_constraint_derivation", "db_design",
+        "batch_impact_regression", "legacy_flow_skill_migration",
+    }
+    assert "unadopted" not in {entry.skill_id for entry in catalog.skills}
 
 
 def test_legacy_invocation_runs_v1_with_audited_explicit_values(adopted):

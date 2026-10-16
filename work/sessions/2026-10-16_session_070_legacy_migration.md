@@ -84,3 +84,30 @@ changes that initial state. The test now snapshots the initial XID set, proves
 pending review leaves it unchanged, and proves adoption adds exactly ADOPT123.
 The targeted test passed (1 test). No adoption implementation change was needed;
 the initial full-run failure is retained and final CI must use the corrected test.
+
+## Full baseline disposition (first completed run)
+
+The completed local full run reported 4 failed, 1506 passed, 4 skipped and 108
+subtests passed in 609.82 seconds. One failure is the already-corrected adoption
+catalog assertion loaded before its fix. Two repository-adoption assertions also
+assume the old four-Skill catalog. The fourth failure is an invalid reference
+document identity during a real stdio subagent startup with a legacy python_review
+fixture. These results do not establish a passing full baseline. Corrections and
+focused verification are required before renewed full validation and release.
+The suspected stdio stall completed normally; no deadlock conclusion is claimed.
+
+Exact-wheel official compatibility completed successfully for the prepared
+artifact: published 17 and candidate 43 tests, zero skips, plus both combined
+environments. Any subsequent source change requires a new wheel and rerun.
+
+## Reference identity correction and independent retest
+
+Embedded fallback document resolution now retains the serving catalog's
+repository fingerprint and basis while retaining the exact embedded bytes,
+XIDs, and content hashes. Strict client identity validation is unchanged.
+The two repository-adoption tests now assert the exact expected five Skill IDs
+and explicitly exclude an unadopted candidate. Executor verification passed
+79 tests across repository adoption, real stdio subagent startup, and resources.
+Independent reviewer accepted the correction and passed 3 targeted tests.
+A new wheel/sdist was built in dist/070-reviewed; renewed full quality and
+exact-wheel compatibility validation are in progress. Publication is still held.
