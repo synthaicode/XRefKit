@@ -1,354 +1,217 @@
 <!-- xid: 4F8C2A7D1E90 -->
 <a id="xid-4F8C2A7D1E90"></a>
 
-# XRefKit の pip 利用開始手順
+# Install XRefKit and connect Skill Packages
 
-XRefKit と Skill Package を PyPI から導入して、ローカル環境で使い始める
-ための最短手順を示す。
-
-## 最短手順
-
-PowerShell で利用する作業フォルダから実行する。
+Install XRefKit into the Python environment used by the client or server. Python
+3.11 or later is required. Run these commands in the intended workspace:
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install xrefkit
-xrefkit init
+python -m xrefkit init
 python -m xrefkit --help
 ```
 
-`xrefkit init` は現在の作業フォルダに `.xrefkit/instance.toml` と、未作成の場合だけ
-`AGENTS.md`、`CLAUDE.md`、`CHATGPT.md` を作成する。既存ファイルは保持し、確認なしに
-上書きしない。起動ファイルが不要な場合は `xrefkit init --no-startup-files` を使う。
+`init` creates `.xrefkit/instance.toml` and missing `AGENTS.md`, `CLAUDE.md` and
+`CHATGPT.md` files. Existing files are preserved. Use `--no-startup-files` when
+startup files are unnecessary. The module form works even when the `xrefkit`
+executable is not on PATH.
 
-`xrefkit` コマンドが PATH に見つからない場合は、常に次の module 形式を
-使える。
+## Connect an AI client through MCP
 
-```powershell
-python -m xrefkit --help
-```
-
-## 既存 Skill を import して VS Code MCP で使う場合
-
-まず `--import` なしで MCP 接続を準備し、接続後の AI に移行を案内させられる。
-Skill 名を利用者が指定する必要はない。生成した追記案は、AI 会話の開始時に
-`get_startup_context` を呼び、その `legacy_migration` と `client_instructions`
-に従う指示を含む。MCP の initialize と AI の発話開始は別であり、VS Code を
-開くだけで自動発話する保証はない。Copilot の会話で「XRefKit の
-get_startup_context を呼んで、使い始める案内をして」と依頼する。
-
-管理者が先に移行する場合は `--import` を指定できる。この指定は、変換した
-Skill／Knowledge を **`--repo` のフォルダへ書き込む**。一時出力先に置くのは
-設定案とレポートであり、変換先を隔離する機能ではない。隔離レビューには
-コピーした別の `--repo` を指定する。移行元と移行先は重ならない別フォルダにする。
-既存の移行先ファイルは異なる内容で上書きせず、衝突として報告する。
-また setup は対象 repo で XID fix を実行する。
+Install the MCP extra in the server's Python environment:
 
 ```powershell
 python -m pip install "xrefkit[mcp]"
-xrefkit mcp setup `
-  --repo C:\dev\itsm\XRefKit `
-  --import C:\work\existing-skills
+python -m xrefkit mcp serve --repo C:\xrefkit-server --transport streamable-http --host 127.0.0.1 --port 8000
 ```
 
-出力された `SETUP.md` と `import-report.json` を確認する。問題がなければ、
-生成された設定例と追記文を適用する。
+Configure the AI client's MCP connection to `http://127.0.0.1:8000/mcp` for this
+local example, or to the administrator-provided endpoint for a remote server.
+The client starts with `get_startup_context`, routes from the task purpose, and
+fetches the selected Skill. Opening VS Code alone does not guarantee an AI
+message or a startup call; start the conversation with your intended task.
+
+The server supplies definitions and resources. The client runs the AI and local
+Python tools. Human approval, business judgment and final acceptance remain
+explicit. Client-local paths are never assumed readable on a remote server.
+
+For a generated local stdio configuration, use:
 
 ```powershell
-xrefkit mcp setup apply `
-  --source C:\Users\<user>\AppData\Local\Temp\xrefkit-setup-<id> `
-  --repo C:\dev\itsm\XRefKit
+python -m xrefkit mcp setup --repo C:\xrefkit-server
+python -m xrefkit mcp setup apply --source C:\path\to\generated-setup --repo C:\xrefkit-server
 ```
 
-この適用処理は `.vscode/mcp.json` を作成し、`AGENTS.md` と `CLAUDE.md` に
-semantic routing の案内を追記する。既存の MCP 設定を上書きする場合だけ
-`--force` を指定する。
+Inspect the generated `SETUP.md` before applying it. Apply creates
+`.vscode/mcp.json` and adds routing instructions to `AGENTS.md` and `CLAUDE.md`.
+Use `--force` only when intentionally replacing existing MCP configuration.
 
-VS Code 起動後は MCP の `xrefkit` サーバーを有効にし、利用者は自然言語で
-依頼する。MCP の semantic routing は、目的に適合する Skill を選択し、選択後に
-one-document methodを提供する。Knowledgeは`knowledge_needs`から必要なものだけを
-catalog検索し、XIDで解決する。親またはclientが各`required_when`を評価してactive
-need IDを指定し、MCPは指定されたneedだけをrequiredとして解決する。未評価のneedを
-不要とはみなさない。Workflow Protocolは引き続き共通実行境界を提供する。
-Skill に基づく作業の実行、
-変更、承認および完了判断はクライアント側が担当する。
+## Migrate an older environment
 
-| 主体 | 担当 |
-|---|---|
-| 利用者 | 自然言語で目的を伝える |
-| XRefKit MCP | Skill を選択し、不活性な定義を提供する |
-| AI クライアント | Skill に従って調査・変更・検証する |
-| 人間／クライアント | 承認と最終的な完了判断を行う |
+After installing and connecting the new environment, tell its AI:
+"Migrate this old XRefKit environment." You do not need to instruct an old
+AI first or manually prepare tests before starting.
 
-### AI に渡す初回移行案内と状態
+For custom Skills that call Python, including shared `tools/` modules outside
+Skill folders, use the
+[guided legacy Python migration](117_guided_legacy_python_migration.md#xid-6D73C9A12E40)
+route. It separates client inspection, preparation and test evidence, governed
+upload/adoption, server registration, and hash-checked local resource use.
+Observed legacy behavior and business-approved expectations remain distinct.
 
-`get_startup_context.legacy_migration` は、対象 MCP サーバーの repo にある
-`.xrefkit/legacy-migration.json` を読み、未開始なら移行元を尋ねる案内、途中なら
-残りの対象と取得待ち XID、完了なら案内なしを返す。状態は版番号や文書キャッシュと
-独立している。サーバー再起動や XRefKit 更新だけでは初回案内を復活させない。
-更新案内はこの状態とは別の責務であり、この機能は更新案内を実装しない。
+The document-only compatibility route remains available when the source and
+target are accessible in the same environment. `plan_legacy_migration(source)`
+returns selectable Skill folders and Knowledge documents. Execute its returned
+client command with an explicit `--target` for every selected unit. The source
+and target must be separate non-overlapping folders. Existing changed files are
+reported as conflicts rather than overwritten.
 
-AI は `plan_legacy_migration(source)` で読み取りのみの一覧を取得し、利用者が
-指示した対象だけを、応答の `client_import_command` に `--target <対象>` として
-追加し、クライアント側の Python で `python -m xrefkit mcp migrate` を実行する。
-MCP サーバー自身は Skill／Knowledge の配置を行わない。対象は
-`skills/` 配下の Skill フォルダ（入れ子を含む）または `knowledge/` 配下の
-Markdown／テキストファイル。未リンクの Knowledge も選択できる。Skill を選ぶと
-その直接リンク先 Knowledge も同梱する。対応外の形式は一覧で明示し、勝手に
-完了扱いにしない。旧ファイルを削除・変更せず、対象 repo へコピー変換する。
-Skill は既存の folder-based `legacy_split_v1` 互換変換器を使用する。
-これは SkillDefinition v1 の採用・品質承認ではない。
+An administrator may request this import during setup:
 
-選択範囲の全成果物について、配置ファイルの SHA-256 と、MCP の既存の
-XID 表現へ正規化した本文の SHA-256 を保存する。`get_document_by_xid` または
-`get_skill` で期待した本文を取得できたことを記録して移行完了とする。
-変換、CLI 確認、キャッシュによる本文省略だけでは完了しない。
-未選択対象まで移行済みとは主張しない。AI は取得待ち XID を
-`get_document_by_xid`（`known_version` なし）で取得する。
-失敗時は対象ごとの理由と準備済み成果物を保持し、再試行では未完了対象だけを
-扱う。状態が壊れていた場合は初期化せず、保全してエラーを報告する。
-旧資産がないことを利用者が明示した場合のみ `dismiss_legacy_migration` で
-案内不要を保存できる。
+```powershell
+python -m xrefkit mcp setup --repo C:\xrefkit-server --import C:\old-skills
+```
 
-保存場所はクライアントごとではなく **サーバーの対象 repo ごと**。stdio の
-ローカル接続では利用者の対象環境になる。共有 HTTP サーバーでは同じ repo を
-利用するクライアントが状態を共有する。移行元パスもサーバーから読める必要がある。
-会社 PC 側にしかないフォルダをリモートサーバーが読めるとは仮定しない。
+`--import` writes converted Skill/Knowledge files into `--repo`; the temporary
+setup output is not an isolated migration destination. Use a separate target
+repository when an isolated review is needed. Inspect `import-report.json`.
+Setup also runs XID maintenance in the target repository.
 
-## Skill Package を追加する場合
+The document-only importer uses the folder-based `legacy_split_v1` converter;
+this does not adopt a SkillDefinition v1 or promote its maturity. Selected
+Skills include their directly linked Knowledge; unlinked Knowledge can be
+selected separately. Unsupported resources remain explicit.
 
-必要な Package だけをPyPIからインストールする。
+Server-scoped `.xrefkit/legacy-migration.json` retains selected targets,
+prepared artifacts, failures and retrieval receipts. Conversion or a local CLI
+read alone is insufficient: retrieve pending bodies with `get_document_by_xid`
+without `known_version`, or with `get_skill`. Conditional omission is not a new
+retrieval receipt. Restarting or upgrading does not reset this state. Do not
+reset damaged state or infer success from a package version. Only explicit
+confirmation that no legacy assets exist permits `dismiss_legacy_migration`.
+For Python migrations, definition retrieval alone does not establish behavioral
+completion; follow the guided route's workflow evidence and remaining checks.
+
+## Install and discover official Skill Packages
+
+Install only the distributions needed:
 
 ```powershell
 python -m pip install xrefkit-skills-batch-regression
 python -m pip install xrefkit-skills-csharp
 python -m pip install xrefkit-skills-brownfield
-```
-
-## 発見と有効化を確認する
-
-以下は CLI resolver から Package を直接利用する場合の手順である。MCP の
-semantic routing では、同じ Python 環境にインストールされた Package が自動発見
-されるため、`--enabled-package` の指定は不要である。
-
-まず、インストール済み Package を発見する。
-
-```powershell
 python -m xrefkit package discover --json
 ```
 
-Package の有効化方式は、CLI resolver と MCP semantic routing で異なる。
-CLI resolver では明示的に有効化するが、MCP サーバーは同じ Python 環境に
-インストールされた Package を `xrefkit.skill_packages` entry point から自動登録する。
+MCP automatically discovers `xrefkit.skill_packages` entry points installed in
+its own interpreter. Restart the server after installation and verify live
+`list_skills`, `rank_skills_for_purpose` and selected `get_skill` responses.
+Installing into a different interpreter does not register a package with that
+server. Package files need not be copied into the repository merely for ranking.
 
-発見結果には、Package の `package_id` とバージョンが表示される。CLI resolver で
-Package を使う場合は、使用する package id を明示して有効化する。
-
-```powershell
-python -m xrefkit show effective-skill batch.impact_regression `
-  --mode tree `
-  --enable-entry-point-discovery `
-  --enabled-package xrefkit.skills.batch_regression
-```
-
-複数 Package を使う場合は `--enabled-package` を追加する。
+CLI resolution enables package IDs explicitly:
 
 ```powershell
-python -m xrefkit show effective-skill csharp.review `
-  --mode tree `
-  --enable-entry-point-discovery `
-  --enabled-package xrefkit.skills.csharp `
-  --enabled-package xrefkit.skills.brownfield
+python -m xrefkit show effective-skill batch.impact_regression --mode tree --enable-entry-point-discovery --enabled-package xrefkit.skills.batch_regression
 ```
 
-継続利用する場合は、リポジトリルートの `xrefkit.server.toml` に package id
-を保存できる。
+Repeat `--enabled-package` to enable multiple packages. For continuing CLI use,
+store IDs in `xrefkit.server.toml`:
 
 ```toml
 [packages]
-enabled = [
-  "xrefkit.skills.batch_regression",
-  "xrefkit.skills.csharp",
-]
+enabled = ["xrefkit.skills.batch_regression", "xrefkit.skills.csharp"]
 ```
 
-`distribution name`（pip で指定する名前）と `package_id`（XRefKit が有効化
-に使う名前）は異なる。値は各 Package の `package_manifest.yaml` で確認する。
+The pip distribution name and XRefKit package ID are different identifiers.
+Use the package manifest or discovery output for the ID. Distribution dependency
+bounds and manifest Core protocol bounds are also different; see
+[Core release compatibility](112_core_skill_release_compatibility.md#xid-0C41A7D389B2).
 
-MCP サーバーを起動する場合は、サーバーが使用する Python 環境に
-インストールされた `xrefkit.skill_packages` entry point を自動発見し、
-Package の Skill を `list_skills` と `rank_skills_for_purpose` の semantic
-routing 対象へ登録する。MCP の ranking へ登録するためだけに Skill ファイルを
-リポジトリへ展開したり、`--enabled-package` を追加したりする必要はない。
-Package のバイト列はインストール先から読み込まれ、ランキング結果には
-`package_id` と Package provenance が付く。MCP サーバーの Python 環境と、
-Package をインストールした Python 環境が異なる場合は発見されない。
+A package may provide a canonical Markdown SkillDefinition or a legacy YAML and
+entry Markdown pair. Repository-native SkillDefinition candidates require
+explicit `--skill-definition` selection and applicable `--skill-governance`
+records; placing a file in the repository does not activate it. Parsing and
+catalog registration do not imply maturity, quality acceptance or production
+adoption. See the
+[distribution boundary](098_skilldefinition_distribution_boundary.md#xid-B7D3A5E91C42).
 
-これはinstalled packageのentry-point discoveryである。repository内に置いただけの
-SkillDefinition v1候補を自動有効化する機能ではない。repository内のv1定義は
-`--skill-definition`で明示し、指定されていない候補をactive catalogへ出さない。
+## Server options and management boundary
 
-package manifestの`provides.skills[].path`は、canonicalなone-document Markdown
-SkillDefinitionを指すことができる。この場合は`skill_definition_v1`として検証し、
-definition XIDとraw bytes SHA-256をcatalogへ登録する。既存のSkill YAMLとentry
-Markdownの組合せは`legacy_split_v1`として継続する。詳細は
-[SkillDefinition distribution and adoption boundary](098_skilldefinition_distribution_boundary.md#xid-B7D3A5E91C42)を参照する。
-parser検証やcatalog登録は、実行可能性、maturity、品質受入れ、production adoptionを
-意味しない。
+Use `python -m xrefkit mcp serve --help` for the exact installed option set.
+Common settings are:
 
-## MCP サーバー起動パラメータ一覧
-
-基本形は次のとおり。
-
-```powershell
-xrefkit mcp serve --repo C:\path\to\XRefKit --transport stdio
-```
-
-| Parameter | Default | 説明 |
+| Option | Default | Purpose |
 | --- | --- | --- |
-| `--repo <path>` | required | XRefKit repository root |
-| `--profile reader\|admin` | `reader` | port単位の機能境界。`admin` はloopback限定で更新・contribution toolsを公開 |
+| `--repo` | required | Server repository root |
+| `--profile reader\|admin` | `reader` | Reader or loopback-only management tools |
 | `--transport stdio\|sse\|streamable-http` | `stdio` | MCP transport |
-| `--host <host>` | `127.0.0.1` | HTTP transport の bind host |
-| `--port <number>` | `8000` | HTTP transport の port |
-| `--http-path <path>` | `/mcp` | Streamable HTTP endpoint |
-| `--log-level <level>` | `info` | `debug` / `info` / `warning` / `error` / `critical` |
-| `--ssl-certfile <path>` | none | HTTPS certificate chain; `--ssl-keyfile` と併用 |
-| `--ssl-keyfile <path>` | none | HTTPS private key; `--ssl-certfile` と併用 |
-| `--public-base-url <url>` | auto | artifact distribution 用の公開URL |
-| `--dist-extra-dir <path>` | none | `/dist` に追加する artifact directory |
-| `--enable-executable-distribution` | off | executable artifact distribution を有効化 |
-| `--enable-inbound-webdav` | off | MCP所有のinbound contribution stagingを有効化。management用の`admin` profileで使用 |
-| `--inbound-webdav-host <host>` | MCP host | inbound WebDAV listener host |
-| `--inbound-webdav-port <port>` | MCP port | inbound WebDAV listener port |
-| `--stateless-http` | off | Streamable HTTP を stateless mode で提供 |
-| `--context-secret <secret>` | `XREFKIT_CONTEXT_SECRET` | context token 用 HMAC secret |
-| `--distribution-trust-id <id>` | none | executable distribution の trust identity |
-| `--domain-knowledge-root <path>` | none | 外部 XID knowledge root; repeatable |
-| `--skill-definition <path>` | none | 明示有効化するone-document SkillDefinition; repeatable |
-| `--skill-governance <path>` | none | definitionに対応する外部maturity/promotion record; repeatable |
-| `--initial-protocol workflow` | both | legacy compatibility: `workflow_protocol` を初期連携 |
-| `--initial-protocol reporting` | both | legacy compatibility: `reporting_protocol` を初期連携 |
-| `--audit-log <path>` | `<repo>\work\mcp\xid_audit.jsonl` | MCP audit JSONL の出力先 |
+| `--host` / `--port` | `127.0.0.1` / `8000` | HTTP bind address |
+| `--http-path` | `/mcp` | Streamable HTTP endpoint |
+| `--ssl-certfile` / `--ssl-keyfile` | none | HTTPS certificate and key |
+| `--public-base-url` | automatic | Artifact distribution URL |
+| `--enable-executable-distribution` | off | Executable artifact distribution |
+| `--distribution-trust-id` | none | Distribution trust identity |
+| `--dist-extra-dir` | none | Additional artifact directory |
+| `--enable-inbound-webdav` | off | Admin contribution staging listener |
+| `--inbound-webdav-host` / `--inbound-webdav-port` | MCP listener | Upload listener binding |
+| `--stateless-http` | off | Stateless Streamable HTTP |
+| `--context-secret` | environment | Context-token HMAC secret |
+| `--domain-knowledge-root` | none | Additional XID roots, repeatable |
+| `--skill-definition` / `--skill-governance` | none | Explicit definition/governance inputs, repeatable |
+| `--audit-log` | repository work area | MCP audit output |
+| `--log-level` | `info` | Logging verbosity |
 
-通常利用ポートは`--profile reader`とし、Skill/Knowledge更新、contribution upload、
-review、adoptionを扱う管理ポートだけを`--profile admin`で起動する。`admin`は
-loopback hostにのみbindできる。`reader`のtool discoveryには管理toolを出さない。
+Reader discovery does not expose update, review or adoption operations. The
+management profile binds only to loopback. Use the existing
+[contribution management guide](095_mcp_contribution_return_adoption.md#xid-0E5C778EB6AF)
+for upload, trusted approval and adoption configuration. Upload/adoption,
+publication, distribution and live verification are separate outcomes.
 
-新しい MCP client は `initialize` params の `xrefkit.excluded_protocols` を使う。
-例えば `reporting` を除外する場合は次の JSON を送る。
+New clients may exclude optional initial protocol bodies during MCP initialize:
 
 ```json
-{
-  "capabilities": {},
-  "xrefkit": {
-    "excluded_protocols": ["reporting"]
-  }
-}
+{"capabilities": {}, "xrefkit": {"excluded_protocols": ["reporting"]}}
 ```
 
-値に指定できるのは `prompt_flow`、`workflow`、`reporting` である。省略時または
-`[]` の場合は3つすべてを初期連携する。旧 client の `xrefkit.initial_protocols`
-は `workflow` と `reporting` の include list として受け付け、`prompt_flow` は
-常に含める。2つの extension を同時に送る要求は不正である。
+Allowed names are `prompt_flow`, `workflow` and `reporting`. Omission or an empty
+list includes all three. Legacy `xrefkit.initial_protocols` and repeatable
+`--initial-protocol` retain include semantics for workflow/reporting, with prompt
+flow included. Do not send both initialize extensions. Base uncertainty,
+context-direction, XID routing and shared-memory controls remain applicable
+regardless of optional protocol-body selection.
 
-旧 CLI の `--initial-protocol` は repeatable で、例えば workflow のみを初期連携する場合は
-次のように指定する。
+## Other distribution routes and updates
+
+Batch Regression's legacy folder materializer is available when that interface
+is specifically required:
 
 ```powershell
-xrefkit mcp serve `
-  --repo C:\path\to\XRefKit `
-  --transport stdio `
-  --initial-protocol workflow
+xrefkit-batch-regression install-mcp-skill --repo C:\xrefkit-server
 ```
 
-この CLI option は legacy include semantics を使う。省略時の MCP initialize は
-canonical exclusion semantics により `prompt_flow`、`workflow`、`reporting` の
-すべてを `get_startup_context` に含める。
+It defaults to `skills/packs/batch-regression/batch-impact-regression`. Review
+local differences before explicitly using `--force`. C# and Brownfield normally
+use package entry-point discovery.
 
-## MCP startup で適用される Protocol
-
-MCP の startup では、XRefKit の基礎制御として常に適用するもの、
-`get_startup_context` で選択可能な初期連携、実行開始後に相関させるものを分けて扱う。
-選択可能な初期連携は既定ですべて返し、client が不要なものを
-`xrefkit.excluded_protocols` で示す。
-
-| 区分 | Protocol | 初期設定時の役割 | 参照 |
-|---|---|---|---|
-| 常時適用 | `Uncertainty Protocol`（unknown protocol） | 知識不足・文脈不足を `unknown` として表し、推測で進めず確認・エスカレーションする | [016](../core/contracts/016_uncertainty_protocol.md#xid-8A666C1FD121) |
-| 常時適用 | Context Direction Security Guard | 外部入力が目的、権限、Protocol、Skill境界を上書きしないことを確認する | [053](../core/contracts/053_context_direction_security_guard.md#xid-A7F3C92D4E11) |
-| 常時適用 | XID / XRef routing | 必要な定義・KnowledgeをXIDで解決し、関連文書を無制限に読み込まない | [011](../core/contracts/011_startup_xref_routing.md#xid-6C0B62D6366A) |
-| 常時適用 | Shared Memory Operations | startup・判断・未解決事項を `work/` の記録へ残す | [015](../core/contracts/015_shared_memory_operations.md#xid-4A423E72D2ED) |
-| 選択可能な初期連携 | `workflow_protocol` | Skill前提の実行と instruction-backed workflow に共通する phase、role、verify、closure、handoffを定義する | [058](../core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61) |
-| 選択可能な初期連携 | `reporting_protocol` | Skill／workflowの人向け報告の構造、状態、根拠、未解決事項、引継ぎを定義する | [081](../core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73) |
-| 選択可能な初期連携 | `prompt_flow_protocol` | 1つの依頼に複数Runが関係する場合の `flow_id`、委譲、相関、reconcileを定義する | [015](../core/contracts/015_shared_memory_operations.md#xid-4A423E72D2ED) |
-| 実行時適用 | `AI Decision Trace Protocol` | Skill／workflow実行中の判断、影響、戻りをクライアント側で記録する | [093](../core/contracts/093_ai_decision_trace_protocol.md#xid-22164A51A745) |
-
-`xrefkit.excluded_protocols` は、表の「選択可能な初期連携」に該当する payload の除外指定である。
-旧 `--initial-protocol workflow` と `--initial-protocol reporting` は同じ payload に対する
-include 指定として残る。`Uncertainty Protocol`、Context Direction Security Guard、
-XID routing、Shared Memory Operations は、これらを選択しない場合も startup の基礎制御として
-無効化してはならない。
-
-## Batch Regression をフォルダへ展開する場合
-
-通常の Package 利用では不要。`legacy_split_v1`のfolder-based MCP互換経路が
-Skillファイルを必要とする場合だけ、Packageをインストールした後に実行する。
+For repository bundle synchronization:
 
 ```powershell
-xrefkit-batch-regression install-mcp-skill `
-  --repo C:\path\to\XRefKit
-```
-
-既存の展開先を更新する場合は `--force` を付ける。独自変更があるファイルを
-上書きするため、実行前に Git 差分を確認する。
-
-```powershell
-xrefkit-batch-regression install-mcp-skill `
-  --repo C:\path\to\XRefKit `
-  --force
-```
-
-この処理の既定の展開先は
-`skills/packs/batch-regression/batch-impact-regression` である。C# と
-brownfield は、通常の entry point discovery を使う。
-
-## GitHub ReleaseからSkillを同期する場合
-
-PyPIに未登録のSkillを管理者がまとめて取得する場合は、GitHub Releaseの
-Skill bundleをXRefKitから同期できる。bundleは `skills/` と `knowledge/`
-を含むドメイン単位のZIPとして公開する。
-
-```powershell
+python -m xrefkit skills sync --bundle csharp --dry-run --json
 python -m xrefkit skills sync --bundle csharp
 python -m xrefkit skills sync --all
 ```
 
-既定では `synthaicode/XRefKit` のうち、bundle専用タグに対応する最新Releaseを取得し、現在のリポジトリの
-`skills/`、`knowledge/`、`review_axes/`、`schemas/`へ登録する。同期状態は
-`.xrefkit/skill-sync/`に記録される。前回同期したファイルは更新できるが、
-手作業で存在するファイルは、確認なしには上書きしない。
+Synchronization is separate from management staging, review and adoption. It
+does not itself activate v1 candidates, accept quality, promote maturity or
+prove live retrieval. See
+[bundle synchronization](090_skill_bundle_sync.md#xid-8D7F2A6C4B10).
 
-更新内容を確認するだけの場合は、次を使う。
-
-```powershell
-python -m xrefkit skills sync --bundle csharp --dry-run --json
-```
-
-同期は配布物をrepositoryへ登録する操作であり、management upload、staging、seal、
-review、adoptionそのものではない。legacy discovery対象はMCP再起動後に読み直される。
-SkillDefinition v1は、同期されたという理由だけではactiveにならず、検証後に
-`--skill-definition`と必要な`--skill-governance`で明示有効化する。このcheckoutには
-admin profile向けのMCP-owned management upload、staging、seal、review、adoption、
-maturity操作も実装されているが、これらはbundle同期から独立した管理境界である。
-uploadまたはadoptionだけでactive catalogへの切替、production publication、品質受入れ、
-live verificationが完了したとは扱わない。
-
-## 更新
-
-更新はインストール時と同じ Python 環境で行う。
+Upgrade in the same interpreter used for execution:
 
 ```powershell
 python -m pip install --upgrade xrefkit
@@ -356,43 +219,7 @@ python -m pip install --upgrade xrefkit-skills-batch-regression
 python -m xrefkit package discover --json
 ```
 
-Package の manifest にある `requires.xrefkit_core` と XRefKit のバージョンが
-合わない場合は、無理に有効化せず、互換範囲を確認する。
-
-## 使い分け
-
-| 目的 | 実行すること |
-|---|---|
-| XRefKit 本体を使う | `python -m pip install xrefkit` |
-| MCP サーバーを使う | `python -m pip install "xrefkit[mcp]"` |
-| 公開 Package を追加する | `python -m pip install <distribution>` |
-| CLI resolver で Package を使う | `--enabled-package` または `xrefkit.server.toml` |
-| MCP で Package を使う | MCP と同じ Python 環境へインストール |
-| PyPI 未公開の配布物をrepositoryへ同期する | `python -m xrefkit skills sync` |
-| legacy folder-based MCP へ展開する | Package 固有の `install-mcp-skill` |
-
-## 完了確認
-
-次の3点はCLI resolverのdownload、discovery、明示enablementを確認する。
-
-```powershell
-python -m xrefkit --help
-python -m xrefkit package discover --json
-python -m xrefkit show effective-skill <skill-id> `
-  --mode tree `
-  --enable-entry-point-discovery `
-  --enabled-package <package-id>
-```
-
-MCP利用では、同じinterpreterでserverを再起動し、live callで`list_skills`、
-`rank_skills_for_purpose`、選択後の`get_skill`を別に確認する。repository内の
-SkillDefinition v1は`--skill-definition`で明示有効化されていることも確認する。
-CLI resolverの成功だけではlive MCP routingを証明しない。
-
-`skills/_index.md` はリポジトリ内 Skill のカタログであり、Package の
-インストールや発見では更新されない。リポジトリ内 Skill 自体を変更した
-場合だけ、必要に応じて次を実行する。
-
-```powershell
-python -m xrefkit skill index --write
-```
+Verify installed compatibility, CLI resolution and live MCP retrieval separately.
+`skills/_index.md` is the repository Skill catalog and is not regenerated by pip
+installation. Run `python -m xrefkit skill index --write` only when repository
+Skill metadata itself changes.

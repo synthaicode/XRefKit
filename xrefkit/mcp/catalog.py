@@ -376,6 +376,12 @@ class XRefCatalog:
             ) if entry.skill_id in receipts and entry.path == receipts[entry.skill_id]["definition_path"]
               and entry.definition_format == "skill_definition_v1"
               and entry.package_id is None else entry for entry in entries]
+        if not any(entry.skill_id == "legacy_flow_skill_migration" for entry in entries):
+            builtin_root = Path(__file__).resolve().parents[1] / "resources" / "migration"
+            if self.repo_root != builtin_root and builtin_root.is_dir():
+                builtin = XRefCatalog.build(builtin_root, discover_packages=False)
+                entries.extend(replace(entry, source_root=str(builtin_root), package_id="xrefkit-core")
+                               for entry in builtin.skills)
         return self._apply_skill_edits(entries)
 
     def _apply_skill_edits(self, entries: list[SkillCatalogEntry]) -> list[SkillCatalogEntry]:
@@ -694,6 +700,13 @@ class XRefCatalog:
         for _xid, path in local_knowledge_files(self.repo_root):
             text = read_text(path)
             entries.append((_knowledge_entry(self.repo_root, self.ownership, path, text), text))
+        builtin_root = Path(__file__).resolve().parents[1] / "resources" / "migration"
+        if self.repo_root != builtin_root and builtin_root.is_dir():
+            known = {entry.xid for entry, _ in entries}
+            for path in sorted((builtin_root / "knowledge").rglob("*.md")):
+                text = read_text(path)
+                if first_xid(text) not in known:
+                    entries.append((_knowledge_entry(builtin_root, None, path, text), text))
         return entries
 
     def get_repository_identity(self) -> dict[str, str]:
@@ -787,6 +800,19 @@ class XRefCatalog:
         result = entry.to_dict()
         result["client_tool_download"] = _client_tool_download_policy(entry)
         result["content_resolution"] = _mcp_content_resolution_policy()
+        from .legacy_migration import _load as load_migration_state
+
+        for unit in load_migration_state(self.repo_root)["units"].values():
+            if unit.get("result", {}).get("skill_id") == skill_id and unit.get("resource_bundle"):
+                result["client_resources"] = {
+                    **unit["resource_bundle"],
+                    "manifest_tool": "get_legacy_resource_manifest",
+                    "file_tool": "get_legacy_resource_file",
+                    "cwd": "materialized bundle root",
+                    "execution_location": "client",
+                    "server_executes_tools": False,
+                }
+                break
         if known_document_versions is None:
             if entry.definition_format == "skill_definition_v1":
                 source_root = Path(entry.source_root) if entry.source_root else self.repo_root
@@ -1059,6 +1085,24 @@ class XRefCatalog:
     def list_tool_contracts(self) -> list[dict]:
         return [contract.to_dict() for contract in self.tools]
 
+    def list_legacy_resource_manifests(self) -> list[dict]:
+        from .legacy_resources import read_resource_manifest
+
+        return [
+            {"namespace": path.parent.name, **read_resource_manifest(self.repo_root, path.parent.name)[1]}
+            for path in sorted((self.repo_root / "tools").glob("*/legacy-resources.json"))
+        ]
+
+    def get_legacy_resource_manifest(self, namespace: str) -> dict:
+        from .legacy_resources import read_resource_manifest
+
+        return read_resource_manifest(self.repo_root, namespace)[1]
+
+    def get_legacy_resource_file(self, namespace: str, path: str) -> dict:
+        from .legacy_resources import resource_file
+
+        return resource_file(self.repo_root, namespace, path)
+
     def get_client_tool_manifest(self) -> dict:
         return _client_tool_distribution(self.repo_root).to_dict()
 
@@ -1261,6 +1305,12 @@ class XRefCatalog:
             response["requested_xid"] = xid
             response["resolved_via"] = "definition_alias"
             return response
+        builtin_root = Path(__file__).resolve().parents[1] / "resources" / "migration"
+        if self.repo_root != builtin_root and builtin_root.is_dir():
+            try:
+                return XRefCatalog.build(builtin_root, discover_packages=False).get_document_by_xid(xid, known_version)
+            except KeyError:
+                pass
         embedded = _embedded_startup_document(xid)
         if embedded is not None:
             return _conditional_document_response(
@@ -3223,6 +3273,16 @@ def _client_tool_files(root: Path) -> list[ClientToolFile]:
                 links=markdown_xid_link_targets(text),
             )
         )
+    helper_path = "tools/migrate_legacy_flow_skill.py"
+    if not any(file.path == helper_path for file in result):
+        helper = Path(__file__).resolve().parents[1] / "resources" / "migration" / helper_path
+        if helper.is_file():
+            text = read_text(helper)
+            result.append(ClientToolFile(
+                path=helper_path, kind="python", content=text,
+                content_hash=stable_hash(text), size_bytes=len(text.encode("utf-8")),
+                run_hint=f"python {helper_path}", imports=_python_imports(text), links=[],
+            ))
     return result
 
 

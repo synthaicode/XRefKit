@@ -311,9 +311,7 @@ def export_contribution_return(
     _verify_manifest_payload(record_dir, manifest)
     exported_files = []
     for item in manifest["files"]:
-        content = (record_dir / "files").joinpath(*PurePosixPath(item["path"]).parts).read_text(
-            encoding="utf-8"
-        )
+        content = (record_dir / "files").joinpath(*PurePosixPath(item["path"]).parts).read_bytes().decode("utf-8")
         if _sha256(content) != item["content_hash"]:
             raise ValueError(f"stored contribution file hash mismatch: {item['path']}")
         exported_files.append({**item, "content": content})
@@ -1162,7 +1160,7 @@ def _stored_files(record_dir: Path, manifest: dict[str, Any]) -> list[AdoptionFi
     for item in manifest["files"]:
         content = (record_dir / "files").joinpath(
             *PurePosixPath(item["path"]).parts
-        ).read_text(encoding="utf-8")
+        ).read_bytes().decode("utf-8")
         if _sha256(content) != item["content_hash"]:
             raise ValueError(f"stored contribution file hash mismatch: {item['path']}")
         result.append(
@@ -1210,7 +1208,7 @@ def _verify_manifest_payload(record_dir: Path, manifest: dict[str, Any]) -> None
         stored = content_root.joinpath(*PurePosixPath(path).parts)
         if not stored.is_file():
             raise ValueError(f"stored contribution file is missing: {path}")
-        content = stored.read_text(encoding="utf-8")
+        content = stored.read_bytes().decode("utf-8")
         encoded = content.encode("utf-8")
         content_hash = hashlib.sha256(encoded).hexdigest()
         if raw.get("content_hash") != content_hash:
@@ -1304,7 +1302,7 @@ def _validate_canonical_target(
                 and known_locations.issubset({normalized})
                 and xid not in (unlocated_existing_knowledge_xids or set())
                 and target.is_file()
-                and _sha256(target.read_text(encoding="utf-8")) == expected_hash
+                and _sha256(target.read_bytes().decode("utf-8")) == expected_hash
             )
             if not prepared_target_matches:
                 raise ValueError(f"Knowledge XID already exists in the canonical catalog: {xid}")

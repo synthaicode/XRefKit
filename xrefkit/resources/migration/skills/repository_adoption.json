@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "adoption": {
+    "authority": "repository user",
+    "date": "2026-10-06",
+    "basis": "Explicit OK to v1-only repository source with preserved declared settings and ID references, required explicit missing capability, draft refusal, and unchanged public YAML/third-party APIs. This is source adoption, not Skill promotion.",
+    "missing_runtime_policy": "require_explicit_input"
+  },
+  "entries": [
+    {
+      "skill_id": "legacy_flow_skill_migration",
+      "definition_path": "skills/os/legacy_flow_skill_migration/SKILL.v1.md",
+      "definition_xid": "F8C1A5D3E920",
+      "definition_sha256": "46af209e3dc82bcebbc15185770054b841cfd71cc0cf7466e068ed8b39a63d8a",
+      "legacy_ids": [],
+      "legacy_sources": [
+        {
+          "path": "skills/os/legacy_flow_skill_migration/meta.md",
+          "xid": "8F1D7A2C4B63",
+          "sha256": "435632e1d9cf4131d199e1304058e8ea5cdf108439609012f9487f1b47995e46"
+        },
+        {
+          "path": "skills/os/legacy_flow_skill_migration/SKILL.md",
+          "xid": "C5E2A7D19F84",
+          "sha256": "f033dd14a30ca5b73638e6dc0cbaca978cca36990d82d9f92e4b6ecfa4f1a455"
+        }
+      ],
+      "legacy_maturity": "trial",
+      "adopted": true,
+      "runtime": {
+        "capability": {
+          "value": null,
+          "source_path": "skills/os/legacy_flow_skill_migration/meta.md",
+          "source_xid": "8F1D7A2C4B63",
+          "source_sha256": "435632e1d9cf4131d199e1304058e8ea5cdf108439609012f9487f1b47995e46",
+          "source_field": "capability"
+        },
+        "tuning": {
+          "value": "analyze a Flow / Skill from an older XRefKit state and generate a current trial-first migration scaffold",
+          "source_path": "skills/os/legacy_flow_skill_migration/meta.md",
+          "source_xid": "8F1D7A2C4B63",
+          "source_sha256": "435632e1d9cf4131d199e1304058e8ea5cdf108439609012f9487f1b47995e46",
+          "source_field": "tuning"
+        },
+        "responsibility": {
+          "value": "a user has a Flow / Skill created on an older XRefKit state and wants to migrate it into the current repository structure without hand-mapping everything from scratch",
+          "source_path": "skills/os/legacy_flow_skill_migration/meta.md",
+          "source_xid": "8F1D7A2C4B63",
+          "source_sha256": "435632e1d9cf4131d199e1304058e8ea5cdf108439609012f9487f1b47995e46",
+          "source_field": "responsibility"
+        },
+        "execution_mode": {
+          "value": "local_default",
+          "source_path": "skills/os/legacy_flow_skill_migration/meta.md",
+          "source_xid": "8F1D7A2C4B63",
+          "source_sha256": "435632e1d9cf4131d199e1304058e8ea5cdf108439609012f9487f1b47995e46",
+          "source_field": "execution_mode"
+        }
+      },
+      "legacy_runtime_policy": {
+        "model_tier": {
+          "value": null,
+          "source_path": "skills/os/legacy_flow_skill_migration/meta.md",
+          "source_xid": "8F1D7A2C4B63",
+          "source_sha256": "435632e1d9cf4131d199e1304058e8ea5cdf108439609012f9487f1b47995e46",
+          "source_field": "model_tier"
+        },
+        "knowledge_inputs": {
+          "value": null,
+          "source_path": "skills/os/legacy_flow_skill_migration/meta.md",
+          "source_xid": "8F1D7A2C4B63",
+          "source_sha256": "435632e1d9cf4131d199e1304058e8ea5cdf108439609012f9487f1b47995e46",
+          "source_field": "knowledge_inputs"
+        }
+      }
+    }
+  ]
+}

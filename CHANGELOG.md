@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.7.0
+
+- Guide migration from the new connected AI: inspect client-local legacy Skills,
+  shared Python tools, tests and dependency files without executing them; prepare
+  selected resources and concrete work items in the existing Workflow runtime.
+- Generate static test preparation scaffolds while preserving missing behavioral
+  expectations as unknown. Observed legacy outputs remain distinct from
+  business-approved expected results; unavailable checks never count as passing.
+- Transfer prepared assets through existing contribution upload, review and human
+  adoption. Register only the exact adopted bundle, retaining converted Skill
+  readiness and explicit client verification requirements.
+- Associate registered Skills with shared resource manifests, pinned metadata and
+  file hashes. Fetch resources over HTTP MCP into a verified local version cache
+  while preserving relative paths. Python runs on the client; the server does
+  not execute migrated code or install its dependencies.
+- Reject unsafe resource paths, changed adopted bytes and damaged caches; retain
+  preparation progress and migration failures for explicit recovery.
+- Document the package-first HTTP workflow, test-safety boundary, registration,
+  client execution and separate evidence required for completion.
+
+Compatibility requires the official Skill dependency-admission updates:
+Brownfield 0.1.6, CSharp 0.1.2 and Batch Regression 0.4.4. Core release gates check
+the exact Core wheel against both published and candidate Skills. XDDP remains
+an unpublished candidate. Real legacy environments still require their own
+dependency, safe-execution and business-expectation verification.
+
 ## 0.6.2
 
 - Preserve the released 0.6.1 runtime, including MCP contribution and maturity

@@ -20,6 +20,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Business learning interview guide](packs/business-intake/061_business_learning_interview_guide.md#xid-D2A41E8C7B51)
 - [Legacy Flow Skill migration guide](guides/062_legacy_flow_skill_migration_guide.md#xid-E3B7D5A18C62)
 - [XRefKit and Skill Package first registration](guides/089_xrefkit_package_first_registration.md#xid-4F8C2A7D1E90)
+- [Guided legacy Skills and Python tools migration](guides/117_guided_legacy_python_migration.md#xid-6D73C9A12E40)
 - [Skill bundle synchronization](guides/090_skill_bundle_sync.md#xid-8D7F2A6C4B10)
 - [Brownfield Workflow usage for humans](guides/091_brownfield_workflow_usage_for_humans.md#xid-D6A4C9E2F817)
 - [Host compatibility pre-check](core/contracts/109_host_compatibility_precheck.md#xid-9D6F3A1C7B42)

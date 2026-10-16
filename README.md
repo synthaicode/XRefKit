@@ -137,6 +137,11 @@ files while preserving existing startup files. See the
 [installation and Skill Package guide](docs/guides/089_xrefkit_package_first_registration.md#xid-4F8C2A7D1E90)
 to add reusable Skills or bring existing material into your workspace.
 
+For older custom Skills that call Python under a shared `tools/` directory,
+connect your AI client and ask it to migrate the old environment. See
+[guided legacy migration](docs/guides/117_guided_legacy_python_migration.md#xid-6D73C9A12E40)
+for preparation, safe baseline tests, governed registration and client verification.
+
 ### 2. Connect your AI tool
 
 For VS Code/Copilot, install the optional MCP integration and generate a setup proposal:

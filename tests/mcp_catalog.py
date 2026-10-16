@@ -157,8 +157,10 @@ if __name__ == "__main__":
         catalog = XRefCatalog.build(self.repo)
 
         self.assertTrue(catalog.catalog_version)
-        self.assertEqual(len(catalog.knowledge), 1)
-        self.assertEqual(len(catalog.skills), 1)
+        self.assertEqual(len(catalog.knowledge), 3)  # Workspace plus bundled migration rules.
+        self.assertEqual(len(catalog.skills), 2)
+        self.assertEqual(catalog.skills[1].skill_id, "legacy_flow_skill_migration")
+        self.assertEqual(catalog.skills[1].package_id, "xrefkit-core")
         self.assertEqual(
             catalog.skills[0].intent,
             ["review explicit sample source behavior"],

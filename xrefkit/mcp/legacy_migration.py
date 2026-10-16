@@ -25,6 +25,11 @@ def _path(root: Path, relative: str) -> Path:
     candidate = root / relative
     if candidate.is_symlink() or not candidate.resolve().is_relative_to(root.resolve()):
         raise ValueError(f"migration path escapes target: {relative}")
+    current = candidate
+    while current != root and current != current.parent:
+        if current.is_symlink() or getattr(current, "is_junction", lambda: False)():
+            raise ValueError(f"migration path contains a link: {relative}")
+        current = current.parent
     return candidate
 
 
@@ -110,6 +115,18 @@ def _locked(root: Path) -> Iterator[None]:
 
 def _verified(root: Path, unit: dict[str, Any]) -> bool:
     artifacts = unit.get("artifacts", [])
+    if unit.get("resource_bundle"):
+        record = unit.get("verification_workflow", {}).get("record")
+        if not isinstance(record, str) or _verification_errors(record, unit["resource_bundle"]["manifest_hash"]):
+            return False
+        from .legacy_resources import read_resource_manifest, manifest_hash, validate_resource_manifest
+        try:
+            bundle_root, manifest = read_resource_manifest(root, unit["resource_bundle"]["namespace"])
+            if manifest_hash(manifest) != unit["resource_bundle"]["manifest_hash"]:
+                return False
+            validate_resource_manifest(manifest, {row["path"]: _path(bundle_root, row["path"]).read_bytes() for row in manifest["files"]})
+        except (OSError, ValueError, KeyError):
+            return False
     return unit["status"] == "installed" and bool(artifacts) and all(
         item.get("receipt") == item["hash"] and _path(root, item["path"]).is_file()
         and stable_hash(_path(root, item["path"]).read_text(encoding="utf-8")) == item["hash"]
@@ -126,6 +143,8 @@ def _remaining_unit(root: Path, unit: dict[str, Any]) -> dict[str, Any]:
     return {"target": unit["target"], "source": unit["source"],
             "status": "changed" if changed else unit["status"],
             "error": "Installed assets are missing or modified; preserve edits and recover explicitly." if changed else unit.get("error"),
+            "resource_bundle": unit.get("resource_bundle"),
+            "verification_requirement": "Submit the existing migration Skill Run record after its deterministic closure gate passes with all migration work items done; baseline/business/client unknowns do not pass" if unit.get("resource_bundle") else None,
             "retrievals": [{"tool": "get_document_by_xid", "xid": a["xid"]}
                            for a in unit.get("artifacts", []) if a.get("receipt") != a["hash"]]}
 
@@ -142,9 +161,16 @@ def migration_context(root: Path) -> dict[str, Any]:
         if status == "not_started":
             instructions = [
                 "Offer to migrate legacy shared XRefKit skills and knowledge in the user's language. "
-                "Ask for the legacy source folder if unknown, then call plan_legacy_migration. "
-                "Use natural intent; the user need not name a Skill. Run the returned client_import_command "
-                "with --target for only the targets the user requests, using client-side Python. "
+                "The new connected AI starts this work; no old-environment AI or manually prepared tests are required. "
+                "Ask for the legacy source folder if unknown. For a client-local source or Python resources, "
+                "run python -m xrefkit mcp migrate inspect --source <client-folder> on the client; "
+                "then use migrate prepare with selected Skills/resources and an opened Skill Run --log. "
+                "Inventory shared tools, modules, data, tests and dependencies; prepare missing tests safely, "
+                "capture an observed baseline where accessible, and retain unknown business expectations for human judgment. "
+                "Upload the prepared bundle via contribution upload/seal and existing human review/adoption, "
+                "register_legacy_bundle, then fetch hash-pinned files to the client and verify behavior. "
+                "Do not execute arbitrary legacy code until test isolation or safe mode is established. "
+                "For document-only sources accessible on the server, plan_legacy_migration and its returned import command remain supported. "
                 "If the user confirms there are no legacy assets, call dismiss_legacy_migration.",
             ]
         elif status == "in_progress":
@@ -154,14 +180,18 @@ def migration_context(root: Path) -> dict[str, Any]:
                 "For installed targets retrieve each "
                 "pending XID with get_document_by_xid (without known_version), or get_skill for Skill bodies. "
                 "Conversion alone is not completion. Report conflicts instead of overwriting files.",
+                "For resource_bundle units, resume the linked migration Skill Run work items and use "
+                "register_legacy_bundle with the adopted contribution_id; server paths are not client paths. "
+                "Resource verification remains pending until the existing workflow closure record is submitted. "
+                "Missing baselines, client tests or business judgments must not be reported as passing.",
             ]
         return {"status": status, "state_path": STATE.as_posix(), "scope": "server_target_repository",
                 "remaining": remaining, "client_instructions": instructions,
-                "completion_basis": "all explicitly selected assets installed and body/hash retrieved via MCP",
+                "completion_basis": "all selected document bodies retrieved via MCP; resource migrations additionally require unchanged pinned files and completed migration work items in a deterministically closed Skill Run (record-level evidence, not independent proof of business correctness)",
                 "client_import_commands": [
                     ["python", "-m", "xrefkit", "mcp", "migrate", "--repo", str(root.resolve()),
                      "--source", item["source"], "--target", item["target"], "--json"]
-                    for item in remaining if item["status"] != "installed"
+                    for item in remaining if item["status"] != "installed" and not item.get("resource_bundle")
                 ],
                 "execution_boundary": "Run import commands only where the server target repository and source are accessible. Confirm the environment mapping for remote MCP; do not treat server paths as local client paths."}
     except (OSError, ValueError, KeyError, TypeError) as exc:
@@ -210,7 +240,8 @@ def plan_legacy_migration(root: Path, source: str) -> dict[str, Any]:
             "instruction": "Review the scope with the user. Append --target <exact-target> for each requested target and execute client-side. Run only where these folders are accessible; for remote MCP confirm the environment mapping. Source bytes are preserved."}
 
 
-def _prepare(root: Path, stage: Path, source: Path, target: str, skill_id: str) -> dict[str, Any]:
+def _prepare(root: Path, stage: Path, source: Path, target: str, skill_id: str,
+             resource_bundle: dict[str, Any] | None = None) -> dict[str, Any]:
     from xrefkit.import_skill import convert_skill, _knowledge_target_path, _knowledge_text
 
     namespace = hashlib.sha256(str(source).casefold().encode()).hexdigest()[:12]
@@ -218,13 +249,29 @@ def _prepare(root: Path, stage: Path, source: Path, target: str, skill_id: str) 
     source_path = _path(source, target)
     if source_path.is_dir():
         unsupported = [p.name for p in source_path.rglob("*") if p.is_file() and p.suffix.lower() not in {".md", ".txt"}]
-        if unsupported:
+        if unsupported and resource_bundle is None:
             raise ValueError(f"Skill contains unsupported resources; preserve and migrate them separately: {', '.join(unsupported)}")
         result = convert_skill(source_dir=source_path, source_root=source, repo_root=stage,
                                skill_id=skill_id, target_skill_dir=stage / "skills" / skill_id,
-                               target_knowledge_dir=knowledge_dir).to_dict()
+                               target_knowledge_dir=knowledge_dir,
+                               source_skill_doc="SKILL.v1.md" if (source_path / "SKILL.v1.md").is_file() else None).to_dict()
         paths = [result["skill_doc"], result["meta_doc"],
                  *[item["target_path"] for item in result["imported_knowledge"]]]
+        if resource_bundle is not None:
+            result["client_resources"] = {**resource_bundle, "source_skill": target}
+            document = _path(stage, result["skill_doc"])
+            text = document.read_text(encoding="utf-8")
+            text += ("\n\n## Migrated client resources\n\n"
+                     f"This Skill uses resource bundle `{resource_bundle['namespace']}` at version "
+                     f"`{resource_bundle['version']}`. Fetch its manifest and files through "
+                     "`get_legacy_resource_manifest` and `get_legacy_resource_file`, validate and "
+                     "materialize them with the XRefKit Python client. Run legacy commands with the "
+                     "materialized bundle root as working directory; original relative paths and "
+                     "shared imports are preserved. Execution occurs only on the client. "
+                     "Review dependencies, configuration, test safety, observed baseline and "
+                     "business-approved expectations in the migration Skill Run before execution. "
+                     "Resource adoption and document retrieval do not establish behavioral correctness.\n")
+            document.write_text(text, encoding="utf-8")
     else:
         path = _knowledge_target_path(source_path, source, knowledge_dir)
         if not path.exists():
@@ -247,13 +294,21 @@ def _prepare(root: Path, stage: Path, source: Path, target: str, skill_id: str) 
 
 
 def import_legacy_assets(root: Path, source: str, targets: list[str], *,
-                         prefix: str | None = None, single_skill_id: str | None = None) -> dict[str, Any]:
+                         prefix: str | None = None, single_skill_id: str | None = None,
+                         _resource_bundle: dict[str, Any] | None = None) -> dict[str, Any]:
     """Explicit write operation. Durable staging allows retry after partial I/O."""
     from xrefkit.import_skill import _slug
     from .catalog import XRefCatalog, _managed_markdown_matches_by_xid
 
     root = root.resolve()
-    plan = plan_legacy_migration(root, source)
+    if _resource_bundle is None:
+        plan = plan_legacy_migration(root, source)
+    else:
+        # Only register_legacy_bundle supplies this internal, verified source.
+        source_path = _path(root, "tools/" + _resource_bundle["namespace"])
+        if Path(source).resolve() != source_path.resolve():
+            raise ValueError("resource bundle source does not match verified namespace")
+        plan = {"source": str(source_path), "targets": _resource_bundle["targets"], "unsupported": []}
     if not targets or any(item not in plan["targets"] for item in targets):
         raise ValueError("select one or more exact targets from plan_legacy_migration")
     source_path = Path(plan["source"])
@@ -269,6 +324,8 @@ def import_legacy_assets(root: Path, source: str, targets: list[str], *,
             key = f"{namespace}:{target}"
             data["units"].setdefault(key, {"source": str(source_path), "target": target,
                                          "status": "pending", "artifacts": []})
+            if _resource_bundle is not None:
+                data["units"][key]["resource_bundle"] = {**_resource_bundle, "source_skill": target}
         _save(root, data)
         # Reuse previously assigned knowledge XIDs, including shared dependencies.
         for unit in data["units"].values():
@@ -291,7 +348,7 @@ def import_legacy_assets(root: Path, source: str, targets: list[str], *,
                 if not unit.get("artifacts"):
                     local = _slug(source_path.name if target == "." else target.removeprefix("skills/"))
                     skill_id = single_skill_id or f"{_slug(prefix or ('legacy.' + namespace))}.{local}"
-                    unit.update(_prepare(root, stage, source_path, target, skill_id))
+                    unit.update(_prepare(root, stage, source_path, target, skill_id, _resource_bundle))
                     unit["status"] = "prepared"
                     _save(root, data)
                 # Preflight every destination before publishing any unit bytes.
@@ -368,7 +425,117 @@ def dismiss_legacy_migration(root: Path) -> dict[str, Any]:
     return migration_context(root)
 
 
+def _verification_errors(record: str, version: str) -> list[str]:
+    """Reuse runtime closure and concrete work items, not caller pass booleans."""
+    from types import SimpleNamespace
+    from xrefkit.skillrun import _progression_record_errors, _section_status, close_skill_run
+    from .legacy_guidance import migration_tasks
+
+    errors, items, _, _, _ = _progression_record_errors(record)
+    errors = list(errors)
+    if _section_status(record, "Closure Gate") != "done":
+        errors.append("migration Skill Run must have a completed Closure Gate")
+    # Replay the existing deterministic closure gate on a disposable copy. This
+    # checks roles/phases/concerns without changing the submitted client record.
+    with tempfile.TemporaryDirectory(prefix="xrefkit-migration-check-") as temp:
+        path = Path(temp) / "run.md"
+        path.write_text(record, encoding="utf-8")
+        closure = close_skill_run(SimpleNamespace(log=str(path), note="migration record verification"))
+        errors.extend(closure.errors)
+        if closure.ok and _section_status(path.read_text(encoding="utf-8"), "Closure Gate") != "done":
+            errors.append("escalated migration closure is not completed verification")
+    actual = {item["item_id"]: item for item in items}
+    for task in migration_tasks(version):
+        item = actual.get(task["item_id"], {})
+        if item.get("status") != "done" or item.get("criterion") != task["completion_criterion"]:
+            errors.append(f"migration work item is incomplete or criterion differs: {task['item_id']}")
+    return errors
+
+
+def register_legacy_bundle(root: Path, contribution_id: str, *, approval_verifier: Any,
+                           verification_workflow: str | None = None) -> dict[str, Any]:
+    """Register only exact bytes already adopted by existing contribution governance.
+
+    Client source paths are never interpreted on the server. Signed adoption is
+    the authority for this source; imported documents retain draft readiness.
+    """
+    from .contribution_returns import (
+        STORE_RELATIVE, ADOPTION_SCHEMA, REVIEW_SCHEMA, _uuid, _read_manifest,
+        _read_event, _verify_manifest_payload, _verify_review_binding,
+    )
+    from .legacy_resources import read_resource_manifest, manifest_hash, validate_resource_manifest
+
+    root = root.resolve()
+    contribution_id = _uuid(contribution_id)
+    record_dir = _path(root, (STORE_RELATIVE / contribution_id).as_posix())
+    contribution = _read_manifest(record_dir / "manifest.json")
+    _verify_manifest_payload(record_dir, contribution)
+    review = _read_event(record_dir / "events" / "review.json", REVIEW_SCHEMA, approval_verifier=approval_verifier)
+    adoption = _read_event(record_dir / "events" / "adoption.json", ADOPTION_SCHEMA, approval_verifier=approval_verifier)
+    _verify_review_binding(contribution, review)
+    if (contribution.get("kind") != "deterministic_tool" or review.get("decision") != "accepted"
+            or adoption.get("status") != "adopted" or adoption.get("contribution_id") != contribution_id
+            or adoption.get("payload_hash") != contribution["payload_hash"]
+            or adoption.get("review_binding_hash") != review.get("review_binding_hash")):
+        raise ValueError("legacy registration requires the exact accepted and adopted tool contribution")
+    target = adoption["canonical_target"]
+    parts = Path(target).parts
+    if len(parts) != 2 or parts[0] != "tools":
+        raise ValueError("legacy resource adoption target must be tools/<namespace>")
+    namespace = parts[1]
+    bundle_root, manifest = read_resource_manifest(root, namespace)
+    signed_files = {row["path"]: row["content_hash"] for row in adoption["canonical_files"]}
+    expected_files = {f"{target}/{row['path']}": row["content_hash"] for row in contribution["files"]}
+    if signed_files != expected_files:
+        raise ValueError("adopted file identity differs from contribution")
+    actual_files = set()
+    for path in bundle_root.rglob("*"):
+        relative = path.relative_to(root).as_posix()
+        _path(root, relative)  # reject every link, including otherwise unused entries
+        if path.is_file():
+            actual_files.add(relative)
+    if actual_files != set(signed_files):
+        raise ValueError("adopted legacy tree contains missing or unapproved files")
+    for path, expected_hash in signed_files.items():
+        if hashlib.sha256(_path(root, path).read_bytes()).hexdigest() != expected_hash:
+            raise ValueError(f"adopted legacy bytes changed: {path}")
+    content = {row["path"]: _path(bundle_root, row["path"]).read_bytes() for row in manifest["files"]}
+    validate_resource_manifest(manifest, content)
+    if set(signed_files) != {f"{target}/{path}" for path in content} | {f"{target}/legacy-resources.json"}:
+        raise ValueError("adopted bundle and resource manifest file sets differ")
+    targets = [row["source"] for row in manifest["skills"]]
+    if not targets or len(targets) != len(set(targets)):
+        raise ValueError("legacy manifest must identify distinct selected Skills")
+    if verification_workflow is not None:
+        if len(verification_workflow.encode("utf-8")) > 1024 * 1024:
+            raise ValueError("migration workflow record exceeds size limit")
+        errors = _verification_errors(verification_workflow, manifest_hash(manifest))
+        if errors:
+            raise ValueError("; ".join(errors))
+    resource_bundle = {"namespace": namespace, "version": manifest["version"],
+                       "manifest_hash": manifest_hash(manifest), "targets": targets,
+                       "contribution_id": contribution_id}
+    result = import_legacy_assets(root, str(bundle_root), targets, prefix=f"legacy.{namespace}",
+                                  _resource_bundle=resource_bundle)
+    if verification_workflow is not None and result["ok"]:
+        with _locked(root):
+            state = _load(root)
+            for unit in state["units"].values():
+                if unit.get("resource_bundle", {}).get("contribution_id") == contribution_id:
+                    unit["verification_workflow"] = {"record": verification_workflow,
+                        "content_hash": hashlib.sha256(verification_workflow.encode()).hexdigest()}
+            _save(root, state)
+        result["migration"] = migration_context(root)
+    return {**result, "client_resources": resource_bundle,
+            "behavior_verification": "workflow_recorded" if verification_workflow is not None else "pending",
+            "skill_readiness": "imported draft; existing readiness/authoring gates still apply, no automatic promotion",
+            "business_correctness": "requires human judgment in the migration workflow"}
+
+
 def main(argv: list[str] | None = None) -> int:
+    if argv and argv[0] in {"inspect", "prepare", "fetch"}:
+        from .legacy_guidance import main as guidance_main
+        return guidance_main(argv)
     parser = argparse.ArgumentParser(prog="xrefkit mcp migrate")
     parser.add_argument("--repo", required=True)
     parser.add_argument("--source", required=True)
