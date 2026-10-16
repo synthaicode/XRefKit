@@ -41,7 +41,12 @@ def test_installed_distribution_dependency_matches_core():
     core = next(req for req in requirements if req.name == "xrefkit")
     assert version("xrefkit") in core.specifier
     assert "0.6.0" not in core.specifier
-    assert "0.7.0" not in core.specifier
+    # The published gate also runs this suite against the previous release.
+    from packaging.version import Version
+
+    supports_core_07 = Version(version("xrefkit-skills-brownfield")) >= Version("0.1.6")
+    assert ("0.7.0" in core.specifier) is supports_core_07
+    assert "0.8.0" not in core.specifier
     assert CORE_PROTOCOL_VERSION == "2.0.0"
 
 

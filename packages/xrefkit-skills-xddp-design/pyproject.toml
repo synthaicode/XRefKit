@@ -9,7 +9,7 @@ description = "Text-only XRefKit XDDP design Skill Package"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-  "xrefkit>=0.6.1,<0.7.0"
+  "xrefkit>=0.6.1,<0.8.0"
 ]
 
 [project.optional-dependencies]
