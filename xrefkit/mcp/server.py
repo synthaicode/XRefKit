@@ -130,6 +130,7 @@ _ADMIN_ONLY_INSTRUCTION_MARKERS = (
     "export_contribution_return",
     "review_contribution_return",
     "adopt_contribution_return",
+    "register_legacy_bundle",
     "assess_skill_maturity",
     "propose_skill_maturity",
     "review_skill_maturity_proposal",
@@ -718,6 +719,24 @@ def main(argv: list[str] | None = None) -> int:
         """Read-only inventory of a user-provided legacy folder on this server."""
         _require_startup_loaded(ctx, "plan_legacy_migration")
         return plan_migration(catalog.repo_root, source)
+
+    @admin_tool()
+    def register_legacy_bundle(ctx: Context, contribution_id: str,
+                               verification_workflow: str | None = None) -> dict[str, Any]:
+        """Register Skills from exact adopted resources; never execute user Python."""
+        from .legacy_migration import register_legacy_bundle as register_bundle
+
+        _require_startup_loaded(ctx, "register_legacy_bundle")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError("XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before register_legacy_bundle")
+        result = register_bundle(catalog.repo_root, contribution_id,
+                                 approval_verifier=approval_verifier,
+                                 verification_workflow=verification_workflow)
+        audit_log.append("legacy.bundle_registered", binding=binding,
+                         tool="register_legacy_bundle", contribution_id=contribution_id,
+                         version=result["client_resources"]["version"], ok=result["ok"])
+        return result
 
     @app.tool()
     def dismiss_legacy_migration(ctx: Context) -> dict[str, Any]:
@@ -1511,6 +1530,24 @@ def main(argv: list[str] | None = None) -> int:
     @app.tool()
     def list_tool_contracts() -> list[dict[str, Any]]:
         return catalog.list_tool_contracts()
+
+    @app.tool()
+    def list_legacy_resource_manifests(ctx: Context) -> list[dict[str, Any]]:
+        """Discover adopted client-side resources; never executes user code."""
+        _require_startup_loaded(ctx, "list_legacy_resource_manifests")
+        return catalog.list_legacy_resource_manifests()
+
+    @app.tool()
+    def get_legacy_resource_manifest(ctx: Context, namespace: str) -> dict[str, Any]:
+        """Fetch a versioned manifest of adopted legacy client resources."""
+        _require_startup_loaded(ctx, "get_legacy_resource_manifest")
+        return catalog.get_legacy_resource_manifest(namespace)
+
+    @app.tool()
+    def get_legacy_resource_file(ctx: Context, namespace: str, path: str) -> dict[str, Any]:
+        """Fetch declared resource bytes as base64 for verified client caching."""
+        _require_startup_loaded(ctx, "get_legacy_resource_file")
+        return catalog.get_legacy_resource_file(namespace, path)
 
     @app.tool()
     def get_client_tool_manifest(ctx: Context) -> dict[str, Any]:

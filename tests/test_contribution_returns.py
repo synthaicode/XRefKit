@@ -399,6 +399,7 @@ def test_human_review_then_local_adoption_is_catalog_visible_and_auditable(
     tmp_path: Path,
 ) -> None:
     root = adoption_repo(tmp_path)
+    initial_xids = {entry["xid"] for entry in XRefCatalog.build(root).list_knowledge_catalog()}
     contribution_id, content = pending_knowledge(root)
     manifest_path = root / ".xrefkit" / "contribution-returns" / contribution_id / "manifest.json"
     original_manifest = manifest_path.read_bytes()
@@ -432,7 +433,8 @@ def test_human_review_then_local_adoption_is_catalog_visible_and_auditable(
         b"knowledge/adopted.md"
     ).hexdigest()
     assert not (root / "knowledge" / "adopted.md").exists()
-    assert XRefCatalog.build(root).list_knowledge_catalog() == []
+    assert {entry["xid"] for entry in XRefCatalog.build(root).list_knowledge_catalog()} == initial_xids
+    assert "ADOPT123" not in initial_xids
 
     adoption_id = str(uuid.uuid4())
     adoption_arguments = {
@@ -455,7 +457,7 @@ def test_human_review_then_local_adoption_is_catalog_visible_and_auditable(
     assert adopted["live_verification"] == "not_performed"
     assert adopted["tool_execution_performed"] is False
     assert replayed["idempotent_replay"] is True
-    assert {entry["xid"] for entry in XRefCatalog.build(root).list_knowledge_catalog()} == {
+    assert {entry["xid"] for entry in XRefCatalog.build(root).list_knowledge_catalog()} == initial_xids | {
         "ADOPT123"
     }
     listed = list_contribution_returns(root, approval_verifier())[0]

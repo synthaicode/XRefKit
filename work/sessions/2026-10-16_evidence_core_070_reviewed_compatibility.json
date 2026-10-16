@@ -1,0 +1,95 @@
+{
+  "ok": true,
+  "core_version": "0.7.0",
+  "core_sha256": "d30ef901af4715a6a71bd2064fb849612ed15842c5637f5c66f63338819c1c72",
+  "scope": "all",
+  "results": [
+    {
+      "name": "xrefkit-skills-brownfield",
+      "scope": "published",
+      "version": "0.1.6",
+      "sha256": "102cfaaf2baaf7bc58b06d57c04020c149ecae49cc870e6d72d3f65602a7baed",
+      "regression_suite": "present",
+      "executed_tests": 10,
+      "skipped_tests": 0,
+      "status": "passed"
+    },
+    {
+      "name": "xrefkit-skills-brownfield",
+      "scope": "candidate",
+      "version": "0.1.6",
+      "sha256": "a25000212d654adb3cd7c4411bd36f20a4909be3bb31bfa8b65e7c32529f5fb9",
+      "regression_suite": "present",
+      "executed_tests": 10,
+      "skipped_tests": 0,
+      "status": "passed"
+    },
+    {
+      "name": "xrefkit-skills-csharp",
+      "scope": "published",
+      "version": "0.1.2",
+      "sha256": "61f4a0ec516eeefbf4e4edba620af353551ede87ee8411b547d1cd51cdc0ef4d",
+      "regression_suite": "present",
+      "executed_tests": 1,
+      "skipped_tests": 0,
+      "status": "passed"
+    },
+    {
+      "name": "xrefkit-skills-csharp",
+      "scope": "candidate",
+      "version": "0.1.2",
+      "sha256": "7f08197d46111ec52f0eb46072bd7c43ee1592b4a51d1ee20f75c860e8d79aa2",
+      "regression_suite": "present",
+      "executed_tests": 1,
+      "skipped_tests": 0,
+      "status": "passed"
+    },
+    {
+      "name": "xrefkit-skills-batch-regression",
+      "scope": "published",
+      "version": "0.4.4",
+      "sha256": "6d53b5774c20a46bb56b2fce9a4c47c445ef3a5c901b31cbd8ce235775a51ea6",
+      "regression_suite": "present",
+      "executed_tests": 6,
+      "skipped_tests": 0,
+      "status": "passed"
+    },
+    {
+      "name": "xrefkit-skills-batch-regression",
+      "scope": "candidate",
+      "version": "0.4.4",
+      "sha256": "f6bc921c405af7f8d084c7e8402be5acd7b4cd433718339158bd802cc3fce735",
+      "regression_suite": "present",
+      "executed_tests": 6,
+      "skipped_tests": 0,
+      "status": "passed"
+    },
+    {
+      "name": "xrefkit-skills-xddp-design",
+      "scope": "published",
+      "status": "not_published",
+      "reason": "PyPI returned 404; candidate validation still required"
+    },
+    {
+      "name": "xrefkit-skills-xddp-design",
+      "scope": "candidate",
+      "version": "0.1.0",
+      "sha256": "fb2ce33295fc026ea3d545abd13598417575694437afb56a1a022e25f0c26c24",
+      "regression_suite": "present",
+      "executed_tests": 26,
+      "skipped_tests": 0,
+      "status": "passed"
+    },
+    {
+      "name": "all-published-official-skills",
+      "scope": "published_combination",
+      "status": "passed"
+    },
+    {
+      "name": "all-candidate-official-skills",
+      "scope": "candidate_combination",
+      "status": "passed"
+    }
+  ],
+  "boundary": "Official inventory only; third-party packages and AI/business judgments are not certified."
+}
