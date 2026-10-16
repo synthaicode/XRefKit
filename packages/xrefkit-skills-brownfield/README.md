@@ -6,7 +6,7 @@ The package provides `brownfield.workflow`, which carries upstream work items
 through requirements, planning, design, manufacturing, and testing. Each phase
 returns a summary first and exposes unresolved items explicitly.
 
-Compatibility: requires XRefKit >=0.6.1,<0.7.0 and Python >=3.11.
+Compatibility: requires XRefKit >=0.6.1,<0.8.0 and Python >=3.11.
 The manifest requirement >=2.0.0 <3.0.0 names the Core protocol,
 separately from the Python distribution version. The installed-package tests
 exercise discovery, manifest/Skill schemas, contract inheritance, required

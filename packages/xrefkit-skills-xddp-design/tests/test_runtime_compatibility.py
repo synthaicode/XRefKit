@@ -82,7 +82,8 @@ def test_installed_dependency_identity_and_distinct_protocol():
     core = next(r for r in requirements if r.name == "xrefkit")
     assert version("xrefkit") in core.specifier
     assert "0.6.0" not in core.specifier
-    assert "0.7.0" not in core.specifier
+    assert "0.7.0" in core.specifier
+    assert "0.8.0" not in core.specifier
     assert "2.0.0" not in core.specifier
     assert CORE_PROTOCOL_VERSION == "2.0.0"
     assert package.manifest.requires.xrefkit_core == ">=2.0.0 <3.0.0"

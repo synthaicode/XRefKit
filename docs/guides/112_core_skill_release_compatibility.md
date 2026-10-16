@@ -74,7 +74,7 @@ missing, empty, or skipped regression coverage blocks the gate.
   its required candidate check.
 
 The source-only XDDP design candidate targets the Core distribution range
-`xrefkit>=0.6.1,<0.7.0` independently of manifest protocol
+`xrefkit>=0.6.1,<0.8.0` independently of manifest protocol
 `>=2.0.0 <3.0.0`. Its installed-runtime regression suite covers discovery,
 contract inheritance, file-backed references, on-demand branch availability,
 the output schema, CLI resolution, and rejection cases. It remains unpublished;
