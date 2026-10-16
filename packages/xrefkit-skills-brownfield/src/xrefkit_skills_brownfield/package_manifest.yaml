@@ -1,6 +1,6 @@
 package_id: xrefkit.skills.brownfield
 package_type: skill_package
-version: 0.1.5
+version: 0.1.6
 
 requires:
   xrefkit_core: ">=2.0.0 <3.0.0"

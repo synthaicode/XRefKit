@@ -10,7 +10,7 @@ It does not include executable tools.
 ## Candidate compatibility
 
 This is a source-only, unpublished candidate at version 0.1.0. Its supported
-Python distribution range is `xrefkit>=0.6.1,<0.7.0` with Python >=3.11.
+Python distribution range is `xrefkit>=0.6.1,<0.8.0` with Python >=3.11.
 The manifest's `xrefkit_core: ">=2.0.0 <3.0.0"` denotes the Core protocol,
 not the version of the Python distribution. Publication is a separate decision.
 
