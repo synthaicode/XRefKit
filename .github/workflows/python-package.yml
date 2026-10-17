@@ -92,7 +92,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # actions/checkout v4.2.2; pinned to the release commit.
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       # actions/setup-python v6.3.0; pinned to the release commit.
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
@@ -143,7 +143,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # actions/checkout v4.2.2; pinned to the release commit.
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       # actions/setup-python v6.3.0; pinned to the release commit.
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
@@ -210,7 +210,7 @@ jobs:
       # The checkout supplies only the repository-owned inspection script; the
       # files under test always come from the build job artifact.
       # actions/checkout v4.2.2; pinned to the release commit.
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       # actions/setup-python v6.3.0; pinned to the release commit.
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
@@ -286,7 +286,7 @@ jobs:
         python-version: ["3.11", "3.12", "3.13"]
     steps:
       # actions/checkout v4.2.2; pinned to the release commit.
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       # actions/setup-python v6.3.0; pinned to the release commit.
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
@@ -325,7 +325,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # actions/checkout v4.2.2; pinned to the release commit.
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       # actions/setup-python v6.3.0; pinned to the release commit.
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
@@ -362,7 +362,7 @@ jobs:
     needs: build-distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
           python-version: "3.12"
@@ -410,7 +410,7 @@ jobs:
       id-token: write
     steps:
       # actions/checkout v4.2.2; pinned to the release commit.
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
           python-version: "3.12"
