@@ -1,5 +1,7 @@
 """CI cleanup must retain release coverage and only cancel obsolete PR runs."""
 from pathlib import Path
+import shutil
+import subprocess
 
 import pytest
 import yaml
@@ -14,6 +16,36 @@ PACKAGES = {
     "python-skill-batch-regression-package.yml": (
         "Batch regression", "xrefkit-skills-batch-regression-v*.*.*", {"sdist-install-smoke"}),
 }
+
+
+@pytest.mark.parametrize("stop_status,remains,expected", [
+    (0, False, 0), (1, False, 0), (1, True, 1), (2, False, 2),
+])
+def test_core_updater_stop_handles_exit_race_without_hiding_errors(stop_status, remains, expected):
+    bash = shutil.which("bash")
+    if Path("C:/Program Files/Git/bin/bash.exe").is_file():
+        bash = "C:/Program Files/Git/bin/bash.exe"
+    if not bash:
+        pytest.skip("Bash is required to execute the workflow stop block")
+    steps = workflow("python-package.yml")["jobs"]["artifact-inspection"]["steps"]
+    update = next(s["run"] for s in steps if "sudo apt-get install --yes clamav" in s.get("run", ""))
+    block = update.split("# Package installation", 1)[1].split("# A failed definition update", 1)[0]
+    block = "# Package installation" + block
+    mocks = f"""
+set -euo pipefail
+calls=0
+pgrep() {{
+  calls=$((calls + 1))
+  if [ "$calls" -eq 1 ]; then return 0; fi
+  return {0 if remains else 1}
+}}
+sudo() {{ return {stop_status}; }}
+sleep() {{ :; }}
+"""
+    result = subprocess.run([bash, "-c", mocks + block + "\necho stop-complete\n"],
+                            capture_output=True, text=True)
+    assert result.returncode == expected, result.stdout + result.stderr
+    assert ("stop-complete" in result.stdout) == (expected == 0)
 
 
 def workflow(filename):

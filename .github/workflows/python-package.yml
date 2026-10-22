@@ -250,7 +250,17 @@ jobs:
           # Package installation may start an updater outside the systemd unit.
           # Stop that exact updater before starting our foreground update.
           if pgrep -x freshclam >/dev/null 2>&1; then
-            sudo pkill --signal TERM --exact freshclam
+            # Exit 1 means the process exited between pgrep and pkill.
+            # Other errors remain fatal; the final pgrep still requires absence.
+            if sudo pkill --signal TERM --exact freshclam; then
+              :
+            else
+              stop_status=$?
+              if [ "$stop_status" -ne 1 ]; then
+                echo "::error::could not stop freshclam (exit ${stop_status})"
+                exit "$stop_status"
+              fi
+            fi
             for attempt in {1..10}; do
               if ! pgrep -x freshclam >/dev/null 2>&1; then
                 break
