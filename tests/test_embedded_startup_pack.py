@@ -23,6 +23,9 @@ class EmbeddedStartupPackTests(unittest.TestCase):
                     self.assertEqual(pack["stale_sources"], [])
                     self.assertEqual(pack["based_on_hashes"], pack["source_hashes"])
                     self.assertTrue(pack["body"])
+                    self.assertIn("## Japanese response writing rules", pack["body"])
+                    self.assertIn("progress updates, questions, explanations, reports, and final answers", pack["body"])
+                    self.assertIn("no named invocation is required", pack["body"])
                     self.assertFalse(any("is STALE" in text for text in context["client_instructions"]))
                     if excluded:
                         for name in excluded:

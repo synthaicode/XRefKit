@@ -29,7 +29,7 @@ EMBEDDED_STARTUP_SOURCE_PATHS = {
 # reports the pack as stale when they diverge, so a hand-maintained copy can
 # no longer drift silently.
 EMBEDDED_BASED_ON_HASHES = {
-    "0B5C58B5E5B2": "2ce3b2fff46200aef3d929811ff9ddfc90aec4b195a986b19ec57180d85b4a56",
+    "0B5C58B5E5B2": "e7e87d6cafcd6dad3819c3186d42cb3985be9160ccb6b841e1b5b6ff19273a72",
     "5A1C8E4D2F90": "b4cc94e25ff8373d13bbe23beb9ad418fa9745d3e99506bcc8015c98a1c14b0a",
     "6C0B62D6366A": "c4de2227516494e4112045a7b5dbf2a4c14285c1520c1f82a5013e22df1ecc5e",
     "8A666C1FD121": "d03931f9892b6af13cd2b0fa7bc2112e06ed5a7f04bea6b9bd530594b516c4d0",
@@ -77,6 +77,59 @@ Sources:
 - Treat knowledge/ as shared evidence fragments and Skill definitions as executable methods with declared knowledge needs. Apply the Workflow Runtime Binding contract (XID 8D50A972BA9F) to derive runtime fields from the current instruction at run start.
 - Treat docs/ indexes as lookup/navigation handles, not mandatory startup body loads.
 - Do not guess missing governance or task facts. Find and read the relevant XIDs first.
+
+## Japanese response writing rules
+
+Apply these yomiyasu-derived rules to every Japanese response, including
+progress updates, questions, explanations, reports, and final answers, whether
+or not a Skill is selected. Also apply them to Japanese prose delivered as an
+artifact. Review the draft before sending; no named invocation is required.
+
+- Preserve meaning, claims, actors, objects, conditions, exceptions, negation,
+  quantities, order, obligation, permission, uncertainty, and degree of confidence.
+  Do not invent facts, causes, promises, emotions, benefits, or missing actors.
+- Match the reader and purpose. Distinguish explanation, advice, requests,
+  rules, current behavior, completed changes, and future plans. Report completed
+  changes concretely; do not describe existing behavior as a newly completed change.
+  Preserve the source's polite or plain style unless a change is requested.
+  Do not vary endings merely for variety or strengthen advice into obligation.
+- Make subjects, predicates, objects, modifiers, pronouns, conditions, and
+  parallel clauses correspond clearly. Supply omitted words only when supported
+  by the source or conversation; do not resolve material ambiguity by guessing.
+- Keep each paragraph focused. Check what conjunctions and pronouns connect.
+  Clarify noun chains and the relationship between operations and results without
+  changing causal direction, scope, sequence, or the weight of separate points.
+- Replace confusing metaphors, personification, inflated nouns, and promotional
+  wording with ordinary, concrete language when their meaning is established.
+  Preserve literal system behavior, established technical terms, names, and
+  intentional expressive language in essays, fiction, or promotional material.
+- Remove empty previews, redundant conclusions, self-labeling, and unnecessary
+  negative contrasts only when they carry no unique meaning or emphasis. Preserve
+  necessary comparisons, qualifications, evaluations, and reader guidance.
+- Keep useful lists, headings, and intentional paragraph breaks. Avoid decorative
+  emphasis and mechanical sentence splitting; retain definitions and identifiers
+  needed for understanding. Preserve code, paths, commands, URLs, quoted source
+  text, and machine-readable values rather than applying prose edits to them.
+- Write auxiliary verbs and the formal nouns for koto and tame in hiragana where
+  appropriate. Do not normalize other spelling variants merely for consistency.
+- Before sending, compare the draft with the request and available evidence for
+  unintended additions, omissions, changed conditions, unsupported certainty,
+  unclear references, repetition, and misleading tense or sentence endings.
+  Leave natural wording intact. Keep material unknowns explicit under the
+  repository uncertainty protocol.
+
+This is a common writing rule, not a separately invoked Skill. It adapts
+yomiyasu's prose principles; its invocation triggers, file discovery, scripts,
+mandatory lint/diff/hash workflow, and editorial output template are not adopted.
+Do not claim those checks ran. Ordinary responses retain their requested format
+without appended editing reports. This rule does not change governance meanings,
+authority, evidence requirements, or the repository's English canonical-document
+and GitHub publication policies.
+
+Source: nanaism/yomiyasu v2.1.3, commit
+`c09270bc93daab14e253fb3ef406182011b79ccb`, adapted under the MIT License,
+Copyright (c) 2026 nanaism. Repository source snapshot and license:
+`sources/web/yomiyasu/SKILL.md` and `sources/web/yomiyasu/LICENSE`.
 
 ## Protocol boundary and runtime routing
 
