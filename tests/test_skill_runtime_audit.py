@@ -5,6 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from xrefkit import skillrun
 from xrefkit.__main__ import main
 from xrefkit.skillmeta import GUARD_CAPABILITY_REF, GUARD_KNOWLEDGE_REF, REQUIRED_OS_CONTRACT, SKILL_RUNTIME_CAPABILITY_REF
 from tools.audit_skill_runtime_logs import audit_skill_runtime_logs
@@ -355,6 +356,147 @@ class SkillRuntimeAuditTests(unittest.TestCase):
                 ),
             )
         return out
+
+    def test_quality_report_cli_posix_path_control(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            out = self._open_run_through_execution(Path(tmp), with_artifacts=True)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(0, main([
+                    "skill", "artifact", "--log", str(out),
+                    "--artifact", "QC-POSIX", "--kind", "check",
+                    "--target", "/tmp/quality report.md", "--item", "WI-001",
+                    "--status", "done", "--role", "sample_skill:quality_reviewer",
+                ]))
+            self.assertIn("target=`/tmp/quality report.md`", out.read_text(encoding="utf-8"))
+
+    def test_quality_report_cli_preserves_literal_paths_after_newline_read(self) -> None:
+        targets = (
+            r"C:\Users\Example\report.md",
+            r"C:\Temp\test.md",
+            r"C:\temp\report.md",
+            r"C:\Users\Example\品質 レポート\report.md",
+            "/tmp/quality report.md",
+        )
+        for target in targets:
+            for newline in ("\n", "\r\n"):
+                with self.subTest(target=target, newline=repr(newline)):
+                    with tempfile.TemporaryDirectory() as tmp:
+                        out = self._open_run_through_execution(Path(tmp), with_artifacts=True)
+                        with contextlib.redirect_stdout(io.StringIO()):
+                            self.assertEqual(0, main([
+                                "skill", "artifact", "--log", str(out),
+                                "--artifact", "QC-PRIOR", "--kind", "check",
+                                "--target", "docs/prior-check.md", "--item", "WI-001",
+                                "--status", "blocked", "--role", "sample_skill:quality_reviewer",
+                                "--note", "Prior acceptance decision",
+                            ]))
+                        before = out.read_text(encoding="utf-8")
+                        out.write_bytes(before.replace("\n", newline).encode("utf-8"))
+                        with contextlib.redirect_stdout(io.StringIO()):
+                            self.assertEqual(0, main([
+                                "skill", "artifact", "--log", str(out),
+                                "--artifact", "QC-LITERAL", "--kind", "check",
+                                "--target", target, "--item", "WI-001",
+                                "--status", "done", "--role", "sample_skill:quality_reviewer",
+                                "--note", "Literal path acceptance",
+                            ]))
+                        # Path.read_text is the CLI's universal-newline input contract.
+                        after = out.read_text(encoding="utf-8")
+                        self.assertIn(f"target=`{target}`", after)
+                        self.assertIn(
+                            f"| QC-LITERAL | Literal path acceptance | {target} | pass | "
+                            "[QC-LITERAL](#runtime-artifacts) |", after,
+                        )
+                        self.assertIn(
+                            "| QC-PRIOR | Prior acceptance decision | docs/prior-check.md | fail | "
+                            "[QC-PRIOR](#runtime-artifacts) |", after,
+                        )
+                        self.assertIn("\n\n## Unknowns And Risks\n", after)
+                        self.assertEqual(before.count("\n## "), after.count("\n## "))
+                        self.assertEqual(
+                            before.split("## Runtime Artifacts\n", 1)[0],
+                            after.split("## Runtime Artifacts\n", 1)[0],
+                        )
+                        self.assertEqual(
+                            before.split("## Quality Gate\n", 1)[1].split("### Report\n", 1)[0],
+                            after.split("## Quality Gate\n", 1)[1].split("### Report\n", 1)[0],
+                        )
+                        self.assertIn(
+                            "QC-PRIOR kind=`check` status=`blocked` "
+                            "role=`sample_skill:quality_reviewer` target=`docs/prior-check.md` "
+                            "item=`WI-001`: Prior acceptance decision", after,
+                        )
+                        for artifact_id, target_ref in (
+                            ("OUT-001", "docs/output.md"),
+                            ("EVD-001", "python tools/run_quality_gate.py xrefkit"),
+                        ):
+                            self.assertIn(artifact_id, after)
+                            self.assertIn(f"target=`{target_ref}`", after)
+                        before_sections = dict(re.findall(
+                            r"(?ms)(^## [^\n]+\n)(.*?)(?=^## |\Z)", before,
+                        ))
+                        after_sections = dict(re.findall(
+                            r"(?ms)(^## [^\n]+\n)(.*?)(?=^## |\Z)", after,
+                        ))
+                        for heading, body in before_sections.items():
+                            if heading not in {"## Runtime Artifacts\n", "## Quality Gate\n", "## Phase Events\n"}:
+                                self.assertEqual(body, after_sections[heading], heading)
+                        self.assertEqual(after, skillrun._refresh_quality_report(after))
+
+    def test_quality_report_multiple_markers_stay_in_bounded_section(self) -> None:
+        for newline in ("\n", "\r\n"):
+            with self.subTest(newline=repr(newline)):
+                with tempfile.TemporaryDirectory() as tmp:
+                    out = self._open_run_through_execution(Path(tmp), with_artifacts=True)
+                    target = r"C:\Users\Example\品質 レポート\report.md"
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        for artifact_id, status, path in (
+                            ("QC-PRIOR", "blocked", "docs/prior-check.md"),
+                            ("QC-LITERAL", "done", target),
+                        ):
+                            self.assertEqual(0, main([
+                                "skill", "artifact", "--log", str(out),
+                                "--artifact", artifact_id, "--kind", "check",
+                                "--target", path, "--item", "WI-001", "--status", status,
+                                "--role", "sample_skill:quality_reviewer", "--note", artifact_id,
+                            ]))
+                    log_text = out.read_text(encoding="utf-8")
+                    prefix, boundary, suffix = log_text.partition("\n## Unknowns And Risks\n")
+                    self.assertTrue(boundary)
+                    fixture = (
+                        "### Report\n\nOutside prefix marker\n\n" + prefix
+                        + "### Report\n\nDuplicate report marker inside Quality Gate.\n\n"
+                        + boundary + suffix
+                        + "\n## Outside Report\n\n### Report\n\nOutside suffix marker\n"
+                    )
+                    # Exercise the CLI's existing universal-newline read contract.
+                    out.write_bytes(fixture.replace("\n", newline).encode("utf-8"))
+                    before = out.read_text(encoding="utf-8")
+                    quality_before, start, end = skillrun._section_body(before, "Quality Gate")
+                    self.assertIsNotNone(quality_before)
+                    self.assertEqual(2, quality_before.count("### Report\n"))
+                    updated = skillrun._refresh_quality_report(before)
+                    quality_after, updated_start, updated_end = skillrun._section_body(updated, "Quality Gate")
+                    self.assertIsNotNone(quality_after)
+                    self.assertEqual(1, quality_after.count("### Report\n"))
+                    self.assertEqual(before[:start], updated[:updated_start])
+                    self.assertEqual(before[end:], updated[updated_end:])
+                    self.assertEqual(
+                        quality_before.split("### Report\n", 1)[0],
+                        quality_after.split("### Report\n", 1)[0],
+                    )
+                    self.assertEqual(before.count("### Report\n") - 1, updated.count("### Report\n"))
+                    self.assertIn("\n\n## Unknowns And Risks\n", updated)
+                    self.assertNotIn("Duplicate report marker inside Quality Gate.", updated)
+                    for artifact_id, path, result in (
+                        ("QC-PRIOR", "docs/prior-check.md", "fail"),
+                        ("QC-LITERAL", target, "pass"),
+                    ):
+                        self.assertIn(
+                            f"| {artifact_id} | {artifact_id} | {path} | {result} | "
+                            f"[{artifact_id}](#runtime-artifacts) |", quality_after,
+                        )
+                    self.assertEqual(updated, skillrun._refresh_quality_report(updated))
 
     def test_verify_advances_check_when_progression_complete(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

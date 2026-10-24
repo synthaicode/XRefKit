@@ -1137,7 +1137,7 @@ def _refresh_quality_report(text: str) -> str:
         + "\n".join(f"- {item}" for item in open_items)
         + "\n\n### Handoff\n- Next owner: quality_reviewer\n- Next action: resolve open checklist items.\n"
     )
-    updated = re.sub(r"(?ms)### Report\n\n.*?(?=\n## Unknowns And Risks\n)", report.rstrip(), body, count=1)
+    updated = re.sub(r"(?ms)### Report\n\n.*?(?=\n*\Z)", lambda _: report.rstrip(), body, count=1)
     return text[:start] + updated + text[end:]
 
 
