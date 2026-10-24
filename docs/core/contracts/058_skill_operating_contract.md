@@ -568,3 +568,65 @@ needs a specific control definition, resolve that document through
 
 Maturity progression and promotion templates are defined in
 `docs/core/contracts/059_skill_maturity_governance.md#xid-4E7B8D9C1A20`.
+
+## Passive Operation Observations (Stage 1)
+
+The existing Skill Run observation record may retain facts emitted directly by
+ordinary run, concern, work-item, check-artifact, and Knowledge operations.
+Recording and aggregation MUST NOT dispatch an LLM, re-analyze conversations,
+classify a retry semantically, or issue additional MCP requests for measurement.
+There is no separate observation ledger or required AI-selected record step.
+
+### Evidence and Measurement Boundary
+
+- The runtime assigns observation IDs and UTC registration timestamps. A
+  registration time is not the time that a person or AI recognized a problem.
+- Concern-state observations retain existing subject references. Actual
+  recognition, occurrence, observation coverage, and avoided incidents remain
+  unknown unless explicit evidence already establishes those facts.
+- Work-item transitions and elapsed time between recorded transitions describe
+  workflow state residence. They MUST NOT be reported as rework classification,
+  human active effort, or tool execution time. Waiting may be included.
+- Check-artifact history retains each declared result and program-assigned
+  observation identity. Recording a check is not execution of a test. Hashes of
+  local evidence files identify that evidence, not an inferred tested source
+  version. Changing the evidence or declared check set starts a distinct series.
+- Knowledge resolution, provision to context, claimed application, and evaluated
+  contribution remain distinct. Existing loaded/applied assertions do not prove
+  a causal contribution to quality or productivity.
+- Provider usage, human operations/effort, and semantic effect stay unknown when
+  the existing operation does not expose them. Estimated tokens MUST NOT be
+  stored as measured usage. Partial usage MUST NOT imply a complete total.
+
+### Identity, Replay, and Persistence
+
+Observations inherit the opened Run and explicit existing references. The client
+may retain a stable operation key on an ordinary operation; a matching replay
+returns the first receipt without a new observation or registration time. A key
+reused with different operation content is rejected before that mutation.
+Without a retained key, a later invocation cannot be proven to be the same
+transport retry; it MUST NOT be counted as an independently verified incident.
+
+The existing log lock and atomic writer own persistence. Recording does not
+replace native operation validation. An observation failure MUST be exposed
+separately and MUST NOT cause an already completed business side effect to be
+executed again. A native write failure remains a write failure. No new content
+approval, adoption, or closure condition is introduced by these observations.
+
+### Read-only Summary and Compatibility
+
+A bounded, read-only summary may aggregate recorded facts in the existing Run.
+Legacy logs are not rewritten; absent observations are unmeasured. Malformed
+observation records are diagnosed rather than silently counted as zero.
+Known subtotals, missing counts, and recorded coverage remain separate.
+
+The five business metrics retain their names and meaning: early discovery rate,
+rework effort, quality-gate pass rate, problem recognition time, and Knowledge
+collection/use cost. When their semantic or timing evidence is missing, return
+unknown. Separately name mechanical proxies such as concern-registration time,
+work-item state residence, and declared check-result history. Never substitute
+those proxies for the business metrics. No early discovery rate is reported
+without a fixed eligible risk denominator and the required observation evidence.
+
+Runtime observation diagnostics and declared check history do not change the
+existing Quality Gate, deterministic verify/close, or human acceptance boundary.

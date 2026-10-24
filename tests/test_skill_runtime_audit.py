@@ -5,6 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from xrefkit import skillrun
 from xrefkit.__main__ import main
 from xrefkit.skillmeta import GUARD_CAPABILITY_REF, GUARD_KNOWLEDGE_REF, REQUIRED_OS_CONTRACT, SKILL_RUNTIME_CAPABILITY_REF
 from tools.audit_skill_runtime_logs import audit_skill_runtime_logs
@@ -356,6 +357,149 @@ class SkillRuntimeAuditTests(unittest.TestCase):
             )
         return out
 
+    def test_quality_report_cli_posix_path_control(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            out = self._open_run_through_execution(Path(tmp), with_artifacts=True)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(0, main([
+                    "skill", "artifact", "--log", str(out),
+                    "--artifact", "QC-POSIX", "--kind", "check",
+                    "--target", "/tmp/quality report.md", "--item", "WI-001",
+                    "--status", "done", "--role", "sample_skill:quality_reviewer",
+                ]))
+            self.assertIn("target=`/tmp/quality report.md`", out.read_text(encoding="utf-8"))
+
+    def test_quality_report_cli_preserves_literal_paths_after_newline_read(self) -> None:
+        targets = (
+            r"C:\Users\Example\report.md",
+            r"C:\Temp\test.md",
+            r"C:\temp\report.md",
+            r"C:\Users\Example\品質 レポート\report.md",
+            "/tmp/quality report.md",
+        )
+        for target in targets:
+            for newline in ("\n", "\r\n"):
+                with self.subTest(target=target, newline=repr(newline)):
+                    with tempfile.TemporaryDirectory() as tmp:
+                        out = self._open_run_through_execution(Path(tmp), with_artifacts=True)
+                        with contextlib.redirect_stdout(io.StringIO()):
+                            self.assertEqual(0, main([
+                                "skill", "artifact", "--log", str(out),
+                                "--artifact", "QC-PRIOR", "--kind", "check",
+                                "--target", "docs/prior-check.md", "--item", "WI-001",
+                                "--status", "blocked", "--role", "sample_skill:quality_reviewer",
+                                "--note", "Prior acceptance decision",
+                            ]))
+                        before = out.read_text(encoding="utf-8")
+                        out.write_bytes(before.replace("\n", newline).encode("utf-8"))
+                        with contextlib.redirect_stdout(io.StringIO()):
+                            self.assertEqual(0, main([
+                                "skill", "artifact", "--log", str(out),
+                                "--artifact", "QC-LITERAL", "--kind", "check",
+                                "--target", target, "--item", "WI-001",
+                                "--status", "done", "--role", "sample_skill:quality_reviewer",
+                                "--note", "Literal path acceptance",
+                            ]))
+                        # Path.read_text is the CLI's universal-newline input contract.
+                        after = out.read_text(encoding="utf-8")
+                        self.assertIn(f"target=`{target}`", after)
+                        self.assertIn(
+                            f"| QC-LITERAL | Literal path acceptance | {target} | pass | "
+                            "[QC-LITERAL](#runtime-artifacts) |", after,
+                        )
+                        self.assertIn(
+                            "| QC-PRIOR | Prior acceptance decision | docs/prior-check.md | fail | "
+                            "[QC-PRIOR](#runtime-artifacts) |", after,
+                        )
+                        self.assertIn("\n\n## Unknowns And Risks\n", after)
+                        self.assertEqual(before.count("\n## "), after.count("\n## "))
+                        self.assertEqual(
+                            before.split("## Runtime Artifacts\n", 1)[0],
+                            after.split("## Runtime Artifacts\n", 1)[0],
+                        )
+                        self.assertEqual(
+                            before.split("## Quality Gate\n", 1)[1].split("### Report\n", 1)[0],
+                            after.split("## Quality Gate\n", 1)[1].split("### Report\n", 1)[0],
+                        )
+                        self.assertIn(
+                            "QC-PRIOR kind=`check` status=`blocked` "
+                            "role=`sample_skill:quality_reviewer` target=`docs/prior-check.md` "
+                            "item=`WI-001`: Prior acceptance decision", after,
+                        )
+                        for artifact_id, target_ref in (
+                            ("OUT-001", "docs/output.md"),
+                            ("EVD-001", "python tools/run_quality_gate.py xrefkit"),
+                        ):
+                            self.assertIn(artifact_id, after)
+                            self.assertIn(f"target=`{target_ref}`", after)
+                        before_sections = dict(re.findall(
+                            r"(?ms)(^## [^\n]+\n)(.*?)(?=^## |\Z)", before,
+                        ))
+                        after_sections = dict(re.findall(
+                            r"(?ms)(^## [^\n]+\n)(.*?)(?=^## |\Z)", after,
+                        ))
+                        for heading, body in before_sections.items():
+                            if heading == "## Operation Observations\n":
+                                self.assertTrue(after_sections[heading].startswith(body), heading)
+                            elif heading not in {"## Runtime Artifacts\n", "## Quality Gate\n", "## Phase Events\n"}:
+                                self.assertEqual(body, after_sections[heading], heading)
+                        self.assertEqual(after, skillrun._refresh_quality_report(after))
+
+    def test_quality_report_multiple_markers_stay_in_bounded_section(self) -> None:
+        for newline in ("\n", "\r\n"):
+            with self.subTest(newline=repr(newline)):
+                with tempfile.TemporaryDirectory() as tmp:
+                    out = self._open_run_through_execution(Path(tmp), with_artifacts=True)
+                    target = r"C:\Users\Example\品質 レポート\report.md"
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        for artifact_id, status, path in (
+                            ("QC-PRIOR", "blocked", "docs/prior-check.md"),
+                            ("QC-LITERAL", "done", target),
+                        ):
+                            self.assertEqual(0, main([
+                                "skill", "artifact", "--log", str(out),
+                                "--artifact", artifact_id, "--kind", "check",
+                                "--target", path, "--item", "WI-001", "--status", status,
+                                "--role", "sample_skill:quality_reviewer", "--note", artifact_id,
+                            ]))
+                    log_text = out.read_text(encoding="utf-8")
+                    prefix, boundary, suffix = log_text.partition("\n## Unknowns And Risks\n")
+                    self.assertTrue(boundary)
+                    fixture = (
+                        "### Report\n\nOutside prefix marker\n\n" + prefix
+                        + "### Report\n\nDuplicate report marker inside Quality Gate.\n\n"
+                        + boundary + suffix
+                        + "\n## Outside Report\n\n### Report\n\nOutside suffix marker\n"
+                    )
+                    # Exercise the CLI's existing universal-newline read contract.
+                    out.write_bytes(fixture.replace("\n", newline).encode("utf-8"))
+                    before = out.read_text(encoding="utf-8")
+                    quality_before, start, end = skillrun._section_body(before, "Quality Gate")
+                    self.assertIsNotNone(quality_before)
+                    self.assertEqual(2, quality_before.count("### Report\n"))
+                    updated = skillrun._refresh_quality_report(before)
+                    quality_after, updated_start, updated_end = skillrun._section_body(updated, "Quality Gate")
+                    self.assertIsNotNone(quality_after)
+                    self.assertEqual(1, quality_after.count("### Report\n"))
+                    self.assertEqual(before[:start], updated[:updated_start])
+                    self.assertEqual(before[end:], updated[updated_end:])
+                    self.assertEqual(
+                        quality_before.split("### Report\n", 1)[0],
+                        quality_after.split("### Report\n", 1)[0],
+                    )
+                    self.assertEqual(before.count("### Report\n") - 1, updated.count("### Report\n"))
+                    self.assertIn("\n\n## Unknowns And Risks\n", updated)
+                    self.assertNotIn("Duplicate report marker inside Quality Gate.", updated)
+                    for artifact_id, path, result in (
+                        ("QC-PRIOR", "docs/prior-check.md", "fail"),
+                        ("QC-LITERAL", target, "pass"),
+                    ):
+                        self.assertIn(
+                            f"| {artifact_id} | {artifact_id} | {path} | {result} | "
+                            f"[{artifact_id}](#runtime-artifacts) |", quality_after,
+                        )
+                    self.assertEqual(updated, skillrun._refresh_quality_report(updated))
+
     def test_verify_advances_check_when_progression_complete(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -642,6 +786,297 @@ class SkillRuntimeAuditTests(unittest.TestCase):
             self.assertTrue(
                 audit_skill_runtime_logs(root=root, sessions_dir=root / "work" / "sessions").ok
             )
+
+
+
+
+class OperationObservationTests(unittest.TestCase):
+    _valid_meta_text = SkillRuntimeAuditTests._valid_meta_text
+    _write_valid_skill = SkillRuntimeAuditTests._write_valid_skill
+
+    def setUp(self):
+        import json
+        self.json = json
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name).resolve()
+        self._write_valid_skill(self.root)
+        self.log = self.root / "work/sessions/run.md"
+        code, result = self.call("run", "--root", str(self.root), "--meta", "skills/sample/meta.md",
+                                 "--task", "Observe existing operations", "--out", str(self.log))
+        self.assertEqual(0, code, result)
+
+    def call(self, operation, *args):
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            code = main(["skill", operation, *args, "--json"])
+        return code, self.json.loads(output.getvalue())
+
+    def item(self, status="in_progress", key=None):
+        args = ["--log", str(self.log), "--item", "WI-1", "--text", "Task", "--completion-criterion",
+                "Evidence recorded", "--status", status, "--role", "sample_skill:executor"]
+        if key:
+            args += ["--operation-key", key]
+        return self.call("workitem", *args)
+
+    def check(self, status="blocked", target="evidence.txt", key=None, artifact="CHK-1"):
+        args = ["--log", str(self.log), "--artifact", artifact, "--kind", "check", "--status", status,
+                "--target", target, "--item", "WI-1", "--role", "sample_skill:checker"]
+        if key:
+            args += ["--operation-key", key]
+        return self.call("artifact", *args)
+
+    def events(self):
+        return skillrun._operation_observations(self.log.read_text(encoding="utf-8"))
+
+    def test_automatic_open_and_concern_with_null_onset(self):
+        self.assertEqual("run.opened", self.events()[0]["operation"])
+        code, result = self.call("concern", "--log", str(self.log), "--concern", "UNK-1", "--kind", "unknown",
+                                 "--status", "open", "--text", "Occurred yesterday", "--role", "sample_skill:executor")
+        self.assertEqual(0, code, result)
+        event = self.events()[-1]
+        self.assertEqual("concern.state_recorded", event["operation"])
+        self.assertEqual("UNK-1", event["facts"]["subject_ref"])
+        self.assertIsNone(event["facts"]["cognitive_onset_at"])
+        self.assertIsNone(event["facts"]["occurred_at"])
+        self.assertTrue(event["recorded_at"].endswith("+00:00"))
+        self.assertEqual(event["event_id"], result["operation_receipt"]["event_id"])
+
+    def test_stable_key_replay_preserves_bytes_receipt_and_rejects_mismatch(self):
+        code, first = self.item(key="stable-1")
+        self.assertEqual(0, code, first)
+        before = self.log.read_bytes()
+        code, second = self.item(key="stable-1")
+        self.assertEqual(0, code, second)
+        self.assertEqual(first["operation_receipt"], second["operation_receipt"])
+        self.assertEqual(before, self.log.read_bytes())
+        code, result = self.item(status="done", key="stable-1")
+        self.assertEqual(1, code, result)
+        self.assertIn("different payload", " ".join(result["errors"]))
+        self.assertEqual(before, self.log.read_bytes())
+
+    def test_invalid_key_and_missing_item_reject_before_native_mutation(self):
+        before = self.log.read_bytes()
+        code, _ = self.item(key="bad key")
+        self.assertEqual(1, code)
+        self.assertEqual(before, self.log.read_bytes())
+        code, result = self.check(key="missing-item")
+        self.assertEqual(1, code, result)
+        self.assertEqual(before, self.log.read_bytes())
+
+    def test_linked_concern_requires_existing_item(self):
+        args = ["--log", str(self.log), "--concern", "UNK-1", "--kind", "unknown", "--status", "open",
+                "--text", "Missing", "--role", "sample_skill:executor", "--item", "WI-1"]
+        before = self.log.read_bytes()
+        self.assertEqual(1, self.call("concern", *args)[0])
+        self.assertEqual(before, self.log.read_bytes())
+        self.item()
+        self.assertEqual(0, self.call("concern", *args)[0])
+        self.assertEqual("WI-1", self.events()[-1]["facts"]["work_item_id"])
+
+    def test_work_state_intervals_and_reentry_are_operation_proxies(self):
+        self.item()
+        self.item(status="done")
+        self.item()
+        self.item(status="done")
+        result = skillrun.summarize_observations(self.log)
+        self.assertEqual("measured", result["status"])
+        states = result["work_item_state_proxy"]
+        self.assertEqual(1, states["first_cycle_count"])
+        self.assertEqual(1, states["reentry_count"])
+        self.assertEqual(3, states["known_interval_count"])
+        self.assertEqual(1, states["missing_interval_count"])
+        self.assertGreaterEqual(states["known_elapsed_seconds"], 0)
+        self.assertIsNone(result["human_active_work_seconds"])
+        self.assertIsNone(result["semantic_rework_count"])
+        self.assertIsNone(result["concern_cognitive_onset"])
+        self.assertNotIn("risk_rate", result)
+
+    def test_check_snapshot_history_changed_evidence_and_check_set(self):
+        import hashlib
+        self.item()
+        evidence = self.root / "evidence.txt"
+        evidence.write_bytes(b"first")
+        self.check(target=str(evidence))
+        self.check(status="done", target=str(evidence))
+        evidence.write_bytes(b"second")
+        self.check(status="done", target=str(evidence))
+        self.check(status="done", target=str(evidence), artifact="CHK-2")
+        snapshots = [e for e in self.events() if e["operation"] == "check.result_recorded"]
+        self.assertEqual(hashlib.sha256(b"first").hexdigest(), snapshots[0]["facts"]["evidence_hash"])
+        self.assertIsNone(snapshots[0]["facts"]["source_hash"])
+        self.assertEqual(["CHK-1"], snapshots[0]["facts"]["check_ids"])
+        self.assertEqual(["CHK-1", "CHK-2"], snapshots[-1]["facts"]["check_ids"])
+        self.assertNotEqual(snapshots[1]["facts"]["evidence_hash"], snapshots[2]["facts"]["evidence_hash"])
+        groups = skillrun.summarize_observations(self.log)["declared_check_results"]
+        group = next(g for g in groups if g["event_count"] == 2)
+        self.assertEqual("blocked", group["first_declared_status"])
+        self.assertEqual("done", group["final_declared_status"])
+        self.assertTrue(all(e["facts"]["execution_verified"] is False for e in snapshots))
+
+    def test_external_and_symlink_evidence_not_read(self):
+        from unittest.mock import patch
+        self.item()
+        with tempfile.TemporaryDirectory() as external:
+            evidence = Path(external) / "external.txt"
+            evidence.write_bytes(b"external")
+            self.check(target=str(evidence))
+            self.assertIsNone(self.events()[-1]["facts"]["evidence_hash"])
+        with patch.object(Path, "read_bytes", side_effect=AssertionError("network/path must not be read")):
+            self.check(target="https://example.com/check")
+        self.assertIsNone(self.events()[-1]["facts"]["evidence_hash"])
+
+    def test_knowledge_hash_is_declared_and_apply_keeps_prior_load_check(self):
+        args = ["--log", str(self.log), "--xid", "7A2F4C8D1201", "--content-hash", "declared"]
+        before = self.log.read_bytes()
+        code, _ = self.call("knowledge", *args, "--action", "apply", "--target", "MISSING")
+        self.assertEqual(1, code)
+        self.assertEqual(before, self.log.read_bytes())
+        code, loaded = self.call("knowledge", *args, "--action", "load", "--operation-key", "load-1")
+        self.assertEqual(0, code, loaded)
+        self.assertEqual("caller_declared", self.events()[-1]["facts"]["content_hash_basis"])
+        before = self.log.read_bytes()
+        self.assertEqual(loaded["operation_receipt"], self.call("knowledge", *args, "--action", "load", "--operation-key", "load-1")[1]["operation_receipt"])
+        self.assertEqual(before, self.log.read_bytes())
+
+    def test_legacy_unmeasured_and_malformed_json_strict(self):
+        self.log.write_text("# Legacy Run\n", encoding="utf-8")
+        self.assertEqual("unmeasured", skillrun.summarize_observations(self.log)["status"])
+        self.log.write_text("## Operation Observations\n\n- event: {broken}\n", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "Operation Observations"):
+            skillrun.summarize_observations(self.log)
+        code, result = self.call("observation-summary", "--log", str(self.log))
+        self.assertEqual(1, code)
+        self.assertEqual("invalid", result["status"])
+
+    def test_malformed_history_warning_does_not_hide_native_success(self):
+        with self.log.open("a", encoding="utf-8") as handle:
+            handle.write("\n- event: {broken}\n")
+        code, result = self.item()
+        self.assertEqual(0, code, result)
+        self.assertTrue(result["measurement_warnings"])
+        self.assertEqual("in_progress", skillrun._parse_work_items(self.log.read_text(encoding="utf-8"))[0]["status"])
+        before = self.log.read_bytes()
+        code, result = self.item(status="done", key="cannot-safely-replay")
+        self.assertEqual(1, code, result)
+        self.assertEqual(before, self.log.read_bytes())
+
+    def test_atomic_failure_preserves_log_and_native_failure(self):
+        from unittest.mock import patch
+        before = self.log.read_bytes()
+        with patch("xrefkit.skillrun.os.replace", side_effect=OSError("disk write failed")):
+            with self.assertRaisesRegex(OSError, "disk write failed"):
+                self.item()
+        self.assertEqual(before, self.log.read_bytes())
+
+    def test_measurement_read_failure_warning_keeps_success(self):
+        from unittest.mock import patch
+        self.item()
+        evidence = self.root / "evidence.txt"
+        evidence.write_bytes(b"data")
+        with patch("xrefkit.skillrun._local_evidence_hash", side_effect=OSError("evidence unavailable")):
+            code, result = self.check(status="done", target=str(evidence))
+        self.assertEqual(0, code, result)
+        self.assertTrue(result["measurement_warnings"])
+        self.assertEqual("done", skillrun._parse_artifacts(self.log.read_text(encoding="utf-8"))[0]["status"])
+
+
+    def test_corruption_schema_run_and_reference_are_diagnosed(self):
+        self.item()
+        original = self.log.read_text(encoding="utf-8")
+        events = self.events()
+        for change in ({"schema_version": 77}, {"run_id": "another-run"}, {"facts": {"subject_ref": "MISSING", "status": "done"}}):
+            event = dict(events[-1])
+            event.update(change)
+            old = self.json.dumps(events[-1], ensure_ascii=False, separators=(",", ":"))
+            damaged = self.json.dumps(event, ensure_ascii=False, separators=(",", ":"))
+            self.log.write_text(original.replace(old, damaged), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "Operation Observations"):
+                skillrun.summarize_observations(self.log)
+        self.log.write_text(original, encoding="utf-8")
+
+    def test_reverse_program_time_is_missing_not_cognitive_or_execution_order(self):
+        self.item()
+        self.item(status="done")
+        events = self.events()
+        event = dict(events[-1])
+        event["recorded_at"] = "2000-01-01T00:00:00+00:00"
+        original = self.log.read_text(encoding="utf-8")
+        self.log.write_text(original.replace(self.json.dumps(events[-1], ensure_ascii=False, separators=(",", ":")),
+                                           self.json.dumps(event, ensure_ascii=False, separators=(",", ":"))), encoding="utf-8")
+        summary = skillrun.summarize_observations(self.log)
+        proxy = summary["work_item_state_proxy"]
+        self.assertEqual(0, proxy["known_interval_count"])
+        self.assertEqual(2, proxy["missing_interval_count"])
+        self.assertIsNone(proxy["intervals"][0]["elapsed_seconds"])
+        self.assertEqual(events[-2]["event_id"], proxy["intervals"][0]["from_event_id"])
+        self.assertIsNone(summary["problem_recognition_time"]["value"])
+
+    def test_large_evidence_skips_hash_without_changing_native_result(self):
+        self.item()
+        evidence = self.root / "large.txt"
+        evidence.write_bytes(b"a" * (1024 * 1024 + 1))
+        code, result = self.check(status="done", target=str(evidence))
+        self.assertEqual(0, code, result)
+        self.assertIn("1 MiB", " ".join(result["measurement_warnings"]))
+        self.assertIsNone(self.events()[-1]["facts"]["evidence_hash"])
+
+    def test_coverage_denominators_are_only_recorded_objects(self):
+        self.item()
+        self.check()
+        self.call("concern", "--log", str(self.log), "--concern", "UNK-1", "--kind", "unknown",
+                  "--status", "open", "--text", "Missing", "--role", "sample_skill:executor")
+        summary = skillrun.summarize_observations(self.log)
+        coverage = summary["recorded_field_coverage"]
+        self.assertEqual({"eligible_recorded_count": 1, "known_count": 0, "missing_count": 1, "coverage_fraction": 0.0}, coverage["check_evidence_hash"])
+        self.assertEqual(1, coverage["check_source_hash"]["missing_count"])
+        self.assertEqual(1, coverage["concern_cognitive_onset"]["missing_count"])
+        self.assertEqual(1, coverage["concern_occurrence"]["missing_count"])
+        for key in ("early_discovery_rate", "rework_effort", "quality_gate_pass_rate", "problem_recognition_time", "knowledge_collection_use_cost"):
+            self.assertIsNone(summary[key]["value"])
+            self.assertIsNone(summary[key]["missing_count"])
+
+    def test_native_knowledge_xid_validation_remains_authoritative(self):
+        code, result = self.call("knowledge", "--log", str(self.log), "--action", "load", "--xid", "legacy-reference",
+                                 "--content-hash", "declared")
+        self.assertEqual(0, code, result)
+        self.assertEqual(["legacy-reference"], self.events()[-1]["facts"]["xids"])
+
+
+    def test_native_read_error_result_is_preserved(self):
+        import argparse
+        from unittest.mock import patch
+        with patch.object(Path, "read_text", side_effect=OSError("native read failed")):
+            result = skillrun.update_knowledge_observation(argparse.Namespace(log=str(self.log)))
+        self.assertFalse(result.ok)
+        self.assertIn("could not read skill run log", " ".join(result.errors))
+
+    def test_non_json_cli_exposes_measurement_warning(self):
+        with self.log.open("a", encoding="utf-8") as handle:
+            handle.write("\n- event: {broken}\n")
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            code = main(["skill", "workitem", "--log", str(self.log), "--item", "WI-1", "--text", "Task",
+                         "--completion-criterion", "Evidence recorded", "--status", "done", "--role", "sample_skill:executor"])
+        self.assertEqual(0, code)
+        self.assertIn("measurement warning:", output.getvalue())
+
+
+    def test_noncheck_artifact_keeps_legacy_missing_item_behavior(self):
+        prior = len(self.events())
+        code, result = self.call("artifact", "--log", str(self.log), "--artifact", "OUT-LEGACY",
+                                 "--kind", "output", "--target", "docs/output.md", "--item", "WI-MISSING",
+                                 "--status", "done", "--role", "sample_skill:executor")
+        self.assertEqual(0, code, result)
+        self.assertEqual(prior, len(self.events()))
+
+    def test_unkeyed_check_missing_item_warns_without_new_native_gate(self):
+        prior = len(self.events())
+        code, result = self.check()
+        self.assertEqual(0, code, result)
+        self.assertTrue(result["measurement_warnings"])
+        self.assertEqual(prior, len(self.events()))
+        self.assertIn("CHK-1", self.log.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

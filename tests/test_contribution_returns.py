@@ -1054,3 +1054,151 @@ def test_contribution_return_over_real_mcp_stdio(tmp_path: Path) -> None:
             inbox.parent.rmdir()
         except OSError:
             pass
+
+
+@pytest.mark.parametrize(
+    "submitted_bytes",
+    [
+        pytest.param(b"<!-- xid: LOCAL123 -->\n\n# Local rule\n\nBody.\n", id="lf"),
+        pytest.param(b"<!-- xid: LOCAL123 -->\r\n\r\n# Local rule\r\n\r\nBody.\r\n", id="crlf"),
+        pytest.param("<!-- xid: LOCAL123 -->\r\r# 日本語のルール\r\r本文。🌱\r".encode("utf-8"), id="bare-cr-utf8"),
+        pytest.param(b"<!-- xid: LOCAL123 -->\r\n\n# Local rule\n\r\nBody.\r\n", id="mixed-lf-crlf"),
+        pytest.param("<!-- xid: LOCAL123 -->\n\n# 日本語のルール\n\n本文。🌱\n".encode("utf-8"), id="non-ascii-utf8"),
+    ],
+)
+def test_exact_bytes_roundtrip_and_replay(tmp_path: Path, submitted_bytes: bytes) -> None:
+    contribution_id = str(uuid.uuid4())
+    arguments = dict(
+        binding=binding(), source_snapshot=source(), contribution_id=contribution_id,
+        kind="knowledge", title="Local rule", summary="Exact byte regression",
+        files=[file("rule.md", submitted_bytes.decode("utf-8"))], knowledge={"xid": "LOCAL123"},
+    )
+    created = submit_contribution_return(tmp_path, **arguments)
+    record = tmp_path / ".xrefkit/contribution-returns" / contribution_id
+    stored_bytes = (record / "files/rule.md").read_bytes()
+    manifest_bytes = (record / "manifest.json").read_bytes()
+    manifest = json.loads(manifest_bytes)
+    row = manifest["files"][0]
+    assert stored_bytes == submitted_bytes
+    assert hashlib.sha256(stored_bytes).hexdigest() == row["content_hash"]
+    assert len(stored_bytes) == row["byte_count"]
+    replay = submit_contribution_return(tmp_path, **arguments)
+    assert created["created"] is True
+    assert replay["created"] is False
+    assert replay["idempotent_replay"] is True
+    assert replay["payload_hash"] == created["payload_hash"]
+    assert (record / "manifest.json").read_bytes() == manifest_bytes
+    assert (record / "files/rule.md").read_bytes() == submitted_bytes
+    listed = list_contribution_returns(tmp_path)
+    assert len(listed) == 1
+    assert listed[0]["files"][0] == row
+    exported = export_contribution_return(tmp_path, contribution_id)
+    exported_row = exported["review_bundle"]["files"][0]
+    assert exported_row["content"].encode("utf-8") == submitted_bytes
+    assert exported_row["content_hash"] == hashlib.sha256(submitted_bytes).hexdigest()
+    assert exported_row["byte_count"] == len(submitted_bytes)
+    assert exported["activation_performed"] is False
+    assert (record / "manifest.json").read_bytes() == manifest_bytes
+    assert (record / "files/rule.md").read_bytes() == stored_bytes
+
+
+@pytest.mark.parametrize("operation", ["list", "export"])
+@pytest.mark.parametrize(
+    "corruption, error, message",
+    [
+        pytest.param("invalid_utf8", UnicodeDecodeError, "utf-8", id="invalid-utf8"),
+        pytest.param("content_hash", ValueError, "file hash mismatch", id="bad-manifest-contenthash"),
+        pytest.param("byte_count", ValueError, "file byte_count mismatch", id="bad-manifest-byte-count"),
+        pytest.param("saved_bytes", ValueError, "file hash mismatch", id="post-save-byte-tamper"),
+    ],
+)
+def test_exact_bytes_corruption_fails_closed(
+    tmp_path: Path, operation: str, corruption: str, error: type[Exception], message: str,
+) -> None:
+    contribution_id, _ = pending_knowledge(tmp_path)
+    record = tmp_path / ".xrefkit/contribution-returns" / contribution_id
+    manifest_path = record / "manifest.json"
+    stored = record / "files/rule.md"
+    manifest = json.loads(manifest_path.read_bytes())
+    if corruption == "invalid_utf8":
+        invalid = stored.read_bytes() + b"\xff"
+        stored.write_bytes(invalid)
+        manifest["files"][0]["content_hash"] = hashlib.sha256(invalid).hexdigest()
+        manifest["files"][0]["byte_count"] = len(invalid)
+    elif corruption == "saved_bytes":
+        stored.write_bytes(stored.read_bytes().replace(b"Body.", b"B0dy."))
+    elif corruption == "content_hash":
+        manifest["files"][0]["content_hash"] = "0" * 64
+    else:
+        manifest["files"][0]["byte_count"] += 1
+    manifest_path.write_bytes(json.dumps(manifest).encode("utf-8"))
+    before = {path.relative_to(record): path.read_bytes() for path in record.rglob("*") if path.is_file()}
+    with pytest.raises(error, match=message):
+        if operation == "list":
+            list_contribution_returns(tmp_path)
+        else:
+            export_contribution_return(tmp_path, contribution_id)
+    after = {path.relative_to(record): path.read_bytes() for path in record.rglob("*") if path.is_file()}
+    assert after == before
+
+
+def test_exact_bytes_existing_receipt_is_verified_without_mutation(tmp_path: Path) -> None:
+    # Fixed existing receipt snapshot: do not regenerate through the submission API.
+    manifest = json.loads(r'''
+{
+    "binding": {
+        "mcp_session_id": "0bb9163e-91e9-46f4-960a-e55f3ef56f09",
+        "repository_fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "run_id": "f35210cf-c853-40af-9be6-42a205bd5fb1",
+        "skill_id": "sample"
+    },
+    "contribution_id": "00000000-0000-4000-8000-000000000001",
+    "created_at": "2026-10-24T04:38:32+00:00",
+    "files": [
+        {
+            "byte_count": 65,
+            "content_hash": "dee606c610283ee8c609e70869a42cb609a3a60d4116874f5e96caf783405a75",
+            "path": "rule.md"
+        }
+    ],
+    "kind": "knowledge",
+    "kind_metadata": {
+        "xid": "LOCAL123"
+    },
+    "limits_version": 1,
+    "payload_hash": "4bc1d451479786ac0a17622e3360d2454ac62200421b8d96c3d78d18a69a60df",
+    "proposed_target_path": null,
+    "schema": "xrefkit.contribution_return/v1",
+    "source": {
+        "knowledge_versions": [],
+        "package_id": null,
+        "package_version": null,
+        "provider_id": "xrefkit-mcp",
+        "provider_version": "test",
+        "skill_content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "skill_id": "sample",
+        "verification": "matched_current_catalog"
+    },
+    "status": "pending_review",
+    "summary": "Immutable exact-byte fixture",
+    "title": "Existing receipt"
+}
+    ''')
+    contribution_id = manifest["contribution_id"]
+    record = tmp_path / ".xrefkit/contribution-returns" / contribution_id
+    (record / "files").mkdir(parents=True)
+    (record / "manifest.json").write_bytes(json.dumps(manifest).encode("utf-8"))
+    (record / "files/rule.md").write_bytes(
+        "<!-- xid: LOCAL123 -->\r\n\r\n# Existing receipt\r\n\r\n保存済み。\r\n".encode("utf-8")
+    )
+    before = {path.relative_to(record): path.read_bytes() for path in record.rglob("*") if path.is_file()}
+    manifest = json.loads(before[Path("manifest.json")])
+    expected = before[Path("files/rule.md")]
+    assert b"\r\n" in expected
+    assert hashlib.sha256(expected).hexdigest() == manifest["files"][0]["content_hash"]
+    assert len(expected) == manifest["files"][0]["byte_count"]
+    assert list_contribution_returns(tmp_path)[0]["payload_hash"] == manifest["payload_hash"]
+    exported = export_contribution_return(tmp_path, contribution_id)
+    assert exported["review_bundle"]["files"][0]["content"].encode("utf-8") == expected
+    after = {path.relative_to(record): path.read_bytes() for path in record.rglob("*") if path.is_file()}
+    assert after == before
