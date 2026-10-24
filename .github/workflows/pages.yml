@@ -46,13 +46,31 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # A release event uses the tag ref even when checkout selects main. Dispatch
+  # the deployment from main so the existing Pages environment policy is kept.
+  dispatch-release:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Request Pages deployment from main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh api --method POST "repos/$RELEASE_REPOSITORY/actions/workflows/pages.yml/dispatches" -f ref=main
+
   deploy:
     if: >-
-      github.event_name != 'workflow_run' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.event == 'push' &&
-       startsWith(github.event.workflow_run.head_branch, 'v') &&
-       github.event.workflow_run.head_repository.full_name == github.repository)
+      github.ref == 'refs/heads/main' &&
+      (github.event_name != 'workflow_run' ||
+       (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        startsWith(github.event.workflow_run.head_branch, 'v') &&
+        github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-latest
     environment:
       name: github-pages

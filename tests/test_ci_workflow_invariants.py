@@ -220,3 +220,38 @@ def test_shared_tools_trigger_only_consumers():
         assert not accepts_changes(filename, "pull_request", ["tools/run_quality_gate.py"])
     assert not accepts_changes("python-skill-csharp-package.yml", "pull_request", ["tools/run_import_smoke.py"])
     assert not accepts_changes("xrefkit-skills-xddp-design.yml", "pull_request", ["xrefkit/cli.py"])
+
+
+def test_pages_deployment_is_main_only_and_release_dispatch_has_no_environment():
+    data = workflow("pages.yml")
+    deploy = data["jobs"]["deploy"]
+    condition = " ".join(deploy["if"].split())
+    assert condition.startswith("github.ref == 'refs/heads/main' && (")
+    assert deploy["environment"]["name"] == "github-pages"
+    route = data["jobs"]["dispatch-release"]
+    assert route["if"] == "github.event_name == 'release'"
+    assert "environment" not in route
+    assert route["permissions"] == {"contents": "read", "actions": "write"}
+    assert data["permissions"]["pages"] == "write"
+    step = route["steps"][0]
+    assert step["env"]["RELEASE_REPOSITORY"] == "${{ github.repository }}"
+    assert step["env"]["GH_TOKEN"] == "${{ github.token }}"
+    assert "github.event.release" not in step["run"]
+
+
+@pytest.mark.parametrize("dispatch_exit", [0, 37])
+def test_pages_release_dispatch_executes_fixed_main_target_and_preserves_failure(dispatch_exit):
+    bash = shutil.which("bash")
+    if Path("C:/Program Files/Git/bin/bash.exe").is_file():
+        bash = "C:/Program Files/Git/bin/bash.exe"
+    if not bash:
+        pytest.skip("Bash is required to execute the Pages dispatch block")
+    script = workflow("pages.yml")["jobs"]["dispatch-release"]["steps"][0]["run"]
+    mock = ('set -euo pipefail\nRELEASE_REPOSITORY=synthaicode/XRefKit\n'
+            'gh() { printf "<%s>\\n" "$@"; return ' + str(dispatch_exit) + '; }\n')
+    result = subprocess.run([bash, "-c", mock + script + "\necho dispatch-complete\n"],
+                            capture_output=True, text=True)
+    assert result.returncode == dispatch_exit, result.stdout + result.stderr
+    assert result.stdout.splitlines()[:6] == ["<api>", "<--method>", "<POST>",
+        "<repos/synthaicode/XRefKit/actions/workflows/pages.yml/dispatches>", "<-f>", "<ref=main>"]
+    assert ("dispatch-complete" in result.stdout) == (dispatch_exit == 0)
