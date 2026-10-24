@@ -496,6 +496,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_knowledge.add_argument("--target", default=None, help="Judgment or artifact target for action=apply")
     p_skill_knowledge.add_argument("--decisive", action="store_true", help="Mark the XID as decision-changing evidence")
     p_skill_knowledge.add_argument("--note", default=None, help="Optional observation note")
+    p_skill_knowledge.add_argument("--operation-key", default=None, help="Stable retry key for this existing operation")
     p_skill_knowledge.add_argument("--json", action="store_true", help="Emit JSON")
 
     p_skill_feedback = skill_sub.add_parser("feedback", help="Record human or downstream outcome feedback")
@@ -564,6 +565,10 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_skill_phase.add_argument("--json", action="store_true", help="Emit JSON")
 
+    p_skill_summary = skill_sub.add_parser("observation-summary", help="Read automatically recorded operation proxies")
+    p_skill_summary.add_argument("--log", required=True, help="Existing Skill or Workflow Run log")
+    p_skill_summary.add_argument("--json", action="store_true", help="Emit JSON")
+
     p_skill_workitem = skill_sub.add_parser("workitem", help="Add or update a concrete Skill work item")
     p_skill_workitem.add_argument("--log", required=True, help="Skill run log to update")
     p_skill_workitem.add_argument("--item", required=True, help="Stable work item id, such as WI-001")
@@ -578,6 +583,7 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Work item status",
     )
     p_skill_workitem.add_argument("--role", required=True, help="Runtime role updating the work item")
+    p_skill_workitem.add_argument("--operation-key", default=None, help="Stable retry key for this existing operation")
     p_skill_workitem.add_argument("--json", action="store_true", help="Emit JSON")
 
     p_skill_artifact = skill_sub.add_parser("artifact", help="Add or update a Skill runtime artifact/evidence link")
@@ -599,6 +605,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_artifact.add_argument("--item", default=None, help="Optional related concrete work item id")
     p_skill_artifact.add_argument("--role", required=True, help="Runtime role updating the artifact")
     p_skill_artifact.add_argument("--note", default=None, help="Optional artifact note")
+    p_skill_artifact.add_argument("--operation-key", default=None, help="Stable retry key for this existing operation")
     p_skill_artifact.add_argument("--json", action="store_true", help="Emit JSON")
 
     p_skill_concern = skill_sub.add_parser("concern", help="Add or update unknown, risk, or judgment closure linkage")
@@ -625,6 +632,8 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_concern.add_argument("--target", default=None, help="Optional path, XID, command, URL, or judgment reference")
     p_skill_concern.add_argument("--text", default=None, help="Concern text; required when adding a new concern")
     p_skill_concern.add_argument("--role", required=True, help="Runtime role recording the concern")
+    p_skill_concern.add_argument("--operation-key", default=None, help="Stable retry key for this existing operation")
+    p_skill_concern.add_argument("--item", default=None, help="Optional existing related work item id")
     p_skill_concern.add_argument("--json", action="store_true", help="Emit JSON")
 
     p_skill_tokens = skill_sub.add_parser("tokens", help="Record token usage consumed by a Skill run")
@@ -895,6 +904,10 @@ def main(argv: list[str] | None = None) -> int:
             from xrefkit.skillrun import cmd_skill_phase
 
             return cmd_skill_phase(args)
+        if args.skill_cmd == "observation-summary":
+            from xrefkit.skillrun import cmd_skill_observation_summary
+
+            return cmd_skill_observation_summary(args)
         if args.skill_cmd == "workitem":
             from xrefkit.skillrun import cmd_skill_workitem
 

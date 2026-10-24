@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import hashlib
+import stat
 import functools
 import os
 import re
@@ -9,7 +11,7 @@ import tempfile
 import time
 import uuid
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 if os.name == "nt":
@@ -53,8 +55,13 @@ class SkillRunResult:
     decision_trace_checkpoint: dict[str, object] | None = None
     update_gate_kickoff: dict[str, object] | None = None
 
+    operation_receipt: dict[str, object] | None = None
+    measurement_warnings: list[str] | None = None
+
     def to_dict(self) -> dict[str, object]:
         return {
+            "operation_receipt": self.operation_receipt,
+            "measurement_warnings": self.measurement_warnings or [],
             "ok": self.ok,
             "skill_id": self.skill_id,
             "skill_doc": self.skill_doc,
@@ -137,7 +144,30 @@ def _locked_log_update(func):
     def wrapper(args, *extra, **kwargs):
         log_path = Path(args.log).resolve()
         with _LogFileLock(log_path.with_name(f".{log_path.name}.lock")):
-            return func(args, *extra, **kwargs)
+            state = None
+            if (func.__name__ in _OPERATION_FIELDS and log_path.exists()
+                    and (func.__name__ != "update_artifact" or str(args.kind).strip().lower() == "check"
+                         or getattr(args, "operation_key", None) is not None)):
+                try:
+                    observation_text = log_path.read_text(encoding="utf-8")
+                except (OSError, UnicodeError):
+                    # Let the native operation retain its own read-error result/exception.
+                    observation_text = None
+                if observation_text is not None:
+                    state, early = _prepare_operation(args, func.__name__, observation_text)
+                    if early is not None:
+                        return early
+                    args._operation_observation = state
+            try:
+                result = func(args, *extra, **kwargs)
+                if state is not None:
+                    result.measurement_warnings = state["warnings"]
+                    if result.ok and state.get("recorded"):
+                        result.operation_receipt = _operation_receipt(state["event"])
+                return result
+            finally:
+                if hasattr(args, "_operation_observation"):
+                    del args._operation_observation
 
     return wrapper
 
@@ -942,6 +972,293 @@ def _append_observation_event(text: str, *, section: str, event: dict[str, objec
     return text[:start] + updated + text[end:]
 
 
+
+_OPERATION_FIELDS = {
+    "update_work_item": ("item", "status", "role", "text", "completion_criterion", "criterion_unknown_reason", "supersedes"),
+    "update_artifact": ("artifact", "kind", "status", "role", "target", "item", "note"),
+    "update_concern": ("concern", "kind", "status", "judgment", "role", "target", "text", "item"),
+    "update_knowledge_observation": ("action", "query", "xid", "content_hash", "status", "source", "target", "decisive", "note"),
+}
+_OPERATION_KINDS = {"run.opened", "workitem.state_recorded", "check.result_recorded",
+                    "concern.state_recorded", "knowledge.operation_recorded"}
+
+
+def _operation_observations(text: str) -> list[dict[str, object]]:
+    """Strictly parse only the additive, program-produced operation section."""
+    body, _, _ = _section_body(text, "Operation Observations")
+    if body is None:
+        return []
+    events = []
+    seen_ids, seen_keys = set(), set()
+    run_id = _log_field(text, "run_id")
+    items = {row["item_id"] for row in _parse_work_items(text)}
+    artifacts = {row["artifact_id"] for row in _parse_artifacts(text)}
+    concerns = {row["concern_id"] for row in _parse_concerns(text)}
+    for line_number, line in enumerate(body.splitlines(), 1):
+        if not line.startswith("- event"):
+            continue
+        try:
+            if not line.startswith("- event: "):
+                raise ValueError("malformed event record")
+            event = json.loads(line.removeprefix("- event:").strip())
+            if not isinstance(event, dict) or event.get("schema_version") != 1 or event.get("event") != "operation.observed":
+                raise ValueError("unsupported event schema")
+            if event.get("operation") not in _OPERATION_KINDS:
+                raise ValueError("unsupported operation")
+            if not run_id or event.get("run_id") != run_id:
+                raise ValueError("event run_id does not match native Run")
+            uuid.UUID(event["event_id"])
+            timestamp = datetime.fromisoformat(event["recorded_at"])
+            if timestamp.utcoffset() != timedelta(0):
+                raise ValueError("recorded_at must be UTC")
+            if not _valid_log_token(event["operation_key"]) or not re.fullmatch(r"[0-9a-f]{64}", event["payload_sha256"]):
+                raise ValueError("invalid operation receipt")
+            if not isinstance(event["facts"], dict):
+                raise ValueError("invalid operation facts")
+            if event["event_id"] in seen_ids or event["operation_key"] in seen_keys:
+                raise ValueError("duplicate operation receipt")
+            facts = event["facts"]
+            operation = event["operation"]
+            if operation == "run.opened" and not isinstance(facts["local_root"], str):
+                raise ValueError("invalid local root")
+            if operation == "workitem.state_recorded" and facts["subject_ref"] not in items:
+                raise ValueError("work item reference not found")
+            if operation == "concern.state_recorded" and facts["subject_ref"] not in concerns:
+                raise ValueError("concern reference not found")
+            if operation == "check.result_recorded" and facts["subject_ref"] not in artifacts:
+                raise ValueError("check reference not found")
+            if facts.get("work_item_id") not in (None, "", "-") and facts["work_item_id"] not in items:
+                raise ValueError("related work item reference not found")
+            if operation == "knowledge.operation_recorded" and (facts["action"] not in {"search", "load", "apply"}
+                    or not isinstance(facts["xids"], list) or any(not isinstance(xid, str) for xid in facts["xids"])
+                    or facts["content_hash_basis"] != "caller_declared" or facts["catalogue_verified"] is not False):
+                raise ValueError("invalid Knowledge declaration")
+            if operation == "workitem.state_recorded" and (not _valid_log_token(facts["subject_ref"]) or facts["status"] not in VALID_WORKITEM_STATUSES):
+                raise ValueError("invalid work item facts")
+            if operation == "concern.state_recorded" and (not _valid_log_token(facts["subject_ref"]) or facts["status"] not in VALID_CONCERN_STATUSES or facts["cognitive_onset_at"] is not None or facts["occurred_at"] is not None):
+                raise ValueError("invalid concern facts")
+            if operation == "check.result_recorded":
+                ids = facts["check_ids"]
+                if (not _valid_log_token(facts["subject_ref"]) or facts["declared_status"] not in VALID_ARTIFACT_STATUSES
+                        or not isinstance(ids, list) or not ids or ids != sorted(set(ids))
+                        or any(not isinstance(value, str) or not _valid_log_token(value) for value in ids)
+                        or facts["check_set_hash"] != _operation_hash(ids)
+                        or facts["source_hash"] is not None or facts["execution_verified"] is not False
+                        or (facts["evidence_hash"] is not None and not re.fullmatch(r"[0-9a-f]{64}", facts["evidence_hash"]))):
+                    raise ValueError("invalid declared check facts")
+        except (ValueError, KeyError, TypeError, AttributeError) as exc:
+            raise ValueError(f"Operation Observations line {line_number}: {exc}") from exc
+        seen_ids.add(event["event_id"])
+        seen_keys.add(event["operation_key"])
+        events.append(event)
+    if not events:
+        raise ValueError("Operation Observations: missing event records")
+    return events
+
+
+def _operation_hash(value: object) -> str:
+    return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
+def _operation_receipt(event: dict[str, object]) -> dict[str, object]:
+    return {key: event[key] for key in ("operation_key", "event_id", "recorded_at")}
+
+
+def _prepare_operation(args, name: str, text: str) -> tuple[dict[str, object], SkillRunResult | None]:
+    """Preflight only the four existing operation kinds, inside their native lock."""
+    supplied_key = getattr(args, "operation_key", None)
+    key = supplied_key if supplied_key is not None else str(uuid.uuid4())
+    state: dict[str, object] = {"warnings": [], "event": None}
+    if not _log_field(text, "run_id"):
+        state["warnings"].append("operation observation requires an existing native run_id")
+    errors = []
+    if not isinstance(key, str) or not _valid_log_token(key):
+        errors.append("invalid --operation-key; use 1-128 token characters")
+    payload = {field: getattr(args, field, None) for field in _OPERATION_FIELDS[name]}
+    for field, value in payload.items():
+        if isinstance(value, str):
+            payload[field] = value.strip().lower() if field in {"status", "kind", "judgment"} else value.strip()
+    payload_hash = _operation_hash({"operation": name, "arguments": payload})
+    for field in ({"update_work_item": ("item", "supersedes"), "update_artifact": ("artifact", "item"), "update_concern": ("concern", "item")}.get(name, ())):
+        value = payload.get(field)
+        if value and not re.fullmatch(r"[A-Za-z0-9_.-]+", value):
+            message = f"invalid --{field} reference for operation observation"
+            (errors if supplied_key is not None else state["warnings"]).append(message)
+    item = payload.get("item") if name in {"update_artifact", "update_concern"} else None
+    if item and not any(row["item_id"] == item for row in _parse_work_items(text)):
+        messages = state["warnings"] if name == "update_artifact" and supplied_key is None else errors
+        messages.append(f"related work item not found: {item}")
+    if name == "update_artifact" and payload.get("kind") != "check" and supplied_key is not None:
+        errors.append("--operation-key is supported only for kind=check artifact operations")
+    try:
+        events = _operation_observations(text)
+    except ValueError as exc:
+        events = []
+        state["warnings"].append(str(exc))
+        if supplied_key is not None:
+            errors.append("operation history is invalid; stable key cannot safely be reconciled")
+    if errors:
+        return state, SkillRunResult(ok=False, skill_id=_log_skill_id(text), skill_doc=None, run_log=str(Path(args.log).resolve()), errors=errors)
+    replay = next((event for event in events if event["operation_key"] == key), None)
+    if replay is not None:
+        if replay["payload_sha256"] != payload_hash:
+            return state, SkillRunResult(ok=False, skill_id=_log_skill_id(text), skill_doc=None, run_log=str(Path(args.log).resolve()), errors=["--operation-key already records a different payload"])
+        return state, SkillRunResult(ok=True, skill_id=_log_skill_id(text), skill_doc=None, run_log=str(Path(args.log).resolve()), errors=[],
+                                    work_items=_parse_work_items(text), artifacts=_parse_artifacts(text), concerns=_parse_concerns(text),
+                                    operation_receipt=_operation_receipt(replay), run_id=_log_field(text, "run_id"))
+    if not state["warnings"]:
+        state["event"] = {"schema_version": 1, "event": "operation.observed", "operation_key": key,
+                          "payload_sha256": payload_hash, "event_id": str(uuid.uuid4()),
+                          "recorded_at": datetime.now(timezone.utc).isoformat(), "facts": {}}
+    state["history"] = events
+    return state, None
+
+
+def _local_evidence_hash(target: str, history: list[dict[str, object]]) -> str | None:
+    opening = next((event for event in history if event["operation"] == "run.opened"), None)
+    if opening is None or not opening["facts"].get("local_root") or target.startswith(("\\\\", "//")) or "://" in target:
+        return None
+    root = Path(opening["facts"]["local_root"])
+    if str(root).startswith(("\\\\", "//")) or not root.is_absolute():
+        return None
+    path = Path(target)
+    candidate = path if path.is_absolute() else root / path
+    if ".." in candidate.parts or not candidate.is_relative_to(root):
+        return None
+    # Inspect every component before opening: reject links, junctions and devices.
+    for component in [root, *reversed(candidate.relative_to(root).parents), candidate.relative_to(root)]:
+        current = component if component.is_absolute() else root / component
+        try:
+            info = current.lstat()
+        except FileNotFoundError:
+            return None
+        if stat.S_ISLNK(info.st_mode) or getattr(info, "st_file_attributes", 0) & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0):
+            return None
+    if not stat.S_ISREG(info.st_mode):
+        return None
+    if info.st_size > 1024 * 1024:
+        raise ValueError("evidence exceeds automatic hashing limit (1 MiB)")
+    # Bound the read even if the file grows after lstat; do not execute evidence.
+    with candidate.open("rb") as handle:
+        data = handle.read(1024 * 1024 + 1)
+    if len(data) > 1024 * 1024:
+        raise ValueError("evidence exceeds automatic hashing limit (1 MiB)")
+    return hashlib.sha256(data).hexdigest()
+
+
+def _append_operation(text: str, args, name: str) -> str:
+    state = getattr(args, "_operation_observation", None)
+    if state is None or state["event"] is None:
+        return text
+    event = state["event"]
+    if name == "update_work_item":
+        row = next(row for row in _parse_work_items(text) if row["item_id"] == str(args.item).strip())
+        operation, facts = "workitem.state_recorded", {"subject_ref": row["item_id"], "status": row["status"]}
+    elif name == "update_concern":
+        row = next(row for row in _parse_concerns(text) if row["concern_id"] == str(args.concern).strip())
+        operation, facts = "concern.state_recorded", {"subject_ref": row["concern_id"], "status": row["status"],
+            "kind": row["kind"], "work_item_id": getattr(args, "item", None), "target": row["target"],
+            "cognitive_onset_at": None, "occurred_at": None}
+    elif name == "update_artifact":
+        rows = _parse_artifacts(text)
+        row = next(row for row in rows if row["artifact_id"] == str(args.artifact).strip())
+        if row["kind"] != "check":
+            return text
+        check_ids = sorted(item["artifact_id"] for item in rows if item["kind"] == "check")
+        try:
+            evidence_hash = _local_evidence_hash(row["target"], state["history"])
+        except (OSError, ValueError) as exc:
+            state["warnings"].append(f"evidence hash unavailable: {exc}")
+            evidence_hash = None
+        operation, facts = "check.result_recorded", {"subject_ref": row["artifact_id"], "work_item_id": row["item_id"],
+            "declared_status": row["status"], "evidence_target": row["target"], "evidence_hash": evidence_hash,
+            "source_hash": None, "execution_verified": False, "recording_attempt_id": event["event_id"], "check_ids": check_ids, "check_set_hash": _operation_hash(check_ids)}
+    else:
+        operation, facts = "knowledge.operation_recorded", {"action": str(args.action), "xids": list(args.xid),
+            "content_hash": getattr(args, "content_hash", None), "content_hash_basis": "caller_declared",
+            "catalogue_verified": False}
+    event.update(operation=operation, run_id=_log_field(text, "run_id"), facts=facts)
+    state["recorded"] = True
+    return _append_observation_event(text, section="Operation Observations", event=event)
+
+
+def _append_run_opened(text: str, root: Path) -> str:
+    event = {"schema_version": 1, "event": "operation.observed", "operation": "run.opened",
+             "operation_key": str(uuid.uuid4()), "payload_sha256": _operation_hash({"run_id": _log_field(text, "run_id")}),
+             "event_id": str(uuid.uuid4()), "recorded_at": datetime.now(timezone.utc).isoformat(),
+             "run_id": _log_field(text, "run_id"), "facts": {"local_root": str(root.resolve())}}
+    return _append_observation_event(text, section="Operation Observations", event=event)
+
+
+def summarize_observations(log: Path) -> dict[str, object]:
+    events = _operation_observations(Path(log).read_text(encoding="utf-8"))
+    work = {"first_cycle_count": 0, "reentry_count": 0, "known_interval_count": 0,
+            "known_elapsed_seconds": 0.0, "missing_interval_count": 0}
+    previous, entered, check_groups = {}, set(), {}
+    intervals = []
+    for event in events:
+        facts = event["facts"]
+        if event["operation"] == "workitem.state_recorded":
+            subject = facts["subject_ref"]
+            prior = previous.get(subject)
+            if prior:
+                elapsed = (datetime.fromisoformat(event["recorded_at"]) - datetime.fromisoformat(prior["recorded_at"])).total_seconds()
+                intervals.append({"work_item_id": subject, "from_event_id": prior["event_id"],
+                                  "to_event_id": event["event_id"], "recorded_state": prior["facts"]["status"],
+                                  "next_recorded_state": facts["status"], "elapsed_seconds": elapsed if elapsed >= 0 else None})
+                if elapsed >= 0:
+                    work["known_interval_count"] += 1
+                    work["known_elapsed_seconds"] += elapsed
+                else:
+                    work["missing_interval_count"] += 1
+            if facts["status"] == "in_progress" and (prior is None or prior["facts"]["status"] != "in_progress"):
+                work["reentry_count" if subject in entered else "first_cycle_count"] += 1
+                entered.add(subject)
+            previous[subject] = event
+        elif event["operation"] == "check.result_recorded":
+            identity = (facts["subject_ref"], facts["evidence_target"], facts["evidence_hash"], facts["check_set_hash"])
+            group = check_groups.setdefault(identity, {"artifact_id": facts["subject_ref"], "evidence_target": facts["evidence_target"],
+                "evidence_hash": facts["evidence_hash"], "check_set_hash": facts["check_set_hash"], "source_hash": None,
+                "first_declared_status": facts["declared_status"], "event_count": 0})
+            group["final_declared_status"] = facts["declared_status"]
+            group["event_count"] += 1
+    work["missing_interval_count"] += len(previous)
+    work["intervals"] = intervals
+    check_records = [event["facts"] for event in events if event["operation"] == "check.result_recorded"]
+    concern_subjects = {event["facts"]["subject_ref"] for event in events if event["operation"] == "concern.state_recorded"}
+    def coverage(total: int, known: int) -> dict[str, object]:
+        return {"eligible_recorded_count": total, "known_count": known, "missing_count": total - known,
+                "coverage_fraction": known / total if total else None}
+    unknown_metrics = {key: {"value": None, "missing_count": None, "population": "unknown"}
+                       for key in ("early_discovery_rate", "rework_effort", "quality_gate_pass_rate",
+                                   "problem_recognition_time", "knowledge_collection_use_cost")}
+    return {**unknown_metrics, "status": "measured" if events else "unmeasured", "event_count": len(events),
+            "recorded_field_coverage": {
+                "check_evidence_hash": coverage(len(check_records), sum(row["evidence_hash"] is not None for row in check_records)),
+                "check_source_hash": coverage(len(check_records), 0),
+                "concern_cognitive_onset": coverage(len(concern_subjects), 0),
+                "concern_occurrence": coverage(len(concern_subjects), 0)},
+            "work_item_state_proxy": work if events else None, "declared_check_results": list(check_groups.values()),
+            "concern_state_record_count": sum(e["operation"] == "concern.state_recorded" for e in events) if events else None,
+            "concern_cognitive_onset": None, "semantic_rework_count": None, "human_active_work_seconds": None,
+            "provider_usage": None, "cost": None,
+            "limits": ["Registration order and program UTC time do not establish occurrence or cognitive order.",
+                       "Intervals span successive work item state registrations in log order, including repeated states; reversed UTC order and final open intervals are missing, never active work or person-time.",
+                       "Check updates are declared results, not verified executions or actual quality trial rates; source-under-test is unknown.",
+                       "No predeclared risk denominator; no risk rate is calculated.",
+                       "Knowledge hashes are caller-declared; catalogue verification is not established.",
+                       "Coverage fractions use only recorded check entries or distinct recorded concern subjects; they are data acquisition coverage, never the five business metrics."]}
+
+
+def cmd_skill_observation_summary(args) -> int:
+    try:
+        result = summarize_observations(Path(args.log))
+    except (OSError, UnicodeError, ValueError) as exc:
+        result = {"status": "invalid", "errors": [str(exc)]}
+    print(json.dumps(result, ensure_ascii=False, indent=2) if args.json else str(result))
+    return 1 if result["status"] == "invalid" else 0
+
+
 def _observation_events(text: str) -> list[dict[str, object]]:
     events: list[dict[str, object]] = []
     for match in re.finditer(r"^- event: (?P<event>\{.*\})$", text, re.MULTILINE):
@@ -1319,6 +1636,7 @@ def update_work_item(args) -> SkillRunResult:
 
     text = _replace_concrete_work_items_section(text, items)
     text = _append_phase_event(text, phase=f"workitem:{item_id}", status=status, role=role, note=item_text or None)
+    text = _append_operation(text, args, "update_work_item")
     _atomic_write_text(log_path, text)
     return SkillRunResult(ok=True, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[], work_items=items)
 
@@ -1455,6 +1773,7 @@ def update_artifact(args) -> SkillRunResult:
     text = _replace_runtime_artifacts_section(text, artifacts)
     text = _refresh_quality_report(text)
     text = _append_phase_event(text, phase=f"artifact:{artifact_id}", status=status, role=role, note=note or target)
+    text = _append_operation(text, args, "update_artifact")
     _atomic_write_text(log_path, text)
     return SkillRunResult(ok=True, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[], artifacts=artifacts)
 
@@ -1590,6 +1909,7 @@ def update_concern(args) -> SkillRunResult:
 
     text = _replace_unknowns_and_risks_section(text, concerns)
     text = _append_phase_event(text, phase=f"concern:{concern_id}", status=status, role=role, note=concern_text or None)
+    text = _append_operation(text, args, "update_concern")
     _atomic_write_text(log_path, text)
     return SkillRunResult(ok=True, skill_id=None, skill_doc=None, run_log=str(log_path), errors=[], concerns=concerns)
 
@@ -2375,6 +2695,7 @@ def update_knowledge_observation(args) -> SkillRunResult:
     if note:
         event["note"] = note
     text = _append_observation_event(text, section=section, event=event)
+    text = _append_operation(text, args, "update_knowledge_observation")
     _atomic_write_text(log_path, text)
     return SkillRunResult(
         ok=True,
@@ -2915,6 +3236,7 @@ def run_skill(args) -> SkillRunResult:
                    "reflection_routes": ["activate_skill_edit", "activate_local_knowledge", "adopt_contribution_return"],
                    "nonapplicability": "Flow-only or typo-only work requires an explicit scoped reason; no gate execution is implied"}
         log += "\n## Shared Update Gate Kickoff\n\n- obligation: `" + json.dumps(kickoff, ensure_ascii=False, sort_keys=True) + "`\n- status: `pending_applicability_and_entry`\n- rule: stage the final candidate and invoke the central entry; only a verified packet/bundle receipt satisfies reflection, never a generic artifact or dispatch plan\n"
+    log = _append_run_opened(log, root)
     with _LogFileLock(out_path.with_name(f".{out_path.name}.lock")):
         _atomic_write_text(out_path, log)
 
@@ -3128,6 +3450,7 @@ def run_workflow_instruction(args) -> SkillRunResult:
     else:
         log = log.replace(marker, "\n" + "\n".join(condition_lines) + "\n" + "\n".join(intake_lines) + "\n" + marker, 1)
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    log = _append_run_opened(log, root)
     with _LogFileLock(out_path.with_name(f".{out_path.name}.lock")):
         _atomic_write_text(out_path, log)
     return SkillRunResult(
@@ -3602,6 +3925,9 @@ def cmd_skill_workitem(args) -> int:
         print("fail: skill workitem")
         for error in result.errors:
             print(f"  error: {error}")
+    if not args.json:
+        for warning in result.measurement_warnings or []:
+            print(f"  measurement warning: {warning}")
     return 0 if result.ok else 1
 
 
@@ -3618,6 +3944,9 @@ def cmd_skill_artifact(args) -> int:
         print("fail: skill artifact")
         for error in result.errors:
             print(f"  error: {error}")
+    if not args.json:
+        for warning in result.measurement_warnings or []:
+            print(f"  measurement warning: {warning}")
     return 0 if result.ok else 1
 
 
@@ -3634,6 +3963,9 @@ def cmd_skill_concern(args) -> int:
         print("fail: skill concern")
         for error in result.errors:
             print(f"  error: {error}")
+    if not args.json:
+        for warning in result.measurement_warnings or []:
+            print(f"  measurement warning: {warning}")
     return 0 if result.ok else 1
 
 
@@ -3691,6 +4023,9 @@ def _cmd_observation(args, updater, label: str) -> int:
         print(f"fail: skill {label}")
         for error in result.errors:
             print(f"  error: {error}")
+    if not args.json:
+        for warning in result.measurement_warnings or []:
+            print(f"  measurement warning: {warning}")
     return 0 if result.ok else 1
 
 
