@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.7.2
+
+- Preserve exact UTF-8 receipt and adoption bytes, including CRLF, with strict
+  hash and byte-count validation.
+- Preserve literal Windows paths in workflow quality reports.
+- Automatically record bounded Skill Run operation facts and stable-key receipts
+  in the existing Run log; add a read-only observation summary. No measurement
+  LLM calls or MCP round trips are added. Semantic effects and unavailable usage
+  remain unknown; declared check results are not inferred test executions.
+
 ## 0.7.0
 
 - Guide migration from the new connected AI: inspect client-local legacy Skills,
