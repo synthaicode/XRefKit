@@ -311,8 +311,9 @@ def export_contribution_return(
     _verify_manifest_payload(record_dir, manifest)
     exported_files = []
     for item in manifest["files"]:
-        content = (record_dir / "files").joinpath(*PurePosixPath(item["path"]).parts).read_bytes().decode("utf-8")
-        if _sha256(content) != item["content_hash"]:
+        encoded = (record_dir / "files").joinpath(*PurePosixPath(item["path"]).parts).read_bytes()
+        content = encoded.decode("utf-8")
+        if hashlib.sha256(encoded).hexdigest() != item["content_hash"]:
             raise ValueError(f"stored contribution file hash mismatch: {item['path']}")
         exported_files.append({**item, "content": content})
     return {
@@ -1158,11 +1159,14 @@ def _next_step(
 def _stored_files(record_dir: Path, manifest: dict[str, Any]) -> list[AdoptionFile]:
     result = []
     for item in manifest["files"]:
-        content = (record_dir / "files").joinpath(
+        data = (record_dir / "files").joinpath(
             *PurePosixPath(item["path"]).parts
-        ).read_bytes().decode("utf-8")
-        if _sha256(content) != item["content_hash"]:
+        ).read_bytes()
+        content = data.decode("utf-8", errors="strict")
+        if hashlib.sha256(data).hexdigest() != item["content_hash"]:
             raise ValueError(f"stored contribution file hash mismatch: {item['path']}")
+        if len(data) != item["byte_count"]:
+            raise ValueError(f"stored contribution file byte_count mismatch: {item['path']}")
         result.append(
             AdoptionFile(
                 bundle_path=item["path"],
@@ -1208,8 +1212,8 @@ def _verify_manifest_payload(record_dir: Path, manifest: dict[str, Any]) -> None
         stored = content_root.joinpath(*PurePosixPath(path).parts)
         if not stored.is_file():
             raise ValueError(f"stored contribution file is missing: {path}")
-        content = stored.read_bytes().decode("utf-8")
-        encoded = content.encode("utf-8")
+        encoded = stored.read_bytes()
+        content = encoded.decode("utf-8")
         content_hash = hashlib.sha256(encoded).hexdigest()
         if raw.get("content_hash") != content_hash:
             raise ValueError(f"stored contribution file hash mismatch: {path}")
@@ -1302,7 +1306,7 @@ def _validate_canonical_target(
                 and known_locations.issubset({normalized})
                 and xid not in (unlocated_existing_knowledge_xids or set())
                 and target.is_file()
-                and _sha256(target.read_bytes().decode("utf-8")) == expected_hash
+                and hashlib.sha256(target.read_bytes()).hexdigest() == expected_hash
             )
             if not prepared_target_matches:
                 raise ValueError(f"Knowledge XID already exists in the canonical catalog: {xid}")
