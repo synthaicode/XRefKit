@@ -519,6 +519,11 @@ def _start_decision_trace_checkpoint(
     return checkpoint, None
 
 
+def _is_compact_log(text: str) -> bool:
+    # Only the generated header selects formatting; task and note text cannot.
+    return text.startswith("# Skill Run Log\n\n- log_format: `compact_v1`\n")
+
+
 def _render_log(
     *,
     run_id: str,
@@ -548,7 +553,15 @@ def _render_log(
     decision_trace_checkpoint: dict[str, object] | None = None,
     definition_identity: dict[str, str] | None = None,
     runtime_binding_source: str = "legacy_meta_compatibility",
+    compact: bool = False,
 ) -> str:
+    def rule(body: str) -> str:
+        return "" if compact else f"- rule: {body}"
+
+    format_header = (
+        "- log_format: `compact_v1`\n- operating_contract_xid: `B7A2C94F0E61`\n"
+        if compact else ""
+    )
     tier_label = model_tier or "unset"
     quality_policy = "required" if model_tier in QUALITY_REQUIRED_TIERS else "optional"
     contract_lines = "\n".join(f"- {key}: `{value}`" for key, value in os_contract.items())
@@ -660,7 +673,7 @@ def _render_log(
         )
     return f"""# Skill Run Log
 
-- run_id: `{run_id}`
+{format_header}- run_id: `{run_id}`
 {flow_lines}
 - mcp_session_id: `-`
 - repository_fingerprint: `-`
@@ -678,7 +691,7 @@ def _render_log(
 ## Skill Load Gate
 
 - status: `opened_by_xrefkit_skill_run`
-- rule: do not open or execute the Skill procedure until this runtime envelope exists
+{rule('do not open or execute the Skill procedure until this runtime envelope exists')}
 
 ## Runtime Role Assignment
 
@@ -703,7 +716,7 @@ def _render_log(
 
 - workflow_protocol: `{workflow_protocol}`
 - checker: `protocol-owned deterministic workflow-progression verification via xrefkit skill verify`
-- rule: checker responsibility is assigned by the runtime workflow protocol, not repeated in Skill meta
+{rule('checker responsibility is assigned by the runtime workflow protocol, not repeated in Skill meta')}
 
 ## OS Contract
 
@@ -719,17 +732,17 @@ def _render_log(
 - responsibility: `{runtime_responsibility}`
 - execution_mode: `{execution_mode}`
 - instruction_basis: `run.task`
-- rule: derive and persist the runtime binding from the current instruction and work-item state; model_requirements remains a separate model-eligibility input
+{rule('derive and persist the runtime binding from the current instruction and work-item state; model_requirements remains a separate model-eligibility input')}
 {legacy_runtime_binding_lines}
 
 ## Startup Inputs
 
-- rule: when work starts from a prior handoff, the receiving startup must name the handoff source log and verify that its closure gate already passed
+{rule('when work starts from a prior handoff, the receiving startup must name the handoff source log and verify that its closure gate already passed')}
 {handoff_source_lines}
 
 ## Domain Knowledge Inputs
 
-- rule: available and selected brownfield domain knowledge is recorded by XID only; load full bodies through XID resolution, not local paths
+{rule('available and selected brownfield domain knowledge is recorded by XID only; load full bodies through XID resolution, not local paths')}
 - requirements:
 {requirement_lines}
 
@@ -743,13 +756,13 @@ def _render_log(
 
 ### Used Knowledge Refs
 
-- rule: record actually consulted domain knowledge XIDs as runtime artifacts or evidence before handoff
+{rule('record actually consulted domain knowledge XIDs as runtime artifacts or evidence before handoff')}
 - none recorded yet
 
 ## MCP Correlation
 
 - status: `pending`
-- rule: bind this Skill Run to one MCP session with `xrefkit skill correlate` after `bind_skill_run` returns
+{rule('bind this Skill Run to one MCP session with `xrefkit skill correlate` after `bind_skill_run` returns')}
 
 ## Skill Routing Trace
 
@@ -759,32 +772,32 @@ def _render_log(
 ## Knowledge Search Trace
 
 - status: `pending`
-- rule: record search queries, hits, misses, and fallback decisions with `xrefkit skill knowledge --action search`
+{rule('record search queries, hits, misses, and fallback decisions with `xrefkit skill knowledge --action search`')}
 
 ## Loaded Knowledge Inputs
 
 - status: `pending`
-- rule: record each XID body actually loaded into model context with `xrefkit skill knowledge --action load`
+{rule('record each XID body actually loaded into model context with `xrefkit skill knowledge --action load`')}
 
 ## Knowledge Application Trace
 
 - status: `pending`
-- rule: link each applied XID to a judgment or artifact with `xrefkit skill knowledge --action apply`
+{rule('link each applied XID to a judgment or artifact with `xrefkit skill knowledge --action apply`')}
 
 ## Human Feedback
 
 - status: `pending`
-- rule: record human acceptance, correction, or rejection with `xrefkit skill feedback --kind human`
+{rule('record human acceptance, correction, or rejection with `xrefkit skill feedback --kind human`')}
 
 ## Human Evaluation
 
 - status: `pending`
-- rule: optional run-boundary evaluation; control returns to the human without waiting, and a subsequent request may record a human-confirmed relationship with `xrefkit skill evaluate`
+{rule('optional run-boundary evaluation; control returns to the human without waiting, and a subsequent request may record a human-confirmed relationship with `xrefkit skill evaluate`')}
 
 ## Outcome Feedback
 
 - status: `pending`
-- rule: record downstream outcome evidence with `xrefkit skill feedback --kind outcome`
+{rule('record downstream outcome evidence with `xrefkit skill feedback --kind outcome`')}
 
 ## Worklist
 
@@ -823,12 +836,12 @@ The workflow protocol worklist has not started.
 ## Concrete Work Items
 
 - status: `pending`
-- rule: task-specific work items must be added with `xrefkit skill workitem` and closed as `done` or `escalated`
+{rule('task-specific work items must be added with `xrefkit skill workitem` and closed as `done` or `escalated`')}
 
 ## Runtime Artifacts
 
 - status: `pending`
-- rule: outputs, evidence, checks, judgments, sources, and handoff links must be added with `xrefkit skill artifact`
+{rule('outputs, evidence, checks, judgments, sources, and handoff links must be added with `xrefkit skill artifact`')}
 
 ## Execution Role
 
@@ -845,7 +858,7 @@ The workflow protocol worklist has not started.
 - status: `pending`
 - model_tier: `{tier_label}`
 - policy: `{quality_policy}`
-- rule: declare acceptance check items as `check`-kind artifacts at planning; an independent quality reviewer sets each to `done` (pass) or `blocked` (fail) with `xrefkit skill artifact`; domain reviews run as separate review Skills orchestrated by the main session and linked here. Required when model_tier is `standard` or `heavy`; optional otherwise
+{rule('declare acceptance check items as `check`-kind artifacts at planning; an independent quality reviewer sets each to `done` (pass) or `blocked` (fail) with `xrefkit skill artifact`; domain reviews run as separate review Skills orchestrated by the main session and linked here. Required when model_tier is `standard` or `heavy`; optional otherwise')}
 
 ### Report
 
@@ -877,17 +890,17 @@ No quality checklist items have been recorded yet.
 ## Unknowns And Risks
 
 - status: `pending`
-- rule: unknowns, missing evidence, risks, and unsupported assumptions must remain explicit and must be resolved, escalated, or linked before closure
+{rule('unknowns, missing evidence, risks, and unsupported assumptions must remain explicit and must be resolved, escalated, or linked before closure')}
 
 ## Closure Gate
 
 - status: `pending`
-- rule: close only after execution, check, log, unknown/risk, and handoff rows are complete or explicitly escalated
+{rule('close only after execution, check, log, unknown/risk, and handoff rows are complete or explicitly escalated')}
 
 ## Handoff
 
 - status: `pending`
-- rule: record outputs, unresolved items, next owner, and human decision points
+{rule('record outputs, unresolved items, next owner, and human decision points')}
 
 ## Token Usage
 
@@ -895,7 +908,7 @@ No quality checklist items have been recorded yet.
 - input: `-`
 - output: `-`
 - total: `-`
-- rule: record tokens consumed by this skill run with `xrefkit skill tokens` (informational; does not gate closure)
+{rule('record tokens consumed by this skill run with `xrefkit skill tokens` (informational; does not gate closure)')}
 """
 
 
@@ -1570,8 +1583,9 @@ def _replace_concrete_work_items_section(text: str, items: list[dict[str, str]])
         "## Concrete Work Items",
         "",
         f"- status: `{status}`",
-        "- rule: each work item requires a completion criterion; use unknown, blocked, or escalated with a reason when the criterion cannot yet be defined",
     ]
+    if not _is_compact_log(text):
+        lines.append("- rule: each work item requires a completion criterion; use unknown, blocked, or escalated with a reason when the criterion cannot yet be defined")
     lines.extend(_render_workitem_line(**item) for item in items)
     new_body = "\n".join(lines) + "\n"
     return text[:start] + new_body + text[end:]
@@ -1710,8 +1724,9 @@ def _replace_runtime_artifacts_section(text: str, artifacts: list[dict[str, str]
         "## Runtime Artifacts",
         "",
         f"- status: `{status}`",
-        "- rule: outputs, evidence, checks, judgments, sources, and handoff links must be added with `xrefkit skill artifact`",
     ]
+    if not _is_compact_log(text):
+        lines.append("- rule: outputs, evidence, checks, judgments, sources, and handoff links must be added with `xrefkit skill artifact`")
     lines.extend(_render_artifact_line(**artifact) for artifact in artifacts)
     new_body = "\n".join(lines) + "\n"
     return text[:start] + new_body + text[end:]
@@ -1844,8 +1859,9 @@ def _replace_unknowns_and_risks_section(text: str, concerns: list[dict[str, str]
         "## Unknowns And Risks",
         "",
         f"- status: `{_overall_concern_status(concerns)}`",
-        "- rule: unknowns, missing evidence, risks, and unsupported assumptions must remain explicit and must be resolved, escalated, or linked before closure",
     ]
+    if not _is_compact_log(text):
+        lines.append("- rule: unknowns, missing evidence, risks, and unsupported assumptions must remain explicit and must be resolved, escalated, or linked before closure")
     lines.extend(_render_concern_line(**concern) for concern in concerns)
     new_body = "\n".join(lines) + "\n"
     return text[:start] + new_body + text[end:]
@@ -2400,7 +2416,8 @@ def _parse_token_usage(text: str) -> dict[str, str] | None:
 
 
 def _render_token_usage_section(
-    *, input_value: str, output_value: str, total_value: str, note: str | None
+    *, input_value: str, output_value: str, total_value: str, note: str | None,
+    include_rule: bool = True,
 ) -> str:
     lines = [
         "## Token Usage",
@@ -2409,8 +2426,9 @@ def _render_token_usage_section(
         f"- input: `{input_value}`",
         f"- output: `{output_value}`",
         f"- total: `{total_value}`",
-        "- rule: record tokens consumed by this skill run with `xrefkit skill tokens` (informational; does not gate closure)",
     ]
+    if include_rule:
+        lines.append("- rule: record tokens consumed by this skill run with `xrefkit skill tokens` (informational; does not gate closure)")
     if note:
         lines.append(f"- note: {note}")
     return "\n".join(lines) + "\n"
@@ -2900,6 +2918,7 @@ def update_token_usage(args) -> SkillRunResult:
         output_value=str(output_tokens) if output_tokens is not None else "-",
         total_value=str(total_tokens),
         note=note,
+        include_rule=not _is_compact_log(text),
     )
     text = _replace_token_usage_section(text, new_body)
     text = _append_phase_event(
@@ -2968,7 +2987,7 @@ def run_skill(args) -> SkillRunResult:
             definition_identity.update({
                 "adoption_path": adoption["path"], "adoption_sha256": adoption["sha256"],
                 "invocation_path": str(meta_arg or getattr(args, "definition", "")),
-                "runtime_provenance": json.dumps(adapter["runtime"], sort_keys=True),
+                "runtime_provenance": json.dumps(adapter["runtime"], sort_keys=True, separators=(",", ":")),
             })
         definition_maturity = "unassessed"
         if adapter and "current_adoption" in adapter:
@@ -2977,7 +2996,7 @@ def run_skill(args) -> SkillRunResult:
                 return SkillRunResult(ok=False, skill_id=skill_id, skill_doc=str(meta_path), run_log=None,
                                       errors=["explicit governance must match current repository adoption record"])
             governance_arg = current["governance_path"]
-            definition_identity["current_adoption_provenance"] = json.dumps(current, sort_keys=True)
+            definition_identity["current_adoption_provenance"] = json.dumps(current, sort_keys=True, separators=(",", ":"))
         if governance_arg:
             governance_path = (root / governance_arg).resolve()
             try:
@@ -3011,7 +3030,7 @@ def run_skill(args) -> SkillRunResult:
                       **({"native_source": adapter["adoption"]} if native_adapter
                          else {"legacy_receipt": adapter["runtime"][key]})}
                 for key in RUNTIME_FIELDS
-            }, sort_keys=True)
+            }, sort_keys=True, separators=(",", ":"))
         if not capability or not tuning or not responsibility or not execution_mode_arg:
             return SkillRunResult(ok=False, skill_id=skill_id, skill_doc=str(meta_path), run_log=None,
                                   errors=["definition-backed runs require --capability, --tuning, --responsibility, and --execution-mode"])
@@ -3021,7 +3040,7 @@ def run_skill(args) -> SkillRunResult:
                        "role_responsibilities": [f"executor: {responsibility}"]})
         if adapter and adapter.get("source_kind") != "native_v1":
             parsed.update({key: receipt["value"] for key, receipt in adapter["legacy_runtime_policy"].items()})
-            definition_identity["legacy_policy_provenance"] = json.dumps(adapter["legacy_runtime_policy"], sort_keys=True)
+            definition_identity["legacy_policy_provenance"] = json.dumps(adapter["legacy_runtime_policy"], sort_keys=True, separators=(",", ":"))
     else:
         parsed = _parse_meta_lines(meta_path.read_text(encoding="utf-8"))
     domain_knowledge, domain_knowledge_errors = _prepare_domain_knowledge_context(
@@ -3226,6 +3245,7 @@ def run_skill(args) -> SkillRunResult:
         decision_trace_checkpoint=checkpoint,
         definition_identity=definition_identity,
         runtime_binding_source="instruction_derived" if definition_arg else "legacy_meta_compatibility",
+        compact=True,
     )
     kickoff = None
     if skill_id in {"skill_flow_authoring", "knowledge_ontology_management"}:
