@@ -140,6 +140,51 @@ This is reading guidance, not an additional approval gate or a new evaluation
 criterion. If the perspective depends on missing context, name that unknown
 rather than inventing the reader's purpose, authority, or decision framework.
 
+## Circular Decision And Work Dependencies
+
+When this protocol applies, report a circular dependency when decisions or
+work cannot advance because their prerequisites form a closed path. For example,
+`A -> B -> C -> A` means A requires B, B requires C, and C requires A.
+Individually simple instructions can accumulate into such a cycle.
+
+Notify the reader when the cycle is identified and when its resolution is
+verified, in the active task's format. Do not repeat an unchanged alert on every
+response or use an always-visible Attention Pet indicator. This is a reporting
+rule, not a new Pet, background monitor, or monitoring service.
+
+At identification, make the following available together:
+
+- the dependency path, with each edge grounded in the original utterance or
+  instruction and a reachable source reference or short quotation;
+- which dependencies are confirmed by that evidence and which are inferred,
+  including the confirmation needed for an inferred edge; label a cycle that
+  relies on an inferred edge as suspected rather than confirmed;
+- the decisions or work that cannot proceed, and the effect on the next step;
+- candidates for breaking the cycle, such as confirming a premise, obtaining
+  an independent input, or explicitly revising a prerequisite; identify the
+  edge each candidate would remove or satisfy independently, and any required
+  decision or authority. A candidate is not an adopted premise.
+
+Distinguish a blocking cycle from ambiguity (unclear meaning), contradiction
+(incompatible requirements), repeated statements, and normal iterative
+improvement with an executable next step. They may coexist, but repetition or
+mutual relevance alone is not evidence of a blocking dependency. Missing
+evidence remains unknown; do not invent an edge to complete a cycle.
+
+After a premise or prerequisite changes, recheck the affected path against the
+current instructions. Fixing a value alone does not establish resolution.
+Identify which edge was removed or independently satisfied, why the original
+closed path no longer blocks progress, and which decision or work can now
+proceed. If the dependency remains circular, keep the cycle open.
+Scope the resolution to the checked cycle; preserve other open cycles and
+unknowns. If resolution depends on an assumption, say "resolved under this
+assumption", name it, and state what change would require rechecking.
+
+Use the same finding or task reference for identification and resolution when
+one exists. This evidence reconstructs dependencies from available conversation
+and task records; it does not expose or claim access to the model's actual
+internal reference history.
+
 ## Finding And Checklist Anchors
 
 When a report contains a checklist, category matrix, gate table, or other
