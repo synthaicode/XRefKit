@@ -95,3 +95,96 @@ def test_compaction_only_removes_template_rules_and_preserves_task(monkeypatch, 
         ))]
 
     assert data_lines(compact) == data_lines(verbose)
+
+
+def test_dashboard_payload_is_identical_for_compact_and_verbose_runs(monkeypatch, tmp_path):
+    import json
+    import os
+    from datetime import datetime, timezone
+    from itertools import count
+    from uuid import UUID
+
+    from xrefkit import dashboard, skillrun
+
+    render = skillrun._render_log
+    captured = {}
+
+    def capture(**kwargs):
+        captured.update(kwargs)
+        return render(**kwargs)
+
+    monkeypatch.setattr(skillrun, "_render_log", capture)
+    _, log = _open_run(tmp_path)
+    provenance = {"capability": {"origin": "explicit_input", "selected_value": "repository inspection"}}
+
+    class FixedDatetime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            fixed = cls(2026, 10, 25, 12, 0, tzinfo=timezone.utc)
+            return fixed.astimezone(tz) if tz else fixed.replace(tzinfo=None)
+
+    monkeypatch.setattr(skillrun, "datetime", FixedDatetime)
+    monkeypatch.setattr(dashboard, "datetime", FixedDatetime)
+    snapshots = []
+    for compact in (False, True):
+        event_ids = count(1)
+        monkeypatch.setattr(skillrun.uuid, "uuid4", lambda: UUID(int=next(event_ids)))
+        identity = {**captured["definition_identity"], "runtime_provenance": json.dumps(
+            provenance, sort_keys=True, separators=(",", ":") if compact else None,
+        )}
+        log.write_text(render(**{**captured, "definition_identity": identity, "compact": compact}), encoding="utf-8")
+
+        def snapshot():
+            # Compare the whole public payload, with no fields removed. The same
+            # file path and frozen clocks make file/observation timestamps equal.
+            os.utime(log, (1792929600, 1792929600))
+            return dashboard.build_payload(tmp_path, log.parent)
+
+        def update(*args):
+            code, output = command("skill", *args, "--log", str(log))
+            assert code == 0, output
+
+        initial = snapshot()
+        assert "token_usage" in {item["code"] for item in initial["runs"][0]["missing_information"]}
+        update("workitem", "--item", "WI-1", "--text", "Inspect target",
+               "--completion-criterion", "report covers target", "--status", "done", "--role", "definition_sample:executor")
+        for artifact_id, kind, target in (("OUT-1", "output", "report.md"), ("EVD-1", "evidence", "tests passed")):
+            update("artifact", "--artifact", artifact_id, "--kind", kind, "--target", target,
+                   "--item", "WI-1", "--status", "done", "--role", "definition_sample:executor")
+        update("concern", "--concern", "RISK-1", "--kind", "risk", "--status", "resolved",
+               "--text", "Compatibility checked", "--target", "tests passed", "--role", "definition_sample:executor")
+        update("correlate", "--run-id", captured["run_id"], "--mcp-session-id", "mcp-1", "--repository-fingerprint", "repo-1")
+        update("routing", "--selected-skill", "definition_sample", "--candidate", "definition_sample", "--reason", "best match")
+        update("knowledge", "--action", "search", "--query", "service map", "--status", "hit", "--xid", "SERVICE123456")
+        update("knowledge", "--action", "load", "--xid", "SERVICE123456", "--content-hash", "hash-1")
+        update("knowledge", "--action", "apply", "--xid", "SERVICE123456", "--content-hash", "hash-1", "--target", "OUT-1")
+        update("feedback", "--kind", "human", "--status", "accepted", "--note", "accepted")
+        update("feedback", "--kind", "outcome", "--status", "successful", "--note", "successful")
+        update("tokens", "--input", "120", "--output", "30")
+        populated = snapshot()
+        run = populated["runs"][0]
+        assert run["missing_information"] == []
+        assert run["counts"]["work_items"] == 1
+        assert run["counts"]["artifacts"] == 2
+        assert run["counts"]["risks"] == 1
+        assert run["loaded_xids"] == run["used_xids"] == ["SERVICE123456"]
+        assert run["definition_format"] == "skill_definition_v1"
+        assert run["definition_xid"] == "ABCDEF123456"
+        assert run["definition_sha256"] == captured["definition_identity"]["sha256"]
+        assert run["capability"] == "repository inspection"
+        assert {event["event"] for event in run["observation_events"]} >= {
+            "skill.routed", "knowledge.search", "knowledge.loaded", "knowledge.applied", "human.feedback", "outcome.feedback",
+        }
+        for phase in ("startup", "planning", "execution"):
+            update("phase", "--phase", phase, "--status", "done", "--role", "definition_sample:executor")
+        update("verify")
+        update("phase", "--phase", "handoff", "--status", "done", "--role", "definition_sample:handoff_owner")
+        update("close")
+        closed = snapshot()
+        assert closed["runs"][0]["status"] == "closed"
+        text = log.read_text(encoding="utf-8")
+        assert json.loads(skillrun._log_field(text, "definition_runtime_provenance")) == provenance
+        assert skillrun._parse_token_usage(text) == {"status": "recorded", "input": "120", "output": "30", "total": "150"}
+        snapshots.append((initial, populated, closed))
+
+    assert snapshots[0] == snapshots[1]
