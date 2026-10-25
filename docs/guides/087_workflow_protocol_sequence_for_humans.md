@@ -25,6 +25,20 @@ Quality acceptance is a separate axis. When required, the `quality_reviewer`
 role checks output acceptability through `check` artifacts and the quality
 phase.
 
+## Saved Skill Run Logs
+
+New Skill run logs declare `log_format: compact_v1` and reference the
+[Skill Operating Contract](../core/contracts/058_skill_operating_contract.md#xid-B7A2C94F0E61)
+by `operating_contract_xid`. Repeated static `rule` prose is omitted; the
+rules still apply through that contract and the startup-loaded protocols.
+Runtime keys, statuses, roles, identifiers, provenance values, evidence, section
+headings, and the required Worklist and Quality Gate reports remain recorded.
+Provenance JSON uses compact whitespace without dropping fields or values.
+
+Existing logs are not migrated. Their readers and update commands remain
+compatible, and token updates retain their existing verbose format. Generic
+instruction-backed Workflow run logs retain their existing format.
+
 ## Main Actors
 
 | Actor | What it does |

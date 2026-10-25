@@ -1000,7 +1000,13 @@ class CliTests(unittest.TestCase):
             )
             text = out.read_text(encoding="utf-8")
             self.assertIn("## Domain Knowledge Inputs", text)
-            self.assertIn("- rule: available and selected brownfield domain knowledge is recorded by XID only", text)
+            self.assertIn("- log_format: `compact_v1`", text)
+            self.assertIn("- operating_contract_xid: `B7A2C94F0E61`", text)
+            self.assertIn(
+                "### Selected Knowledge Inputs\n\n- target_service_structure:\n"
+                "  - `LOCAL-SERVICE-MAP-001`\n  - `LOCAL-DB-SCHEMA-001`",
+                text,
+            )
             self.assertIn("- xid: `LOCAL-SERVICE-MAP-001`", text)
             self.assertIn("content_hash: `sha256-service-map`", text)
             self.assertIn("last_verified: `2026-07-04`", text)
