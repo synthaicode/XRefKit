@@ -63,6 +63,16 @@ artifact. Review the draft before sending; no named invocation is required.
   changes concretely; do not describe existing behavior as a newly completed change.
   Preserve the source's polite or plain style unless a change is requested.
   Do not vary endings merely for variety or strengthen advice into obligation.
+- Before shortening an explanation, identify its main point and develop a
+  concrete explanation for the reader. Then remove repetition while retaining
+  actors, actions, reasons, and applicable conditions. Keep conditions beside
+  the statements they qualify. If the length limit would obscure meaning,
+  narrow the topic or revise the structure.
+- Prefer actionable affirmative instructions. Retain negation when it carries
+  a prohibition, exception, limitation, or necessary comparison.
+- Read the shortened explanation on its own. Restore missing context or
+  rebuild the explanation when it remains unclear; show the finished text
+  without the intermediate draft unless requested.
 - Make subjects, predicates, objects, modifiers, pronouns, conditions, and
   parallel clauses correspond clearly. Supply omitted words only when supported
   by the source or conversation; do not resolve material ambiguity by guessing.
@@ -100,6 +110,11 @@ Source: nanaism/yomiyasu v2.1.3, commit
 `c09270bc93daab14e253fb3ef406182011b79ccb`, adapted under the MIT License,
 Copyright (c) 2026 nanaism. Repository source snapshot and license:
 `sources/web/yomiyasu/SKILL.md` and `sources/web/yomiyasu/LICENSE`.
+
+Additional explanation-first guidance: Kazuki Ota,
+[Explain Before Shorten](https://zenn.dev/microsoft/articles/explain-before-shorten),
+consulted 2026-10-31. The guidance above is a concise adaptation of its writing
+approach, not an installation of the article's Skill or invocation rules.
 
 ## How to reference (fixed procedure)
 

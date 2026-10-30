@@ -29,7 +29,7 @@ EMBEDDED_STARTUP_SOURCE_PATHS = {
 # reports the pack as stale when they diverge, so a hand-maintained copy can
 # no longer drift silently.
 EMBEDDED_BASED_ON_HASHES = {
-    "0B5C58B5E5B2": "e7e87d6cafcd6dad3819c3186d42cb3985be9160ccb6b841e1b5b6ff19273a72",
+    "0B5C58B5E5B2": "67cfd78c24b8a7d0ff4a5e86a055b06bd020cc8920ebe25bf54a2087a83686be",
     "5A1C8E4D2F90": "b4cc94e25ff8373d13bbe23beb9ad418fa9745d3e99506bcc8015c98a1c14b0a",
     "6C0B62D6366A": "c4de2227516494e4112045a7b5dbf2a4c14285c1520c1f82a5013e22df1ecc5e",
     "8A666C1FD121": "d03931f9892b6af13cd2b0fa7bc2112e06ed5a7f04bea6b9bd530594b516c4d0",
@@ -93,6 +93,16 @@ artifact. Review the draft before sending; no named invocation is required.
   changes concretely; do not describe existing behavior as a newly completed change.
   Preserve the source's polite or plain style unless a change is requested.
   Do not vary endings merely for variety or strengthen advice into obligation.
+- Before shortening an explanation, identify its main point and develop a
+  concrete explanation for the reader. Then remove repetition while retaining
+  actors, actions, reasons, and applicable conditions. Keep conditions beside
+  the statements they qualify. If the length limit would obscure meaning,
+  narrow the topic or revise the structure.
+- Prefer actionable affirmative instructions. Retain negation when it carries
+  a prohibition, exception, limitation, or necessary comparison.
+- Read the shortened explanation on its own. Restore missing context or
+  rebuild the explanation when it remains unclear; show the finished text
+  without the intermediate draft unless requested.
 - Make subjects, predicates, objects, modifiers, pronouns, conditions, and
   parallel clauses correspond clearly. Supply omitted words only when supported
   by the source or conversation; do not resolve material ambiguity by guessing.
@@ -130,6 +140,11 @@ Source: nanaism/yomiyasu v2.1.3, commit
 `c09270bc93daab14e253fb3ef406182011b79ccb`, adapted under the MIT License,
 Copyright (c) 2026 nanaism. Repository source snapshot and license:
 `sources/web/yomiyasu/SKILL.md` and `sources/web/yomiyasu/LICENSE`.
+
+Additional explanation-first guidance: Kazuki Ota,
+[Explain Before Shorten](https://zenn.dev/microsoft/articles/explain-before-shorten),
+consulted 2026-10-31. The guidance above is a concise adaptation of its writing
+approach, not an installation of the article's Skill or invocation rules.
 
 ## Protocol boundary and runtime routing
 

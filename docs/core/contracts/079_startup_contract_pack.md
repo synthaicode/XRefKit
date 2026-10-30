@@ -22,7 +22,7 @@ as stale to every client when they diverge.
 ## Based On
 
 - pack_version: 1
-- 0B5C58B5E5B2: `8c115becf0a4b0b5a6a35a42e69129590f23ee7ab36d61ca14b7ea7edf79aff6`
+- 0B5C58B5E5B2: `15d803bdd05ee63abdfe04bda36c3856439ce6b6286a0f46d922dd4be8e3dce2`
 - 5A1C8E4D2F90: `4d85ea9ba71cb30d1271e363a071a4a03c19f869f3f50019c3677370bca457c8`
 - 6C0B62D6366A: `b3f4950c87f689fd5f51379380413fbd16be6f6c8fcf79ae27d0cd24c88aaaf5`
 - 8A666C1FD121: `ff3f5e3b7b83a738edb5e99195a79e664db33a514e7a8d1fe0129e6787f994a2`
@@ -74,6 +74,16 @@ artifact. Review the draft before sending; no named invocation is required.
   changes concretely; do not describe existing behavior as a newly completed change.
   Preserve the source's polite or plain style unless a change is requested.
   Do not vary endings merely for variety or strengthen advice into obligation.
+- Before shortening an explanation, identify its main point and develop a
+  concrete explanation for the reader. Then remove repetition while retaining
+  actors, actions, reasons, and applicable conditions. Keep conditions beside
+  the statements they qualify. If the length limit would obscure meaning,
+  narrow the topic or revise the structure.
+- Prefer actionable affirmative instructions. Retain negation when it carries
+  a prohibition, exception, limitation, or necessary comparison.
+- Read the shortened explanation on its own. Restore missing context or
+  rebuild the explanation when it remains unclear; show the finished text
+  without the intermediate draft unless requested.
 - Make subjects, predicates, objects, modifiers, pronouns, conditions, and
   parallel clauses correspond clearly. Supply omitted words only when supported
   by the source or conversation; do not resolve material ambiguity by guessing.
@@ -111,6 +121,11 @@ Source: nanaism/yomiyasu v2.1.3, commit
 `c09270bc93daab14e253fb3ef406182011b79ccb`, adapted under the MIT License,
 Copyright (c) 2026 nanaism. Repository source snapshot and license:
 `sources/web/yomiyasu/SKILL.md` and `sources/web/yomiyasu/LICENSE`.
+
+Additional explanation-first guidance: Kazuki Ota,
+[Explain Before Shorten](https://zenn.dev/microsoft/articles/explain-before-shorten),
+consulted 2026-10-31. The guidance above is a concise adaptation of its writing
+approach, not an installation of the article's Skill or invocation rules.
 
 ## Protocol boundary and runtime routing
 
