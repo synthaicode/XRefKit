@@ -29,7 +29,7 @@ pack's owned Skills above. See [Business Pack model](../docs/core/models/071_bus
 ## Semantic Routing Cues
 
 - For a whole-job request to establish and coordinate project work, select the
-  `project-management` pack, then its setup, discovery or progression Skill
+  `project-management` pack, then its setup, discovery, progression or PM decision-support Skill
   from the current state. Its public draft boundary still applies.
 
 - For project progress rules that are absent, unclear or need applicability confirmation:
@@ -38,7 +38,12 @@ pack's owned Skills above. See [Business Pack model](../docs/core/models/071_bus
   - route to `requirements_discovery_coordination`; preserve the existing interview and technical investigation routes
 - For guidance across contributors about scoped start conditions, dependencies, holds and next actions:
   - route to `work_progress_coordination`; quality decisions remain with the designated quality route
-- These three work-practice entries are public draft sources. Naming a Skill is
+- For PM decision/consultation settings beyond existing progress rules:
+  - route to `pm_coordination_setup`
+- For internal confirmation items needing PM handling or stakeholder agreement,
+  agreement-to-delivery traceability, or PM selection of a bounded start scope:
+  - route to `pm_decision_coordination`; internal readiness and quality remain with their owners
+- These five work-practice entries are public draft sources. Naming a Skill is
   not required for semantic selection, but selection does not authorize execution.
   Always supply its matching `governance/skills/<skill_id>.json` for readiness
   checks and any attempted run; draft refusal is required. Do not omit that
@@ -398,6 +403,18 @@ Current family paths:
   - meta: `skills/packs/project-management/work_progress_coordination/SKILL.v1.md`
   - skill_doc: `skills/packs/project-management/work_progress_coordination/SKILL.v1.md`
   - governance: `governance/skills/work_progress_coordination.json` (draft; not executable)
+
+- `pm_coordination_setup`:
+  - summary: configure decision authority, stakeholder responsibilities and agreement traceability using applicable organization and project Knowledge
+  - meta: `skills/packs/project-management/pm_coordination_setup/SKILL.v1.md`
+  - skill_doc: `skills/packs/project-management/pm_coordination_setup/SKILL.v1.md`
+  - governance: `governance/skills/pm_coordination_setup.json` (draft; not executable)
+
+- `pm_decision_coordination`:
+  - summary: support PM judgments and stakeholder agreement through internal reflection, quality follow-up and bounded start choices
+  - meta: `skills/packs/project-management/pm_decision_coordination/SKILL.v1.md`
+  - skill_doc: `skills/packs/project-management/pm_decision_coordination/SKILL.v1.md`
+  - governance: `governance/skills/pm_decision_coordination.json` (draft; not executable)
 
 ## Notes
 

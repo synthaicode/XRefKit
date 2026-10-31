@@ -5,6 +5,7 @@ import re
 import shutil
 import subprocess
 import sys
+from importlib.metadata import version
 from pathlib import Path
 
 import pytest
@@ -13,6 +14,17 @@ from xrefkit.discovery import DiscoveredSkillPackage, discover_skill_packages
 from xrefkit.loaders import load_package_manifest
 from xrefkit.mcp.catalog import XRefCatalog, _build_package_skills
 from xrefkit_skills_project_management import package_root
+
+
+# Core compatibility runs this suite against published and candidate packages.
+# Keep explicit release expectations so missing new assets cannot pass silently.
+BASE_SKILLS = ('progress_rules_setup', 'requirements_discovery_coordination', 'work_progress_coordination')
+RELEASE_SKILLS = {
+    '0.1.0a1': BASE_SKILLS,
+    '0.1.0a2': BASE_SKILLS + ('pm_coordination_setup', 'pm_decision_coordination'),
+}
+INSTALLED_VERSION = version('xrefkit-skills-project-management')
+EXPECTED_SKILLS = RELEASE_SKILLS[INSTALLED_VERSION]
 
 
 def package():
@@ -25,7 +37,8 @@ def test_installed_discovery_and_governance(tmp_path):
     candidate=package()
     catalog=XRefCatalog.build(tmp_path,discover_packages=True)
     entries={e.skill_id:e for e in catalog.skills if e.package_id==candidate.package_id}
-    assert set(entries)=={'progress_rules_setup','requirements_discovery_coordination','work_progress_coordination'}
+    assert str(candidate.manifest.version)==INSTALLED_VERSION
+    assert set(entries)==set(EXPECTED_SKILLS)
     for provided in candidate.manifest.provides.skills:
         entry=entries[provided.id]
         assert entry.maturity=='draft'
@@ -37,7 +50,7 @@ def test_installed_discovery_and_governance(tmp_path):
         assert catalog.get_skill(provided.id)['skill_content'].encode()==body
 
 
-@pytest.mark.parametrize('sid',['progress_rules_setup','requirements_discovery_coordination','work_progress_coordination'])
+@pytest.mark.parametrize('sid',EXPECTED_SKILLS)
 def test_packaged_draft_cannot_run(sid,tmp_path):
     provided=next(p for p in package().manifest.provides.skills if p.id==sid)
     command=[sys.executable,'-I','-m','xrefkit','skill','run','--root',str(package_root()),
@@ -82,8 +95,8 @@ def test_packaged_links_are_local_or_explicit_navigation():
 
 def test_package_contains_no_project_configuration_or_adapter():
     manifest=load_package_manifest(package_root()/'package_manifest.yaml')
-    assert len(manifest.provides.skills)==3
+    assert len(manifest.provides.skills)==len(EXPECTED_SKILLS)
     assert not manifest.provides.knowledge
     assert not list(package_root().rglob('*.skill.yaml'))
     source=json.loads((package_root()/'source_manifest.json').read_text())
-    assert len(source['sources'])==6
+    assert len(source['sources'])==len(EXPECTED_SKILLS)+3
