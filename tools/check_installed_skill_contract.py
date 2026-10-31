@@ -16,6 +16,9 @@ def verify_installed(name: str, package_id: str, core_version: str,
     from xrefkit.models import LocalDomainSkill
     from xrefkit.resolver import EffectiveSkillResolver
     from xrefkit.workspace import CORE_PROTOCOL_VERSION, build_registry
+    from xrefkit.models.common import version_satisfies
+    from xrefkit.mcp.catalog import _build_package_skills
+    from xrefkit.skill_definition import load_skill_definition as load_native
 
     if metadata.version("xrefkit") != core_version:
         raise ValueError("installed Core does not match candidate wheel")
@@ -23,7 +26,8 @@ def verify_installed(name: str, package_id: str, core_version: str,
     own_entries = [e for e in distribution.entry_points if e.group == "xrefkit.skill_packages"]
     if len(own_entries) != 1:
         raise ValueError(f"{name}: expected one installed Skill package entry point")
-    candidates = [p for p in discover_skill_packages() if p.package_id == package_id]
+    discovered = discover_skill_packages()
+    candidates = [p for p in discovered if p.package_id == package_id]
     if len(candidates) != 1:
         raise ValueError(f"{name}: missing or ambiguous package ID {package_id}")
     package = candidates[0]
@@ -31,12 +35,63 @@ def verify_installed(name: str, package_id: str, core_version: str,
         raise ValueError("discovered entry point does not belong to distribution")
     if package.version != distribution.version:
         raise ValueError("manifest version differs from installed distribution")
-    registry = build_registry(package_manifests=[], discover_entry_points=True,
-                              enabled_package_ids=enabled_ids or {package_id})
+    enabled = enabled_ids or {package_id}
+    selected = [p for p in discovered if p.package_id in enabled]
+    if {p.package_id for p in selected} != enabled:
+        raise ValueError("missing enabled package")
+    # Native v1 is an MCP distribution format, not legacy v2 inheritance.
+    # Check all enabled identities/protocols together before format-specific probes.
+    seen_ids, seen_xids = set(), set()
+    legacy_ids = set()
+    for candidate in selected:
+        if not version_satisfies(CORE_PROTOCOL_VERSION, candidate.manifest.requires.xrefkit_core):
+            raise ValueError(f"package {candidate.package_id} requires incompatible protocol; current core is {CORE_PROTOCOL_VERSION}")
+        formats = {Path(p.path).suffix.lower() == ".md" for p in candidate.manifest.provides.skills}
+        if len(formats) != 1:
+            raise ValueError("mixed native/legacy package requires a supported explicit probe")
+        if formats == {False}:
+            legacy_ids.add(candidate.package_id)
+        for group in candidate.manifest.provides.model_dump().values():
+            for provided in group:
+                if provided["xid"] in seen_xids:
+                    raise ValueError(f"duplicate XID across enabled packages: {provided['xid']}")
+                seen_xids.add(provided["xid"])
+                target = (candidate.package_root / provided["path"]).resolve()
+                if not target.is_relative_to(candidate.package_root.resolve()) or not target.is_file():
+                    raise ValueError("escaping or missing provided asset")
+        for provided in candidate.manifest.provides.skills:
+            if provided.id in seen_ids:
+                raise ValueError(f"duplicate Skill across enabled packages: {provided.id}")
+            seen_ids.add(provided.id)
+        if formats == {True}:
+            _build_package_skills(candidate)  # strict identity and bound-governance checks
+    registry = build_registry(package_manifests=[], discover_entry_points=bool(legacy_ids),
+                              enabled_package_ids=legacy_ids)
     checked = []
     with tempfile.TemporaryDirectory(prefix="xrefkit-skill-contract-") as temporary:
         local_root = Path(temporary).resolve()
         for provided in package.manifest.provides.skills:
+            if Path(provided.path).suffix.lower() == ".md":
+                path = package.package_root / provided.path
+                native = load_native(path)
+                header = native["metadata"]
+                for label, actual, required in (
+                    ("required_outputs", header["outputs"], provided.required_outputs),
+                    ("required_knowledge", [x for need in header["knowledge_needs"] for x in need["seed_xids"]], provided.required_knowledge),
+                    ("must_not", header["exclusions"], provided.must_not),
+                ):
+                    if not set(required) <= set(actual):
+                        raise ValueError(f"{provided.id}: native definition lost manifest {label}")
+                if provided.required_review_axes:
+                    raise ValueError("native review-axis inheritance is unsupported; do not discard manifest requirements")
+                for relative in re.findall(r"\]\(([^)#]+)(?:#[^)]*)?\)", native["method"]):
+                    if "://" in relative:
+                        continue
+                    target = (path.parent / relative).resolve()
+                    if not target.is_relative_to(package.package_root.resolve()) or not target.is_file():
+                        raise ValueError(f"missing or escaping native reference: {relative}")
+                checked.append(provided.id)
+                continue
             base = registry.skills.require(provided.id)
             definition = base.definition
             if provided.xid != definition.xid:

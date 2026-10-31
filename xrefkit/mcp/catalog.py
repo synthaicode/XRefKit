@@ -1055,8 +1055,8 @@ class XRefCatalog:
             ]
             # Declared preconditions travel with the ranking so the client can
             # filter to Skills runnable in the current state (084 M4). Empty
-            # until metas adopt preconditions; tool-availability stays the only
-            # server-known readiness signal.
+            # until metas adopt preconditions; known adoption and packaged
+            # governance restrictions also constrain readiness below.
             readiness = {
                 "runnable": not missing_tools,
                 "missing_tool_contracts": missing_tools,
@@ -1070,6 +1070,11 @@ class XRefCatalog:
                     "required_runtime_inputs": missing_runtime,
                     "repository_adopted": skill.repository_adoption["effective_adopted"],
                     "historical_repository_adopted": skill.repository_adoption["adopted"],
+                })
+            if skill.package_id and skill.maturity_governance and skill.maturity in {"draft", "deprecated"}:
+                readiness.update({
+                    "runnable": False,
+                    "governance_block_reason": f"Packaged Skill maturity {skill.maturity} prohibits execution",
                 })
             if score <= 0:
                 continue
@@ -2343,12 +2348,24 @@ def _build_package_skills(package: DiscoveredSkillPackage) -> list[SkillCatalogE
                 worklist_policy="required",
             )
             knowledge_needs = [dict(item) for item in meta["knowledge_needs"]]
+            maturity_governance = None
+            if provided.governance_path is not None:
+                from ..skill_definition_governance import (
+                    governance_projection, load_governance_record, match_definition,
+                )
+                governance_path = (package_root / provided.governance_path).resolve()
+                if not governance_path.is_relative_to(package_root):
+                    raise ValueError("package Skill governance path escapes package root")
+                record = load_governance_record(governance_path)
+                match_definition(record, definition)
+                maturity_governance = governance_projection(record)
+                maturity_governance["record_ref"]["path"] = governance_path.relative_to(package_root).as_posix()
             entries.append(
                 SkillCatalogEntry(
                     skill_id=meta["skill_id"],
                     title=first_heading(method, meta["skill_id"]),
                     summary=meta["summary"],
-                    maturity="unassessed",
+                    maturity=maturity_governance["maturity"] if maturity_governance else "unassessed",
                     intent=list(meta["applies_when"]),
                     target_artifacts=list(meta["outputs"]),
                     applies_when=list(meta["applies_when"]),
@@ -2378,6 +2395,7 @@ def _build_package_skills(package: DiscoveredSkillPackage) -> list[SkillCatalogE
                     definition_format="skill_definition_v1",
                     definition_xid=meta["xid"],
                     definition_content_hash=definition["content_hash"],
+                    maturity_governance=maturity_governance,
                 )
             )
             continue

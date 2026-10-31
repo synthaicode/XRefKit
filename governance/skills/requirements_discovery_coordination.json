@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "skill_id": "requirements_discovery_coordination",
+  "definition_xid": "3B8E71A5C902",
+  "definition_content_hash": "8affa513e077162b51f58085c4462065ea6ed814c7093ba6494fa3fcfcb9725c",
+  "maturity": "draft",
+  "observation_refs": [],
+  "governance_refs": [],
+  "promotion": {
+    "decision": "not_requested",
+    "target_maturity": null,
+    "authority": null,
+    "decided_at": null,
+    "basis_refs": []
+  }
+}

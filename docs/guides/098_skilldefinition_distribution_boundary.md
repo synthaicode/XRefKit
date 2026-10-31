@@ -17,6 +17,11 @@ package discoveryは配布済み定義を読む経路であり、管理uploadは
 - pathが従来のSkill YAMLなら、entry Markdownとの分割形式を
   `definition_format: legacy_split_v1`として扱う。
 - routing一覧にはmethod本文を含めない。選択後の`get_skill`だけがone-documentのraw内容を返す。
+- Core 0.7.5から、Markdown定義の `provides.skills[].governance_path` は
+  package root内の外部governanceを明示的に指定できる。ID・XID・raw SHA-256を
+  検証し、draftを含む成熟度をcatalogへ保持する。欠落・改変・root外の参照は拒否する。
+  省略時は従来どおり `unassessed` であり、自動昇格ではない。直接CLI実行では
+  対応する `--governance` を明示する。legacy YAMLにはこのフィールドを指定しない。
 - packageのone-document形式はMCP catalogの配布境界である。旧v2 workspace registryは
   現時点で従来YAML modelのみを扱う。
 

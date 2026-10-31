@@ -15,7 +15,7 @@ Categories list skill ids only. Resolve summaries and `SKILL.v1.md` paths from t
   `cross_constraint_derivation`, `integration_scenario_derivation`
 - Python: `python_review`, `python_implementation_flow`
 - SQL Server: `batch_impact_regression`, `db_current_state_analysis`, `db_design`
-- repository: `doc_ship`, `retro`, `knowledge_ontology_management`,
+- repository: `progress_rules_setup`, `requirements_discovery_coordination`, `work_progress_coordination`, `doc_ship`, `retro`, `knowledge_ontology_management`,
   `shared_asset_update_gate`, `correction_retrospective_analyst`,
   `consultation_research_mapping`, `judgment_log`, `skill_flow_authoring`,
   `skill_calibration_evaluation`,

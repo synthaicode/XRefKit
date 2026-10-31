@@ -91,6 +91,31 @@ def test_real_resolver_probe_passes_representative_fixture(tmp_path, monkeypatch
     assert installed.verify_installed("demo", "official.demo", "0.6.1")["skills"] == ["demo.skill"]
 
 
+def test_native_probe_uses_bound_catalog_and_rejects_changed_governance(tmp_path, monkeypatch):
+    from test_packaged_native_governance import fixture
+    from xrefkit import discovery
+    candidate = fixture(tmp_path)
+    monkeypatch.setattr(discovery, "discover_skill_packages", lambda: [candidate])
+    monkeypatch.setattr(installed.metadata, "version", lambda name: "0.7.5")
+    monkeypatch.setattr(installed.metadata, "distribution", lambda name: SimpleNamespace(
+        version="0.1.0", entry_points=[SimpleNamespace(group="xrefkit.skill_packages", name="test")]))
+    # This minimal fixture method uses repository links, so first replace it with
+    # an equivalent native method with no external file dependency and rebind draft.
+    path = tmp_path / "skill.md"
+    text = path.read_text().split("## Method", 1)[0] + "## Method\nInspect requested target.\n"
+    path.write_text(text)
+    import hashlib
+    gp = tmp_path / "governance.json"
+    record = json.loads(gp.read_text())
+    record["definition_content_hash"] = hashlib.sha256(path.read_bytes()).hexdigest()
+    gp.write_text(json.dumps(record))
+    assert installed.verify_installed("demo", "test.native", "0.7.5")["skills"] == ["progress_rules_setup"]
+    record["definition_content_hash"] = "0" * 64
+    gp.write_text(json.dumps(record))
+    with pytest.raises(ValueError, match="content_hash"):
+        installed.verify_installed("demo", "test.native", "0.7.5")
+
+
 def test_real_protocol_rejection_stops_installed_probe(tmp_path, monkeypatch):
     root, manifest, _ = contract_fixture(tmp_path, monkeypatch)
     manifest["requires"]["xrefkit_core"] = ">=3.0.0"

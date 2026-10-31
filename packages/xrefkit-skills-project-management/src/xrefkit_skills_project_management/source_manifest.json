@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "source": "skills/packs/project-management/progress_rules_setup/SKILL.v1.md",
+      "source_sha256": "54b27ab875a01d1702eae09ee90a81c9326ccd00fe6132c4aae02e9605daf077",
+      "packaged_sha256": "54b27ab875a01d1702eae09ee90a81c9326ccd00fe6132c4aae02e9605daf077"
+    },
+    {
+      "source": "skills/packs/project-management/requirements_discovery_coordination/SKILL.v1.md",
+      "source_sha256": "8affa513e077162b51f58085c4462065ea6ed814c7093ba6494fa3fcfcb9725c",
+      "packaged_sha256": "faba7fa1233ec4b598e01a102111fa5d81c629d817d01820903a6fbd1aef13b9"
+    },
+    {
+      "source": "skills/packs/project-management/work_progress_coordination/SKILL.v1.md",
+      "source_sha256": "415cdb0cddfc1e362dd534f989910f905c0f4f93b9c2b284489ff4e2c8b538fc",
+      "packaged_sha256": "721b5eb7cb02a186ea20e7a21b6e117adc8f6c3f25842ed2a01c0a31e200e0e0"
+    },
+    {
+      "source": "skills/packs/project-management/progress_rules_setup/references/persistence_handoff.md",
+      "source_sha256": "0a266cfafb025f5b56eb7f1b0b50ba47361fd77c297ba17bc132a2d6b3dfe9ae",
+      "packaged_sha256": "067d1c6c20422384b0742976609309f5e39d45d0145599c693d71ebc29f317d0"
+    },
+    {
+      "source": "docs/packs/project-management/entry.md",
+      "source_sha256": "02e80dc91c58e1321ea36b539340096a57fff79c2f9181b105ea1857dd097387",
+      "packaged_sha256": "02e80dc91c58e1321ea36b539340096a57fff79c2f9181b105ea1857dd097387"
+    },
+    {
+      "source": "skills/packs/project-management/pack.md",
+      "source_sha256": "2d7ff5a09b47b5b1ceae494bc5aabca3a2666a190f2453470a84e919c666fb5d",
+      "packaged_sha256": "2d7ff5a09b47b5b1ceae494bc5aabca3a2666a190f2453470a84e919c666fb5d"
+    }
+  ],
+  "transform": "repository-external XID links become navigation URLs; packaged governance rebinds exact transformed bytes"
+}

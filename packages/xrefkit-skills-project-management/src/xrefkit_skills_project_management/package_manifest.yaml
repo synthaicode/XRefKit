@@ -1,0 +1,24 @@
+package_id: xrefkit.skills.project_management
+package_type: skill_package
+version: 0.1.0a1
+requires:
+  xrefkit_core: '>=2.0.0 <3.0.0'
+provides:
+  skills:
+  - id: progress_rules_setup
+    xid: 91F7D3B6A204
+    path: skills/packs/project-management/progress_rules_setup/SKILL.v1.md
+    governance_path: governance/skills/progress_rules_setup.json
+  - id: requirements_discovery_coordination
+    xid: 3B8E71A5C902
+    path: skills/packs/project-management/requirements_discovery_coordination/SKILL.v1.md
+    governance_path: governance/skills/requirements_discovery_coordination.json
+  - id: work_progress_coordination
+    xid: A4D902C7E651
+    path: skills/packs/project-management/work_progress_coordination/SKILL.v1.md
+    governance_path: governance/skills/work_progress_coordination.json
+contract: {}
+metadata:
+  display_name: Project Management
+  maturity_note: draft; publication is not promotion
+  routing_entry: docs/packs/project-management/entry.md

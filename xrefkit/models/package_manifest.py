@@ -35,11 +35,20 @@ class ProvidedAsset(StrictModel):
 
 
 class ProvidedSkill(ProvidedAsset):
+    governance_path: str | None = None
     contract_role: str | None = None
     required_outputs: list[str] = Field(default_factory=list)
     required_knowledge: list[str] = Field(default_factory=list)
     required_review_axes: list[str] = Field(default_factory=list)
     must_not: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _validate_governance_path(self) -> "ProvidedSkill":
+        if self.governance_path is not None:
+            validate_non_empty(self.governance_path, "governance_path")
+            if not self.path.lower().endswith(".md"):
+                raise ValueError("governance_path requires a native Markdown SkillDefinition")
+        return self
 
     @field_validator("required_outputs", "required_knowledge", "required_review_axes", "must_not")
     @classmethod
