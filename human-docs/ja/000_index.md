@@ -20,6 +20,7 @@
 
 ## 人間向けの基礎説明
 
+- [プロジェクト運営の全体ガイド：PM調整と内部運営](074_project_management_guide.md)
 - [既存ドキュメント取り込み（人間向け）](003_import_for_humans.md#xid-0CF07930F2FA)
 - [全体の流れ（人間向け）](004_overall_flow_for_humans.md#xid-E01E6695A30A)
 - [ソース取り込み（PDF/Excel/Web）](020_sources.md#xid-2FAD591BF725)
