@@ -34,14 +34,14 @@ method without confirmation. Within existing authorization, prepare supported
 artifacts even when a delivery step is unavailable; distinguish creation, saving,
 upload/link, handoff and confirmed shared visibility.
 
-The PyPI distribution candidate is `xrefkit-skills-project-management` version
+The PyPI distribution is `xrefkit-skills-project-management` version
 `0.1.0a1`, package ID `xrefkit.skills.project_management`. It packages the native
 definitions, shared persistence reference, bound draft governance and this entry.
 Distribution and grouping do not grant maturity. Existing technical and storage
 Skills are selected only when available and applicable; absent dependencies are
 explicit handoffs, not copied procedures or automatic integrations.
 
-This candidate requires the unreleased Core `0.7.5` support for packaged native
-governance. Core `0.7.4` on PyPI cannot supply that guarantee. Build/installation
-checks against a local candidate Core do not establish public installability.
+This package requires Core `>=0.7.5,<0.8.0` for packaged native governance.
+Core `0.7.4` cannot supply that guarantee. Build/installation checks against a
+local candidate Core do not establish public installability.
 See the package README for the release prerequisites and supported entry point.

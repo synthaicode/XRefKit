@@ -112,8 +112,8 @@ dependency/platform combinations, transitive external Knowledge corpus links,
 or AI/business judgments during a project's workflow execution.
 
 Project Management `0.1.0a1` requires Core `>=0.7.5,<0.8.0` for explicit packaged
-native governance. Core `0.7.5` here is an unpublished candidate version; the
-package release workflow's tag path installs released Core and blocks until a
+native governance. The package release workflow's tag path installs released
+Core and blocks until a
 compatible release exists. Candidate checks cannot satisfy that public dependency.
 The package remains draft and source-only until separately authorized publication;
 after publication the inventory's publication state must be updated explicitly.

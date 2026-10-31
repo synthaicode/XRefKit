@@ -1,6 +1,6 @@
 # XRefKit Project Management
 
-Distribution candidate: **xrefkit-skills-project-management 0.1.0a1**.
+Distribution: **xrefkit-skills-project-management 0.1.0a1**.
 Package ID: `xrefkit.skills.project_management`.
 
 Three native SkillDefinitions form one Project Management job:
@@ -20,11 +20,11 @@ values, custom UI, Azure attachment adapter or generic work tracker is bundled.
 
 All three definitions are **draft**. The alpha distribution version does not
 promote maturity. Packaged governance is explicitly bound in the manifest and
-checked against each definition's exact hash. Core `0.7.5` is the first planned
-version with this package-governance support; it is an unreleased candidate here.
-Do not claim the package can currently be installed from public PyPI.
+checked against each definition's exact hash. This package requires Core
+`>=0.7.5,<0.8.0` for native package-governance support. Publication and public
+availability are verified separately from source and candidate-build validation.
 
-Once compatible Core and this package are separately approved and published:
+Install after compatible Core and this package are published:
 
 ```console
 python -m pip install --pre xrefkit-skills-project-management
@@ -52,8 +52,8 @@ sdist with `python -m build packages/xrefkit-skills-project-management`.
 
 The existing Skill-package pipeline pattern is used: tests, build, metadata and
 archive inspection, secret checks, malware scan, isolated wheel/sdist install,
-then tag-gated Trusted Publishing. The official source-only package inventory
-also includes this candidate in Core's individual and combined candidate checks.
+then tag-gated Trusted Publishing. The official package inventory also includes this package in Core's individual
+and combined candidate checks; its publication state is updated after release.
 PR checks use the local candidate Core. Release install checks require compatible
 Core from PyPI and fail if it is absent; publish cannot precede those checks.
 
