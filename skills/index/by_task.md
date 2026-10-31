@@ -33,7 +33,7 @@ Categories list skill ids only. Resolve summaries and `SKILL.v1.md` paths from t
 - implement: `implementation_flow`, `python_implementation_flow`, `brownfield_workflow`,
   `marketing_explainer_video`
 - release: `crosspost_release`
-- control: `progress_rules_setup`, `requirements_discovery_coordination`, `work_progress_coordination`, `doc_ship`, `retro`, `knowledge_ontology_management`,
+- control: `progress_rules_setup`, `requirements_discovery_coordination`, `work_progress_coordination`, `pm_coordination_setup`, `pm_decision_coordination`, `doc_ship`, `retro`, `knowledge_ontology_management`,
   `shared_asset_update_gate`, `correction_retrospective_analyst`,
   `source_structure_findings_registration`,
   `domain_knowledge_catalog_preparation`,

@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xrefkit-skills-project-management"
-version = "0.1.0a1"
-description = "Draft XRefKit Project Management Skills for setup, discovery and contributor coordination"
+version = "0.1.0a2"
+description = "Draft XRefKit Project Management Skills for setup, discovery, contributor coordination and PM decision support"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}

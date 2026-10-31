@@ -1,9 +1,9 @@
 # XRefKit Project Management
 
-Distribution: **xrefkit-skills-project-management 0.1.0a1**.
+Distribution: **xrefkit-skills-project-management 0.1.0a2**.
 Package ID: `xrefkit.skills.project_management`.
 
-Three native SkillDefinitions form one Project Management job:
+Five native SkillDefinitions form one Project Management job:
 
 - `progress_rules_setup`: confirm project rules, record destinations, formats,
   sharing/attachment methods and completion conditions with the human owner.
@@ -11,14 +11,19 @@ Three native SkillDefinitions form one Project Management job:
   evidence investigation without requiring finalized requirements first.
 - `work_progress_coordination`: guide contributors from confirmed prerequisite
   slices, holds and separate quality-owner decisions.
+- `pm_coordination_setup`: extend confirmed progress setup with organization-aware
+  decision authority, stakeholder responsibilities and trace-record settings.
+- `pm_decision_coordination`: support PM handling and stakeholder agreement,
+  trace internal reflection and quality results, and prepare bounded work-start
+  choices from existing readiness results throughout the project.
 
-Technical investigation, quality verification and stakeholder agreement retain
+Technical investigation, quality verification and final agreement judgments retain
 their existing owners. Project Knowledge supplies actual settings. No project
 values, custom UI, Azure attachment adapter or generic work tracker is bundled.
 
 ## Readiness and installation
 
-All three definitions are **draft**. The alpha distribution version does not
+All five definitions are **draft**. The alpha distribution version does not
 promote maturity. Packaged governance is explicitly bound in the manifest and
 checked against each definition's exact hash. This package requires Core
 `>=0.7.5,<0.8.0` for native package-governance support. Publication and public
@@ -31,7 +36,7 @@ python -m pip install --pre xrefkit-skills-project-management
 ```
 
 MCP discovery uses the normal `xrefkit.skill_packages` entry point and the enabled
-package ID above. It exposes the three methods and their draft governance.
+package ID above. It exposes the five methods and their draft governance.
 Semantic selection needs no user-supplied Skill name, but draft execution remains
 refused. Supply the packaged `governance/skills/<skill_id>.json` to any direct CLI
 readiness/run check; the CLI does not auto-discover external governance.
@@ -58,7 +63,7 @@ PR checks use the local candidate Core. Release install checks require compatibl
 Core from PyPI and fail if it is absent; publish cannot precede those checks.
 
 Publication requires a separate authorized release and the tag matching
-`xrefkit-skills-project-management-v0.1.0a1`. No tag or upload is created by
+`xrefkit-skills-project-management-v0.1.0a2`. No tag or upload is created by
 preparation. Configure PyPI pending Trusted Publisher with owner `synthaicode`,
 repository `XRefKit`, workflow `python-skill-project-management-package.yml`,
 environment `pypi`; existing OIDC publishing needs no API-token secret.

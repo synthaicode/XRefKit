@@ -17,19 +17,29 @@
       "packaged_sha256": "721b5eb7cb02a186ea20e7a21b6e117adc8f6c3f25842ed2a01c0a31e200e0e0"
     },
     {
+      "source": "skills/packs/project-management/pm_coordination_setup/SKILL.v1.md",
+      "source_sha256": "6465ef81ba03f15d22a6cd3ade16a84facfa799580eb160a0c9a750f806eb17f",
+      "packaged_sha256": "6465ef81ba03f15d22a6cd3ade16a84facfa799580eb160a0c9a750f806eb17f"
+    },
+    {
+      "source": "skills/packs/project-management/pm_decision_coordination/SKILL.v1.md",
+      "source_sha256": "bdf1ce16f09c6cfa0635acf0b4e867e057a13ffa40797bea70f3e5ad93903f2a",
+      "packaged_sha256": "bdf1ce16f09c6cfa0635acf0b4e867e057a13ffa40797bea70f3e5ad93903f2a"
+    },
+    {
       "source": "skills/packs/project-management/progress_rules_setup/references/persistence_handoff.md",
       "source_sha256": "0a266cfafb025f5b56eb7f1b0b50ba47361fd77c297ba17bc132a2d6b3dfe9ae",
       "packaged_sha256": "067d1c6c20422384b0742976609309f5e39d45d0145599c693d71ebc29f317d0"
     },
     {
       "source": "docs/packs/project-management/entry.md",
-      "source_sha256": "02e80dc91c58e1321ea36b539340096a57fff79c2f9181b105ea1857dd097387",
-      "packaged_sha256": "02e80dc91c58e1321ea36b539340096a57fff79c2f9181b105ea1857dd097387"
+      "source_sha256": "9bbf3a9bd67f2b8fdd5c7272ffab1c2ccdebd178d7712edf60b1072d837b5aae",
+      "packaged_sha256": "9bbf3a9bd67f2b8fdd5c7272ffab1c2ccdebd178d7712edf60b1072d837b5aae"
     },
     {
       "source": "skills/packs/project-management/pack.md",
-      "source_sha256": "2d7ff5a09b47b5b1ceae494bc5aabca3a2666a190f2453470a84e919c666fb5d",
-      "packaged_sha256": "2d7ff5a09b47b5b1ceae494bc5aabca3a2666a190f2453470a84e919c666fb5d"
+      "source_sha256": "4d7d42ad397fb5c2660a83022a81068b2e5e75547047d56780c98d6b9bf13982",
+      "packaged_sha256": "4d7d42ad397fb5c2660a83022a81068b2e5e75547047d56780c98d6b9bf13982"
     }
   ],
   "transform": "repository-external XID links become navigation URLs; packaged governance rebinds exact transformed bytes"

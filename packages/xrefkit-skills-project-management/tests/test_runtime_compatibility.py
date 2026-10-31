@@ -25,7 +25,7 @@ def test_installed_discovery_and_governance(tmp_path):
     candidate=package()
     catalog=XRefCatalog.build(tmp_path,discover_packages=True)
     entries={e.skill_id:e for e in catalog.skills if e.package_id==candidate.package_id}
-    assert set(entries)=={'progress_rules_setup','requirements_discovery_coordination','work_progress_coordination'}
+    assert set(entries)=={'progress_rules_setup','requirements_discovery_coordination','work_progress_coordination','pm_coordination_setup','pm_decision_coordination'}
     for provided in candidate.manifest.provides.skills:
         entry=entries[provided.id]
         assert entry.maturity=='draft'
@@ -37,7 +37,7 @@ def test_installed_discovery_and_governance(tmp_path):
         assert catalog.get_skill(provided.id)['skill_content'].encode()==body
 
 
-@pytest.mark.parametrize('sid',['progress_rules_setup','requirements_discovery_coordination','work_progress_coordination'])
+@pytest.mark.parametrize('sid',['progress_rules_setup','requirements_discovery_coordination','work_progress_coordination','pm_coordination_setup','pm_decision_coordination'])
 def test_packaged_draft_cannot_run(sid,tmp_path):
     provided=next(p for p in package().manifest.provides.skills if p.id==sid)
     command=[sys.executable,'-I','-m','xrefkit','skill','run','--root',str(package_root()),
@@ -82,8 +82,8 @@ def test_packaged_links_are_local_or_explicit_navigation():
 
 def test_package_contains_no_project_configuration_or_adapter():
     manifest=load_package_manifest(package_root()/'package_manifest.yaml')
-    assert len(manifest.provides.skills)==3
+    assert len(manifest.provides.skills)==5
     assert not manifest.provides.knowledge
     assert not list(package_root().rglob('*.skill.yaml'))
     source=json.loads((package_root()/'source_manifest.json').read_text())
-    assert len(source['sources'])==6
+    assert len(source['sources'])==8

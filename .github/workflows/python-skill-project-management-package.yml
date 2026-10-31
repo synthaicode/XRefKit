@@ -11,6 +11,7 @@ on:
       - "skills/packs/project-management/**"
       - "governance/skills/*coordination.json"
       - "governance/skills/progress_rules_setup.json"
+      - "governance/skills/pm_coordination_setup.json"
       - "docs/packs/project-management/**"
       - "xrefkit/**"
       - "pyproject.toml"
@@ -116,6 +117,10 @@ jobs:
             --required-member xrefkit_skills_project_management/package_manifest.yaml \
             --required-member xrefkit_skills_project_management/skills/packs/project-management/progress_rules_setup/SKILL.v1.md \
             --required-member xrefkit_skills_project_management/governance/skills/progress_rules_setup.json \
+            --required-member xrefkit_skills_project_management/skills/packs/project-management/pm_coordination_setup/SKILL.v1.md \
+            --required-member xrefkit_skills_project_management/governance/skills/pm_coordination_setup.json \
+            --required-member xrefkit_skills_project_management/skills/packs/project-management/pm_decision_coordination/SKILL.v1.md \
+            --required-member xrefkit_skills_project_management/governance/skills/pm_decision_coordination.json \
             --manifest-output artifact-manifest.txt
       - name: Install ClamAV and update virus definitions
         shell: bash

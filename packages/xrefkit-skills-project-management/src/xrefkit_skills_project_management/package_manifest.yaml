@@ -1,6 +1,6 @@
 package_id: xrefkit.skills.project_management
 package_type: skill_package
-version: 0.1.0a1
+version: 0.1.0a2
 requires:
   xrefkit_core: '>=2.0.0 <3.0.0'
 provides:
@@ -17,6 +17,14 @@ provides:
     xid: A4D902C7E651
     path: skills/packs/project-management/work_progress_coordination/SKILL.v1.md
     governance_path: governance/skills/work_progress_coordination.json
+  - id: pm_coordination_setup
+    xid: F7B3C9A204D6
+    path: skills/packs/project-management/pm_coordination_setup/SKILL.v1.md
+    governance_path: governance/skills/pm_coordination_setup.json
+  - id: pm_decision_coordination
+    xid: C8E4A1D760B3
+    path: skills/packs/project-management/pm_decision_coordination/SKILL.v1.md
+    governance_path: governance/skills/pm_decision_coordination.json
 contract: {}
 metadata:
   display_name: Project Management
