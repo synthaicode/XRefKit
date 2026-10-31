@@ -4,6 +4,7 @@
     {"name": "xrefkit-skills-brownfield", "path": "packages/xrefkit-skills-brownfield", "package_id": "xrefkit.skills.brownfield", "publication": "pypi"},
     {"name": "xrefkit-skills-csharp", "path": "packages/xrefkit-skills-csharp", "package_id": "xrefkit.skills.csharp", "publication": "pypi"},
     {"name": "xrefkit-skills-batch-regression", "path": "packages/xrefkit-skills-batch-regression", "package_id": "xrefkit.skills.batch_regression", "publication": "pypi"},
-    {"name": "xrefkit-skills-xddp-design", "path": "packages/xrefkit-skills-xddp-design", "package_id": "xrefkit.skills.xddp.design", "publication": "source_only"}
+    {"name": "xrefkit-skills-xddp-design", "path": "packages/xrefkit-skills-xddp-design", "package_id": "xrefkit.skills.xddp.design", "publication": "source_only"},
+    {"name": "xrefkit-skills-project-management", "path": "packages/xrefkit-skills-project-management", "package_id": "xrefkit.skills.project_management", "publication": "source_only"}
   ]
 }

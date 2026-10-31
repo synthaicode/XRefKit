@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "skill_id": "progress_rules_setup",
+  "definition_xid": "91F7D3B6A204",
+  "definition_content_hash": "54b27ab875a01d1702eae09ee90a81c9326ccd00fe6132c4aae02e9605daf077",
+  "maturity": "draft",
+  "observation_refs": [],
+  "governance_refs": [],
+  "promotion": {
+    "decision": "not_requested",
+    "target_maturity": null,
+    "authority": null,
+    "decided_at": null,
+    "basis_refs": []
+  }
+}

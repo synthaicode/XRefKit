@@ -23,6 +23,7 @@ a mismatched path fails the inventory check.
 | xrefkit-skills-csharp | PyPI | required | required |
 | xrefkit-skills-batch-regression | PyPI | required | required |
 | xrefkit-skills-xddp-design | source only | explicitly `not_published` | required; failures block Core release |
+| xrefkit-skills-project-management | source only | explicitly `not_published` | required; native v1 and draft governance |
 
 The **published** scope retrieves the current non-yanked wheel directly from
 official PyPI, verifies its SHA256, and checks its actual `Requires-Dist`.
@@ -51,8 +52,15 @@ tests block the candidate scope and therefore Core publication.
 
 Each isolated environment runs `pip check`, discovers the installed entry
 point, verifies distribution/manifest identity and version, and uses the real
-Core registry and resolver to inherit every packaged Skill through a project
-wrapper. Core **protocol** compatibility comes from the runtime's own
+Core registry and resolver to inherit each legacy packaged Skill through a project
+wrapper. Native v1 packages use the actual MCP catalog parser and explicit
+governance binding instead; they do not claim legacy wrapper inheritance.
+Their identity, declared constraints, local links and exact governance hashes
+are checked, with package regressions exercising discovery and draft refusal.
+Mixed native/legacy packages are rejected by this probe until a supported
+combined format route exists. Enabled-package identity/XID and protocol checks
+precede the format-specific checks, so combined installs retain collision gates.
+Core **protocol** compatibility comes from the runtime's own
 `build_registry` check, independently from Python distribution compatibility.
 The probe validates actual Skill schemas, retained manifest contracts, required
 Knowledge/review-axis/schema/template references, file existence and content,
@@ -102,3 +110,10 @@ The guarantee covers official inventoried distributions on the CI Python 3.12
 runtime. It does not certify external third-party packages, all possible
 dependency/platform combinations, transitive external Knowledge corpus links,
 or AI/business judgments during a project's workflow execution.
+
+Project Management `0.1.0a1` requires Core `>=0.7.5,<0.8.0` for explicit packaged
+native governance. Core `0.7.5` here is an unpublished candidate version; the
+package release workflow's tag path installs released Core and blocks until a
+compatible release exists. Candidate checks cannot satisfy that public dependency.
+The package remains draft and source-only until separately authorized publication;
+after publication the inventory's publication state must be updated explicitly.

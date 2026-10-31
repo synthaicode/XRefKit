@@ -28,6 +28,23 @@ pack's owned Skills above. See [Business Pack model](../docs/core/models/071_bus
 
 ## Semantic Routing Cues
 
+- For a whole-job request to establish and coordinate project work, select the
+  `project-management` pack, then its setup, discovery or progression Skill
+  from the current state. Its public draft boundary still applies.
+
+- For project progress rules that are absent, unclear or need applicability confirmation:
+  - route to `progress_rules_setup`
+- For an ambiguous request that needs repeated human clarification and bounded evidence investigation:
+  - route to `requirements_discovery_coordination`; preserve the existing interview and technical investigation routes
+- For guidance across contributors about scoped start conditions, dependencies, holds and next actions:
+  - route to `work_progress_coordination`; quality decisions remain with the designated quality route
+- These three work-practice entries are public draft sources. Naming a Skill is
+  not required for semantic selection, but selection does not authorize execution.
+  Always supply its matching `governance/skills/<skill_id>.json` for readiness
+  checks and any attempted run; draft refusal is required. Do not omit that
+  external record to run the source as `unassessed`. The adoption-derived catalog
+  does not automatically enumerate these unadopted native definitions.
+
 - For authorized workspace-scoped Azure DevOps test import, explicit plan binding, Task delivery or delivery reconciliation:
   - route to `azure_work_item_integration`
   - the current writer/recovery only supports PBI 10 / Task 21; load its operating-model Knowledge before operation
@@ -363,6 +380,24 @@ Current family paths:
   - summary: local approved-plan persistence, Markdown/Mermaid and explicit observations independent of Azure
   - meta: `skills/os/local_work_management/SKILL.v1.md`
   - skill_doc: `skills/os/local_work_management/SKILL.v1.md`
+
+- `progress_rules_setup`:
+  - summary: confirm or propose project progress rules before coordination
+  - meta: `skills/packs/project-management/progress_rules_setup/SKILL.v1.md`
+  - skill_doc: `skills/packs/project-management/progress_rules_setup/SKILL.v1.md`
+  - governance: `governance/skills/progress_rules_setup.json` (draft; not executable)
+
+- `requirements_discovery_coordination`:
+  - summary: coordinate clarification and evidence-investigation cycles from ambiguous requests
+  - meta: `skills/packs/project-management/requirements_discovery_coordination/SKILL.v1.md`
+  - skill_doc: `skills/packs/project-management/requirements_discovery_coordination/SKILL.v1.md`
+  - governance: `governance/skills/requirements_discovery_coordination.json` (draft; not executable)
+
+- `work_progress_coordination`:
+  - summary: coordinate contributors from scoped start conditions, holds and quality-owner decisions
+  - meta: `skills/packs/project-management/work_progress_coordination/SKILL.v1.md`
+  - skill_doc: `skills/packs/project-management/work_progress_coordination/SKILL.v1.md`
+  - governance: `governance/skills/work_progress_coordination.json` (draft; not executable)
 
 ## Notes
 

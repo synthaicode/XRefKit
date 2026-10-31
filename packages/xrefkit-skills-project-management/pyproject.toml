@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xrefkit-skills-project-management"
+version = "0.1.0a1"
+description = "Draft XRefKit Project Management Skills for setup, discovery and contributor coordination"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+dependencies = ["xrefkit>=0.7.5,<0.8.0"]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[project.entry-points."xrefkit.skill_packages"]
+project_management = "xrefkit_skills_project_management:package_root"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+xrefkit_skills_project_management = ["package_manifest.yaml", "skills/**/*.md", "governance/**/*.json", "docs/**/*.md", "source_manifest.json"]

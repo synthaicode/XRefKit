@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "skill_id": "work_progress_coordination",
+  "definition_xid": "A4D902C7E651",
+  "definition_content_hash": "415cdb0cddfc1e362dd534f989910f905c0f4f93b9c2b284489ff4e2c8b538fc",
+  "maturity": "draft",
+  "observation_refs": [],
+  "governance_refs": [],
+  "promotion": {
+    "decision": "not_requested",
+    "target_maturity": null,
+    "authority": null,
+    "decided_at": null,
+    "basis_refs": []
+  }
+}

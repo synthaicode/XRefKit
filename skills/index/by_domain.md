@@ -6,7 +6,7 @@
 Categories list skill ids only. Resolve summaries and `SKILL.v1.md` paths from the canonical catalog
 [skills/_index.md](../_index.md#xid-8D91F66DDBB7).
 
-- operations: `azure_work_item_integration`, `doc_ship`, `retro`, `knowledge_ontology_management`,
+- operations: `progress_rules_setup`, `requirements_discovery_coordination`, `work_progress_coordination`, `azure_work_item_integration`, `doc_ship`, `retro`, `knowledge_ontology_management`,
   `shared_asset_update_gate`, `correction_retrospective_analyst`,
   `source_structure_findings_registration`,
   `domain_knowledge_catalog_preparation`,
