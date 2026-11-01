@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-6a3f7bcb-5a80-469a-93f5-3df7657e0951",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-11-01T11:29:23Z",
+  "git_commit": "734c2c5dc3a09ee16cc417cbab8c5735185ae35d",
+  "purpose": "before AI workflow run 6a3f7bcb-5a80-469a-93f5-3df7657e0951",
+  "work_item_id": null,
+  "run_id": "6a3f7bcb-5a80-469a-93f5-3df7657e0951",
+  "context_policy": "current-only",
+  "human_approved": false
+}
