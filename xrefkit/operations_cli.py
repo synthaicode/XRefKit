@@ -413,6 +413,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_run_source = p_skill_run.add_mutually_exclusive_group(required=True)
     p_skill_run_source.add_argument("--meta", help="Relative path to the legacy Skill meta.md to run")
     p_skill_run_source.add_argument("--definition", help="Explicit SkillDefinition document to run without a legacy meta source")
+    p_skill_run_source.add_argument("--package-skill", help="Explicit installed Skill Package reference (package_id::skill_id)")
     p_skill_run.add_argument(
         "--governance",
         default=None,
