@@ -220,6 +220,22 @@ newly adopted SkillDefinition becomes routable only after it is included through
 the existing explicit-enablement or package-discovery boundary and that active
 catalog state is verified.
 
+## Start a package Skill Run
+
+From the consuming project, after selecting the installed package Skill, use its
+qualified ID. Supply the four runtime fields from the active instruction.
+
+```powershell
+python -m xrefkit skill run --package-skill 'xrefkit.skills.csharp::csharp.review' --task '<task>' --capability '<capability>' --tuning '<tuning>' --responsibility '<responsibility>' --execution-mode subagent_required --json
+```
+
+The CLI resolves the installed split YAML through package discovery and writes
+the run log under the consuming project. The log records the package version,
+Skill XID, and YAML hash. Package runs start at unassessed maturity. In MCP
+mode, initialize the session, call `bind_skill_run` with the returned `run_id`
+and `skill_id`, and execute the returned `client_record_command` using the
+returned `run_log` before retrieving task-specific content.
+
 ## Representative Conversion and Cutover Conditions
 
 ```powershell

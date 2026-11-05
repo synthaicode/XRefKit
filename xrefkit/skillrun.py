@@ -660,7 +660,7 @@ def _render_log(
         ]
     )
     definition_lines = "".join(
-        f"- definition_{key}: `{value}`\n"
+        f"- {key if key.startswith('package_') else 'definition_' + key}: `{value}`\n"
         for key, value in (definition_identity or {}).items()
     )
     runtime_responsibility = role_responsibilities.get("executor") or "not declared"
@@ -2929,15 +2929,50 @@ def update_token_usage(args) -> SkillRunResult:
     return SkillRunResult(ok=True, skill_id=_log_skill_id(text), skill_doc=None, run_log=str(log_path), errors=[])
 
 
+def _resolve_package_run_source(reference: str) -> tuple[Path, str, dict[str, str]]:
+    from xrefkit.discovery import enabled_discovered_packages
+    from xrefkit.hashing import sha256_file
+    from xrefkit.workspace import build_registry
+
+    package_id, separator, skill_id = reference.partition("::")
+    if not separator or not package_id or not skill_id:
+        raise ValueError("--package-skill requires package_id::skill_id")
+    packages = enabled_discovered_packages(enabled_package_ids={package_id})
+    if len(packages) != 1:
+        raise ValueError(f"expected one installed package for {package_id}, found {len(packages)}")
+    package = packages[0]
+    provided = next((item for item in package.manifest.provides.skills if item.id == skill_id), None)
+    if provided is None:
+        raise ValueError(f"package does not provide Skill: {reference}")
+    if not provided.path.endswith(".skill.yaml"):
+        raise ValueError("--package-skill requires a split YAML Skill; use --definition with packaged governance for Markdown")
+
+    registry = build_registry(package_manifests=[package.manifest_path])
+    record = registry.skills.require(skill_id)
+    if record.package_id != package_id or record.xid != provided.xid:
+        raise ValueError(f"package Skill identity mismatch: {reference}")
+    entry = (record.root / record.definition.entry.path).resolve()
+    identity = {
+        "format": "legacy_split_v1",
+        "package_id": package_id,
+        "package_version": package.manifest.version,
+        "package_skill_xid": record.xid,
+        "package_skill_path": record.path.relative_to(record.root).as_posix(),
+        "package_skill_sha256": sha256_file(record.path),
+    }
+    return entry, skill_id, identity
+
+
 def run_skill(args) -> SkillRunResult:
     root = Path(args.root).resolve()
     definition_arg = getattr(args, "definition", None)
     governance_arg = getattr(args, "governance", None)
     meta_arg = getattr(args, "meta", None)
-    if bool(definition_arg) == bool(meta_arg):
-        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=["exactly one of --meta or --definition is required"])
+    package_arg = getattr(args, "package_skill", None)
+    if sum(bool(source) for source in (definition_arg, meta_arg, package_arg)) != 1:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=["exactly one of --meta, --definition, or --package-skill is required"])
     try:
-        adoption = load_repository_adoption(root)
+        adoption = None if package_arg else load_repository_adoption(root)
         adapter = repository_skill(root, definition_arg or meta_arg, adoption) if adoption else None
     except (ValueError, OSError) as exc:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[str(exc)])
@@ -2946,15 +2981,26 @@ def run_skill(args) -> SkillRunResult:
             return SkillRunResult(ok=False, skill_id=adapter["skill_id"], skill_doc=None, run_log=None,
                                   errors=["draft or deprecated repository Skills are not adopted and cannot execute"])
         definition_arg = adapter["definition_path"]
-    if not definition_arg and (governance_arg or any(
+    if package_arg and governance_arg:
+        return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None,
+                              errors=["--governance requires a Markdown SkillDefinition"])
+    if not (definition_arg or package_arg) and (governance_arg or any(
         getattr(args, key, None)
         for key in ("capability", "tuning", "responsibility", "execution_mode")
     )):
         return SkillRunResult(
             ok=False, skill_id=None, skill_doc=None, run_log=None,
-            errors=["--governance, --capability, --tuning, --responsibility, and --execution-mode are definition-only runtime inputs"],
+            errors=["--governance, --capability, --tuning, --responsibility, and --execution-mode require --definition or --package-skill"],
         )
-    meta_path = (root / (definition_arg or meta_arg)).resolve()
+    definition_identity = None
+    if package_arg:
+        try:
+            meta_path, package_skill_id, definition_identity = _resolve_package_run_source(package_arg)
+        except (ImportError, KeyError, OSError, ValueError) as exc:
+            return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[str(exc)])
+    else:
+        meta_path = (root / (definition_arg or meta_arg)).resolve()
+    instruction_bound = bool(definition_arg or package_arg)
     task, task_errors = _read_task(args)
     if task_errors:
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=task_errors)
@@ -2964,7 +3010,6 @@ def run_skill(args) -> SkillRunResult:
         source_name = "definition" if definition_arg else "meta"
         return SkillRunResult(ok=False, skill_id=None, skill_doc=None, run_log=None, errors=[f"{source_name} not found: {meta_path}"])
 
-    definition_identity = None
     if definition_arg:
         try:
             definition = load_skill_definition(meta_path)
@@ -3018,6 +3063,12 @@ def run_skill(args) -> SkillRunResult:
                 "governance_sha256": str(governance["_content_hash"]),
                 "promotion_decision": str(governance["promotion"]["decision"]),
             })
+    elif package_arg:
+        parsed = {"skill_id": package_skill_id}
+        skill_id = package_skill_id
+        definition_maturity = "unassessed"
+
+    if instruction_bound:
         runtime = {key: str(getattr(args, key, "") or
                    (adapter["runtime"][key]["value"] if adapter else "") or "").strip()
                    for key in RUNTIME_FIELDS}
@@ -3058,7 +3109,7 @@ def run_skill(args) -> SkillRunResult:
             domain_knowledge=domain_knowledge,
         )
     maturity, _ = _resolve_maturity(parsed)
-    maturity = (str(parsed.get("maturity") or "unassessed") if definition_arg else (maturity or "stable"))
+    maturity = (str(parsed.get("maturity") or "unassessed") if instruction_bound else (maturity or "stable"))
 
     if maturity == "draft":
         return SkillRunResult(
@@ -3080,8 +3131,8 @@ def run_skill(args) -> SkillRunResult:
         )
 
     validation_level = "trial" if maturity == "trial" else "stable"
-    validation = validate_skill_meta(meta_path, check_level=validation_level) if not definition_arg else None
-    if definition_arg:
+    validation = validate_skill_meta(meta_path, check_level=validation_level) if not instruction_bound else None
+    if instruction_bound:
         blocking_errors = []
     elif maturity == "trial":
         allowed_trial_errors = {"trial-or-higher skills must include at least one observation_refs entry"}
@@ -3147,7 +3198,7 @@ def run_skill(args) -> SkillRunResult:
             errors=[f"skill_doc not found: {skill_doc_path}"],
         )
     os_contract = resolve_os_contract(parsed.get("os_contract"))
-    if definition_arg:
+    if instruction_bound:
         os_contract = dict(REQUIRED_OS_CONTRACT)
     if maturity == "trial":
         merged_os_contract = dict(REQUIRED_OS_CONTRACT)
@@ -3226,8 +3277,8 @@ def run_skill(args) -> SkillRunResult:
         node_id=getattr(args, "node_id", None),
         skill_id=skill_id,
         maturity=maturity,
-        meta_path=Path("-") if definition_arg else meta_path.relative_to(root),
-        skill_doc=skill_doc_path.relative_to(root),
+        meta_path=Path("-") if instruction_bound else meta_path.relative_to(root),
+        skill_doc=skill_doc_path if package_arg else skill_doc_path.relative_to(root),
         execution_mode=execution_mode,
         guard_policy=guard_policy,
         capability_layering=capability_layering,
@@ -3244,7 +3295,7 @@ def run_skill(args) -> SkillRunResult:
         domain_knowledge=domain_knowledge,
         decision_trace_checkpoint=checkpoint,
         definition_identity=definition_identity,
-        runtime_binding_source="instruction_derived" if definition_arg else "legacy_meta_compatibility",
+        runtime_binding_source="instruction_derived" if instruction_bound else "legacy_meta_compatibility",
         compact=True,
     )
     kickoff = None

@@ -137,6 +137,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          clam_db_dir="/var/lib/clamav"
+          printf 'Runner UTC time: %s\n' "$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          shopt -s nullglob
+          for database in "${clam_db_dir}"/*.cvd "${clam_db_dir}"/*.cld; do
+            printf 'ClamAV database: %s\n' "${database}"
+            if ! sigtool --info "${database}"; then
+              echo "::warning::Could not inspect ClamAV database ${database}"
+            fi
+          done
           if clamscan --help | grep -Fq -- "--fail-if-cvd-older-than"; then
             clamscan --recursive --infected --fail-if-cvd-older-than=1 dist/
           else
