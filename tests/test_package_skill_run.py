@@ -18,6 +18,10 @@ def test_installed_package_run_binds_over_mcp(tmp_path, module, reference, xid):
     from pathlib import Path
 
     pytest.importorskip(module)
+    from xrefkit.discovery import discover_skill_packages
+    package_id = reference.split("::")[0]
+    package = next(item for item in discover_skill_packages() if item.package_id == package_id)
+    package_knowledge_xids = [asset.xid for asset in package.manifest.provides.knowledge]
     anyio = pytest.importorskip("anyio")
     pytest.importorskip("mcp")
     from mcp.client.session import ClientSession
@@ -94,6 +98,13 @@ def test_installed_package_run_binds_over_mcp(tmp_path, module, reference, xid):
                     )
                     assert not requirements.isError, requirements.content
                     assert not requirements.structuredContent["missing"]
+                    for xid in package_knowledge_xids:
+                        document = await session.call_tool("get_document_by_xid", {"xid": xid})
+                        assert not document.isError, document.content
+                        expanded = await session.call_tool("expand_knowledge", {"xid": xid})
+                        assert not expanded.isError, expanded.content
+                        assert expanded.structuredContent["content"]
+
                     skill = await session.call_tool("get_skill", {"skill_id": run["skill_id"]})
                     assert not skill.isError, skill.content
                     assert skill.structuredContent["skill_id"] == run["skill_id"]
