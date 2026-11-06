@@ -108,6 +108,69 @@ create-only semantics and immutable replay. Missing trusted host integration
 refuses new activation/adoption. The Python server never invents a host launcher.
 Endpoint bundle packets are separate from ordinary single-target CLI apply.
 
+### Local Windows host bridge for canonical source updates
+
+`python -m xrefkit.governance_host` supplies an operator-controlled adapter for
+the ordinary single-target `asset_update` packet. It does not accept overlay
+endpoint packets, promote maturity, update adoption companions, or publish a
+package. Prepare the final candidate and specialist evidence first; keep the
+parent work item open. The child Skill-run checkpoint must satisfy the existing
+clean-worktree rule. Preserve and explicitly handle pending changes before
+dispatch rather than suppressing that gate.
+
+```powershell
+python -m xrefkit.governance_host --root . dispatch `
+  --packet work/canonical-packet.json `
+  --codex $env:CODEX_APP_RUNTIME_CLI_PATH `
+  --out-dir work/YYYY-MM-DD_governance-dispatch
+```
+
+The selected native Codex executable uses its existing login and model settings.
+The adapter opens a correlated `shared_asset_update_gate` child run, starts an
+actual isolated `codex exec` process, retains its JSONL events and exit status,
+and requires one completed thread, the designated saved result and closed child
+run. Existing governance validation must pass before the host signs its receipt.
+Process success alone does not establish a passing gate. The analyst does not
+receive authority environment variables; the per-dispatch host secret is created
+only after it exits. Evidence includes a signed process-provenance record and
+the existing signed execution receipt. Failed dispatch never applies a target.
+
+Use the receipt and authority-state paths returned in `handoff.json`:
+
+```powershell
+python -m xrefkit.governance_host --root . apply `
+  --packet work/canonical-packet.json `
+  --receipt work/YYYY-MM-DD_governance-dispatch/receipt.json `
+  --authority-state <returned-operator-state-path> `
+  --out work/YYYY-MM-DD_reflection.json
+```
+
+This opens a native review window with the target, candidate hash and complete
+diff. A human must choose the explicit apply button; closing or cancelling does
+not apply anything. There is no `--yes`, standard-input approval or imported
+unsigned-approval path. An AI must not operate this window on the person's
+behalf. Only the operator UI action creates a separate human assertion; the
+unchanged canonical `apply_update` endpoint then revalidates the frozen inputs,
+signed receipt, target baseline and approval claims. Changes while the window
+is open are rejected. The output destination is reserved before application.
+
+Authority state is encrypted using Windows user-scoped DPAPI under
+`%LOCALAPPDATA%/XRefKit/governance-host`, outside repository and analyst inputs.
+No key material is printed or placed in a command line. This is a local
+operator-process trust boundary, **not** isolation from a hostile process or AI
+with the same OS-user privileges; deployment requiring that stronger property
+must use a separate operator account or external identity-provider adapter.
+The developer/operator owns the selected executable and adapter integrity.
+
+Exit `3` means the canonical update completed but evidence persistence failed;
+the actual reflected target/hash is printed. Inspect and recover evidence before
+retrying. Exit `2` reports a refused or failed operation; a cancellation returns
+`human_declined_no_application`. Preserve the encrypted state and receipt for
+later verification. Never infer adoption or runtime activation from source
+reflection. For a repository Skill, perform its existing separately authorized
+source-hash companion update and catalog/definition checks after reflection;
+preserve draft refusal and all maturity/adoption values.
+
 Authoring intake returns the shared kickoff obligation; specialist methods retain
 their existing semantic checks and hand staged candidates to governed reflection.
 Only selected routes are connected. Raw edits, generators, alternate checkouts,
