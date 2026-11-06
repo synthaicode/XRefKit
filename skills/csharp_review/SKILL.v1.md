@@ -24,6 +24,9 @@ criteria:
 - id: finding_evidence
   statement: Each finding carries an evidence path, violated condition, severity, remediation, and unresolved boundary when evidence is incomplete.
   verification: Inspect every finding and downgrade unsupported conclusions to needs_confirmation.
+- id: analogous_path_coverage
+  statement: Evidence-backed findings trigger a bounded check of role-equivalent paths within the declared scope, with each candidate disposition and evidence limit recorded.
+  verification: Inspect the finding-to-path inventory; distinguish additional manifestations, duplicate findings, non-matches, unverified paths, and out-of-scope handoffs without inferring defects from similarity alone.
 - id: scope_and_handoff
   statement: Out-of-scope security, design, XDDP, and report-composition discoveries remain explicit handoffs with a next owner.
   verification: Check the handoff list and confirm no out-of-scope discovery was silently absorbed.
@@ -86,6 +89,31 @@ Confirm the target and declared scope, establish the Roslyn baseline, and keep c
 ## Evidence and method
 
 Load the applicable Knowledge entries before claiming coverage. For each category, record what static analysis establishes and what requires runtime or human evidence. Verify custom framework behavior from local source and package evidence. For attributes, identify the definition, consumer, and activation preconditions rather than using a fixed value whitelist. For resource and concurrency paths, inspect disposal, async blocking, shared state, cancellation, queue pressure, connection lifetime, and wait wake-up behavior. For input, exceptions, time/culture, state, contracts, and traceability, preserve the input, decision, source, violated condition, and observable consequence. Every finding includes an evidence path, severity (`critical`, `major`, `minor`, or `needs_confirmation`), violated condition, and remediation; category absence remains an explicit pass or not_applicable result.
+
+## Evidence-driven analogous-path check
+
+After a finding is supported by source or runtime evidence, state its violated
+condition and the execution structure that made it possible. Use the active
+review criteria to identify role-equivalent paths inside the declared scope;
+textual resemblance alone does not establish a common defect.
+
+Record a bounded inventory linking the finding to candidate paths and their
+owners or boundaries. Inspect each candidate under its own preconditions and
+record whether it is an additional manifestation, an existing finding, a
+non-match, not yet verified, or an out-of-scope handoff. Preserve evidence and
+negative results; do not count the same finding twice or claim a new root cause
+merely because another location fails.
+
+When runtime evidence is needed, choose a representative candidate and a
+control that distinguishes the suspected mechanism from ordinary failure.
+Record the exact intervention, observable state or outcome, and what the test
+does not establish. A successful representative test does not verify every
+candidate in the inventory.
+
+Before reporting coverage complete, give each inventoried path an evidence-backed
+disposition or explicit unverified boundary and next owner. Keep this check
+within the declared scope and existing Skill exclusions; proposed scope
+expansion remains a handoff rather than an unbounded search.
 
 ## Unknown, stop, and handoff
 
