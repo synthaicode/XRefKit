@@ -7,4 +7,4 @@ checks:
   - id: compiler_diagnostics_not_primary
     description: Findings do not merely duplicate compiler or Roslyn diagnostics.
   - id: out_of_scope_items_handoff
-    description: Security, XDDP trace, design, and report-composition concerns are handoffs.
+    description: Security, XDDP trace, design, and cross-detector or under-evidenced report-composition concerns remain handoffs; this detector expresses its own supported results.

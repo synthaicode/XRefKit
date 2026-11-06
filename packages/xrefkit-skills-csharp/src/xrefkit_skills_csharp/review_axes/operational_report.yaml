@@ -1,0 +1,18 @@
+axis_id: csharp.operational_report
+xid: xid-axis-csharp-operational-report
+summary: Independently assess the detector's own human-readable operational report against its evidence.
+checks:
+  - id: operational_assessment_first
+    description: The opening explains concrete operational meaning before IDs, followed by conditions, evidence and limits before individual findings; counts or short finding lists alone fail.
+  - id: overall_evidence_consistency
+    description: Every overall claim links to detector findings/evidence and preserves observed, inferred, possible and unverified boundaries, reviewed revision and scoped fixes.
+  - id: technical_meaning_preserved
+    description: Wording retains technical object, actor, ownership, conditions and evidence strength without unsupported broader guarantees, business damage, frequency or common causes.
+  - id: impact_order_preserves_judgment
+    description: Confirmed defects follow evidenced operational impact without severity regrading; ties/incomparability use stated stable order and unknown frequency is not invented.
+  - id: design_decisions_separate
+    description: Unsettled policy stays separate with needed decision, known choices, supported conditional consequences, missing basis and owner/handoff; actual defects needing a choice cross-reference that item.
+  - id: detector_coverage_preserved
+    description: Applicable category results, finding evidence, unknowns and handoffs remain visible; ordinary reporting does not absorb cross-detector, security, XDDP or design review.
+  - id: independent_acceptance_recorded
+    description: A reviewer independent of the producer records content results with evidence; schema/progression checks are not content acceptance and unavailable review is explicit.

@@ -15,7 +15,7 @@ expected:
       file: SaveAsync
       reason: exactly-once claim is a design/XDDP trace-continuity concern
     - owner: review_report_composition
-      reason: expression/report wording is outside detector scope if requested
+      reason: cross-detector composition or missing report evidence outside this detector requires handoff; ordinary expression of supported detector results is required in review_report
   excluded_from_primary_findings:
     - item: CS8602
       reason: already covered by Roslyn baseline

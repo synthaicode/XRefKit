@@ -1,6 +1,6 @@
 package_id: xrefkit.skills.csharp
 package_type: skill_package
-version: 0.1.3
+version: 0.1.4
 
 requires:
   xrefkit_core: ">=2.0.0 <3.0.0"
@@ -12,6 +12,7 @@ provides:
       path: skills/csharp_review.skill.yaml
       contract_role: base_skill
       required_outputs:
+        - review_report
         - findings
         - evidence
         - unknowns
@@ -20,6 +21,7 @@ provides:
       required_knowledge:
         - xid-knowledge-csharp-review-spec
       required_review_axes:
+        - xid-axis-csharp-operational-report
         - xid-axis-csharp-review-findings
         - xid-axis-csharp-evidence-coverage
       must_not:
@@ -80,6 +82,9 @@ provides:
       path: knowledge/csharp_error_policy_patterns.md
 
   review_axes:
+    - id: csharp.operational_report
+      xid: xid-axis-csharp-operational-report
+      path: review_axes/operational_report.yaml
     - id: csharp.review_findings
       xid: xid-axis-csharp-review-findings
       path: review_axes/csharp_review_findings.yaml
