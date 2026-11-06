@@ -164,3 +164,30 @@ def test_inline_identity_mismatch_refused(tmp_path):
     path.write_text("<!-- xid: ABCDEF123456 -->\n# Wrong identity")
     with pytest.raises(ValueError, match="identity does not match"):
         catalog.expand_knowledge("xid-knowledge-rules")
+
+
+@pytest.mark.parametrize(("declared", "inline", "accepted"), [
+    ("xid-7A2F4C8D1401", "7A2F4C8D1401", True),
+    ("7A2F4C8D1401", "xid-7A2F4C8D1401", True),
+    ("xid-7A2F4C8D1401", "7A2F4C8D1402", False),
+    ("xid-knowledge-rules", "knowledge-rules", False),
+    ("xid-7A2F4C8D1401-extra", "7A2F4C8D1401", False),
+])
+def test_native_hex_inline_identity_compatibility(tmp_path, declared, inline, accepted):
+    catalog = package_catalog(tmp_path)
+    package = catalog.discovered_packages[0]
+    package.manifest.provides.knowledge[0].xid = declared
+    (package.package_root / "knowledge/rules.md").write_text(f"<!-- xid: {inline} -->\n# Rules")
+    if accepted:
+        assert catalog.get_document_by_xid(declared)["xid"] == declared
+        assert catalog.expand_knowledge(declared)["content"]
+    else:
+        with pytest.raises(ValueError, match="identity does not match"):
+            catalog.get_document_by_xid(declared)
+
+
+def test_prefixed_native_startup_identity_cannot_shadow_core(tmp_path):
+    catalog = package_catalog(tmp_path)
+    catalog.discovered_packages[0].manifest.provides.knowledge[0].xid = "xid-0B5C58B5E5B2"
+    with pytest.raises(ValueError, match="core startup XID"):
+        catalog.get_document_by_xid("xid-0B5C58B5E5B2")

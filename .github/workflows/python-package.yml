@@ -408,6 +408,17 @@ jobs:
           test -f "$wheel"
           python tools/check_skill_compatibility.py --core-wheel "$wheel" \
             --scope all --output "${RUNNER_TEMP}/xrefkit-skill-compatibility"
+      - name: Exercise published Brownfield and Csharp together through installed MCP
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: |
+          set -euo pipefail
+          venv="${RUNNER_TEMP}/xrefkit-combined-mcp"
+          python -m venv "$venv"
+          wheel="$(find "${GITHUB_WORKSPACE}/dist" -maxdepth 1 -name 'xrefkit-*.whl' -print -quit)"
+          "$venv/bin/python" -m pip install "${wheel}[mcp]" \
+            xrefkit-skills-brownfield==0.1.6 xrefkit-skills-csharp==0.1.4
+          "$venv/bin/python" "${GITHUB_WORKSPACE}/tools/check_combined_package_mcp.py"
       - name: Preserve compatibility results and failure reasons
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
