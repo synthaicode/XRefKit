@@ -7,11 +7,14 @@ entry point group so XRefKit can discover `package_manifest.yaml`.
 
 It does not include executable tools.
 
-Compatibility: requires XRefKit >=0.6.1,<0.8.0 and Python >=3.11.
+Compatibility: requires XRefKit >=0.7.8,<0.8.0 and Python >=3.11.
 The manifest requirement >=2.0.0 <3.0.0 refers to the Skill Package
 core protocol, separately from the Python distribution version.
 
 ## 0.1.4
+
+Requires Core 0.7.8 for declared package Knowledge delivery and explicit required
+Knowledge resolution through MCP.
 
 C# review now requires a human-readable `review_report` alongside the existing
 structured findings, evidence, unknowns, used XIDs and handoffs. Consumers that
