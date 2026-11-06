@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-e25944aa-6d41-4e1a-a18b-625f0bbf8c1b",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-11-06T13:08:19Z",
+  "git_commit": "4b24153072057ef74015b67ff4a94590e0860537",
+  "purpose": "before AI Skill run shared_asset_update_gate",
+  "work_item_id": "WI-FORMAL",
+  "run_id": "e25944aa-6d41-4e1a-a18b-625f0bbf8c1b",
+  "context_policy": "current-only",
+  "human_approved": false
+}
