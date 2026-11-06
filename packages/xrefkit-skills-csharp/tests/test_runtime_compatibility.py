@@ -4,12 +4,20 @@ import hashlib
 from importlib.metadata import version
 
 import yaml
+import pytest
+from packaging.version import Version
 
 from xrefkit.discovery import discover_skill_packages
 from xrefkit.models import LocalDomainSkill
 from xrefkit.mcp.catalog import XRefCatalog
 from xrefkit.resolver import EffectiveSkillResolver
 from xrefkit.workspace import build_registry
+
+
+report_contract = pytest.mark.skipif(
+    Version(version("xrefkit-skills-csharp")) < Version("0.1.4"),
+    reason="The operational review_report contract was introduced in C# skills 0.1.4",
+)
 
 
 def test_installed_package_resolves_every_skill(tmp_path):
@@ -44,6 +52,7 @@ def test_installed_package_resolves_every_skill(tmp_path):
         json.loads(path.read_text(encoding="utf-8"))
 
 
+@report_contract
 def test_report_contract_survives_package_lookup_and_local_inheritance(tmp_path):
     """A local wrapper cannot silently lose the report or its review resources."""
     package = next(p for p in discover_skill_packages() if p.package_id == "xrefkit.skills.csharp")
@@ -96,6 +105,7 @@ def test_report_contract_survives_package_lookup_and_local_inheritance(tmp_path)
                for item in bundle.loaded_texts.all_loaded())
 
 
+@report_contract
 def test_mcp_entry_delivery_includes_every_independent_report_check(tmp_path):
     """Normal get_skill delivery must suffice even without optional axis retrieval."""
     package = next(p for p in discover_skill_packages() if p.package_id == "xrefkit.skills.csharp")
