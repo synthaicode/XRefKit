@@ -11,6 +11,15 @@ Compatibility: requires XRefKit >=0.7.8,<0.8.0 and Python >=3.11.
 The manifest requirement >=2.0.0 <3.0.0 refers to the Skill Package
 core protocol, separately from the Python distribution version.
 
+## 0.1.5
+
+C# review reports now begin with a concise feature/function name, supported
+user-visible problem, and required design-policy decisions. Essential scope and
+uncertainty remain beside the opening claims; detailed conditions, evidence,
+findings and decision details follow. The independent report axis checks the same
+structure. This changes reporting guidance only, without changing detector scope,
+result fields, or the repository report Skill's draft/unadopted status.
+
 ## 0.1.4
 
 Requires Core 0.7.8 for declared package Knowledge delivery and explicit required

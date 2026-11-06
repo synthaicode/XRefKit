@@ -3,7 +3,7 @@ xid: xid-axis-csharp-operational-report
 summary: Independently assess the detector's own human-readable operational report against its evidence.
 checks:
   - id: operational_assessment_first
-    description: The opening explains concrete operational meaning before IDs, followed by conditions, evidence and limits before individual findings; counts or short finding lists alone fail.
+    description: The concise opening names the feature or function in reader-understandable terms, the supported user-visible problem and required design-policy decisions (or none/unknown), with essential scope and uncertainty, before IDs, implementation detail or findings; detailed conditions, evidence and limits follow before individual findings and separate decision details; counts or short finding lists alone fail.
   - id: overall_evidence_consistency
     description: Every overall claim links to detector findings/evidence and preserves observed, inferred, possible and unverified boundaries, reviewed revision and scoped fixes.
   - id: technical_meaning_preserved
