@@ -14,6 +14,15 @@ inputs:
 outputs:
 - composed review report, category matrix expression check, finding expression check, required-input result table when applicable, composition issues, and handoff items back to the detector when evidence is insufficient
 criteria:
+- id: overall_operational_assessment
+  statement: The report begins with an overall operational assessment, followed by its conditions, evidence and limits, before individual findings; the assessment explains which supported operational guarantees may fail and why that matters to severity judgment.
+  verification: An independent quality reviewer compares every overall claim with identified detector findings and evidence, checks the required order, and rejects count-only summaries, unsupported common causes, and unverified impacts stated as observed results.
+- id: content_first_and_technical_fidelity
+  statement: The opening explains the concrete operational behavior or change before finding identifiers, and readable wording preserves the technical object, ownership, scope and evidence strength.
+  verification: An independent quality reviewer reads the opening without following IDs, then compares it with detector evidence to reject identifier-only introductions or substitutions that broaden or change the technical claim.
+- id: decision_separation_and_impact_order
+  statement: Confirmed defects are ordered by evidenced operational impact, while unresolved design-policy decisions are presented separately with required choices, option-dependent impacts and missing evidence.
+  verification: An independent quality reviewer checks defect ordering against supported impact and detector severity, checks explicit ties or incomparability, and rejects undecided policy presented as a confirmed defect.
 - id: category_visibility
   statement: Every active detector category remains visible with status, reviewed evidence, judgment basis, remaining unknowns, and handoff when applicable.
   verification: Compare report rows with detector categories and confirm not_applicable has an axis-specific absence basis.
@@ -46,6 +55,12 @@ aliases:
 Compose detector output into a report a human reviewer can use for a decision.
 The detector owns category applicability, findings, severity, evidence, and
 remediation judgment; this Skill owns clear expression of those results.
+
+Start the composed report with the overall operational assessment required by
+Overall Assessment Composition below, then its conditions, evidence and limits,
+then individual findings, followed by a separate design-policy decision section.
+This report-specific order applies to the composed artifact; execution status
+reporting does not replace the operational assessment.
 
 Confirm the detector output, reviewed scope, report purpose, and evidence
 references. Preserve every active category and express its status with the
@@ -123,6 +138,99 @@ the judgment basis or changing the detector's conclusion.
 - Do not place implementation-specific examples in this Skill. Target-specific
   details belong in the composed report or eval fixtures, not in the canonical
   instruction.
+
+## Overall Assessment Composition
+
+Before individual findings, explain the concrete operational problem or change
+and what the reviewed system can or cannot be relied on to preserve under the
+evidenced conditions, including the resulting operational implications. Lead
+with that meaning, not finding identifiers; IDs serve as supporting references
+beside the explanation. A reader must be able to understand the opening without
+looking up those IDs. For a fix report, distinguish the scoped correction from
+remaining issues rather than implying that the whole system is now safe. Give the reader enough context to judge severity
+across the report without reconstructing it from the finding list. A finding
+count, severity tally, or shortened list of defects alone is insufficient.
+
+Use this order: overall operational assessment; conditions, evidence and limits
+supporting that assessment; then individual findings. The assessment may contain several distinct
+operational concerns; it need not claim a shared cause or a single failure chain.
+
+For every overall claim, identify the supporting finding IDs and evidence.
+Keep its triggering conditions and reviewed scope beside it. Explain the
+connection between the observed behavior, the affected operational guarantee,
+and the potential consequence while preserving detector severity and judgment.
+Distinguish observed results from inferred or possible impacts and unverified
+questions. Do not invent business losses, occurrence frequency, shared causes,
+or recovery guarantees. Preserve the reviewed version/time boundary; historical
+findings do not establish that the current implementation remains defective.
+
+When evidence cannot support an overall operational implication, state that
+limit and return the missing premise or evidence to the detector with the
+blocked decision. Do not manufacture an impact merely to fill the opening.
+
+Simplify wording without changing the technical object, actor, ownership,
+condition or evidence strength. Explain unfamiliar terms when needed while
+retaining distinctions that determine the claim. Do not replace a specific
+resource-lifetime or ownership failure with a broader connection, delivery or
+service-failure claim unless the evidence supports that broader meaning.
+
+## Defect Order And Design-Policy Decisions
+
+Present confirmed defects in descending operational impact, using the
+supported affected guarantee, scope, consequence and recovery limits. Preserve
+the detector's severity and explain the evidence supporting the order; do not
+silently regrade findings. Where impacts tie or cannot be compared on the
+available evidence, state that limit and use a stable finding-ID order within
+the tied or incomparable group. Unknown occurrence frequency remains unknown
+and must not become an invented probability used to rank defects.
+
+Give items requiring a design-policy decision their own section, separate from
+confirmed defects. Name the decision needed, the known alternatives and their
+conditional operational implications, missing premises or evidence, and the
+decision owner or handoff when known. Support option-dependent impacts with
+available evidence or mark them unknown. When no such decision is required,
+state none rather than inventing an item. Do not invent alternatives or select a
+policy merely to complete the report. If alternatives are not established,
+state what the owner must clarify. An undecided expected behavior is not a
+confirmed violation. When a confirmed defect also requires a policy choice for
+remediation, retain the evidenced defect in the defect list and cross-reference
+the separate decision item without weakening the finding or pretending that
+the policy has been decided.
+
+## Independent Report Acceptance
+
+The independent quality reviewer owns acceptance of the composed report's
+content under the existing quality phase. The composer may self-check these
+conditions but must not certify its own acceptance; deterministic workflow
+verification does not establish them.
+
+- The opening explains the overall operational implications before individual
+  findings, followed by the applicable conditions, evidence and limits. It is
+  not merely a count, severity tally, or compressed finding list.
+- The opening conveys the concrete behavior/change and operational meaning
+  before IDs; identifiers only support that explanation. Readability changes
+  preserve the technical object, ownership, conditions, scope and strength of
+  the evidence rather than substituting a broader or different claim.
+- Every overall claim is traceable to identified detector findings and evidence;
+  the claim, conditions, severity and scope are consistent with those details.
+- Observed results, possible impacts and unverified matters remain distinct,
+  including recovery/retry boundaries and the reviewed version/time boundary
+  when applicable. Unsupported business damage, frequency or shared causes
+  are absent.
+- Confirmed defects are ordered by evidenced operational impact without
+  changing detector severity. Ties, incomparable impacts and unknown frequency
+  are explicit; unsupported probability or business loss does not drive order.
+- Design-policy decisions have a separate section identifying the required
+  decision, known alternatives and conditional impacts, missing basis and
+  owner/handoff. Unsettled policy is not labeled a confirmed defect; confirmed
+  defects needing a remediation choice cross-reference the separate item.
+- Category coverage and per-finding expression slots remain intact. Missing
+  support is a composition issue with an explicit detector/human handoff,
+  rather than a new technical finding or an asserted impact.
+
+Record each applicable acceptance result and its evidence through the existing
+quality gate. A missing or failed review remains explicit; do not represent
+report composition as quality-accepted until the independent checks pass.
 
 ## Category Matrix Composition
 
@@ -226,8 +334,11 @@ evidence reference, and what decision remains blocked.
 ## Closure
 
 Closure is allowed when the composed report preserves detector judgments,
-exposes decision bases for active categories and findings, and lists all
-composition issues or detector handoffs that remain unresolved.
+exposes the overall operational assessment and its supporting conditions,
+evidence and limits before individual findings, preserves decision bases for
+active categories and findings, and lists all composition issues or detector
+handoffs that remain unresolved. Content acceptance requires the independent
+report acceptance checks above; procedural closure alone is not acceptance.
 
 ## Reporting Contract (共通報告)
 

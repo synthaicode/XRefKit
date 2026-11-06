@@ -3787,7 +3787,7 @@
       "skill_id": "review_report_composition",
       "definition_path": "skills/review_report_composition/SKILL.v1.md",
       "definition_xid": "B1C2D3E4F5A6",
-      "definition_sha256": "8ce6ec3bdeecb1ac8cc6b7f9c67e1bf1e6c190c14db135484296d8fc15c4e762",
+      "definition_sha256": "b38da4bfd10e23bd2e5739cb8bf3e069ecf26a3405f227c43bf69a44a740f599",
       "legacy_ids": [],
       "legacy_sources": [
         {
