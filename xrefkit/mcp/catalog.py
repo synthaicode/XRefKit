@@ -5,6 +5,7 @@ import io
 import json
 import re
 import zipfile
+from collections.abc import Iterator
 from dataclasses import dataclass, replace
 from pathlib import Path
 
@@ -691,6 +692,51 @@ class XRefCatalog:
         )
         return stable_hash(version_basis)[:16]
 
+    def _package_assets(self) -> Iterator[tuple[DiscoveredSkillPackage, str, Path, str]]:
+        """Resolve only manifest-declared assets and split Skill references."""
+        for package in self.discovered_packages:
+            root = package.package_root.resolve()
+            seen = set()
+            provides = package.manifest.provides
+            groups = {
+                "knowledge": provides.knowledge,
+                "fragment": provides.fragments,
+                "review_axis": provides.review_axes,
+                "schema": provides.schemas,
+                "template": provides.templates,
+                "skill": provides.skills,
+            }
+            for kind, assets in groups.items():
+                for asset in assets:
+                    path = (root / asset.path).resolve()
+                    if not path.is_relative_to(root):
+                        raise ValueError(f"package asset escapes root: {asset.path}")
+                    key = (asset.xid, path)
+                    if key not in seen:
+                        seen.add(key)
+                        yield package, asset.xid, path, kind
+                    if kind == "skill" and path.name.endswith(".skill.yaml"):
+                        skill = load_package_skill_definition(path)
+                        for fragment in [skill.entry, *skill.required_fragments, *skill.branches]:
+                            target = (root / fragment.path).resolve()
+                            if not target.is_relative_to(root):
+                                raise ValueError(f"package fragment escapes root: {fragment.path}")
+                            key = (fragment.xid, target)
+                            if key not in seen:
+                                seen.add(key)
+                                yield package, fragment.xid, target, "fragment"
+
+    def _package_document(self, package: DiscoveredSkillPackage, xid: str, path: Path, text: str) -> XRefDocument:
+        return XRefDocument(
+            xid=xid,
+            title=first_heading(text, path.stem),
+            path=f"package:{package.package_id}/{path.relative_to(package.package_root.resolve()).as_posix()}",
+            summary=first_paragraph(text),
+            content=text,
+            links=markdown_xid_link_targets(text),
+            content_hash=stable_hash(text),
+        )
+
     def _scan_knowledge(self) -> list[tuple[KnowledgeCatalogEntry, str]]:
         """One consistent read per file: entry hash and body come from the
         same text, so they can never disagree."""
@@ -707,6 +753,17 @@ class XRefCatalog:
         for _xid, path in local_knowledge_files(self.repo_root):
             text = read_text(path)
             entries.append((_knowledge_entry(self.repo_root, self.ownership, path, text), text))
+        for package, xid, path, kind in self._package_assets():
+            if kind != "knowledge":
+                continue
+            text = read_text(path)
+            entry = _knowledge_entry(package.package_root.resolve(), None, path, text)
+            document = self._package_document(package, xid, path, text)
+            entries.append((replace(
+                entry, xid=xid, path=document.path, missing=[],
+                zone_metadata={"source": "installed_skill_package", "package_id": package.package_id,
+                               "package_version": package.version},
+            ), text))
         builtin_root = Path(__file__).resolve().parents[1] / "resources" / "migration"
         if self.repo_root != builtin_root and builtin_root.is_dir():
             known = {entry.xid for entry, _ in entries}
@@ -1234,6 +1291,12 @@ class XRefCatalog:
             for local_xid, path in local_knowledge_files(self.repo_root)
             if local_xid == xid
         )
+        package_documents = {}
+        for package, asset_xid, path, _kind in self._package_assets():
+            if asset_xid == xid:
+                text = read_text(path)
+                matches.append((path, text))
+                package_documents[path] = self._package_document(package, xid, path, text)
         # An active local edit is an explicit overlay of its source document.
         # Suppress only the corresponding source path; unrelated documents
         # declaring the same XID remain a conflict.
@@ -1277,12 +1340,19 @@ class XRefCatalog:
                 "xid": xid,
                 "message": "multiple catalog-visible documents declare this XID; refusing path-order selection",
                 "matches": [
-                    _document_conflict_match(self.repo_root, self.ownership, path, text)
+                    ({"source": "installed_skill_package",
+                      "content_hash": package_documents[path].content_hash}
+                     if path in package_documents else
+                     _document_conflict_match(self.repo_root, self.ownership, path, text))
                     for path, text in matches
                 ],
             }
         if len(matches) == 1:
             path, text = matches[0]
+            if path in package_documents:
+                return _conditional_document_response(
+                    package_documents[path], known_version, self.repository_fingerprint,
+                )
             for entry in (self.skills if self.skill_definition_paths else []):
                 if (entry.definition_format == "skill_definition_v1"
                         and entry.package_id is None
