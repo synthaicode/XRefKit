@@ -189,8 +189,8 @@ def test_cli_distinguishes_applied_evidence_failure(monkeypatch, capsys):
     assert "observed-hash" in capsys.readouterr().out
 
 
-@pytest.mark.parametrize("replace_identity", [False, True])
-def test_dispatch_attests_only_actual_opened_run_and_completed_output(case, monkeypatch, replace_identity):
+@pytest.mark.parametrize("invalid_run", [None, "identity", "escalated"])
+def test_dispatch_attests_only_actual_opened_run_and_completed_output(case, monkeypatch, invalid_run):
     root, packet, _ = case
     source = root / "work/packet.json"
     source.write_text(json.dumps(packet))
@@ -213,15 +213,19 @@ def test_dispatch_attests_only_actual_opened_run_and_completed_output(case, monk
             (out / "analysis.json").write_bytes((root / "work/analysis.md").read_bytes())
             Path(argv[argv.index("--output-last-message") + 1]).write_text("Analysis complete")
             kwargs["stdout"].write(b'{"type":"thread.started","thread_id":"simulated-session"}\n{"type":"turn.completed"}\n')
-            if replace_identity:
+            if invalid_run == "identity":
                 child_path.write_text(child_path.read_text().replace("child-test-run", "replaced-run"))
+            elif invalid_run == "escalated":
+                child_path.write_text(child_path.read_text().replace(
+                    "## Closure Gate\n- status: `done`", "## Closure Gate\n- status: `escalated`"))
         return SimpleNamespace(returncode=0, pid=123, communicate=communicate)
     monkeypatch.setattr(host.subprocess, "run", open_run)
     monkeypatch.setattr(host.subprocess, "Popen", launch)
     monkeypatch.setattr(host, "_state_path", lambda execution_id: root / "authority.dpapi")
     monkeypatch.setattr(host, "_save_state", lambda path, value, **kwargs: state.update(value))
-    if replace_identity:
-        with pytest.raises(ValueError, match="host-opened child identity"):
+    if invalid_run:
+        expected = "host-opened child identity" if invalid_run == "identity" else "completed child Skill run"
+        with pytest.raises(ValueError, match=expected):
             host.dispatch_local(root, source, binary, out)
         assert not state and not (out / "receipt.json").exists()
     else:

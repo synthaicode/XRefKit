@@ -154,6 +154,13 @@ verify. Never sign a receipt or approve/apply a target. Record the designated
 result as a done output artifact using its repository-relative path; record
 evidence, explicit handoff and all concerns. Report failed/unknown findings
 honestly. Successful process exit is not evidence that checks pass.
+The later host attestation, separate human action and canonical application are
+normal downstream responsibilities, outside your analysis scope. Record them
+as handoff steps; their being future steps alone is not an unresolved analysis
+risk. If you identify a concrete unresolved risk or uncertainty, retain it and
+its required disposition even when that prevents host attestation. The host
+requires actual Closure Gate done; it will not reinterpret escalated closure as
+success, and you must not resolve a genuine concern merely to obtain a receipt.
 Return only a short completion message after the output and run are saved.
 """
 
