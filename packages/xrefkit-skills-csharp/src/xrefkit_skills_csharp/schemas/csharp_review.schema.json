@@ -2,12 +2,37 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "xrefkit.skills.csharp.review",
   "type": "object",
-  "required": ["findings", "evidence", "unknowns", "used_xids", "handoffs"],
+  "required": [
+    "findings",
+    "evidence",
+    "unknowns",
+    "used_xids",
+    "handoffs",
+    "review_report"
+  ],
   "properties": {
-    "findings": {"type": "array"},
-    "evidence": {"type": "array"},
-    "unknowns": {"type": "array"},
-    "used_xids": {"type": "array", "items": {"type": "string"}},
-    "handoffs": {"type": "array"}
+    "findings": {
+      "type": "array"
+    },
+    "evidence": {
+      "type": "array"
+    },
+    "unknowns": {
+      "type": "array"
+    },
+    "used_xids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "handoffs": {
+      "type": "array"
+    },
+    "review_report": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable operational report of the same detector results; evidence, findings, unknowns and handoffs remain authoritative structured outputs. Independent content acceptance is separate from schema validation."
+    }
   }
 }

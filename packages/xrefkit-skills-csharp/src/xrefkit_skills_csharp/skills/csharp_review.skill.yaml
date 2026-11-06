@@ -38,6 +38,7 @@ branches:
     load_policy: on_demand
 
 required_outputs:
+  - review_report
   - findings
   - evidence
   - unknowns
@@ -48,6 +49,7 @@ required_knowledge:
   - xid-knowledge-csharp-review-spec
 
 review_axes:
+  - xid-axis-csharp-operational-report
   - xid-axis-csharp-review-findings
   - xid-axis-csharp-evidence-coverage
 
