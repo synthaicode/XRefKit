@@ -709,7 +709,7 @@ class XRefCatalog:
             for kind, assets in groups.items():
                 for asset in assets:
                     path = _package_asset_path(root, asset.path)
-                    if _embedded_startup_document(asset.xid) is not None:
+                    if _embedded_startup_document(_native_xid_identity(asset.xid)) is not None:
                         raise ValueError(f"package asset conflicts with core startup XID: {asset.xid}")
                     key = (asset.xid, path)
                     if key not in seen:
@@ -721,7 +721,7 @@ class XRefCatalog:
                             raise ValueError("package Skill identity does not match manifest")
                         for fragment in [skill.entry, *skill.required_fragments, *skill.branches]:
                             target = _package_asset_path(root, fragment.path)
-                            if _embedded_startup_document(fragment.xid) is not None:
+                            if _embedded_startup_document(_native_xid_identity(fragment.xid)) is not None:
                                 raise ValueError(f"package fragment conflicts with core startup XID: {fragment.xid}")
                             key = (fragment.xid, target)
                             if key not in seen:
@@ -729,7 +729,8 @@ class XRefCatalog:
                                 yield package, fragment.xid, target, "fragment"
 
     def _package_document(self, package: DiscoveredSkillPackage, xid: str, path: Path, text: str) -> XRefDocument:
-        if path.suffix.lower() == ".md" and first_xid(text) and first_xid(text) != xid:
+        document_xid = first_xid(text) if path.suffix.lower() == ".md" else None
+        if document_xid and _native_xid_identity(document_xid) != _native_xid_identity(xid):
             raise ValueError(f"package document identity does not match manifest: {xid}")
         return XRefDocument(
             xid=xid,
@@ -1718,6 +1719,12 @@ def _knowledge_entry(
         missing=missing,
         zone_metadata=_zone_metadata(ownership, rel),
     )
+
+
+def _native_xid_identity(xid: str) -> str:
+    """Accept the legacy anchor prefix only for native 12-digit hex XIDs."""
+    match = re.fullmatch(r"(?:xid-)?([0-9A-F]{12})", xid)
+    return match.group(1) if match else xid
 
 
 def _package_asset_path(root: Path, relative: str) -> Path:
