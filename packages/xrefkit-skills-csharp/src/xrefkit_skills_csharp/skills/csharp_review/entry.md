@@ -53,16 +53,21 @@ technical claims remain handoffs to the appropriate owner.
 
 ### Generation
 
-1. Begin with the overall operational assessment: explain the concrete behavior
-   or scoped change and what cannot be relied on under the evidenced conditions.
-   Put the meaning before finding IDs; IDs are supporting references. A count,
-   severity tally or shortened finding list does not explain overall impact.
-2. Follow with the conditions, reviewed revision/scope, evidence and limits
-   supporting that assessment, then the individual findings. Link every overall
-   claim to the relevant finding IDs and evidence. Separate observed results,
-   source-backed implications, possible impacts and unverified matters. Historical
-   results do not establish current defects; a scoped correction does not prove
-   whole-system safety. If no supported operational implication can be stated,
+1. Begin with a concise overall operational assessment naming the reviewed
+   feature or function in terms the reader understands, the supported
+   user-visible problem, and any required design-policy decisions. State none
+   when no decision is required, or unknown when the need is not established;
+   do not invent choices. Put this meaning before finding IDs, implementation
+   detail or individual findings; IDs are supporting references. Keep essential
+   scope, conditions and uncertainty beside the claims even in this short
+   opening. A count, severity tally or shortened finding list is not enough.
+2. After that opening, give the detailed conditions, reviewed revision/scope,
+   evidence and limits supporting the assessment, then the individual findings
+   and separate design-policy decision details. Link every overall claim to the
+   relevant finding IDs and evidence. Separate observed results, source-backed
+   implications, possible impacts and unverified matters. Historical results do
+   not establish current defects; a scoped correction does not prove whole-system
+   safety. If no supported user-visible or operational implication can be stated,
    say why and name the missing premise instead of inventing an impact.
 3. Order confirmed defects by evidenced operational impact while preserving
    detector severity. Explain the order from affected guarantees, scope,
@@ -98,7 +103,7 @@ The required acceptance checks are included here for entry-only MCP delivery.
 They match xid-axis-csharp-operational-report in the package registry; failure
 to retrieve that separate asset does not remove these checks.
 
-- `operational_assessment_first`: The opening explains concrete operational meaning before IDs, followed by conditions, evidence and limits before individual findings; counts or short finding lists alone fail.
+- `operational_assessment_first`: The concise opening names the feature or function in reader-understandable terms, the supported user-visible problem and required design-policy decisions (or none/unknown), with essential scope and uncertainty, before IDs, implementation detail or findings; detailed conditions, evidence and limits follow before individual findings and separate decision details; counts or short finding lists alone fail.
 - `overall_evidence_consistency`: Every overall claim links to detector findings/evidence and preserves observed, inferred, possible and unverified boundaries, reviewed revision and scoped fixes.
 - `technical_meaning_preserved`: Wording retains technical object, actor, ownership, conditions and evidence strength without unsupported broader guarantees, business damage, frequency or common causes.
 - `impact_order_preserves_judgment`: Confirmed defects follow evidenced operational impact without severity regrading; ties/incomparability use stated stable order and unknown frequency is not invented.
