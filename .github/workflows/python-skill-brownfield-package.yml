@@ -79,7 +79,7 @@ jobs:
       - name: Validate distribution metadata
         working-directory: ${{ env.PACKAGE_ROOT }}
         run: python -m twine check dist/*
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: xrefkit-skills-brownfield-distribution
           path: ${{ env.PACKAGE_ROOT }}/dist/
@@ -131,7 +131,7 @@ jobs:
           fi
       - name: Upload artifact member manifest
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: xrefkit-skills-brownfield-artifact-manifest
           path: artifact-manifest.txt
