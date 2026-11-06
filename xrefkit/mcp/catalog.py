@@ -5,8 +5,9 @@ import io
 import json
 import re
 import zipfile
+from collections.abc import Iterator
 from dataclasses import dataclass, replace
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 from .contracts import builtin_tool_contracts
 from .legacy_migration import migration_context
@@ -683,13 +684,62 @@ class XRefCatalog:
                 for entry in self.skills
             ]
             + [
-                f"{package.package_id}{package.version}"
-                for package in self.discovered_packages
+                f"{package.package_id}{package.version}{xid}{stable_hash(read_text(path))}"
+                for package, xid, path, _kind in self._package_assets()
             ]
             + [tool.tool_id + tool.version for tool in self.tools]
             + ([self.ownership.content_hash] if self.ownership else [])
         )
         return stable_hash(version_basis)[:16]
+
+    def _package_assets(self) -> Iterator[tuple[DiscoveredSkillPackage, str, Path, str]]:
+        """Resolve only manifest-declared assets and split Skill references."""
+        for package in self.discovered_packages:
+            root = package.package_root.resolve()
+            seen = set()
+            provides = package.manifest.provides
+            groups = {
+                "knowledge": provides.knowledge,
+                "fragment": provides.fragments,
+                "review_axis": provides.review_axes,
+                "schema": provides.schemas,
+                "template": provides.templates,
+                "skill": provides.skills,
+            }
+            for kind, assets in groups.items():
+                for asset in assets:
+                    path = _package_asset_path(root, asset.path)
+                    if _embedded_startup_document(asset.xid) is not None:
+                        raise ValueError(f"package asset conflicts with core startup XID: {asset.xid}")
+                    key = (asset.xid, path)
+                    if key not in seen:
+                        seen.add(key)
+                        yield package, asset.xid, path, kind
+                    if kind == "skill" and path.suffix.lower() != ".md":
+                        skill = load_package_skill_definition(path)
+                        if skill.xid != asset.xid or skill.skill_id != asset.id:
+                            raise ValueError("package Skill identity does not match manifest")
+                        for fragment in [skill.entry, *skill.required_fragments, *skill.branches]:
+                            target = _package_asset_path(root, fragment.path)
+                            if _embedded_startup_document(fragment.xid) is not None:
+                                raise ValueError(f"package fragment conflicts with core startup XID: {fragment.xid}")
+                            key = (fragment.xid, target)
+                            if key not in seen:
+                                seen.add(key)
+                                yield package, fragment.xid, target, "fragment"
+
+    def _package_document(self, package: DiscoveredSkillPackage, xid: str, path: Path, text: str) -> XRefDocument:
+        if path.suffix.lower() == ".md" and first_xid(text) and first_xid(text) != xid:
+            raise ValueError(f"package document identity does not match manifest: {xid}")
+        return XRefDocument(
+            xid=xid,
+            title=first_heading(text, path.stem),
+            path=f"package:{package.package_id}/{path.relative_to(package.package_root.resolve()).as_posix()}",
+            summary=first_paragraph(text),
+            content=text,
+            links=markdown_xid_link_targets(text),
+            content_hash=stable_hash(text),
+        )
 
     def _scan_knowledge(self) -> list[tuple[KnowledgeCatalogEntry, str]]:
         """One consistent read per file: entry hash and body come from the
@@ -714,6 +764,17 @@ class XRefCatalog:
                 text = read_text(path)
                 if first_xid(text) not in known:
                     entries.append((_knowledge_entry(builtin_root, None, path, text), text))
+        for package, xid, path, kind in self._package_assets():
+            if kind != "knowledge":
+                continue
+            text = read_text(path)
+            entry = _knowledge_entry(package.package_root.resolve(), None, path, text)
+            document = self._package_document(package, xid, path, text)
+            entries.append((replace(
+                entry, xid=xid, path=document.path, missing=[],
+                zone_metadata={"source": "installed_skill_package", "package_id": package.package_id,
+                               "package_version": package.version},
+            ), text))
         return entries
 
     def get_repository_identity(self) -> dict[str, str]:
@@ -742,6 +803,7 @@ class XRefCatalog:
     def build_knowledge_context(self, query: str, limit: int = 5) -> dict:
         scanned = self._scan_knowledge()
         ranked = _rank_entries(query, [entry for entry, _text in scanned])[:limit]
+        _require_unique_knowledge([entry for entry, _ in scanned])
         by_xid = {entry.xid: (entry, text) for entry, text in scanned}
         expanded: list[dict] = []
         missing: list[dict] = []
@@ -899,6 +961,7 @@ class XRefCatalog:
         """
         entry = self._skill_by_id(skill_id)
         knowledge = self.knowledge
+        _require_unique_knowledge(knowledge)
         by_xid = {item.xid: item for item in knowledge}
         if entry.definition_format == "skill_definition_v1":
             needs = entry.knowledge_slots
@@ -1234,6 +1297,18 @@ class XRefCatalog:
             for local_xid, path in local_knowledge_files(self.repo_root)
             if local_xid == xid
         )
+        package_documents = {}
+        for package, asset_xid, path, _kind in self._package_assets():
+            if asset_xid == xid:
+                text = read_text(path)
+                matches.append((path, text))
+                package_documents[path] = self._package_document(package, xid, path, text)
+        if package_documents:
+            # Installed packages cannot shadow a core migration document merely
+            # because the consumer repository does not contain that document.
+            builtin_root = Path(__file__).resolve().parents[1] / "resources" / "migration"
+            if self.repo_root != builtin_root and builtin_root.is_dir():
+                matches.extend(_managed_markdown_matches_by_xid(builtin_root, None, xid))
         # An active local edit is an explicit overlay of its source document.
         # Suppress only the corresponding source path; unrelated documents
         # declaring the same XID remain a conflict.
@@ -1277,12 +1352,19 @@ class XRefCatalog:
                 "xid": xid,
                 "message": "multiple catalog-visible documents declare this XID; refusing path-order selection",
                 "matches": [
-                    _document_conflict_match(self.repo_root, self.ownership, path, text)
+                    ({"source": "installed_skill_package",
+                      "content_hash": package_documents[path].content_hash}
+                     if path in package_documents else
+                     _document_conflict_match(self.repo_root, self.ownership, path, text))
                     for path, text in matches
                 ],
             }
         if len(matches) == 1:
             path, text = matches[0]
+            if path in package_documents:
+                return _conditional_document_response(
+                    package_documents[path], known_version, self.repository_fingerprint,
+                )
             for entry in (self.skills if self.skill_definition_paths else []):
                 if (entry.definition_format == "skill_definition_v1"
                         and entry.package_id is None
@@ -1636,6 +1718,27 @@ def _knowledge_entry(
         missing=missing,
         zone_metadata=_zone_metadata(ownership, rel),
     )
+
+
+def _package_asset_path(root: Path, relative: str) -> Path:
+    """Manifest paths are portable relative allowlist entries, never glob roots."""
+    portable = PurePosixPath(relative)
+    if ("\\" in relative or ":" in relative or portable.is_absolute()
+            or PureWindowsPath(relative).drive or ".." in portable.parts
+            or portable.as_posix() != relative):
+        raise ValueError(f"package asset escapes root or is not a portable relative path: {relative}")
+    path = (root / relative).resolve()
+    if not path.is_relative_to(root):
+        raise ValueError(f"package asset escapes root: {relative}")
+    return path
+
+
+def _require_unique_knowledge(entries: list[KnowledgeCatalogEntry]) -> None:
+    seen: set[str] = set()
+    for entry in entries:
+        if entry.xid in seen:
+            raise ValueError(f"knowledge xid conflict: {entry.xid} appears in multiple catalog-visible knowledge entries")
+        seen.add(entry.xid)
 
 
 def _external_knowledge_entry(root: Path, path: Path, text: str) -> KnowledgeCatalogEntry:
@@ -2400,14 +2503,16 @@ def _build_package_skills(package: DiscoveredSkillPackage) -> list[SkillCatalogE
             )
             continue
         skill = load_package_skill_definition(skill_path)
-        entry_path = package.package_root / skill.entry.path
+        if skill.xid != provided.xid or skill.skill_id != provided.id:
+            raise ValueError("package Skill identity does not match manifest")
+        entry_path = _package_asset_path(package_root, skill.entry.path)
         entry_text = read_text(entry_path) if entry_path.exists() else ""
         summary = first_paragraph(entry_text) or f"Package Skill {skill.skill_id}"
         rel_skill = skill_path.relative_to(package_root).as_posix()
         rel_entry = skill.entry.path.replace("\\", "/")
         required_knowledge = [
             {"xid": xid, "required": True, "reason": "package declaration"}
-            for xid in skill.required_knowledge
+            for xid in dict.fromkeys([*provided.required_knowledge, *skill.required_knowledge])
         ]
         entries.append(
             SkillCatalogEntry(
@@ -2443,7 +2548,8 @@ def _build_package_skills(package: DiscoveredSkillPackage) -> list[SkillCatalogE
                 ),
                 responsibility=skill.role or "package Skill execution",
                 preconditions=[],
-                knowledge_slots=[],
+                knowledge_slots=[{"slot": need["xid"], "bind": need["xid"], "required": True, "min": 1}
+                                 for need in required_knowledge],
                 missing=[],
                 zone_metadata={
                     "source": "installed_skill_package",
