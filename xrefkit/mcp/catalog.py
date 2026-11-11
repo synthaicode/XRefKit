@@ -1299,8 +1299,17 @@ class XRefCatalog:
             if local_xid == xid
         )
         package_documents = {}
+        package_aliases = []
+        native_identity = _native_xid_identity(xid)
         for package, asset_xid, path, _kind in self._package_assets():
             if asset_xid == xid:
+                text = read_text(path)
+                matches.append((path, text))
+                package_documents[path] = self._package_document(package, xid, path, text)
+            elif _native_xid_identity(asset_xid) == native_identity:
+                package_aliases.append((package, path))
+        if not matches:
+            for package, path in package_aliases:
                 text = read_text(path)
                 matches.append((path, text))
                 package_documents[path] = self._package_document(package, xid, path, text)

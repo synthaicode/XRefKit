@@ -205,7 +205,7 @@ jobs:
   artifact-inspection:
     name: Core / Inspect built artifacts and scan for malware/secrets
     needs: build-distribution
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       # The checkout supplies only the repository-owned inspection script; the
       # files under test always come from the build job artifact.
@@ -232,71 +232,9 @@ jobs:
             --required-member xrefkit/resources/base/contracts.json \
             --required-member xrefkit/resources/base/model_body.md \
             --manifest-output artifact-manifest.txt
-      - name: Install ClamAV and update virus definitions
-        shell: bash
-        run: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install --yes clamav clamav-freshclam
-            # Use the package's standard config path, removing only its
-            # example marker, and pass a job-local database path explicitly.
-            clam_db_dir="/tmp/xrefkit-clamav-${GITHUB_RUN_ID}"
-            sudo install -d -o clamav -g clamav -m 0755 "${clam_db_dir}"
-            sudo sed -i -E '/^[[:space:]]*Example[[:space:]]*$/d' /etc/clamav/freshclam.conf
-          if command -v systemctl >/dev/null 2>&1 && \
-             sudo systemctl cat clamav-freshclam.service >/dev/null 2>&1; then
-            sudo systemctl stop clamav-freshclam.service
-          fi
-          # Package installation may start an updater outside the systemd unit.
-          # Stop that exact updater before starting our foreground update.
-          if pgrep -x freshclam >/dev/null 2>&1; then
-            # Exit 1 means the process exited between pgrep and pkill.
-            # Other errors remain fatal; the final pgrep still requires absence.
-            if sudo pkill --signal TERM --exact freshclam; then
-              :
-            else
-              stop_status=$?
-              if [ "$stop_status" -ne 1 ]; then
-                echo "::error::could not stop freshclam (exit ${stop_status})"
-                exit "$stop_status"
-              fi
-            fi
-            for attempt in {1..10}; do
-              if ! pgrep -x freshclam >/dev/null 2>&1; then
-                break
-              fi
-              sleep 1
-            done
-          fi
-          if pgrep -x freshclam >/dev/null 2>&1; then
-            echo "::error::freshclam background updater is still running after service stop"
-            exit 1
-          fi
-          # A failed definition update must fail this job; malware scanning
-          # has no success fallback. Bound the external update to a clear
-            # failure instead of allowing a runner to stall indefinitely.
-            timeout --signal=TERM --kill-after=30s 10m \
-              sudo freshclam --config-file=/etc/clamav/freshclam.conf --datadir="${clam_db_dir}" --stdout --verbose
       - name: Scan built artifacts with ClamAV
         shell: bash
-        run: |
-          set -euo pipefail
-          clam_db_dir="/tmp/xrefkit-clamav-${GITHUB_RUN_ID}"
-          printf 'Runner UTC time: %s\n' "$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-          shopt -s nullglob
-          for database in "${clam_db_dir}"/*.cvd "${clam_db_dir}"/*.cld; do
-            printf 'ClamAV database: %s\n' "${database}"
-            if ! sigtool --info "${database}"; then
-              echo "::warning::Could not inspect ClamAV database ${database}"
-            fi
-          done
-          if clamscan --help | grep -Fq -- "--fail-if-cvd-older-than"; then
-            clamscan --database="${clam_db_dir}" --recursive --infected --fail-if-cvd-older-than=1 dist/
-          else
-            echo "::warning::ClamAV lacks --fail-if-cvd-older-than; freshclam succeeded, using recursive infected scan."
-            clamscan --database="${clam_db_dir}" --recursive --infected dist/
-          fi
-      # actions/upload-artifact v4.6.2; pinned to the release commit.
+        run: bash tools/scan_python_artifacts.sh dist/
       - name: Upload artifact member manifest
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

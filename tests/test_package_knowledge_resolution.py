@@ -191,3 +191,16 @@ def test_prefixed_native_startup_identity_cannot_shadow_core(tmp_path):
     catalog.discovered_packages[0].manifest.provides.knowledge[0].xid = "xid-0B5C58B5E5B2"
     with pytest.raises(ValueError, match="core startup XID"):
         catalog.get_document_by_xid("xid-0B5C58B5E5B2")
+
+
+def test_native_seed_resolves_prefixed_package_asset(tmp_path):
+    catalog = package_catalog(tmp_path)
+    package = catalog.discovered_packages[0]
+    package.manifest.provides.knowledge[0].xid = "xid-7A2F4C8D1701"
+    bare = catalog.get_document_by_xid("7A2F4C8D1701")
+    prefixed = catalog.get_document_by_xid("xid-7A2F4C8D1701")
+    assert bare["content_hash"] == prefixed["content_hash"]
+    assert bare["content"] == prefixed["content"]
+
+    duplicate = replace(catalog, discovered_packages=(package, package))
+    assert duplicate.get_document_by_xid("7A2F4C8D1701")["error"] == "xid_conflict"
