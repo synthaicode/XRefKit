@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "skill_id": "db_current_state_analysis",
+  "definition_xid": "B6D4A1E9C730",
+  "definition_content_hash": "a70068677be0bafc3f0c9eed251477e25d1405cfbd873a2b9bea5275d69485c2",
+  "maturity": "trial",
+  "observation_refs": [
+    "observations/2026-07-04_wideworldimporters_skill_check.md"
+  ],
+  "governance_refs": [],
+  "promotion": {
+    "decision": "approved",
+    "target_maturity": "trial",
+    "authority": "human:repository-user",
+    "decided_at": "2026-11-11T15:38:40Z",
+    "basis_refs": [
+      "observations/2026-07-04_wideworldimporters_skill_check.md"
+    ]
+  }
+}

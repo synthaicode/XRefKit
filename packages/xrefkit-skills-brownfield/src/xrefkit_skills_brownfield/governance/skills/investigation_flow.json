@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "skill_id": "investigation_flow",
+  "definition_xid": "E8B2D6A4C190",
+  "definition_content_hash": "4ee06b4648686fc3d9498801e69bf3dd2a0f878fbeadf23b8cddc6e4bb400d70",
+  "maturity": "trial",
+  "observation_refs": [
+    "observations/2026-04-10_xddp_integration.md"
+  ],
+  "governance_refs": [],
+  "promotion": {
+    "decision": "approved",
+    "target_maturity": "trial",
+    "authority": "human:repository-user",
+    "decided_at": "2026-11-11T15:38:40Z",
+    "basis_refs": [
+      "observations/2026-04-10_xddp_integration.md"
+    ]
+  }
+}

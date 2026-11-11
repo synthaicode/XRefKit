@@ -107,6 +107,10 @@ jobs:
             --required-member xrefkit_skills_brownfield/package_manifest.yaml \
             --required-member xrefkit_skills_brownfield/skills/brownfield_workflow.skill.yaml \
             --required-member xrefkit_skills_brownfield/skills/brownfield_workflow/entry.md \
+            --required-member xrefkit_skills_brownfield/skills/investigation_flow/SKILL.v1.md \
+            --required-member xrefkit_skills_brownfield/skills/requirements_flow/SKILL.v1.md \
+            --required-member xrefkit_skills_brownfield/skills/design_flow/SKILL.v1.md \
+            --required-member xrefkit_skills_brownfield/skills/db_current_state_analysis/SKILL.v1.md \
             --manifest-output artifact-manifest.txt
       - name: Install ClamAV and update virus definitions
         shell: bash
