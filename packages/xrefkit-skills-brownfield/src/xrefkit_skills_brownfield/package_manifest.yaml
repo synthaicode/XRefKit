@@ -1,6 +1,6 @@
 package_id: xrefkit.skills.brownfield
 package_type: skill_package
-version: 0.1.6
+version: 0.2.0
 
 requires:
   xrefkit_core: ">=2.0.0 <3.0.0"
@@ -78,6 +78,23 @@ provides:
         - discard_or_hide_uncommitted_edits_without_authorization
         - add_file_without_local_extension_pattern_check
 
+    - id: investigation_flow
+      xid: E8B2D6A4C190
+      path: skills/investigation_flow/SKILL.v1.md
+      governance_path: governance/skills/investigation_flow.json
+    - id: requirements_flow
+      xid: D4A7C91E2B60
+      path: skills/requirements_flow/SKILL.v1.md
+      governance_path: governance/skills/requirements_flow.json
+    - id: design_flow
+      xid: 6A4F8C2D1E70
+      path: skills/design_flow/SKILL.v1.md
+      governance_path: governance/skills/design_flow.json
+    - id: db_current_state_analysis
+      xid: B6D4A1E9C730
+      path: skills/db_current_state_analysis/SKILL.v1.md
+      governance_path: governance/skills/db_current_state_analysis.json
+
   fragments: []
   knowledge:
     - id: brownfield.llm_review_knowledge_usage
@@ -98,6 +115,27 @@ provides:
     - id: brownfield.service_data_flow
       xid: xid-7A2F4C8D2301
       path: knowledge/architecture/110_service_interaction_data_flow_viewpoints.md
+    - id: brownfield.xddp_supporting_methods
+      xid: xid-7A2F4C8D1711
+      path: knowledge/organization/171_xddp_supporting_methods.md
+    - id: brownfield.investigation_coverage_checklist
+      xid: xid-91E2A7C56101
+      path: knowledge/investigation/100_investigation_coverage_checklist.md
+    - id: brownfield.constraint_derivation_framework
+      xid: xid-81A6C4E2B190
+      path: knowledge/packs/constraint-derivation/110_constraint_derivation_framework.md
+    - id: brownfield.current_source_structure_findings_catalog
+      xid: xid-A9E742B1C6D0
+      path: knowledge/source_analysis/170_current_source_structure_findings_catalog.md
+    - id: brownfield.csharp_naming_convention_extraction
+      xid: xid-B4F7E1A2C903
+      path: knowledge/source_analysis/140_csharp_naming_convention_extraction.md
+    - id: brownfield.database_current_state_analysis_viewpoints
+      xid: xid-F9B3C6A70412
+      path: knowledge/database/110_database_current_state_analysis_viewpoints.md
+    - id: brownfield.database_design_viewpoints
+      xid: xid-E7D4A11B8C06
+      path: knowledge/database/100_database_design_viewpoints.md
   review_axes:
     - id: brownfield.traceability
       xid: xid-axis-brownfield-traceability

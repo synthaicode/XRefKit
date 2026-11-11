@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "source": "skills/investigation_flow/SKILL.v1.md",
+      "source_sha256": "ac4a5fb1782a49e1446ae2fc89271930d21e5817291d43952516f29bcd141c5a",
+      "packaged_sha256": "4ee06b4648686fc3d9498801e69bf3dd2a0f878fbeadf23b8cddc6e4bb400d70"
+    },
+    {
+      "source": "skills/requirements_flow/SKILL.v1.md",
+      "source_sha256": "63e5ad6958b3ca6f318c1fee2ff403cc523f5ed1d4cb41cf33d15fdb8fc98811",
+      "packaged_sha256": "c2795e83f1b9d6620bfe5103632a7e66813d0f4cc3c55f5457572939eec79bc8"
+    },
+    {
+      "source": "skills/design_flow/SKILL.v1.md",
+      "source_sha256": "eb007fd4e5ff20d58a37941d550b9fd46f0172ca1aede109cddf9ecde34314b5",
+      "packaged_sha256": "281a000504b26ab7904af2072e34c57fe628a606822ca951c154adf5d3d0c592"
+    },
+    {
+      "source": "skills/db_current_state_analysis/SKILL.v1.md",
+      "source_sha256": "01cd3e5c3de788af7ba51cb260ab2d6a2da7f142478113ca68a4a0d6d63d49c9",
+      "packaged_sha256": "a70068677be0bafc3f0c9eed251477e25d1405cfbd873a2b9bea5275d69485c2"
+    }
+  ]
+}

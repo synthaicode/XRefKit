@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "skill_id": "design_flow",
+  "definition_xid": "6A4F8C2D1E70",
+  "definition_content_hash": "281a000504b26ab7904af2072e34c57fe628a606822ca951c154adf5d3d0c592",
+  "maturity": "trial",
+  "observation_refs": [
+    "observations/2026-04-10_xddp_integration.md"
+  ],
+  "governance_refs": [],
+  "promotion": {
+    "decision": "approved",
+    "target_maturity": "trial",
+    "authority": "human:repository-user",
+    "decided_at": "2026-11-11T15:38:40Z",
+    "basis_refs": [
+      "observations/2026-04-10_xddp_integration.md"
+    ]
+  }
+}

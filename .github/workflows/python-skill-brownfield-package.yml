@@ -6,6 +6,7 @@ on:
       - "packages/xrefkit-skills-brownfield/**"
       - ".github/workflows/python-skill-brownfield-package.yml"
       - "tools/inspect_python_artifacts.py"
+      - "tools/scan_python_artifacts.sh"
       - "tools/run_import_smoke.py"
   push:
     tags:
@@ -88,7 +89,7 @@ jobs:
   artifact-inspection:
     name: Brownfield / Inspect built artifacts and scan for malware/secrets
     needs: build-distribution
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
@@ -107,28 +108,14 @@ jobs:
             --required-member xrefkit_skills_brownfield/package_manifest.yaml \
             --required-member xrefkit_skills_brownfield/skills/brownfield_workflow.skill.yaml \
             --required-member xrefkit_skills_brownfield/skills/brownfield_workflow/entry.md \
+            --required-member xrefkit_skills_brownfield/skills/investigation_flow/SKILL.v1.md \
+            --required-member xrefkit_skills_brownfield/skills/requirements_flow/SKILL.v1.md \
+            --required-member xrefkit_skills_brownfield/skills/design_flow/SKILL.v1.md \
+            --required-member xrefkit_skills_brownfield/skills/db_current_state_analysis/SKILL.v1.md \
             --manifest-output artifact-manifest.txt
-      - name: Install ClamAV and update virus definitions
-        shell: bash
-        run: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install --yes clamav clamav-freshclam
-          if command -v systemctl >/dev/null 2>&1 && \
-             sudo systemctl cat clamav-freshclam.service >/dev/null 2>&1; then
-            sudo systemctl stop clamav-freshclam.service
-          fi
-          sudo freshclam
       - name: Scan built artifacts with ClamAV
         shell: bash
-        run: |
-          set -euo pipefail
-          if clamscan --help | grep -Fq -- "--fail-if-cvd-older-than"; then
-            clamscan --recursive --infected --fail-if-cvd-older-than=1 dist/
-          else
-            echo "::warning::ClamAV lacks --fail-if-cvd-older-than; using recursive infected scan."
-            clamscan --recursive --infected dist/
-          fi
+        run: bash tools/scan_python_artifacts.sh dist/
       - name: Upload artifact member manifest
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

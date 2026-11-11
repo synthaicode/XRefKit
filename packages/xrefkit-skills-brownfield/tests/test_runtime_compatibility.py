@@ -45,7 +45,10 @@ def test_installed_distribution_dependency_matches_core():
     from packaging.version import Version
 
     supports_core_07 = Version(version("xrefkit-skills-brownfield")) >= Version("0.1.6")
-    assert ("0.7.0" in core.specifier) is supports_core_07
+    mixed_package = Version(version("xrefkit-skills-brownfield")) >= Version("0.2.0")
+    assert ("0.7.0" in core.specifier) is (supports_core_07 and not mixed_package)
+    if mixed_package:
+        assert "0.7.10" in core.specifier
     assert "0.8.0" not in core.specifier
     assert CORE_PROTOCOL_VERSION == "2.0.0"
 
@@ -75,8 +78,7 @@ def test_installed_workflow_resolves_contract_and_all_required_assets(tmp_path):
         assert text.strip()
         if asset.asset_type == "knowledge":
             assert "<!-- xid: " + xid.removeprefix("xid-") + " -->" in text
-    assert len(bundle.available_domain_knowledge) == 6
-    assert all(item.selected for item in bundle.available_domain_knowledge)
+    assert {item.xid for item in bundle.available_domain_knowledge if item.selected} == set(provided.required_knowledge)
 
 
 def test_workflow_entry_references_are_packaged_and_readable():
@@ -136,3 +138,36 @@ def test_incompatible_local_package_version_is_rejected(tmp_path):
                              local_id="project.compatibility")
     with pytest.raises(ValueError, match="does not satisfy"):
         EffectiveSkillResolver(registry).resolve_entry(local.skill_id)
+
+
+def test_installed_trial_skills_are_discoverable_and_bound_to_evidence(tmp_path):
+    from packaging.version import Version
+
+
+    from xrefkit.mcp.catalog import XRefCatalog
+    from xrefkit.skill_definition import load_skill_definition
+    from xrefkit.skill_definition_governance import load_governance_record, match_definition
+
+    package = installed_package()
+    expected = {"investigation_flow", "requirements_flow", "design_flow", "db_current_state_analysis"}
+    native = [item for item in package.manifest.provides.skills if item.governance_path]
+    if Version(package.version) < Version("0.2.0"):
+        assert not native
+        assert [item.id for item in package.manifest.provides.skills] == ["brownfield.workflow"]
+        return
+    assert {item.id for item in native} == expected
+    catalog = XRefCatalog.build(tmp_path, discover_packages=True)
+    for item in native:
+        definition = load_skill_definition(package.package_root / item.path)
+        governance = load_governance_record(package.package_root / item.governance_path)
+        match_definition(governance, definition)
+        assert governance["maturity"] == "trial"
+        assert governance["promotion"]["decision"] == "approved"
+        for ref in governance["observation_refs"]:
+            assert (package.package_root / ref).is_file()
+        entry = catalog.get_skill(item.id)
+        assert entry["package_id"] == package.package_id
+        assert entry["maturity"] == "trial"
+        for need in definition["metadata"]["knowledge_needs"]:
+            for xid in need["seed_xids"]:
+                assert catalog.get_document_by_xid(xid)["content"], xid

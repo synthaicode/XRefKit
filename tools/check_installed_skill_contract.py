@@ -46,10 +46,10 @@ def verify_installed(name: str, package_id: str, core_version: str,
     for candidate in selected:
         if not version_satisfies(CORE_PROTOCOL_VERSION, candidate.manifest.requires.xrefkit_core):
             raise ValueError(f"package {candidate.package_id} requires incompatible protocol; current core is {CORE_PROTOCOL_VERSION}")
-        formats = {Path(p.path).suffix.lower() == ".md" for p in candidate.manifest.provides.skills}
-        if len(formats) != 1:
-            raise ValueError("mixed native/legacy package requires a supported explicit probe")
-        if formats == {False}:
+        formats = {Path(p.path).suffix.lower() for p in candidate.manifest.provides.skills}
+        if not formats:
+            raise ValueError("installed Skill Package provides no Skills")
+        if formats - {".md"}:
             legacy_ids.add(candidate.package_id)
         for group in candidate.manifest.provides.model_dump().values():
             for provided in group:
@@ -63,7 +63,7 @@ def verify_installed(name: str, package_id: str, core_version: str,
             if provided.id in seen_ids:
                 raise ValueError(f"duplicate Skill across enabled packages: {provided.id}")
             seen_ids.add(provided.id)
-        if formats == {True}:
+        if ".md" in formats:
             _build_package_skills(candidate)  # strict identity and bound-governance checks
     registry = build_registry(package_manifests=[], discover_entry_points=bool(legacy_ids),
                               enabled_package_ids=legacy_ids)
