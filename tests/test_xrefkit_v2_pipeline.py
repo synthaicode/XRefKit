@@ -533,3 +533,19 @@ def test_repository_csharp_package_resolves_local_csharp_review(tmp_path: Path) 
     assert "applied_skills" in bundle.required_outputs
     assert "xid-branch-csharp-review-async-synchronization" in bundle.references.branches
     assert "xid-project-csharp-current-code-scope" in bundle.references.knowledge
+
+
+def test_registry_loads_split_contract_from_mixed_package(tmp_path):
+    package_manifest, local_manifest = _sample_workspace(tmp_path)
+    manifest = yaml.safe_load(package_manifest.read_text(encoding="utf-8"))
+    native_path = "skills/investigation_flow/SKILL.v1.md"
+    _write(package_manifest.parent / native_path, (REPO_ROOT / native_path).read_text(encoding="utf-8"))
+    manifest["provides"]["skills"].append({
+        "id": "investigation_flow",
+        "xid": "E8B2D6A4C190",
+        "path": native_path,
+    })
+    _write_yaml(package_manifest, manifest)
+
+    registry = build_registry(package_manifests=[package_manifest], local_manifest_path=local_manifest)
+    assert registry.skills.require("xddp.design.change_design").definition.entry.path == "skills/change_design/entry.md"

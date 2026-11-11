@@ -67,6 +67,10 @@ def build_registry(
         registry.add_package(manifest, package_root)
         for provided in manifest.provides.skills:
             skill_path = _contained_path(package_root, provided.path, label=f"package skill {provided.id}")
+            # The effective Skill resolver composes split YAML contracts.
+            # Native Markdown Skills are registered by the MCP catalog.
+            if skill_path.suffix.lower() == ".md":
+                continue
             skill = load_skill_definition(skill_path)
             _validate_skill_paths(package_root, skill)
             registry.add_package_skill(
