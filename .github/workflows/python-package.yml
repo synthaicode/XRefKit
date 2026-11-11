@@ -205,7 +205,7 @@ jobs:
   artifact-inspection:
     name: Core / Inspect built artifacts and scan for malware/secrets
     needs: build-distribution
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       # The checkout supplies only the repository-owned inspection script; the
       # files under test always come from the build job artifact.
