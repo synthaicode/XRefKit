@@ -143,8 +143,6 @@ def test_incompatible_local_package_version_is_rejected(tmp_path):
 def test_installed_trial_skills_are_discoverable_and_bound_to_evidence(tmp_path):
     from packaging.version import Version
 
-    if Version(version("xrefkit-skills-brownfield")) < Version("0.2.0"):
-        pytest.skip("the published predecessor contains only the split YAML workflow")
 
     from xrefkit.mcp.catalog import XRefCatalog
     from xrefkit.skill_definition import load_skill_definition
@@ -153,6 +151,10 @@ def test_installed_trial_skills_are_discoverable_and_bound_to_evidence(tmp_path)
     package = installed_package()
     expected = {"investigation_flow", "requirements_flow", "design_flow", "db_current_state_analysis"}
     native = [item for item in package.manifest.provides.skills if item.governance_path]
+    if Version(package.version) < Version("0.2.0"):
+        assert not native
+        assert [item.id for item in package.manifest.provides.skills] == ["brownfield.workflow"]
+        return
     assert {item.id for item in native} == expected
     catalog = XRefCatalog.build(tmp_path, discover_packages=True)
     for item in native:
