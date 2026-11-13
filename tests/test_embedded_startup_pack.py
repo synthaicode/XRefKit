@@ -23,6 +23,12 @@ class EmbeddedStartupPackTests(unittest.TestCase):
                     self.assertEqual(pack["stale_sources"], [])
                     self.assertEqual(pack["based_on_hashes"], pack["source_hashes"])
                     self.assertTrue(pack["body"])
+                    self.assertIn("--definition <path-to-SKILL.v1.md>", pack["body"])
+                    self.assertIn(
+                        "local-trial adoption binds approved trial governance and sealed evidence",
+                        pack["body"],
+                    )
+                    self.assertIn("shared governance kickoff", pack["body"])
                     self.assertIn("## Japanese response writing rules", pack["body"])
                     self.assertIn("progress updates, questions, explanations, reports, and final answers", pack["body"])
                     self.assertIn("no named invocation is required", pack["body"])

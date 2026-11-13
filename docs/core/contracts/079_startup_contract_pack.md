@@ -11,13 +11,16 @@ This page is not the repository-native startup target for XRefKit itself. For
 XRefKit startup without assuming MCP, use
 `docs/core/contracts/080_xrefkit_startup_contract.md#xid-C3A1F78D9B22`.
 
-Maintenance rule: when any source document changes, update this page and
-its "Based On" hashes in the same commit. Generate the current hash lines
+Maintenance rule: when a startup source changes, update its packaged copy
+under `xrefkit/resources/base/startup_sources/`, both pack bodies, and their
+recorded source hashes in the same commit. Generate the current hash lines
 with `python -m xrefkit.mcp.cli startup-pack-hashes --repo <this-repo>`, and
-verify with `python -m xrefkit.mcp.cli check-startup-pack --repo <this-repo>`
-(exits non-zero when stale). The MCP server compares these hashes against
-the live sources on every `get_startup_context` call and reports the pack
-as stale to every client when they diverge.
+verify the repository pack with
+`python -m xrefkit.mcp.cli check-startup-pack --repo <this-repo>`.
+The Core quality job also compares both source sets and both model-facing
+bodies from the Sources list onward. On every `get_startup_context` call, the
+MCP server reports staleness when the selected pack's recorded hashes differ
+from the live source hashes.
 
 ## Based On
 
@@ -41,14 +44,20 @@ Sources:
 ## Global startup invariants
 
 - In an adopted repository, use `skills/repository_adoption.json` as the explicit
-  canonical source/provenance boundary. Start selected Skills with
+  canonical source and provenance boundary. Start selected Skills with
   `python -m xrefkit skill run --definition <path-to-SKILL.v1.md>` and the
-  instruction-derived runtime inputs. Recorded repository legacy invocation
-  aliases may supply audited compatibility values; explicit inputs take
-  precedence and missing inputs refuse execution. External legacy interfaces
-  and Workflow Runtime Binding ownership remain supported.
-- For Skill/Knowledge creation or update, use the shared governance kickoff returned by the authoring or ingress route and hand staged candidates to its governed reflection endpoint; detailed checks are delegated on demand.
-- Draft repository Skills remain unavailable until separate adoption review.
+  instruction-derived runtime inputs. Recorded legacy invocation aliases may
+  supply audited compatibility values. Explicit inputs take precedence, and
+  missing inputs refuse execution. External legacy interfaces and Workflow
+  Runtime Binding ownership remain supported.
+- Historical draft Skills remain unavailable unless a valid explicit current
+  local-trial adoption binds approved trial governance and sealed evidence.
+  Use the shared effective-readiness resolver and preserve historical receipts.
+  Source adoption does not establish promotion or authorize shared MCP
+  publication. See the SkillDefinition adoption contract (XID E6A19D4B72C3).
+- For Skill/Knowledge creation or update, use the shared governance kickoff
+  returned by the authoring or ingress route and hand staged candidates to its
+  governed reflection endpoint. Detailed checks are delegated on demand.
 
 - MCP-only governance is authoritative when configured. Do not read local XRefKit governance Markdown, local Skill files, or filesystem Markdown links to bypass MCP.
 - Apply control in this order: base control -> XRefKit routing -> task-specific workflow/Skill execution.
@@ -139,6 +148,7 @@ those procedures.
 
 - Route dynamically from the active Skill catalog and the current instruction.
   The selected method and instruction determine the Workflow Runtime Binding.
+  `model_requirements` remains separate model-routing data.
 - Start a Skill Run with the returned runtime envelope, preserve its `run_log`
   and definition identity, and do not materialize or execute the method until
   the run and ExecutionBinding succeed.

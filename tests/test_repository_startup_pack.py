@@ -6,6 +6,7 @@ import shutil
 
 from xrefkit.mcp.catalog import XRefCatalog
 from xrefkit.mcp.cli import main
+from xrefkit.mcp.repository import markdown_xid_only_text
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
@@ -29,8 +30,30 @@ def test_repository_startup_pack_matches_sources_and_adopted_route(capsys):
         "startup_contract_pack"
     ]
     assert "--definition <path-to-SKILL.v1.md>" in pack["body"]
-    assert "Draft repository Skills remain" in pack["body"]
+    assert "valid explicit current" in pack["body"]
+    assert "local-trial adoption binds approved trial governance and sealed evidence" in pack["body"]
     assert "missing inputs refuse execution" in pack["body"]
+
+
+def test_repository_and_embedded_startup_packs_match(tmp_path):
+    repository_pack = XRefCatalog.build(REPOSITORY_ROOT).get_startup_context()[
+        "startup_contract_pack"
+    ]
+    embedded_pack = XRefCatalog.build(tmp_path).get_startup_context()[
+        "startup_contract_pack"
+    ]
+    assert repository_pack["pack_source"] == "repository_document"
+    assert embedded_pack["pack_source"] == "embedded_fallback"
+    assert embedded_pack["source_hashes"] == repository_pack["source_hashes"], (
+        "Update the packaged copies of the startup source documents."
+    )
+    source_list = "\nSources:\n"
+    _, repository_separator, repository_body = repository_pack["body"].partition(source_list)
+    _, embedded_separator, embedded_body = embedded_pack["body"].partition(source_list)
+    assert repository_separator and embedded_separator, "Both packs must have a Sources list."
+    assert markdown_xid_only_text(embedded_body) == repository_body, (
+        "Update the model-facing text in both the repository and embedded startup packs."
+    )
 
 
 def test_source_change_still_fails_official_pack_check(tmp_path, capsys):

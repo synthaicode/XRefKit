@@ -37,9 +37,11 @@ Typical contents:
 - XID as the primary key
 - `xref search/show/rewrite/check/fix`
 - `knowledge/` as shared domain fragments
-- `skills/` as executable SkillDefinition procedures; runtime binding fields are
-  derived from the instruction under
-  `docs/core/contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F`
+- `skills/` as executable SkillDefinition procedures; runtime
+  runtime binding values are derived from the current instruction and carried
+  by ExecutionBinding. See the [Workflow Runtime Binding contract](../contracts/111_workflow_runtime_binding.md#xid-8D50A972BA9F).
+  Legacy split Skills may retain the corresponding fields in `meta.md` during
+  migration.
 
 These rules are about how XRefKit routes knowledge and keeps references durable.
 
@@ -82,5 +84,3 @@ If these layers are ever separated into different repositories, the extraction b
   - `xrefkit xref` commands
   - repository structure and routing
   - skill / knowledge organization
-
-

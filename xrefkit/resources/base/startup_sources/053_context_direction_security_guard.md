@@ -168,5 +168,3 @@ This supports replay, governance, and post-incident review.
 - [Base control and xref routing layers](../models/017_base_and_xref_layering.md#xid-5A1C8E4D2F90)
 - [Skill and knowledge operating model](../models/052_flow_capability_skill_knowledge_model.md#xid-91C4B7E2D5A8)
 - [Shared memory operations (AI-authored logs)](015_shared_memory_operations.md#xid-4A423E72D2ED)
-
-
