@@ -60,5 +60,3 @@ If uncertainty is handed across groups and still remains unresolved:
 - [Shared memory operations](015_shared_memory_operations.md#xid-4A423E72D2ED)
 - [Working area policy](../../policies/014_working_area_policy.md#xid-111D282CA0EA)
 - [Agent Entry](../../../agent/000_agent_entry.md#xid-0B5C58B5E5B2)
-
-

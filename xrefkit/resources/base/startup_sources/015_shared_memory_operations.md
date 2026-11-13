@@ -108,5 +108,3 @@ closure gates pass.
 - [Working area policy](../../policies/014_working_area_policy.md#xid-111D282CA0EA)
 - [Agent Entry](../../../agent/000_agent_entry.md#xid-0B5C58B5E5B2)
 - [Startup xref routing policy](011_startup_xref_routing.md#xid-6C0B62D6366A)
-
-
