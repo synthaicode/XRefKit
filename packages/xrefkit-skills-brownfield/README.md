@@ -90,7 +90,7 @@ analysis = analyze_understanding(current, previous)
 impact = assess_impact(plan, analysis["notification"])
 ```
 
-The optional extra installs Project Management `>=0.1.0a3,<0.2.0`. Brownfield works
+The optional extra installs Project Management `>=0.1.0,<0.2.0`. Brownfield works
 without that extra and saves a notification for a named receiving owner.
 Project Management owns notification validation, direct/dependent impact analysis,
 schedule/actual/baseline separation, CPM, Mermaid and immutable plan history.

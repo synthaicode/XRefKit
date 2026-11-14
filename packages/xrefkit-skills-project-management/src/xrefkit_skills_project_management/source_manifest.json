@@ -33,8 +33,8 @@
     },
     {
       "source": "docs/packs/project-management/entry.md",
-      "source_sha256": "0c5932d3285b99ebff32f51ab8f8d8bdf6bff3c220cbb77bb4551dedd94cc366",
-      "packaged_sha256": "0c5932d3285b99ebff32f51ab8f8d8bdf6bff3c220cbb77bb4551dedd94cc366"
+      "source_sha256": "b00c1c608a9d946b63161520bedb3ef959a86ca7cdb696b8a7a85b95bbe5803d",
+      "packaged_sha256": "b00c1c608a9d946b63161520bedb3ef959a86ca7cdb696b8a7a85b95bbe5803d"
     },
     {
       "source": "docs/packs/project-management/scheduling.md",

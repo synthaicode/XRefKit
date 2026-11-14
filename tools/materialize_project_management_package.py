@@ -85,7 +85,7 @@ def generate(root: Path) -> dict[str, bytes]:
         result[gp] = (json.dumps(governance, indent=2) + "\n").encode()
         provided.append({"id":sid,"xid":meta["xid"],"path":path,"governance_path":gp})
     manifest = {"package_id":"xrefkit.skills.project_management","package_type":"skill_package",
-                "version":"0.1.0a3","requires":{"xrefkit_core":">=2.0.0 <3.0.0"},
+                "version":"0.1.0","requires":{"xrefkit_core":">=2.0.0 <3.0.0"},
                 "provides":{"skills":provided},"contract":{},
                 "metadata":{"display_name":"Project Management","maturity_note":"trial; authoring/readiness bootstrap, not operational validation",
                             "routing_entry":"docs/packs/project-management/entry.md"}}

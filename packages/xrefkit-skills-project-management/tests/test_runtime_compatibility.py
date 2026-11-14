@@ -22,11 +22,11 @@ BASE_SKILLS = ('progress_rules_setup', 'requirements_discovery_coordination', 'w
 RELEASE_SKILLS = {
     '0.1.0a1': BASE_SKILLS,
     '0.1.0a2': BASE_SKILLS + ('pm_coordination_setup', 'pm_decision_coordination'),
-    '0.1.0a3': BASE_SKILLS + ('pm_coordination_setup', 'pm_decision_coordination'),
+    '0.1.0': BASE_SKILLS + ('pm_coordination_setup', 'pm_decision_coordination'),
 }
 INSTALLED_VERSION = version('xrefkit-skills-project-management')
 EXPECTED_SKILLS = RELEASE_SKILLS[INSTALLED_VERSION]
-EXPECTED_MATURITY = 'trial' if INSTALLED_VERSION == '0.1.0a3' else 'draft'
+EXPECTED_MATURITY = 'trial' if INSTALLED_VERSION == '0.1.0' else 'draft'
 
 
 def package():
@@ -108,4 +108,4 @@ def test_package_contains_no_project_configuration_or_adapter():
     assert not manifest.provides.knowledge
     assert not list(package_root().rglob('*.skill.yaml'))
     source=json.loads((package_root()/'source_manifest.json').read_text())
-    assert len(source['sources'])==len(EXPECTED_SKILLS)+(5 if INSTALLED_VERSION == '0.1.0a3' else 3)
+    assert len(source['sources'])==len(EXPECTED_SKILLS)+(5 if INSTALLED_VERSION == '0.1.0' else 3)
