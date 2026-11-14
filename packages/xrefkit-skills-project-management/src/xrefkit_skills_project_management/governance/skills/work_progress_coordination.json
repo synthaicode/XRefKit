@@ -2,15 +2,19 @@
   "schema_version": 1,
   "skill_id": "work_progress_coordination",
   "definition_xid": "A4D902C7E651",
-  "definition_content_hash": "721b5eb7cb02a186ea20e7a21b6e117adc8f6c3f25842ed2a01c0a31e200e0e0",
-  "maturity": "draft",
-  "observation_refs": [],
+  "definition_content_hash": "fae7a802bde4b4a632d870040a2005e0fea40d23397eade0fb5449d2028e6ad7",
+  "maturity": "trial",
+  "observation_refs": [
+    "observations/2026-11-14_project_management_trial_authoring.md"
+  ],
   "governance_refs": [],
   "promotion": {
-    "decision": "not_requested",
-    "target_maturity": null,
-    "authority": null,
-    "decided_at": null,
-    "basis_refs": []
+    "decision": "approved",
+    "target_maturity": "trial",
+    "authority": "human:repository-user",
+    "decided_at": "2026-11-14T14:02:02Z",
+    "basis_refs": [
+      "observations/2026-11-14_project_management_trial_authoring.md"
+    ]
   }
 }

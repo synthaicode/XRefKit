@@ -60,6 +60,18 @@ applicable Knowledge fragments before each phase judgment and classify the
 relationship to existing patterns as `follows`, `adapts`, `introduces`, or
 `unknown`.
 
+## Understanding change and planning handoff
+
+When requirements understanding or method/migration evidence changes, apply
+[Understanding changes and PM handoff](references/understanding-change.md#xid-84C9D6A1E730).
+Record structured requirement/confirmation/approach revisions, analyze explicit
+Knowledge Requirements, derive evidence-seeking Decision activities and notify
+Project Management of traced impact. Use the package helper for comparison;
+keep CPM/history in Project Management. Neither evidence nor a generated plan
+grants approval. Preserve the existing technical/quality owners and phase gates.
+Standard user-facing output has three sections: `要求事項`, `確認事項`, `進め方`.
+Each item carries its change reason and evidence/decision basis.
+
 ## Phase method
 
 1. Confirm the upstream item, target scope, current behavior, desired behavior,
@@ -359,7 +371,10 @@ Before closure, trace every in-scope upstream item to a result, attach evidence
 and Knowledge/pattern basis, classify every unknown, record the next-phase input
 package, and stop when proceeding would require guessing. Use the shared
 [Skill Reporting Contract](../../docs/core/contracts/081_skill_reporting_contract.md#xid-6B2D9F4A1C73)
-with `Status`, `Result`, `Evidence`, `Open Items`, and `Handoff` in that order.
+for its required status/result, evidence, unresolved-item and handoff content.
+For this workflow's explicitly requested standard output, place that content
+within `要求事項`, `確認事項`, and `進め方`, in that order. Keep detailed phase
+evidence linked; the three headings do not waive any closure requirement.
 
 ### Original Skill-specific declarations
 

@@ -2,15 +2,19 @@
   "schema_version": 1,
   "skill_id": "pm_coordination_setup",
   "definition_xid": "F7B3C9A204D6",
-  "definition_content_hash": "6465ef81ba03f15d22a6cd3ade16a84facfa799580eb160a0c9a750f806eb17f",
-  "maturity": "draft",
-  "observation_refs": [],
+  "definition_content_hash": "67bdf1ae1e339e3e0616f3d01cd1c440eff007a35f9e99cd7bd66ea10eac2da0",
+  "maturity": "trial",
+  "observation_refs": [
+    "observations/2026-11-14_project_management_trial_authoring.md"
+  ],
   "governance_refs": [],
   "promotion": {
-    "decision": "not_requested",
-    "target_maturity": null,
-    "authority": null,
-    "decided_at": null,
-    "basis_refs": []
+    "decision": "approved",
+    "target_maturity": "trial",
+    "authority": "human:repository-user",
+    "decided_at": "2026-11-14T14:02:02Z",
+    "basis_refs": [
+      "observations/2026-11-14_project_management_trial_authoring.md"
+    ]
   }
 }

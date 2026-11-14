@@ -1,6 +1,6 @@
 package_id: xrefkit.skills.project_management
 package_type: skill_package
-version: 0.1.0a2
+version: 0.1.0a3
 requires:
   xrefkit_core: '>=2.0.0 <3.0.0'
 provides:
@@ -28,5 +28,5 @@ provides:
 contract: {}
 metadata:
   display_name: Project Management
-  maturity_note: draft; publication is not promotion
+  maturity_note: trial; authoring/readiness bootstrap, not operational validation
   routing_entry: docs/packs/project-management/entry.md

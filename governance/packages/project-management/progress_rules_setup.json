@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "skill_id": "progress_rules_setup",
+  "definition_xid": "91F7D3B6A204",
+  "definition_content_hash": "40a10fa465b5805153ad1c86530aa00c7f51d3ff134f43f692128d6934dac5fe",
+  "maturity": "trial",
+  "observation_refs": [
+    "observations/2026-11-14_project_management_trial_authoring.md"
+  ],
+  "governance_refs": [],
+  "promotion": {
+    "decision": "approved",
+    "target_maturity": "trial",
+    "authority": "human:repository-user",
+    "decided_at": "2026-11-14T14:02:02Z",
+    "basis_refs": [
+      "observations/2026-11-14_project_management_trial_authoring.md"
+    ]
+  }
+}

@@ -6,7 +6,8 @@
 Project Management groups five work-practice Skills for one coordination job.
 It does not replace technical investigation, quality verification or human
 agreement. The [pack manifest](../../../skills/packs/project-management/pack.md#xid-6A37D1F9B804)
-owns the grouping; each Skill remains a public draft with its external governance.
+owns the grouping; each Skill is public trial with exact external governance and
+an authoring/readiness bootstrap observation, not a claim of actual project use.
 
 ```mermaid
 flowchart TD
@@ -32,7 +33,7 @@ flowchart TD
 ```
 
 Semantic routing selects the appropriate stage without requiring the user to
-name a Skill. Selection is not permission to execute a draft. Always bind the
+name a Skill. Selection does not grant project authority. Always bind the
 matching `governance/skills/<skill_id>.json`; missing records must not be used to
 obtain an unassessed run. Trial promotion and human adoption remain separate.
 
@@ -54,8 +55,11 @@ PM selects which bounded work to start from that result. Neither new method
 sends external messages, assigns stakeholders or changes plans automatically.
 
 The PyPI distribution is `xrefkit-skills-project-management` version
-`0.1.0a2`, package ID `xrefkit.skills.project_management`. It packages the native
-definitions, shared persistence reference, bound draft governance and this entry.
+`0.1.0a3`, package ID `xrefkit.skills.project_management`. It packages the native
+definitions, shared persistence reference, bound trial governance, bootstrap
+observation and this entry. The [scheduling interface](scheduling.md#xid-73E20A8D9C51)
+adds structured Decision/Execution plans, immutable Gantt history, deterministic
+CPM/remaining forecasts and Brownfield impact handoffs.
 Distribution and grouping do not grant maturity. Existing technical and storage
 Skills are selected only when available and applicable; absent dependencies are
 explicit handoffs, not copied procedures or automatic integrations.

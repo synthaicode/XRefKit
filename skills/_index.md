@@ -390,31 +390,31 @@ Current family paths:
   - summary: confirm or propose project progress rules before coordination
   - meta: `skills/packs/project-management/progress_rules_setup/SKILL.v1.md`
   - skill_doc: `skills/packs/project-management/progress_rules_setup/SKILL.v1.md`
-  - governance: `governance/skills/progress_rules_setup.json` (draft; not executable)
+  - governance: `governance/skills/progress_rules_setup.json` (trial; authoring/readiness observation)
 
 - `requirements_discovery_coordination`:
   - summary: coordinate clarification and evidence-investigation cycles from ambiguous requests
   - meta: `skills/packs/project-management/requirements_discovery_coordination/SKILL.v1.md`
   - skill_doc: `skills/packs/project-management/requirements_discovery_coordination/SKILL.v1.md`
-  - governance: `governance/skills/requirements_discovery_coordination.json` (draft; not executable)
+  - governance: `governance/skills/requirements_discovery_coordination.json` (trial; authoring/readiness observation)
 
 - `work_progress_coordination`:
   - summary: coordinate contributors from scoped start conditions, holds and quality-owner decisions
   - meta: `skills/packs/project-management/work_progress_coordination/SKILL.v1.md`
   - skill_doc: `skills/packs/project-management/work_progress_coordination/SKILL.v1.md`
-  - governance: `governance/skills/work_progress_coordination.json` (draft; not executable)
+  - governance: `governance/skills/work_progress_coordination.json` (trial; authoring/readiness observation)
 
 - `pm_coordination_setup`:
   - summary: configure decision authority, stakeholder responsibilities and agreement traceability using applicable organization and project Knowledge
   - meta: `skills/packs/project-management/pm_coordination_setup/SKILL.v1.md`
   - skill_doc: `skills/packs/project-management/pm_coordination_setup/SKILL.v1.md`
-  - governance: `governance/skills/pm_coordination_setup.json` (draft; not executable)
+  - governance: `governance/skills/pm_coordination_setup.json` (trial; authoring/readiness observation)
 
 - `pm_decision_coordination`:
   - summary: support PM judgments and stakeholder agreement through internal reflection, quality follow-up and bounded start choices
   - meta: `skills/packs/project-management/pm_decision_coordination/SKILL.v1.md`
   - skill_doc: `skills/packs/project-management/pm_decision_coordination/SKILL.v1.md`
-  - governance: `governance/skills/pm_decision_coordination.json` (draft; not executable)
+  - governance: `governance/skills/pm_decision_coordination.json` (trial; authoring/readiness observation)
 
 ## Notes
 

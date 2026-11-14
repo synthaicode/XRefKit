@@ -33,10 +33,10 @@ control_refs: []
 
 # Skill: requirements_discovery_coordination
 
-Public draft source. Select the matching external record at
-`governance/skills/requirements_discovery_coordination.json` when checking readiness or
-opening a run; do not omit draft governance to obtain an unassessed run.
-Publication placement does not grant execution, adoption or trial maturity.
+Public trial source. Select the matching external record at
+`governance/skills/requirements_discovery_coordination.json` for readiness or a run. Trial
+uses an authoring/readiness observation, not operational validation. Preserve
+project-specific prerequisites and human authority; publication is not adoption.
 
 ## Startup and routing
 
@@ -93,6 +93,30 @@ delegated method in prose or bypass a route that refuses missing prerequisites.
    Repeat the smallest useful investigation until the requirement owner can
    explicitly finalize the bounded requirement set, or until a named issue
    needs human resolution. No automatic iteration count grants approval.
+
+## Decision plans and Brownfield trace continuity
+
+For configured scheduling, maintain the Decision plan for questions, investigation,
+PoC, verification and method/data-migration decisions. Use explicit estimates and
+information/decision dependencies; unknown duration or unsupported relationships
+remain a planning gap. Do not infer an implementation commitment from an estimate.
+Each activity links its requirement XIDs, evidence, decision record and Work item.
+
+Consume Brownfield understanding changes and Knowledge Requirement findings as
+proposed impact notifications. Preserve the three user-facing sections
+`要求事項`, `確認事項`, `進め方`, with the reason and evidence/decision traces of
+each item. Link investigation and verification activities to the Knowledge
+Requirement they answer, expected evidence and decision owner; substantive
+analysis still belongs to the selected Brownfield or technical Skill.
+
+Use the [scheduling interface](../../../../docs/packs/project-management/scheduling.md#xid-73E20A8D9C51)
+to calculate Decision dependencies and compare revisions. Persist an immutable
+new plan revision when understanding, scope, dependency or estimate changes;
+save actual observations separately. At the Decision-to-Execution handoff carry
+the exact decision, evidence, approval, affected work and unresolved conditions.
+If an Execution problem reopens a method or migration choice, add/reopen a Decision
+plan and link the affected Execution Hold. Never insert cross-plan task IDs into
+one local CPM network or erase the previous Execution plan.
 
 ## Completion and handoff
 

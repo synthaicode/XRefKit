@@ -20,6 +20,7 @@ label.
 
 Load the detailed procedure only when needed:
 
+- `references/understanding-change.md`
 - `references/phase-workflow.md`
 - `references/requirements-validation.md`
 - `references/specification-reconciliation.md`
@@ -240,3 +241,12 @@ unknowns, blockers, completed items, next handoff, and evidence links. Before
 closure, trace every upstream item, attach evidence and Knowledge/pattern
 basis, give each unknown a resolver and owner, and stop when proceeding would
 require guessing.
+
+## Understanding-change integration
+
+When new findings change requirements, confirmation questions, method choice or
+data-migration scope, use `references/understanding-change.md` and the installed
+`xrefkit_skills_brownfield.understanding` helper. Preserve exact JSON revisions,
+Knowledge Requirement gaps, artifact traceability and a proposed PM notification.
+The user-facing standard output is `要求事項`, `確認事項`, `進め方`, with reason
+and evidence for every item. Schedule/CPM/history belong to Project Management.

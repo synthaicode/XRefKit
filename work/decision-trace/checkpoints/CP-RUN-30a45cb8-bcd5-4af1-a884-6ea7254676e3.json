@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-30a45cb8-bcd5-4af1-a884-6ea7254676e3",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-11-14T14:17:48Z",
+  "git_commit": "7c3bf5367123af8a694eca4fb5a15dbeb488600e",
+  "purpose": "before AI Skill run shared_asset_update_gate",
+  "work_item_id": "PM-GOVERNANCE",
+  "run_id": "30a45cb8-bcd5-4af1-a884-6ea7254676e3",
+  "context_policy": "current-only",
+  "human_approved": false
+}

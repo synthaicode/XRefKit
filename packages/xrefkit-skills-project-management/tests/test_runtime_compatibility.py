@@ -22,9 +22,11 @@ BASE_SKILLS = ('progress_rules_setup', 'requirements_discovery_coordination', 'w
 RELEASE_SKILLS = {
     '0.1.0a1': BASE_SKILLS,
     '0.1.0a2': BASE_SKILLS + ('pm_coordination_setup', 'pm_decision_coordination'),
+    '0.1.0a3': BASE_SKILLS + ('pm_coordination_setup', 'pm_decision_coordination'),
 }
 INSTALLED_VERSION = version('xrefkit-skills-project-management')
 EXPECTED_SKILLS = RELEASE_SKILLS[INSTALLED_VERSION]
+EXPECTED_MATURITY = 'trial' if INSTALLED_VERSION == '0.1.0a3' else 'draft'
 
 
 def package():
@@ -41,8 +43,8 @@ def test_installed_discovery_and_governance(tmp_path):
     assert set(entries)==set(EXPECTED_SKILLS)
     for provided in candidate.manifest.provides.skills:
         entry=entries[provided.id]
-        assert entry.maturity=='draft'
-        assert entry.maturity_governance['promotion']['decision']=='not_requested'
+        assert entry.maturity==EXPECTED_MATURITY
+        assert entry.maturity_governance['promotion']['decision']==('approved' if EXPECTED_MATURITY=='trial' else 'not_requested')
         assert entry.definition_format=='skill_definition_v1'
         body=(package_root()/provided.path).read_bytes()
         governance=json.loads((package_root()/provided.governance_path).read_text())
@@ -51,7 +53,7 @@ def test_installed_discovery_and_governance(tmp_path):
 
 
 @pytest.mark.parametrize('sid',EXPECTED_SKILLS)
-def test_packaged_draft_cannot_run(sid,tmp_path):
+def test_packaged_readiness_matches_release(sid,tmp_path):
     provided=next(p for p in package().manifest.provides.skills if p.id==sid)
     command=[sys.executable,'-I','-m','xrefkit','skill','run','--root',str(package_root()),
              '--definition',provided.path,'--governance',provided.governance_path,
@@ -60,9 +62,16 @@ def test_packaged_draft_cannot_run(sid,tmp_path):
              '--out',str(tmp_path/'must-not-exist.md'),'--json']
     result=subprocess.run(command,cwd=tmp_path,capture_output=True,text=True,encoding='utf-8')
     data=json.loads(result.stdout)
-    assert result.returncode!=0 and not data['ok']
-    assert any('draft' in e for e in data['errors'])
-    assert data['run_log'] is None and not (tmp_path/'must-not-exist.md').exists()
+    if EXPECTED_MATURITY=='draft':
+        assert result.returncode!=0 and not data['ok']
+        assert any('draft' in e for e in data['errors'])
+        assert data['run_log'] is None and not (tmp_path/'must-not-exist.md').exists()
+    else:
+        assert result.returncode==0 and data['ok'], (result.stdout,result.stderr)
+        assert Path(data['run_log']).is_file()
+        governance=json.loads((package_root()/provided.governance_path).read_text(encoding='utf-8'))
+        for ref in governance['observation_refs'] + governance['promotion']['basis_refs']:
+            assert (package_root()/ref).is_file()
 
 
 @pytest.mark.parametrize('damage',['hash','identity','missing','escape'])
@@ -85,7 +94,7 @@ def test_damaged_governance_refuses_catalog(tmp_path,damage):
 
 def test_packaged_links_are_local_or_explicit_navigation():
     for path in package_root().rglob('*.md'):
-        for relative in re.findall(r'\]\(([^)#]+)(?:#[^)]*)?\)',path.read_text()):
+        for relative in re.findall(r'\]\(([^)#]+)(?:#[^)]*)?\)',path.read_text(encoding='utf-8')):
             if '://' in relative:
                 assert relative.startswith('https://github.com/synthaicode/XRefKit/')
                 continue
@@ -99,4 +108,4 @@ def test_package_contains_no_project_configuration_or_adapter():
     assert not manifest.provides.knowledge
     assert not list(package_root().rglob('*.skill.yaml'))
     source=json.loads((package_root()/'source_manifest.json').read_text())
-    assert len(source['sources'])==len(EXPECTED_SKILLS)+3
+    assert len(source['sources'])==len(EXPECTED_SKILLS)+(5 if INSTALLED_VERSION == '0.1.0a3' else 3)

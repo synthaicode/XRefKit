@@ -41,9 +41,10 @@ control_refs: []
 
 # Skill: pm_decision_coordination
 
-Public draft source. Select the matching external record at
-`governance/skills/pm_decision_coordination.json` for readiness or a run. Do not
-omit draft governance to obtain an unassessed run. Publication is not promotion.
+Public trial source. Select the matching external record at
+`governance/skills/pm_decision_coordination.json` for readiness or a run. Trial
+uses an authoring/readiness observation, not operational validation. Preserve
+project-specific prerequisites and human authority; publication is not adoption.
 
 ## Startup and ownership
 

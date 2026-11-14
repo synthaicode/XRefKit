@@ -11,7 +11,9 @@ WORKFLOWS = Path(__file__).resolve().parents[1] / ".github/workflows"
 PACKAGES = {
     "python-package.yml": ("Core", "v*.*.*", {"sdist-install-smoke", "skill-compatibility"}),
     "python-skill-brownfield-package.yml": (
-        "Brownfield", "xrefkit-skills-brownfield-v*.*.*", {"sdist-install-smoke"}),
+        "Brownfield", "xrefkit-skills-brownfield-v*.*.*", {"sdist-install-smoke", "cross-package-integration"}),
+    "python-skill-project-management-package.yml": (
+        "Project Management", "xrefkit-skills-project-management-v*.*.*", {"sdist-install-smoke", "cross-package-integration"}),
     "python-skill-csharp-package.yml": ("CSharp", "xrefkit-skills-csharp-v*.*.*", set()),
     "python-skill-batch-regression-package.yml": (
         "Batch regression", "xrefkit-skills-batch-regression-v*.*.*", {"sdist-install-smoke"}),

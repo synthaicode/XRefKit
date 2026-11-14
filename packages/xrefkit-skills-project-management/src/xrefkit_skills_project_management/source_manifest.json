@@ -3,28 +3,28 @@
   "sources": [
     {
       "source": "skills/packs/project-management/progress_rules_setup/SKILL.v1.md",
-      "source_sha256": "54b27ab875a01d1702eae09ee90a81c9326ccd00fe6132c4aae02e9605daf077",
-      "packaged_sha256": "54b27ab875a01d1702eae09ee90a81c9326ccd00fe6132c4aae02e9605daf077"
+      "source_sha256": "40a10fa465b5805153ad1c86530aa00c7f51d3ff134f43f692128d6934dac5fe",
+      "packaged_sha256": "40a10fa465b5805153ad1c86530aa00c7f51d3ff134f43f692128d6934dac5fe"
     },
     {
       "source": "skills/packs/project-management/requirements_discovery_coordination/SKILL.v1.md",
-      "source_sha256": "8affa513e077162b51f58085c4462065ea6ed814c7093ba6494fa3fcfcb9725c",
-      "packaged_sha256": "faba7fa1233ec4b598e01a102111fa5d81c629d817d01820903a6fbd1aef13b9"
+      "source_sha256": "dd48ef1f0cd66ba670500629e8de01a1a2ddec44f91d27fb8bb92d529dea0229",
+      "packaged_sha256": "e732ceb7f222bee30808af27d17ee717cd2b7a9680ca353b329b672b24d08359"
     },
     {
       "source": "skills/packs/project-management/work_progress_coordination/SKILL.v1.md",
-      "source_sha256": "415cdb0cddfc1e362dd534f989910f905c0f4f93b9c2b284489ff4e2c8b538fc",
-      "packaged_sha256": "721b5eb7cb02a186ea20e7a21b6e117adc8f6c3f25842ed2a01c0a31e200e0e0"
+      "source_sha256": "18f84ff496a1d11d09bdb688cac112366175d1edf869dc6f1fe400ed102cbbac",
+      "packaged_sha256": "fae7a802bde4b4a632d870040a2005e0fea40d23397eade0fb5449d2028e6ad7"
     },
     {
       "source": "skills/packs/project-management/pm_coordination_setup/SKILL.v1.md",
-      "source_sha256": "6465ef81ba03f15d22a6cd3ade16a84facfa799580eb160a0c9a750f806eb17f",
-      "packaged_sha256": "6465ef81ba03f15d22a6cd3ade16a84facfa799580eb160a0c9a750f806eb17f"
+      "source_sha256": "67bdf1ae1e339e3e0616f3d01cd1c440eff007a35f9e99cd7bd66ea10eac2da0",
+      "packaged_sha256": "67bdf1ae1e339e3e0616f3d01cd1c440eff007a35f9e99cd7bd66ea10eac2da0"
     },
     {
       "source": "skills/packs/project-management/pm_decision_coordination/SKILL.v1.md",
-      "source_sha256": "bdf1ce16f09c6cfa0635acf0b4e867e057a13ffa40797bea70f3e5ad93903f2a",
-      "packaged_sha256": "bdf1ce16f09c6cfa0635acf0b4e867e057a13ffa40797bea70f3e5ad93903f2a"
+      "source_sha256": "323f758cb9538f702e87c34e8ebdd58632d1f2ea5f1db74d884e844a53042249",
+      "packaged_sha256": "323f758cb9538f702e87c34e8ebdd58632d1f2ea5f1db74d884e844a53042249"
     },
     {
       "source": "skills/packs/project-management/progress_rules_setup/references/persistence_handoff.md",
@@ -33,13 +33,23 @@
     },
     {
       "source": "docs/packs/project-management/entry.md",
-      "source_sha256": "9bbf3a9bd67f2b8fdd5c7272ffab1c2ccdebd178d7712edf60b1072d837b5aae",
-      "packaged_sha256": "9bbf3a9bd67f2b8fdd5c7272ffab1c2ccdebd178d7712edf60b1072d837b5aae"
+      "source_sha256": "0c5932d3285b99ebff32f51ab8f8d8bdf6bff3c220cbb77bb4551dedd94cc366",
+      "packaged_sha256": "0c5932d3285b99ebff32f51ab8f8d8bdf6bff3c220cbb77bb4551dedd94cc366"
+    },
+    {
+      "source": "docs/packs/project-management/scheduling.md",
+      "source_sha256": "9f71ed575b27bcd06463d41d0f1eea64dc04039ccf6844fd745562223df38f29",
+      "packaged_sha256": "9f71ed575b27bcd06463d41d0f1eea64dc04039ccf6844fd745562223df38f29"
     },
     {
       "source": "skills/packs/project-management/pack.md",
-      "source_sha256": "4d7d42ad397fb5c2660a83022a81068b2e5e75547047d56780c98d6b9bf13982",
-      "packaged_sha256": "4d7d42ad397fb5c2660a83022a81068b2e5e75547047d56780c98d6b9bf13982"
+      "source_sha256": "95de60480f04d0ea8f2b8003f54486495701c38c7d7417a9e517e0fcbc25b44e",
+      "packaged_sha256": "95de60480f04d0ea8f2b8003f54486495701c38c7d7417a9e517e0fcbc25b44e"
+    },
+    {
+      "source": "observations/2026-11-14_project_management_trial_authoring.md",
+      "source_sha256": "ef9348ad57c59328933909ee5b4fba2b6ab37dc333f965daa140ec3a7b6e4f85",
+      "packaged_sha256": "ef9348ad57c59328933909ee5b4fba2b6ab37dc333f965daa140ec3a7b6e4f85"
     }
   ],
   "transform": "repository-external XID links become navigation URLs; packaged governance rebinds exact transformed bytes"

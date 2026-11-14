@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "skill_id": "requirements_discovery_coordination",
+  "definition_xid": "3B8E71A5C902",
+  "definition_content_hash": "e732ceb7f222bee30808af27d17ee717cd2b7a9680ca353b329b672b24d08359",
+  "maturity": "trial",
+  "observation_refs": [
+    "observations/2026-11-14_project_management_trial_authoring.md"
+  ],
+  "governance_refs": [],
+  "promotion": {
+    "decision": "approved",
+    "target_maturity": "trial",
+    "authority": "human:repository-user",
+    "decided_at": "2026-11-14T14:02:02Z",
+    "basis_refs": [
+      "observations/2026-11-14_project_management_trial_authoring.md"
+    ]
+  }
+}

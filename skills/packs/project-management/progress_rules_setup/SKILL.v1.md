@@ -33,10 +33,10 @@ control_refs: []
 
 # Skill: progress_rules_setup
 
-Public draft source. Select the matching external record at
-`governance/skills/progress_rules_setup.json` when checking readiness or
-opening a run; do not omit draft governance to obtain an unassessed run.
-Publication placement does not grant execution, adoption or trial maturity.
+Public trial source. Select the matching external record at
+`governance/skills/progress_rules_setup.json` for readiness or a run. Trial
+uses an authoring/readiness observation, not operational validation. Preserve
+project-specific prerequisites and human authority; publication is not adoption.
 
 ## Method
 
@@ -78,6 +78,24 @@ Publication placement does not grant execution, adoption or trial maturity.
    visibility. If no destination is yet set, keep the
    proposal in the run's work area and hand the destination decision to the
    project owner. Such a proposal is not an operational configuration.
+
+## Decision and Execution scheduling setup
+
+When scheduling is requested, establish separate Decision and Execution plan
+identities, their authoritative structured-data destination, working calendar,
+dependency/duration units, revision naming, actual-observation cadence, baseline
+approval owner, and history delivery rules. Confirm these project settings through
+the existing setup procedure; the package example is not an adopted project rule.
+Record which revision is proposed, which has recorded approval, and which approved
+revision is the comparison baseline. Never infer adoption from the latest file.
+
+Use the [scheduling interface](../../../../docs/packs/project-management/scheduling.md#xid-73E20A8D9C51)
+when the configured local JSON/Mermaid route is selected. It supplies deterministic
+calculation and immutable file history, not authority, remote delivery, resource
+leveling, or a quality/start-condition matcher. Return unsupported dependency or
+calendar conditions to the project/tooling owner rather than silently approximating
+them. Preserve prior revision files and index reason, requirement XIDs, Evidence,
+judgment and approval; correct errors by adding a revision.
 
 ## Completion and handoff
 
