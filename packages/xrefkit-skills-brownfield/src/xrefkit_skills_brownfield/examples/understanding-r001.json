@@ -1,0 +1,117 @@
+{
+  "schema": "brownfield.understanding/v1",
+  "project_id": "migration",
+  "revision": 1,
+  "recorded_at": "2026-11-14T15:00:00+09:00",
+  "reason": "initial request",
+  "evidence_refs": [
+    "request/1"
+  ],
+  "decision_refs": [],
+  "approval_refs": [],
+  "requirements": [
+    {
+      "id": "req",
+      "text": "Preserve existing images",
+      "status": "candidate",
+      "owner": "project-owner",
+      "reason": "initial request",
+      "requirement_xids": [
+        "ABCDEF123456"
+      ],
+      "evidence_refs": [
+        "request/1"
+      ],
+      "decision_refs": [],
+      "approval_refs": [],
+      "artifact_refs": [
+        "source"
+      ],
+      "affected_task_ids": [
+        "migrate"
+      ]
+    }
+  ],
+  "confirmations": [
+    {
+      "id": "volume",
+      "text": "How much data must migrate?",
+      "status": "open",
+      "owner": "project-owner",
+      "reason": "initial request",
+      "requirement_xids": [
+        "ABCDEF123456"
+      ],
+      "evidence_refs": [
+        "request/1"
+      ],
+      "decision_refs": [],
+      "approval_refs": [],
+      "artifact_refs": [
+        "source"
+      ],
+      "affected_task_ids": [
+        "migrate"
+      ]
+    }
+  ],
+  "approach": [
+    {
+      "id": "investigate",
+      "text": "Inspect current storage",
+      "status": "proposed",
+      "owner": "project-owner",
+      "reason": "initial request",
+      "requirement_xids": [
+        "ABCDEF123456"
+      ],
+      "evidence_refs": [
+        "request/1"
+      ],
+      "decision_refs": [],
+      "approval_refs": [],
+      "artifact_refs": [
+        "source"
+      ],
+      "affected_task_ids": [
+        "migrate"
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "source",
+      "ref": "source/storage.sql",
+      "revision": "sha256:123",
+      "requirement_xids": [
+        "ABCDEF123456"
+      ],
+      "evidence_refs": [
+        "scan/1"
+      ]
+    }
+  ],
+  "knowledge_requirements": [
+    {
+      "id": "migration-speed",
+      "requirement_xids": [
+        "ABCDEF123456"
+      ],
+      "question": "Can migration finish in the permitted downtime?",
+      "query": "migration throughput",
+      "needed_for": "migration method decision",
+      "status": "open",
+      "knowledge_refs": [],
+      "evidence_refs": [
+        "inventory/1"
+      ],
+      "decision_refs": [],
+      "owner": "technical-owner",
+      "reason": "Throughput is unmeasured",
+      "method": "Measure representative migration throughput",
+      "expected_evidence": "Measured throughput with data volume and environment",
+      "decision_ref": "decision/migration",
+      "resolution_point": "before method approval"
+    }
+  ]
+}

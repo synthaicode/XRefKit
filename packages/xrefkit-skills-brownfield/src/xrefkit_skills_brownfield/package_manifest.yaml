@@ -1,6 +1,6 @@
 package_id: xrefkit.skills.brownfield
 package_type: skill_package
-version: 0.2.0
+version: 0.3.0
 
 requires:
   xrefkit_core: ">=2.0.0 <3.0.0"
@@ -50,6 +50,13 @@ provides:
         - test_definition_gaps
         - test_case_traceability
         - overview_detail_report
+        - understanding_revision
+        - understanding_changes
+        - knowledge_requirement_analysis
+        - requirement_artifact_traceability
+        - decision_investigation_plan
+        - project_management_impact_notification
+        - three_section_report
       required_knowledge:
         - xid-7A2F4C8D1401
         - xid-7A2F4C8D1501

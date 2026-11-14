@@ -5,7 +5,7 @@
 
 - pack_id: `project-management`
 - summary: establish project progress rules, coordinate iterative requirements discovery, and guide contributors using recorded prerequisites and independent quality decisions, and support PM decisions and stakeholder agreement
-- maturity: `draft`
+- maturity: `trial`
 - depends_on:
   - os_contract_version: `1`
 - entry: `../../../docs/packs/project-management/entry.md#xid-78C2A5F1D903`
@@ -33,4 +33,5 @@ Project-specific Knowledge is selected by the five definitions' query needs;
 no fictional project settings are bundled. The used operating-model Knowledge
 applies only when its corresponding persistence adapter is selected. Existing
 technical Skills and quality ownership remain external handoff dependencies.
-This draft grouping does not approve trial use or install those dependencies.
+Trial status uses explicit human approval and an authoring/readiness observation;
+it does not establish operational adoption or install those dependencies.

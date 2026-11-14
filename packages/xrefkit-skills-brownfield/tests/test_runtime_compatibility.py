@@ -86,7 +86,8 @@ def test_workflow_entry_references_are_packaged_and_readable():
     entry = package.package_root / "skills/brownfield_workflow/entry.md"
     text = entry.read_text(encoding="utf-8")
     references = re.findall(r"`(references/[^`]+\.md)`", text)
-    assert len(references) == 10
+    from packaging.version import Version
+    assert len(set(references)) == (11 if Version(package.version) >= Version("0.3.0") else 10)
     for relative in references:
         path = entry.parent / relative
         assert path.resolve().is_relative_to(package.package_root.resolve())
