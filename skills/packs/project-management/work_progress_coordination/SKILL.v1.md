@@ -36,10 +36,10 @@ control_refs: []
 
 # Skill: work_progress_coordination
 
-Public draft source. Select the matching external record at
-`governance/skills/work_progress_coordination.json` when checking readiness or
-opening a run; do not omit draft governance to obtain an unassessed run.
-Publication placement does not grant execution, adoption or trial maturity.
+Public trial source. Select the matching external record at
+`governance/skills/work_progress_coordination.json` for readiness or a run. Trial
+uses an authoring/readiness observation, not operational validation. Preserve
+project-specific prerequisites and human authority; publication is not adoption.
 
 ## Startup and preparation
 
@@ -96,6 +96,31 @@ current authorized plan until the designated human confirms them.
    request the appropriate owner to revalidate them. Preserve old evidence;
    do not erase completion history or assume that an old quality result covers
    changed artifacts. Refresh authoritative state before the next guidance.
+
+## Execution forecast, baselines and impact
+
+For configured scheduling, use the [scheduling interface](../../../../docs/packs/project-management/scheduling.md#xid-73E20A8D9C51)
+with the current structured Execution plan and separately recorded actual-start,
+actual-finish, remaining-duration and evidence observations. Preserve the exact
+approved baseline reference. A progress observation does not revise the plan or
+baseline; a scope, estimate or dependency change requires a new immutable plan
+revision with its reason, requirement XIDs, Evidence, judgment and approval.
+
+Report independently calculated planned and remaining-work CPM results, all
+critical branches and float, then compare against the selected baseline. Explain
+calendar/dependency assumptions and retained Holds. A computed date, critical
+flag, zero remaining duration or recorded actual finish grants no readiness,
+quality or completion approval; continue the existing condition/quality-owner
+checks above. A scheduler result is not the start-condition matcher.
+
+Consume Brownfield impact notifications through the receiver's deterministic
+assessment. Show directly mapped work, dependent work, unmapped requirement/task
+references, proposed Decision activities and Holds. Return unmapped or unclear
+impact to its owner, not as clearance. Route requirement-understanding changes,
+investigation results, method decisions and data-migration findings to their
+exact records. A Decision delay does not automatically move Execution dates:
+record the impact/Hold, obtain the responsible decision, then persist a reviewed
+Execution revision. Preserve actual and quality evidence from earlier revisions.
 
 ## Completion and handoff
 
