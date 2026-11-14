@@ -17,6 +17,11 @@ def fixture(tmp_path):
     (tmp_path/'skill.md').write_bytes(source.read_bytes())
     gov=json.loads((root/'governance/skills/progress_rules_setup.json').read_text())
     gov['definition_content_hash']=hashlib.sha256(source.read_bytes()).hexdigest()
+    # This fixture tests draft refusal independently of the source's current
+    # maturity; the installed-package suite checks the real trial release.
+    gov.update(maturity='draft', observation_refs=[], governance_refs=[],
+               promotion={'decision':'not_requested','target_maturity':None,
+                          'authority':None,'decided_at':None,'basis_refs':[]})
     (tmp_path/'governance.json').write_text(json.dumps(gov))
     manifest={'package_id':'test.native','package_type':'skill_package','version':'0.1.0',
               'requires':{'xrefkit_core':'>=2.0.0 <3.0.0'},'contract':{},

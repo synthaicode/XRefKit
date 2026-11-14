@@ -189,6 +189,7 @@ jobs:
           python -I -m pytest "${GITHUB_WORKSPACE}/${PACKAGE_ROOT}/tests" --import-mode=importlib -o pythonpath= -q
 
   cross-package-integration:
+    name: Project Management / Brownfield integration
     needs: build-distribution
     uses: ./.github/workflows/brownfield-project-management-integration.yml
     with:
