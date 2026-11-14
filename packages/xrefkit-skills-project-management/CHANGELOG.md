@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0a3 — 2026-11-14
+## 0.1.0 — 2026-11-14
 
 - Add separate structured Decision/Execution plans, deterministic calendar-aware
   CPM, remaining-work forecasts, Mermaid views and plan/baseline comparisons.

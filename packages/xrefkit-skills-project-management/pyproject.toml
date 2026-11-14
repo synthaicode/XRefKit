@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xrefkit-skills-project-management"
-version = "0.1.0a3"
+version = "0.1.0"
 description = "Trial Project Management Skills with deterministic scheduling and immutable Gantt history"
 readme = "README.md"
 requires-python = ">=3.11"
