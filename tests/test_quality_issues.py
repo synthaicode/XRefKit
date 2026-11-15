@@ -76,6 +76,7 @@ def save(root, args=None):
               "skill_maturity": "trial", "knowledge_versions": args["knowledge_versions"]}
     payload.pop("skill_content_hash")
     payload.pop("knowledge_versions")
+    payload.pop("package_id")
     result = submit_contribution_return(root, binding=binding, source_snapshot=source, **payload)
     return result, {"binding": binding, "source_snapshot": source, **payload}
 
@@ -123,6 +124,39 @@ def test_transfer_denied_before_network(classification):
     with pytest.raises(ValueError, match="not authorized"):
         asyncio.run(submit_quality_feedback(call_tool=call_tool, **args))
     assert calls == []
+
+
+@pytest.mark.parametrize("change", [{"allowed": False}, {"destination": "other-server"}])
+def test_destination_permission_not_inferred(change):
+    args = fixture_args()
+    args["policy"].update(change)
+    with pytest.raises(ValueError, match="not authorized"):
+        prepare_quality_issue(**args)
+
+
+@pytest.mark.parametrize("secret", ['{"password": "synthetic-value"}',
+                                   "Bearer synthetic-token", "-----BEGIN PRIVATE KEY-----"])
+def test_secret_encodings_in_summary_denied(secret):
+    args = fixture_args()
+    args["summary"] = secret
+    with pytest.raises(ValueError, match="sensitive"):
+        prepare_quality_issue(**args)
+
+
+def test_unassessed_maturity_preserved_only_for_quality_extension():
+    args = fixture_args()
+    args["observation"]["maturity_at_use"] = "unassessed"
+    assert prepare_quality_issue(**args)["skill_observation"]["maturity_at_use"] == "unassessed"
+    from xrefkit.mcp.contribution_returns import _validate_skill_observation_metadata
+    with pytest.raises(ValueError, match="invalid maturity"):
+        _validate_skill_observation_metadata(args["observation"])
+
+
+def test_raw_prompt_fields_rejected():
+    args = fixture_args()
+    args["report"]["prompt_body"] = "synthetic conversation"
+    with pytest.raises(ValueError, match="Extra inputs"):
+        prepare_quality_issue(**args)
 
 
 @pytest.mark.parametrize("location", ["report", "title", "file"])
@@ -177,6 +211,7 @@ def test_duplicate_and_concurrent_intake_preserve_reports(tmp_path):
     assert len(listed) == 2 and all(row["report_count"] == 2 for row in listed)
     assert {row["issue_id"] for row in listed} == {result["contribution_id"], other["contribution_id"]}
     assert len({row["observation"]["client_id"] for row in listed}) == 2
+    assert get_quality_issue(tmp_path, result["contribution_id"])["report_count"] == 2
 
 
 def test_signed_human_decision_history_and_no_adoption(tmp_path):
@@ -220,6 +255,47 @@ def test_human_auth_and_tamper_fail_closed(tmp_path):
         get_quality_issue(tmp_path, result["contribution_id"], args["approval_verifier"])
 
 
+@pytest.mark.parametrize("field", ["verification_evidence", "related_issue_ids"])
+@pytest.mark.parametrize("value", [False, 0, "", {}, [7], [False], [{}]])
+def test_decision_arrays_and_items_are_strict(tmp_path, field, value):
+    result, _ = save(tmp_path)
+    with pytest.raises(ValueError, match="arrays|strings"):
+        decision(tmp_path, result["contribution_id"], **{field: value})
+
+
+@pytest.mark.parametrize("field", ["issue_id", "decision_id", "status", "reviewer", "decision_evidence"])
+@pytest.mark.parametrize("value", [False, 7, {}, []])
+def test_decision_scalar_text_is_strict(tmp_path, field, value):
+    result, _ = save(tmp_path)
+    args = {"issue_id": result["contribution_id"], "decision_id": str(uuid.uuid4()), "status": "triaged",
+            "reviewer": "human:test", "decision_evidence": "Reviewed", "expected_revision": 0}
+    args[field] = value
+    with pytest.raises(ValueError, match="must be a string"):
+        quality_decision_claims(tmp_path, **args)
+
+
+def test_concurrent_decisions_and_old_replay_do_not_roll_back(tmp_path):
+    result, _ = save(tmp_path)
+    issue_id = result["contribution_id"]
+    requests = [decision(tmp_path, issue_id), decision(tmp_path, issue_id, status="under_review")]
+    def submit(args):
+        try:
+            return decide_quality_issue(tmp_path, **args)
+        except ValueError as exc:
+            assert "stale issue revision" in str(exc)
+            return None
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        responses = list(pool.map(submit, requests))
+    assert sum(response is not None for response in responses) == 1
+    winner = requests[next(i for i, response in enumerate(responses) if response is not None)]
+    verifier = winner["approval_verifier"]
+    assert get_quality_issue(tmp_path, issue_id, verifier)["revision"] == 1
+    decide_quality_issue(tmp_path, **decision(tmp_path, issue_id, status="deferred", expected_revision=1))
+    assert decide_quality_issue(tmp_path, **winner)["idempotent_replay"]
+    current = get_quality_issue(tmp_path, issue_id, verifier)
+    assert current["status"] == "deferred" and current["revision"] == 2
+
+
 def test_quality_client_to_real_mcp(tmp_path):
     anyio = pytest.importorskip("anyio")
     pytest.importorskip("mcp")
@@ -247,6 +323,12 @@ def test_quality_client_to_real_mcp(tmp_path):
                 assert (await session.call_tool("list_quality_issues", {})).isError
                 assert not (await session.call_tool("get_startup_context", {})).isError
                 assert not (await session.call_tool("get_quality_issue_contract", {})).isError
+                evaluated = await session.call_tool("evaluate_instruction_feedback", {"feedback": report()["feedback"]})
+                assert evaluated.structuredContent["quality_issue_follow_up"]["automatic_submission"] is False
+                changed = report()["feedback"]
+                changed["attempts"][1].update(reason="requirement_change", scope_revision=1)
+                evaluated = await session.call_tool("evaluate_instruction_feedback", {"feedback": changed})
+                assert "quality_issue_follow_up" not in evaluated.structuredContent
                 args = fixture_args()
                 args["observation"].update(skill_id="python_review", skill_content_hash=skill_hash,
                                             maturity_at_use=skill["maturity"])

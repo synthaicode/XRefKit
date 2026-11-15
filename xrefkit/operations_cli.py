@@ -268,7 +268,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     dashboard_sub = dashboard.add_subparsers(dest="dashboard_cmd", required=True)
 
-    p_dashboard_serve = dashboard_sub.add_parser("serve", help="Serve the Skill Run Observation Dashboard")
+    p_dashboard_serve = dashboard_sub.add_parser("serve", help="Serve the XRefKit Management Console")
     p_dashboard_serve.add_argument("--root", default=".", help="Project root (default: .)")
     p_dashboard_serve.add_argument(
         "--sessions-dir",

@@ -716,7 +716,19 @@ def main(argv: list[str] | None = None) -> int:
     def evaluate_instruction_feedback(ctx: Context, feedback: dict[str, Any]) -> dict[str, Any]:
         """Evaluate explicit acceptance and repeated-instruction feedback without inferring user preferences."""
         _require_startup_loaded(ctx, "evaluate_instruction_feedback")
-        return _with_control_reminder(evaluate_feedback(feedback))
+        result = evaluate_feedback(feedback)
+        if args.profile == "admin" and result["quality_retries"]:
+            result["quality_issue_follow_up"] = {
+                "contract_tool": "get_quality_issue_contract",
+                "automatic_submission": False,
+                "client_action": (
+                    "Assess whether explicit correction evidence concerns an XRefKit common rule. "
+                    "A retry count alone does not establish an issue. If applicable, use the host "
+                    "quality callback to prepare a sanitized report under configured destination "
+                    "permissions. Keep unknowns explicit and continue the current user task."
+                ),
+            }
+        return _with_control_reminder(result)
 
     @app.tool()
     def plan_legacy_migration(ctx: Context, source: str) -> dict[str, Any]:

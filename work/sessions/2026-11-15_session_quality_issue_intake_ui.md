@@ -42,3 +42,33 @@
 - Backend executor reports 13 focused tests passed; broader and HTTP/MCP integration checks remain in progress.
 - Independent constraint review requested an explicit state/action matrix before quality acceptance; findings remain open.
 
+## Final implementation evidence
+- CR-01 state/action matrix was added and independently accepted. The six primary/commonality runs passed verification and closure.
+- Implemented optional quality metadata on `skill_observation`, permission-gated client callback, existing Feedback follow-up guidance, MCP list/detail/decision tools, signed revision-bound issue history, and similarity references.
+- Implemented four areas in the Python Management Console, protected Issue decisions and existing Contribution review/adoption adapters. Existing diagnostic panels and `/api/runs` remain.
+- QI-R01 missing-Issue POST handling and QI-R02 strict decision input typing were corrected and independently rechecked. No unresolved implementation-local findings remained in the review.
+- Existing core test suite during implementation: 1656 passed, 5 skipped, 120 subtests passed (650.03 seconds). Final changed-area and existing gateway/contribution/dashboard regression after fixes: 200 passed (65.91 seconds).
+- Wheel and sdist built. Clean environment installed candidate Core with Brownfield 0.3.0 and Project Management 0.1.0; `pip check` passed, installed-package tests and integration tests: 88 passed (12.86 seconds). No files under packages/ or integration/ were changed.
+- Final whole-source Bandit medium/high scan passed. B608 on the static HTML literal is a documented false positive, suppressed for that rule only; there is no SQL execution in the renderer.
+- XID check: 432 indexed, 0 missing, 0 issues. Skill structural check, five-pack lint, project quality baseline and tracked runtime-log audit passed. `xref fix --include docs` did not introduce unrelated source changes.
+- Synthetic browser verification: two related reports; zero-match search; four console areas; a test-only signed triage decision changed state to triaged/revision 1 with recorded history; reload preserved the Quality Issues area. This is not evidence of a production human identity-provider integration.
+- Next.js retained. Feature/API comparison is documented; actual deployment/use has not been verified.
+
+## Open closure and deployment conditions
+- Real host correction callbacks, production human assertion issuer, actual Next.js use and production workload capacity remain unverified. No universal conversation observer was installed. Existing transport idempotency remains bound to the same MCP session.
+- Implementation, console and Python review handoffs are recorded. Their deterministic verify/close attempts refuse normal closure because the deployment unknowns remain; this result is preserved rather than overridden. The independent Python review verdict is `needs-review` for those limits, with no unresolved code finding.
+- Prepare a draft PR for code and evidence review. Do not merge or release. Deployment evidence and the human disposition of remaining unknowns are needed before normal governance closure or a production-readiness claim.
+
+## Evidence pointers
+- Final tests: `work/sessions/2026-11-15_quality_issue_final_regression.txt`.
+- Core regression: `work/sessions/2026-11-15_core_baseline_pytest.txt`.
+- Package compatibility: `work/sessions/2026-11-15_quality_issue_package_compatibility.txt`.
+- Independent code review: `work/reviews/2026-11-15_quality_issue_python_review.md`.
+- Independent report check: `work/reviews/2026-11-15_quality_issue_review_report_acceptance.md`.
+- UI parity and tests: `work/sessions/2026-11-15_console_parity_and_validation.md`.
+- User guide: `docs/guides/118_quality_issue_management.md#xid-6E7D3B90A152`.
+
+
+## Tracked evidence gate
+- After adding all ten current Skill Run records to the reviewable change set, the tracked runtime-log audit reports three blocked runs (implementation, console, Python review) because their deployment unknowns are not resolved. The earlier audit passed only the seven previously tracked logs. This final audit is not a product-test failure and is not suppressed; normal closure and release readiness are not claimed.
+

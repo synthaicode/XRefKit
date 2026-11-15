@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+- Add Quality Issue metadata to existing Skill observation contributions, with
+  explicit correction evidence, client transfer permission checks, preserved
+  unknowns, report relationships, and signed human decision history.
+- Integrate Quality Issues, Governance, Runtime Diagnostics, and Quality
+  Evaluation in the Python Management Console. Existing diagnostics and
+  `/api/runs` remain available; contribution review/adoption reuse their existing
+  human approval and governance gates.
+- Provide a client correction-callback adapter; host conversation access,
+  redaction, and production approval identity integration remain host-owned.
+- Retain the Next.js dashboard pending actual-use and migration confirmation.
+
 ## 0.7.2
 
 - Preserve exact UTF-8 receipt and adoption bytes, including CRLF, with strict

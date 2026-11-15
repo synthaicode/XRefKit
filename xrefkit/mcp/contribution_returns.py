@@ -108,7 +108,7 @@ def contribution_return_contract() -> dict[str, Any]:
             "skill_id": "selected MCP Skill identity",
             "skill_content_hash": "exact selected Skill SHA-256",
             "skill_version": "optional package/source version used",
-            "maturity_at_use": "draft|trial|stable|governed|deprecated",
+            "maturity_at_use": "draft|trial|stable|governed|deprecated; quality_issue observations also retain explicit unassessed",
             "run_id": "bound Skill Run UUID",
             "client_id": "bounded non-secret client installation identifier",
             "execution_environment": "bounded non-secret environment identifier",
@@ -781,7 +781,10 @@ def _validate_skill_observation_metadata(raw: dict[str, Any]) -> dict[str, Any]:
         "skill_content_hash": _sha256_value(
             raw.get("skill_content_hash"), "skill_observation.skill_content_hash"
         ),
-        "maturity_at_use": _maturity(raw.get("maturity_at_use"), "maturity_at_use"),
+        "maturity_at_use": (
+            "unassessed" if "quality_issue" in raw and raw.get("maturity_at_use") == "unassessed"
+            else _maturity(raw.get("maturity_at_use"), "maturity_at_use")
+        ),
         "run_id": _uuid(raw.get("run_id"), "skill_observation.run_id"),
         "client_id": _safe_identifier(raw.get("client_id"), "skill_observation.client_id"),
         "execution_environment": _safe_identifier(
