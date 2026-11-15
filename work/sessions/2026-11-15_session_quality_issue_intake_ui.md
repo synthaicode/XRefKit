@@ -72,3 +72,9 @@
 ## Tracked evidence gate
 - After adding all ten current Skill Run records to the reviewable change set, the tracked runtime-log audit reports three blocked runs (implementation, console, Python review) because their deployment unknowns are not resolved. The earlier audit passed only the seven previously tracked logs. This final audit is not a product-test failure and is not suppressed; normal closure and release readiness are not claimed.
 
+
+## PR handoff
+- Draft PR: https://github.com/synthaicode/XRefKit/pull/196 . No main push, merge, or release performed.
+- GitHub connector PR creation returned 403 (integration permission); existing authorized local GitHub authentication successfully created the draft.
+- Requested human scope disposition for deployment unknowns after preparing the concrete implementation, tests, and draft PR. Pending response, normal closure remains blocked.
+
