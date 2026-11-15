@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.7.12 (2026-11-15)
 
 - Add Quality Issue metadata to existing Skill observation contributions, with
   explicit correction evidence, client transfer permission checks, preserved
