@@ -231,6 +231,15 @@ def test_gateway_over_real_mcp_stdio_before_run_binding(request_and_policy, tmp_
                         "route_ref": "route-1", "reason": "initial"}]}})
                 assert not feedback.isError
                 assert feedback.structuredContent["first_acceptance_rate"] is None
+                feedback = await session.call_tool("evaluate_instruction_feedback", {"feedback": {
+                    "version": 1, "cost_unit": "unknown", "attempts": [
+                        {"id": "a", "goal_id": "g", "scope_revision": 0, "model": "capable",
+                         "route_ref": "route-1", "reason": "initial"},
+                        {"id": "b", "goal_id": "g", "scope_revision": 0, "model": "capable",
+                         "route_ref": "route-1", "reason": "instruction_miss", "retry_of": "a",
+                         "reason_evidence": "Synthetic missing heading correction"}]}})
+                assert feedback.structuredContent["quality_retries"] == 1
+                assert "quality_issue_follow_up" not in feedback.structuredContent
 
     with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as errlog:
         anyio.run(scenario, errlog)

@@ -3,6 +3,14 @@
 This app displays recorded operational state from XRefKit Skill runs stored
 under a client repository's `work/sessions` directory.
 
+The Python dashboard is the Management Console for Quality Issues, Governance,
+Runtime Diagnostics, and Quality Evaluation. See the
+[Management Console guide](../../docs/guides/118_quality_issue_management.md#xid-6E7D3B90A152).
+This Next.js app remains supported by the unchanged `/api/runs` data contract.
+It is not removed: actual deployments and migration readiness have not been
+confirmed. Use the Python console for Quality Issue decisions and contribution
+review/adoption.
+
 ## Approach
 
 The dashboard does not parse Skill logs in TypeScript. It calls the repository runtime command:

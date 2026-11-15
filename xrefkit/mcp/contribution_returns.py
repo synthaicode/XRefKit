@@ -108,7 +108,7 @@ def contribution_return_contract() -> dict[str, Any]:
             "skill_id": "selected MCP Skill identity",
             "skill_content_hash": "exact selected Skill SHA-256",
             "skill_version": "optional package/source version used",
-            "maturity_at_use": "draft|trial|stable|governed|deprecated",
+            "maturity_at_use": "draft|trial|stable|governed|deprecated; quality_issue observations also retain explicit unassessed",
             "run_id": "bound Skill Run UUID",
             "client_id": "bounded non-secret client installation identifier",
             "execution_environment": "bounded non-secret environment identifier",
@@ -119,6 +119,7 @@ def contribution_return_contract() -> dict[str, Any]:
             "ambiguities": "array of bounded observations; empty is allowed",
             "human_evaluation": "optional explicit human evaluation record",
             "proposed_maturity": "optional client proposal without authority",
+            "quality_issue": "optional sanitized quality report; get_quality_issue_contract describes its schema; independent human issue decisions grant no adoption authority",
             "sensitive_data": "prompt bodies, credentials, tokens, secrets, and secret-bearing fields are prohibited",
             "files": "exactly one inert Markdown observation",
         },
@@ -200,6 +201,11 @@ def submit_contribution_return(
     )
     if normalized_kind == "skill_observation":
         _validate_skill_observation_source(kind_metadata, source_snapshot, binding)
+        if kind_metadata.get("quality_issue") is not None:
+            from xrefkit.quality_issues import reject_sensitive
+            reject_sensitive({"title": normalized_title, "summary": normalized_summary,
+                              "files": normalized_files, "metadata": kind_metadata,
+                              "source": source_snapshot})
     normalized_proposed_target = (
         _safe_path(proposed_target_path) if proposed_target_path is not None else None
     )
@@ -765,7 +771,7 @@ def _validate_skill_observation_metadata(raw: dict[str, Any]) -> dict[str, Any]:
         "skill_id", "skill_content_hash", "skill_version", "maturity_at_use",
         "run_id", "client_id", "execution_environment", "model_id", "outcome",
         "retry_count", "evaluation_evidence", "ambiguities", "human_evaluation",
-        "proposed_maturity",
+        "proposed_maturity", "quality_issue",
     }
     unknown = sorted(set(raw).difference(allowed))
     if unknown:
@@ -775,7 +781,10 @@ def _validate_skill_observation_metadata(raw: dict[str, Any]) -> dict[str, Any]:
         "skill_content_hash": _sha256_value(
             raw.get("skill_content_hash"), "skill_observation.skill_content_hash"
         ),
-        "maturity_at_use": _maturity(raw.get("maturity_at_use"), "maturity_at_use"),
+        "maturity_at_use": (
+            "unassessed" if "quality_issue" in raw and raw.get("maturity_at_use") == "unassessed"
+            else _maturity(raw.get("maturity_at_use"), "maturity_at_use")
+        ),
         "run_id": _uuid(raw.get("run_id"), "skill_observation.run_id"),
         "client_id": _safe_identifier(raw.get("client_id"), "skill_observation.client_id"),
         "execution_environment": _safe_identifier(
@@ -854,6 +863,9 @@ def _validate_skill_observation_metadata(raw: dict[str, Any]) -> dict[str, Any]:
     result["proposed_maturity"] = (
         _maturity(proposed, "proposed_maturity") if proposed is not None else None
     )
+    if "quality_issue" in raw:
+        from xrefkit.quality_issues import validate_quality_report
+        result["quality_issue"] = validate_quality_report(raw["quality_issue"])
     return result
 
 

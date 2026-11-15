@@ -3,7 +3,9 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import os
 import re
+import secrets
 import shutil
 import sys
 import webbrowser
@@ -15,6 +17,12 @@ from urllib.parse import parse_qs, urlparse
 
 from xrefkit.boundary_analysis import analyze_dashboard_payload
 from xrefkit.mcp.audit import AUDIT_SCHEMA
+from xrefkit.mcp.contribution_adoption import HmacHumanApprovalVerifier, HumanApprovalVerifier, LocalCanonicalAdoptionTransport
+from xrefkit.mcp.contribution_returns import list_contribution_returns, export_contribution_return
+from xrefkit.quality_issues import (
+    STATUSES as QUALITY_STATUSES, list_quality_issues, get_quality_issue,
+    decide_quality_issue, quality_decision_claims,
+)
 from xrefkit.plan_observation import artifact_path, load_plans, plan_panel
 from xrefkit.work_management import confined_directory, load_workspaces
 from xrefkit.skillrun import (
@@ -1149,11 +1157,266 @@ def _json_response(handler: BaseHTTPRequestHandler, payload: object, status: int
     handler.send_response(status)
     handler.send_header("Content-Type", "application/json; charset=utf-8")
     handler.send_header("Content-Length", str(len(body)))
+    handler.send_header("Cache-Control", "no-store")
+    handler.send_header("X-Content-Type-Options", "nosniff")
     handler.end_headers()
     handler.wfile.write(body)
 
 
-def _html_page(payload: dict[str, object]) -> str:
+def _console_html(csrf_token: str, decisions_enabled: bool) -> str:
+    options = ''.join(f'<option value="{state}">{state.replace("_", " ").title()}</option>' for state in QUALITY_STATUSES)
+    decisions = ''.join(f'<option value="{state}">{state.replace("_", " ").title()}</option>' for state in QUALITY_STATUSES if state != "reported")
+    disabled = "" if decisions_enabled else " disabled"
+    # Static HTML template returned to the browser; this is never executed as SQL.
+    markup = f'''
+    <style>
+      .console-nav {{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }}
+      .console-nav a {{ padding: 12px 18px; border: 1px solid #cbd5e1; border-radius: 8px; text-decoration: none; }}
+      .console-area {{ display: none; }}
+      body[data-console-area="quality"] #console-quality,
+      body[data-console-area="governance"] #console-governance,
+      body[data-console-area="runtime"] #console-runtime,
+      body[data-console-area="evaluation"] #console-evaluation {{ display: block; }}
+      body[data-console-area="quality"] [href="/?area=quality"],
+      body[data-console-area="governance"] [href="/?area=governance"],
+      body[data-console-area="runtime"] [href="/?area=runtime"],
+      body[data-console-area="evaluation"] [href="/?area=evaluation"] {{ background: #172c4b; color: white; }}
+      .issue-layout {{ display: grid; grid-template-columns: minmax(230px, 1fr) minmax(300px, 2fr); gap: 24px; }}
+      .issue-list {{ list-style: none; padding: 0; }}
+      .issue-list button {{ display: block; width: 100%; text-align: left; padding: 16px; margin: 8px 0; cursor: pointer; background: white; border: 1px solid #cbd5e1; border-radius: 8px; }}
+      .issue-list button[aria-current="true"] {{ border: 2px solid #2563eb; }}
+      .issue-filter {{ display: flex; flex-wrap: wrap; gap: 12px; }}
+      .issue-filter label, #issue-form label {{ display: grid; gap: 6px; margin: 12px 0; }}
+      #issue-form input, #issue-form select, #issue-form textarea, #governance-form input, #governance-form select, #governance-form textarea, .issue-filter input, .issue-filter select {{ padding: 9px; max-width: 100%; font: inherit; }}
+      #governance-form label {{ display: grid; gap: 6px; margin: 12px 0; }}
+      #governance-form button {{ padding: 10px 16px; margin: 8px; }}
+      #issue-form textarea {{ min-height: 70px; }}
+      #issue-form button {{ padding: 10px 16px; margin: 8px 8px 8px 0; cursor: pointer; }}
+      #issue-detail pre, #decision-claims {{ white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }}
+      #issue-detail dd {{ margin: 8px 0 18px; white-space: pre-wrap; overflow-wrap: anywhere; }}
+      #issue-detail dt {{ font-weight: bold; }}
+      #console-message, #decision-message {{ white-space: pre-wrap; }}
+      .console-area [hidden] {{ display: none !important; }}
+      @media (max-width: 800px) {{ .issue-layout {{ grid-template-columns: 1fr; }} }}
+    </style>
+    <nav class="console-nav" aria-label="Management Console">
+      <a href="/?area=quality">Quality Issues</a><a href="/?area=governance">Governance</a>
+      <a href="/?area=runtime">Runtime Diagnostics</a><a href="/?area=evaluation">Quality Evaluation</a>
+    </nav>
+    <section id="console-quality" class="console-area">
+      <h2>Quality Issues</h2><p>Review reported corrections, their evidence, and improvement decisions. Approving an Issue does not approve a Skill or Knowledge change.</p>
+      <div class="issue-filter"><label>Search <input id="issue-search" type="search" placeholder="Title, Skill, classification, or Issue ID"></label>
+      <label>Status <select id="issue-status"><option value="">All states</option>{options}</select></label>
+      <button id="issue-refresh" type="button">Refresh issues</button></div>
+      <p id="console-message" role="status"></p>
+      <div class="issue-layout"><ul id="issue-list" class="issue-list" aria-label="Quality Issue reports"></ul>
+      <div><article id="issue-detail"><p>Select an Issue to inspect its evidence and history.</p></article>
+      <form id="issue-form" hidden data-csrf="{html.escape(csrf_token, quote=True)}">
+        <h3>Human decision</h3>
+        <p>{'A signed assertion from the configured trusted approval issuer is required.' if decisions_enabled else 'Read-only: a trusted human approval verifier is not configured.'}</p>
+        <fieldset{disabled}><legend>Decision basis</legend>
+        <label>State <select name="status">{decisions}</select></label>
+        <label>Reviewer <input name="reviewer" required maxlength="512" autocomplete="off"></label>
+        <label>Decision reason <textarea name="decision_evidence" required maxlength="16384"></textarea></label>
+        <label>Verification evidence (one reference per line; required for Resolved) <textarea name="verification_evidence"></textarea></label>
+        <label>Related Issue IDs (one per line) <textarea name="related_issue_ids"></textarea></label>
+        <button id="prepare-decision" type="button">Prepare approval request</button>
+        <details><summary>Exact approval request for the trusted issuer</summary><pre id="decision-claims"></pre></details>
+        <label>Signed approval assertion <textarea name="approval_assertion" required autocomplete="off" spellcheck="false"></textarea></label>
+        <button type="submit">Record decision</button></fieldset>
+        <p id="decision-message" role="status"></p>
+      </form></div></div>
+    </section>
+    <section id="console-governance" class="console-area"><h2>Governance</h2>
+      <p>Existing Contribution Return review and adoption remain separate human-authorized operations. Quality Issue decisions never publish, adopt, or change maturity.</p>
+      <p>Select a contribution to review or adopt it using its existing approval process. Adoption publishes the exact accepted files to their approved repository location.</p>
+      <p id="governance-message" role="status"></p><div id="contribution-list"></div>
+      <form id="governance-form" hidden><h3 id="governance-title">Contribution review</h3>
+        <fieldset{disabled}><legend>Human contribution decision</legend>
+        <label>Action <select name="action"><option value="review">Review contribution</option><option value="adopt">Adopt accepted contribution</option></select></label>
+        <label>Reviewer <input name="reviewer" required maxlength="512"></label>
+        <label>Reason <textarea name="decision_evidence" required></textarea></label>
+        <div id="governance-review-fields"><label>Decision <select name="decision"><option value="accepted">Accept</option><option value="rejected">Reject</option></select></label>
+        <label>Approved repository path (accept only) <input name="approved_target_path"></label>
+        <button type="button" id="governance-prepare">Prepare approval request</button>
+        <details><summary>Approval request for the trusted issuer</summary><pre id="governance-claims"></pre></details>
+        <label>Signed approval assertion <textarea name="approval_assertion" autocomplete="off" spellcheck="false"></textarea></label></div>
+        <div id="governance-adopt-fields" hidden><label>Adoption token from the accepted review <textarea name="approval_token" autocomplete="off" spellcheck="false"></textarea></label>
+        <details><summary>Governed update evidence, when required</summary>
+        <label>Governance packet JSON <textarea name="governance_packet"></textarea></label><label>Governance receipt JSON <textarea name="governance_receipt"></textarea></label></details></div>
+        <button type="submit">Record selected action</button></fieldset>
+        <p id="governance-result" role="status"></p>
+        <label id="adoption-token-label" hidden>One-time adoption token — retain securely for the separate adoption action <textarea id="adoption-token" readonly autocomplete="off"></textarea></label>
+      </form></section>
+    <section id="console-evaluation" class="console-area"><h2>Quality Evaluation</h2>
+      <p>Inspect recorded Skill quality results and verification artifacts. Run completion alone does not prove output quality or that an improvement worked.</p>
+      <p><a href="/?area=runtime&amp;panel=closure">Skill quality gates</a> · <a href="/?area=runtime&amp;panel=evidence">Evaluation evidence and checks</a> · <a href="/?area=runtime&amp;panel=analysis">Recorded boundary analysis</a></p>
+      <p>Quality Issue details retain the original/corrected output references, diff summary, and human decision verification evidence for comparison.</p>
+      <div id="evaluation-list"></div></section>
+    '''  # nosec B608
+    return markup + r'''
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const area = document.body.dataset.consoleArea;
+      const message = document.getElementById("console-message");
+      const form = document.getElementById("issue-form");
+      let issues = [], selected = null, decisionId = null;
+      const text = (tag, value) => { const e = document.createElement(tag); e.textContent = value; return e; };
+      async function request(url, payload) {
+        const options = payload === undefined ? {cache: "no-store"} : {method: "POST", headers: {"Content-Type": "application/json", "X-XRefKit-CSRF": form.dataset.csrf}, body: JSON.stringify(payload)};
+        const response = await fetch(url, options);
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Request failed");
+        return result;
+      }
+      function detailField(dl, label, value) {
+        const dd = document.createElement("dd");
+        if (Array.isArray(value)) {
+          if (!value.length) dd.textContent = "Not recorded";
+          else { const ul = document.createElement("ul"); for (const item of value) ul.append(text("li", String(item))); dd.append(ul); }
+        } else dd.textContent = value ?? "unknown";
+        dl.append(text("dt", label), dd);
+      }
+      function showIssue(issue) {
+        selected = issue;
+        decisionId = crypto.randomUUID();
+        const detail = document.getElementById("issue-detail"); detail.replaceChildren(text("h3", issue.title), text("p", issue.summary));
+        const dl = document.createElement("dl");
+        detailField(dl, "State / revision", issue.status + " / " + issue.revision);
+        detailField(dl, "Issue ID", issue.issue_id);
+        detailField(dl, "Reported / occurred", issue.created_at + " / " + issue.report.occurred_at);
+        detailField(dl, "Classification / common rule", issue.report.classification + " / " + issue.report.common_rule_relation);
+        detailField(dl, "Observed facts", issue.report.observed_facts);
+        detailField(dl, "Human correction evidence", issue.report.correction_evidence.map(e => e.summary));
+        detailField(dl, "Original output", issue.report.output_before.summary);
+        detailField(dl, "Corrected output", issue.report.output_after?.summary || "Not available yet");
+        detailField(dl, "Output difference", issue.report.diff_summary);
+        detailField(dl, "AI cause hypotheses (not human findings)", issue.report.inferred_causes);
+        detailField(dl, "Unknowns", issue.report.unknowns);
+        detailField(dl, "Impact", issue.report.impact);
+        detailField(dl, "Reported by / affected Skill", issue.observation.client_id + " / " + issue.source.skill_id + " / version " + (issue.observation.skill_version || "unknown"));
+        detailField(dl, "Related reports", issue.report_count + " report(s) with this suggested similarity key; human confirmation remains separate.");
+        detailField(dl, "Human judgment history", issue.history.map(h => h.status.replaceAll("_", " ") + " — " + h.reviewer + ": " + h.decision_evidence + (h.verification_evidence?.length ? " · Verification: " + h.verification_evidence.join("; ") : "")));
+        detail.append(dl);
+        const links = document.createElement("p");
+        const sourceUrl = "/api/quality-issues/" + encodeURIComponent(issue.issue_id) + "/source";
+        const skill = document.createElement("a"); skill.href = sourceUrl + "?kind=skill"; skill.textContent = "Current Skill document (may differ from reported version)"; links.append(skill);
+        for (const knowledge of (issue.source.knowledge_versions || [])) {
+          const a = document.createElement("a"); a.href = sourceUrl + "?xid=" + encodeURIComponent(knowledge.xid); a.textContent = " · Current Knowledge " + knowledge.xid; links.append(a);
+        }
+        for (const id of [...(issue.similar_issue_ids || []), ...(issue.related_issue_ids || [])]) {
+          const a = document.createElement("a"); a.href = "/?area=quality&issue_id=" + encodeURIComponent(id); a.textContent = " · Report " + id; links.append(a);
+        }
+        detail.append(links);
+        const technical = document.createElement("details");
+        technical.append(text("summary", "Evidence identifiers, hashes, correlation, and original report"), text("pre", JSON.stringify(issue, null, 2)));
+        detail.append(technical);
+        form.reset(); form.hidden = false;
+        form.elements.related_issue_ids.value = (issue.related_issue_ids || []).join("\n");
+        document.getElementById("decision-claims").textContent = "";
+        document.getElementById("decision-message").textContent = "";
+        renderList();
+      }
+      function renderList() {
+        const needle = document.getElementById("issue-search").value.trim().toLowerCase();
+        const state = document.getElementById("issue-status").value;
+        const shown = issues.filter(i => (!state || i.status === state) && [i.title, i.issue_id, i.source.skill_id, i.report.classification].join(" ").toLowerCase().includes(needle));
+        const list = document.getElementById("issue-list"); list.replaceChildren();
+        for (const issue of shown) {
+          const row = document.createElement("li"), button = text("button", issue.title + "\n" + issue.status + " · " + issue.report_count + " related report(s)");
+          button.type = "button"; button.setAttribute("aria-current", String(selected?.issue_id === issue.issue_id));
+          button.addEventListener("click", () => showIssue(issue)); row.append(button); list.append(row);
+        }
+        message.textContent = shown.length ? shown.length + " of " + issues.length + " reports" : "No Quality Issues match these filters.";
+      }
+      async function loadIssues() {
+        try {
+          issues = (await request("/api/quality-issues")).issues; renderList();
+          const id = new URL(location.href).searchParams.get("issue_id");
+          if (id) { const issue = issues.find(i => i.issue_id === id); if (issue) showIssue(issue); else message.textContent = "Requested Quality Issue is unavailable."; }
+        } catch (error) { message.textContent = "Issues unavailable: " + error.message; }
+      }
+      function decision() {
+        if (!selected) throw new Error("Select an Issue first.");
+        const lines = name => form.elements[name].value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+        return {issue_id: selected.issue_id, decision_id: decisionId, status: form.elements.status.value, reviewer: form.elements.reviewer.value, decision_evidence: form.elements.decision_evidence.value, expected_revision: selected.revision, verification_evidence: lines("verification_evidence"), related_issue_ids: lines("related_issue_ids")};
+      }
+      document.getElementById("prepare-decision").addEventListener("click", async () => {
+        try { const claims = await request("/api/quality-issues/decision-claims", decision()); document.getElementById("decision-claims").textContent = JSON.stringify(claims, null, 2); document.getElementById("decision-claims").parentElement.open = true; }
+        catch (error) { document.getElementById("decision-message").textContent = error.message; }
+      });
+      form.addEventListener("submit", async event => {
+        event.preventDefault(); const button = form.querySelector('button[type="submit"]'); button.disabled = true;
+        try {
+          await request("/api/quality-issues/decisions", {...decision(), approval_assertion: form.elements.approval_assertion.value});
+          const id = selected.issue_id; await loadIssues(); const updated = issues.find(i => i.issue_id === id); if (updated) showIssue(updated);
+          document.getElementById("decision-message").textContent = "Decision recorded. Skill and Knowledge adoption remain separate.";
+        } catch (error) { document.getElementById("decision-message").textContent = "Decision not recorded: " + error.message + ". Your entries have been preserved."; }
+        finally { button.disabled = false; }
+      });
+      document.getElementById("issue-search").addEventListener("input", renderList);
+      document.getElementById("issue-status").addEventListener("change", renderList);
+      document.getElementById("issue-refresh").addEventListener("click", loadIssues);
+      if (area === "quality") loadIssues();
+      if (area === "governance") request("/api/contributions").then(result => {
+        document.getElementById("governance-message").textContent = result.contributions.length ? result.contributions.length + " contribution(s)" : "No contributions reported.";
+        for (const contribution of result.contributions) {
+          const box = document.createElement("article"); box.append(text("h3", contribution.title || contribution.contribution_id), text("p", contribution.kind + " · " + contribution.status));
+          const info = document.createElement("details"); info.append(text("summary", "Submitted identity and recorded history"), text("pre", JSON.stringify(contribution, null, 2))); box.append(info);
+          const select = text("button", "Review or adopt"); select.type = "button";
+          select.addEventListener("click", () => {
+            const g = document.getElementById("governance-form"); g.reset(); g.hidden = false; g.dataset.contributionId = contribution.contribution_id; g.dataset.decisionId = crypto.randomUUID(); g.dataset.adoptionId = crypto.randomUUID();
+            g.elements.approved_target_path.value = contribution.proposed_target_path || "";
+            document.getElementById("governance-title").textContent = contribution.title;
+            document.getElementById("governance-result").textContent = "";
+            document.getElementById("governance-claims").textContent = "";
+            document.getElementById("adoption-token").value = ""; document.getElementById("adoption-token-label").hidden = true;
+            document.getElementById("governance-review-fields").hidden = false; document.getElementById("governance-adopt-fields").hidden = true;
+            g.scrollIntoView({block: "start", behavior: "smooth"});
+          }); box.append(select);
+          const link = document.createElement("a"); link.href = "/api/contributions/" + encodeURIComponent(contribution.contribution_id); link.textContent = "Review existing contribution evidence"; box.append(link); document.getElementById("contribution-list").append(box);
+        }
+      }).catch(error => document.getElementById("governance-message").textContent = "Contributions unavailable: " + error.message);
+      const governanceForm = document.getElementById("governance-form");
+      governanceForm.elements.action.addEventListener("change", () => {
+        const adopt = governanceForm.elements.action.value === "adopt";
+        document.getElementById("governance-review-fields").hidden = adopt;
+        document.getElementById("governance-adopt-fields").hidden = !adopt;
+      });
+      function governanceDecision() {
+        const g = governanceForm;
+        return {contribution_id: g.dataset.contributionId, decision_id: g.dataset.decisionId, reviewer: g.elements.reviewer.value, decision_evidence: g.elements.decision_evidence.value, decision: g.elements.decision.value, approved_target_path: g.elements.decision.value === "accepted" ? g.elements.approved_target_path.value : null};
+      }
+      document.getElementById("governance-prepare").addEventListener("click", async () => {
+        try { const claims = await request("/api/contributions/review-claims", governanceDecision()); document.getElementById("governance-claims").textContent = JSON.stringify(claims, null, 2); document.getElementById("governance-claims").parentElement.open = true; }
+        catch (error) { document.getElementById("governance-result").textContent = error.message; }
+      });
+      governanceForm.addEventListener("submit", async event => {
+        event.preventDefault(); const g = governanceForm, button = g.querySelector('button[type="submit"]'); button.disabled = true;
+        try {
+          const adopt = g.elements.action.value === "adopt";
+          let payload = {...governanceDecision(), approval_assertion: g.elements.approval_assertion.value};
+          if (adopt) {
+            payload = {contribution_id: g.dataset.contributionId, adoption_id: g.dataset.adoptionId, reviewer: g.elements.reviewer.value, decision_evidence: g.elements.decision_evidence.value, approval_token: g.elements.approval_token.value};
+            for (const field of ["governance_packet", "governance_receipt"]) if (g.elements[field].value.trim()) payload[field] = JSON.parse(g.elements[field].value);
+          }
+          const result = await request(adopt ? "/api/contributions/adopt" : "/api/contributions/review", payload);
+          document.getElementById("governance-result").textContent = adopt ? "Accepted contribution adopted. Publication and release remain separate." : "Contribution review recorded. Adoption is a separate action.";
+          if (result.approval_token) { document.getElementById("adoption-token").value = result.approval_token; document.getElementById("adoption-token-label").hidden = false; }
+        } catch (error) { document.getElementById("governance-result").textContent = "Action not recorded: " + error.message + ". Your entries have been preserved."; }
+        finally { button.disabled = false; }
+      });
+      if (area === "evaluation") request("/api/quality-issues").then(result => {
+        const list = document.getElementById("evaluation-list");
+        for (const issue of result.issues) { const p = document.createElement("p"), a = document.createElement("a"); a.href = "/?area=quality&issue_id=" + encodeURIComponent(issue.issue_id); a.textContent = issue.title + " — " + issue.status; p.append(a); list.append(p); }
+        if (!result.issues.length) list.append(text("p", "No Issue improvement evidence recorded."));
+      }).catch(error => document.getElementById("evaluation-list").textContent = "Issue evidence unavailable: " + error.message);
+    });
+    </script>
+    '''
+
+
+def _html_page(payload: dict[str, object], *, console_area: str = "quality", csrf_token: str = "", decisions_enabled: bool = False) -> str:
     summary = payload["summary"]
     runs = payload["runs"]
     flows = payload.get("flows", [])
@@ -1286,7 +1549,7 @@ def _html_page(payload: dict[str, object]) -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Skill Run Observation Dashboard</title>
+  <title>XRefKit Management Console</title>
   <style>
     :root {{
       color-scheme: light;
@@ -1531,12 +1794,16 @@ def _html_page(payload: dict[str, object]) -> str:
     }}
   </style>
 </head>
-<body>
+<body data-console-area="{html.escape(console_area, quote=True)}">
   <header>
-    <h1>Skill Run Observation Dashboard</h1>
+    <h1>XRefKit Management Console</h1>
     <p class="sub">Root: {html.escape(str(payload["root"]))} | Sessions: {html.escape(str(payload["sessions_dir"]))} | <a href="/api/runs">JSON</a></p>
   </header>
   <main>
+    {_console_html(csrf_token, decisions_enabled)}
+    <div id="console-runtime" class="console-area">
+    <h2>Runtime Diagnostics</h2>
+    <p class="category-note">Skill Run Observation Dashboard</p>
     <nav class="tabs" aria-label="Dashboard categories">
       <button class="tab" data-panel="plans">計画 / Plans</button>
       <button class="tab active" data-panel="overview">Overview</button>
@@ -1643,9 +1910,11 @@ def _html_page(payload: dict[str, object]) -> str:
       <div class="box"><h3>Missing Information Ranking</h3>{missing_information_rows}</div>
       {missing_information_cards}
     </section>
+    </div>
   </main>
   <script>
     const navigation = new URL(window.location.href);
+    navigation.searchParams.set("area", document.body.dataset.consoleArea);
     let activePanel = navigation.searchParams.get("panel") || (document.querySelector(".plan-card") ? "plans" : "overview");
     let statusFilter = "all";
     let searchQuery = "";
@@ -2175,6 +2444,32 @@ def _has_xid_records(run: object) -> bool:
     )
 
 
+def _contribution_review_claims(catalog, fields: dict, verifier: HumanApprovalVerifier) -> dict:
+    """Prepare the existing review claim shape without signing or accepting it."""
+    from xrefkit.mcp.contribution_returns import (
+        _uuid, _required_text, _optional_path_hash, _validate_canonical_target,
+        MAX_REVIEWER_BYTES, MAX_DECISION_EVIDENCE_BYTES,
+    )
+    contribution_id = _uuid(fields.get("contribution_id"))
+    bundle = catalog.export_contribution_return(contribution_id, verifier)["review_bundle"]
+    decision = fields.get("decision")
+    if decision not in {"accepted", "rejected"}:
+        raise ValueError("decision must be accepted or rejected")
+    target = fields.get("approved_target_path")
+    if decision == "accepted":
+        target = _validate_canonical_target(catalog.repo_root, bundle, target,
+                                           ownership=catalog.ownership, existing_knowledge_xids=catalog._known_xids())
+    elif target is not None:
+        raise ValueError("approved_target_path is not allowed for a rejected decision")
+    _required_text(fields.get("decision_evidence"), "decision_evidence", MAX_DECISION_EVIDENCE_BYTES)
+    proposed = bundle.get("proposed_target_path")
+    return {"contribution_id": contribution_id, "decision_id": _uuid(fields.get("decision_id"), "decision_id"),
+            "decision": decision, "reviewer": _required_text(fields.get("reviewer"), "reviewer", MAX_REVIEWER_BYTES),
+            "payload_hash": bundle["payload_hash"], "proposed_target_path": proposed,
+            "proposed_target_path_hash": _optional_path_hash(proposed), "approved_target_path": target,
+            "approved_target_path_hash": _optional_path_hash(target)}
+
+
 class DashboardServer(ThreadingHTTPServer):
     def __init__(
         self,
@@ -2184,11 +2479,16 @@ class DashboardServer(ThreadingHTTPServer):
         root: Path,
         sessions_dir: Path,
         mcp_audit_log: Path,
+        approval_verifier: HumanApprovalVerifier | None = None,
+        governance_host_verifier: HumanApprovalVerifier | None = None,
     ) -> None:
         super().__init__(server_address, handler)
         self.root = root
         self.sessions_dir = sessions_dir
         self.mcp_audit_log = mcp_audit_log
+        self.approval_verifier = approval_verifier
+        self.governance_host_verifier = governance_host_verifier
+        self.csrf_token = secrets.token_urlsafe(32)
 
 
 class DashboardHandler(BaseHTTPRequestHandler):
@@ -2197,8 +2497,119 @@ class DashboardHandler(BaseHTTPRequestHandler):
     def log_message(self, format: str, *args: object) -> None:
         sys.stderr.write("dashboard: " + format % args + "\n")
 
+    def _local_host(self) -> bool:
+        allowed = {f"127.0.0.1:{self.server.server_port}", f"localhost:{self.server.server_port}", f"[::1]:{self.server.server_port}"}
+        return self.headers.get("Host", "").lower() in allowed
+
+    def do_POST(self) -> None:
+        # Human approval stays external. CSRF/Host checks protect the browser
+        # transport; they are not a substitute for the signed decision assertion.
+        host = self.headers.get("Host", "").lower()
+        origin = self.headers.get("Origin")
+        if (not self._local_host() or self.client_address[0] not in {"127.0.0.1", "::1"}
+                or (origin is not None and origin != f"http://{host}")
+                or not secrets.compare_digest(self.headers.get("X-XRefKit-CSRF", ""), self.server.csrf_token)):
+            _json_response(self, {"error": "local same-origin request with CSRF token required"}, 403)
+            return
+        if self.path not in {"/api/quality-issues/decisions", "/api/quality-issues/decision-claims", "/api/contributions/review", "/api/contributions/review-claims", "/api/contributions/adopt"}:
+            _json_response(self, {"error": "not found"}, 404)
+            return
+        if self.server.approval_verifier is None:
+            _json_response(self, {"error": "trusted human approval verifier is not configured"}, 403)
+            return
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            if not 0 < length <= 128 * 1024 or self.headers.get_content_type() != "application/json":
+                raise ValueError("bounded application/json request required")
+            body = json.loads(self.rfile.read(length).decode("utf-8"))
+            if self.path.startswith("/api/contributions/"):
+                from xrefkit.mcp.catalog import XRefCatalog
+                catalog = XRefCatalog.build(self.server.root)
+                if self.path.endswith("/adopt"):
+                    allowed = {"contribution_id", "adoption_id", "reviewer", "decision_evidence", "approval_token", "governance_packet", "governance_receipt"}
+                else:
+                    allowed = {"contribution_id", "decision_id", "decision", "reviewer", "decision_evidence", "approved_target_path"}
+                    if self.path.endswith("/review"):
+                        allowed.add("approval_assertion")
+                if not isinstance(body, dict) or set(body) - allowed:
+                    raise ValueError("unsupported contribution action fields")
+                if self.path.endswith("/adopt"):
+                    result = catalog.adopt_contribution_return(transport=LocalCanonicalAdoptionTransport(),
+                        approval_verifier=self.server.approval_verifier, governance_host_verifier=self.server.governance_host_verifier, **body)
+                elif self.path.endswith("/review"):
+                    result = catalog.review_contribution_return(approval_verifier=self.server.approval_verifier, **body)
+                else:
+                    result = _contribution_review_claims(catalog, body, self.server.approval_verifier)
+                _json_response(self, result)
+                return
+            allowed = {"issue_id", "decision_id", "status", "reviewer", "decision_evidence", "expected_revision", "verification_evidence", "related_issue_ids"}
+            if self.path.endswith("/decisions"):
+                allowed.add("approval_assertion")
+            if not isinstance(body, dict) or set(body) - allowed:
+                raise ValueError("unsupported decision fields")
+            if self.path.endswith("/decision-claims"):
+                result = quality_decision_claims(self.server.root, **body)
+            else:
+                result = decide_quality_issue(self.server.root, approval_verifier=self.server.approval_verifier, **body)
+            _json_response(self, result)
+        except (ValueError, TypeError, UnicodeDecodeError) as exc:
+            _json_response(self, {"error": str(exc)}, 400)
+        except (FileNotFoundError, KeyError):
+            _json_response(self, {"error": "quality issue unavailable"}, 404)
+        except (OSError, RuntimeError):
+            _json_response(self, {"error": "quality decision storage unavailable"}, 503)
+
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
+        # Prevent a foreign Host from reading the local approval browser token.
+        if self.server.server_address[0] in {"127.0.0.1", "::1"} and not self._local_host():
+            _json_response(self, {"error": "local dashboard host required"}, 403)
+            return
+        if parsed.path.startswith(("/api/quality-issues", "/api/contributions")) and (
+                not self._local_host() or self.client_address[0] not in {"127.0.0.1", "::1"}):
+            _json_response(self, {"error": "management evidence requires a local connection"}, 403)
+            return
+        try:
+            if parsed.path == "/api/quality-issues":
+                query = parse_qs(parsed.query)
+                rows = list_quality_issues(self.server.root, self.server.approval_verifier,
+                                          status=query.get("status", [None])[0], skill_id=query.get("skill_id", [None])[0])
+                _json_response(self, {"issues": rows})
+                return
+            if parsed.path.startswith("/api/quality-issues/"):
+                parts = parsed.path.removeprefix("/api/quality-issues/").split("/")
+                issue = get_quality_issue(self.server.root, parts[0], self.server.approval_verifier)
+                if len(parts) == 2 and parts[1] == "source":
+                    from xrefkit.mcp.catalog import XRefCatalog
+                    query = parse_qs(parsed.query)
+                    xid = query.get("xid", [None])[0]
+                    if xid is not None:
+                        if xid not in {row["xid"] for row in issue["source"].get("knowledge_versions", [])}:
+                            raise ValueError("Knowledge XID is not referenced by this Issue")
+                        issue = {"version_scope": "current; compare with reported content_hash", "document": XRefCatalog.build(self.server.root).get_document_by_xid(xid)}
+                    elif query.get("kind") == ["skill"]:
+                        issue = {"version_scope": "current; compare with reported content_hash", "skill": XRefCatalog.build(self.server.root).get_skill(issue["source"]["skill_id"])}
+                    else:
+                        issue = {"source": issue["source"], "observation": issue["observation"], "binding": issue["binding"]}
+                elif len(parts) != 1:
+                    raise ValueError("invalid quality issue route")
+                _json_response(self, issue)
+                return
+            if parsed.path == "/api/contributions":
+                _json_response(self, {"contributions": list_contribution_returns(self.server.root, self.server.approval_verifier)})
+                return
+            if parsed.path.startswith("/api/contributions/"):
+                _json_response(self, export_contribution_return(self.server.root, parsed.path.removeprefix("/api/contributions/"), self.server.approval_verifier))
+                return
+        except (ValueError, TypeError) as exc:
+            _json_response(self, {"error": str(exc)}, 400)
+            return
+        except (FileNotFoundError, KeyError):
+            _json_response(self, {"error": "record unavailable"}, 404)
+            return
+        except (OSError, RuntimeError):
+            _json_response(self, {"error": "record storage or verification unavailable"}, 503)
+            return
         if parsed.path == "/artifact":
             values = parse_qs(parsed.query).get("path", [])
             path = artifact_path(self.server.root, values[0]) if len(values) == 1 else None
@@ -2227,10 +2638,19 @@ class DashboardHandler(BaseHTTPRequestHandler):
             return
         if parsed.path in {"/", "/index.html"}:
             payload = build_payload(self.server.root, self.server.sessions_dir, self.server.mcp_audit_log)
-            body = _html_page(payload).encode("utf-8")
+            query = parse_qs(parsed.query)
+            area = query.get("area", ["runtime" if "panel" in query or "run_id" in query else "quality"])[0]
+            if area not in {"quality", "governance", "runtime", "evaluation"}:
+                area = "quality"
+            local = self._local_host() and self.client_address[0] in {"127.0.0.1", "::1"}
+            body = _html_page(payload, console_area=area, csrf_token=self.server.csrf_token if local else "",
+                              decisions_enabled=local and self.server.approval_verifier is not None).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("X-Frame-Options", "DENY")
+            self.send_header("X-Content-Type-Options", "nosniff")
             self.end_headers()
             self.wfile.write(body)
             return
@@ -2246,15 +2666,21 @@ def serve_dashboard(
     port: int,
     open_browser: bool,
 ) -> None:
+    secret = os.environ.get("XREFKIT_CONTRIBUTION_APPROVAL_SECRET")
+    governance_secret = os.environ.get("XREFKIT_GOVERNANCE_HOST_SECRET")
+    if secret and governance_secret == secret:
+        raise ValueError("governance host and human approval authorities must use different secrets")
     server = DashboardServer(
         (host, port),
         DashboardHandler,
         root=root.resolve(),
         sessions_dir=sessions_dir.resolve(),
         mcp_audit_log=mcp_audit_log.resolve(),
+        approval_verifier=HmacHumanApprovalVerifier(secret) if secret else None,
+        governance_host_verifier=HmacHumanApprovalVerifier(governance_secret) if governance_secret else None,
     )
     url = f"http://{host}:{server.server_port}/"
-    print(f"Skill Run Observation Dashboard: {url}")
+    print(f"XRefKit Management Console: {url}")
     print(f"root: {root.resolve()}")
     print(f"sessions: {sessions_dir.resolve()}")
     if open_browser:

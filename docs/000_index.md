@@ -93,6 +93,7 @@ This `docs/` folder is the human-facing documentation. Agents should treat it as
 - [Deterministic legacy Skill merge design](designs/076_deterministic_legacy_skill_merge_design.md#xid-8D5C74573895)
 - [Structure graph build guide (binary setup after a source-level copy)](guides/078_structure_graph_build_guide.md#xid-8B3E5D0A94C7)
 - [Skill Run Observation Dashboard usage](guides/086_skill_run_observation_dashboard_usage.md#xid-4A4763A2DE63)
+- [Quality Issue Management Console](guides/118_quality_issue_management.md#xid-6E7D3B90A152)
 - [Knowledge observation and improvement platform design](designs/088_knowledge_observation_and_improvement_platform_design.md#xid-32B512763C78)
 - [Copilot trace Skill boundary analysis design](designs/089_copilot_trace_skill_boundary_analysis_design.md#xid-B6E4A91C7D2F)
 - [MCP Skill local edit design](designs/090_mcp_skill_local_edit_design.md#xid-A4C7E2D91B60)
