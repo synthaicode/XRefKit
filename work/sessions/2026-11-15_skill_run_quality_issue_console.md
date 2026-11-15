@@ -165,10 +165,10 @@
 blocked
 
 ### Reason
-The workflow remains blocked; incomplete phases: Startup, Planning, Check, Closure.
+The workflow remains blocked; incomplete phases: Startup, Planning, Closure.
 
 ### Result
-2 of 6 workflow protocol phases are complete.
+3 of 6 workflow protocol phases are complete.
 
 ### Checks Performed
 
@@ -177,8 +177,8 @@ The workflow remains blocked; incomplete phases: Startup, Planning, Check, Closu
 | [Startup](#startup) | Confirm task, scope, active Skill, inputs, and loaded-context boundary. | Phase checklist | not_checked | [Startup](#startup) |
 | [Planning](#planning) | Create concrete work items, assumptions, target outputs, and handoff boundary. | Phase checklist | not_checked | [Planning](#planning) |
 | [Execution](#execution) | Execute the Skill procedure inside the declared capability and flow boundary. | Phase checklist | pass | [Execution](#execution) |
-| [Check](#check) | Run the separate check role against evidence, output quality, unknowns, and handoff readiness. | Phase checklist | fail | [Check](#check) |
-| [Closure](#closure) | Apply the closure gate and keep pass, fail, unknown, and escalation states explicit. | Phase checklist | not_checked | [Closure](#closure) |
+| [Check](#check) | Run the separate check role against evidence, output quality, unknowns, and handoff readiness. | Phase checklist | pass | [Check](#check) |
+| [Closure](#closure) | Apply the closure gate and keep pass, fail, unknown, and escalation states explicit. | Phase checklist | fail | [Closure](#closure) |
 | [Handoff](#handoff) | Record outputs, unresolved items, next owner, and human decision points. | Phase checklist | pass | [Handoff](#handoff) |
 
 ### Evidence
@@ -188,7 +188,6 @@ The workflow remains blocked; incomplete phases: Startup, Planning, Check, Closu
 ### Open Items
 - Startup
 - Planning
-- Check
 - Closure
 
 ### Handoff
@@ -199,8 +198,8 @@ The workflow remains blocked; incomplete phases: Startup, Planning, Check, Closu
 - [ ] Startup: Confirm task, scope, active Skill, inputs, and loaded-context boundary.
 - [ ] Planning: Create concrete work items, assumptions, target outputs, and handoff boundary.
 - [x] Execution: Execute the Skill procedure inside the declared capability and flow boundary.
-- [!] Check: Run the separate check role against evidence, output quality, unknowns, and handoff readiness.
-- [ ] Closure: Apply the closure gate and keep pass, fail, unknown, and escalation states explicit.
+- [x] Check: Run the separate check role against evidence, output quality, unknowns, and handoff readiness.
+- [!] Closure: Apply the closure gate and keep pass, fail, unknown, and escalation states explicit.
 - [x] Handoff: Record outputs, unresolved items, next owner, and human decision points.
 
 ## Concrete Work Items
@@ -215,6 +214,7 @@ The workflow remains blocked; incomplete phases: Startup, Planning, Check, Closu
 - [x] EVD-CONSOLE kind=`evidence` status=`done` role=`python_implementation_flow:executor` target=`work/sessions/2026-11-15_console_parity_and_validation.md` item=`WI-TEST-DOC`: HTTP regressions, parity inventory, explicit host and deployment limits
 - [x] OUT-CONSOLE-GUIDE kind=`output` status=`done` role=`python_implementation_flow:executor` target=`docs/guides/118_quality_issue_management.md` item=`WI-TEST-DOC`: Usage, trust boundaries, host hook, signed human decisions, separate source adoption
 - [x] HND-CONSOLE kind=`handoff` status=`done` role=`python_implementation_flow:executor` target=`work/sessions/2026-11-15_console_parity_and_validation.md` item=`-`: Hand completed code, 31 passing tests and explicit deployment limits to parent and independent Python reviewer for verification and closure
+- [x] HND-DEPLOYMENT-SCOPE kind=`handoff` status=`done` role=`python_implementation_flow:handoff_owner` target=`work/sessions/2026-11-15_session_quality_issue_intake_ui.md` item=`-`: Explicit human scope disposition; deployment verification remains deferred, not verified
 ## Execution Role
 
 - status: `done`
@@ -222,7 +222,7 @@ The workflow remains blocked; incomplete phases: Startup, Planning, Check, Closu
 
 ## Check Role
 
-- status: `blocked`
+- status: `done`
 - responsibility: deterministically verify workflow-progression records (worklist, work items, artifact recording and linkage, concerns, role separation) with `xrefkit skill verify`; output quality is the quality gate's responsibility, not this one
 
 ## Quality Gate
@@ -262,12 +262,17 @@ No quality checklist items have been recorded yet.
 ## Unknowns And Risks
 
 - status: `escalated`
-- [!] UNK-CONSOLE-DEPLOYMENT kind=`unknown` status=`escalated` judgment=`trivial` role=`python_implementation_flow:executor` target=`work/sessions/2026-11-15_console_parity_and_validation.md`: Actual Next.js deployments, production trusted human issuer, and real host correction callbacks remain unverified; retain Next.js and hand off deployment checks before retirement or production claims
+- [x] UNK-CONSOLE-DEPLOYMENT kind=`unknown` status=`resolved` judgment=`trivial` role=`python_implementation_flow:handoff_owner` target=`work/sessions/2026-11-15_session_quality_issue_intake_ui.md`: Current-delivery scope question resolved by explicit human instruction on 2026-11-15: implementation and tested PR only; deployment verification deferred. Host/issuer/usage/capacity facts remain unverified in the linked deployment handoff, not asserted as resolved facts.
+- [!] DEPLOYMENT-HANDOFF kind=`risk` status=`escalated` judgment=`trivial` role=`python_implementation_flow:handoff_owner` target=`work/sessions/2026-11-15_session_quality_issue_intake_ui.md`: Human explicitly acknowledges deferred host integration, production issuer, actual Next.js usage and production capacity checks. No production readiness or Next.js retirement is approved; deployment owner must verify before enabling or retiring these surfaces.
 ## Closure Gate
 
-- status: `pending`
+- status: `escalated`
 
+### Closure Checks
 
+- unknown: `passed` open=`-`
+- risk: `passed` open=`-` escalated=`DEPLOYMENT-HANDOFF`
+- judgment: `passed` open=`-` non_trivial=`-` reference=`not_required`
 ## Handoff
 
 - status: `done`
@@ -289,6 +294,8 @@ No quality checklist items have been recorded yet.
 - event: {"schema_version":1,"event":"operation.observed","operation_key":"905646f4-7622-4326-bd6b-f063de8780f5","payload_sha256":"5a417e58e7e0c5785e782faba9325ce853849a890b44dbe41b02471fd42f45d9","event_id":"22947e94-3f04-4209-a7f0-899bb5edda32","recorded_at":"2026-11-15T11:59:49.669140+00:00","facts":{"subject_ref":"UNK-CONSOLE-DEPLOYMENT","status":"escalated","kind":"unknown","work_item_id":null,"target":"work/sessions/2026-11-15_console_parity_and_validation.md","cognitive_onset_at":null,"occurred_at":null},"operation":"concern.state_recorded","run_id":"d1d4fde2-e97a-4e6a-bc1d-6569c2d0905d"}
 - event: {"schema_version":1,"event":"operation.observed","operation_key":"7e9ae5b0-c538-439a-9855-c682b2de5d8d","payload_sha256":"53f9805a2da46931f31540407f74701e18c2e5a6627961ff622e73a83cb1df05","event_id":"746dd450-3a21-40b7-95cd-84db6a0f3871","recorded_at":"2026-11-15T12:00:00.645218+00:00","facts":{"subject_ref":"WI-CONSOLE","status":"done"},"operation":"workitem.state_recorded","run_id":"d1d4fde2-e97a-4e6a-bc1d-6569c2d0905d"}
 - event: {"schema_version":1,"event":"operation.observed","operation_key":"ba7efcdf-5597-4d29-b8c1-a43921061fc5","payload_sha256":"9e7bc815abd37cb8f366e6cdec0a4ae79309472c7bb5dd2c55a9177688f78b57","event_id":"13d3031a-2de1-4b58-8e42-f295c4714c6c","recorded_at":"2026-11-15T12:00:01.140551+00:00","facts":{"subject_ref":"WI-TEST-DOC","status":"done"},"operation":"workitem.state_recorded","run_id":"d1d4fde2-e97a-4e6a-bc1d-6569c2d0905d"}
+- event: {"schema_version":1,"event":"operation.observed","operation_key":"ba2135b5-d30c-4eeb-aa04-434eaeb556c4","payload_sha256":"879e422381ca1c0c40f28529b31c29b9caa033fdc4d7f17316cf837f42202b98","event_id":"a7195897-b907-44c9-84ea-bcf15a0cf3e3","recorded_at":"2026-11-15T12:07:40.248529+00:00","facts":{"subject_ref":"UNK-CONSOLE-DEPLOYMENT","status":"resolved","kind":"unknown","work_item_id":null,"target":"work/sessions/2026-11-15_session_quality_issue_intake_ui.md","cognitive_onset_at":null,"occurred_at":null},"operation":"concern.state_recorded","run_id":"d1d4fde2-e97a-4e6a-bc1d-6569c2d0905d"}
+- event: {"schema_version":1,"event":"operation.observed","operation_key":"0b756a75-3254-42e3-a5db-3afda67aeee5","payload_sha256":"cd25fc8b38f4ca2937163aaa87611a39e7236e7cb33912bd6ca30b42c39de783","event_id":"bf2f4f34-743d-44ee-91ea-00f5c2fce1bd","recorded_at":"2026-11-15T12:07:40.735841+00:00","facts":{"subject_ref":"DEPLOYMENT-HANDOFF","status":"escalated","kind":"risk","work_item_id":null,"target":"work/sessions/2026-11-15_session_quality_issue_intake_ui.md","cognitive_onset_at":null,"occurred_at":null},"operation":"concern.state_recorded","run_id":"d1d4fde2-e97a-4e6a-bc1d-6569c2d0905d"}
 ## Phase Events
 - 2026-11-15 `execution` -> `in_progress` role=`python_implementation_flow:executor`
 - 2026-11-15 `workitem:WI-CONSOLE` -> `in_progress` role=`python_implementation_flow:executor`: Implement management console and protected human Issue decisions, preserve diagnostics
@@ -303,3 +310,8 @@ No quality checklist items have been recorded yet.
 - 2026-11-15 `execution` -> `done` role=`python_implementation_flow:executor`
 - 2026-11-15 `check` -> `blocked` role=`python_implementation_flow:checker`: progression record incomplete
 - 2026-11-15 `handoff` -> `done` role=`python_implementation_flow:handoff_owner`: Console and parity evidence handed to PR review; deployment unknowns retained
+- 2026-11-15 `concern:UNK-CONSOLE-DEPLOYMENT` -> `resolved` role=`python_implementation_flow:handoff_owner`: Current-delivery scope question resolved by explicit human instruction on 2026-11-15: implementation and tested PR only; deployment verification deferred. Host/issuer/usage/capacity facts remain unverified in the linked deployment handoff, not asserted as resolved facts.
+- 2026-11-15 `concern:DEPLOYMENT-HANDOFF` -> `escalated` role=`python_implementation_flow:handoff_owner`: Human explicitly acknowledges deferred host integration, production issuer, actual Next.js usage and production capacity checks. No production readiness or Next.js retirement is approved; deployment owner must verify before enabling or retiring these surfaces.
+- 2026-11-15 `artifact:HND-DEPLOYMENT-SCOPE` -> `done` role=`python_implementation_flow:handoff_owner`: Explicit human scope disposition; deployment verification remains deferred, not verified
+- 2026-11-15 `check` -> `done` role=`python_implementation_flow:checker`: progression record verified
+- 2026-11-15 `closure` -> `escalated` role=`closure_gate`: Current implementation/PR scope accepted by human; deployment risk explicitly acknowledged and handed off, not verified

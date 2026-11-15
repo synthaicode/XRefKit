@@ -6,6 +6,7 @@ import copy
 import hashlib
 import json
 import os
+import secrets
 import shutil
 import subprocess
 import sys
@@ -25,7 +26,7 @@ from xrefkit.quality_issues import (
     quality_decision_claims, submit_quality_feedback, validate_quality_report,
 )
 
-SECRET = "synthetic-quality-approval-secret-32-bytes"
+SECRET = secrets.token_hex(32)
 
 
 def report():
@@ -163,7 +164,7 @@ def test_raw_prompt_fields_rejected():
 def test_sensitive_data_rejected_on_both_boundaries(tmp_path, location):
     args = fixture_args()
     if location == "report":
-        args["report"]["observed_facts"] = ["password=synthetic-credential"]
+        args["report"]["observed_facts"] = [f"password={secrets.token_hex(16)}"]
     elif location == "title":
         args["title"] = "Contact synthetic.person@example.invalid"
     if location != "file":
@@ -172,7 +173,7 @@ def test_sensitive_data_rejected_on_both_boundaries(tmp_path, location):
         return
     _, payload = save(tmp_path, args)
     payload["contribution_id"] = str(uuid.uuid4())
-    payload["files"][0]["content"] = "api_key=synthetic-credential"
+    payload["files"][0]["content"] = f"api_key={secrets.token_hex(16)}"
     payload["files"][0]["content_hash"] = hashlib.sha256(payload["files"][0]["content"].encode()).hexdigest()
     with pytest.raises(ValueError, match="sensitive"):
         submit_contribution_return(tmp_path, **payload)

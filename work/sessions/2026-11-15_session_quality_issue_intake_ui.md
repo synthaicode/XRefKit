@@ -78,3 +78,15 @@
 - GitHub connector PR creation returned 403 (integration permission); existing authorized local GitHub authentication successfully created the draft.
 - Requested human scope disposition for deployment unknowns after preparing the concrete implementation, tests, and draft PR. Pending response, normal closure remains blocked.
 
+
+## Human scope disposition (2026-11-15)
+- The user explicitly selected: 導入時へ引き継ぎ、今回の範囲を確定する . Current delivery scope is implemented/tested PR; live host correction wiring, production human assertion issuer, Next.js usage and production volume are deferred to deployment.
+- This resolves whether deployment evidence is required for this implementation delivery. It does not establish any of those deployment facts. The original factual limits remain in the guide/review and are carried as an explicitly acknowledged deployment risk and handoff.
+- CI artifact inspection identified a synthetic fixed test key in tests/test_quality_issues.py as a possible credential assignment. Replace it with an ephemeral generated test key while preserving the scanner and approval tests.
+
+
+## Scoped completion and artifact recheck
+- Implementation, console and review verify/close passed after explicit human scope disposition; deployment facts remain unverified in acknowledged handoffs. Tracked runtime audit passed for 17 logs.
+- Three fixed synthetic credential-like fixtures now use ephemeral generated values. Final focused tests: 70 passed in 26.46 seconds. Rebuilt wheel/sdist passed the unchanged artifact inspector with all three required embedded startup members; no forbidden paths, oversized files or credential patterns.
+- No product/scanner behavior changed in this follow-up. PR stays draft; merge and release remain outside authorization.
+

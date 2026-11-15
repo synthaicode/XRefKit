@@ -57,3 +57,17 @@
 ### Handoff
 
 - QI-R02 fix and deterministic tests returned to the independent reviewer; implementation does not close the review finding.
+
+## 2026-11-15: Package secret-inspection fixture correction
+
+### Event
+
+- CI package inspection rejected static synthetic credential assignments in the new test module.
+- Replaced the shared test approval key with an ephemeral module-load key, preserving the `SECRET` fixture API. Replaced the two credential-rejection payload values with ephemeral per-test values.
+- The artifact inspector and its detection rules were not changed or suppressed.
+
+### Verification
+
+- The existing `tools.inspect_python_artifacts.content_issues` check against the complete updated test module returned an empty finding list.
+- `python -m pytest tests/test_quality_issues.py tests/test_quality_issue_dashboard.py -q`: 70 passed in 26.46 seconds after all three fixture replacements.
+- Rebuilt archive inspection is handed to the parent coordinator's packaging verification.
