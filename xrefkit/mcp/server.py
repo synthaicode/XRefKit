@@ -130,6 +130,10 @@ _ADMIN_ONLY_INSTRUCTION_MARKERS = (
     "export_contribution_return",
     "review_contribution_return",
     "adopt_contribution_return",
+    "get_quality_issue_contract",
+    "list_quality_issues",
+    "get_quality_issue",
+    "decide_quality_issue",
     "register_legacy_bundle",
     "assess_skill_maturity",
     "propose_skill_maturity",
@@ -1249,6 +1253,54 @@ def main(argv: list[str] | None = None) -> int:
         """List pending-review contribution metadata without file bodies."""
         _require_startup_loaded(ctx, "list_contribution_returns")
         return catalog.list_contribution_returns(approval_verifier)
+
+    @admin_tool()
+    def get_quality_issue_contract(ctx: Context) -> dict[str, Any]:
+        """Describe optional quality observations and the independent human decision boundary."""
+        from xrefkit.quality_issues import quality_issue_contract
+        _require_startup_loaded(ctx, "get_quality_issue_contract")
+        return quality_issue_contract()
+
+    @admin_tool()
+    def list_quality_issues(ctx: Context, status: str | None = None,
+                           skill_id: str | None = None) -> list[dict[str, Any]]:
+        """List individual quality reports and candidate similarity links."""
+        from xrefkit.quality_issues import list_quality_issues as list_issues
+        _require_startup_loaded(ctx, "list_quality_issues")
+        return list_issues(catalog.repo_root, approval_verifier, status=status, skill_id=skill_id)
+
+    @admin_tool()
+    def get_quality_issue(ctx: Context, issue_id: str) -> dict[str, Any]:
+        """Read a quality report and verified human decision history."""
+        from xrefkit.quality_issues import get_quality_issue as get_issue
+        _require_startup_loaded(ctx, "get_quality_issue")
+        return get_issue(catalog.repo_root, issue_id, approval_verifier)
+
+    @admin_tool()
+    def decide_quality_issue(ctx: Context, issue_id: str, decision_id: str, status: str,
+                             reviewer: str, decision_evidence: str, expected_revision: int,
+                             approval_assertion: str, verification_evidence: list[str] | None = None,
+                             related_issue_ids: list[str] | None = None) -> dict[str, Any]:
+        """Record a signed human quality decision; never approve Skill or Knowledge changes."""
+        from xrefkit.quality_issues import decide_quality_issue as decide_issue
+        _require_startup_loaded(ctx, "decide_quality_issue")
+        binding = _binding_for(ctx, run_registry)
+        if binding is None:
+            raise RuntimeError("XREFKIT_SKILL_RUN_REQUIRED: bind_skill_run before decide_quality_issue")
+        result = decide_issue(catalog.repo_root, issue_id=issue_id, decision_id=decision_id,
+                              status=status, reviewer=reviewer, decision_evidence=decision_evidence,
+                              expected_revision=expected_revision, approval_assertion=approval_assertion,
+                              verification_evidence=verification_evidence, related_issue_ids=related_issue_ids,
+                              approval_verifier=approval_verifier)
+        try:
+            audit_log.append("quality_issue.decided", binding=binding, tool="decide_quality_issue",
+                             issue_id=issue_id, decision_id=decision_id, status=status,
+                             event_hash=result["event_hash"], created=result["created"])
+            result["audit_status"] = "recorded"
+        except OSError as exc:
+            LOGGER.error("quality issue decision audit failed: %s", exc)
+            result["audit_status"] = "failed"
+        return result
 
     @admin_tool()
     def export_contribution_return(ctx: Context, contribution_id: str) -> dict[str, Any]:
