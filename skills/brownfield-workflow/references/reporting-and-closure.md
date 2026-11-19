@@ -23,6 +23,26 @@ while retaining required traceability and coverage. Preserve actors, causal
 relationships, constraints, exceptions and evidence when shortening; do not
 supply missing premises by inference presented as fact.
 
+Before drafting, inventory the explicit conditions in the original source
+sections governing the chosen decision: current mechanisms, scope, exceptions,
+existing or planned capabilities, dependencies and review corrections. Give
+each distinct condition its own ID, source location and current/planned/proposed
+status; one future item does not cover another. Map every inventory item to
+`reflected`, `not_applicable` with a reason, or `unknown_relevance`. Unknown
+relevance cannot support an unconditional conclusion. Recheck the inventory
+against the original source, not an inventory reconstructed from the draft.
+The record may be a sidecar; decision-changing conditions and their effect must
+also appear in prose beside the affected decision, without a new visible template.
+
+Before shortening, map proposed changes and the way forward to the source
+conditions that justify or limit them. Distinguish the existing system from
+planned changes and proposals, and retain scope, exceptions, dependencies and
+review corrections that could change what to do or when. Check the source back
+against the draft for omitted decision-changing conditions; integrate each
+condition's effect into the affected requirement, confirmation or next step.
+Keep uncertain relevance explicit without inventing an effect. Supporting
+coverage notes do not replace this explanation or add a mandatory report section.
+
 Before delivery, check that the overview and details together explain the
 whole change and its judgment basis without requiring the reader to reconstruct
 their relationship. Preserve the phase output structure and closure obligations

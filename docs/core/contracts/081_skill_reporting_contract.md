@@ -79,6 +79,32 @@ question and constraints rather than reproducing a general reference. Keep
 required coverage and supporting evidence available; selecting the explanation
 does not authorize omitting required checks or unresolved findings.
 
+Before drafting, inventory the explicit conditions in the original source
+sections governing the chosen decision: current mechanisms, scope, exceptions,
+existing or planned capabilities, dependencies and review corrections. Give
+each distinct condition its own ID, source location and current/planned/proposed
+status; one future item does not cover another. Map every inventory item to
+`reflected`, `not_applicable` with a reason, or `unknown_relevance`. Unknown
+relevance cannot support an unconditional conclusion. Recheck the inventory
+against the original source, not an inventory reconstructed from the draft.
+The record may be a sidecar; decision-changing conditions and their effect must
+also appear in prose beside the affected decision, without a new visible template.
+
+Before compressing the explanation, map each conclusion or recommendation to
+its source conditions and reachable source locations. Distinguish current
+facts from planned changes and proposals; include applicable scope, exceptions,
+dependencies and review corrections. Retain the conditions that could change
+the recommendation, its timing, necessity or limits, including future conditions
+that affect a current decision. If a condition's relevance is uncertain, record
+that uncertainty rather than silently dropping it or inventing its effect.
+
+Check coverage in both directions: each conclusion must have its source basis,
+and each decision-changing source condition must be accounted for in the draft.
+Compare the draft back to the source and applicable corrections before delivery;
+restore omitted conditions and explain their effect alongside the affected
+conclusion. A compact coverage record may support this check, but does not
+replace the explanation or impose a visible table or heading on every report.
+
 Shorten only after establishing these relationships. Preserve the actors,
 causal links, conditions, exceptions, evidence and uncertainty needed to
 understand the result. Do not invent a missing premise or causal explanation;
