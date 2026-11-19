@@ -34,6 +34,23 @@ against the original source, not an inventory reconstructed from the draft.
 The record may be a sidecar; decision-changing conditions and their effect must
 also appear in prose beside the affected decision, without a new visible template.
 
+For explicitly named members, first extract the exact original noun phrase
+with its source location as a minimal evidence excerpt, separate from normalized
+wording. Independently reread the original source to verify each name before
+grouping or mapping; similar names and related information are not substitutes.
+Mark ambiguous or unreadable identities unknown instead of guessing a normalized
+name, then check that verified original members and their actions survive in prose.
+
+Before grouping targets under a collective label, enumerate the individually
+named source members and the action, destination and conditions bound to each.
+Retain those individual identities in the source inventory; repeating the
+collective label there is not coverage. Use the label only when its membership
+remains explicit beside it in prose or a compact list. Check against the source
+that grouping neither narrows nor broadens scope, preserves distinct target-action
+relationships, and does not present a partial list as exhaustive or add guessed
+members. Decision-relevant membership must remain in the explanation, not only
+in a sidecar; preserve uncertainty when the source does not establish the full set.
+
 Before shortening, map proposed changes and the way forward to the source
 conditions that justify or limit them. Distinguish the existing system from
 planned changes and proposals, and retain scope, exceptions, dependencies and
