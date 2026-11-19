@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.1 — 2026-11-20
+
+- Connect reporting conclusions to the requested purpose, confirmed conditions
+  and supporting details while preserving task-owned output formats.
+- Inventory source conditions before drafting and check their decision-relevant
+  effects in both directions against the finished report.
+- Preserve exact named targets and each target's actions and conditions when
+  grouping documents, data or other scope members.
+- Keep existing evidence, uncertainty, human-decision and maturity boundaries.
+
 ## 0.3.0 — 2026-11-14
 
 - Compare explicit requirement-understanding revisions, including removal,
