@@ -62,6 +62,33 @@ reader resume or decide. Their placement follows the task format. These details
 supplement XID-backed evidence and Run Log work items, artifacts, concerns,
 phases, verification, and closure; they do not replace them.
 
+## Context-Specific Explanation
+
+When this protocol applies to a specific problem, begin the human-facing
+explanation by connecting the user's purpose, confirmed premises and current
+state to the overall conclusion. Integrate the premises that qualify the
+conclusion into that opening explanation; a separate list of assumptions or
+individual findings does not by itself explain the overall result. Follow the
+task-owned format, and place this explanation beside a structured artifact
+when its fixed schema cannot contain prose.
+
+Develop details from that overall account. Explain which part of the problem
+each finding addresses, how it supports or limits the conclusion, and why it
+matters to the current decision. Select information for the user's concrete
+question and constraints rather than reproducing a general reference. Keep
+required coverage and supporting evidence available; selecting the explanation
+does not authorize omitting required checks or unresolved findings.
+
+Shorten only after establishing these relationships. Preserve the actors,
+causal links, conditions, exceptions, evidence and uncertainty needed to
+understand the result. Do not invent a missing premise or causal explanation;
+state what is unknown and how it limits the conclusion.
+
+Before delivery, check that the reader can identify the overall situation and
+judgment basis without reconstructing them from disconnected topics or evidence
+tables. This is a content review of the explanation, not proof of reader
+understanding, a new approval gate, or a universal heading sequence.
+
 ## Auxiliary Readability Guidance
 
 This is XRefKit's own Japanese-oriented guidance, inspired by selected ASD-STE100
