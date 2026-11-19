@@ -1,6 +1,6 @@
 # xrefkit-skills-brownfield
 
-Public XRefKit Skill Package for brownfield change work, version **0.3.0**.
+Public XRefKit Skill Package for brownfield change work, version **0.3.1**.
 
 The package provides `brownfield.workflow`, which carries upstream work items
 through requirements, planning, design, manufacturing, and testing. Each phase
@@ -34,7 +34,7 @@ execute an investigation or decide whether evidence is true or sufficient.
 The technical investigator records those judgments and their owners explicitly.
 
 ```console
-python -m pip install "xrefkit-skills-brownfield[project-management]==0.3.0"
+python -m pip install "xrefkit-skills-brownfield[project-management]==0.3.1"
 xrefkit-brownfield-understanding current.json --previous previous.json
 xrefkit-brownfield-understanding current.json --previous previous.json --json --save project-records
 ```

@@ -62,6 +62,76 @@ reader resume or decide. Their placement follows the task format. These details
 supplement XID-backed evidence and Run Log work items, artifacts, concerns,
 phases, verification, and closure; they do not replace them.
 
+## Context-Specific Explanation
+
+When this protocol applies to a specific problem, begin the human-facing
+explanation by connecting the user's purpose, confirmed premises and current
+state to the overall conclusion. Integrate the premises that qualify the
+conclusion into that opening explanation; a separate list of assumptions or
+individual findings does not by itself explain the overall result. Follow the
+task-owned format, and place this explanation beside a structured artifact
+when its fixed schema cannot contain prose.
+
+Develop details from that overall account. Explain which part of the problem
+each finding addresses, how it supports or limits the conclusion, and why it
+matters to the current decision. Select information for the user's concrete
+question and constraints rather than reproducing a general reference. Keep
+required coverage and supporting evidence available; selecting the explanation
+does not authorize omitting required checks or unresolved findings.
+
+Before drafting, inventory the explicit conditions in the original source
+sections governing the chosen decision: current mechanisms, scope, exceptions,
+existing or planned capabilities, dependencies and review corrections. Give
+each distinct condition its own ID, source location and current/planned/proposed
+status; one future item does not cover another. Map every inventory item to
+`reflected`, `not_applicable` with a reason, or `unknown_relevance`. Unknown
+relevance cannot support an unconditional conclusion. Recheck the inventory
+against the original source, not an inventory reconstructed from the draft.
+The record may be a sidecar; decision-changing conditions and their effect must
+also appear in prose beside the affected decision, without a new visible template.
+
+For explicitly named members, first extract the exact original noun phrase
+with its source location as a minimal evidence excerpt, separate from normalized
+wording. Independently reread the original source to verify each name before
+grouping or mapping; similar names and related information are not substitutes.
+Mark ambiguous or unreadable identities unknown instead of guessing a normalized
+name, then check that verified original members and their actions survive in prose.
+
+Before grouping targets under a collective label, enumerate the individually
+named source members and the action, destination and conditions bound to each.
+Retain those individual identities in the source inventory; repeating the
+collective label there is not coverage. Use the label only when its membership
+remains explicit beside it in prose or a compact list. Check against the source
+that grouping neither narrows nor broadens scope, preserves distinct target-action
+relationships, and does not present a partial list as exhaustive or add guessed
+members. Decision-relevant membership must remain in the explanation, not only
+in a sidecar; preserve uncertainty when the source does not establish the full set.
+
+Before compressing the explanation, map each conclusion or recommendation to
+its source conditions and reachable source locations. Distinguish current
+facts from planned changes and proposals; include applicable scope, exceptions,
+dependencies and review corrections. Retain the conditions that could change
+the recommendation, its timing, necessity or limits, including future conditions
+that affect a current decision. If a condition's relevance is uncertain, record
+that uncertainty rather than silently dropping it or inventing its effect.
+
+Check coverage in both directions: each conclusion must have its source basis,
+and each decision-changing source condition must be accounted for in the draft.
+Compare the draft back to the source and applicable corrections before delivery;
+restore omitted conditions and explain their effect alongside the affected
+conclusion. A compact coverage record may support this check, but does not
+replace the explanation or impose a visible table or heading on every report.
+
+Shorten only after establishing these relationships. Preserve the actors,
+causal links, conditions, exceptions, evidence and uncertainty needed to
+understand the result. Do not invent a missing premise or causal explanation;
+state what is unknown and how it limits the conclusion.
+
+Before delivery, check that the reader can identify the overall situation and
+judgment basis without reconstructing them from disconnected topics or evidence
+tables. This is a content review of the explanation, not proof of reader
+understanding, a new approval gate, or a universal heading sequence.
+
 ## Auxiliary Readability Guidance
 
 This is XRefKit's own Japanese-oriented guidance, inspired by selected ASD-STE100
