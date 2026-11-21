@@ -1,0 +1,117 @@
+{
+  "request": {
+    "version": 1,
+    "assignment": {
+      "flow_id": "fixture-flow",
+      "run_id": "fixture-run",
+      "parent_run_id": "fixture-parent-run",
+      "root_run_id": "fixture-root-run",
+      "work_item_id": "fixture-item",
+      "node_id": "fixture-node",
+      "route_id": "fixture-route",
+      "route_revision": 1,
+      "binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "owner_generation": 1,
+      "execution_id": "fixture-execution"
+    },
+    "criteria_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "authorization_ref": "fixture-authority",
+    "reservation_ref": "fixture-reservation",
+    "budget": {
+      "max_attempts": 1,
+      "max_input_tokens": 32,
+      "max_output_tokens": 16,
+      "deadline_ms": 1000
+    },
+    "cancelled": false,
+    "selected_model": "synthetic-model"
+  },
+  "events": [
+    {
+      "version": 1,
+      "assignment": {
+        "flow_id": "fixture-flow",
+        "run_id": "fixture-run",
+        "parent_run_id": "fixture-parent-run",
+        "root_run_id": "fixture-root-run",
+        "work_item_id": "fixture-item",
+        "node_id": "fixture-node",
+        "route_id": "fixture-route",
+        "route_revision": 1,
+        "binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "owner_generation": 1,
+        "execution_id": "fixture-execution"
+      },
+      "attempt_id": "attempt-1",
+      "operation_id": "operation-1",
+      "call_id": "call-1",
+      "kind": "admitted",
+      "sequence": 1
+    },
+    {
+      "version": 1,
+      "assignment": {
+        "flow_id": "fixture-flow",
+        "run_id": "fixture-run",
+        "parent_run_id": "fixture-parent-run",
+        "root_run_id": "fixture-root-run",
+        "work_item_id": "fixture-item",
+        "node_id": "fixture-node",
+        "route_id": "fixture-route",
+        "route_revision": 1,
+        "binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "owner_generation": 1,
+        "execution_id": "fixture-execution"
+      },
+      "attempt_id": "attempt-1",
+      "operation_id": "operation-1",
+      "call_id": "call-1",
+      "kind": "dispatched",
+      "sequence": 2
+    },
+    {
+      "version": 1,
+      "assignment": {
+        "flow_id": "fixture-flow",
+        "run_id": "fixture-run",
+        "parent_run_id": "fixture-parent-run",
+        "root_run_id": "fixture-root-run",
+        "work_item_id": "fixture-item",
+        "node_id": "fixture-node",
+        "route_id": "fixture-route",
+        "route_revision": 1,
+        "binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "owner_generation": 1,
+        "execution_id": "fixture-execution"
+      },
+      "attempt_id": "attempt-1",
+      "operation_id": "operation-1",
+      "call_id": "call-1",
+      "kind": "receipt",
+      "sequence": 3
+    }
+  ],
+  "result": {
+    "version": 1,
+    "assignment": {
+      "flow_id": "fixture-flow",
+      "run_id": "fixture-run",
+      "parent_run_id": "fixture-parent-run",
+      "root_run_id": "fixture-root-run",
+      "work_item_id": "fixture-item",
+      "node_id": "fixture-node",
+      "route_id": "fixture-route",
+      "route_revision": 1,
+      "binding_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "owner_generation": 1,
+      "execution_id": "fixture-execution"
+    },
+    "attempt_id": "attempt-1",
+    "operation_id": "operation-1",
+    "call_id": "call-1",
+    "outcome": "allowed",
+    "transport_completed": true,
+    "observed_model": "synthetic-model",
+    "evidence_ref": "fixture-receipt"
+  }
+}
