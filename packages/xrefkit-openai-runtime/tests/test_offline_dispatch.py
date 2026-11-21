@@ -230,8 +230,7 @@ class OfflineDispatchTests(unittest.TestCase):
         for variant, row, expected in self.spec["cases"][case]:
             with self.subTest(variant=variant):
                 change = row.get("after_prepare", {})
-                omit_reservation = ("reservation" in change and change["reservation"] is None
-                                    or change.get("reservation_matches") is False)
+                omit_reservation = change.get("reservation_matches") is False
                 dispatcher, host, base = self.setup_case(row, reserve_baseline=not omit_reservation)
                 prepared = dispatcher.prepare(base)
                 self.assertIsInstance(prepared, PreparedTool)
@@ -244,18 +243,30 @@ class OfflineDispatchTests(unittest.TestCase):
                 before = dispatcher.snapshot(base)
                 dispatcher.update_host(self.change_host(host, change, advancing=True))
                 at_entry = dispatcher.snapshot(base)
-                input_changes = {key: change[key] for key in ("args", "target", "destination") if key in change}
-                decision = dispatcher.invoke(prepared, self.request(input_changes))
+                input_changes = {key: change[key] for key in ("args", "target", "destination", "reservation")
+                                 if key in change}
+                incoming = self.request(input_changes)
+                decision = dispatcher.invoke(prepared, incoming)
                 after = dispatcher.snapshot(base)
                 reason = decision.reason
+                supplemental = {}
                 if decision.outcome == "executed":
                     self.assertEqual(reason, "bounded_typed_result")
                     self.assertEqual(decision.receipt.entry_tick, self.limits["entry_tick"])
                     reason = "current_at_entry"
+                    supplemental["recipient_withdrawn_after_prepare"] = self.check_recipient_withdrawn()
                 else:
                     self.assertEqual(after.intents, ())
                 if variant == "missing-reservation":
-                    self.assertEqual(at_entry.reservations, ())
+                    self.assertIsNotNone(prepared.request.reservation)
+                    self.assertIsNone(incoming.reservation)
+                    self.assertEqual(len(at_entry.reservations), 1)
+                    self.assertEqual(at_entry.reservations[0].state, "reserved")
+                    self.assertFalse(at_entry.reservations[0].consumed)
+                    self.assertEqual(after, at_entry)
+                    supplemental["prepared_reservation_digest"] = at_entry.reservations[0].reservation_digest
+                    supplemental["entry_reservation_ref_absent"] = True
+                    supplemental["missing_ledger_control"] = self.check_missing_ledger()
                 if variant == "stale-reservation":
                     self.assertEqual(len(at_entry.reservations), 1)
                     self.assertNotEqual(at_entry.reservations[0].action_digest,
@@ -268,7 +279,7 @@ class OfflineDispatchTests(unittest.TestCase):
                 actual = (decision.outcome, reason, after.entry_count)
                 self.record(case, variant, row, expected, actual, before, after, [decision],
                             prepared_binding=prepared.request.generation, prepared_runner=prepared.runner_revision,
-                            ledger_at_entry=asdict(at_entry))
+                            ledger_at_entry=asdict(at_entry), **supplemental)
         dispatcher, host, base = self.setup_case()
         prepared = dispatcher.prepare(base)
         replaced_context = replace(host.context, provenance=b"other trusted synthetic context")
@@ -277,6 +288,40 @@ class OfflineDispatchTests(unittest.TestCase):
         decision = dispatcher.invoke(prepared, base)
         self.assertEqual((decision.outcome, decision.reason), ("hold", "context_held"))
         self.assertEqual(dispatcher.snapshot(base).entry_count, 0)
+
+    def check_recipient_withdrawn(self):
+        dispatcher, host, base = self.setup_case()
+        prepared = dispatcher.prepare(base)
+        self.assertIsInstance(prepared, PreparedTool)
+        self.assertIsNotNone(prepared.return_pin)
+        self.assertTrue(dispatcher._may_read(base))
+        held = self.assemble_for(base.recipient, authorized_recipient="")
+        self.assertEqual(held.hold_reason, "unauthorized_destination")
+        self.assertIsNone(held.payload)
+        dispatcher.update_host(replace(host, return_scope=ToolReturnScope(base.recipient, held)))
+        before = dispatcher.snapshot(base)
+        self.assertEqual(len(before.reservations), 1)
+        self.assertEqual(before.reservations[0].state, "reserved")
+        self.assertFalse(before.reservations[0].consumed)
+        rejected = dispatcher.invoke(prepared, base)
+        self.assertEqual((rejected.outcome, rejected.reason), ("hold", "recipient_egress_unapproved"))
+        self.assertIsNone(rejected.value)
+        self.assertIsNone(rejected.receipt)
+        self.assertEqual(rejected.evidence.effect, "none")
+        after = dispatcher.snapshot(base)
+        self.assertEqual(after, before)
+        return {"unchanged_recipient": True, "upstream_hold": held.hold_reason,
+                "decision": self.summarized(rejected), "before": asdict(before), "after": asdict(after)}
+
+    def check_missing_ledger(self):
+        dispatcher, _, base = self.setup_case(reserve_baseline=False)
+        before = dispatcher.snapshot(base)
+        self.assertEqual(before.reservations, ())
+        decision = self.invoke(dispatcher, base)
+        self.assertEqual((decision.outcome, decision.reason), ("hold", "reservation_missing"))
+        self.assertEqual(dispatcher.snapshot(base), before)
+        return {"entry_reservation_ref_present": True, "ledger_reservation_count": len(before.reservations),
+                "decision": self.summarized(decision), "entry_count": before.entry_count}
 
     def seed_mismatched_reservation(self, dispatcher, host, base):
         stale = replace(base, args=encode({"key": "different"}))

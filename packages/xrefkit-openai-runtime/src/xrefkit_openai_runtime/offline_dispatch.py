@@ -46,7 +46,7 @@ class ToolReturnScope:
 
     @property
     def pin(self) -> tuple[str, str, str] | None:
-        if self.context.payload is None or self.context.hold_reason is not None:
+        if not self.recipient or self.context.payload is None or self.context.hold_reason is not None:
             return None
         return self.recipient, _digest(self.context.payload), self.context.provenance_sha256
 
@@ -104,6 +104,7 @@ class PreparedTool:
     runner_revision: str
     registry_revision: str
     context_pin: ToolContextPin
+    return_pin: tuple[str, str, str] | None
 
 
 @dataclass(frozen=True)
@@ -295,7 +296,7 @@ class OfflineToolDispatch:
             if (
                 self._definition_check(definition.tool_id, definition.version) is not None
                 or not host.listing_approved or not host.permitted_targets
-                or not host.authority.confirmed_destination or not host.return_scope.recipient
+                or not host.authority.confirmed_destination or host.return_scope.pin is None
                 or host.authority.cancelled or not self._context_current()
             ):
                 return ()
@@ -313,7 +314,7 @@ class OfflineToolDispatch:
             if request.target not in host.permitted_targets:
                 return self._record_attempt(request, canonical, ToolDecision("deny", "target_outside_scope"))
             return PreparedTool(request, _digest(canonical), host.runner_id, host.runner_revision,
-                                self._definition.registry_revision, host.context_pin)
+                                self._definition.registry_revision, host.context_pin, host.return_scope.pin)
 
     def reserve_tool(self, request: ToolRequest) -> ToolDecision | None:
         """Trusted host preparation on the private Tool ledger."""
@@ -359,7 +360,11 @@ class OfflineToolDispatch:
         self, prepared: PreparedTool, request: ToolRequest, digest: str, reject_before_entry: bool,
         interruption: Literal["receipt_lost", "paused"] | None,
     ) -> ToolDecision:
-        if prepared.request != request or prepared.action_digest != digest:
+        if prepared.action_digest != digest:
+            return ToolDecision("hold", "action_changed")
+        if prepared.request != request:
+            if request.reservation is None and replace(prepared.request, reservation=None) == request:
+                return ToolDecision("hold", "reservation_missing")
             return ToolDecision("hold", "action_changed")
         old = self._intents.get(request.operation_key)
         if old is not None:
@@ -426,6 +431,8 @@ class OfflineToolDispatch:
             return ToolDecision("hold", "destination_unconfirmed")
         if request.recipient != host.return_scope.recipient:
             return ToolDecision("hold", "recipient_unconfirmed")
+        if prepared.return_pin is None or prepared.return_pin != host.return_scope.pin:
+            return ToolDecision("hold", "recipient_egress_unapproved")
         return None
 
     def _context_matches(self, request: ToolRequest) -> bool:
