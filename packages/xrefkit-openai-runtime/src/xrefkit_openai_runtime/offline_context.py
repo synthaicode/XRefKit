@@ -242,9 +242,12 @@ def assemble_offline_context(
         except ValueError as exc:
             raise _Hold("invalid_inventory") from exc
         pins = _inventory_pins(inventory)
-        if _is_link(fixture_root) or not fixture_root.is_dir():
-            raise _Hold("invalid_fixture_root")
-        root = fixture_root.resolve()
+        try:
+            if _is_link(fixture_root) or not fixture_root.is_dir():
+                raise _Hold("invalid_fixture_root")
+            root = fixture_root.resolve()
+        except OSError as exc:
+            raise _Hold("fixture_root_unavailable") from exc
         manifest_pin = pins["startup.json"]
         _, startup_text = _read_source(root, manifest_pin)
         try:

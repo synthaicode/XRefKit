@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from xrefkit_openai_runtime.contracts import ExecutionRequest
 from xrefkit_openai_runtime.offline_context import (
@@ -142,15 +143,22 @@ class OfflineContextTests(unittest.TestCase):
 
     def test_e201_02_source_boundary(self) -> None:
         unknown = "F20100000003"
-        (self.root / "sources" / "unapproved.md").write_text(f"<!-- xid: {unknown} -->\n", encoding="utf-8")
+        with patch("xrefkit_openai_runtime.offline_context._is_link", side_effect=PermissionError):
+            inaccessible = self.assemble()
+        provenance = self.record("E201-02", "inaccessible-root", inaccessible, "fixture_root_unavailable")
+        self.assertEqual(provenance["assignment"], self.request.assignment.model_dump(mode="json"))
+
         wrong_root = self.root / "sources"
         self.record(
             "E201-02", "wrong-root", self.assemble(fixture_root=wrong_root), "source_unavailable",
             fixture_root=wrong_root,
         )
 
-        original = (self.root / "startup.json").read_bytes()
+        startup_path = self.root / "startup.json"
+        original = startup_path.read_bytes()
+        original_inventory = self.inventory
         added = self.root / "sources" / "unapproved.md"
+        added.write_bytes(f"<!-- xid: {unknown} -->\n".encode("utf-8"))
         self.startup["sources"].append({
             "path": "sources/unapproved.md", "role": "optional-support", "xid": unknown,
             "revision": self.startup["revision"], "sha256": sha256(added.read_bytes()).hexdigest(),
@@ -158,6 +166,7 @@ class OfflineContextTests(unittest.TestCase):
         self.startup["selected_xids"].append(unknown)
         self.repin_startup()
         self.record("E201-02", "repinned-sixth-source", self.assemble(), "source_allowlist_mismatch")
+        added.unlink()
 
         self.startup = json.loads(original)
         pin = next(pin for pin in self.startup["sources"] if pin["path"] == REQUIRED_PATH)
@@ -174,7 +183,6 @@ class OfflineContextTests(unittest.TestCase):
         self.record("E201-02", "repinned-required-source-removed", self.assemble(), "source_allowlist_mismatch")
 
         self.startup = json.loads(original)
-
         self.startup["selected_xids"] = [REQUIRED_XID, unknown]
         self.repin_startup()
         self.record("E201-02", "unauthorized-xid", self.assemble(), "unauthorized_xid_selection")
@@ -185,7 +193,6 @@ class OfflineContextTests(unittest.TestCase):
 
         self.startup["selected_xids"] = [REQUIRED_XID]
         self.repin_startup()
-        (self.root / OPTIONAL_PATH).write_bytes(b"Deliberately not the selected source.\n")
         outcome = self.assemble()
         provenance = self.record("E201-02", "optional-xid-unselected", outcome, None)
         self.assertNotIn(OPTIONAL_XID.encode(), outcome.payload)
@@ -195,6 +202,14 @@ class OfflineContextTests(unittest.TestCase):
             "not_selected",
         )
 
+        startup_path.write_bytes(original)
+        self.startup = json.loads(original)
+        self.inventory = original_inventory
+        self.inventory_sha256 = INVENTORY_SHA256
+        self.assertEqual(
+            sha256((self.root / OPTIONAL_PATH).read_bytes()).hexdigest(),
+            next(pin["sha256"] for pin in self.startup["sources"] if pin["path"] == OPTIONAL_PATH),
+        )
         pin = next(pin for pin in self.startup["sources"] if pin["path"] == REQUIRED_PATH)
         pin["path"] = "../out-of-root.md"
         self.repin_startup()
