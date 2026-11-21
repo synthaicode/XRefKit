@@ -257,6 +257,8 @@ def assemble_offline_context(
         for path in startup.startup_order:
             pin = pins[path]
             raw, text = _read_source(root, pin)
+            if not text.strip():
+                raise _Hold("source_incomplete_or_invalid", pin)
             instructions.append(text)
             evidence(pin, "retained", raw_byte_span=[0, len(raw)])
 
@@ -267,6 +269,8 @@ def assemble_offline_context(
                 raw, text = _read_source(root, pin)
                 if _XID_MARKER.findall(text) != [xid]:
                     raise _Hold("source_xid_mismatch_or_ambiguous", pin)
+                if pin.role == "required-support" and not _XID_MARKER.sub("", text, count=1).strip():
+                    raise _Hold("source_incomplete_or_invalid", pin)
             except _Hold as exc:
                 if pin.role == "required-support" or exc.reason in ("source_outside_root", "invalid_source_path"):
                     raise

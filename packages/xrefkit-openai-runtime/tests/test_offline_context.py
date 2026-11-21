@@ -241,6 +241,13 @@ class OfflineContextTests(unittest.TestCase):
         self.replace_pinned_source(REQUIRED_PATH, original_required + b"<!-- xid: F20100000002 -->\n")
         self.record("E201-03", "ambiguous-body-xid", self.assemble(), "source_xid_mismatch_or_ambiguous")
 
+        self.replace_pinned_source(REQUIRED_PATH, f"<!-- xid: {REQUIRED_XID} -->\n".encode("ascii"))
+        self.record("E201-03", "repinned-required-xid-no-body", self.assemble(), "source_incomplete_or_invalid")
+        self.replace_pinned_source(REQUIRED_PATH, original_required)
+
+        self.replace_pinned_source(CONTROL_PATH, b"\n")
+        self.record("E201-03", "repinned-blank-required-control", self.assemble(), "source_incomplete_or_invalid")
+
     def test_e201_04_assignment_and_serialization(self) -> None:
         original_request = self.request
         original_assignment = original_request.assignment
