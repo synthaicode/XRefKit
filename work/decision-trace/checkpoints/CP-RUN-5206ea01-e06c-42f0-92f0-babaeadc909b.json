@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-5206ea01-e06c-42f0-92f0-babaeadc909b",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-11-21T15:23:03Z",
+  "git_commit": "343b892e88603f420ef39cd527699269765dd625",
+  "purpose": "before AI Skill run brownfield.workflow",
+  "work_item_id": null,
+  "run_id": "5206ea01-e06c-42f0-92f0-babaeadc909b",
+  "context_policy": "current-only",
+  "human_approved": false
+}
