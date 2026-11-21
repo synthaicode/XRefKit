@@ -18,7 +18,10 @@ from xrefkit_openai_runtime.offline_evaluation import (
     evaluate_io, evaluation_digest, evidence_digest, project_interaction, reevaluate_io,
     tool_observation_digest, trace_pins,
 )
-from xrefkit_openai_runtime.offline_responses import AdapterResult, AttemptDiagnostics, TextItem, UsageObservation
+from xrefkit_openai_runtime.offline_responses import (
+    AdapterResult, Admission, AttemptDiagnostics, DispatchState, FakeInvocation,
+    FakeResponse, OfflineResponsesAdapter, TextItem, UsageObservation,
+)
 
 
 _FIXTURE_SHA256 = "59e4aa50166dd059ff9852cac8c269a7ad135eca48dc703a4bddcedac15e02c1"
@@ -224,6 +227,10 @@ class OfflineEvaluationCases(unittest.TestCase):
                     "tool_observation_sha256": policy.tool_observation_sha256,
                     "evaluator_side_effects": "none",
                 }
+                if variant == "misordered-events":
+                    source = result.source_findings[0]
+                    self.assertEqual(source.provenance, "pinned_v1_order_and_transition")
+                    self.assertNotEqual(*source.comparison_sha256)
                 if variant == "rubric-drift":
                     self.assertNotEqual(*result.source_findings[0].comparison_sha256)
                 if variant == "expected-model-missing":
@@ -240,6 +247,8 @@ class OfflineEvaluationCases(unittest.TestCase):
                     proof["verified_successor"] = self.check_reevaluation(inputs.reevaluation)
                 if variant == "exact-trace":
                     proof["upstream_controls"] = self.verify_native_observations()
+                if variant == "reviewer-disagreement":
+                    proof["review_pin_controls"] = self.check_review_pin_set(inputs, policy)
                 serialized = json.dumps(proof)
                 for canary in assertions.get("ordinary_output_excludes", []):
                     self.assertEqual(inputs.interaction["fixture_forbidden_content"], canary)
@@ -436,6 +445,8 @@ class OfflineEvaluationCases(unittest.TestCase):
     def verify_native_observations(self):
         _, _, inputs, policy = self.run_case(())
         native_api = self.verify_native_api(inputs, policy)
+        outcome_operands = self.check_v1_outcome(inputs, policy)
+        trace_operand_controls = self.check_v1_trace_operands(inputs, policy)
 
         dispatch = test_offline_dispatch.OfflineDispatchTests()
         dispatch.setUpClass()
@@ -482,7 +493,8 @@ class OfflineEvaluationCases(unittest.TestCase):
         self.assertEqual((altered_output.api_outcome, altered_output.usage), ("completed", inputs.api.usage))
         self.assertEqual((altered_structure.outcome, altered_output.aggregate), ("unresolved", "criteria_unresolved"))
         return {
-            "native_api": native_api,
+            "native_api": native_api, "v1_outcome_operands": outcome_operands,
+            "v1_rejected_trace_operands": trace_operand_controls,
             "output_substitution": {
                 "api_source": altered_output.source_findings[1].outcome, "usage": asdict(altered_output.usage),
                 "structure": altered_structure.reason, "operands": altered_structure.comparison_sha256,
@@ -507,13 +519,38 @@ class OfflineEvaluationCases(unittest.TestCase):
              "completed", "required_usage_reported", (0, 0, 0)),
             ("partial-usage", {"usage": {"input_tokens": 0}}, "completed", "required_usage_partial", (0, None, None)),
             ("absent-usage", {"usage": None}, "completed", "required_usage_missing", (None, None, None)),
-            ("out-of-scope-model", {"model": provider_alternate}, "completed", "observed_model_identifier_redacted", None),
+            ("missing-model", {}, "completed", "observed_model_missing", None),
+            ("out-of-scope-model", {}, "completed", "observed_model_identifier_redacted", None),
         )
         evidence = {}
         for label, changes, disposition, decisive_reason, expected_usage in native_variants:
             fake_response = {**harness.defaults["response"], "output": [text_output], **changes}
-            settings, sends, _, invoke = harness.setup_variant({"response": fake_response})
-            api = invoke(request_override=request)
+            settings = harness.defaults
+            sends: list[FakeInvocation] = []
+
+            def fake_provider(invocation: FakeInvocation) -> FakeResponse:
+                sends.append(invocation)
+                requested_model = json.loads(invocation.body)["model"]
+                response = {**fake_response, "model": requested_model}
+                if label == "missing-model":
+                    del response["model"]
+                elif label == "out-of-scope-model":
+                    response["model"] = provider_alternate
+                return FakeResponse(settings["transport_request_id"], response)
+
+            admission = Admission(
+                request.assignment, settings["attempt_id"], request.authorization_ref, request.reservation_ref,
+                _sha(harness.context.payload), harness.context.provenance_sha256,
+            )
+            adapter = OfflineResponsesAdapter(fake_provider)
+            api = adapter.invoke(
+                request, harness.context, attempt_id=settings["attempt_id"],
+                profile=settings["profile"], destination=settings["destination"],
+                read_current=lambda: DispatchState(request.assignment, admission),
+                authorize_body=lambda profile, destination, _: (
+                    profile == settings["profile"] and destination == settings["destination"]
+                ),
+            )
             self.assertEqual((api.disposition, len(sends)), (disposition, 1))
             wire_digest = _sha(sends[0].body)
             self.assertEqual(api.diagnostics.request_sha256, wire_digest)
@@ -546,14 +583,33 @@ class OfflineEvaluationCases(unittest.TestCase):
                 self.assertEqual(checks["usage"].reason, decisive_reason)
             if label in ("refusal", "incomplete"):
                 self.assertEqual((checks["outcome"].outcome, checks["outcome"].reason), ("fail", decisive_reason))
-            if label == "out-of-scope-model":
-                self.assertEqual(api.diagnostics.observed_model, "sha256:" + _sha(provider_alternate.encode()))
+            actual_model = api.diagnostics.observed_model
+            serialized_model = json.loads(sends[0].body)["model"]
+            self.assertEqual(serialized_model, request.selected_model)
+            if actual_model is None:
+                normalized_model = "absent"
+            elif actual_model.startswith("sha256:"):
+                normalized_model = "digest_only"
+            elif actual_model == serialized_model:
+                normalized_model = "allowlisted_match"
+            else:
+                normalized_model = "different"
+            if label == "missing-model":
+                self.assertIsNone(actual_model)
+                self.assertEqual((checks["model"].outcome, checks["model"].reason), ("unresolved", decisive_reason))
+                self.assertEqual(checked.v1_assessment, "held")
+            elif label == "out-of-scope-model":
+                self.assertEqual(actual_model, "sha256:" + _sha(provider_alternate.encode()))
                 self.assertNotEqual(api.diagnostics.observed_model, provider_alternate)
                 self.assertEqual((checks["model"].outcome, checks["model"].reason), ("unresolved", decisive_reason))
                 self.assertEqual(checked.v1_assessment, "held")
+            else:
+                self.assertEqual(actual_model, serialized_model)
+                self.assertEqual((checks["model"].outcome, checks["model"].reason), ("pass", "observed_model_matched"))
+                self.assertEqual(checked.v1_assessment, "review_required")
             evidence[label] = {
                 "wire_sha256": wire_digest, "disposition": api.disposition, "usage": usage,
-                "normalized_model": "digest_only" if label == "out-of-scope-model" else "allowlisted",
+                "wire_model_sha256": _sha(serialized_model.encode()), "normalized_model": normalized_model,
                 "model_check": checks["model"].reason, "outcome_check": checks["outcome"].reason,
                 "usage_check": checks["usage"].reason,
             }
@@ -565,4 +621,61 @@ class OfflineEvaluationCases(unittest.TestCase):
         model = next(check for check in contradictory.criteria if check.id == "model")
         self.assertEqual((model.outcome, model.reason), ("fail", "observed_model_mismatch"))
         evidence["authenticated_mismatch_control"] = {"outcome": model.outcome, "reason": model.reason}
+        return evidence
+
+    def check_review_pin_set(self, inputs, policy):
+        first, second = inputs.reviews
+        omitted = evaluate_io(policy, replace(inputs, reviews=(first,)))
+        partial = next(check for check in omitted.criteria if check.id == "semantic")
+        self.assertEqual((partial.outcome, partial.reason), ("unresolved", "pinned_review_set_incomplete"))
+        self.assertEqual(omitted.aggregate, "criteria_unresolved")
+        self.assertNotEqual(*partial.comparison_sha256)
+
+        duplicate = evaluate_io(policy, replace(inputs, reviews=(first, first)))
+        repeated = next(check for check in duplicate.criteria if check.id == "semantic")
+        self.assertEqual((repeated.outcome, repeated.reason), ("unresolved", "duplicate_review_record"))
+        self.assertEqual(duplicate.aggregate, "criteria_unresolved")
+
+        reordered = evaluate_io(policy, replace(inputs, reviews=(second, first)))
+        disagreement = next(check for check in reordered.criteria if check.id == "semantic")
+        self.assertEqual((disagreement.outcome, disagreement.reason), ("unresolved", "independent_review_conflict"))
+        self.assertEqual(reordered.aggregate, "criteria_unresolved")
+        return {"missing": asdict(partial), "duplicate": asdict(repeated), "reordered": asdict(disagreement)}
+
+    def check_v1_outcome(self, inputs, policy):
+        events = (*inputs.events[:-1], inputs.events[-1].model_copy(update={"kind": "held"}))
+        result = ExecutionResult.model_validate({**inputs.result, "outcome": "held", "transport_completed": False})
+        modified = replace(inputs, events=events, result=result)
+        trusted = replace(policy, trace_pins=trace_pins(inputs.request, events, result))
+        checked = evaluate_io(trusted, modified)
+        self.assertEqual(checked.source_findings[0].outcome, "pass")
+        outcome = next(check for check in checked.criteria if check.id == "outcome")
+        self.assertEqual(outcome.reason, "transport_outcome_unresolved")
+        self.assertEqual(outcome.comparison_sha256, (
+            _sha(_encode(("allowed", True, "completed", "executed_or_replay"))),
+            _sha(_encode(("held", False, "completed", "executed"))),
+        ))
+        return asdict(outcome)
+
+    def check_v1_trace_operands(self, inputs, policy):
+        result = ExecutionResult.model_validate(inputs.result)
+        event = inputs.events[1]
+        broken_correlation = (
+            inputs.events[0], event.model_copy(update={"operation_id": "other-operation"}), *inputs.events[2:]
+        )
+        rejected_cases = (
+            ("call_correlation", broken_correlation, result,
+             ("attempt_correlation", (event.operation_id, event.call_id)),
+             ("attempt_correlation", ("other-operation", event.call_id))),
+            ("transport_flag", inputs.events, result.model_copy(update={"transport_completed": False}),
+             ("transport_completed", True), ("transport_completed", False)),
+        )
+        evidence = {}
+        for name, events, output, expected, actual in rejected_cases:
+            pinned = replace(policy, trace_pins=trace_pins(inputs.request, events, output))
+            rejected = evaluate_io(pinned, replace(inputs, events=events, result=output))
+            trace = rejected.source_findings[0]
+            self.assertEqual((trace.outcome, trace.reason), ("fail", "trace_order_invalid"))
+            self.assertEqual(trace.comparison_sha256, (_sha(_encode(expected)), _sha(_encode(actual))))
+            evidence[name] = asdict(trace)
         return evidence

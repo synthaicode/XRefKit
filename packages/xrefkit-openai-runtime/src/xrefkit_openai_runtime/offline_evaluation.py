@@ -298,9 +298,46 @@ def _trace(policy: EvaluationPolicy, inputs: EvaluationInputs) -> tuple[Criterio
     try:
         assessment = assess_model_result(request, inputs.events, result)
     except ValueError:
-        return _criterion(name, "fail", "trace_order_invalid"), "held"
+        expected, actual = _trace_rule_operands(inputs.events, result)
+        return _compared(_criterion(name, "fail", "trace_order_invalid"),
+                         "pinned_v1_order_and_transition", expected, actual), "held"
 
     return _criterion(name, "pass", "trace_correlated", result.evidence_ref), assessment
+
+
+def _trace_rule_operands(events: tuple[ExecutionEvent, ...], result: ExecutionResult) -> tuple[object, object]:
+    """Describe the first rejected V1 operand pair; the accepted validator decides validity."""
+    predecessors = {
+        "admitted": (None,),
+        "dispatched": ("admitted",),
+        "receipt": ("dispatched", "held"),
+        "held": ("dispatched",),
+    }
+    stages: dict[str, str] = {}
+    attempts: dict[str, tuple[str, str]] = {}
+    for sequence, event in enumerate(events, 1):
+        if event.sequence != sequence:
+            return ("event_sequence", sequence), ("event_sequence", event.sequence)
+        correlation = (event.operation_id, event.call_id)
+        expected_correlation = attempts.setdefault(event.attempt_id, correlation)
+        if expected_correlation != correlation:
+            return ("attempt_correlation", expected_correlation), ("attempt_correlation", correlation)
+        allowed = predecessors[event.kind]
+        previous = stages.get(event.attempt_id)
+        if previous not in allowed:
+            return ("preceding_stage", event.kind, allowed), ("preceding_stage", event.kind, (previous,))
+        stages[event.attempt_id] = event.kind
+
+    correlation = attempts.get(result.attempt_id)
+    result_correlation = (result.operation_id, result.call_id)
+    if correlation is not None and correlation != result_correlation:
+        return ("result_correlation", correlation), ("result_correlation", result_correlation)
+    stage = stages.get(result.attempt_id)
+    transport_completed = stage == "receipt"
+    if result.transport_completed != transport_completed:
+        return ("transport_completed", transport_completed), ("transport_completed", result.transport_completed)
+    allowed_stages = {"refused": (None, "admitted"), "allowed": ("admitted", "dispatched", "receipt")}
+    return ("result_stage", result.outcome, allowed_stages.get(result.outcome)), ("result_stage", result.outcome, (stage,))
 
 
 def _api_check(policy: EvaluationPolicy, inputs: EvaluationInputs) -> Criterion:
@@ -600,7 +637,18 @@ def _semantic(policy: EvaluationPolicy, inputs: EvaluationInputs, output_sha256:
         failure = _review_check(policy, inputs, review, output_sha256, available)
         if failure is not None:
             return failure
-    refs = tuple(review.id for review in inputs.reviews) + tuple(
+    expected_reviews = tuple(sorted(policy.reviewer_record_pins))
+    actual_reviews = tuple(sorted(evidence_digest(review) for review in inputs.reviews))
+    review_ids = tuple(review.id for review in inputs.reviews)
+    if len(set(review_ids)) != len(review_ids):
+        return _compared(_unknown(name, "duplicate_review_record", *review_ids,
+                                  next_check="request_independent_review"), "independent_fixture_review",
+                         tuple(dict.fromkeys(review_ids)), review_ids)
+    if actual_reviews != expected_reviews:
+        return _compared(_unknown(name, "pinned_review_set_incomplete", *review_ids,
+                                  next_check="request_independent_review"), "independent_fixture_review",
+                         expected_reviews, actual_reviews)
+    refs = review_ids + tuple(
         ref for review in inputs.reviews for ref in review.basis_refs
     )
     verdicts = {review.verdict for review in inputs.reviews}
@@ -683,8 +731,9 @@ def _source_evidence(
         _record_digest([event.model_dump(mode="json") for event in inputs.events]),
         _record_digest(result.model_dump(mode="json") if isinstance(result, ExecutionResult) else result),
     )
+    trace = replace(checks[0], id="v1_identity")
     return (
-        _compared(replace(checks[0], id="v1_identity"), "pinned_v1",
+        trace if trace.comparison_sha256 is not None else _compared(trace, "pinned_v1",
                   (policy.trace_pins, policy.assignment.model_dump(mode="json"), asdict(policy.links), policy.links.criteria_sha256),
                   (observed_trace, request.assignment.model_dump(mode="json"), asdict(inputs.links), request.criteria_sha256)),
         _compared(replace(checks[1], id="api_identity"), "normalized_api",
@@ -699,7 +748,8 @@ def _comparison_metadata(
     sources: tuple[Criterion, ...], effect: str,
 ) -> tuple[Criterion, ...]:
     source_comparisons = tuple(item.comparison_sha256 for item in sources)
-    observed_model = inputs.result.observed_model if isinstance(inputs.result, ExecutionResult) else None
+    result = inputs.result if isinstance(inputs.result, ExecutionResult) else None
+    observed_model = result.observed_model if result is not None else None
     records = {
         "identity": ("pinned_v1_api_tool", tuple(pair[0] for pair in source_comparisons),
                      tuple(pair[1] for pair in source_comparisons)),
@@ -707,8 +757,10 @@ def _comparison_metadata(
                   (inputs.request.selected_model, observed_model, inputs.api.diagnostics.observed_model)),
         "structure": ("normalized_output", ("objective_string", policy.output_byte_limit),
                       (len(inputs.output_utf8), _digest(inputs.output_utf8))),
-        "outcome": ("v1_api_tool", ("completed", "executed_or_replay"),
-                    (inputs.api.disposition, inputs.tool.outcome)),
+        "outcome": ("v1_api_tool", ("allowed", True, "completed", "executed_or_replay"),
+                    (result.outcome if result is not None else None,
+                     result.transport_completed if result is not None else None,
+                     inputs.api.disposition, inputs.tool.outcome)),
         "effect": ("independent_postcondition", policy.expected_postcondition,
                    (effect, tuple(evidence_digest(item) for item in inputs.postconditions))),
         "usage": ("normalized_api", sorted(policy.usage_required_fields), asdict(inputs.api.usage)),
