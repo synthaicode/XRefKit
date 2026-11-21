@@ -57,8 +57,9 @@ class Records:
     def resolve(self, pointer):
         return self.records[pointer]
 
-    def authority(self, *, pm_revision="pm-1", project_revision="project-1", status="Todo", **overrides):
-        project = self.add("project", "project/item", project_revision, ProjectState("issue", "item", status))
+    def authority(self, *, pm_revision="pm-1", project_revision="project-1", status="Todo",
+                  issue_id="issue", **overrides):
+        project = self.add("project", "project/item", project_revision, ProjectState(issue_id, "item", status))
         fields = {
             "kind": "progress",
             "state": "Review the affected records",
@@ -68,7 +69,7 @@ class Records:
             "next_action": "Read the current source evidence",
         }
         fields.update(overrides)
-        pm = self.add("pm", "pm", pm_revision, PMState("issue", "item", project_revision, status, **fields))
+        pm = self.add("pm", "pm", pm_revision, PMState(issue_id, "item", project_revision, status, **fields))
         return ProjectionInput(project, pm)
 
     def preserved_issue(self, issue):

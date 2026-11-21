@@ -58,53 +58,68 @@ sends external messages, assigns stakeholders or changes plans automatically.
 
 The five Skills use the shared
 [persistence handoff](../../../skills/packs/project-management/progress_rules_setup/references/persistence_handoff.md#xid-62A9D4E7B103)
-to produce a concise Human View from the existing authoritative records.
-A progress report leads with material changes from the last identifiable report.
-An approval request shows the precise decision, scope of permission, effect of
-holding it, and material unresolved risks. Review conclusions distinguish
-verified scope from remaining implementation or verification work.
+for record ownership, updates and review handoffs. Keep the existing project
+mapping.
 
-When GitHub is configured, the Project is authoritative for its configured
-progress fields. The existing Decision and Execution records own plans,
-dependencies, approvals, baselines, revisions and observations. Technical
-details use the configured evidence, Knowledge, Brownfield or Runtime record.
-The Issue presents the work purpose, acceptance criteria, current decision and
-next action with role-labelled references. Use the exact source revisions for
-AI handoff and keep them in the underlying records.
+| Record | What the reader can rely on |
+| --- | --- |
+| Canonical Issue | Current intent, requirements, acceptance criteria, active decisions and approval state, next action and owner. Its current references identify the applicable management and technical records. |
+| GitHub Project | Current board status and other configured Project fields. The Issue explains evidenced dependency holds that affect the work. |
+| Project Management | Decision and Execution plans, dependencies, schedules and CPM, scoped approval evidence, baselines, revisions and observations. |
+| Technical records | Versioned designs, contracts, tests, verification, sources and evidence in existing stores. Include the owner, applicability, and revision, XID or hash when needed for an exact lookup. |
+| Original Issue record | The exact prior body for audit and change review, along with GitHub's existing edit history and comments. |
+| Human View | A concise display at the top of the Issue. Lead with material changes or the current state, then show actionable decisions, risks, blockers and the next step. |
 
-### Issue projection candidate
+### Current Issue record and AI handoff
 
-The package module `xrefkit_skills_project_management.issue_projection`
-prepares a bounded managed block from frozen source references. A project host
-maps its existing reads into the input types, checks the destination's access
-rules and supplies exact immutable readbacks and human-readable links. The
-module checks identity, revision and content digest before preparing the body.
-Keep the host's normalization bound to the verified source bytes. The
-projection types are integration inputs and do not change existing stored
-records, approval enums, scheduling history or Brownfield formats.
+The package module `xrefkit_skills_project_management.issue_work_record`
+supports an Issue with one inline managed `IssueWorkRecord` outside the top
+Human View. Keep current and archival reference declarations distinct in that
+record. `resolve_work_handoff` starts from the current Issue body, resolves the
+configured Project and PM locators, and checks the current designated technical
+and Decision revisions against the Issue's references. Carry the applicable decisions, execution inputs, unknowns,
+authorization scope, verification and stop conditions through the existing
+Workflow Runtime Binding. If a required reference is missing, stale, unrelated
+or out of scope, stop the affected handoff. Historical snapshots remain
+available through their labeled history links.
 
-Creation prepares an Issue body from verified sources. For updates preserve
-manual content and compare against the latest Issue and Project basis. Before
-legacy extraction obtain the per-Issue approval, archive the entire previous
-body with exact readback and inventory and preserve incoming fragments. An
-existing collapsed technical section requires the same migration checks.
+A host maps existing reads to the input types, checks the destination's access
+rules, and supplies exact readbacks and reader-accessible references. Keep its
+normalized values bound to the verified bytes. The Issue uses a small inline
+record plus links to the project's existing PM and technical stores. The
+package does not require a new record store or redefine project approvals,
+scheduling history, or Brownfield and Runtime contracts.
 
-GitHub REST documents conditional reads and its Issue update endpoint does not
-document an atomic compare-and-update against Issue, Project and source
-revisions together. Use the prepared body in the confirmed review handoff on
-GitHub unless the host can supply the required guarded writer. Run the
-candidate against copied or synthetic records before seeking a production
-migration approval.
+### Prepare and deliver an update
 
-The host calls `render_view(current, resolve, previous=previous)` using the
-current and last reported source references. `prepare_create(view)` prepares
-an initial body for a host-assigned logical identity. `prepare_update`
-requires the existing Issue snapshot, the verified archive and, for ordinary
-updates, the last delivery's managed block identity. Both return a plan with
-no external side effects. `apply_update` accepts a writer with an atomic
-Issue and Project compare guarantee. Store the archived snapshot and verified
-delivery receipt through the configured provider. Re-read the destination and
-source revisions before retrying a conflict or an uncertain outcome.
+1. Save and verify applicable management and technical changes in their
+   existing stores. Resolve their exact versions before linking them from the
+   current Issue. Prepare the top summary from the current work record, mapped
+   Project and applicable sources.
+2. Preserve the preceding Issue body and the existing comments and platform
+   edit history. Routine updates can use a verified readback from the existing
+   Issue history route. Compare prior delivery and managed work-record identity
+   before replacing managed
+   content, and preserve manual content outside the declared blocks. For a
+   legacy migration, require explicit approval for the exact Issue revision,
+   verify the complete original's readback, and check the old fragment mapping.
+3. Refresh the Issue, Project and required sources before delivery. Use the
+   host's guarded writer for automated changes. If a receiving route lacks the
+   required guarantee, hand off the prepared candidate for review.
+4. Read back the actual destination and sources after a partial or uncertain
+   result. `reconcile_current_update` recognizes a confirmed prepared body
+   and a verified unchanged prior body or creation reservation. Divergence
+   requires a new review. Preserve already verified saves, record any gaps, and retry only
+   the unresolved authorized step. A completed source save alone establishes
+   no Issue or Project update.
+
+The existing `render_view`, `prepare_create`, `prepare_update` and
+`apply_update` routes remain available. `apply_update` requires the guarded
+writer's atomic Issue and Project revision comparison. GitHub REST documents
+conditional reads and does not document that compare-and-update guarantee for
+the Issue body and Project together. Without a host that provides the
+guarantee, use the configured review handoff. Test with copied or synthetic
+records before seeking production migration approval.
 
 ## Distribution
 

@@ -30,7 +30,10 @@ class ProjectionConflict(ProjectionError):
 
 @dataclass(frozen=True)
 class RecordPointer:
-    role: Literal["project", "pm", "technical", "decision", "archive", "migration_authorization", "delivery"]
+    role: Literal[
+        "project", "pm", "technical", "decision", "archive", "issue_history",
+        "migration_authorization", "delivery",
+    ]
     locator: str
     revision: str
     sha256: str
@@ -193,14 +196,21 @@ class _Verified:
     pm: PMState
     decision: DecisionRequest | None
     links: tuple[tuple[str, str], ...]
+    evidence: tuple[Readback, ...]
 
 
-def _load(source: ProjectionInput, resolve: ResolveRecord) -> _Verified:
+def _load(
+    source: ProjectionInput,
+    resolve: ResolveRecord,
+    issue_scope: tuple[str, tuple[str, ...]] | None = None,
+) -> _Verified:
     project = _resolve(source.project, "project", resolve)
     pm = _resolve(source.pm, "pm", resolve)
     _require(isinstance(project.value, ProjectState), "authoritative Project state missing")
     _require(isinstance(pm.value, PMState), "authoritative PM state missing")
     state = pm.value
+    if issue_scope is not None:
+        state = replace(state, purpose=issue_scope[0], acceptance=issue_scope[1])
     _text(project.value.issue_id, "Project Issue identity")
     _text(project.value.item_id, "Project item identity")
     _text(project.value.status, "Project status")
@@ -235,8 +245,8 @@ def _load(source: ProjectionInput, resolve: ResolveRecord) -> _Verified:
     _require(len({record.locator for record in records}) == len(records), "record roles require distinct locators")
 
     links = [("Project item", project.link), ("PM record", pm.link)]
-    for index, pointer in enumerate(source.evidence, 1):
-        evidence = _resolve(pointer, "technical", resolve)
+    evidence_records = tuple(_resolve(pointer, "technical", resolve) for pointer in source.evidence)
+    for index, evidence in enumerate(evidence_records, 1):
         links.append((f"Technical evidence {index}", evidence.link))
 
     decision = None
@@ -267,10 +277,10 @@ def _load(source: ProjectionInput, resolve: ResolveRecord) -> _Verified:
                 "decision option labels must be unique and the recommendation must name a recorded option",
             )
             links.append(("Decision scope", record.link))
-    return _Verified(state, decision, tuple(links))
+    return _Verified(state, decision, tuple(links), evidence_records)
 
 
-def _changes(current: _Verified, previous: _Verified | None) -> str:
+def _changes(current: _Verified, previous: _Verified | None, extra_changes: tuple[str, ...]) -> str:
     if previous is None:
         return "Previous report basis is unknown."
     attributes = (
@@ -286,6 +296,7 @@ def _changes(current: _Verified, previous: _Verified | None) -> str:
     previous_decision = replace(previous.decision, pm_revision="") if previous.decision else None
     if current_decision != previous_decision:
         changed.append("human decision")
+    changed.extend(extra_changes)
     if not changed:
         return "No material change from the previous report."
     return "Changed since the previous report: " + ", ".join(changed) + "."
@@ -298,9 +309,23 @@ def render_view(
     previous: ProjectionInput | None = None,
 ) -> ProjectedView:
     """Render a creation draft or replaceable view from current authoritative records."""
-    verified = _load(current, resolve)
+    return _render_verified(
+        current, _load(current, resolve), previous,
+        _load(previous, resolve) if previous is not None else None,
+    )
+
+
+def _render_verified(
+    current: ProjectionInput,
+    verified: _Verified,
+    previous: ProjectionInput | None = None,
+    prior: _Verified | None = None,
+    *,
+    reference_labels: tuple[str, ...] = (),
+    history_links: tuple[str, ...] = (),
+    extra_changes: tuple[str, ...] = (),
+) -> ProjectedView:
     state = verified.pm
-    prior = _load(previous, resolve) if previous is not None else None
     if prior is not None:
         _require(
             (prior.pm.issue_id, prior.pm.item_id) == (state.issue_id, state.item_id)
@@ -309,7 +334,7 @@ def render_view(
             "previous report basis is for different work",
         )
 
-    lines = [VIEW_START.decode(), f"**{_inline(state.state)}**", "", _changes(verified, prior), ""]
+    lines = [VIEW_START.decode(), f"**{_inline(state.state)}**", "", _changes(verified, prior, extra_changes), ""]
     lines += [f"**Purpose.** {_inline(state.purpose)}", "", "**Acceptance.**", ""]
     lines.extend(f"- {_inline(criterion)}" for criterion in state.acceptance)
     for label, items in (("Blockers", state.blockers), ("Risks and unknowns", state.risks)):
@@ -343,8 +368,13 @@ def render_view(
         lines += ["", "**Deadline.** " + _inline(state.deadline)]
     lines += ["", f"**Next.** {_inline(state.owner)} — {_inline(state.next_action)}.", ""]
     links = list(verified.links)
+    if reference_labels:
+        _require(len(reference_labels) == len(current.evidence), "technical link labels do not match records")
+        for index, label in enumerate(reference_labels, 2):
+            links[index] = (_inline(label), links[index][1])
     if prior is not None:
         links.append(("Previous PM record", prior.links[1][1]))
+    links.extend(("Issue history snapshot", _url(link)) for link in history_links)
     lines += [" · ".join(f"[{label}](<{link}>)" for label, link in links), VIEW_END.decode()]
     sources = (current.project, current.pm, *current.evidence)
     if current.decision is not None:
@@ -406,6 +436,7 @@ class UpdatePlan:
     replacement: bytes
     archive: RecordPointer | None
     prior_delivery: RecordPointer | None
+    current_pm: RecordPointer | None = None
 
     @property
     def changed(self) -> bool:
@@ -459,9 +490,15 @@ def managed_view_sha256(body: bytes) -> str:
     return _digest(body[slice(*bounds)])
 
 
-def _archived(snapshot: IssueSnapshot, archive: RecordPointer | None, resolve: ResolveRecord) -> Readback:
+def _archived(
+    snapshot: IssueSnapshot,
+    archive: RecordPointer | None,
+    resolve: ResolveRecord,
+    *,
+    role: str = "archive",
+) -> Readback:
     _require(archive is not None, "archive of the exact prior Issue revision is required")
-    found = _resolve(archive, "archive", resolve)
+    found = _resolve(archive, role, resolve)
     _require(
         found.content == snapshot.body and isinstance(found.value, IssueArchive)
         and (found.value.issue_id, found.value.issue_revision) == (snapshot.issue_id, snapshot.revision),
@@ -521,6 +558,7 @@ def prepare_update(
     prior_delivery: RecordPointer | None = None,
     resolve: ResolveRecord,
     migration: LegacyMigration | None = None,
+    edit_history: RecordPointer | None = None,
 ) -> UpdatePlan:
     """Stage an update without mutating Issue, Project, or evidence records."""
     _require(snapshot.issue_id == view.issue_id, "view is for a different Issue")
@@ -529,6 +567,7 @@ def prepare_update(
     _validate_view(view)
     bounds = _view_bounds(snapshot.body)
     if migration is not None:
+        _require(edit_history is None, "legacy migration requires its exact archived body")
         saved = _archived(snapshot, archive, resolve)
         replacement = _legacy_replacement(snapshot, view, saved, migration, resolve)
     else:
@@ -545,10 +584,13 @@ def prepare_update(
                 and prior.managed_sha256 == managed_view_sha256(snapshot.body),
                 "existing Human View differs from the prior delivery; reconcile before replacing it",
             )
-            _archived(snapshot, archive, resolve)
+            if edit_history is not None:
+                _archived(snapshot, edit_history, resolve, role="issue_history")
+            else:
+                _archived(snapshot, archive, resolve)
     return UpdatePlan(
         snapshot.issue_id, snapshot.revision, _digest(snapshot.body), view.project,
-        view.project_item_id, view.project_status, replacement, archive, prior_delivery,
+        view.project_item_id, view.project_status, replacement, edit_history or archive, prior_delivery,
     )
 
 

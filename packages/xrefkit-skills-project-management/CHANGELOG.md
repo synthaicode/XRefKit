@@ -2,9 +2,12 @@
 
 ## Unreleased
 
-- Prepare a compact Issue view from separate, verified Project Management and
-  technical records. Preserve manual text, historical evidence and links
-  through verified archive and revision preconditions.
+- Prepare a compact Issue view from the current Issue work record and verified
+  Project Management and technical references. Resolve AI handoffs from current
+  inputs and retain original Issue revisions for audit.
+- Preserve manual text, historical links and platform history through verified
+  archive and revision checks. Reconcile partial deliveries using readback of
+  the Issue and its linked records.
 
 ## 0.1.2 — 2026-11-21
 

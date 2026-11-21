@@ -21,16 +21,19 @@ Technical investigation, quality verification and final agreement judgments reta
 their existing owners. Project Knowledge supplies actual settings. No project
 values, custom UI, Azure attachment adapter or generic work tracker is bundled.
 
-## Human View
+## Human View and current Issue record
 
-Use the shared persistence handoff to prepare current decisions, material
-changes and next actions from authoritative records. Detailed evidence and
-execution records remain available for audit and AI handoff. Where GitHub is
-configured, Project fields carry progress and the Issue shows the current
-scope and action with links to evidence.
+Use the shared persistence handoff to prepare a concise top-of-Issue summary
+with current state, material changes, decisions and next actions. The Issue
+keeps the exact current work requirements, acceptance criteria, actions and
+verified record declarations. GitHub Project fields own board status. The
+existing Project Management and versioned technical stores retain their
+respective plans, evidence and approval records.
 
-The issue projection API prepares a current view from verified existing
-Project Management and technical records. Use the documented guarded update
+Use the current Issue record and its verified current references for AI
+handoff. Older Issue text remains available as historical evidence. The Issue
+projection API prepares the current record and summary and supports verified
+archive and delivery checks. Follow its documented guarded update or review
 handoff in `package_root()/docs/packs/project-management/entry.md`.
 
 ## Structured scheduling and Gantt history

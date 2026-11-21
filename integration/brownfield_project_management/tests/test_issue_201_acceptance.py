@@ -26,6 +26,7 @@ _SOURCE = (
     / "sources/web/github.com/synthaicode/XRefKit/issues/201/2026-11-21_original-body.md"
 )
 _SOURCE_DIGEST = "37ed0a8f8e54cd318e3e71d5365f736ea6c0cf6ee5e9ce7bf910a721f4931fc8"
+_DESIGN = Path(__file__).resolve().parent / "fixtures/issue_201/design-draft.md"
 
 
 def issue_201_fixture():
@@ -71,8 +72,8 @@ def issue_201_fixture():
         "https://records.example.test/201/management/v1", progress,
     )
     technical = record(
-        "technical", "2026-11-21T06:26:35Z", source,
-        "https://records.example.test/201/technical/original", None,
+        "technical", "fixture-design-v1", _DESIGN.read_bytes(),
+        "https://records.example.test/201/technical/design-v1", None,
     )
     return ProjectionInput(project=project, pm=pm, evidence=(technical,)), rows
 
@@ -87,13 +88,13 @@ def test_issue_201_generates_a_compact_view_from_separate_records():
     body = unescape(view.body.decode("utf-8"))
     assert "#200の契約確定待ち" in body and "実装は未着手" in body
     assert "#200の契約確定後" in body and "担当者名は未確定" in body
-    assert "https://records.example.test/201/technical/original" in body
+    assert "https://records.example.test/201/technical/design-v1" in body
     assert "https://records.example.test/201/management/v1" in body
     assert "**Decision needed.**" not in body
     assert "<details>" not in body and "### 1. Acquire Runtime" not in body
     assert len(view.body) < len(_SOURCE.read_bytes()) // 4
     assert view.body == render_view(inputs, resolve).body
-    assert rows[inputs.evidence[0].locator].content == _SOURCE.read_bytes()
+    assert rows[inputs.evidence[0].locator].content == _DESIGN.read_bytes()
 
 
 def test_issue_201_copy_migration_keeps_source_and_is_repeatable():
