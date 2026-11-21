@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2 — 2026-11-21
+
+- Explain project stage and status codes in reader-facing updates by naming
+  the work, its current state and any pending decision.
+
 ## 0.1.1 — 2026-11-21
 
 - Keep Project and Issue updates, progress reports, review results and approval

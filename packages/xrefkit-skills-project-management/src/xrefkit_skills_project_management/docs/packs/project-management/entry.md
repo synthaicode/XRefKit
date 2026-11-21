@@ -74,7 +74,7 @@ respective source information through their established formats and owners.
 ## Distribution
 
 The PyPI distribution is `xrefkit-skills-project-management` version
-`0.1.1`, package ID `xrefkit.skills.project_management`. It packages the native
+`0.1.2`, package ID `xrefkit.skills.project_management`. It packages the native
 definitions, shared persistence reference, bound trial governance, bootstrap
 observation and this entry. The [scheduling interface](scheduling.md#xid-73E20A8D9C51)
 adds structured Decision/Execution plans, immutable Gantt history, deterministic
