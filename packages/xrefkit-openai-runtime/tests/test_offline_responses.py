@@ -44,8 +44,18 @@ class OfflineResponsesTests(unittest.TestCase):
         cls.spec = json.loads(raw)
         cls.defaults = cls.spec["defaults"]
         upstream = cls.spec["baseline"]
-        golden = json.loads((_FIXTURES / "execution_v1.json").read_bytes())
+        # Git may expand LF to CRLF on checkout. Pin the canonical Git bytes.
+        golden_bytes = (_FIXTURES / "execution_v1.json").read_bytes().replace(b"\r\n", b"\n")
+        cls.golden_sha256 = sha256(golden_bytes).hexdigest()
+        if cls.golden_sha256 != upstream["v1_git_blob_sha256"]:
+            raise AssertionError("accepted V1 golden fixture drift")
+        golden = json.loads(golden_bytes)
         cls.request = ExecutionRequest.model_validate(golden["request"])
+        actual_defaults = (cls.request.selected_model, cls.request.budget.max_output_tokens,
+                           cls.request.budget.deadline_ms)
+        frozen_defaults = tuple(cls.defaults[key] for key in ("model", "max_output_tokens", "deadline_ms"))
+        if actual_defaults != frozen_defaults:
+            raise AssertionError("synthetic request settings differ from the frozen defaults")
         inventory_path = _FIXTURES / upstream["context_revision"]
         inventory = (inventory_path / "fixture-inventory.json").read_bytes()
         cls.context = assemble_offline_context(
@@ -134,7 +144,7 @@ class OfflineResponsesTests(unittest.TestCase):
 
         return settings, sends, screened, invoke
 
-    def assert_expected(self, settings, expectation, result, sends, screened, invoke):
+    def assert_expected(self, settings, expectation, result, sends, screened, invoke, observation_keys):
         semantic = expectation if isinstance(expectation, str) else expectation.get("disposition", "completed")
         self.assertEqual(result.disposition, _EXPECTED_DISPOSITIONS.get(semantic, semantic))
         if isinstance(expectation, dict) and "correlation" in expectation:
@@ -151,6 +161,9 @@ class OfflineResponsesTests(unittest.TestCase):
             self.assertEqual(body["model"], self.request.selected_model)
             self.assertEqual(body["max_output_tokens"], self.request.budget.max_output_tokens)
             self.assertEqual(sends[0].deadline_ms, self.request.budget.deadline_ms)
+            self.assertEqual(body["model"], settings["model"])
+            self.assertEqual(body["max_output_tokens"], settings["max_output_tokens"])
+            self.assertEqual(sends[0].deadline_ms, settings["deadline_ms"])
             self.assertNotIn("deadline_ms", body)
             d = result.diagnostics
             self.assertEqual((d.run_id, d.work_item_id, d.binding_sha256, d.attempt_id), (
@@ -201,13 +214,13 @@ class OfflineResponsesTests(unittest.TestCase):
         elif semantic == "reported_usage_preserved":
             self.assertEqual(tuple(asdict(result.usage).values()), (8, 0, 8, None, None))
         elif semantic == "same_attempt_and_receipt_identity_no_charge_or_reservation_release":
-            observations = [result, deepcopy(result)]
-            self.assertEqual(
-                {item.observation_key for item in observations},
-                {(self.request.assignment.run_id, settings["attempt_id"],
-                  settings["transport_request_id"], settings["response"]["id"])},
+            expected_key = (
+                self.request.assignment.run_id, settings["attempt_id"],
+                settings["transport_request_id"], settings["response"]["id"],
             )
+            self.assertEqual(observation_keys, [expected_key, expected_key])
             self.assertEqual(result.diagnostics.reservation_ref, self.request.reservation_ref)
+            self.assertEqual(len(sends), 1)
         elif semantic == "no_protected_outbound_fields":
             self.assertIn(b"E202_INPUT_CANARY", screened[0][2])
             self.assertEqual(sends, [])
@@ -236,15 +249,33 @@ class OfflineResponsesTests(unittest.TestCase):
             with self.subTest(variant=variant):
                 settings, sends, screened, invoke = self.setup_variant(changes)
                 result = invoke()
-                self.assert_expected(settings, expectation, result, sends, screened, invoke)
+                observation_keys = []
+
+                def receive_observation(observation):
+                    observation_keys.append(observation.observation_key)
+
+                if settings.get("deliver_same_observation_twice"):
+                    # Deliver the same existing observation through the local receiver twice.
+                    # No transport, billing or reservation action occurs on receipt delivery.
+                    receive_observation(result)
+                    receive_observation(result)
+                self.assert_expected(settings, expectation, result, sends, screened, invoke, observation_keys)
                 self.assertEqual(len(sends), 0 if sends_expected == "zero" else 1)
-                print(json.dumps({
+                evidence = {
                     "case": family, "variant": variant, "fixture_sha256": _FROZEN_HASH,
                     "expected": expectation, "fake_sends_expected": sends_expected,
                     "fake_sends_observed": len(sends),
                     "observed_disposition": result.disposition, "reason": result.reason,
                     "diagnostics": asdict(result.diagnostics), "usage": asdict(result.usage),
-                }, sort_keys=True))
+                }
+                if family == "E202-01":
+                    evidence["v1_git_blob_sha256"] = self.golden_sha256
+                    evidence["request_model"] = self.request.selected_model
+                    evidence["request_max_output_tokens"] = self.request.budget.max_output_tokens
+                    evidence["request_deadline_ms"] = self.request.budget.deadline_ms
+                if observation_keys:
+                    evidence["observation_delivery_keys"] = observation_keys
+                print(json.dumps(evidence, sort_keys=True))
 
     def test_e202_01_request_mapping(self):
         self.run_case("E202-01")
