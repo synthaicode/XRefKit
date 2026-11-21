@@ -11,9 +11,10 @@ import unittest
 import test_offline_responses
 
 from xrefkit_openai_runtime.offline_budget import Action, Authority, Grant, OfflineBudget, Rate
+from xrefkit_openai_runtime.offline_context import assemble_offline_context
 from xrefkit_openai_runtime.offline_dispatch import (
     OfflineToolDispatch, PreparedTool, ToolContextPin, ToolDecision, ToolDefinition,
-    ToolHost, ToolRequest, tool_budget_action,
+    ToolHost, ToolRequest, ToolReturnScope, tool_budget_action,
 )
 
 
@@ -44,6 +45,11 @@ class OfflineDispatchTests(unittest.TestCase):
         upstream = test_offline_responses.OfflineResponsesTests
         upstream.setUpClass()
         cls.accepted_context = upstream.context
+        cls.context_request = upstream.request
+        context_fixture = upstream.spec["baseline"]
+        cls.context_root = _FIXTURES / context_fixture["context_revision"]
+        cls.context_inventory = (cls.context_root / "fixture-inventory.json").read_bytes()
+        cls.context_inventory_digest = context_fixture["inventory_sha256"]
         budget_bytes = (_FIXTURES / "e203-fixtures-r1" / "cases.json").read_bytes()
         expected = cls.spec["baseline"]["budget_fixture_sha256"]
         if sha256(budget_bytes).hexdigest() != expected:
@@ -59,7 +65,17 @@ class OfflineDispatchTests(unittest.TestCase):
             self.limits["deadline_tick"],
         )
 
-    def setup_case(self, changes=None, additional=()):
+    def assemble_for(self, recipient, *, authorized_recipient, stale_assignment=False):
+        assignment = self.context_request.assignment
+        if stale_assignment:
+            assignment = assignment.model_copy(update={"binding_sha256": "0" * 64})
+        return assemble_offline_context(
+            self.context_request, current_assignment=assignment, fixture_root=self.context_root,
+            inventory_bytes=self.context_inventory, inventory_sha256=self.context_inventory_digest,
+            destination=recipient, authorized_destination=authorized_recipient,
+        )
+
+    def setup_case(self, changes=None, additional=(), *, reserve_baseline=True):
         changes = changes or {}
         baseline = self.request()
         rate = Rate("fixture-rate-r1", "fixture-tool-ledger", 1, 1)
@@ -82,11 +98,15 @@ class OfflineDispatchTests(unittest.TestCase):
             baseline.route, baseline.generation, initial_runner["id"], initial_runner["revision"],
             self.spec["registry"]["revision"], self.spec["knowledge"]["revision"],
             frozenset(initial_runner["capabilities"]), frozenset({baseline.target}), context, pin,
-            baseline.recipient, True, authority,
+            ToolReturnScope(
+                baseline.recipient, self.assemble_for(baseline.recipient, authorized_recipient=baseline.recipient),
+            ),
+            authority,
         )
         result = encode(changes.get("fake_result", self.defaults["fake_result"]))
         dispatcher = OfflineToolDispatch(self.definition, host, units=units, fake_result=result)
-        for request in (baseline, *additional):
+        requests = (baseline, *additional) if reserve_baseline else additional
+        for request in requests:
             self.assertIsNone(dispatcher.reserve_tool(request))
         return dispatcher, host, baseline
 
@@ -115,17 +135,18 @@ class OfflineDispatchTests(unittest.TestCase):
         capabilities = frozenset(runner["capabilities"])
         if "runner_capability" in row and row["runner_capability"] is None:
             capabilities = None
-        evidence = host.reservation_evidence
-        reservation = self.defaults["reservation"]
-        if "reservation" in row and row["reservation"] is None:
-            evidence = ((reservation, "missing"),)
-        if row.get("reservation_matches") is False:
-            evidence = ((reservation, "mismatch"),)
-        if row.get("reservation_state") == "consumed":
-            evidence = ((reservation, "consumed"),)
         context = host.context
         if row.get("context_status") == "held":
-            context = replace(context, hold_reason="synthetic_context_hold")
+            context = self.assemble_for(self.defaults["recipient"],
+                                        authorized_recipient=self.defaults["recipient"], stale_assignment=True)
+            self.assertEqual(context.hold_reason, "assignment_not_current")
+        return_scope = host.return_scope
+        if row.get("return_egress") is False:
+            recipient = row.get("recipient", host.return_scope.recipient)
+            authorized = host.return_scope.recipient if recipient != host.return_scope.recipient else ""
+            held = self.assemble_for(recipient, authorized_recipient=authorized)
+            self.assertEqual(held.hold_reason, "unauthorized_destination")
+            return_scope = ToolReturnScope(recipient, held)
         return replace(
             host, authority=updated, runner_id=runner["id"],
             runner_revision=row.get("runner_revision", runner["revision"]), capabilities=capabilities,
@@ -133,8 +154,7 @@ class OfflineDispatchTests(unittest.TestCase):
             knowledge_revision=row.get("knowledge_revision", host.knowledge_revision),
             generation=row.get("generation", host.generation), context=context,
             intent_available=row.get("intent_store_available", True),
-            return_egress=row.get("return_egress", host.return_egress),
-            recipient=row.get("recipient", host.recipient), reservation_evidence=evidence,
+            return_scope=return_scope,
         )
 
     def invoke(self, dispatcher, request, **options):
@@ -147,15 +167,22 @@ class OfflineDispatchTests(unittest.TestCase):
     def summarized(decision):
         return {"outcome": decision.outcome, "reason": decision.reason,
                 "receipt": asdict(decision.receipt) if decision.receipt else None,
+                "evidence": asdict(decision.evidence) if decision.evidence else None,
                 "returned_bounded_value": decision.value is not None}
 
     def record(self, case, variant, row, expected, actual, before, after, decisions, **extra):
         self.assertEqual(tuple(actual), tuple(expected))
         self.assertEqual(after.entry_count, expected[2])
-        self.assertEqual(after.admissions_consumed, after.entry_count)
+        self.assertEqual(after.admissions_consumed - before.admissions_consumed, after.entry_count)
         self.assertEqual(before.entry_count, 0)
-        self.assertEqual(before.admissions_consumed, 0)
         self.assertLessEqual(len(after.intents), after.entry_count)
+        for decision in decisions:
+            self.assertIsNotNone(decision.evidence)
+            self.assertEqual(decision.evidence.workflow_acceptance, "not_evaluated")
+            self.assertEqual(len(decision.evidence.proposal_digest), 64)
+            self.assertEqual(len(decision.evidence.target_digest), 64)
+            self.assertEqual(len(decision.evidence.correlation.grant_digest), 64)
+            self.assertEqual(len(decision.evidence.correlation.reservation_digest), 64)
         evidence = {
             "case": case, "variant": variant, "fixture_sha256": _FROZEN_HASH,
             "expected": expected, "observed": actual,
@@ -202,12 +229,21 @@ class OfflineDispatchTests(unittest.TestCase):
         case = "E204-02"
         for variant, row, expected in self.spec["cases"][case]:
             with self.subTest(variant=variant):
-                dispatcher, host, base = self.setup_case(row)
+                change = row.get("after_prepare", {})
+                omit_reservation = ("reservation" in change and change["reservation"] is None
+                                    or change.get("reservation_matches") is False)
+                dispatcher, host, base = self.setup_case(row, reserve_baseline=not omit_reservation)
                 prepared = dispatcher.prepare(base)
                 self.assertIsInstance(prepared, PreparedTool)
+                if change.get("reservation_matches") is False:
+                    self.seed_mismatched_reservation(dispatcher, host, base)
+                if change.get("reservation_state") == "consumed":
+                    # Seed the real private #203 gate without entering the #204 runner.
+                    seeded = dispatcher._budget.dispatch_fake(host.authority.grants[0].action)
+                    self.assertEqual(seeded.disposition, "executed")
                 before = dispatcher.snapshot(base)
-                change = row.get("after_prepare", {})
                 dispatcher.update_host(self.change_host(host, change, advancing=True))
+                at_entry = dispatcher.snapshot(base)
                 input_changes = {key: change[key] for key in ("args", "target", "destination") if key in change}
                 decision = dispatcher.invoke(prepared, self.request(input_changes))
                 after = dispatcher.snapshot(base)
@@ -218,9 +254,21 @@ class OfflineDispatchTests(unittest.TestCase):
                     reason = "current_at_entry"
                 else:
                     self.assertEqual(after.intents, ())
+                if variant == "missing-reservation":
+                    self.assertEqual(at_entry.reservations, ())
+                if variant == "stale-reservation":
+                    self.assertEqual(len(at_entry.reservations), 1)
+                    self.assertNotEqual(at_entry.reservations[0].action_digest,
+                                        sha256(host.authority.grants[0].action.canonical_arguments).hexdigest())
+                if variant == "consumed-reservation":
+                    self.assertTrue(at_entry.reservations[0].consumed)
+                    self.assertEqual(after.admissions_consumed, before.admissions_consumed)
+                if variant == "cap-exhausted-after-prepare":
+                    self.assertEqual(at_entry.parent_headroom, change["headroom"])
                 actual = (decision.outcome, reason, after.entry_count)
                 self.record(case, variant, row, expected, actual, before, after, [decision],
-                            prepared_binding=prepared.request.generation, prepared_runner=prepared.runner_revision)
+                            prepared_binding=prepared.request.generation, prepared_runner=prepared.runner_revision,
+                            ledger_at_entry=asdict(at_entry))
         dispatcher, host, base = self.setup_case()
         prepared = dispatcher.prepare(base)
         replaced_context = replace(host.context, provenance=b"other trusted synthetic context")
@@ -229,6 +277,16 @@ class OfflineDispatchTests(unittest.TestCase):
         decision = dispatcher.invoke(prepared, base)
         self.assertEqual((decision.outcome, decision.reason), ("hold", "context_held"))
         self.assertEqual(dispatcher.snapshot(base).entry_count, 0)
+
+    def seed_mismatched_reservation(self, dispatcher, host, base):
+        stale = replace(base, args=encode({"key": "different"}))
+        original_grant = host.authority.grants[0]
+        action = tool_budget_action(self.definition, stale, rate_revision=original_grant.action.rate_revision,
+                                    units=self.defaults["synthetic_reservation_units"])
+        authority = replace(host.authority, grants=(replace(original_grant, action=action),))
+        dispatcher.update_host(replace(host, authority=authority))
+        self.assertIsNone(dispatcher.reserve_tool(stale))
+        dispatcher.update_host(host)
 
     def test_E204_03_concurrent_and_replayed(self):
         case = "E204-03"
@@ -380,7 +438,7 @@ class OfflineDispatchTests(unittest.TestCase):
                     dispatcher.update_host(self.change_host(host, row["after"]))
                     second = self.invoke(dispatcher, self.request(row["after"]))
                     self.assertEqual(first.outcome, "executed")
-                    self.assertEqual(second.receipt, first.receipt)
+                    self.assertEqual(second.receipt, first.receipt if row["return_data"] else None)
                     decisions.append(second)
                     outcome, reason = f"executed_then_{second.outcome}", second.reason
                 elif "attempt_registration" in row:
@@ -392,7 +450,7 @@ class OfflineDispatchTests(unittest.TestCase):
                 elif canaries:
                     # Revoke return permission before requesting the saved receipt.
                     self.assertEqual(first.value, canaries["raw_result"])
-                    dispatcher.update_host(replace(host, return_egress=False))
+                    dispatcher.update_host(self.change_host(host, {"return_egress": False}))
                     second = self.invoke(dispatcher, replace(base, provider_call="call-2"))
                     bad_arg = self.invoke(dispatcher, self.request({"args": {"key": canaries["raw_argument"]}}))
                     self.assertEqual((bad_arg.outcome, bad_arg.reason), ("deny", "argument_schema_invalid"))
@@ -408,8 +466,40 @@ class OfflineDispatchTests(unittest.TestCase):
                 if row.get("expected_effect_status"):
                     self.assertEqual(first.receipt.effect, row["expected_effect_status"])
                 after = dispatcher.snapshot(base)
+                supplemental = {}
+                if row["stage"] == "invoke_then_reuse" and not row["return_data"]:
+                    denied = self.change_host(host, row["after"]).return_scope.context
+                    supplemental = {
+                        "upstream_return_hold": denied.hold_reason,
+                        "upstream_return_provenance_sha256": denied.provenance_sha256,
+                        "fresh_different_recipient": self.check_fresh_recipient(row["after"]["recipient"]),
+                    }
                 self.record(case, variant, row, expected, (outcome, reason, after.entry_count),
-                            before, after, decisions)
+                            before, after, decisions, **supplemental)
+
+    def check_fresh_recipient(self, recipient):
+        later = self.request({"recipient": recipient, "attempt": "attempt-2", "provider_call": "call-2",
+                              "grant": "grant-2", "reservation": "reservation-2"})
+        dispatcher, host, base = self.setup_case(additional=(later,))
+        first = self.invoke(dispatcher, base)
+        self.assertEqual(first.outcome, "executed")
+        fresh_context = self.assemble_for(recipient, authorized_recipient=recipient)
+        self.assertIsNone(fresh_context.hold_reason)
+        self.assertEqual(fresh_context.payload, host.return_scope.context.payload)
+        fresh_scope = ToolReturnScope(recipient, fresh_context)
+        self.assertEqual(fresh_scope.pin[1:], host.return_scope.pin[1:])
+        self.assertNotEqual(fresh_scope.pin[0], host.return_scope.pin[0])
+        dispatcher.update_host(replace(host, return_scope=fresh_scope))
+        before = dispatcher.snapshot(later)
+        self.assertTrue(dispatcher._may_read(later))
+        held = self.invoke(dispatcher, later)
+        self.assertEqual((held.outcome, held.reason), ("hold", "receipt_reuse_not_authorized"))
+        self.assertIsNone(held.value)
+        self.assertIsNone(held.receipt)
+        after = dispatcher.snapshot(later)
+        self.assertEqual(after, before)
+        return {"fresh_context_approved": True, "fresh_grant_current": True,
+                "decision": self.summarized(held), "additional_entries": after.entry_count - before.entry_count}
 
     def provider_ledger(self, host, base):
         units = self.defaults["synthetic_provider_reservation_units"]
@@ -433,7 +523,8 @@ class OfflineDispatchTests(unittest.TestCase):
                 dispatcher, host, base = self.setup_case(row)
                 provider, action = self.provider_ledger(host, base)
                 before_provider = provider.snapshot(action)
-                dispatcher.update_host(self.change_host(host, row))
+                current = self.change_host(host, row)
+                dispatcher.update_host(current)
                 before = dispatcher.snapshot(base)
                 decision = self.invoke(dispatcher, base, reject_before_entry="reject_at" in row,
                                        interruption="receipt_lost" if "interruption" in row else None)
@@ -451,4 +542,6 @@ class OfflineDispatchTests(unittest.TestCase):
                 reason = map_reasons.get(decision.reason, decision.reason)
                 self.record(case, variant, row, expected, (decision.outcome, reason, after.entry_count),
                             before, after, [decision], provider_before=asdict(before_provider.work),
-                            provider_after=asdict(after_provider.work), provider_effects=after_provider.fake_effects)
+                            provider_after=asdict(after_provider.work), provider_effects=after_provider.fake_effects,
+                            upstream_hold_reason=current.context.hold_reason,
+                            upstream_provenance_sha256=current.context.provenance_sha256)

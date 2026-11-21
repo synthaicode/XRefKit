@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from hashlib import sha256
 import json
 import re
@@ -38,6 +38,20 @@ class ToolContextPin:
 
 
 @dataclass(frozen=True)
+class ToolReturnScope:
+    """Trusted binding of a #201 assembly decision to its checked recipient."""
+
+    recipient: str
+    context: ContextAssembly
+
+    @property
+    def pin(self) -> tuple[str, str, str] | None:
+        if self.context.payload is None or self.context.hold_reason is not None:
+            return None
+        return self.recipient, _digest(self.context.payload), self.context.provenance_sha256
+
+
+@dataclass(frozen=True)
 class ToolHost:
     """Trusted, immutable scope supplied by XRefKit, separate from Tool proposals."""
 
@@ -51,12 +65,10 @@ class ToolHost:
     permitted_targets: frozenset[str]
     context: ContextAssembly
     context_pin: ToolContextPin
-    recipient: str
-    return_egress: bool
+    return_scope: ToolReturnScope
     authority: Authority
     intent_available: bool = True
     listing_approved: bool = True
-    reservation_evidence: tuple[tuple[str, Literal["missing", "mismatch", "consumed"]], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -121,11 +133,24 @@ class ToolReceipt:
 
 
 @dataclass(frozen=True)
+class ToolAttemptEvidence:
+    correlation: ToolCorrelation
+    action_digest: str | None
+    proposal_digest: str
+    arguments_digest: str
+    target_digest: str
+    destination_digest: str
+    effect: Literal["none", "observed", "unknown"]
+    workflow_acceptance: Literal["not_evaluated"] = "not_evaluated"
+
+
+@dataclass(frozen=True)
 class ToolDecision:
     outcome: Literal["executed", "deny", "hold", "stop", "in_progress", "replay"]
     reason: str
     receipt: ToolReceipt | None = None
     value: str | None = field(default=None, repr=False)
+    evidence: ToolAttemptEvidence | None = None
 
 
 @dataclass(frozen=True)
@@ -133,7 +158,17 @@ class _Intent:
     digest: str
     receipt: ToolReceipt
     context_pin: ToolContextPin
-    value: str | None = None
+    return_pin: tuple[str, str, str] | None
+    value: str | None = field(default=None, repr=False)
+
+
+@dataclass(frozen=True)
+class ToolReservationEvidence:
+    reservation_digest: str
+    action_digest: str
+    state: str
+    consumed: bool
+    units: int
 
 
 @dataclass(frozen=True)
@@ -142,6 +177,8 @@ class ToolSnapshot:
     admissions_consumed: int
     reserved_units: int
     headroom: int | None
+    parent_headroom: int | None
+    reservations: tuple[ToolReservationEvidence, ...]
     intents: tuple[ToolReceipt, ...]
 
 
@@ -255,11 +292,10 @@ class OfflineToolDispatch:
     def discover(self) -> tuple[ToolDefinition, ...]:
         with self._lock:
             definition, host = self._definition, self._host
-            pin = host.context_pin
             if (
                 self._definition_check(definition.tool_id, definition.version) is not None
                 or not host.listing_approved or not host.permitted_targets
-                or not host.authority.confirmed_destination or not host.recipient
+                or not host.authority.confirmed_destination or not host.return_scope.recipient
                 or host.authority.cancelled or not self._context_current()
             ):
                 return ()
@@ -270,12 +306,12 @@ class OfflineToolDispatch:
             canonical = _action_bytes(self._definition, request)
             failed = self._definition_check(request.tool_id, request.version)
             if failed is not None:
-                return failed
+                return self._record_attempt(request, canonical, failed)
             if isinstance(canonical, ToolDecision):
-                return canonical
+                return self._record_attempt(request, canonical, canonical)
             host = self._host
             if request.target not in host.permitted_targets:
-                return ToolDecision("deny", "target_outside_scope")
+                return self._record_attempt(request, canonical, ToolDecision("deny", "target_outside_scope"))
             return PreparedTool(request, _digest(canonical), host.runner_id, host.runner_revision,
                                 self._definition.registry_revision, host.context_pin)
 
@@ -314,51 +350,57 @@ class OfflineToolDispatch:
         with self._lock:
             canonical = _action_bytes(self._definition, request)
             if isinstance(canonical, ToolDecision):
-                return canonical
-            digest = _digest(canonical)
-            if prepared.request != request or prepared.action_digest != digest:
-                return ToolDecision("hold", "action_changed")
-            old = self._intents.get(request.operation_key)
-            if old is not None:
-                return self._read_receipt(request, digest, old)
-            failed = self._check_current(prepared)
-            if failed is not None:
-                return failed
-            if not self._host.intent_available:
-                return ToolDecision("hold", "intent_unavailable")
-            evidence = dict(self._host.reservation_evidence).get(request.reservation)
-            if evidence is not None:
-                return ToolDecision("deny" if evidence == "consumed" else "hold",
-                                    f"reservation_{evidence}")
-            if reject_before_entry:
-                return ToolDecision("deny", "proved_no_entry")
-            action = self._budget_action(request)
-            if isinstance(action, ToolDecision):
-                return action
-            pending = self._receipt(request, digest, "pending", "unknown", None)
-            admission = self._budget.dispatch_fake(action)
-            if admission.disposition != "executed":
-                return self._budget_failure(admission.disposition, admission.reason)
+                return self._record_attempt(request, canonical, canonical)
+            before = self._runner.entry_count
+            decision = self._invoke_locked(prepared, request, _digest(canonical), reject_before_entry, interruption)
+            return self._record_attempt(request, canonical, decision, entered=self._runner.entry_count != before)
 
-            # The host lock is still held when the runner counts its entry. It
-            # also protects the intent before either a replay or replacement.
-            self._intents[request.operation_key] = _Intent(digest, pending, self._host.context_pin)
-            output = self._runner._enter()
-            if interruption is not None:
-                reason = "admitted_worker_effect_unresolved" if interruption == "paused" else "effect_unknown"
-                receipt = self._receipt(request, digest, reason, "unknown", None)
-                self._intents[request.operation_key] = _Intent(digest, receipt, self._host.context_pin)
-                return ToolDecision("hold", reason, receipt)
-            value, reason = self._validate_result(output)
-            if value is None:
-                receipt = self._receipt(request, digest, reason, "observed", _digest(output))
-                self._intents[request.operation_key] = _Intent(digest, receipt, self._host.context_pin)
-                return ToolDecision("hold", reason, receipt)
-            receipt = self._receipt(request, digest, "completed", "observed", _digest(output))
-            self._intents[request.operation_key] = _Intent(digest, receipt, self._host.context_pin, value)
-            if not self._may_read(request):
-                return ToolDecision("hold", "receipt_reuse_not_authorized", receipt)
-            return ToolDecision("executed", "bounded_typed_result", receipt, value)
+    def _invoke_locked(
+        self, prepared: PreparedTool, request: ToolRequest, digest: str, reject_before_entry: bool,
+        interruption: Literal["receipt_lost", "paused"] | None,
+    ) -> ToolDecision:
+        if prepared.request != request or prepared.action_digest != digest:
+            return ToolDecision("hold", "action_changed")
+        old = self._intents.get(request.operation_key)
+        if old is not None:
+            return self._read_receipt(request, digest, old)
+        failed = self._check_current(prepared)
+        if failed is not None:
+            return failed
+        if not self._host.intent_available:
+            return ToolDecision("hold", "intent_unavailable")
+        if reject_before_entry:
+            return ToolDecision("deny", "proved_no_entry")
+        action = self._budget_action(request)
+        if isinstance(action, ToolDecision):
+            return action
+        pending = self._receipt(request, digest, "pending", "unknown", None)
+        admission = self._budget.dispatch_fake(action)
+        if admission.disposition != "executed":
+            if admission.reason == "reservation_not_matched":
+                entries = self._budget.snapshot(action).reservations
+                if not any(entry.action.reservation_id == action.reservation_id for entry in entries):
+                    return ToolDecision("hold", "reservation_missing")
+            return self._budget_failure(admission.disposition, admission.reason)
+
+        # The host lock also protects the intent before a replay or replacement.
+        intent = _Intent(digest, pending, self._host.context_pin, self._host.return_scope.pin)
+        self._intents[request.operation_key] = intent
+        output = self._runner._enter()
+        if interruption is not None:
+            reason = "admitted_worker_effect_unresolved" if interruption == "paused" else "effect_unknown"
+            receipt = self._receipt(request, digest, reason, "unknown", None)
+            self._intents[request.operation_key] = replace(intent, receipt=receipt)
+            return ToolDecision("hold", reason, receipt)
+        value, reason = self._validate_result(output)
+        receipt = self._receipt(request, digest, "completed" if value is not None else reason,
+                                "observed", _digest(output))
+        self._intents[request.operation_key] = replace(intent, receipt=receipt, value=value)
+        if value is None:
+            return ToolDecision("hold", reason, receipt)
+        if not self._may_read(request):
+            return ToolDecision("hold", "receipt_reuse_not_authorized")
+        return ToolDecision("executed", "bounded_typed_result", receipt, value)
 
     def _check_current(self, prepared: PreparedTool) -> ToolDecision | None:
         request, host = prepared.request, self._host
@@ -382,7 +424,7 @@ class OfflineToolDispatch:
             return ToolDecision("deny", "target_outside_scope")
         if request.destination != authority.confirmed_destination:
             return ToolDecision("hold", "destination_unconfirmed")
-        if request.recipient != host.recipient:
+        if request.recipient != host.return_scope.recipient:
             return ToolDecision("hold", "recipient_unconfirmed")
         return None
 
@@ -409,9 +451,9 @@ class OfflineToolDispatch:
             grant for grant in authority.grants if grant.action.authorization_ref == request.grant
         )
         return (
-            host.return_egress and self._context_matches(request)
+            host.return_scope.pin is not None and self._context_matches(request)
             and request.route == host.route and request.generation == host.generation == authority.binding_revision
-            and request.policy == authority.policy_revision and request.recipient == host.recipient
+            and request.policy == authority.policy_revision and request.recipient == host.return_scope.recipient
             and request.target in host.permitted_targets and request.destination == authority.confirmed_destination
             and not authority.cancelled and authority.now_tick < request.deadline
             and len(matches) == 1 and matches[0].action == action and matches[0].status == "allowed"
@@ -424,11 +466,15 @@ class OfflineToolDispatch:
             return ToolDecision("deny", "operation_digest_conflict")
         if intent.receipt.outcome == "pending":
             return ToolDecision("in_progress", "operation_active")
+        can_read = (
+            intent.context_pin == self._host.context_pin and intent.return_pin == self._host.return_scope.pin
+            and self._may_read(request)
+        )
         if intent.receipt.effect == "unknown":
-            detail = intent.receipt if self._may_read(request) else None
+            detail = intent.receipt if can_read else None
             return ToolDecision("hold", intent.receipt.outcome, detail)
-        if intent.context_pin != self._host.context_pin or not self._may_read(request):
-            return ToolDecision("hold", "receipt_reuse_not_authorized", intent.receipt)
+        if not can_read:
+            return ToolDecision("hold", "receipt_reuse_not_authorized")
         if intent.value is None:
             return ToolDecision("hold", intent.receipt.outcome, intent.receipt)
         return ToolDecision("replay", "receipt_reuse_authorized", intent.receipt, intent.value)
@@ -445,15 +491,40 @@ class OfflineToolDispatch:
             pass
         return None, "invalid_result"
 
+    @staticmethod
+    def _correlation(request: ToolRequest) -> ToolCorrelation:
+        correlation = (request.run, request.work, request.route, request.operation_id, request.attempt,
+                       request.provider_call, request.policy, request.grant, request.reservation or "")
+        return ToolCorrelation(*(_digest(_json_bytes(value)) for value in correlation))
+
+    def _record_attempt(
+        self, request: ToolRequest, canonical: bytes | ToolDecision, decision: ToolDecision,
+        *, entered: bool = False,
+    ) -> ToolDecision:
+        effect: Literal["none", "observed", "unknown"] = "observed" if entered else "none"
+        if decision.receipt is not None:
+            effect = decision.receipt.effect
+        elif decision.reason in {"operation_active", "effect_unknown", "admitted_worker_effect_unresolved"}:
+            effect = "unknown"
+        arguments_digest = _digest(request.args)
+        target_digest = _digest(_json_bytes(request.target))
+        destination_digest = _digest(_json_bytes(request.destination))
+        proposal_digest = _digest(_json_bytes((
+            request.tool_id, request.version, arguments_digest, target_digest, destination_digest,
+        )))
+        evidence = ToolAttemptEvidence(
+            self._correlation(request), _digest(canonical) if isinstance(canonical, bytes) else None,
+            proposal_digest, arguments_digest, target_digest, destination_digest, effect,
+        )
+        return replace(decision, evidence=evidence)
+
     def _receipt(
         self, request: ToolRequest, digest: str, outcome: str,
         effect: Literal["observed", "unknown"], result_digest: str | None,
     ) -> ToolReceipt:
-        correlation = (request.run, request.work, request.route, request.operation_id, request.attempt,
-                       request.provider_call, request.policy, request.grant, request.reservation or "")
         return ToolReceipt(digest, self._definition.schema, _digest(_json_bytes(self._host.runner_id)),
                            request.generation, self._host.authority.now_tick,
-                           ToolCorrelation(*(_digest(_json_bytes(value)) for value in correlation)),
+                           self._correlation(request),
                            outcome, effect, result_digest)
 
     def snapshot(self, request: ToolRequest) -> ToolSnapshot:
@@ -462,5 +533,12 @@ class OfflineToolDispatch:
             if isinstance(action, ToolDecision):
                 raise ValueError("a valid action is needed to scope the Tool ledger")
             snapshot = self._budget.snapshot(action)
+            reservations = tuple(
+                ToolReservationEvidence(_digest(_json_bytes(entry.action.reservation_id)),
+                                        _digest(entry.action.canonical_arguments), entry.state,
+                                        entry.fake_effect_consumed, entry.original_units)
+                for entry in snapshot.reservations
+            )
             return ToolSnapshot(self._runner.entry_count, snapshot.fake_effects, snapshot.work.reserved,
-                                snapshot.work.headroom, tuple(intent.receipt for intent in self._intents.values()))
+                                snapshot.work.headroom, snapshot.parent.headroom, reservations,
+                                tuple(intent.receipt for intent in self._intents.values()))
