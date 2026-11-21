@@ -64,12 +64,47 @@ An approval request shows the precise decision, scope of permission, effect of
 holding it, and material unresolved risks. Review conclusions distinguish
 verified scope from remaining implementation or verification work.
 
-When GitHub is configured, the Project is the progress entry point and the
-Issue presents the work purpose, acceptance criteria and current actions and
-decisions. The configured detailed records support traceability and AI-to-AI
-handoff. Updating the current view requires keeping past decisions and evidence
-reachable. Existing plans, Brownfield handoffs and Runtime records supply their
-respective source information through their established formats and owners.
+When GitHub is configured, the Project is authoritative for its configured
+progress fields. The existing Decision and Execution records own plans,
+dependencies, approvals, baselines, revisions and observations. Technical
+details use the configured evidence, Knowledge, Brownfield or Runtime record.
+The Issue presents the work purpose, acceptance criteria, current decision and
+next action with role-labelled references. Use the exact source revisions for
+AI handoff and keep them in the underlying records.
+
+### Issue projection candidate
+
+The package module `xrefkit_skills_project_management.issue_projection`
+prepares a bounded managed block from frozen source references. A project host
+maps its existing reads into the input types, checks the destination's access
+rules and supplies exact immutable readbacks and human-readable links. The
+module checks identity, revision and content digest before preparing the body.
+Keep the host's normalization bound to the verified source bytes. The
+projection types are integration inputs and do not change existing stored
+records, approval enums, scheduling history or Brownfield formats.
+
+Creation prepares an Issue body from verified sources. For updates preserve
+manual content and compare against the latest Issue and Project basis. Before
+legacy extraction obtain the per-Issue approval, archive the entire previous
+body with exact readback and inventory and preserve incoming fragments. An
+existing collapsed technical section requires the same migration checks.
+
+GitHub REST documents conditional reads and its Issue update endpoint does not
+document an atomic compare-and-update against Issue, Project and source
+revisions together. Use the prepared body in the confirmed review handoff on
+GitHub unless the host can supply the required guarded writer. Run the
+candidate against copied or synthetic records before seeking a production
+migration approval.
+
+The host calls `render_view(current, resolve, previous=previous)` using the
+current and last reported source references. `prepare_create(view)` prepares
+an initial body for a host-assigned logical identity. `prepare_update`
+requires the existing Issue snapshot, the verified archive and, for ordinary
+updates, the last delivery's managed block identity. Both return a plan with
+no external side effects. `apply_update` accepts a writer with an atomic
+Issue and Project compare guarantee. Store the archived snapshot and verified
+delivery receipt through the configured provider. Re-read the destination and
+source revisions before retrying a conflict or an uncertain outcome.
 
 ## Distribution
 

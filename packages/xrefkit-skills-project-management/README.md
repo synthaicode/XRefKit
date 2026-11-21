@@ -29,6 +29,10 @@ execution records remain available for audit and AI handoff. Where GitHub is
 configured, Project fields carry progress and the Issue shows the current
 scope and action with links to evidence.
 
+The issue projection API prepares a current view from verified existing
+Project Management and technical records. Use the documented guarded update
+handoff in `package_root()/docs/packs/project-management/entry.md`.
+
 ## Structured scheduling and Gantt history
 
 The package includes the explicit Python tool

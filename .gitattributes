@@ -12,3 +12,4 @@ observations/2026-10-10_planning_flow_trial_basis.md -text whitespace=cr-at-eol
 governance/skills/planning_flow.json -text whitespace=cr-at-eol
 tools/scan_python_artifacts.sh text eol=lf
 sources/web/mermaid/2026-11-14_gantt.html -text
+sources/web/github.com/synthaicode/XRefKit/issues/201/2026-11-21_original-body.md -text

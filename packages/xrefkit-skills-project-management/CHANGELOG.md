@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Prepare a compact Issue view from separate, verified Project Management and
+  technical records. Preserve manual text, historical evidence and links
+  through verified archive and revision preconditions.
+
 ## 0.1.2 — 2026-11-21
 
 - Explain project stage and status codes in reader-facing updates by naming
