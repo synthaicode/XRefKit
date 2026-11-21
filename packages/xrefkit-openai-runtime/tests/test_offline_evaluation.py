@@ -7,13 +7,15 @@ import json
 from pathlib import Path
 import unittest
 
-from xrefkit_openai_runtime.contracts import AssignmentRef, ExecutionEvent, ExecutionRequest
+from xrefkit_openai_runtime.contracts import AssignmentRef, ExecutionEvent, ExecutionRequest, ExecutionResult
 from xrefkit_openai_runtime.offline_dispatch import ToolAttemptEvidence, ToolCorrelation, ToolDecision, ToolReceipt
 from xrefkit_openai_runtime.offline_evaluation import (
-    EffectObservation, EvaluationInputs, EvaluationPolicy, InteractionReference, ReevaluationLink,
-    RevisionLinks, ReviewAuthority, SemanticReview, api_observation_digest, evaluate_io, tool_observation_digest,
+    EffectObservation, EvaluationInputs, EvaluationPolicy, ReevaluationLink,
+    RevisionLinks, ReviewAuthority, SemanticReview, api_observation_digest, effective_rules_digest,
+    evaluate_io, evaluation_digest, evidence_digest, project_interaction, reevaluate_io,
+    tool_observation_digest, trace_pins,
 )
-from xrefkit_openai_runtime.offline_responses import AdapterResult, AttemptDiagnostics, UsageObservation
+from xrefkit_openai_runtime.offline_responses import AdapterResult, AttemptDiagnostics, TextItem, UsageObservation
 
 
 _FIXTURE_SHA256 = "59e4aa50166dd059ff9852cac8c269a7ad135eca48dc703a4bddcedac15e02c1"
@@ -93,42 +95,54 @@ class OfflineEvaluationCases(unittest.TestCase):
         expanded = self.resolve(document)
         return self.resolve(expanded, expanded)
 
-    def run_case(self, changes):
-        original = self.records()
-        observed = self.records(changes)
-        api = observed["api"]
-        tool = observed["tool"]
-        receipt = tool["receipt"]
+    def run_case(self, changes, *, rubric_version="rubric-r1", original_changes=(),
+                 evaluation_ref="evaluation-205-r1", previous=None):
+        original = self.records(original_changes)
+        observed = self.records(tuple(original_changes) + tuple(changes))
+        api, tool = observed["api"], observed["tool"]
+        receipt, frozen_receipt = tool["receipt"], original["tool"]["receipt"]
         typed_receipt = (ToolReceipt(**{**receipt, "correlation": ToolCorrelation(**receipt["correlation"])})
                          if receipt is not None else None)
-        external_ref = observed["interaction"]
-        reference = (InteractionReference(*(external_ref[key] for key in
-                     ("ref", "revision", "attempt_id", "access", "status", "origin")))
-                     if external_ref is not None else None)
+        attempt_effect = tool["evidence"]["effect"]
+        attempt_evidence = ToolAttemptEvidence(
+            ToolCorrelation(**frozen_receipt["correlation"]), frozen_receipt["action_digest"],
+            _sha(b"synthetic-proposal"), _sha(b"synthetic-arguments"), _sha(b"synthetic-target"),
+            _sha(b"synthetic-destination"), attempt_effect,
+        )
+        interaction = observed["interaction"]
+        reference = project_interaction(interaction) if interaction is not None else None
+        request = ExecutionRequest.model_validate(observed["request"])
+        events = tuple(ExecutionEvent.model_validate(event) for event in observed["events"])
+        # The fixture host seals the received V1 records under the declared current authority.
+        # An unsupported version is passed raw for evaluator rejection; it cannot become a V1 pin.
+        trace_record = observed["result"] if observed["result"]["version"] == 1 else original["result"]
+        v1_pins = trace_pins(request, events, ExecutionResult.model_validate(trace_record))
+        postconditions = tuple(EffectObservation(**proof) for proof in observed["postconditions"])
+
+        original_result = ExecutionResult.model_validate(original["result"])
+        review_basis = {original_result.evidence_ref: _sha(_encode(original_result.model_dump(mode="json")))}
+        review_basis.update((proof["ref"], evidence_digest(EffectObservation(**proof)))
+                            for proof in original["postconditions"])
+        if original["interaction"] is not None:
+            original_ref = project_interaction(original["interaction"])
+            review_basis[original_ref.ref] = evidence_digest(original_ref)
         reviews = tuple(SemanticReview(
             data["id"], data["role"], data["authorized"], data["context"], data["author_context"],
             _refs(data), data["output_sha256"], data["verdict"], tuple(data["basis_refs"]), data["rationale"],
+            tuple(review_basis.get(ref, "") for ref in data["basis_refs"]),
         ) for data in observed["reviewers"])
         output = observed["output_utf8"].encode()
+        items = (TextItem("output-205", "text", observed["output_utf8"]),) if api["disposition"] == "completed" else ()
         inputs = EvaluationInputs(
-            request=ExecutionRequest.model_validate(observed["request"]),
-            events=tuple(ExecutionEvent.model_validate(event) for event in observed["events"]),
-            result=observed["result"],
-            links=_refs(observed["revision_links"]),
+            request=request, events=events, result=observed["result"], links=_refs(observed["revision_links"]),
             api=AdapterResult(api["disposition"], api["reason"], AttemptDiagnostics(**api["diagnostics"]),
-                              UsageObservation(**(api["usage"] or {}))),
-            tool=ToolDecision(tool["outcome"], tool["reason"], typed_receipt, tool["value"]),
-            output_utf8=output,
-            tool_return_utf8=observed["tool_return_utf8"].encode(),
-            recorded_tool_effect=tool["evidence"]["effect"],
-            postconditions=tuple(EffectObservation(**proof) for proof in observed["postconditions"]),
-            interaction=reference,
-            reviews=reviews,
-            reevaluation=ReevaluationLink(**observed["reevaluation"]) if observed["reevaluation"] else None,
+                              UsageObservation(**(api["usage"] or {})), items),
+            tool=ToolDecision(tool["outcome"], tool["reason"], typed_receipt, tool["value"], attempt_evidence),
+            output_utf8=output, tool_return_utf8=observed["tool_return_utf8"].encode(),
+            recorded_tool_effect=attempt_effect, postconditions=postconditions, interaction=interaction,
+            reviews=reviews, reevaluation=ReevaluationLink(**observed["reevaluation"]) if observed["reevaluation"] else None,
         )
-        rubric = self.fixture["rubrics"]["rubric-r1"]
-        # Test host supplies an independent policy record. Only declared scope switches are case inputs.
-        # The host pins the exact received request and artifact bytes independently of claimed source digests.
+        rubric = self.fixture["rubrics"][rubric_version]
         authorities = (ReviewAuthority("reviewer-a", "review-context-a"), ReviewAuthority("reviewer-b", "review-context-b"))
         policy = EvaluationPolicy(
             assignment=AssignmentRef.model_validate(observed["active_assignment"]),
@@ -136,22 +150,24 @@ class OfflineEvaluationCases(unittest.TestCase):
             api_request_sha256=_sha(_encode(observed["request"])),
             api_observation_sha256=api_observation_digest(inputs.api),
             tool_observation_sha256=tool_observation_digest(inputs.tool, inputs.recorded_tool_effect),
-            output_sha256=_sha(output),
+            output_sha256=_sha(output), trace_pins=v1_pins, rubric_utf8=_encode(rubric), approved_rules_sha256="",
+            provider_reservation_ref=original["request"]["reservation_ref"],
+            effect_observation_pins=tuple(evidence_digest(proof) for proof in postconditions),
+            interaction_pin=evidence_digest(reference) if reference is not None else None,
+            reviewer_record_pins=tuple(evidence_digest(review) for review in reviews),
             expected_model=original["request"]["selected_model"],
             expected_postcondition=rubric["expected_postcondition"] if observed["postcondition_required"] else None,
             output_byte_limit=96,
-            producer=original["producer"],
-            producer_context="producer-context",
-            reviewers=authorities,
+            producer=original["producer"], producer_context="producer-context", reviewers=authorities,
             trusted_readback_origins=frozenset({"independent-fixture-readback", "independent-fixture-readback-b"}),
             usage_required_fields=frozenset(observed["usage_required_fields"]),
-            interaction_required=observed["interaction_required"],
-            semantic_required=observed["semantic_required"],
+            interaction_required=observed["interaction_required"], semantic_required=observed["semantic_required"],
             rubric_successor=("rubric-r2", self.fixture["rubric_sha256"]["rubric-r2"]),
-            prior_evaluation_ref="evaluation-205-r1",
+            prior_evaluation_ref="evaluation-205-r1", evaluation_ref=evaluation_ref,
+            previous_evaluation_pin=evaluation_digest(previous) if previous is not None else None,
         )
-        evaluation = evaluate_io(policy, inputs)
-        return evaluation, observed, inputs, policy
+        policy = replace(policy, approved_rules_sha256=effective_rules_digest(policy))
+        return evaluate_io(policy, inputs), observed, inputs, policy
 
     def run_group(self, case: str):
         for variant, changes, expected, assertions in self.fixture["cases"][case]:
@@ -196,13 +212,23 @@ class OfflineEvaluationCases(unittest.TestCase):
                     "case": case, "variant": variant, "expected": expected, "observed": actual,
                     "fixture_sha256": _FIXTURE_SHA256, "evaluation": asdict(result),
                     "source_correlation_sha256": _sha(_encode(raw["revision_links"])),
-                    "approved_policy_sha256": _sha(_encode(asdict(policy.links))),
+                    "approved_policy_sha256": result.approved_policy_sha256,
                     "api_observation_sha256": policy.api_observation_sha256,
                     "tool_observation_sha256": policy.tool_observation_sha256,
                     "evaluator_side_effects": "none",
                 }
+                if variant == "wrong-tool-call":
+                    self.assertEqual((result.api_outcome, result.tool_outcome), ("completed", "unverified"))
+                    self.assertEqual(result.usage, inputs.api.usage)
+                if variant == "wrong-api-attempt":
+                    self.assertEqual((result.api_outcome, result.tool_outcome), ("unverified", "executed"))
+                    self.assertTrue(result.entry_observed)
+                if inputs.reevaluation is not None:
+                    proof["verified_successor"] = self.check_reevaluation(inputs.reevaluation)
                 serialized = json.dumps(proof)
                 for canary in assertions.get("ordinary_output_excludes", []):
+                    self.assertEqual(inputs.interaction["fixture_forbidden_content"], canary)
+                    self.assertNotIn(canary, json.dumps(asdict(project_interaction(inputs.interaction))))
                     self.assertNotIn(canary, serialized)
                 print(serialized)
 
@@ -211,7 +237,7 @@ class OfflineEvaluationCases(unittest.TestCase):
         _, _, inputs, policy = self.run_case(())
         # A payload or source observation replaced after trusted intake is not a current artifact.
         substituted = evaluate_io(policy, replace(inputs, output_utf8=b'{"objective":"other"}'))
-        self.assertEqual(substituted.criteria[0].reason, "result_digest_mismatch")
+        self.assertEqual(substituted.criteria[0].reason, "api_output_unlinked")
         modified = evaluate_io(policy, replace(inputs, api=replace(inputs.api, disposition="refusal")))
         self.assertEqual(modified.criteria[0].reason, "api_observation_digest_mismatch")
 
@@ -251,6 +277,39 @@ class OfflineEvaluationCases(unittest.TestCase):
         linked = replace(replay_policy, replay_receipt_refs=("attempt-205", "call-prior"))
         self.assertEqual(evaluate_io(linked, replay_input).criteria[0].outcome, "pass")
 
+        # The immutable pins cover record contents, not merely their revision labels.
+        modified_request = replace(inputs, request=inputs.request.model_copy(update={"authorization_ref": "other"}))
+        changed_events = replace(inputs, events=(inputs.events[0].model_copy(update={"kind": "held"}), *inputs.events[1:]))
+        changed_result = replace(inputs, result={**inputs.result, "evidence_ref": "different-v1-ref"})
+        for candidate in (modified_request, changed_events, changed_result):
+            checked = evaluate_io(policy, candidate)
+            self.assertEqual(checked.criteria[0].reason, "trace_content_unpinned")
+            self.assertEqual(checked.aggregate, "criteria_unresolved")
+        changed_scope = evaluate_io(replace(policy, output_byte_limit=512), inputs)
+        self.assertEqual(changed_scope.criteria[0].reason, "effective_rubric_unpinned")
+        self.assertEqual(changed_scope.aggregate, "criteria_unresolved")
+
+        # Unlinked Tool records do not erase separately verified API usage.
+        result = evaluate_io(unrelated_policy, replace(denied_input, tool=unrelated))
+        self.assertEqual((result.api_outcome, result.tool_outcome), ("completed", "unverified"))
+        self.assertEqual(result.usage, inputs.api.usage)
+        # Neither an absent receipt nor an absent attempt can substantiate a trusted denial.
+        missing = replace(denied, evidence=None)
+        missing_policy = replace(policy, tool_observation_sha256=tool_observation_digest(missing, "none"))
+        result = evaluate_io(missing_policy, replace(denied_input, tool=missing))
+        self.assertEqual(result.criteria[0].reason, "tool_attempt_evidence_missing")
+        self.assertEqual(result.aggregate, "criteria_unresolved")
+        # Unlinked API records must not erase the accepted Tool's possible-effect hold.
+        possible = replace(receipt, outcome="effect_unknown", effect="unknown", result_digest=None)
+        held = replace(inputs.tool, outcome="hold", receipt=possible, value=None,
+                       evidence=replace(evidence, effect="unknown"))
+        held_policy = replace(policy, tool_observation_sha256=tool_observation_digest(held, "unknown"))
+        bad_api = replace(inputs.api, diagnostics=replace(inputs.api.diagnostics, attempt_id="wrong"))
+        result = evaluate_io(held_policy, replace(inputs, api=bad_api, tool=held, recorded_tool_effect="unknown"))
+        self.assertEqual((result.api_outcome, result.tool_outcome, result.tool_effect), ("unverified", "hold", "unknown"))
+        self.assertEqual(result.usage, UsageObservation())
+        self.assertEqual(result.next_proposal, "reconcile")
+
     def test_E205_02_structure_and_outcomes(self):
         self.run_group("E205-02")
 
@@ -262,6 +321,54 @@ class OfflineEvaluationCases(unittest.TestCase):
 
     def test_E205_05_independent_review(self):
         self.run_group("E205-05")
+        result, _, inputs, policy = self.run_case((("/postconditions/0/observed", "synthetic-absent"),))
+        criteria = {check.id: check for check in result.criteria}
+        self.assertEqual(criteria["semantic"].reason, "review_basis_changed")
+        self.assertEqual(criteria["effect"].outcome, "fail")
+        self.assertEqual(result.aggregate, "criteria_failed")
+        self.assertEqual(result.review_state, "pending")
+        _, _, inputs, policy = self.run_case((("/interaction_required", True),))
+        reference = project_interaction(inputs.interaction)
+        result = evaluate_io(policy, replace(inputs, interaction=replace(reference, ref="substituted")))
+        criteria = {check.id: check for check in result.criteria}
+        self.assertEqual(criteria["interaction"].reason, "interaction_snapshot_unpinned")
+        self.assertEqual(result.usage, inputs.api.usage)
+        reviewer = replace(inputs.reviews[0], rationale="substituted under the same reviewer identity")
+        result = evaluate_io(policy, replace(inputs, reviews=(reviewer,)))
+        self.assertEqual({check.id: check for check in result.criteria}["semantic"].reason,
+                         "review_record_unpinned")
 
     def test_E205_06_aggregation_and_handoff(self):
         self.run_group("E205-06")
+
+    def check_reevaluation(self, link):
+        prior, _, _, _ = self.run_case(())
+        prior_digest = evaluation_digest(prior)
+        revisions = (
+            ("/request/criteria_sha256", "@rubric:rubric-r2"),
+            ("/revision_links/criteria_revision", "rubric-r2"),
+            ("/revision_links/criteria_sha256", "@rubric:rubric-r2"),
+            ("/reviewers/0/criteria_revision", "rubric-r2"),
+            ("/reviewers/0/criteria_sha256", "@rubric:rubric-r2"),
+            ("/postconditions/0/observed", "synthetic-revised"),
+            ("/output_utf8", '{"objective":"synthetic-revised"}'),
+        )
+        _, _, inputs, policy = self.run_case(
+            (), rubric_version="rubric-r2", original_changes=revisions,
+            evaluation_ref="evaluation-205-r2", previous=prior,
+        )
+        latest = reevaluate_io(prior, link, policy, inputs)
+        self.assertEqual(latest.aggregate, "criteria_met")
+        self.assertEqual(latest.criteria_revision, "rubric-r2")
+        self.assertEqual(latest.reevaluation_from, prior.evaluation_ref)
+        self.assertEqual(latest.evaluation_ref, "evaluation-205-r2")
+        self.assertNotEqual(latest.output_sha256, prior.output_sha256)
+        self.assertEqual(prior.criteria_revision, "rubric-r1")
+        self.assertEqual(evaluation_digest(prior), prior_digest)
+        with self.assertRaises(ValueError):
+            reevaluate_io(prior, replace(link, new_evaluation_ref="unapproved"), policy, inputs)
+        return {
+            "prior_sha256": prior_digest, "prior_unchanged": True,
+            "successor_sha256": evaluation_digest(latest), "successor_criteria_sha256": latest.criteria_sha256,
+            "successor_aggregate": latest.aggregate, "successor_human_acceptance": latest.human_acceptance,
+        }

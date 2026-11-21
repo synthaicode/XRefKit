@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field, fields, replace
+from collections.abc import Mapping
 from hashlib import sha256
 import json
 from typing import Literal
 
 from .contracts import AssignmentRef, ExecutionEvent, ExecutionRequest, ExecutionResult, assess_model_result
 from .offline_dispatch import ToolDecision
-from .offline_responses import AdapterResult, UsageObservation
+from .offline_responses import AdapterResult, TextItem, UsageObservation
 
 
 Outcome = Literal["pass", "fail", "unresolved", "omitted", "not_applicable"]
@@ -52,6 +53,13 @@ class EvaluationPolicy:
     api_observation_sha256: str
     tool_observation_sha256: str
     output_sha256: str
+    trace_pins: tuple[str, str, str]
+    rubric_utf8: bytes = field(repr=False)
+    approved_rules_sha256: str
+    provider_reservation_ref: str
+    effect_observation_pins: tuple[str, ...]
+    interaction_pin: str | None
+    reviewer_record_pins: tuple[str, ...]
     expected_model: str | None
     expected_postcondition: str | None
     output_byte_limit: int
@@ -66,6 +74,8 @@ class EvaluationPolicy:
     rubric_successor: tuple[str, str] | None = None
     prior_evaluation_ref: str | None = None
     replay_receipt_refs: tuple[str, str] | None = None
+    evaluation_ref: str = "evaluation-205-r1"
+    previous_evaluation_pin: str | None = None
 
 
 @dataclass(frozen=True)
@@ -101,6 +111,7 @@ class SemanticReview:
     verdict: str
     basis_refs: tuple[str, ...]
     rationale: str = field(repr=False)
+    basis_pins: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -124,7 +135,7 @@ class EvaluationInputs:
     tool_return_utf8: bytes = field(repr=False)
     recorded_tool_effect: Literal["none", "observed", "unknown"] | None = None
     postconditions: tuple[EffectObservation, ...] = ()
-    interaction: InteractionReference | None = None
+    interaction: InteractionReference | Mapping[str, object] | None = None
     reviews: tuple[SemanticReview, ...] = ()
     reevaluation: ReevaluationLink | None = None
 
@@ -137,6 +148,8 @@ class Criterion:
     next_check: NextCheck = "report_only"
     evidence_refs: tuple[str, ...] = ()
     evidence_owner: str | None = None
+    comparison_sha256: tuple[str, str] | None = None
+    provenance: str | None = None
 
 
 @dataclass(frozen=True)
@@ -155,6 +168,10 @@ class Evaluation:
     retained_reviewers: tuple[str, ...]
     review_state: Literal["reviewed", "pending", "not_applicable"]
     output_sha256: str
+    approved_policy_sha256: str
+    evaluation_ref: str = "evaluation-205-r1"
+    reevaluation_from: str | None = None
+    approved_rubric_successor: tuple[str, str] | None = None
     handoff_targets: tuple[str, str] = ("#206", "#209")
     allow_repeat: Literal[False] = False
     human_acceptance: None = None
@@ -191,7 +208,64 @@ def tool_observation_digest(tool: ToolDecision, effect: str | None) -> str:
     return _record_digest({"tool": asdict(tool), "effect": effect})
 
 
-def _identity(policy: EvaluationPolicy, inputs: EvaluationInputs) -> tuple[Criterion, str]:
+def trace_pins(request: ExecutionRequest, events: tuple[ExecutionEvent, ...],
+               result: ExecutionResult) -> tuple[str, str, str]:
+    return (
+        _record_digest(request.model_dump(mode="json")),
+        _record_digest([event.model_dump(mode="json") for event in events]),
+        _record_digest(result.model_dump(mode="json")),
+    )
+
+
+def _policy_record(policy: EvaluationPolicy) -> dict[str, object]:
+    record = asdict(policy)
+    record["assignment"] = policy.assignment.model_dump(mode="json")
+    record["rubric_utf8"] = _digest(policy.rubric_utf8)
+    record["usage_required_fields"] = sorted(policy.usage_required_fields)
+    record["trusted_readback_origins"] = sorted(policy.trusted_readback_origins)
+    return record
+
+
+def effective_rules_digest(policy: EvaluationPolicy) -> str:
+    keys = ("expected_model", "expected_postcondition", "output_byte_limit", "usage_required_fields",
+            "interaction_required", "semantic_required", "reviewers", "trusted_readback_origins",
+            "producer", "producer_context", "permitted_interaction_origin", "rubric_successor", "prior_evaluation_ref")
+    record = _policy_record(policy)
+    return _record_digest({"rubric": record["rubric_utf8"], **{key: record[key] for key in keys}})
+
+
+def evaluation_policy_digest(policy: EvaluationPolicy) -> str:
+    return _record_digest(_policy_record(policy))
+
+
+def _policy_valid(policy: EvaluationPolicy) -> bool:
+    if _digest(policy.rubric_utf8) != policy.links.criteria_sha256:
+        return False
+    if effective_rules_digest(policy) != policy.approved_rules_sha256:
+        return False
+    try:
+        rubric = json.loads(policy.rubric_utf8)
+    except ValueError:
+        return False
+    return (
+        isinstance(rubric, dict) and rubric.get("revision") == policy.links.criteria_revision
+        and (policy.expected_postcondition is None or rubric.get("expected_postcondition") == policy.expected_postcondition)
+    )
+
+
+def evidence_digest(record: EffectObservation | InteractionReference | SemanticReview) -> str:
+    return _record_digest(asdict(record))
+
+
+def project_interaction(record: Mapping[str, object]) -> InteractionReference | None:
+    """Read solely the permitted reference metadata from a protected interaction record."""
+    permitted = tuple(record.get(field.name) for field in fields(InteractionReference))
+    if not all(isinstance(value, str) for value in permitted):
+        return None
+    return InteractionReference(*permitted)
+
+
+def _trace(policy: EvaluationPolicy, inputs: EvaluationInputs) -> tuple[Criterion, str]:
     name = "identity"
     request, result = inputs.request, inputs.result
     observed = (result.attempt_id, result.operation_id, result.call_id)
@@ -207,31 +281,54 @@ def _identity(policy: EvaluationPolicy, inputs: EvaluationInputs) -> tuple[Crite
         return _unknown(name, "result_uncorrelated"), "held"
     if any(event.assignment != policy.assignment for event in inputs.events):
         return _unknown(name, "event_assignment_uncorrelated"), "held"
+    if trace_pins(request, inputs.events, result) != policy.trace_pins:
+        return _unknown(name, "trace_content_unpinned"), "held"
     try:
         assessment = assess_model_result(request, inputs.events, result)
     except ValueError:
         return _criterion(name, "fail", "trace_order_invalid"), "held"
+
+    return _criterion(name, "pass", "trace_correlated", result.evidence_ref), assessment
+
+
+def _api_check(policy: EvaluationPolicy, inputs: EvaluationInputs) -> Criterion:
+    name = "identity"
+    attempt_id, _, _ = policy.links.correlation
     diag = inputs.api.diagnostics
-    if diag.attempt_id != result.attempt_id:
-        return _unknown(name, "attempt_uncorrelated"), assessment
+    if diag.attempt_id != attempt_id:
+        return _unknown(name, "attempt_uncorrelated")
     if (diag.run_id, diag.work_item_id, diag.binding_sha256, diag.reservation_ref, diag.request_sha256) != (
         policy.assignment.run_id, policy.assignment.work_item_id, policy.assignment.binding_sha256,
-        request.reservation_ref, policy.api_request_sha256,
+        policy.provider_reservation_ref, policy.api_request_sha256,
     ):
-        return _unknown(name, "api_evidence_uncorrelated"), assessment
+        return _unknown(name, "api_evidence_uncorrelated")
     if api_observation_digest(inputs.api) != policy.api_observation_sha256:
-        return _unknown(name, "api_observation_digest_mismatch"), assessment
+        return _unknown(name, "api_observation_digest_mismatch")
+    if inputs.api.disposition == "completed":
+        text_items = tuple(item.text for item in inputs.api.items
+                           if isinstance(item, TextItem) and item.kind == "text")
+        try:
+            if not text_items or "".join(text_items).encode("utf-8") != inputs.output_utf8:
+                return _unknown(name, "api_output_unlinked")
+        except UnicodeError:
+            return _unknown(name, "api_output_unlinked")
+    return _criterion(name, "pass", "api_observation_verified")
+
+
+def _tool_check(policy: EvaluationPolicy, inputs: EvaluationInputs) -> Criterion:
+    name = "identity"
+    current_attempt, operation, current_call = policy.links.correlation
     if tool_observation_digest(inputs.tool, inputs.recorded_tool_effect) != policy.tool_observation_sha256:
-        return _unknown(name, "tool_observation_digest_mismatch"), assessment
+        return _unknown(name, "tool_observation_digest_mismatch")
     receipt, evidence = inputs.tool.receipt, inputs.tool.evidence
     observations = tuple(item for item in (receipt, evidence) if item is not None)
     for item in observations:
         link = item.correlation
-        attempt_id, call_id = result.attempt_id, result.call_id
+        attempt_id, call_id = current_attempt, current_call
         if item is receipt and inputs.tool.outcome == "replay" and policy.replay_receipt_refs is not None:
             attempt_id, call_id = policy.replay_receipt_refs
         for label, actual, expected in (
-            ("operation", link.operation_digest, result.operation_id),
+            ("operation", link.operation_digest, operation),
             ("call", link.call_digest, call_id),
             ("attempt", link.attempt_digest, attempt_id),
             ("run", link.run_digest, policy.assignment.run_id),
@@ -239,33 +336,35 @@ def _identity(policy: EvaluationPolicy, inputs: EvaluationInputs) -> tuple[Crite
             ("route", link.route_digest, policy.assignment.route_id),
         ):
             if actual != _identifier_digest(expected):
-                return _unknown(name, f"{label}_uncorrelated"), assessment
+                return _unknown(name, f"{label}_uncorrelated")
         if inputs.recorded_tool_effect is not None and item.effect != inputs.recorded_tool_effect:
-            return _unknown(name, "tool_effect_conflict", next_check="reconcile"), assessment
+            return _unknown(name, "tool_effect_conflict", next_check="reconcile")
     if receipt is not None:
         if receipt.binding_generation != policy.assignment.owner_generation:
-            return _unknown(name, "tool_generation_uncorrelated"), assessment
+            return _unknown(name, "tool_generation_uncorrelated")
         if receipt.result_digest is not None and receipt.result_digest != _digest(inputs.tool_return_utf8):
-            return _unknown(name, "tool_result_digest_mismatch"), assessment
+            return _unknown(name, "tool_result_digest_mismatch")
         if evidence is not None and ((inputs.tool.outcome != "replay" and receipt.correlation != evidence.correlation)
                                      or receipt.action_digest != evidence.action_digest
                                      or receipt.effect != evidence.effect):
-            return _unknown(name, "tool_attempt_receipt_conflict", next_check="reconcile"), assessment
+            return _unknown(name, "tool_attempt_receipt_conflict", next_check="reconcile")
         if inputs.tool.outcome in ("executed", "replay"):
             if receipt.effect != "observed" or receipt.outcome != "completed":
-                return _unknown(name, "tool_receipt_outcome_unverified"), assessment
+                return _unknown(name, "tool_receipt_outcome_unverified")
             if receipt.result_digest is None:
-                return _unknown(name, "tool_result_digest_missing"), assessment
+                return _unknown(name, "tool_result_digest_missing")
             try:
                 returned = json.loads(inputs.tool_return_utf8.decode("utf-8"), object_pairs_hook=_object)
             except (ValueError, RecursionError):
-                return _unknown(name, "tool_value_unverified"), assessment
+                return _unknown(name, "tool_value_unverified")
             if (not isinstance(returned, dict) or returned.keys() != {"value"}
                     or inputs.tool.value is None or returned["value"] != inputs.tool.value):
-                return _unknown(name, "tool_value_unverified"), assessment
+                return _unknown(name, "tool_value_unverified")
     elif inputs.tool.outcome in ("executed", "replay"):
-        return _unknown(name, "tool_receipt_missing"), assessment
-    return _criterion(name, "pass", "trace_correlated", result.evidence_ref), assessment
+        return _unknown(name, "tool_receipt_missing")
+    if evidence is None and receipt is None:
+        return _unknown(name, "tool_attempt_evidence_missing")
+    return _criterion(name, "pass", "tool_observation_verified")
 
 
 def _model(policy: EvaluationPolicy, inputs: EvaluationInputs) -> Criterion:
@@ -351,6 +450,8 @@ def _effect(policy: EvaluationPolicy, inputs: EvaluationInputs) -> Criterion:
         return _unknown(name, "postcondition_stale", *refs)
     if any(item.operation_id != inputs.result.operation_id for item in proof):
         return _unknown(name, "postcondition_uncorrelated", *refs)
+    if tuple(evidence_digest(item) for item in proof) != policy.effect_observation_pins:
+        return _unknown(name, "postcondition_snapshot_unpinned", *refs)
     values = {item.observed for item in proof}
     if len(values) != 1:
         return _unknown(name, "postcondition_conflict", *refs, next_check="reconcile")
@@ -393,11 +494,13 @@ def _interaction(policy: EvaluationPolicy, inputs: EvaluationInputs) -> Criterio
         return _unknown(name, "interaction_access_blocked", source.ref)
     if source.status != "complete":
         return _unknown(name, "interaction_reference_insufficient", source.ref)
+    if evidence_digest(source) != policy.interaction_pin:
+        return _unknown(name, "interaction_snapshot_unpinned", source.ref)
     return _criterion(name, "pass", "interaction_reference_sufficient", source.ref)
 
 
 def _review_check(policy: EvaluationPolicy, inputs: EvaluationInputs, review: SemanticReview,
-                  output_sha256: str, available: set[str]) -> Criterion | None:
+                  output_sha256: str, available: dict[str, str]) -> Criterion | None:
     name = "semantic"
     if (not review.authorized or review.role != "independent_semantic_fixture"
             or review.id == policy.producer or review.context == policy.producer_context
@@ -414,8 +517,12 @@ def _review_check(policy: EvaluationPolicy, inputs: EvaluationInputs, review: Se
         return _unknown(name, "review_result_mismatch", review.id, next_check="request_independent_review")
     if links.evidence_revision != pinned.evidence_revision:
         return _unknown(name, "review_evidence_mismatch", review.id, next_check="request_independent_review")
-    if not review.basis_refs or not set(review.basis_refs) <= available:
+    if not review.basis_refs or not set(review.basis_refs) <= available.keys():
         return _unknown(name, "review_basis_unavailable", review.id, *review.basis_refs)
+    if tuple(available[ref] for ref in review.basis_refs) != review.basis_pins:
+        return _unknown(name, "review_basis_changed", review.id, *review.basis_refs)
+    if evidence_digest(review) not in policy.reviewer_record_pins:
+        return _unknown(name, "review_record_unpinned", review.id)
     if review.verdict not in ("pass", "fail"):
         return _unknown(name, "review_verdict_unresolved", review.id, next_check="request_independent_review")
     return None
@@ -428,13 +535,14 @@ def _semantic(policy: EvaluationPolicy, inputs: EvaluationInputs, output_sha256:
         return _criterion(name, "not_applicable", "semantic_review_not_declared")
     if not inputs.reviews:
         return _unknown(name, "review_unavailable", next_check="request_independent_review")
-    available = {inputs.result.evidence_ref}
-    available.update(item.ref for item in inputs.postconditions
+    available = {inputs.result.evidence_ref: policy.trace_pins[2]}
+    available.update((item.ref, evidence_digest(item)) for item in inputs.postconditions
                      if item.authorized and item.current and item.origin in policy.trusted_readback_origins
                      and item.revision == policy.links.evidence_revision
-                     and item.operation_id == inputs.result.operation_id)
+                     and item.operation_id == inputs.result.operation_id
+                     and evidence_digest(item) in policy.effect_observation_pins)
     if interaction.outcome == "pass" and inputs.interaction is not None:
-        available.add(inputs.interaction.ref)
+        available[inputs.interaction.ref] = evidence_digest(inputs.interaction)
     for review in inputs.reviews:
         failure = _review_check(policy, inputs, review, output_sha256, available)
         if failure is not None:
@@ -478,47 +586,117 @@ def _aggregate(policy: EvaluationPolicy, inputs: EvaluationInputs, checks: tuple
     return _criterion(name, "pass", "all_applicable_criteria_met")
 
 
+def _comparison_metadata(
+    checks: tuple[Criterion, ...], policy: EvaluationPolicy, inputs: EvaluationInputs,
+    identity: tuple[Criterion, Criterion, Criterion], effect: str,
+) -> tuple[Criterion, ...]:
+    trace, api, tool = identity
+    records = {
+        "identity": ("pinned_v1_api_tool", policy.trace_pins,
+                     (trace.reason, api.reason, tool.reason)),
+        "model": ("v1_and_normalized_api", policy.expected_model,
+                  (inputs.api.diagnostics.observed_model, trace.reason, api.reason)),
+        "structure": ("normalized_output", policy.output_byte_limit,
+                      (len(inputs.output_utf8), _digest(inputs.output_utf8))),
+        "outcome": ("v1_api_tool", ("completed", "executed_or_replay"),
+                    (inputs.api.disposition, inputs.tool.outcome)),
+        "effect": ("independent_postcondition", policy.expected_postcondition,
+                   (effect, tuple(evidence_digest(item) for item in inputs.postconditions))),
+        "usage": ("normalized_api", sorted(policy.usage_required_fields), asdict(inputs.api.usage)),
+        "interaction": ("protected_reference_metadata", policy.interaction_pin,
+                        evidence_digest(inputs.interaction) if inputs.interaction is not None else None),
+        "semantic": ("independent_fixture_review", policy.reviewer_record_pins,
+                     tuple(evidence_digest(item) for item in inputs.reviews)),
+        "aggregate": ("mandatory_criteria", policy.approved_rules_sha256,
+                      tuple((item.id, item.outcome, item.reason) for item in checks if item.id != "aggregate")),
+    }
+    return tuple(replace(check, provenance=records[check.id][0], comparison_sha256=(
+        _record_digest(records[check.id][1]), _record_digest(records[check.id][2]),
+    )) for check in checks)
+
+
 def evaluate_io(policy: EvaluationPolicy, inputs: EvaluationInputs) -> Evaluation:
     """Assess recorded evidence; the return includes only observations and a next-check proposal."""
-    raw_result = inputs.result
     output_sha256 = _digest(inputs.output_utf8)
-    if isinstance(raw_result, dict):
+    if isinstance(inputs.interaction, Mapping):
+        inputs = replace(inputs, interaction=project_interaction(inputs.interaction))
+    if isinstance(inputs.result, dict):
         try:
-            parsed_result = ExecutionResult.model_validate(raw_result)
+            parsed_result = ExecutionResult.model_validate(inputs.result)
         except ValueError:
             parsed_result = None
-        if parsed_result is None:
-            reason = ("unsupported_source_revision" if raw_result.get("version") != 1
-                      else "result_schema_unverified")
-            identity, assessment = _unknown("identity", reason), "held"
-        else:
+        if parsed_result is not None:
             inputs = replace(inputs, result=parsed_result)
-            identity, assessment = _identity(policy, inputs)
+
+    if not _policy_valid(policy):
+        trace, assessment = _unknown("identity", "effective_rubric_unpinned"), "held"
+        api = tool = trace
     else:
-        identity, assessment = _identity(policy, inputs)
-    if identity.outcome == "pass" and output_sha256 != policy.output_sha256:
-        identity = _unknown("identity", "result_digest_mismatch")
+        if isinstance(inputs.result, dict):
+            version = inputs.result.get("version")
+            reason = ("unsupported_source_revision" if type(version) is not int or version != 1
+                      else "result_schema_unverified")
+            trace, assessment = _unknown("identity", reason), "held"
+        else:
+            trace, assessment = _trace(policy, inputs)
+        api, tool = _api_check(policy, inputs), _tool_check(policy, inputs)
+        if api.outcome == "pass" and output_sha256 != policy.output_sha256:
+            api = _unknown("identity", "result_digest_mismatch")
+
+    identity = next((check for check in (trace, api, tool) if check.outcome != "pass"), trace)
+    trusted_api, trusted_tool = api.outcome == "pass", tool.outcome == "pass"
+    raw_tool = inputs.tool
+    usage = inputs.api.usage if trusted_api else UsageObservation()
+    effect = ((raw_tool.evidence.effect if raw_tool.evidence is not None else
+               raw_tool.receipt.effect if raw_tool.receipt is not None else
+               inputs.recorded_tool_effect or "unverified") if trusted_tool else "unverified")
+    entry_observed = trusted_tool and raw_tool.receipt is not None and raw_tool.receipt.effect == "observed"
     if identity.outcome == "pass":
         interaction = _interaction(policy, inputs)
         semantic = _semantic(policy, inputs, output_sha256, interaction)
         checks = (identity, _model(policy, inputs), _structure(policy, inputs), _outcome(inputs),
-                  _effect(policy, inputs), _usage(policy, inputs.api.usage), interaction, semantic)
-        usage = inputs.api.usage
-        effect = (inputs.tool.evidence.effect if inputs.tool.evidence is not None else
-                  inputs.tool.receipt.effect if inputs.tool.receipt is not None else
-                  inputs.recorded_tool_effect or "unverified")
-        entry_observed = inputs.tool.receipt is not None and inputs.tool.receipt.effect == "observed"
-        retained = tuple(_identifier_digest(review.id) for review in inputs.reviews)
+                  _effect(policy, inputs), _usage(policy, usage), interaction, semantic)
     else:
         semantic = _unknown("semantic", "upstream_identity_unverified")
         checks = (identity, semantic)
-        usage, effect, entry_observed, retained = UsageObservation(), "unverified", False, ()
+        if effect == "unknown":
+            checks += (_unknown("effect", "possible_effect_unreconciled", next_check="reconcile"),)
     aggregate = _aggregate(policy, inputs, checks)
     return Evaluation(
-        policy.links.criteria_revision, policy.links.criteria_sha256, checks + (aggregate,),
+        policy.links.criteria_revision, policy.links.criteria_sha256,
+        _comparison_metadata(checks + (aggregate,), policy, inputs, (trace, api, tool), effect),
         {"pass": "criteria_met", "fail": "criteria_failed", "unresolved": "criteria_unresolved"}[aggregate.outcome],
-        aggregate.next_check, assessment, inputs.api.disposition, inputs.tool.outcome,
-        effect, entry_observed, usage, retained,
+        aggregate.next_check, assessment,
+        inputs.api.disposition if trusted_api else "unverified",
+        raw_tool.outcome if trusted_tool else "unverified",
+        effect, entry_observed, usage,
+        tuple(_identifier_digest(review.id) for review in inputs.reviews) if identity.outcome == "pass" else (),
         {"unresolved": "pending", "not_applicable": "not_applicable"}.get(semantic.outcome, "reviewed"),
-        output_sha256,
+        output_sha256, evaluation_policy_digest(policy), policy.evaluation_ref,
+        approved_rubric_successor=policy.rubric_successor,
     )
+
+
+def evaluation_digest(evaluation: Evaluation) -> str:
+    return _record_digest(asdict(evaluation))
+
+
+def reevaluate_io(previous: Evaluation, link: ReevaluationLink, policy: EvaluationPolicy,
+                  inputs: EvaluationInputs) -> Evaluation:
+    """Evaluate a separately approved successor without rewriting the earlier result."""
+    if (
+        previous.evaluation_ref != link.prior_evaluation_ref
+        or previous.criteria_revision != link.previous_criteria_revision
+        or previous.approved_rubric_successor != (link.new_criteria_revision, link.new_criteria_sha256)
+        or policy.previous_evaluation_pin != evaluation_digest(previous)
+        or policy.prior_evaluation_ref != link.prior_evaluation_ref
+        or policy.evaluation_ref != link.new_evaluation_ref
+        or policy.evaluation_ref == previous.evaluation_ref
+        or not _policy_valid(policy)
+        or policy.links.criteria_revision != link.new_criteria_revision
+        or policy.links.criteria_sha256 != link.new_criteria_sha256
+        or inputs.reevaluation is not None
+    ):
+        raise ValueError("reevaluation is not linked to the pinned evaluation and approved successor")
+    current = evaluate_io(policy, inputs)
+    return replace(current, reevaluation_from=previous.evaluation_ref)
