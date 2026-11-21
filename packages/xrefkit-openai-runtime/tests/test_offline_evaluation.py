@@ -7,11 +7,14 @@ import json
 from pathlib import Path
 import unittest
 
+import test_offline_dispatch
+import test_offline_responses
+
 from xrefkit_openai_runtime.contracts import AssignmentRef, ExecutionEvent, ExecutionRequest, ExecutionResult
 from xrefkit_openai_runtime.offline_dispatch import ToolAttemptEvidence, ToolCorrelation, ToolDecision, ToolReceipt
 from xrefkit_openai_runtime.offline_evaluation import (
     EffectObservation, EvaluationInputs, EvaluationPolicy, ReevaluationLink,
-    RevisionLinks, ReviewAuthority, SemanticReview, api_observation_digest, effective_rules_digest,
+    ReplayAuthorization, RevisionLinks, ReviewAuthority, SemanticReview, api_observation_digest, effective_rules_digest,
     evaluate_io, evaluation_digest, evidence_digest, project_interaction, reevaluate_io,
     tool_observation_digest, trace_pins,
 )
@@ -165,6 +168,8 @@ class OfflineEvaluationCases(unittest.TestCase):
             rubric_successor=("rubric-r2", self.fixture["rubric_sha256"]["rubric-r2"]),
             prior_evaluation_ref="evaluation-205-r1", evaluation_ref=evaluation_ref,
             previous_evaluation_pin=evaluation_digest(previous) if previous is not None else None,
+            tool_authorization_digests=tuple(frozen_receipt["correlation"][field]
+                for field in ("policy_digest", "grant_digest", "reservation_digest")),
         )
         policy = replace(policy, approved_rules_sha256=effective_rules_digest(policy))
         return evaluate_io(policy, inputs), observed, inputs, policy
@@ -177,6 +182,8 @@ class OfflineEvaluationCases(unittest.TestCase):
                 check = checks[assertions["criterion"]]
                 actual = [check.outcome, check.reason]
                 self.assertEqual(actual, expected)
+                if check.reason in ("review_rubric_mismatch", "review_result_mismatch", "review_evidence_mismatch"):
+                    self.assertNotEqual(*check.comparison_sha256)
                 known = asdict(result.usage)
                 optional = {
                     "aggregate": result.aggregate, "v1": result.v1_assessment,
@@ -225,6 +232,8 @@ class OfflineEvaluationCases(unittest.TestCase):
                     self.assertTrue(result.entry_observed)
                 if inputs.reevaluation is not None:
                     proof["verified_successor"] = self.check_reevaluation(inputs.reevaluation)
+                if variant == "exact-trace":
+                    proof["upstream_controls"] = self.verify_native_observations()
                 serialized = json.dumps(proof)
                 for canary in assertions.get("ordinary_output_excludes", []):
                     self.assertEqual(inputs.interaction["fixture_forbidden_content"], canary)
@@ -267,16 +276,6 @@ class OfflineEvaluationCases(unittest.TestCase):
         self.assertEqual(result.criteria[0].reason, "tool_attempt_receipt_conflict")
         self.assertEqual(result.next_proposal, "reconcile")
 
-        prior = replace(receipt, correlation=replace(
-            receipt.correlation, call_digest=_sha(_encode("call-prior", ascii_only=True)),
-        ))
-        replay = replace(inputs.tool, outcome="replay", receipt=prior, evidence=replace(evidence, effect="observed"))
-        replay_input = replace(inputs, tool=replay)
-        replay_policy = replace(policy, tool_observation_sha256=tool_observation_digest(replay, "observed"))
-        self.assertEqual(evaluate_io(replay_policy, replay_input).criteria[0].reason, "call_uncorrelated")
-        linked = replace(replay_policy, replay_receipt_refs=("attempt-205", "call-prior"))
-        self.assertEqual(evaluate_io(linked, replay_input).criteria[0].outcome, "pass")
-
         # The immutable pins cover record contents, not merely their revision labels.
         modified_request = replace(inputs, request=inputs.request.model_copy(update={"authorization_ref": "other"}))
         changed_events = replace(inputs, events=(inputs.events[0].model_copy(update={"kind": "held"}), *inputs.events[1:]))
@@ -312,6 +311,35 @@ class OfflineEvaluationCases(unittest.TestCase):
 
     def test_E205_02_structure_and_outcomes(self):
         self.run_group("E205-02")
+        failure, _, _, _ = self.run_case((
+            ("/output_utf8", '{"objective":'),
+            ("/tool/receipt/correlation/call_digest", "@jsonsha:other-call"),
+        ))
+        checks = {check.id: check for check in failure.criteria}
+        self.assertEqual((checks["structure"].outcome, checks["structure"].reason), ("fail", "invalid_json"))
+        self.assertEqual(failure.aggregate, "criteria_failed")
+
+        failure, _, _, _ = self.run_case((
+            ("/api/diagnostics/attempt_id", "attempt-other"),
+            ("/tool/outcome", "deny"),
+            ("/tool/receipt", None),
+            ("/tool/evidence/effect", "none"),
+        ))
+        checks = {check.id: check for check in failure.criteria}
+        self.assertEqual(checks["outcome"].reason, "tool_denied")
+        self.assertEqual(failure.aggregate, "criteria_failed")
+
+        failure, _, _, _ = self.run_case((
+            ("/active_assignment/route_revision", 2),
+            ("/api/diagnostics/attempt_id", "attempt-other"),
+            ("/tool/receipt/correlation/call_digest", "@jsonsha:other-call"),
+        ))
+        self.assertEqual({item.id: item.reason for item in failure.source_findings}, {
+            "v1_identity": "assignment_not_current", "api_identity": "attempt_uncorrelated",
+            "tool_identity": "call_uncorrelated",
+        })
+        self.assertTrue(all(item.comparison_sha256[0] != item.comparison_sha256[1]
+                            for item in failure.source_findings))
 
     def test_E205_03_effect_evidence(self):
         self.run_group("E205-03")
@@ -329,10 +357,14 @@ class OfflineEvaluationCases(unittest.TestCase):
         self.assertEqual(result.review_state, "pending")
         _, _, inputs, policy = self.run_case((("/interaction_required", True),))
         reference = project_interaction(inputs.interaction)
-        result = evaluate_io(policy, replace(inputs, interaction=replace(reference, ref="substituted")))
-        criteria = {check.id: check for check in result.criteria}
-        self.assertEqual(criteria["interaction"].reason, "interaction_snapshot_unpinned")
-        self.assertEqual(result.usage, inputs.api.usage)
+        for changed in (
+            replace(reference, ref="substituted"), replace(reference, access="blocked"),
+            replace(reference, status="redacted_insufficient"), replace(reference, revision="evidence-r0"),
+        ):
+            result = evaluate_io(policy, replace(inputs, interaction=changed))
+            criteria = {check.id: check for check in result.criteria}
+            self.assertEqual(criteria["interaction"].reason, "interaction_snapshot_unpinned")
+            self.assertEqual(result.usage, inputs.api.usage)
         reviewer = replace(inputs.reviews[0], rationale="substituted under the same reviewer identity")
         result = evaluate_io(policy, replace(inputs, reviews=(reviewer,)))
         self.assertEqual({check.id: check for check in result.criteria}["semantic"].reason,
@@ -357,6 +389,11 @@ class OfflineEvaluationCases(unittest.TestCase):
             (), rubric_version="rubric-r2", original_changes=revisions,
             evaluation_ref="evaluation-205-r2", previous=prior,
         )
+        direct = evaluate_io(policy, inputs)
+        self.assertEqual(direct.criteria[0].reason, "reevaluation_link_required")
+        self.assertEqual(direct.aggregate, "criteria_unresolved")
+        without_previous_pin = evaluate_io(replace(policy, previous_evaluation_pin=None), inputs)
+        self.assertEqual(without_previous_pin.aggregate, "criteria_unresolved")
         latest = reevaluate_io(prior, link, policy, inputs)
         self.assertEqual(latest.aggregate, "criteria_met")
         self.assertEqual(latest.criteria_revision, "rubric-r2")
@@ -371,4 +408,74 @@ class OfflineEvaluationCases(unittest.TestCase):
             "prior_sha256": prior_digest, "prior_unchanged": True,
             "successor_sha256": evaluation_digest(latest), "successor_criteria_sha256": latest.criteria_sha256,
             "successor_aggregate": latest.aggregate, "successor_human_acceptance": latest.human_acceptance,
+            "direct_aggregate": direct.aggregate, "direct_reason": direct.criteria[0].reason,
+        }
+
+    def verify_native_observations(self):
+        _, _, inputs, policy = self.run_case(())
+        api_harness = test_offline_responses.OfflineResponsesTests()
+        api_harness.setUpClass()
+        settings, sends, _, invoke = api_harness.setup_variant({})
+        api = invoke()
+        self.assertEqual((api.disposition, len(sends)), ("completed", 1))
+        output = "".join(item.text for item in api.items if isinstance(item, TextItem) and item.kind == "text").encode()
+        self.assertTrue(output)
+        wire_digest = _sha(sends[0].body)
+        self.assertEqual(api.diagnostics.request_sha256, wire_digest)
+        attempt, operation, call = policy.links.correlation
+        api_policy = replace(
+            policy, assignment=api_harness.request.assignment,
+            links=replace(policy.links, correlation=(settings["attempt_id"], operation, call)),
+            provider_reservation_ref=api_harness.request.reservation_ref, api_request_sha256=wire_digest,
+            api_observation_sha256=api_observation_digest(api), output_sha256=_sha(output),
+        )
+        checked = evaluate_io(api_policy, replace(inputs, api=api, output_utf8=output))
+        self.assertEqual(checked.source_findings[1].outcome, "pass")
+        self.assertEqual(checked.usage, api.usage)
+
+        dispatch = test_offline_dispatch.OfflineDispatchTests()
+        dispatch.setUpClass()
+        later = dispatch.request({"attempt": "attempt-2", "provider_call": "call-2",
+                                  "grant": "grant-2", "reservation": "reservation-2"})
+        dispatcher, host, base = dispatch.setup_case(additional=(later,))
+        first = dispatch.invoke(dispatcher, base)
+        replay = dispatch.invoke(dispatcher, later)
+        self.assertEqual((first.outcome, replay.outcome, dispatcher.snapshot(later).entry_count),
+                         ("executed", "replay", 1))
+        self.assertEqual(first.receipt, replay.receipt)
+        authorized_action = next(grant.action for grant in host.authority.grants
+                                 if grant.action.authorization_ref == later.grant)
+        digests = tuple(_sha(_encode(ref, ascii_only=True)) for ref in (
+            authorized_action.policy_revision, authorized_action.authorization_ref, authorized_action.reservation_id,
+        ))
+        scope = _sha(_encode(host.return_scope.pin))
+        seal = ReplayAuthorization(first.receipt.correlation, replay.evidence.correlation, scope)
+        tool_assignment = policy.assignment.model_copy(update={
+            "run_id": later.run, "work_item_id": later.work, "route_id": later.route,
+            "owner_generation": later.generation,
+        })
+        tool_policy = replace(
+            policy, assignment=tool_assignment, links=replace(
+                policy.links, correlation=(later.attempt, later.operation_id, later.provider_call),
+            ), tool_observation_sha256=tool_observation_digest(replay, "observed"),
+            tool_authorization_digests=digests, replay_authorization=seal,
+        )
+        native_return_bytes = test_offline_dispatch.encode(dispatch.defaults["fake_result"])
+        tool_inputs = replace(inputs, tool=replay, tool_return_utf8=native_return_bytes,
+                              recorded_tool_effect="observed", tool_return_scope_sha256=scope)
+        checked_tool = evaluate_io(tool_policy, tool_inputs)
+        self.assertEqual((checked_tool.source_findings[2].outcome, checked_tool.tool_outcome), ("pass", "replay"))
+        invalid_scope = evaluate_io(tool_policy, replace(tool_inputs, tool_return_scope_sha256="a" * 64))
+        self.assertEqual(invalid_scope.source_findings[2].reason, "tool_replay_authorization_unverified")
+        for key in ("policy_digest", "grant_digest", "reservation_digest"):
+            amended = replace(replay.evidence.correlation, **{key: "0" * 64})
+            wrong = replace(replay, evidence=replace(replay.evidence, correlation=amended))
+            wrong_policy = replace(tool_policy, tool_observation_sha256=tool_observation_digest(wrong, "observed"))
+            rejected = evaluate_io(wrong_policy, replace(tool_inputs, tool=wrong))
+            self.assertEqual(rejected.source_findings[2].reason, "tool_replay_authorization_unverified")
+        return {
+            "adapter_wire_sha256": wire_digest, "adapter_evaluation": checked.source_findings[1].outcome,
+            "dispatch_entries": dispatcher.snapshot(later).entry_count,
+            "replay_evaluation": checked_tool.source_findings[2].outcome,
+            "replay_scope_sha256": scope, "changed_replay_scope": invalid_scope.source_findings[2].reason,
         }
