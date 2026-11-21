@@ -1,6 +1,6 @@
 # XRefKit Project Management
 
-Distribution: **xrefkit-skills-project-management 0.1.2**.
+Distribution: **xrefkit-skills-project-management 0.1.3**.
 Package ID: `xrefkit.skills.project_management`.
 
 Five native SkillDefinitions form one Project Management job:
@@ -82,7 +82,7 @@ availability are verified separately from source and candidate-build validation.
 Install after compatible Core and this package are published:
 
 ```console
-python -m pip install xrefkit-skills-project-management==0.1.2
+python -m pip install xrefkit-skills-project-management==0.1.3
 ```
 
 MCP discovery uses the normal `xrefkit.skill_packages` entry point and the enabled
@@ -114,7 +114,7 @@ PR checks use the local candidate Core. Release install checks require compatibl
 Core from PyPI and fail if it is absent; publish cannot precede those checks.
 
 Publication requires a separate authorized release and the tag matching
-`xrefkit-skills-project-management-v0.1.2`. No tag or upload is created by
+`xrefkit-skills-project-management-v0.1.3`. No tag or upload is created by
 preparation. Configure PyPI pending Trusted Publisher with owner `synthaicode`,
 repository `XRefKit`, workflow `python-skill-project-management-package.yml`,
 environment `pypi`; existing OIDC publishing needs no API-token secret.

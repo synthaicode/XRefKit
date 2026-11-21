@@ -67,7 +67,7 @@ mapping.
 | GitHub Project | Current board status and other configured Project fields. The Issue explains evidenced dependency holds that affect the work. |
 | Project Management | Decision and Execution plans, dependencies, schedules and CPM, scoped approval evidence, baselines, revisions and observations. |
 | Technical records | Versioned designs, contracts, tests, verification, sources and evidence in existing stores. Include the owner, applicability, and revision, XID or hash when needed for an exact lookup. |
-| Original Issue record | The exact prior body for audit and change review, along with GitHub's existing edit history and comments. |
+| Issue history | GitHub's native edit history and comments retain audit context. Use the configured history route for exact readback when a write needs it. |
 | Human View | A concise display at the top of the Issue. Lead with material changes or the current state, then show actionable decisions, risks, blockers and the next step. |
 
 ### Current Issue record and AI handoff
@@ -80,8 +80,7 @@ configured Project and PM locators, and checks the current designated technical
 and Decision revisions against the Issue's references. Carry the applicable decisions, execution inputs, unknowns,
 authorization scope, verification and stop conditions through the existing
 Workflow Runtime Binding. If a required reference is missing, stale, unrelated
-or out of scope, stop the affected handoff. Historical snapshots remain
-available through their labeled history links.
+or out of scope, stop the affected handoff. Historical snapshots remain available through the Issue history or a separately configured audit route.
 
 A host maps existing reads to the input types, checks the destination's access
 rules, and supplies exact readbacks and reader-accessible references. Keep its
@@ -102,7 +101,7 @@ scheduling history, or Brownfield and Runtime contracts.
    before replacing managed
    content, and preserve manual content outside the declared blocks. For a
    legacy migration, require explicit approval for the exact Issue revision,
-   verify the complete original's readback, and check the old fragment mapping.
+   verify complete prior-body readback, and check the old fragment mapping. Prefer native Issue history and preserve existing anchors on the Issue.
 3. Refresh the Issue, Project and required sources before delivery. Use the
    host's guarded writer for automated changes. If a receiving route lacks the
    required guarantee, hand off the prepared candidate for review.
@@ -124,7 +123,7 @@ records before seeking production migration approval.
 ## Distribution
 
 The PyPI distribution is `xrefkit-skills-project-management` version
-`0.1.2`, package ID `xrefkit.skills.project_management`. It packages the native
+`0.1.3`, package ID `xrefkit.skills.project_management`. It packages the native
 definitions, shared persistence reference, bound trial governance, bootstrap
 observation and this entry. The [scheduling interface](scheduling.md#xid-73E20A8D9C51)
 adds structured Decision/Execution plans, immutable Gantt history, deterministic

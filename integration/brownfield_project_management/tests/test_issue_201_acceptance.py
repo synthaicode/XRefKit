@@ -21,11 +21,8 @@ from xrefkit_skills_project_management.issue_projection import (
 )
 
 
-_SOURCE = (
-    Path(__file__).resolve().parents[3]
-    / "sources/web/github.com/synthaicode/XRefKit/issues/201/2026-11-21_original-body.md"
-)
-_SOURCE_DIGEST = "37ed0a8f8e54cd318e3e71d5365f736ea6c0cf6ee5e9ce7bf910a721f4931fc8"
+_SOURCE = Path(__file__).resolve().parent / "fixtures/issue_201/legacy-issue.md"
+_SOURCE_DIGEST = hashlib.sha256(_SOURCE.read_bytes()).hexdigest()
 _DESIGN = Path(__file__).resolve().parent / "fixtures/issue_201/design-draft.md"
 
 
@@ -91,8 +88,8 @@ def test_issue_201_generates_a_compact_view_from_separate_records():
     assert "https://records.example.test/201/technical/design-v1" in body
     assert "https://records.example.test/201/management/v1" in body
     assert "**Decision needed.**" not in body
-    assert "<details>" not in body and "### 1. Acquire Runtime" not in body
-    assert len(view.body) < len(_SOURCE.read_bytes()) // 4
+    assert "<details>" not in body and "Historic topic" not in body
+    assert len(view.body) < 1500
     assert view.body == render_view(inputs, resolve).body
     assert rows[inputs.evidence[0].locator].content == _DESIGN.read_bytes()
 
@@ -134,7 +131,7 @@ def test_issue_201_copy_migration_keeps_source_and_is_repeatable():
     migration = LegacyMigration(authorization, aliases)
     plan = prepare_update(issue, view, archive=archive, resolve=resolve, migration=migration)
     new_body = plan.replacement.decode("utf-8")
-    assert "<details>" not in new_body and "## Proposed startup" not in new_body
+    assert "<details>" not in new_body and "## Historic topic" not in new_body
     for alias in aliases:
         assert f'{archive_url}#{alias}' in new_body
     assert rows[archive.locator].content == _SOURCE.read_bytes()

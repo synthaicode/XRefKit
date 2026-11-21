@@ -510,6 +510,7 @@ def _archived(
 def _legacy_replacement(
     snapshot: IssueSnapshot, view: ProjectedView, saved: Readback,
     migration: LegacyMigration, resolve: ResolveRecord,
+    *, link_archive: bool,
 ) -> bytes:
     record = _resolve(migration.authorization, "migration_authorization", resolve)
     auth = record.value
@@ -527,12 +528,16 @@ def _legacy_replacement(
         and all(re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}", fragment) for fragment in aliases)
         and set(aliases) == set(snapshot.fragments) == set(auth.aliases)
         and set(aliases) <= set(saved.value.fragments)
-        and not urlsplit(saved.link).fragment,
+        and (not link_archive or not urlsplit(saved.link).fragment),
         "complete old fragment aliases and matching archived targets must be verified",
     )
-    lines = ["", f"[Prior Issue record](<{saved.link}>)"]
+    lines = ["", f"[Prior Issue record](<{saved.link}>)"] if link_archive else []
     for alias in aliases:
-        lines += ["", f'<a name="{alias}"></a>', f"[Archived section](<{saved.link}#{alias}>)"]
+        lines += ["", f'<a name="{alias}"></a>']
+        if link_archive:
+            lines.append(f"[Archived section](<{saved.link}#{alias}>)")
+    if not lines:
+        return view.body
     return view.body + ("\n".join(lines) + "\n").encode("utf-8")
 
 
@@ -567,9 +572,10 @@ def prepare_update(
     _validate_view(view)
     bounds = _view_bounds(snapshot.body)
     if migration is not None:
-        _require(edit_history is None, "legacy migration requires its exact archived body")
-        saved = _archived(snapshot, archive, resolve)
-        replacement = _legacy_replacement(snapshot, view, saved, migration, resolve)
+        _require(archive is None or edit_history is None, "select one verified Issue history source")
+        saved = _archived(snapshot, edit_history or archive, resolve,
+                          role="issue_history" if edit_history is not None else "archive")
+        replacement = _legacy_replacement(snapshot, view, saved, migration, resolve, link_archive=archive is not None)
     else:
         _require(bounds is not None, "unmanaged Issue requires a separately authorized legacy migration")
         start, end = bounds
