@@ -50,9 +50,54 @@ project-specific values remain separately selected Knowledge, not bundled policy
 `pm_decision_coordination` receives existing internal questions, supports the PM's
 routing and scoped agreement judgment, and returns decisions and conditions to
 internal owners. It tracks answer sufficiency, delivery, reflection and quality
-results separately. The existing progress method owns readiness evaluation; the
-PM selects which bounded work to start from that result. Neither new method
+results separately. The existing progress method owns readiness evaluation. A
+current standing PM decision can select the bounds in advance as described below.
+Neither new method
 sends external messages, assigns stakeholders or changes plans automatically.
+
+## Progression under standing approval
+
+Use `pm_coordination_setup` to record a project-wide decision from the designated
+human authority. The decision can delegate ordinary offline transitions once
+for an explicitly bounded scope. Record which transitions it covers, designated
+roles, required evidence, and how to handle existing holds. Keep the exact policy
+revision and approval reference in the project's current decision records.
+Without applicable standing authority, use the existing decision route.
+
+Present the whole proposed flow before collecting decisions. Remove checks that
+can be resolved using current policy and evidence from the human approval list.
+Group remaining exceptions by decision owner and include their impact, options
+and the recommended treatment in one handoff.
+
+| Transition | Current evidence required |
+| --- | --- |
+| Start authorized offline work | Scoped readiness: approved scope and cases, exact baseline and inputs, assigned implementer and independent reviewer, and satisfied dependencies or an authorized bounded overlap. |
+| Send the candidate to independent review | Required verification passed on the exact candidate and the evidence packet is ready. |
+| Record offline acceptance | Required verification and independent review passed for the same exact candidate. Resolve any blocking findings and repeat affected checks after changes. |
+| Hand off the accepted artifact | Recorded offline acceptance and its evidence apply to the exact candidate. Recheck the receiving task's own start conditions before it advances. |
+
+For the deterministic match used by `work_progress_coordination`, use
+`xrefkit_skills_project_management.offline_progress.evaluate_offline_transition`.
+The host resolves the current policy, work identity and revision, applicable holds, and
+attributable check results through authoritative records before calling it.
+The matcher consumes those verified inputs. It does not read repository prose
+as authority, perform verification or independently attest a reviewer.
+
+- `proceed`: act within standing authorization and record the policy revision,
+  approval reference, exact work/candidate revision, relevant evidence and action
+  through the configured persistence route. Advance immediately where the host
+  can perform the authorized action. Use the existing technical and quality
+  routes for their work. Record offline acceptance as policy-based progression.
+- `await_evidence`: route missing, failed, stale or conflicting checks to their
+  existing owner and refresh the result. Escalate if resolving the gap requires
+  an exception, changed scope, or a reserved human decision.
+- `human_decision`: consolidate out-of-policy actions and decisions still reserved
+  to a human. Existing explicit holds apply until the authorized decision record
+  resolves them. Live API calls, real Tools, real-data transfer, merge, release,
+  and any governed human acceptance use their existing authority records.
+
+The matcher does not change an Issue or Project on its own. Persist authorized
+transitions with current revision checks and delivery readback.
 
 ## Project updates and decisions
 
