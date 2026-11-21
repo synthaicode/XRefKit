@@ -10,11 +10,18 @@ import re
 from stat import FILE_ATTRIBUTE_REPARSE_POINT
 from typing import Literal
 
-from pydantic import ValidationError
-
 from .contracts import AssignmentRef, ContractRecord, Digest, ExecutionRequest, Identifier
 
 FIXTURE_CONTEXT_BYTE_LIMIT = 4_096
+_FIXTURE_REVISION = "e201-fixtures-r1"
+# Content hashes can vary for controlled synthetic cases. Source authority cannot.
+_APPROVED_SOURCE_IDENTITIES = {
+    "startup.json": ("required-manifest", ""),
+    "sources/startup-control.md": ("required-control", ""),
+    "sources/required.md": ("required-support", "F20100000001"),
+    "sources/optional.md": ("optional-support", "F20100000002"),
+    "inputs/tool-result.json": ("optional-tool-data", ""),
+}
 _XID_MARKER = re.compile(r"^<!-- xid: ([A-F0-9]{12}) -->$", re.MULTILINE)
 
 
@@ -89,13 +96,18 @@ def _is_link(path: Path) -> bool:
     return path.is_symlink() or bool(attributes & FILE_ATTRIBUTE_REPARSE_POINT)
 
 
-def _source_path(root: Path, relative: str) -> Path:
+def _logical_path(relative: str) -> PurePosixPath:
     if any(ord(character) < 32 for character in relative):
         raise _Hold("invalid_source_path")
     logical = PurePosixPath(relative)
     if (logical.is_absolute() or logical.as_posix() != relative
             or any(part in (".", "..") or ":" in part or "\\" in part for part in logical.parts)):
         raise _Hold("source_outside_root")
+    return logical
+
+
+def _source_path(root: Path, relative: str) -> Path:
+    logical = _logical_path(relative)
     current = root
     for part in logical.parts:
         current = current / part
@@ -129,19 +141,15 @@ def _inventory_pins(inventory: SourceInventory) -> dict[str, SourcePin]:
     xids = [pin.xid for pin in inventory.files if pin.xid]
     if len(pins) != len(inventory.files) or len(xids) != len(set(xids)):
         raise _Hold("ambiguous_source_identity")
-    if any(pin.revision != inventory.revision for pin in pins.values()):
-        raise _Hold("source_revision_mismatch")
+    if inventory.revision != _FIXTURE_REVISION:
+        raise _Hold("inventory_revision_mismatch")
     for pin in pins.values():
-        if pin.role in ("required-support", "optional-support"):
-            if re.fullmatch(r"[A-F0-9]{12}", pin.xid) is None:
-                raise _Hold("invalid_source_identity", pin)
-        elif pin.xid:
-            raise _Hold("invalid_source_identity", pin)
-    manifest = pins.get("startup.json")
-    manifests = [pin for pin in pins.values() if pin.role == "required-manifest"]
-    controls = [pin for pin in pins.values() if pin.role == "required-control"]
-    if manifest is None or manifests != [manifest] or not controls:
-        raise _Hold("invalid_startup_inventory")
+        if pin.revision != inventory.revision:
+            raise _Hold("source_revision_mismatch", pin)
+        _logical_path(pin.path)
+    identities = {path: (pin.role, pin.xid) for path, pin in pins.items()}
+    if identities != _APPROVED_SOURCE_IDENTITIES:
+        raise _Hold("source_allowlist_mismatch")
     return pins
 
 
@@ -231,7 +239,7 @@ def assemble_offline_context(
             inventory = SourceInventory.model_validate(
                 json.loads(_source_text(inventory_bytes), object_pairs_hook=_unique_object),
             )
-        except (ValueError, ValidationError) as exc:
+        except ValueError as exc:
             raise _Hold("invalid_inventory") from exc
         pins = _inventory_pins(inventory)
         if _is_link(fixture_root) or not fixture_root.is_dir():
@@ -241,7 +249,7 @@ def assemble_offline_context(
         _, startup_text = _read_source(root, manifest_pin)
         try:
             startup = StartupManifest.model_validate(json.loads(startup_text, object_pairs_hook=_unique_object))
-        except (ValueError, ValidationError) as exc:
+        except ValueError as exc:
             raise _Hold("invalid_startup_manifest", manifest_pin) from exc
         _validate_startup(startup, inventory, pins)
         evidence(manifest_pin, "validated")

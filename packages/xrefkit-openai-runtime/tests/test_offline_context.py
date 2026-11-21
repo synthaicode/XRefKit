@@ -53,6 +53,7 @@ class OfflineContextTests(unittest.TestCase):
             target = self.root / pin["path"]
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(raw)
+            self.assertEqual(sha256(target.read_bytes()).hexdigest(), pin["sha256"])
         self.startup = json.loads((self.root / "startup.json").read_bytes())
         golden = json.loads((FIXTURES / "execution_v1.json").read_bytes())
         self.request = ExecutionRequest.model_validate(golden["request"])
@@ -68,7 +69,10 @@ class OfflineContextTests(unittest.TestCase):
         }
         return assemble_offline_context(self.request, **{**settings, **overrides})
 
-    def record(self, case: str, variant: str, result: ContextAssembly, expected_hold: str | None) -> dict:
+    def record(
+        self, case: str, variant: str, result: ContextAssembly, expected_hold: str | None,
+        *, fixture_root: Path | None = None,
+    ) -> dict:
         fake = FakeContextTransport()
         fake.dispatch(result)
         self.assertEqual(result.hold_reason, expected_hold)
@@ -80,6 +84,16 @@ class OfflineContextTests(unittest.TestCase):
             self.assertIsNone(provenance["payload_sha256"])
         else:
             self.assertEqual(provenance["payload_sha256"], sha256(result.payload).hexdigest())
+        effective_root = fixture_root if fixture_root is not None else self.root
+        expected_paths = {pin["path"] for pin in json.loads(self.inventory)["files"]}
+        actual_paths = {
+            path.relative_to(effective_root).as_posix()
+            for path in effective_root.rglob("*") if path.is_file()
+        }
+        effective_hashes = {
+            name: sha256((effective_root / name).read_bytes()).hexdigest() if name in actual_paths else None
+            for name in sorted(expected_paths | actual_paths)
+        }
         print(json.dumps({
             "case": case,
             "variant": variant,
@@ -88,6 +102,9 @@ class OfflineContextTests(unittest.TestCase):
             "serialized_bytes": len(result.payload) if result.payload is not None else None,
             "inventory_sha256": provenance["inventory_sha256"],
             "provenance_sha256": result.provenance_sha256,
+            "provenance_json": result.provenance.decode("utf-8"),
+            "effective_fixture_root": effective_root.relative_to(self.root).as_posix(),
+            "effective_raw_sha256": effective_hashes,
             "payload_sha256": provenance["payload_sha256"],
         }, sort_keys=True))
         return provenance
@@ -127,7 +144,36 @@ class OfflineContextTests(unittest.TestCase):
         unknown = "F20100000003"
         (self.root / "sources" / "unapproved.md").write_text(f"<!-- xid: {unknown} -->\n", encoding="utf-8")
         wrong_root = self.root / "sources"
-        self.record("E201-02", "wrong-root", self.assemble(fixture_root=wrong_root), "source_unavailable")
+        self.record(
+            "E201-02", "wrong-root", self.assemble(fixture_root=wrong_root), "source_unavailable",
+            fixture_root=wrong_root,
+        )
+
+        original = (self.root / "startup.json").read_bytes()
+        added = self.root / "sources" / "unapproved.md"
+        self.startup["sources"].append({
+            "path": "sources/unapproved.md", "role": "optional-support", "xid": unknown,
+            "revision": self.startup["revision"], "sha256": sha256(added.read_bytes()).hexdigest(),
+        })
+        self.startup["selected_xids"].append(unknown)
+        self.repin_startup()
+        self.record("E201-02", "repinned-sixth-source", self.assemble(), "source_allowlist_mismatch")
+
+        self.startup = json.loads(original)
+        pin = next(pin for pin in self.startup["sources"] if pin["path"] == REQUIRED_PATH)
+        pin.update(role="required-control", xid="")
+        self.startup["startup_order"].append(REQUIRED_PATH)
+        self.startup["selected_xids"].remove(REQUIRED_XID)
+        self.repin_startup()
+        self.record("E201-02", "repinned-required-source-role", self.assemble(), "source_allowlist_mismatch")
+
+        self.startup = json.loads(original)
+        self.startup["sources"] = [pin for pin in self.startup["sources"] if pin["path"] != REQUIRED_PATH]
+        self.startup["selected_xids"].remove(REQUIRED_XID)
+        self.repin_startup()
+        self.record("E201-02", "repinned-required-source-removed", self.assemble(), "source_allowlist_mismatch")
+
+        self.startup = json.loads(original)
 
         self.startup["selected_xids"] = [REQUIRED_XID, unknown]
         self.repin_startup()
@@ -162,8 +208,17 @@ class OfflineContextTests(unittest.TestCase):
         self.record("E201-03", "core-present-without-startup", self.assemble(), "source_unavailable")
         startup.write_bytes(original_startup)
 
+        for path in (CONTROL_PATH, REQUIRED_PATH):
+            item = self.root / path
+            original = item.read_bytes()
+            item.unlink()
+            self.record("E201-03", f"missing-required:{path}", self.assemble(), "source_unavailable")
+            item.write_bytes(original)
+
         required = self.root / REQUIRED_PATH
         original_required = required.read_bytes()
+        required.write_bytes(b"\n".join(original_required.splitlines()[:2]) + b"\n")
+        self.record("E201-03", "truncated-but-valid-required-source", self.assemble(), "source_digest_mismatch")
         required.write_bytes(original_required + b"Unapproved change.\n")
         self.record("E201-03", "changed-source-digest", self.assemble(), "source_digest_mismatch")
         required.write_bytes(original_required)
@@ -174,6 +229,12 @@ class OfflineContextTests(unittest.TestCase):
         self.record("E201-03", "stale-startup-revision", self.assemble(), "startup_revision_mismatch")
         self.startup["revision"] = revision
 
+        pin = next(pin for pin in self.startup["sources"] if pin["path"] == REQUIRED_PATH)
+        pin["revision"] = "e201-fixtures-stale"
+        self.repin_startup()
+        self.record("E201-03", "stale-per-source-revision", self.assemble(), "source_revision_mismatch")
+        pin["revision"] = revision
+
         self.replace_pinned_source(REQUIRED_PATH, original_required.rstrip(b"\n"))
         self.record("E201-03", "partial-required-source", self.assemble(), "source_incomplete_or_invalid")
 
@@ -181,12 +242,25 @@ class OfflineContextTests(unittest.TestCase):
         self.record("E201-03", "ambiguous-body-xid", self.assemble(), "source_xid_mismatch_or_ambiguous")
 
     def test_e201_04_assignment_and_serialization(self) -> None:
-        request_json = self.request.model_dump_json()
-        self.request = ExecutionRequest.model_validate_json(request_json)
-        valid = self.assemble()
-        expected = self.request.assignment.model_dump(mode="json")
+        original_request = self.request
+        original_assignment = original_request.assignment
+        original = self.assemble(current_assignment=original_assignment)
+        serialized = original_request.model_dump_json()
+        self.request = ExecutionRequest.model_validate_json(serialized)
+        self.assertEqual(self.request, original_request)
+        self.assertEqual(self.request.criteria_sha256, original_request.criteria_sha256)
+        self.assertEqual(self.request.authorization_ref, original_request.authorization_ref)
+        self.assertEqual(self.request.reservation_ref, original_request.reservation_ref)
+        self.assertEqual(self.request.budget, original_request.budget)
+        self.assertEqual(self.request.cancelled, original_request.cancelled)
+        self.assertEqual(self.request.selected_model, original_request.selected_model)
+        valid = self.assemble(current_assignment=original_assignment)
+        self.assertEqual(valid.payload, original.payload)
+        self.assertEqual(valid.provenance, original.provenance)
         provenance = self.record("E201-04", "serialized-v1-assignment", valid, None)
-        self.assertEqual(provenance["assignment"], expected)
+        self.assertEqual(provenance["assignment"], original_assignment.model_dump(mode="json"))
+        for field in ("run_id", "work_item_id", "execution_id", "binding_sha256"):
+            self.assertEqual(provenance["assignment"][field], getattr(original_assignment, field))
         self.assertEqual(provenance["version"], 1)
         self.assertEqual(sha256(valid.provenance).hexdigest(), valid.provenance_sha256)
         canonical = json.dumps(provenance, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -216,6 +290,13 @@ class OfflineContextTests(unittest.TestCase):
         result = self.assemble(destination="synthetic-destination-not-approved")
         self.record("E201-05", "unauthorized-simulated-destination", result, "unauthorized_destination")
 
+    def assert_size_omissions(self, provenance: dict, expected: list[str]) -> None:
+        self.assertEqual(provenance["size_omission_order"], expected)
+        for name in expected:
+            entry = next(source for source in provenance["sources"] if source["path"] == name)
+            self.assertEqual(entry["status"], "omitted")
+            self.assertEqual(entry["reason"], "context_byte_limit")
+
     def test_e201_06_size_limit_and_omission_order(self) -> None:
         self.assertEqual(FIXTURE_CONTEXT_BYTE_LIMIT, 4_096)
         # Build the byte-size cases from the same source with a multibyte literal and
@@ -232,12 +313,12 @@ class OfflineContextTests(unittest.TestCase):
         self.replace_pinned_source(CONTROL_PATH, trust + marker + b"x" * padding + b"\n")
         exact = self.assemble()
         self.assertEqual(len(exact.payload), 4_096)
-        self.assertEqual(self.record("E201-06", "exactly-4096", exact, None)["size_omission_order"], [])
+        self.assert_size_omissions(self.record("E201-06", "exactly-4096", exact, None), [])
 
         self.replace_pinned_source(CONTROL_PATH, trust + marker + b"x" * (padding + 1) + b"\n")
         over = self.assemble()
         evidence = self.record("E201-06", "pre-omission-4097", over, None)
-        self.assertEqual(evidence["size_omission_order"], [TOOL_PATH])
+        self.assert_size_omissions(evidence, [TOOL_PATH])
         self.assertIn(OPTIONAL_XID.encode(), over.payload)
 
         presence = json.loads(exact.payload)
@@ -247,11 +328,11 @@ class OfflineContextTests(unittest.TestCase):
         self.replace_pinned_source(CONTROL_PATH, trust + marker + b"x" * more_padding + b"\n")
         over = self.assemble()
         evidence = self.record("E201-06", "omit-tool-then-xid", over, None)
-        self.assertEqual(evidence["size_omission_order"], [TOOL_PATH, OPTIONAL_PATH])
+        self.assert_size_omissions(evidence, [TOOL_PATH, OPTIONAL_PATH])
         self.assertNotIn(OPTIONAL_XID.encode(), over.payload)
 
         required_only_gap = 4_096 - len(over.payload)
         self.replace_pinned_source(CONTROL_PATH, trust + marker + b"x" * (more_padding + required_only_gap + 1) + b"\n")
         hold = self.assemble()
         evidence = self.record("E201-06", "required-alone-4097", hold, "required_context_byte_limit")
-        self.assertEqual(evidence["size_omission_order"], [TOOL_PATH, OPTIONAL_PATH])
+        self.assert_size_omissions(evidence, [TOOL_PATH, OPTIONAL_PATH])
