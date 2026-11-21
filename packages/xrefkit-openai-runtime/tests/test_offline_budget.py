@@ -11,7 +11,8 @@ import unittest
 import test_offline_responses
 
 from xrefkit_openai_runtime.offline_budget import (
-    Action, Authority, Grant, Observation, OfflineBudget, Rate, ReceiptRef, VerifiedReceipt,
+    Action, AdapterLink, AdapterScope, Authority, Grant, Observation, OfflineBudget, Rate,
+    ReceiptRef, VerifiedReceipt,
 )
 from xrefkit_openai_runtime.offline_responses import UsageObservation
 
@@ -68,13 +69,22 @@ class OfflineBudgetTests(unittest.TestCase):
         return json.dumps(arguments, sort_keys=True, separators=(",", ":")).encode()
 
     @staticmethod
-    def evidence(case, variant, expected, decision, before, after, transitions=(), upstream=None):
+    def evidence(case, variant, expected, decision, before, after, transitions=(), upstream=None, supplemental=None):
         def summary(snapshot):
             return {
                 "work": asdict(snapshot.work), "parent": asdict(snapshot.parent),
                 "attempts_consumed": snapshot.attempts_consumed, "fake_effects": snapshot.fake_effects,
                 "reservations": [
-                    {"attempt": entry.action.attempt_id, "reservation": entry.action.reservation_id,
+                    {"run": entry.action.run_id, "work_item": entry.action.work_item_id,
+                     "attempt": entry.action.attempt_id, "reservation": entry.action.reservation_id,
+                     "grant": entry.action.authorization_ref, "binding_revision": entry.action.binding_revision,
+                     "policy_revision": entry.action.policy_revision, "rate_revision": entry.rate.revision,
+                     "command": entry.action.command, "effect_class": entry.action.effect_class,
+                     "destination": entry.action.destination, "model": entry.action.model,
+                     "arguments_sha256": sha256(entry.action.canonical_arguments).hexdigest(),
+                     "adapter_scope": asdict(entry.adapter_link.scope) if entry.adapter_link else None,
+                     "verified_fallback_id": entry.adapter_link.fallback_id if entry.adapter_link else None,
+                     "reserved_tick": entry.reserved_tick, "observation_ticks": entry.observation_ticks,
                      "state": entry.state, "original_units": entry.original_units,
                      "synthetic_debit": entry.synthetic_debit, "actual_bill": entry.actual_bill,
                      "fake_effect_consumed": entry.fake_effect_consumed,
@@ -91,6 +101,7 @@ class OfflineBudgetTests(unittest.TestCase):
             "ledger_before": summary(before), "ledger_after": summary(after),
             "transitions": [asdict(transition) for transition in transitions],
             "upstream": upstream,
+            "supplemental": supplemental,
         }))
 
     def test_E203_01_permissions(self):
@@ -220,37 +231,43 @@ class OfflineBudgetTests(unittest.TestCase):
                               [("reserved", self.defaults["reservation_units"]), ("stop", None)])
         return results
 
-    def upstream_observation(self, fixture_key):
+    def prepare_upstream(self, fixture_key):
         fixture_case, fixture_variant = fixture_key.split("/")
         row = next(row for row in self.adapter_fixture.spec["cases"][fixture_case] if row[0] == fixture_variant)
         settings, sends, _, invoke = self.adapter_fixture.setup_variant(row[1])
-        result = invoke()
-        expected_effects = 0 if row[2] == "zero" else 1
-        self.assertEqual(len(sends), expected_effects)
-        if "transport_observation" in row[1]:
-            self.assertEqual(result.reason, row[1]["transport_observation"])
-        diagnostics = result.diagnostics
         assignment = self.adapter_fixture.request.assignment
-        self.assertEqual((diagnostics.run_id, diagnostics.work_item_id, diagnostics.binding_sha256,
-                          diagnostics.attempt_id, diagnostics.reservation_ref), (
-                              assignment.run_id, assignment.work_item_id, assignment.binding_sha256,
-                              settings["attempt_id"], self.adapter_fixture.request.reservation_ref,
-                          ))
-        return result, {"fixture": fixture_key, "fake_effects": len(sends),
-                        "disposition": result.disposition, "reason": result.reason,
-                        "diagnostics": asdict(diagnostics)}
+        scope = AdapterScope(assignment.run_id, assignment.work_item_id, assignment.binding_sha256,
+                             settings["attempt_id"], self.adapter_fixture.request.reservation_ref)
+
+        def observe():
+            result = invoke()
+            self.assertEqual(len(sends), 0 if row[2] == "zero" else 1)
+            if "transport_observation" in row[1]:
+                self.assertEqual(result.reason, row[1]["transport_observation"])
+            return result, {"fixture": fixture_key, "fake_effects": len(sends),
+                            "disposition": result.disposition, "reason": result.reason,
+                            "diagnostics": asdict(result.diagnostics)}
+
+        return scope, observe
 
     def settlement_case(self, changes):
         action, authority = self.synthetic_case({})
+        result = fallback_id = None
+        if "use_upstream" in changes:
+            scope, observe_upstream = self.prepare_upstream(changes["use_upstream"])
+            fallback_id = sha256(json.dumps(asdict(scope), sort_keys=True).encode()).hexdigest()
+            authority = replace(authority, adapter_links=(AdapterLink(action, scope, fallback_id),))
         ledger = OfflineBudget(authority)
         self.assertEqual(ledger.reserve(action).units, self.defaults["reservation_units"])
-        ledger.update_authority(replace(authority, ledger_available=changes.get("ledger_available", True),
+        ledger.update_authority(replace(authority, now_tick=authority.now_tick + 1,
+                                        ledger_available=changes.get("ledger_available", True),
                                         headroom_proved=changes.get("headroom_proved", True)))
         default_receipt = self.defaults["receipt"]
         values = changes.get("usage", self.defaults["reported_complete"])
         upstream = None
         if "use_upstream" in changes:
-            result, upstream = self.upstream_observation(changes["use_upstream"])
+            result, upstream = observe_upstream()
+            self.assertEqual(AdapterScope.from_diagnostics(result.diagnostics), scope)
             usage = result.usage
             request_id, response_id = result.diagnostics.transport_request_id, result.diagnostics.response_id
             if request_id is not None:
@@ -274,7 +291,7 @@ class OfflineBudgetTests(unittest.TestCase):
         reference = ReceiptRef(
             changes.get("receipt_attempt_id", default_receipt["attempt_id"]),
             changes.get("receipt_reservation_id", default_receipt["reservation_id"]),
-            request_id, response_id, default_receipt["receipt_revision"],
+            request_id, response_id, default_receipt["receipt_revision"], fallback_id,
         )
         observation = Observation(reference, changes.get("submission", submission), usage,
                                   changes.get("settlement_rate_revision", action.rate_revision))
@@ -282,7 +299,15 @@ class OfflineBudgetTests(unittest.TestCase):
         verified = None if changes.get("verified_binding_ref", True) is None else VerifiedReceipt(
             action, replace(observation, receipt=expected_ref),
         )
-        return action, ledger, observation, verified, upstream
+        return action, ledger, observation, verified, upstream, result
+
+    @staticmethod
+    def settle_case(ledger, action, observation, verified, adapter_result):
+        if adapter_result is None:
+            return ledger.settle(action, observation, verified)
+        return ledger.settle_adapter(action, adapter_result, revision=observation.receipt.revision,
+                                     settlement_rate=observation.rate_revision,
+                                     submission_unproved=observation.submission == "unknown")
 
     def assert_amounts(self, snapshot, reserved, debit):
         self.assertEqual((snapshot.work.reserved, snapshot.work.debit), (reserved, debit))
@@ -292,6 +317,11 @@ class OfflineBudgetTests(unittest.TestCase):
                 self.assertEqual(scope.headroom, scope.cap - reserved - debit)
         self.assertEqual(len(snapshot.reservations), 1)
         self.assertEqual(snapshot.reservations[0].original_units, self.defaults["reservation_units"])
+        self.assertEqual(snapshot.reservations[0].reserved_tick, self.defaults["now_tick"])
+        self.assertEqual(len(snapshot.reservations[0].observation_ticks),
+                         len(snapshot.reservations[0].observations))
+        self.assertTrue(all(tick >= snapshot.reservations[0].reserved_tick
+                            for tick in snapshot.reservations[0].observation_ticks))
         self.assertIsNone(snapshot.reservations[0].actual_bill)
         self.assertEqual(snapshot.fake_effects, 0)
 
@@ -301,9 +331,13 @@ class OfflineBudgetTests(unittest.TestCase):
                    "debit_8_release_unused_8": (8, 8)}
         for variant, changes, expected in self.spec["cases"][case]:
             with self.subTest(variant=variant):
-                action, ledger, observation, verified, upstream = self.settlement_case(changes)
+                action, ledger, observation, verified, upstream, result = self.settlement_case(changes)
                 before = ledger.snapshot(action)
-                decision = ledger.settle(action, observation, verified)
+                mismatched = replace(result, diagnostics=replace(result.diagnostics, reservation_ref="wrong-upstream"))
+                mismatch = self.settle_case(ledger, action, observation, verified, mismatched)
+                self.assertEqual((mismatch.disposition, mismatch.reason), ("hold", "adapter_correlation_unproved"))
+                self.assertEqual(ledger.snapshot(action), before)
+                decision = self.settle_case(ledger, action, observation, verified, result)
                 debit, release = amounts[expected]
                 after = ledger.snapshot(action)
                 self.assertEqual((decision.disposition, decision.reason, decision.units),
@@ -314,10 +348,10 @@ class OfflineBudgetTests(unittest.TestCase):
                 self.assertEqual(after.reservations[0].synthetic_debit, debit)
                 self.assertEqual(after.reservations[0].observations, (observation,))
                 if debit == 0:
-                    replay = ledger.settle(action, observation, verified)
+                    replay = self.settle_case(ledger, action, observation, verified, result)
                     self.assertEqual(replay.disposition, "duplicate")
                     self.assertEqual(ledger.snapshot(action), after)
-                self.evidence(case, variant, expected, decision, before, after, upstream=upstream)
+                self.evidence(case, variant, expected, decision, before, after, (mismatch,), upstream)
 
     def test_E203_04_unreliable_usage(self):
         case = "E203-04"
@@ -332,19 +366,20 @@ class OfflineBudgetTests(unittest.TestCase):
         }
         for variant, changes, expected in self.spec["cases"][case]:
             with self.subTest(variant=variant):
-                action, ledger, observation, verified, upstream = self.settlement_case(changes)
+                action, ledger, observation, verified, upstream, result = self.settlement_case(changes)
                 next_action = replace(action, attempt_id="attempt-next", reservation_id="reserve-next",
                                       authorization_ref="grant-next")
                 if "headroom_proved" in changes or variant == "over-reserve":
                     _, host = self.synthetic_case({})
-                    ledger.update_authority(replace(host, headroom_proved=changes.get("headroom_proved", True),
+                    ledger.update_authority(replace(host, now_tick=host.now_tick + 1,
+                                                    headroom_proved=changes.get("headroom_proved", True),
                                                     grants=(*host.grants, replace(host.grants[0], action=next_action))))
                 if "hold_reason" in changes:
                     self.assertEqual(changes["hold_reason"], "unresolved_exposure")
                     observation = replace(observation, submission="possible", usage=UsageObservation())
                     verified = VerifiedReceipt(action, observation)
                 before = ledger.snapshot(action)
-                decision = ledger.settle(action, observation, verified)
+                decision = self.settle_case(ledger, action, observation, verified, result)
                 after = ledger.snapshot(action)
                 reason, observed_counts = outcomes[expected]
                 self.assertEqual((decision.disposition, decision.reason), ("hold", reason))
@@ -369,21 +404,29 @@ class OfflineBudgetTests(unittest.TestCase):
         case = "E203-05"
         for variant, changes, expected in self.spec["cases"][case]:
             with self.subTest(variant=variant):
-                action, ledger, observation, verified, upstream = self.settlement_case(changes)
+                action, ledger, observation, verified, upstream, result = self.settlement_case(changes)
                 before = ledger.snapshot(action)
-                decision = ledger.settle(action, observation, verified)
+                wrong_binding = replace(result, diagnostics=replace(result.diagnostics, binding_sha256="0" * 64))
+                mismatch = self.settle_case(ledger, action, observation, verified, wrong_binding)
+                self.assertEqual((mismatch.disposition, mismatch.reason), ("hold", "adapter_correlation_unproved"))
+                self.assertEqual(ledger.snapshot(action), before)
+                decision = self.settle_case(ledger, action, observation, verified, result)
                 after = ledger.snapshot(action)
-                transitions = ()
+                transitions = (mismatch,)
                 if expected == "release_provider_16_once_keep_attempt_history":
                     self.assertEqual((decision.disposition, decision.reason, decision.units),
                                      ("released", "verified_no_submit", self.defaults["reservation_units"]))
                     self.assert_amounts(after, 0, 0)
                     self.assertEqual(after.attempts_consumed, changes["attempts_consumed"])
                     self.assertEqual(after.parent.headroom - before.parent.headroom, decision.units)
-                    duplicate = ledger.settle(action, observation, verified)
+                    self.assertEqual(after.reservations[0].observation_ticks, (self.defaults["now_tick"] + 1,))
+                    self.assertIsNone(observation.receipt.request_id)
+                    self.assertIsNone(observation.receipt.response_id)
+                    self.assertEqual(observation.receipt.fallback_id, before.reservations[0].adapter_link.fallback_id)
+                    duplicate = self.settle_case(ledger, action, observation, verified, result)
                     self.assertEqual(duplicate.disposition, "duplicate")
                     self.assertEqual(ledger.snapshot(action), after)
-                    transitions = (duplicate,)
+                    transitions += (duplicate,)
                 else:
                     self.assertEqual((decision.disposition, decision.reason), ("hold", "submission_unresolved"))
                     self.assert_amounts(after, 16, 0)
@@ -399,19 +442,21 @@ class OfflineBudgetTests(unittest.TestCase):
         case = "E203-06"
         for variant, changes, expected in self.spec["cases"][case]:
             with self.subTest(variant=variant):
-                action, ledger, observation, verified, upstream = self.settlement_case(changes)
+                action, ledger, observation, verified, upstream, result = self.settlement_case(changes)
                 before = ledger.snapshot(action)
                 transitions = []
+                supplemental = None
                 if expected == "hold_then_debit_14_once":
                     self.assertEqual(changes["sequence"], ["possible_submit", "matching_complete", "identical_replay"])
                     pending = replace(observation, receipt=replace(observation.receipt, request_id=None,
-                                                                  response_id=None),
+                                                                  response_id=None, fallback_id="late-attempt-proof"),
                                       submission="possible", usage=UsageObservation())
                     pending_decision = ledger.settle(action, pending, VerifiedReceipt(action, pending))
                     self.assertEqual((pending_decision.disposition, pending_decision.reason),
                                      ("hold", "submission_unresolved"))
                     self.assert_amounts(ledger.snapshot(action), 16, 0)
                     observation = replace(observation, receipt=replace(observation.receipt,
+                                                                      fallback_id=pending.receipt.fallback_id,
                                                                       revision=pending.receipt.revision + 1))
                     verified = VerifiedReceipt(action, observation)
                     transitions.append(pending_decision)
@@ -423,7 +468,7 @@ class OfflineBudgetTests(unittest.TestCase):
                     self.assertEqual(ledger.snapshot(action), before)
                     transitions.append(mismatch)
 
-                decision = ledger.settle(action, observation, verified)
+                decision = self.settle_case(ledger, action, observation, verified, result)
                 after = ledger.snapshot(action)
                 settled_cases = {"one_14_debit_one_release_duplicate_no_op", "hold_then_debit_14_once",
                                  "hold_conflict_no_overwrite_or_second_debit"}
@@ -447,10 +492,15 @@ class OfflineBudgetTests(unittest.TestCase):
                         after, decision = revised, conflicting
                     else:
                         self.assertEqual(changes.get("deliveries", 2), 2)
-                        duplicate = ledger.settle(action, observation, verified)
+                        duplicate = self.settle_case(ledger, action, observation, verified, result)
                         self.assertEqual(duplicate.disposition, "duplicate")
                         self.assertEqual(ledger.snapshot(action), after)
                         transitions.append(duplicate)
+                        if result is not None:
+                            supplemental = {
+                                "provider_receipt_replay": self.check_cross_reservation_replay(changes, fallback=False),
+                                "verified_fallback_replay": self.check_cross_reservation_replay(changes, fallback=True),
+                            }
                 else:
                     self.assert_amounts(after, 16, 0)
                     self.assertEqual(before, after)
@@ -463,4 +513,58 @@ class OfflineBudgetTests(unittest.TestCase):
                         self.assertEqual(retry.disposition, "hold")
                         self.assertEqual(ledger.snapshot(action), after)
                         transitions.append(retry)
-                self.evidence(case, variant, expected, decision, before, after, transitions, upstream)
+                self.evidence(case, variant, expected, decision, before, after, transitions, upstream, supplemental)
+
+    def check_cross_reservation_replay(self, changes, *, fallback):
+        first, ledger, observation, verified, _, result = self.settlement_case(changes)
+        link = ledger.snapshot(first).reservations[0].adapter_link
+        if fallback:
+            # An opaque/absent provider ID is represented by the adapter's nullable diagnostics.
+            result = replace(result, diagnostics=replace(result.diagnostics, transport_request_id=None,
+                                                         response_id=None))
+            observation = replace(observation, receipt=replace(observation.receipt, request_id=None, response_id=None))
+        decision = self.settle_case(ledger, first, observation, verified, result)
+        self.assertEqual((decision.disposition, decision.units), ("settled", 14))
+        first_receipt = ledger.snapshot(first).reservations[0].observations[0].receipt
+        self.assertEqual(first_receipt, observation.receipt)
+        self.assertEqual(self.settle_case(ledger, first, observation, verified, result).disposition, "duplicate")
+
+        second = replace(first, attempt_id="attempt-replayed", reservation_id="reservation-replayed",
+                         authorization_ref="grant-replayed")
+        _, host = self.synthetic_case({})
+        second_link = AdapterLink(second, link.scope, link.fallback_id if fallback else "another-proof")
+        ledger.update_authority(replace(host, now_tick=host.now_tick + 1, grants=(
+            host.grants[0], replace(host.grants[0], action=second),
+        ), adapter_links=(link, second_link)))
+        self.assertEqual(ledger.reserve(second).disposition, "reserved")
+        before = ledger.snapshot(second)
+        replay = self.settle_case(ledger, second, observation, verified, result)
+        self.assertEqual((replay.disposition, replay.reason), ("hold", "receipt_owned_by_other_reservation"))
+        after = ledger.snapshot(second)
+        self.assertEqual(before, after)
+        self.assertEqual((after.work.reserved, after.work.debit, after.parent.reserved, after.parent.debit),
+                         (16, 14, 16, 14))
+        self.assertEqual([entry.state for entry in after.reservations], ["settled", "reserved"])
+        self.assertEqual(after.fake_effects, 0)
+
+        supplement = {
+            "first_receipt": asdict(first_receipt), "first_settlement": asdict(decision),
+            "second_grant": second.authorization_ref, "second_attempt": second.attempt_id,
+            "second_reservation": second.reservation_id, "second_fallback_id": second_link.fallback_id,
+            "replay": asdict(replay), "remaining_reserve": after.parent.reserved,
+            "single_debit": after.parent.debit, "fake_effects": after.fake_effects,
+        }
+        if fallback:
+            # Without the pinned adapter proof, both absence and a substituted fallback must hold.
+            standalone = OfflineBudget(host)
+            self.assertEqual(standalone.reserve(first).disposition, "reserved")
+            unresolved = standalone.snapshot(first)
+            missing = replace(observation, receipt=replace(observation.receipt, fallback_id=None))
+            missing_decision = standalone.settle(first, missing, VerifiedReceipt(first, missing))
+            mismatched = replace(observation, receipt=replace(observation.receipt, fallback_id="other-fallback"))
+            mismatch_decision = standalone.settle(first, mismatched, VerifiedReceipt(first, observation))
+            for rejection in (missing_decision, mismatch_decision):
+                self.assertEqual((rejection.disposition, rejection.reason), ("hold", "correlation_unproved"))
+            self.assertEqual(standalone.snapshot(first), unresolved)
+            supplement.update(missing_fallback=asdict(missing_decision), mismatched_fallback=asdict(mismatch_decision))
+        return supplement

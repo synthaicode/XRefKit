@@ -6,7 +6,7 @@ from dataclasses import dataclass, replace
 from threading import Lock
 from typing import Literal
 
-from .offline_responses import UsageObservation
+from .offline_responses import AdapterResult, AttemptDiagnostics, UsageObservation
 
 
 @dataclass(frozen=True)
@@ -53,6 +53,29 @@ class Rate:
 
 
 @dataclass(frozen=True)
+class AdapterScope:
+    run_id: str | None
+    work_item_id: str | None
+    binding_sha256: str | None
+    attempt_id: str | None
+    reservation_ref: str | None
+
+    @classmethod
+    def from_diagnostics(cls, diagnostics: AttemptDiagnostics) -> AdapterScope:
+        return cls(diagnostics.run_id, diagnostics.work_item_id, diagnostics.binding_sha256,
+                   diagnostics.attempt_id, diagnostics.reservation_ref)
+
+
+@dataclass(frozen=True)
+class AdapterLink:
+    """A trusted, pre-observation link from one #202 admission to one local action."""
+
+    action: Action
+    scope: AdapterScope
+    fallback_id: str
+
+
+@dataclass(frozen=True)
 class Authority:
     now_tick: int
     binding_revision: int
@@ -69,6 +92,7 @@ class Authority:
     cancelled: bool = False
     ledger_available: bool = True
     headroom_proved: bool = True
+    adapter_links: tuple[AdapterLink, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -78,6 +102,13 @@ class ReceiptRef:
     request_id: str | None
     response_id: str | None
     revision: int
+    fallback_id: str | None = None
+
+    def identity_keys(self) -> tuple[tuple[str, str], ...]:
+        return tuple((kind, value) for kind, value in (
+            ("transport_request", self.request_id), ("response", self.response_id),
+            ("verified_fallback", self.fallback_id),
+        ) if value)
 
 
 @dataclass(frozen=True)
@@ -108,9 +139,12 @@ class Reservation:
     action: Action
     rate: Rate
     original_units: int
+    reserved_tick: int
+    adapter_link: AdapterLink | None = None
     fake_effect_consumed: bool = False
     state: Literal["reserved", "settled", "released"] = "reserved"
     observations: tuple[Observation, ...] = ()
+    observation_ticks: tuple[int, ...] = ()
     synthetic_debit: int | None = None
     actual_bill: None = None
     exposure_uncertain: bool = False
@@ -145,6 +179,7 @@ class OfflineBudget:
         self._lock = Lock()
         self._entries: dict[str, Reservation] = {}
         self._attempts: set[tuple[str, str, str]] = set()
+        self._receipt_owners: dict[tuple[str, str], str] = {}
         self._fake_effects = 0
 
     def update_authority(self, authority: Authority) -> None:
@@ -219,7 +254,15 @@ class OfflineBudget:
                 return Decision("hold", "headroom_unproved")
             if units > min(work.headroom, parent.headroom):
                 return Decision("stop", "cap_exhausted")
-            self._entries[action.reservation_id] = Reservation(action, rate, units)
+            links = tuple(link for link in self._authority.adapter_links if link.action == action)
+            if len(links) > 1 or any(not link.fallback_id or not all((
+                link.scope.run_id, link.scope.work_item_id, link.scope.binding_sha256,
+                link.scope.attempt_id, link.scope.reservation_ref,
+            )) for link in links):
+                return Decision("hold", "adapter_link_unproved")
+            self._entries[action.reservation_id] = Reservation(
+                action, rate, units, self._authority.now_tick, links[0] if links else None,
+            )
             self._attempts.add(action.attempt)
             return Decision("reserved", "reservation_created", units)
 
@@ -248,35 +291,74 @@ class OfflineBudget:
         self, action: Action, observation: Observation, verified: VerifiedReceipt | None,
     ) -> Decision:
         with self._lock:
-            if not self._authority.ledger_available:
-                return Decision("hold", "ledger_unavailable")
             entry = self._entries.get(action.reservation_id)
-            reference = observation.receipt
             if (
-                entry is None or entry.action != action or verified is None
+                entry is None or entry.action != action or entry.adapter_link is not None or verified is None
                 or verified.action != action or verified.observation != observation
-                or reference.attempt_id != action.attempt_id
-                or reference.reservation_id != action.reservation_id
-                or not _quantity(reference.revision) or not reference.revision
-                or (observation.submission == "confirmed" and not (
-                    reference.request_id and reference.response_id))
             ):
                 return Decision("hold", "correlation_unproved")
-            if observation in entry.observations:
-                return Decision("duplicate", "identical_observation")
-            if entry.state != "reserved" or any(
-                earlier.receipt.revision >= reference.revision
-                or (earlier.receipt.request_id is not None and reference.request_id != earlier.receipt.request_id)
-                or (earlier.receipt.response_id is not None and reference.response_id != earlier.receipt.response_id)
-                for earlier in entry.observations
-            ):
-                self._entries[action.reservation_id] = replace(entry, exposure_uncertain=True)
-                return Decision("hold", "conflicting_observation")
+            return self._settle_verified(entry, observation)
 
-            updated = replace(entry, observations=(*entry.observations, observation))
-            decision, updated = self._apply_observation(updated, observation)
-            self._entries[action.reservation_id] = updated
-            return decision
+    def settle_adapter(
+        self, action: Action, result: AdapterResult, *, revision: int, settlement_rate: str | None,
+        submission_unproved: bool = False,
+    ) -> Decision:
+        """Consume an authentic synthetic adapter result through its pinned link."""
+        with self._lock:
+            entry = self._entries.get(action.reservation_id)
+            diagnostics = result.diagnostics
+            if (
+                entry is None or entry.action != action or entry.adapter_link is None
+                or AdapterScope.from_diagnostics(diagnostics) != entry.adapter_link.scope
+            ):
+                return Decision("hold", "adapter_correlation_unproved")
+            reference = ReceiptRef(action.attempt_id, action.reservation_id,
+                                   diagnostics.transport_request_id, diagnostics.response_id,
+                                   revision, entry.adapter_link.fallback_id)
+            if submission_unproved:
+                submission = "unknown"
+            elif result.disposition == "no_submit":
+                submission = "no_submit"
+            elif (result.disposition in {"completed", "refusal", "incomplete", "provider_failed"}
+                  and diagnostics.observed_model in (None, entry.action.model)):
+                submission = "confirmed"
+            else:
+                submission = "possible"
+            return self._settle_verified(entry, Observation(reference, submission, result.usage, settlement_rate))
+
+    def _settle_verified(self, entry: Reservation, observation: Observation) -> Decision:
+        if not self._authority.ledger_available:
+            return Decision("hold", "ledger_unavailable")
+        action = entry.action
+        reference = observation.receipt
+        if (
+            reference.attempt_id != action.attempt_id or reference.reservation_id != action.reservation_id
+            or not _quantity(reference.revision) or not reference.revision
+            or not (reference.fallback_id or (reference.request_id and reference.response_id))
+        ):
+            return Decision("hold", "correlation_unproved")
+        keys = reference.identity_keys()
+        if any(self._receipt_owners.get(key, action.reservation_id) != action.reservation_id for key in keys):
+            return Decision("hold", "receipt_owned_by_other_reservation")
+        if observation in entry.observations:
+            return Decision("duplicate", "identical_observation")
+        if entry.state != "reserved" or any(
+            earlier.receipt.revision >= reference.revision
+            or (earlier.receipt.request_id is not None and reference.request_id != earlier.receipt.request_id)
+            or (earlier.receipt.response_id is not None and reference.response_id != earlier.receipt.response_id)
+            or (earlier.receipt.fallback_id is not None and reference.fallback_id != earlier.receipt.fallback_id)
+            for earlier in entry.observations
+        ):
+            self._entries[action.reservation_id] = replace(entry, exposure_uncertain=True)
+            return Decision("hold", "conflicting_observation")
+
+        updated = replace(entry, observations=(*entry.observations, observation),
+                          observation_ticks=(*entry.observation_ticks, self._authority.now_tick))
+        decision, updated = self._apply_observation(updated, observation)
+        for key in keys:
+            self._receipt_owners[key] = action.reservation_id
+        self._entries[action.reservation_id] = updated
+        return decision
 
     def _apply_observation(
         self, entry: Reservation, observation: Observation,
