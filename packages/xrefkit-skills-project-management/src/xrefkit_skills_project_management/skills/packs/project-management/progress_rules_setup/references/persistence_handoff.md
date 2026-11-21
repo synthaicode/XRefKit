@@ -32,29 +32,33 @@ until then any authorized prepared artifact is a provisional handoff only.
 
 ## Human View and authoritative records
 
-Apply this procedure to human-facing Issue and Project updates, progress reports,
-review results and approval requests. Use the confirmed record mapping. For
-projects that designate a GitHub Project, use it as the progress entry point:
+Apply this procedure to Issue and Project updates, progress reports, reviews and
+approval requests. Follow the confirmed project mapping and classify content
+by meaning, even when an older artifact mixed several roles.
 
-- GitHub Project owns the configured status, priority, assignee, blockers and
-  decisions awaiting a response. Use its existing fields and links.
-- GitHub Issue shows the work purpose, acceptance criteria, current decision
-  requests and next action. Link the Project item and evidence as applicable.
-- The configured evidence and execution records retain investigation, sources,
-  selected Knowledge XIDs, revisions and hashes, execution and verification
-  logs, model and tool receipts, Decision and Execution history, unknowns and
-  hypotheses, approval history, baselines, differences, snapshots, test
-  results and failure conditions, and related Issue and Knowledge links.
-  Keep each record with its existing owner and access rules. Knowledge supplies
-  applicable rules and source-backed findings. Run-specific records stay in
-  their designated evidence stores.
+| Content | Current location and owner |
+| --- | --- |
+| Work intent, requirements, acceptance criteria, current decisions and approval state, next action and owner | The canonical Issue or the existing authoritative work item. In GitHub, keep these in the current Issue work record, together with its verified reference declarations and links to the applicable decisions and approvals. |
+| Board status, priority, assignment and configured hold fields | The mapped GitHub Project item when GitHub is configured. Verify its identity and field values. A Project label such as Todo can coexist with an evidenced dependency hold. |
+| Decision and Execution plans, dependencies, schedules and CPM, approvals, baseline, plan revisions and actual snapshots | Existing Project Management records and their configured owners. Link the exact applicable versions from the current Issue. |
+| Design, API contracts, investigation, technical unknowns, tests and evidence | The configured Evidence, Knowledge, document, Brownfield or Runtime stores. Preserve applicable ownership, scope, revisions, XIDs and hashes. |
+| Older Issue text, decisions as recorded at that time and prior evidence references | Use GitHub's native Issue edit history by default. Use a separate immutable copy only when the confirmed record rules require one or the owner approves a preservation route for a concrete history gap. Resolve current obligations from the live Issue and its current sources. |
+| Concise display of current state, material changes, decisions due now, blockers, risks and next action | The regenerable Human View at the top of the Issue. Link the current sources and clearly identify archive links as history. |
 
-Identify the authoritative location for each record type. Reuse existing
-records and link their exact revision wherever it matters to a judgment. Preserve
-history and existing references, including substantive legacy Issue content,
-before replacing any part of a current display. If a move would break a
-reference, lose history, or expose restricted evidence, keep the affected
-content and report the unresolved mapping, access or preservation step.
+Keep existing stores, access rules and authority boundaries. One item of
+information has one current owner. A reference from an Issue conveys that
+source's scope and revision. Resolve required references and check that their
+content supports the work before showing a status or preparing a handoff.
+Clarify an unresolved mapping through the existing project setup.
+
+## Write work-specific requirements
+
+Keep the current Issue requirements focused on what this item must change,
+deliver or constrain. Leave standard XRefKit startup, Runtime binding and XID
+handling in their existing contracts. Include a startup, binding or XID rule
+in Requirements when this item changes it or depends on an Issue-specific
+condition. Retain the acceptance checks that establish this item's required
+behavior, including work-specific validation of existing controls.
 
 ## Prepare the Human View
 
@@ -81,27 +85,41 @@ content and report the unresolved mapping, access or preservation step.
    detail in the linked records unless the reader needs them to decide. Aim for
    one screen (roughly 300–500 Japanese characters for an ordinary Japanese
    update). Preserve meaning and split by decision when necessary.
-3. For each approval request, state what is being approved, what approval
-   enables, what remains outside its scope, what stays held if deferred and
-   the material unresolved risks. Identify the decision owner from the
-   configured rules and link the exact scope and revision. Keep design
+3. First check the authoritative blocker, review and acceptance records.
+   A dependency hold, planned approval or reviewer assignment does not by
+   itself create a decision for the reader. Ask only for a decision explicitly
+   actionable at the current record revision. For each request, state the
+   question, why it is due now, options and their effects, any evidenced
+   recommendation, the authorization scope and the impact of deferral. Identify
+   the decision owner from the configured rules and link the exact scope and revision. Keep design
    approval, work start, external API execution and data changes as separate
    grants of authority. Record an approval only from an explicit, attributable
    human decision within that scope. AI recommendations, review verdicts and
    test results remain evidence. Omit the request when no human decision is
    needed.
-4. Compare the view against the source for each decision and its evidence.
-   Retain every decision-changing condition, relevant blocker, material
-   unknown, and next owner or unresolved ownership in the view. Update only
-   the existing current-state portion of an Issue or the applicable Project
-   fields. Recompute the view from current records on each update instead of
-   appending successive reports to that portion. If no safe update boundary or
-   authorized preservation route is established, prepare the view for handoff
-   without overwriting the existing body.
-5. For AI handoff and restart, return the authoritative detailed records,
-   revisions and unresolved items to the receiving owner. A Human View is a
-   regenerable display of those records. It cannot serve as the source for an
-   AI handoff, an approval, or a Runtime or Brownfield progression decision.
+4. Compare the view against its sources. Keep every decision-changing condition,
+   relevant blocker, material unknown and next owner visible. Keep the current
+   Issue work record and its reference declarations outside the single managed
+   Human View. Replace the view at the top in place and preserve manual content
+   outside the declared blocks byte for byte. Check the prior delivery before
+   replacing a managed block. An unexpected edit requires reconciliation.
+   Preserve Issue identity, comments and native edit history for GitHub.
+   Verify the exact Issue revision and complete pre-edit body against the
+   designated history source before an update that replaces existing content.
+   Read back the prior version through native edit history after delivery.
+   For an authorized legacy migration, bind approval to the exact Issue and
+   revision, and preserve old fragment names through a checked mapping to the
+   relevant surviving content. If required history or link preservation cannot
+   be verified, hold the change for review. Use a separate archive only through
+   an agreed route that addresses the verified preservation need.
+5. For AI handoff and restart, read the current Issue work record at its verified
+   revision. Follow its current references to applicable PM decisions, execution
+   plan and verified technical evidence. Carry the exact work intent, requirements,
+   acceptance criteria, open unknowns, authorization limits and stop conditions
+   into the existing Workflow Runtime Binding. A summary, an old Issue archive
+   or an earlier passed check is insufficient for current implementation input.
+   Stop the affected handoff when any required current source is missing, stale,
+   mismatched or outside the approved scope. Keep other authorized work moving.
 
 ## Update procedure
 
@@ -110,20 +128,22 @@ content and report the unresolved mapping, access or preservation step.
    Check which steps available tools or people can perform. A connection or
    read permission is not write authority, and a missing remote writer does not
    prevent authorized artifact preparation or a configured file handoff.
-2. Prepare the smallest update, preserving unrelated content and history.
-   Distinguish proposed changes, received human answers, applied answers and
-   confirmed decisions. Link the evidence rather than copying a status claim
-   without provenance. Prepare the Human View from the applicable records and
-   apply configured conflict/revision protection.
-3. Perform the supported authorized steps and verify their actual outputs
-   against project rules. For files, inspect the saved artifact at the intended
-   path; for attachment/link registration or direct updates, inspect the
-   available result and configured confirmation evidence. Require readback or a
-   receipt only when the applicable project/adapter contract requires it. Keep
-   artifact produced, saved at the designated location, uploaded/linked, handed
-   to the designated person, and team visibility confirmed distinct; report only
-   the outcomes supported by evidence. Inspect partial or uncertain operation
-   results before retrying to avoid duplicate actions.
+2. Prepare the smallest update. Record confirmed changes with their existing
+   owners first and verify saved revision, scope and content identity before
+   linking them from the Issue. Keep proposed changes distinct from applied
+   answers and human decisions. Prepare the compact summary from the current
+   Issue work record, mapped Project fields and verified applicable sources.
+3. Refresh the Issue, Project item and required current sources before updating.
+   Use the guarded writer for automated Issue and Project revision comparison.
+   If the receiving route lacks the required guarantee, deliver the prepared
+   candidate through the configured review handoff. If a record was saved but
+   the Issue update failed or its result is uncertain, record each result with
+   evidence. Read back the actual Issue, Project and linked records before
+   retrying. Reuse verified saved records, reconcile stale or conflicting
+   content, and repeat only the unresolved authorized step. Distinguish saved,
+   linked, handed off and visible. Confirm completion only from the configured
+   endpoint's readback or receipt.
+
 4. Return artifact paths or record links, the specific questions the human needs
    to answer, and the smallest remaining delivery actions with their owner.
    Persist those answers through the same route when they arrive. Next time,

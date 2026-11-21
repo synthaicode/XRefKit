@@ -1,6 +1,6 @@
 # XRefKit Project Management
 
-Distribution: **xrefkit-skills-project-management 0.1.2**.
+Distribution: **xrefkit-skills-project-management 0.1.3**.
 Package ID: `xrefkit.skills.project_management`.
 
 Five native SkillDefinitions form one Project Management job:
@@ -21,13 +21,20 @@ Technical investigation, quality verification and final agreement judgments reta
 their existing owners. Project Knowledge supplies actual settings. No project
 values, custom UI, Azure attachment adapter or generic work tracker is bundled.
 
-## Human View
+## Human View and current Issue record
 
-Use the shared persistence handoff to prepare current decisions, material
-changes and next actions from authoritative records. Detailed evidence and
-execution records remain available for audit and AI handoff. Where GitHub is
-configured, Project fields carry progress and the Issue shows the current
-scope and action with links to evidence.
+Use the shared persistence handoff to prepare a concise top-of-Issue summary
+with current state, material changes, decisions and next actions. The Issue
+keeps the exact current work requirements, acceptance criteria, actions and
+verified record declarations. GitHub Project fields own board status. The
+existing Project Management and versioned technical stores retain their
+respective plans, evidence and approval records.
+
+Use the current Issue record and its verified current references for AI
+handoff. Older Issue text remains available as historical evidence. The Issue
+projection API prepares the current record and summary and supports verified
+archive and delivery checks. Follow its documented guarded update or review
+handoff in `package_root()/docs/packs/project-management/entry.md`.
 
 ## Structured scheduling and Gantt history
 
@@ -75,7 +82,7 @@ availability are verified separately from source and candidate-build validation.
 Install after compatible Core and this package are published:
 
 ```console
-python -m pip install xrefkit-skills-project-management==0.1.2
+python -m pip install xrefkit-skills-project-management==0.1.3
 ```
 
 MCP discovery uses the normal `xrefkit.skill_packages` entry point and the enabled
@@ -107,7 +114,7 @@ PR checks use the local candidate Core. Release install checks require compatibl
 Core from PyPI and fail if it is absent; publish cannot precede those checks.
 
 Publication requires a separate authorized release and the tag matching
-`xrefkit-skills-project-management-v0.1.2`. No tag or upload is created by
+`xrefkit-skills-project-management-v0.1.3`. No tag or upload is created by
 preparation. Configure PyPI pending Trusted Publisher with owner `synthaicode`,
 repository `XRefKit`, workflow `python-skill-project-management-package.yml`,
 environment `pypi`; existing OIDC publishing needs no API-token secret.
