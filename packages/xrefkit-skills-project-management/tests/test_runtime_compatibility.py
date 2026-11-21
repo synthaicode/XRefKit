@@ -23,10 +23,12 @@ RELEASE_SKILLS = {
     '0.1.0a1': BASE_SKILLS,
     '0.1.0a2': BASE_SKILLS + ('pm_coordination_setup', 'pm_decision_coordination'),
     '0.1.0': BASE_SKILLS + ('pm_coordination_setup', 'pm_decision_coordination'),
+    '0.1.1': BASE_SKILLS + ('pm_coordination_setup', 'pm_decision_coordination'),
 }
 INSTALLED_VERSION = version('xrefkit-skills-project-management')
 EXPECTED_SKILLS = RELEASE_SKILLS[INSTALLED_VERSION]
-EXPECTED_MATURITY = 'trial' if INSTALLED_VERSION == '0.1.0' else 'draft'
+TRIAL_RELEASES = {'0.1.0', '0.1.1'}
+EXPECTED_MATURITY = 'trial' if INSTALLED_VERSION in TRIAL_RELEASES else 'draft'
 
 
 def package():
@@ -108,4 +110,26 @@ def test_package_contains_no_project_configuration_or_adapter():
     assert not manifest.provides.knowledge
     assert not list(package_root().rglob('*.skill.yaml'))
     source=json.loads((package_root()/'source_manifest.json').read_text())
-    assert len(source['sources'])==len(EXPECTED_SKILLS)+(5 if INSTALLED_VERSION == '0.1.0' else 3)
+    assert len(source['sources'])==len(EXPECTED_SKILLS)+(5 if INSTALLED_VERSION in TRIAL_RELEASES else 3)
+
+
+def test_human_view_procedure_is_reachable_from_all_native_methods():
+    if INSTALLED_VERSION != '0.1.1':
+        pytest.skip('Human View procedure was added in 0.1.1')
+    root = package_root()
+    reference = root / (
+        'skills/packs/project-management/progress_rules_setup/references/persistence_handoff.md'
+    )
+    procedure = ' '.join(reference.read_text(encoding='utf-8').split())
+    for provided in package().manifest.provides.skills:
+        method = (root / provided.path).read_text(encoding='utf-8')
+        matches = re.findall(r'\]\(([^)#]+)#xid-62A9D4E7B103\)', method)
+        assert any(((root / provided.path).parent / target).resolve() == reference
+                   for target in matches), provided.id
+    for condition in (
+        'label the baseline unknown',
+        'explicit, attributable human decision',
+        'without overwriting the existing body',
+        'authoritative detailed records',
+    ):
+        assert condition in procedure
