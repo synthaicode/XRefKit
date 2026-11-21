@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-68c2f970-ece5-4320-a0a5-9360366a54bf",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-11-21T07:38:09Z",
+  "git_commit": "1b17a154c42ad6ffbb4d65f2c03e8607c70e70f5",
+  "purpose": "before AI Skill run shared_asset_update_gate",
+  "work_item_id": "pm-reference-release-gate",
+  "run_id": "68c2f970-ece5-4320-a0a5-9360366a54bf",
+  "context_policy": "current-only",
+  "human_approved": false
+}
