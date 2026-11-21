@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1 — 2026-11-21
+
+- Keep Project and Issue updates, progress reports, review results and approval
+  requests focused on human decisions and material changes.
+- Preserve evidence, prior Issue content and AI handoff sources through the
+  existing persistence route. Keep review results, design approval and work
+  authorization distinct.
+
 ## 0.1.0 — 2026-11-14
 
 - Add separate structured Decision/Execution plans, deterministic calendar-aware

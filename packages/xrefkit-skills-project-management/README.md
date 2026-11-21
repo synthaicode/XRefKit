@@ -1,6 +1,6 @@
 # XRefKit Project Management
 
-Distribution: **xrefkit-skills-project-management 0.1.0**.
+Distribution: **xrefkit-skills-project-management 0.1.1**.
 Package ID: `xrefkit.skills.project_management`.
 
 Five native SkillDefinitions form one Project Management job:
@@ -21,9 +21,17 @@ Technical investigation, quality verification and final agreement judgments reta
 their existing owners. Project Knowledge supplies actual settings. No project
 values, custom UI, Azure attachment adapter or generic work tracker is bundled.
 
+## Human View
+
+Use the shared persistence handoff to prepare current decisions, material
+changes and next actions from authoritative records. Detailed evidence and
+execution records remain available for audit and AI handoff. Where GitHub is
+configured, Project fields carry progress and the Issue shows the current
+scope and action with links to evidence.
+
 ## Structured scheduling and Gantt history
 
-This release adds the explicit Python tool
+The package includes the explicit Python tool
 `xrefkit_skills_project_management.schedule`. It independently calculates Decision
 and Execution networks, generates Mermaid Gantt from authoritative JSON, and
 saves separate immutable Revision/Snapshot files. The history index retains change
@@ -67,7 +75,7 @@ availability are verified separately from source and candidate-build validation.
 Install after compatible Core and this package are published:
 
 ```console
-python -m pip install xrefkit-skills-project-management==0.1.0
+python -m pip install xrefkit-skills-project-management==0.1.1
 ```
 
 MCP discovery uses the normal `xrefkit.skill_packages` entry point and the enabled
@@ -99,7 +107,7 @@ PR checks use the local candidate Core. Release install checks require compatibl
 Core from PyPI and fail if it is absent; publish cannot precede those checks.
 
 Publication requires a separate authorized release and the tag matching
-`xrefkit-skills-project-management-v0.1.0`. No tag or upload is created by
+`xrefkit-skills-project-management-v0.1.1`. No tag or upload is created by
 preparation. Configure PyPI pending Trusted Publisher with owner `synthaicode`,
 repository `XRefKit`, workflow `python-skill-project-management-package.yml`,
 environment `pypi`; existing OIDC publishing needs no API-token secret.

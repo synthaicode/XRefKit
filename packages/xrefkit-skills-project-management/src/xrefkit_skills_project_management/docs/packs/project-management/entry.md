@@ -54,8 +54,27 @@ results separately. The existing progress method owns readiness evaluation; the
 PM selects which bounded work to start from that result. Neither new method
 sends external messages, assigns stakeholders or changes plans automatically.
 
+## Project updates and decisions
+
+The five Skills use the shared
+[persistence handoff](../../../skills/packs/project-management/progress_rules_setup/references/persistence_handoff.md#xid-62A9D4E7B103)
+to produce a concise Human View from the existing authoritative records.
+A progress report leads with material changes from the last identifiable report.
+An approval request shows the precise decision, scope of permission, effect of
+holding it, and material unresolved risks. Review conclusions distinguish
+verified scope from remaining implementation or verification work.
+
+When GitHub is configured, the Project is the progress entry point and the
+Issue presents the work purpose, acceptance criteria and current actions and
+decisions. The configured detailed records support traceability and AI-to-AI
+handoff. Updating the current view requires keeping past decisions and evidence
+reachable. Existing plans, Brownfield handoffs and Runtime records supply their
+respective source information through their established formats and owners.
+
+## Distribution
+
 The PyPI distribution is `xrefkit-skills-project-management` version
-`0.1.0`, package ID `xrefkit.skills.project_management`. It packages the native
+`0.1.1`, package ID `xrefkit.skills.project_management`. It packages the native
 definitions, shared persistence reference, bound trial governance, bootstrap
 observation and this entry. The [scheduling interface](scheduling.md#xid-73E20A8D9C51)
 adds structured Decision/Execution plans, immutable Gantt history, deterministic
