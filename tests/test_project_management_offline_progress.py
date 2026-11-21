@@ -1,13 +1,25 @@
+import importlib.util
+import sys
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 
-from xrefkit_skills_project_management.offline_progress import (
-    OfflinePolicy,
-    TransitionEvidence,
-    TransitionRequest,
-    evaluate_offline_transition,
+# The release compatibility suite also runs against published wheels. These
+# tests cover the new source module before it is present in any published wheel.
+MODULE_PATH = (
+    Path(__file__).resolve().parents[1] / "packages" / "xrefkit-skills-project-management"
+    / "src" / "xrefkit_skills_project_management" / "offline_progress.py"
 )
+SPEC = importlib.util.spec_from_file_location("project_management_offline_progress", MODULE_PATH)
+assert SPEC is not None and SPEC.loader is not None
+MODULE = importlib.util.module_from_spec(SPEC)
+sys.modules[SPEC.name] = MODULE
+SPEC.loader.exec_module(MODULE)
+OfflinePolicy = MODULE.OfflinePolicy
+TransitionEvidence = MODULE.TransitionEvidence
+TransitionRequest = MODULE.TransitionRequest
+evaluate_offline_transition = MODULE.evaluate_offline_transition
 
 
 POLICY = OfflinePolicy(
