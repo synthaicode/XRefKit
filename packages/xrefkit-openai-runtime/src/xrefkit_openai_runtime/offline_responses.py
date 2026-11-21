@@ -20,6 +20,9 @@ FIXTURE_MODEL = "synthetic-model"
 FIXTURE_TOOL = "fixture_lookup"
 
 _IDENTIFIER = re.compile(r"[a-zA-Z0-9_-]{1,128}")
+_BINDING_DIGEST = re.compile(r"[a-f0-9]{64}")
+_TRANSPORT_REQUEST_IDS = ("e202-http-request-001", "e202-fake-http")
+_RESPONSE_IDS = ("e202-response-001",)
 _ERROR_CODES = frozenset({
     "invalid_request_error", "invalid_api_key", "insufficient_quota",
     "rate_limit_exceeded", "model_not_found",
@@ -96,11 +99,11 @@ class ToolProposal:
 class AttemptDiagnostics:
     """Closed field set for retained attempt evidence; no response/request content."""
 
-    run_id: str
-    work_item_id: str
-    binding_sha256: str
-    attempt_id: str
-    reservation_ref: str
+    run_id: str | None
+    work_item_id: str | None
+    binding_sha256: str | None
+    attempt_id: str | None
+    reservation_ref: str | None
     request_sha256: str | None = None
     transport_request_id: str | None = None
     response_id: str | None = None
@@ -124,7 +127,7 @@ class AdapterResult:
     retry_after_seconds: int | None = None
 
     @property
-    def observation_key(self) -> tuple[str, str, str | None, str | None]:
+    def observation_key(self) -> tuple[str | None, str | None, str | None, str | None]:
         diagnostic = self.diagnostics
         return (diagnostic.run_id, diagnostic.attempt_id,
                 diagnostic.transport_request_id, diagnostic.response_id)
@@ -213,6 +216,19 @@ def _identifier(value: object) -> str | None:
     return value if isinstance(value, str) and _IDENTIFIER.fullmatch(value) else None
 
 
+def _diagnostic_id(value: object, approved: tuple[str, ...]) -> str | None:
+    """Preserve known synthetic IDs; retain only an opaque key for other IDs."""
+    if not isinstance(value, str) or not 0 < len(value) <= 128:
+        return None
+    if value in approved:
+        return value
+    try:
+        raw = value.encode("utf-8")
+    except UnicodeEncodeError:
+        return None
+    return "sha256:" + sha256(raw).hexdigest()
+
+
 def _count(value: object) -> int | None:
     return value if type(value) is int and value >= 0 else None
 
@@ -281,18 +297,22 @@ def _ordered_items(output: object) -> tuple[TextItem | ToolProposal, ...]:
 
 
 def _normalize(response: FakeResponse, diagnostics: AttemptDiagnostics) -> AdapterResult:
-    if not isinstance(response, FakeResponse) or not isinstance(response.body, Mapping):
+    if not isinstance(response, FakeResponse):
+        return AdapterResult("unknown_remote_outcome", "invalid_fake_response", diagnostics)
+    diagnostics = replace(
+        diagnostics, transport_request_id=_diagnostic_id(response.request_id, _TRANSPORT_REQUEST_IDS),
+    )
+    if not isinstance(response.body, Mapping):
         return AdapterResult("unknown_remote_outcome", "invalid_fake_response", diagnostics)
     body = response.body
     status = body.get("http")
     status = status if type(status) is int and 100 <= status <= 599 else None
     error = body.get("code")
     error = error if isinstance(error, str) and error in _ERROR_CODES else None
-    observed = _identifier(body.get("model"))
     diagnostics = replace(
-        diagnostics, transport_request_id=_identifier(response.request_id),
-        response_id=_identifier(body.get("id")), http_status=status,
-        error_code=error, observed_model=observed,
+        diagnostics, response_id=_diagnostic_id(body.get("id"), _RESPONSE_IDS),
+        http_status=status, error_code=error,
+        observed_model=_diagnostic_id(body.get("model"), (FIXTURE_MODEL,)),
     )
     usage = _usage(body.get("usage"))
     if status is None:
@@ -365,9 +385,13 @@ class OfflineResponsesAdapter:
         read_current: Callable[[], DispatchState],
         authorize_body: Callable[[str, str, bytes], bool],
     ) -> AdapterResult:
+        binding = request.assignment.binding_sha256
         diagnostics = AttemptDiagnostics(
-            request.assignment.run_id, request.assignment.work_item_id,
-            request.assignment.binding_sha256, attempt_id, request.reservation_ref,
+            run_id=_diagnostic_id(request.assignment.run_id, ("fixture-run",)),
+            work_item_id=_diagnostic_id(request.assignment.work_item_id, ("fixture-item",)),
+            binding_sha256=binding if isinstance(binding, str) and _BINDING_DIGEST.fullmatch(binding) else None,
+            attempt_id=_diagnostic_id(attempt_id, ("e202-attempt-001",)),
+            reservation_ref=_diagnostic_id(request.reservation_ref, ("fixture-reservation",)),
         )
 
         def hold(reason: str) -> AdapterResult:

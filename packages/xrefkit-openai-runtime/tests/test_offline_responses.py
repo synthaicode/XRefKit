@@ -123,9 +123,12 @@ class OfflineResponsesTests(unittest.TestCase):
 
         adapter = OfflineResponsesAdapter(transport)
 
-        def invoke(owner=adapter, screen_body=screen, reader=lambda: current):
+        def invoke(
+            owner=adapter, screen_body=screen, reader=lambda: current,
+            request_override=request, attempt_override=settings["attempt_id"],
+        ):
             return owner.invoke(
-                request, context, attempt_id=settings["attempt_id"], profile=settings["profile"],
+                request_override, context, attempt_id=attempt_override, profile=settings["profile"],
                 destination=settings["destination"], read_current=reader, authorize_body=screen_body,
             )
 
@@ -286,7 +289,13 @@ class OfflineResponsesTests(unittest.TestCase):
         self.assertEqual(invoke().disposition, "unsupported_output")
         _, _, _, invoke = self.setup_variant({})
         invalid = OfflineResponsesAdapter(lambda _: FakeResponse("e202-fake-http", []))
-        self.assertEqual(invoke(invalid).disposition, "unknown_remote_outcome")
+        malformed = invoke(invalid)
+        self.assertEqual(malformed.disposition, "unknown_remote_outcome")
+        self.assertEqual(malformed.diagnostics.transport_request_id, "e202-fake-http")
+        self.assertEqual(malformed.diagnostics.attempt_id, "e202-attempt-001")
+        self.assertEqual(malformed.diagnostics.reservation_ref, self.request.reservation_ref)
+        self.assertEqual(malformed.observation_key[2], "e202-fake-http")
+        self.assertIsNone(malformed.diagnostics.response_id)
 
     def test_e202_04_errors_and_uncertainty(self):
         self.run_case("E202-04")
@@ -305,3 +314,32 @@ class OfflineResponsesTests(unittest.TestCase):
 
     def test_e202_06_data_and_diagnostics(self):
         self.run_case("E202-06")
+
+        canary = "E202_HEADER_CANARY"
+        _, _, _, invoke = self.setup_variant({})
+        response = deepcopy(self.defaults["response"])
+        response.update(id=canary, model=canary)
+        rejected = OfflineResponsesAdapter(lambda _: FakeResponse(canary, response))
+        result = invoke(rejected)
+        correlation = "sha256:" + sha256(canary.encode()).hexdigest()
+        self.assertNotIn(canary, json.dumps(asdict(result.diagnostics)))
+        self.assertEqual(result.diagnostics.transport_request_id, correlation)
+        self.assertEqual(result.diagnostics.response_id, correlation)
+        self.assertEqual(result.diagnostics.observed_model, correlation)
+
+        _, sends, _, invoke = self.setup_variant({})
+        caller_canary = "E202_CALLER_METADATA!"
+        untrusted_assignment = self.request.assignment.model_copy(
+            update={"run_id": caller_canary, "work_item_id": caller_canary},
+        )
+        untrusted_request = self.request.model_copy(
+            update={"assignment": untrusted_assignment, "reservation_ref": caller_canary},
+        )
+        result = invoke(request_override=untrusted_request, attempt_override=caller_canary)
+        self.assertEqual(result.disposition, "local_hold")
+        self.assertEqual(sends, [])
+        diagnostic = asdict(result.diagnostics)
+        self.assertNotIn(caller_canary, json.dumps(diagnostic))
+        expected = "sha256:" + sha256(caller_canary.encode()).hexdigest()
+        for key in ("run_id", "work_item_id", "attempt_id", "reservation_ref"):
+            self.assertEqual(diagnostic[key], expected)
