@@ -58,23 +58,72 @@ sends external messages, assigns stakeholders or changes plans automatically.
 
 The five Skills use the shared
 [persistence handoff](../../../skills/packs/project-management/progress_rules_setup/references/persistence_handoff.md#xid-62A9D4E7B103)
-to produce a concise Human View from the existing authoritative records.
-A progress report leads with material changes from the last identifiable report.
-An approval request shows the precise decision, scope of permission, effect of
-holding it, and material unresolved risks. Review conclusions distinguish
-verified scope from remaining implementation or verification work.
+for record ownership, updates and review handoffs. Keep the existing project
+mapping.
 
-When GitHub is configured, the Project is the progress entry point and the
-Issue presents the work purpose, acceptance criteria and current actions and
-decisions. The configured detailed records support traceability and AI-to-AI
-handoff. Updating the current view requires keeping past decisions and evidence
-reachable. Existing plans, Brownfield handoffs and Runtime records supply their
-respective source information through their established formats and owners.
+| Record | What the reader can rely on |
+| --- | --- |
+| Canonical Issue | Current intent, requirements, acceptance criteria, active decisions and approval state, next action and owner. Its current references identify the applicable management and technical records. |
+| GitHub Project | Current board status and other configured Project fields. The Issue explains evidenced dependency holds that affect the work. |
+| Project Management | Decision and Execution plans, dependencies, schedules and CPM, scoped approval evidence, baselines, revisions and observations. |
+| Technical records | Versioned designs, contracts, tests, verification, sources and evidence in existing stores. Include the owner, applicability, and revision, XID or hash when needed for an exact lookup. |
+| Issue history | GitHub's native edit history and comments retain audit context. Use the configured history route for exact readback when a write needs it. |
+| Human View | A concise display at the top of the Issue. Lead with material changes or the current state, then show actionable decisions, risks, blockers and the next step. |
+
+### Current Issue record and AI handoff
+
+The package module `xrefkit_skills_project_management.issue_work_record`
+supports an Issue with one inline managed `IssueWorkRecord` outside the top
+Human View. Keep current and archival reference declarations distinct in that
+record. `resolve_work_handoff` starts from the current Issue body, resolves the
+configured Project and PM locators, and checks the current designated technical
+and Decision revisions against the Issue's references. Carry the applicable decisions, execution inputs, unknowns,
+authorization scope, verification and stop conditions through the existing
+Workflow Runtime Binding. If a required reference is missing, stale, unrelated
+or out of scope, stop the affected handoff. Historical snapshots remain available through the Issue history or a separately configured audit route.
+
+A host maps existing reads to the input types, checks the destination's access
+rules, and supplies exact readbacks and reader-accessible references. Keep its
+normalized values bound to the verified bytes. The Issue uses a small inline
+record plus links to the project's existing PM and technical stores. The
+package does not require a new record store or redefine project approvals,
+scheduling history, or Brownfield and Runtime contracts.
+
+### Prepare and deliver an update
+
+1. Save and verify applicable management and technical changes in their
+   existing stores. Resolve their exact versions before linking them from the
+   current Issue. Prepare the top summary from the current work record, mapped
+   Project and applicable sources.
+2. Preserve the preceding Issue body and the existing comments and platform
+   edit history. Routine updates can use a verified readback from the existing
+   Issue history route. Compare prior delivery and managed work-record identity
+   before replacing managed
+   content, and preserve manual content outside the declared blocks. For a
+   legacy migration, require explicit approval for the exact Issue revision,
+   verify complete prior-body readback, and check the old fragment mapping. Prefer native Issue history and preserve existing anchors on the Issue.
+3. Refresh the Issue, Project and required sources before delivery. Use the
+   host's guarded writer for automated changes. If a receiving route lacks the
+   required guarantee, hand off the prepared candidate for review.
+4. Read back the actual destination and sources after a partial or uncertain
+   result. `reconcile_current_update` recognizes a confirmed prepared body
+   and a verified unchanged prior body or creation reservation. Divergence
+   requires a new review. Preserve already verified saves, record any gaps, and retry only
+   the unresolved authorized step. A completed source save alone establishes
+   no Issue or Project update.
+
+The existing `render_view`, `prepare_create`, `prepare_update` and
+`apply_update` routes remain available. `apply_update` requires the guarded
+writer's atomic Issue and Project revision comparison. GitHub REST documents
+conditional reads and does not document that compare-and-update guarantee for
+the Issue body and Project together. Without a host that provides the
+guarantee, use the configured review handoff. Test with copied or synthetic
+records before seeking production migration approval.
 
 ## Distribution
 
 The PyPI distribution is `xrefkit-skills-project-management` version
-`0.1.2`, package ID `xrefkit.skills.project_management`. It packages the native
+`0.1.3`, package ID `xrefkit.skills.project_management`. It packages the native
 definitions, shared persistence reference, bound trial governance, bootstrap
 observation and this entry. The [scheduling interface](scheduling.md#xid-73E20A8D9C51)
 adds structured Decision/Execution plans, immutable Gantt history, deterministic

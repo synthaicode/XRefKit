@@ -6,6 +6,7 @@ import hashlib
 import json
 import re
 import sys
+import tomllib
 from pathlib import Path
 
 import yaml
@@ -84,8 +85,10 @@ def generate(root: Path) -> dict[str, bytes]:
                 raise ValueError(f"promotion evidence must be bundled: {reference}")
         result[gp] = (json.dumps(governance, indent=2) + "\n").encode()
         provided.append({"id":sid,"xid":meta["xid"],"path":path,"governance_path":gp})
+    project_file = root / "packages/xrefkit-skills-project-management/pyproject.toml"
+    version = tomllib.loads(project_file.read_text(encoding="utf-8"))["project"]["version"]
     manifest = {"package_id":"xrefkit.skills.project_management","package_type":"skill_package",
-                "version":"0.1.2","requires":{"xrefkit_core":">=2.0.0 <3.0.0"},
+                "version":version,"requires":{"xrefkit_core":">=2.0.0 <3.0.0"},
                 "provides":{"skills":provided},"contract":{},
                 "metadata":{"display_name":"Project Management","maturity_note":"trial; authoring/readiness bootstrap, not operational validation",
                             "routing_entry":"docs/packs/project-management/entry.md"}}

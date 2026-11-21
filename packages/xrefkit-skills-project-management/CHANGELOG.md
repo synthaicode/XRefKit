@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.3 — 2026-11-21
+
+- Prepare a compact Issue view from the current Issue work record and verified
+  Project Management and technical references. Resolve AI handoffs from current
+  inputs and retain original Issue revisions for audit.
+- Preserve manual text, historical links and platform history through verified
+  archive and revision checks. Reconcile partial deliveries using readback of
+  the Issue and its linked records.
+- Keep the Issue's work-specific requirements and acceptance conditions readable
+  in place. Reuse native Issue edit history without a separate Original file.
+
 ## 0.1.2 — 2026-11-21
 
 - Explain project stage and status codes in reader-facing updates by naming
