@@ -436,7 +436,58 @@ class OfflineBudgetTests(unittest.TestCase):
                         self.assertEqual(expected, "hold_reservation_16_reconcile")
                 self.assertIsNone(after.reservations[0].synthetic_debit)
                 self.assertEqual(after.reservations[0].observations, (observation,))
-                self.evidence(case, variant, expected, decision, before, after, transitions, upstream)
+                supplemental = self.check_no_submit_after_prior_usage() if variant == "proved-no-submit" else None
+                self.evidence(case, variant, expected, decision, before, after, transitions, upstream, supplemental)
+
+    def check_no_submit_after_prior_usage(self):
+        evidence = {}
+        for label, usage in (
+            ("positive_input", UsageObservation(input_tokens=8)),
+            ("partial_zero", UsageObservation(input_tokens=0)),
+            ("all_zero", UsageObservation(0, 0, 0)),
+            ("annotation_zero", UsageObservation(cached_input_tokens=0)),
+            ("all_unknown", UsageObservation()),
+        ):
+            action, ledger, observation, _, _, _ = self.settlement_case({})
+            reference = replace(observation.receipt, request_id=None, response_id=None,
+                                fallback_id="verified-fallback-no-submit-reconciliation")
+            possible = replace(observation, receipt=reference, submission="possible", usage=usage)
+            pending = ledger.settle(action, possible, VerifiedReceipt(action, possible))
+            self.assertEqual((pending.disposition, pending.reason), ("hold", "submission_unresolved"))
+            before = ledger.snapshot(action)
+            self.assert_amounts(before, 16, 0)
+
+            no_submit = replace(possible, receipt=replace(reference, revision=reference.revision + 1),
+                                submission="no_submit", usage=UsageObservation())
+            proof = VerifiedReceipt(action, no_submit)
+            decision = ledger.settle(action, no_submit, proof)
+            after = ledger.snapshot(action)
+            replay = ledger.settle(action, no_submit, proof)
+            if label == "all_unknown":
+                self.assertEqual((decision.disposition, decision.reason, decision.units),
+                                 ("released", "verified_no_submit", 16))
+                self.assert_amounts(after, 0, 0)
+                self.assertEqual(after.reservations[0].observations, (possible, no_submit))
+                self.assertFalse(after.reservations[0].exposure_uncertain)
+                self.assertEqual((replay.disposition, replay.reason), ("duplicate", "identical_observation"))
+            else:
+                self.assertEqual((decision.disposition, decision.reason, decision.units),
+                                 ("hold", "conflicting_no_submit", None))
+                self.assert_amounts(after, 16, 0)
+                self.assertEqual(after.reservations, (replace(before.reservations[0], exposure_uncertain=True),))
+                self.assertIsNone(after.work.headroom)
+                self.assertIsNone(after.parent.headroom)
+                self.assertEqual(replay, decision)
+            self.assertEqual(ledger.snapshot(action), after)
+            evidence[label] = {
+                "prior_possible": asdict(possible), "incoming_no_submit": asdict(no_submit),
+                "decision": asdict(decision), "replay": asdict(replay),
+                "before": {"work": asdict(before.work), "parent": asdict(before.parent)},
+                "after": {"work": asdict(after.work), "parent": asdict(after.parent)},
+                "observations_retained": [asdict(record) for record in after.reservations[0].observations],
+                "fake_effects": after.fake_effects,
+            }
+        return evidence
 
     def test_E203_06_reconciliation(self):
         case = "E203-06"

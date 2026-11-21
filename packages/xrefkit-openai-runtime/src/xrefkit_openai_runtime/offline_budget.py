@@ -365,6 +365,11 @@ class OfflineBudget:
         if any(_contradicts_known_usage(earlier.usage, observation.usage) for earlier in entry.observations):
             self._entries[action.reservation_id] = replace(entry, exposure_uncertain=True)
             return Decision("hold", "usage_conflicts_with_prior_observation")
+        if observation.submission == "no_submit" and any(
+            earlier.usage != UsageObservation() for earlier in entry.observations
+        ):
+            self._entries[action.reservation_id] = replace(entry, exposure_uncertain=True)
+            return Decision("hold", "conflicting_no_submit")
 
         updated = replace(entry, observations=(*entry.observations, observation),
                           observation_ticks=(*entry.observation_ticks, self._authority.now_tick))
