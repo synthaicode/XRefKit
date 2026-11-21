@@ -128,6 +128,7 @@ Skills should reference these pages by XID and load only what is needed.
 - [Current source structure findings catalog](source_analysis/170_current_source_structure_findings_catalog.md#xid-A9E742B1C6D0)
 - [Maverick.NET Friendbook XML-command structure findings](source_analysis/171_maverick_net_friendbook_structure_findings.md#xid-B4F8D2A91C03)
 - [Modular Monolith with DDD API structure findings](source_analysis/172_modular_monolith_ddd_api_structure_findings.md#xid-D8F2A6C91B74)
+- [XRefKit API Execution Boundary Structure Findings](source_analysis/174_xrefkit_api_execution_boundary_findings.md#xid-0A4F8C62D199)
 
 ## Private knowledge
 
