@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from dataclasses import astuple, dataclass, replace
 from threading import Lock
 from typing import Literal
 
@@ -171,6 +171,11 @@ def _quantity(value: object) -> bool:
     return type(value) is int and value >= 0
 
 
+def _contradicts_known_usage(previous: UsageObservation, current: UsageObservation) -> bool:
+    return any(known is not None and reported is not None and known != reported
+               for known, reported in zip(astuple(previous), astuple(current)))
+
+
 class OfflineBudget:
     """One shared lock covers host updates, reservation, and the fake effect itself."""
 
@@ -179,6 +184,7 @@ class OfflineBudget:
         self._lock = Lock()
         self._entries: dict[str, Reservation] = {}
         self._attempts: set[tuple[str, str, str]] = set()
+        self._adapter_owners: dict[AdapterScope, str] = {}
         self._receipt_owners: dict[tuple[str, str], str] = {}
         self._fake_effects = 0
 
@@ -260,9 +266,14 @@ class OfflineBudget:
                 link.scope.attempt_id, link.scope.reservation_ref,
             )) for link in links):
                 return Decision("hold", "adapter_link_unproved")
+            link = links[0] if links else None
+            if link and link.scope in self._adapter_owners:
+                return Decision("hold", "adapter_admission_owned_by_other_reservation")
             self._entries[action.reservation_id] = Reservation(
-                action, rate, units, self._authority.now_tick, links[0] if links else None,
+                action, rate, units, self._authority.now_tick, link,
             )
+            if link:
+                self._adapter_owners[link.scope] = action.reservation_id
             self._attempts.add(action.attempt)
             return Decision("reserved", "reservation_created", units)
 
@@ -351,6 +362,9 @@ class OfflineBudget:
         ):
             self._entries[action.reservation_id] = replace(entry, exposure_uncertain=True)
             return Decision("hold", "conflicting_observation")
+        if any(_contradicts_known_usage(earlier.usage, observation.usage) for earlier in entry.observations):
+            self._entries[action.reservation_id] = replace(entry, exposure_uncertain=True)
+            return Decision("hold", "usage_conflicts_with_prior_observation")
 
         updated = replace(entry, observations=(*entry.observations, observation),
                           observation_ticks=(*entry.observation_ticks, self._authority.now_tick))
