@@ -316,15 +316,27 @@ def _api_check(policy: EvaluationPolicy, inputs: EvaluationInputs) -> Criterion:
         return _unknown(name, "api_evidence_uncorrelated")
     if api_observation_digest(inputs.api) != policy.api_observation_sha256:
         return _unknown(name, "api_observation_digest_mismatch")
-    if inputs.api.disposition == "completed":
-        text_items = tuple(item.text for item in inputs.api.items
-                           if isinstance(item, TextItem) and item.kind == "text")
-        try:
-            if not text_items or "".join(text_items).encode("utf-8") != inputs.output_utf8:
-                return _unknown(name, "api_output_unlinked")
-        except UnicodeError:
-            return _unknown(name, "api_output_unlinked")
     return _criterion(name, "pass", "api_observation_verified")
+
+
+def _normalized_output_digest(api: AdapterResult) -> str | None:
+    text_items = tuple(item.text for item in api.items if isinstance(item, TextItem) and item.kind == "text")
+    try:
+        return _digest("".join(text_items).encode("utf-8")) if text_items else None
+    except UnicodeError:
+        return None
+
+
+def _output_check(policy: EvaluationPolicy, inputs: EvaluationInputs, *, api_valid: bool) -> Criterion:
+    name = "structure"
+    if not api_valid or inputs.api.disposition != "completed":
+        return _unknown(name, "normalized_output_unverified")
+    normalized = _normalized_output_digest(inputs.api)
+    supplied = _digest(inputs.output_utf8)
+    if supplied != policy.output_sha256 or normalized != supplied:
+        return _compared(_unknown(name, "api_output_unlinked"), "normalized_output",
+                         (policy.output_sha256, policy.output_sha256), (supplied, normalized))
+    return _criterion(name, "pass", "normalized_output_linked")
 
 
 def _tool_check(policy: EvaluationPolicy, inputs: EvaluationInputs) -> Criterion:
@@ -400,6 +412,8 @@ def _model(policy: EvaluationPolicy, inputs: EvaluationInputs) -> Criterion:
     observed = inputs.result.observed_model
     if observed is None or inputs.api.diagnostics.observed_model is None:
         return _unknown(name, "observed_model_missing")
+    if observed.startswith("sha256:") or inputs.api.diagnostics.observed_model.startswith("sha256:"):
+        return _unknown(name, "observed_model_identifier_redacted")
     if observed != inputs.api.diagnostics.observed_model:
         return _unknown(name, "observed_model_conflict", next_check="reconcile")
     if observed != policy.expected_model:
@@ -566,13 +580,15 @@ def _review_check(policy: EvaluationPolicy, inputs: EvaluationInputs, review: Se
 
 
 def _semantic(policy: EvaluationPolicy, inputs: EvaluationInputs, output_sha256: str,
-              interaction: Criterion) -> Criterion:
+              interaction: Criterion, *, tool_valid: bool) -> Criterion:
     name = "semantic"
     if not policy.semantic_required:
         return _criterion(name, "not_applicable", "semantic_review_not_declared")
     if not inputs.reviews:
         return _unknown(name, "review_unavailable", next_check="request_independent_review")
     available = {inputs.result.evidence_ref: policy.trace_pins[2]}
+    if tool_valid and inputs.tool.receipt is not None:
+        available[policy.links.tool_receipt_revision] = policy.tool_observation_sha256
     available.update((item.ref, evidence_digest(item)) for item in inputs.postconditions
                      if item.authorized and item.current and item.origin in policy.trusted_readback_origins
                      and item.revision == policy.links.evidence_revision
@@ -656,19 +672,12 @@ def _source_evidence(
         asdict(expected_receipt) if receipt is not None and expected_receipt is not None else None,
         asdict(expected_attempt) if attempt_evidence is not None and expected_attempt is not None else None,
         policy.tool_observation_sha256, replay.return_scope_sha256 if replay is not None else None,
+        receipt.result_digest if receipt is not None else None,
     )
     observed_tool = (asdict(receipt.correlation) if receipt is not None else None,
                      asdict(attempt_evidence.correlation) if attempt_evidence is not None else None,
-                     tool_observation_digest(inputs.tool, inputs.recorded_tool_effect), inputs.tool_return_scope_sha256)
-    api_payload_digest = None
-    if inputs.api.disposition == "completed":
-        try:
-            parts = tuple(item.text for item in inputs.api.items if isinstance(item, TextItem) and item.kind == "text")
-            if parts:
-                api_payload_digest = _digest("".join(parts).encode("utf-8"))
-        except UnicodeError:
-            pass
-    expected_api_payload = policy.output_sha256 if inputs.api.disposition == "completed" else None
+                     tool_observation_digest(inputs.tool, inputs.recorded_tool_effect), inputs.tool_return_scope_sha256,
+                     _digest(inputs.tool_return_utf8) if receipt is not None and receipt.result_digest is not None else None)
     observed_trace = (
         _record_digest(request.model_dump(mode="json")),
         _record_digest([event.model_dump(mode="json") for event in inputs.events]),
@@ -676,11 +685,11 @@ def _source_evidence(
     )
     return (
         _compared(replace(checks[0], id="v1_identity"), "pinned_v1",
-                  (policy.trace_pins, policy.assignment.model_dump(mode="json"), asdict(policy.links)),
-                  (observed_trace, request.assignment.model_dump(mode="json"), asdict(inputs.links))),
+                  (policy.trace_pins, policy.assignment.model_dump(mode="json"), asdict(policy.links), policy.links.criteria_sha256),
+                  (observed_trace, request.assignment.model_dump(mode="json"), asdict(inputs.links), request.criteria_sha256)),
         _compared(replace(checks[1], id="api_identity"), "normalized_api",
-                  (expected_scope, policy.api_observation_sha256, policy.output_sha256, expected_api_payload),
-                  (observed_scope, api_observation_digest(inputs.api), _digest(inputs.output_utf8), api_payload_digest)),
+                  (expected_scope, policy.api_observation_sha256),
+                  (observed_scope, api_observation_digest(inputs.api))),
         _compared(replace(checks[2], id="tool_identity"), "dispatch_observation", expected_tool, observed_tool),
     )
 
@@ -694,8 +703,8 @@ def _comparison_metadata(
     records = {
         "identity": ("pinned_v1_api_tool", tuple(pair[0] for pair in source_comparisons),
                      tuple(pair[1] for pair in source_comparisons)),
-        "model": ("v1_and_normalized_api", (policy.expected_model, policy.expected_model),
-                  (observed_model, inputs.api.diagnostics.observed_model)),
+        "model": ("v1_and_normalized_api", (policy.expected_model, policy.expected_model, policy.expected_model),
+                  (inputs.request.selected_model, observed_model, inputs.api.diagnostics.observed_model)),
         "structure": ("normalized_output", ("objective_string", policy.output_byte_limit),
                       (len(inputs.output_utf8), _digest(inputs.output_utf8))),
         "outcome": ("v1_api_tool", ("completed", "executed_or_replay"),
@@ -749,8 +758,7 @@ def _evaluate_io(
         else:
             trace, assessment = _trace(policy, inputs)
         api, tool = _api_check(policy, inputs), _tool_check(policy, inputs)
-        if api.outcome == "pass" and output_sha256 != policy.output_sha256:
-            api = _unknown("identity", "result_digest_mismatch")
+
 
     source_evidence = _source_evidence(policy, inputs, (trace, api, tool))
     identity = next((check for check in (trace, api, tool) if check.outcome != "pass"), trace)
@@ -761,16 +769,18 @@ def _evaluate_io(
                raw_tool.receipt.effect if raw_tool.receipt is not None else
                inputs.recorded_tool_effect or "unverified") if trusted_tool else "unverified")
     entry_observed = trusted_tool and raw_tool.receipt is not None and raw_tool.receipt.effect == "observed"
+    review_available = False
     if valid_policy and linked:
+        output = _output_check(policy, inputs, api_valid=trusted_api)
+        review_available = trace_valid and output.outcome == "pass"
         interaction = _interaction(policy, inputs)
-        semantic = (_semantic(policy, inputs, output_sha256, interaction)
-                    if trace_valid and trusted_api and trusted_tool else
+        semantic = (_semantic(policy, inputs, output_sha256, interaction, tool_valid=trusted_tool)
+                    if review_available else
                     _unknown("semantic", "review_subject_unverified"))
         checks = (
             identity,
             _model(policy, inputs) if trace_valid and trusted_api else _unknown("model", "model_subject_unverified"),
-            _structure(policy, inputs) if trusted_api and inputs.api.disposition == "completed"
-            else _unknown("structure", "normalized_output_unverified"),
+            _structure(policy, inputs) if output.outcome == "pass" else output,
             _outcome(inputs, trace_valid=trace_valid, api_valid=trusted_api, tool_valid=trusted_tool),
             _effect(policy, inputs, tool_valid=trusted_tool),
             _usage(policy, usage) if trusted_api else _unknown("usage", "api_observation_unverified"),
@@ -791,7 +801,7 @@ def _evaluate_io(
         raw_tool.outcome if trusted_tool else "unverified",
         effect, entry_observed, usage,
         tuple(_identifier_digest(review.id) for review in inputs.reviews)
-        if trace_valid and trusted_api and trusted_tool else (),
+        if review_available else (),
         {"unresolved": "pending", "not_applicable": "not_applicable"}.get(semantic.outcome, "reviewed"),
         output_sha256, evaluation_policy_digest(policy), source_evidence, policy.evaluation_ref,
         reevaluation_from=linked_previous, approved_rubric_successor=policy.rubric_successor,

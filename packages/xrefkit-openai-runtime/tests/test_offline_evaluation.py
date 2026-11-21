@@ -224,9 +224,15 @@ class OfflineEvaluationCases(unittest.TestCase):
                     "tool_observation_sha256": policy.tool_observation_sha256,
                     "evaluator_side_effects": "none",
                 }
+                if variant == "rubric-drift":
+                    self.assertNotEqual(*result.source_findings[0].comparison_sha256)
+                if variant == "expected-model-missing":
+                    self.assertNotEqual(*check.comparison_sha256)
                 if variant == "wrong-tool-call":
                     self.assertEqual((result.api_outcome, result.tool_outcome), ("completed", "unverified"))
                     self.assertEqual(result.usage, inputs.api.usage)
+                    self.assertEqual(checks["semantic"].outcome, "pass")
+                    self.assertEqual(result.aggregate, "criteria_unresolved")
                 if variant == "wrong-api-attempt":
                     self.assertEqual((result.api_outcome, result.tool_outcome), ("unverified", "executed"))
                     self.assertTrue(result.entry_observed)
@@ -246,7 +252,10 @@ class OfflineEvaluationCases(unittest.TestCase):
         _, _, inputs, policy = self.run_case(())
         # A payload or source observation replaced after trusted intake is not a current artifact.
         substituted = evaluate_io(policy, replace(inputs, output_utf8=b'{"objective":"other"}'))
-        self.assertEqual(substituted.criteria[0].reason, "api_output_unlinked")
+        self.assertEqual(substituted.source_findings[1].outcome, "pass")
+        self.assertEqual({check.id: check.reason for check in substituted.criteria}["structure"], "api_output_unlinked")
+        self.assertEqual(substituted.usage, inputs.api.usage)
+        self.assertEqual(substituted.aggregate, "criteria_unresolved")
         modified = evaluate_io(policy, replace(inputs, api=replace(inputs.api, disposition="refusal")))
         self.assertEqual(modified.criteria[0].reason, "api_observation_digest_mismatch")
 
@@ -349,6 +358,19 @@ class OfflineEvaluationCases(unittest.TestCase):
 
     def test_E205_05_independent_review(self):
         self.run_group("E205-05")
+        _, _, inputs, policy = self.run_case(())
+        review = replace(inputs.reviews[0], basis_refs=(policy.links.tool_receipt_revision,),
+                         basis_pins=(policy.tool_observation_sha256,))
+        tool_basis_policy = replace(policy, reviewer_record_pins=(evidence_digest(review),))
+        verified = evaluate_io(tool_basis_policy, replace(inputs, reviews=(review,)))
+        self.assertEqual({check.id: check.reason for check in verified.criteria}["semantic"],
+                         "independent_review_matched")
+        unlinked = evaluate_io(tool_basis_policy, replace(inputs, reviews=(review,),
+                               tool_return_utf8=b'{"value":"different"}'))
+        criterion = {check.id: check for check in unlinked.criteria}["semantic"]
+        self.assertEqual((criterion.outcome, criterion.reason), ("unresolved", "review_basis_unavailable"))
+        self.assertEqual(unlinked.source_findings[2].reason, "tool_result_digest_mismatch")
+        self.assertNotEqual(*unlinked.source_findings[2].comparison_sha256)
         result, _, inputs, policy = self.run_case((("/postconditions/0/observed", "synthetic-absent"),))
         criteria = {check.id: check for check in result.criteria}
         self.assertEqual(criteria["semantic"].reason, "review_basis_changed")
@@ -413,25 +435,7 @@ class OfflineEvaluationCases(unittest.TestCase):
 
     def verify_native_observations(self):
         _, _, inputs, policy = self.run_case(())
-        api_harness = test_offline_responses.OfflineResponsesTests()
-        api_harness.setUpClass()
-        settings, sends, _, invoke = api_harness.setup_variant({})
-        api = invoke()
-        self.assertEqual((api.disposition, len(sends)), ("completed", 1))
-        output = "".join(item.text for item in api.items if isinstance(item, TextItem) and item.kind == "text").encode()
-        self.assertTrue(output)
-        wire_digest = _sha(sends[0].body)
-        self.assertEqual(api.diagnostics.request_sha256, wire_digest)
-        attempt, operation, call = policy.links.correlation
-        api_policy = replace(
-            policy, assignment=api_harness.request.assignment,
-            links=replace(policy.links, correlation=(settings["attempt_id"], operation, call)),
-            provider_reservation_ref=api_harness.request.reservation_ref, api_request_sha256=wire_digest,
-            api_observation_sha256=api_observation_digest(api), output_sha256=_sha(output),
-        )
-        checked = evaluate_io(api_policy, replace(inputs, api=api, output_utf8=output))
-        self.assertEqual(checked.source_findings[1].outcome, "pass")
-        self.assertEqual(checked.usage, api.usage)
+        native_api = self.verify_native_api(inputs, policy)
 
         dispatch = test_offline_dispatch.OfflineDispatchTests()
         dispatch.setUpClass()
@@ -473,9 +477,92 @@ class OfflineEvaluationCases(unittest.TestCase):
             wrong_policy = replace(tool_policy, tool_observation_sha256=tool_observation_digest(wrong, "observed"))
             rejected = evaluate_io(wrong_policy, replace(tool_inputs, tool=wrong))
             self.assertEqual(rejected.source_findings[2].reason, "tool_replay_authorization_unverified")
+        altered_output = evaluate_io(policy, replace(inputs, output_utf8=b'{"objective":"substituted"}'))
+        altered_structure = next(check for check in altered_output.criteria if check.id == "structure")
+        self.assertEqual((altered_output.api_outcome, altered_output.usage), ("completed", inputs.api.usage))
+        self.assertEqual((altered_structure.outcome, altered_output.aggregate), ("unresolved", "criteria_unresolved"))
         return {
-            "adapter_wire_sha256": wire_digest, "adapter_evaluation": checked.source_findings[1].outcome,
+            "native_api": native_api,
+            "output_substitution": {
+                "api_source": altered_output.source_findings[1].outcome, "usage": asdict(altered_output.usage),
+                "structure": altered_structure.reason, "operands": altered_structure.comparison_sha256,
+            },
             "dispatch_entries": dispatcher.snapshot(later).entry_count,
             "replay_evaluation": checked_tool.source_findings[2].outcome,
             "replay_scope_sha256": scope, "changed_replay_scope": invalid_scope.source_findings[2].reason,
         }
+
+    def verify_native_api(self, inputs, policy):
+        harness = test_offline_responses.OfflineResponsesTests()
+        harness.setUpClass()
+        request = harness.request.model_copy(update={"criteria_sha256": policy.links.criteria_sha256})
+        text_output = {"id": "e205-native-text", "type": "text", "text": inputs.output_utf8.decode()}
+        provider_alternate = "other-synthetic-model"
+        native_variants = (
+            ("completed", {}, "completed", None, None),
+            ("refusal", {"output": [{"id": "e205-native-refusal", "type": "refusal", "text": "Synthetic refusal"}]},
+             "refusal", "api_refusal", None),
+            ("incomplete", {"status": "incomplete"}, "incomplete", "api_incomplete", None),
+            ("explicit-zero", {"usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}},
+             "completed", "required_usage_reported", (0, 0, 0)),
+            ("partial-usage", {"usage": {"input_tokens": 0}}, "completed", "required_usage_partial", (0, None, None)),
+            ("absent-usage", {"usage": None}, "completed", "required_usage_missing", (None, None, None)),
+            ("out-of-scope-model", {"model": provider_alternate}, "completed", "observed_model_identifier_redacted", None),
+        )
+        evidence = {}
+        for label, changes, disposition, decisive_reason, expected_usage in native_variants:
+            fake_response = {**harness.defaults["response"], "output": [text_output], **changes}
+            settings, sends, _, invoke = harness.setup_variant({"response": fake_response})
+            api = invoke(request_override=request)
+            self.assertEqual((api.disposition, len(sends)), (disposition, 1))
+            wire_digest = _sha(sends[0].body)
+            self.assertEqual(api.diagnostics.request_sha256, wire_digest)
+            _, operation, call = policy.links.correlation
+            attempt = settings["attempt_id"]
+            events = tuple(event.model_copy(update={"assignment": request.assignment, "attempt_id": attempt})
+                           for event in inputs.events)
+            result = ExecutionResult.model_validate({
+                **inputs.result, "assignment": request.assignment, "attempt_id": attempt,
+                "observed_model": api.diagnostics.observed_model,
+            })
+            links = replace(policy.links, correlation=(attempt, operation, call))
+            native_inputs = replace(inputs, request=request, events=events, result=result, links=links, api=api)
+            native_policy = replace(
+                policy, assignment=request.assignment, links=links,
+                provider_reservation_ref=request.reservation_ref, api_request_sha256=wire_digest,
+                api_observation_sha256=api_observation_digest(api), trace_pins=trace_pins(request, events, result),
+                expected_model=request.selected_model,
+                usage_required_fields=frozenset({"input_tokens", "output_tokens", "total_tokens"})
+                if expected_usage is not None else frozenset(),
+            )
+            native_policy = replace(native_policy, approved_rules_sha256=effective_rules_digest(native_policy))
+            checked = evaluate_io(native_policy, native_inputs)
+            checks = {check.id: check for check in checked.criteria}
+            self.assertEqual(checked.source_findings[1].outcome, "pass")
+            self.assertEqual(checked.usage, api.usage)
+            usage = (api.usage.input_tokens, api.usage.output_tokens, api.usage.total_tokens)
+            if expected_usage is not None:
+                self.assertEqual(usage, expected_usage)
+                self.assertEqual(checks["usage"].reason, decisive_reason)
+            if label in ("refusal", "incomplete"):
+                self.assertEqual((checks["outcome"].outcome, checks["outcome"].reason), ("fail", decisive_reason))
+            if label == "out-of-scope-model":
+                self.assertEqual(api.diagnostics.observed_model, "sha256:" + _sha(provider_alternate.encode()))
+                self.assertNotEqual(api.diagnostics.observed_model, provider_alternate)
+                self.assertEqual((checks["model"].outcome, checks["model"].reason), ("unresolved", decisive_reason))
+                self.assertEqual(checked.v1_assessment, "held")
+            evidence[label] = {
+                "wire_sha256": wire_digest, "disposition": api.disposition, "usage": usage,
+                "normalized_model": "digest_only" if label == "out-of-scope-model" else "allowlisted",
+                "model_check": checks["model"].reason, "outcome_check": checks["outcome"].reason,
+                "usage_check": checks["usage"].reason,
+            }
+
+        contradictory, _, _, _ = self.run_case((
+            ("/result/observed_model", "fixture-model-b"),
+            ("/api/diagnostics/observed_model", "fixture-model-b"),
+        ))
+        model = next(check for check in contradictory.criteria if check.id == "model")
+        self.assertEqual((model.outcome, model.reason), ("fail", "observed_model_mismatch"))
+        evidence["authenticated_mismatch_control"] = {"outcome": model.outcome, "reason": model.reason}
+        return evidence
