@@ -24,10 +24,11 @@ RELEASE_SKILLS = {
     '0.1.0a2': BASE_SKILLS + ('pm_coordination_setup', 'pm_decision_coordination'),
     '0.1.0': BASE_SKILLS + ('pm_coordination_setup', 'pm_decision_coordination'),
     '0.1.1': BASE_SKILLS + ('pm_coordination_setup', 'pm_decision_coordination'),
+    '0.1.2': BASE_SKILLS + ('pm_coordination_setup', 'pm_decision_coordination'),
 }
 INSTALLED_VERSION = version('xrefkit-skills-project-management')
 EXPECTED_SKILLS = RELEASE_SKILLS[INSTALLED_VERSION]
-TRIAL_RELEASES = {'0.1.0', '0.1.1'}
+TRIAL_RELEASES = {'0.1.0', '0.1.1', '0.1.2'}
 EXPECTED_MATURITY = 'trial' if INSTALLED_VERSION in TRIAL_RELEASES else 'draft'
 
 
@@ -124,11 +125,18 @@ def test_shared_persistence_procedure_is_reachable_from_all_native_methods():
         assert any(((root / provided.path).parent / target).resolve() == reference
                    for target in matches), provided.id
     procedure = ' '.join(reference.read_text(encoding='utf-8').split())
-    if INSTALLED_VERSION == '0.1.1':
+    if INSTALLED_VERSION in {'0.1.1', '0.1.2'}:
         for condition in (
             'label the baseline unknown',
             'explicit, attributable human decision',
             'without overwriting the existing body',
             'authoritative detailed records',
+        ):
+            assert condition in procedure
+    if INSTALLED_VERSION == '0.1.2':
+        for condition in (
+            'work or decision and its current status in plain language',
+            'project-specific meaning for stage and status codes',
+            'Preserve exact identifiers and enum values in formal records and fields',
         ):
             assert condition in procedure

@@ -68,8 +68,16 @@ content and report the unresolved mapping, access or preservation step.
    its reason and impact, material risks or unknowns, and the next action and
    responsible person or role. Keep confirmed facts, proposals, hypotheses and
    unverified claims distinct. For a review result, show the verdict, covered
-   scope and the gaps that affect the current decision. Link details through
-   references the intended reader can access. Keep identifiers and technical
+   scope and the gaps that affect the current decision. State the concrete
+   work or decision and its current status in plain language. Use a verified
+   project-specific meaning for stage and status codes. Include the code only
+   when it helps readers locate the record or decide. If its meaning is unknown,
+   state what the records establish and flag the gap when it affects the decision.
+   Preserve exact identifiers and enum values in formal records and fields. For
+   example, Issue #199 can say "The API executor design is awaiting the requester's
+   decision. Implementation start is separately on hold." Here `P0` is a
+   project-specific stage label. Link details through references the intended
+   reader can access. Keep identifiers and technical
    detail in the linked records unless the reader needs them to decide. Aim for
    one screen (roughly 300–500 Japanese characters for an ordinary Japanese
    update). Preserve meaning and split by decision when necessary.

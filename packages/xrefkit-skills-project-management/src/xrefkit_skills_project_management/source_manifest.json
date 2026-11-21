@@ -28,13 +28,13 @@
     },
     {
       "source": "skills/packs/project-management/progress_rules_setup/references/persistence_handoff.md",
-      "source_sha256": "95e4227934017b8d26b2bc18b7318fc74fca4ad75216f0f97e4e532997c5b010",
-      "packaged_sha256": "bda27ec78be3f03dfe600449d26c63bb2ff3b84509d902534dbb2bd86f4c32c7"
+      "source_sha256": "cc46f179f952f0291fe4d42846f753e727a07c3cb29760a557a93adbe6498a16",
+      "packaged_sha256": "813b0f098b216adf8cfc110d460b5d8e5bd5c790fb5cda66f68e1100306e2674"
     },
     {
       "source": "docs/packs/project-management/entry.md",
-      "source_sha256": "88947e5c2bbd9a037dc407e104a5e5d7281d1f973e24af9c6f4ca538af350c9a",
-      "packaged_sha256": "88947e5c2bbd9a037dc407e104a5e5d7281d1f973e24af9c6f4ca538af350c9a"
+      "source_sha256": "da9ef6c72635dfd89a4dcc4d322f07e0107f54b4838765e6522a1179bddcc478",
+      "packaged_sha256": "da9ef6c72635dfd89a4dcc4d322f07e0107f54b4838765e6522a1179bddcc478"
     },
     {
       "source": "docs/packs/project-management/scheduling.md",
