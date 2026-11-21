@@ -18,6 +18,12 @@ targets:
     source_scope: nine bounded Python client work modules
     target_kind: python_subsystem
     aliases: [XRefKit client work management]
+  - target_xid: E9A4C7B2106D
+    name: XRefKit API execution boundary
+    repository_identity: repository:XRefKit
+    source_scope: bounded Python API execution integration boundary
+    target_kind: python_subsystem
+    aliases: [XRefKit API execution integration]
 findings:
   - finding_xid: B4F8D2A91C03
     target_xid: E9A4C7B2106A
@@ -49,3 +55,13 @@ findings:
     coverage: Nine modules covering client plans, optional work packages, runs, Markdown/Mermaid, Azure test capture/binding, offline candidate, scoped delivery and reconciliation.
     unresolved_verification: Generic write targets, production, live fault injection, multi-host locks and shared artifact access remain unverified/outside scope.
     detail_path: knowledge/source_analysis/173_xrefkit_python_client_work_structure_findings.md
+  - finding_xid: 0A4F8C62D199
+    target_xid: E9A4C7B2106D
+    title: XRefKit API execution boundary structure findings
+    analysis_kinds: [python_structure, api_execution_boundary]
+    status: current
+    source_revision: 2271fb1015b01ef731982810f2bea3ff9f6ab9fe
+    last_verified: 2026-11-21
+    coverage: Gateway and host dispatch, binding/startup, Runtime distribution, and workflow/feedback evidence.
+    unresolved_verification: Actual API execution, dispatch fencing, provider recovery, and end-to-end compatibility remain unverified.
+    detail_path: knowledge/source_analysis/174_xrefkit_api_execution_boundary_findings.md
