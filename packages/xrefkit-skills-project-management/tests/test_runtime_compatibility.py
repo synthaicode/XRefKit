@@ -113,23 +113,22 @@ def test_package_contains_no_project_configuration_or_adapter():
     assert len(source['sources'])==len(EXPECTED_SKILLS)+(5 if INSTALLED_VERSION in TRIAL_RELEASES else 3)
 
 
-def test_human_view_procedure_is_reachable_from_all_native_methods():
-    if INSTALLED_VERSION != '0.1.1':
-        pytest.skip('Human View procedure was added in 0.1.1')
+def test_shared_persistence_procedure_is_reachable_from_all_native_methods():
     root = package_root()
     reference = root / (
         'skills/packs/project-management/progress_rules_setup/references/persistence_handoff.md'
     )
-    procedure = ' '.join(reference.read_text(encoding='utf-8').split())
     for provided in package().manifest.provides.skills:
         method = (root / provided.path).read_text(encoding='utf-8')
         matches = re.findall(r'\]\(([^)#]+)#xid-62A9D4E7B103\)', method)
         assert any(((root / provided.path).parent / target).resolve() == reference
                    for target in matches), provided.id
-    for condition in (
-        'label the baseline unknown',
-        'explicit, attributable human decision',
-        'without overwriting the existing body',
-        'authoritative detailed records',
-    ):
-        assert condition in procedure
+    procedure = ' '.join(reference.read_text(encoding='utf-8').split())
+    if INSTALLED_VERSION == '0.1.1':
+        for condition in (
+            'label the baseline unknown',
+            'explicit, attributable human decision',
+            'without overwriting the existing body',
+            'authoritative detailed records',
+        ):
+            assert condition in procedure
