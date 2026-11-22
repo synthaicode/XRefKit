@@ -7,6 +7,7 @@ import stat
 import functools
 import os
 import re
+import sqlite3
 import tempfile
 import time
 import uuid
@@ -2171,9 +2172,21 @@ def _validate_handoff_sources(root: Path, source_logs: list[str]) -> tuple[list[
 
 def _progression_record_errors(
     text: str,
+    log_path: Path | None = None,
 ) -> tuple[list[str], list[dict[str, str]], list[dict[str, str]], list[dict[str, str]], dict[str, str]]:
     """Deterministic work-item / artifact / concern checks shared by verify and close."""
     errors: list[str] = []
+    from xrefkit.engineering_decision import validate_run_decision
+
+    try:
+        validate_run_decision(text)
+    except ValueError as exc:
+        errors.append(str(exc))
+    if log_path is not None and _section_status(text, "Host Execution") == "required":
+        from xrefkit.host_execution import has_host_completion
+
+        if not has_host_completion(text, log_path):
+            errors.append("delegated Run lacks verified host completion evidence")
 
     work_items = _parse_work_items(text)
     if not work_items:
@@ -2248,7 +2261,7 @@ def verify_progression_run(args) -> SkillRunResult:
     elif not _phase_has_role_event(text, phase="execution", role=executor):
         errors.append(f"execution phase must be advanced by executor role {executor}")
 
-    record_errors, work_items, artifacts, concerns, closure_checks = _progression_record_errors(text)
+    record_errors, work_items, artifacts, concerns, closure_checks = _progression_record_errors(text, log_path)
     errors.extend(record_errors)
 
     new_status = "blocked" if errors else "done"
@@ -2339,7 +2352,7 @@ def close_skill_run(args) -> SkillRunResult:
         if not _phase_has_role_event(text, phase="handoff", role=handoff_owner):
             errors.append(f"handoff phase must be advanced by handoff_owner role {handoff_owner}")
 
-    record_errors, work_items, artifacts, concerns, closure_checks = _progression_record_errors(text)
+    record_errors, work_items, artifacts, concerns, closure_checks = _progression_record_errors(text, log_path)
     errors.extend(record_errors)
 
     # Tier-conditional quality gate. For standard/heavy tiers the quality axis
@@ -2963,8 +2976,27 @@ def _resolve_package_run_source(reference: str) -> tuple[Path, str, dict[str, st
     return entry, skill_id, identity
 
 
+def _engineering_binding(root, args):
+    from xrefkit.engineering_decision import bind_run
+
+    return bind_run(root, args)
+
+
+def _append_engineering_binding(log, root, binding):
+    if binding is None:
+        return log
+    from xrefkit.engineering_decision import BOUND_EVENT
+
+    return _append_observation_event(log, section="Engineering Decision",
+                                     event={"event": BOUND_EVENT, "root": str(root), **binding})
+
+
 def run_skill(args) -> SkillRunResult:
     root = Path(args.root).resolve()
+    try:
+        engineering_binding = _engineering_binding(root, args)
+    except (OSError, ValueError, sqlite3.Error) as exc:
+        return SkillRunResult(False, None, None, None, [str(exc)])
     definition_arg = getattr(args, "definition", None)
     governance_arg = getattr(args, "governance", None)
     meta_arg = getattr(args, "meta", None)
@@ -3307,8 +3339,12 @@ def run_skill(args) -> SkillRunResult:
                    "reflection_routes": ["activate_skill_edit", "activate_local_knowledge", "adopt_contribution_return"],
                    "nonapplicability": "Flow-only or typo-only work requires an explicit scoped reason; no gate execution is implied"}
         log += "\n## Shared Update Gate Kickoff\n\n- obligation: `" + json.dumps(kickoff, ensure_ascii=False, sort_keys=True) + "`\n- status: `pending_applicability_and_entry`\n- rule: stage the final candidate and invoke the central entry; only a verified packet/bundle receipt satisfies reflection, never a generic artifact or dispatch plan\n"
-    log = _append_run_opened(log, root)
+    if getattr(args, "host_evidence_required", False):
+        log += "\n## Host Execution\n\n- status: `required`\n"
+    log = _append_run_opened(_append_engineering_binding(log, root, engineering_binding), root)
     with _LogFileLock(out_path.with_name(f".{out_path.name}.lock")):
+        if getattr(args, "delegated_run", False) and out_path.exists():
+            return SkillRunResult(False, skill_id, str(skill_doc_path), None, ["delegated output already exists"])
         _atomic_write_text(out_path, log)
 
     return SkillRunResult(
@@ -3342,6 +3378,10 @@ def run_workflow_instruction(args) -> SkillRunResult:
     human acceptance decision recorded separately with ``skill feedback``.
     """
     root = Path(args.root).resolve()
+    try:
+        engineering_binding = _engineering_binding(root, args)
+    except (OSError, ValueError, sqlite3.Error) as exc:
+        return SkillRunResult(False, None, None, None, [str(exc)])
     work_type = str(getattr(args, "work_type", "instruction") or "instruction").strip()
     skill_source = str(getattr(args, "skill_source", None) or "").strip()
     source_path: Path | None = None
@@ -3521,7 +3561,7 @@ def run_workflow_instruction(args) -> SkillRunResult:
     else:
         log = log.replace(marker, "\n" + "\n".join(condition_lines) + "\n" + "\n".join(intake_lines) + "\n" + marker, 1)
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    log = _append_run_opened(log, root)
+    log = _append_run_opened(_append_engineering_binding(log, root, engineering_binding), root)
     with _LogFileLock(out_path.with_name(f".{out_path.name}.lock")):
         _atomic_write_text(out_path, log)
     return SkillRunResult(
@@ -3558,13 +3598,35 @@ def run_workflow_delegate(args) -> SkillRunResult:
     child_args.parent_run_id = parent_run_id
     child_args.flow_id = flow_id
     child_args.root_run_id = root_run_id
-    child_args.meta = str(args.meta)
     child_args.work_item_id = str(args.work_item_id).strip()
-    child_result = run_skill(child_args)
-    if not child_result.ok:
-        return child_result
+    typed_source = bool(getattr(args, "definition", None) or getattr(args, "package_skill", None))
+    child_args.host_evidence_required = typed_source
+    child_args.delegated_run = True
+    if args.out:
+        child_args.out = str((Path(args.root).resolve() / args.out).resolve())
+    elif typed_source:
+        child_args.out = str(Path(args.root).resolve() / "work" / "sessions" / f"delegated-{uuid.uuid4()}.md")
     with _LogFileLock(parent_log.with_name(f".{parent_log.name}.lock")):
-        current = parent_log.read_text(encoding="utf-8")
+        current, error = _validate_observation_log(parent_log)
+        if error is not None:
+            return error
+        assert current is not None
+        if (_log_field(current, "run_id") != parent_run_id
+                or (_log_field(current, "flow_id") or parent_run_id) != flow_id
+                or (_log_field(current, "root_run_id") or parent_run_id) != root_run_id):
+            return SkillRunResult(False, None, None, str(parent_log), ["parent identity changed during delegation"])
+        if typed_source:
+            item = next((item for item in _parse_work_items(current)
+                         if item["item_id"] == child_args.work_item_id), None)
+            if (not item or item["status"] not in {"pending", "in_progress"}
+                    or _section_status(current, "Closure Gate") != "pending"):
+                return SkillRunResult(False, None, None, str(parent_log),
+                                      ["typed delegation requires an open parent work item"])
+        if child_args.out and Path(child_args.out).exists():
+            return SkillRunResult(False, None, None, str(parent_log), ["delegated output already exists"])
+        child_result = run_skill(child_args)
+        if not child_result.ok:
+            return child_result
         current = _append_observation_event(
             current,
             section="Prompt Flow Trace",
@@ -3577,6 +3639,7 @@ def run_workflow_delegate(args) -> SkillRunResult:
                 "work_item_id": child_args.work_item_id,
                 "skill_id": child_result.skill_id,
                 "child_log": child_result.run_log,
+                **({"host_evidence_required": True} if typed_source else {}),
             },
         )
         _atomic_write_text(parent_log, current)
@@ -3668,6 +3731,21 @@ def record_workflow_recovery(args) -> SkillRunResult:
         return error
     assert text is not None
     status = str(args.status)
+    engineering_receipt = None
+    if status == "confirmed":
+        from xrefkit.engineering_decision import bound_decision, require_decision
+
+        try:
+            binding = bound_decision(text)
+            decision_id = getattr(args, "engineering_decision_id", None)
+            if binding is not None:
+                engineering_receipt = require_decision(
+                    Path(binding["root"]), binding["work_item_id"], "retry", decision_id,
+                )
+            elif decision_id is not None:
+                raise ValueError("engineering retry authorization requires a managed Run")
+        except (OSError, ValueError, sqlite3.Error) as exc:
+            return SkillRunResult(False, None, None, str(log_path), [str(exc)])
     reviewer = str(args.reviewer or "").strip() or None
     if status == "confirmed" and not reviewer:
         return SkillRunResult(
@@ -3709,6 +3787,8 @@ def record_workflow_recovery(args) -> SkillRunResult:
         "stop_conditions": stop_conditions or ["unknown"],
         "reviewer": reviewer,
     }
+    if engineering_receipt is not None:
+        event["engineering_decision"] = engineering_receipt
     text = _append_observation_event(text, section="Recovery Trace", event=event)
     _atomic_write_text(log_path, text)
     return SkillRunResult(
@@ -3846,11 +3926,19 @@ def reconcile_workflow(args) -> SkillRunResult:
             if work_item_id not in work_item_by_id:
                 findings.append(f"child run {child_run_id} references unknown work item {work_item_id}")
         child_log = Path(child_log_value).resolve()
-        if not child_log.exists():
-            findings.append(f"child run {child_run_id} log not found: {child_log}")
+        child_text, child_error = _validate_observation_log(child_log)
+        if child_error:
+            findings.extend(f"child run {child_run_id}: {message}" for message in child_error.errors)
             continue
-        child_text = child_log.read_text(encoding="utf-8")
+        assert child_text is not None
         correlation_ok = True
+        for field, expected in (
+            ("run_id", child_run_id), ("work_item_id", work_item_id),
+            ("root_run_id", _log_field(text, "root_run_id") or parent_run_id),
+        ):
+            if _log_field(child_text, field) != expected:
+                findings.append(f"child run {child_run_id} {field} does not match {expected}")
+                correlation_ok = False
         if _log_field(child_text, "flow_id") != flow_id:
             findings.append(f"child run {child_run_id} flow_id does not match parent flow {flow_id}")
             correlation_ok = False
@@ -3858,6 +3946,12 @@ def reconcile_workflow(args) -> SkillRunResult:
             findings.append(f"child run {child_run_id} parent_run_id does not match {parent_run_id}")
             correlation_ok = False
         child_closure = _section_status(child_text, "Closure Gate")
+        if event.get("host_evidence_required"):
+            from xrefkit.host_execution import has_host_completion
+
+            if not has_host_completion(child_text, child_log):
+                findings.append(f"child run {child_run_id} lacks verified host completion evidence")
+                correlation_ok = False
         if child_closure not in ACCEPTED_CLOSE_STATUSES:
             findings.append(f"child run {child_run_id} is not closed or escalated: {child_closure or 'missing'}")
         child_record_errors, _, _, _, _ = _progression_record_errors(child_text)
