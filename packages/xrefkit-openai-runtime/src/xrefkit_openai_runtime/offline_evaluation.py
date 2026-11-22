@@ -10,7 +10,7 @@ from typing import Literal
 
 from .contracts import AssignmentRef, ExecutionEvent, ExecutionRequest, ExecutionResult, assess_model_result
 from .offline_dispatch import ToolCorrelation, ToolDecision
-from .offline_responses import AdapterResult, TextItem, UsageObservation
+from .offline_responses import AdapterResult, TextItem, ToolProposal, UsageObservation
 
 
 Outcome = Literal["pass", "fail", "unresolved", "omitted", "not_applicable"]
@@ -86,6 +86,8 @@ class EvaluationPolicy:
     tool_authorization_digests: tuple[str, str, str] | None = None
     evaluation_ref: str = "evaluation-205-r1"
     previous_evaluation_pin: str | None = None
+    controller_profile: Literal["provider_only", "continuation"] | None = None
+    controller_tool_correlation: ToolCorrelation | None = None
 
 
 @dataclass(frozen=True)
@@ -231,6 +233,9 @@ def trace_pins(request: ExecutionRequest, events: tuple[ExecutionEvent, ...],
 
 def _policy_record(policy: EvaluationPolicy) -> dict[str, object]:
     record = asdict(policy)
+    if policy.controller_profile is None:
+        record.pop("controller_profile")
+        record.pop("controller_tool_correlation")
     record["assignment"] = policy.assignment.model_dump(mode="json")
     record["rubric_utf8"] = _digest(policy.rubric_utf8)
     record["usage_required_fields"] = sorted(policy.usage_required_fields)
@@ -243,6 +248,8 @@ def effective_rules_digest(policy: EvaluationPolicy) -> str:
             "interaction_required", "semantic_required", "reviewers", "trusted_readback_origins",
             "producer", "producer_context", "permitted_interaction_origin", "rubric_successor", "prior_evaluation_ref")
     record = _policy_record(policy)
+    if policy.controller_profile is not None:
+        keys += ("controller_profile",)
     return _record_digest({"rubric": record["rubric_utf8"], **{key: record[key] for key in keys}})
 
 
@@ -382,6 +389,10 @@ def _tool_check(policy: EvaluationPolicy, inputs: EvaluationInputs) -> Criterion
     if tool_observation_digest(inputs.tool, inputs.recorded_tool_effect) != policy.tool_observation_sha256:
         return _unknown(name, "tool_observation_digest_mismatch")
     receipt, evidence = inputs.tool.receipt, inputs.tool.evidence
+    if policy.controller_profile == "provider_only":
+        if receipt is None and evidence is None and inputs.recorded_tool_effect == "none":
+            return _criterion(name, "pass", "provider_only_tool_absence_verified")
+        return _unknown(name, "unexpected_tool_observation")
     replay = policy.replay_authorization if inputs.tool.outcome == "replay" else None
     if inputs.tool.outcome == "replay" and (
         replay is None or receipt is None or evidence is None
@@ -394,6 +405,16 @@ def _tool_check(policy: EvaluationPolicy, inputs: EvaluationInputs) -> Criterion
         if item is None:
             continue
         link = item.correlation
+        if policy.controller_profile == "continuation":
+            if (link != policy.controller_tool_correlation
+                    or link.call_digest != _identifier_digest(current_call)
+                    or link.run_digest != _identifier_digest(policy.assignment.run_id)
+                    or link.work_digest != _identifier_digest(policy.assignment.work_item_id)
+                    or link.route_digest != _identifier_digest(policy.assignment.route_id)):
+                return _unknown(name, "previous_tool_uncorrelated")
+            if inputs.recorded_tool_effect is not None and item.effect != inputs.recorded_tool_effect:
+                return _unknown(name, "tool_effect_conflict", next_check="reconcile")
+            continue
         expected_fields = (
             ("operation", link.operation_digest, operation),
             ("run", link.run_digest, policy.assignment.run_id),
@@ -428,8 +449,13 @@ def _tool_check(policy: EvaluationPolicy, inputs: EvaluationInputs) -> Criterion
                 returned = json.loads(inputs.tool_return_utf8.decode("utf-8"), object_pairs_hook=_object)
             except (ValueError, RecursionError):
                 return _unknown(name, "tool_value_unverified")
-            if (not isinstance(returned, dict) or returned.keys() != {"value"}
-                    or inputs.tool.value is None or returned["value"] != inputs.tool.value):
+            if policy.controller_profile == "continuation":
+                matches = (isinstance(returned, dict) and returned.keys() == {"status", "text"}
+                           and returned["status"] == "ok" and returned["text"] == inputs.tool.value)
+            else:
+                matches = (isinstance(returned, dict) and returned.keys() == {"value"}
+                           and returned["value"] == inputs.tool.value)
+            if not matches or inputs.tool.value is None:
                 return _unknown(name, "tool_value_unverified")
     elif inputs.tool.outcome in ("executed", "replay"):
         return _unknown(name, "tool_receipt_missing")
@@ -487,7 +513,10 @@ def _structure(policy: EvaluationPolicy, inputs: EvaluationInputs) -> Criterion:
     return _criterion(name, "pass", "schema_matched")
 
 
-def _outcome(inputs: EvaluationInputs, *, trace_valid: bool, api_valid: bool, tool_valid: bool) -> Criterion:
+def _outcome(
+    inputs: EvaluationInputs, *, trace_valid: bool, api_valid: bool, tool_valid: bool,
+    tool_required: bool = True,
+) -> Criterion:
     name = "outcome"
     if api_valid and inputs.api.disposition in ("refusal", "incomplete", "provider_failed", "no_submit"):
         return _criterion(name, "fail", f"api_{inputs.api.disposition}")
@@ -499,7 +528,7 @@ def _outcome(inputs: EvaluationInputs, *, trace_valid: bool, api_valid: bool, to
         return _unknown(name, "api_outcome_unresolved")
     if not trace_valid or inputs.result.outcome != "allowed" or not inputs.result.transport_completed:
         return _unknown(name, "transport_outcome_unresolved")
-    if not tool_valid or inputs.tool.outcome not in ("executed", "replay"):
+    if not tool_valid or (tool_required and inputs.tool.outcome not in ("executed", "replay")):
         return _unknown(name, "tool_outcome_unresolved")
     return _criterion(name, "pass", "typed_outcomes_matched")
 
@@ -712,6 +741,8 @@ def _source_evidence(
             )),
             *policy.tool_authorization_digests,
         )
+    if policy.controller_profile == "continuation":
+        current_tool = policy.controller_tool_correlation
     receipt, attempt_evidence = inputs.tool.receipt, inputs.tool.evidence
     replay = policy.replay_authorization if inputs.tool.outcome == "replay" else None
     expected_receipt = replay.original if replay is not None else current_tool
@@ -780,6 +811,20 @@ def evaluate_io(policy: EvaluationPolicy, inputs: EvaluationInputs) -> Evaluatio
     return _evaluate_io(policy, inputs)
 
 
+def controller_tool_criterion(
+    api: AdapterResult, *, expected_model: str, tool_name: str, document_id: str,
+) -> Criterion:
+    """Apply the initial #206 typed-output criterion before Tool authorization."""
+    proposal = api.items[0] if len(api.items) == 1 else None
+    current = ((proposal.name, proposal.query) if isinstance(proposal, ToolProposal) else None)
+    expected = (tool_name, document_id)
+    if api.disposition != "completed" or api.diagnostics.observed_model != expected_model or current != expected:
+        return _compared(_criterion("structure", "fail", "controller_tool_proposal_unverified"),
+                         "normalized_api", expected, current)
+    return _compared(_criterion("structure", "pass", "controller_tool_proposal_matched"),
+                     "normalized_api", expected, current)
+
+
 def _evaluate_io(
     policy: EvaluationPolicy, inputs: EvaluationInputs, *, linked_previous: str | None = None,
 ) -> Evaluation:
@@ -833,7 +878,8 @@ def _evaluate_io(
             identity,
             _model(policy, inputs) if trace_valid and trusted_api else _unknown("model", "model_subject_unverified"),
             _structure(policy, inputs) if output.outcome == "pass" else output,
-            _outcome(inputs, trace_valid=trace_valid, api_valid=trusted_api, tool_valid=trusted_tool),
+            _outcome(inputs, trace_valid=trace_valid, api_valid=trusted_api, tool_valid=trusted_tool,
+                     tool_required=policy.controller_profile != "provider_only"),
             _effect(policy, inputs, tool_valid=trusted_tool),
             _usage(policy, usage) if trusted_api else _unknown("usage", "api_observation_unverified"),
             interaction,

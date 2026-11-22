@@ -2,26 +2,35 @@
 
 from dataclasses import asdict, replace
 from hashlib import sha256
+from itertools import count
 import json
 import os
 from pathlib import Path
 import unittest
 from unittest.mock import patch
 
-from xrefkit_openai_runtime.contracts import AssignmentRef
+from xrefkit_openai_runtime.contracts import AssignmentRef, BudgetLimits, ExecutionEvent, ExecutionRequest, ExecutionResult
 from xrefkit_openai_runtime.offline_context import ContextAssembly
 from xrefkit_openai_runtime.offline_controller import (
-    Assessment, ControllerBinding, ControllerLimits, CurrentState, OfflineController,
+    Assessment, ControllerBinding, ControllerLimits, CurrentState, OfflineController, OfflineJournal,
     ProviderReceipt, RetryProof, ToolCall,
 )
-from xrefkit_openai_runtime.offline_evaluation import Criterion, Evaluation
-from xrefkit_openai_runtime.offline_responses import UsageObservation
+from xrefkit_openai_runtime.offline_dispatch import ToolDecision, _FakeRunner
+from xrefkit_openai_runtime.offline_evaluation import (
+    EvaluationInputs, EvaluationPolicy, ReviewAuthority, RevisionLinks, SemanticReview,
+    api_observation_digest, effective_rules_digest, evaluation_policy_digest, evidence_digest,
+    tool_observation_digest, trace_pins,
+)
+from xrefkit_openai_runtime.offline_responses import (
+    AttemptDiagnostics, FakeResponse, UsageObservation, normalize_controller_response,
+)
 
 
 MANIFEST_SHA256 = "213082505029762e2e05458ad3f57f13f02e5204646373a2d9b642441c0d4960"
 USAGE = UsageObservation(1, 0, 1)
 ZERO = UsageObservation(0, 0, 0)
 MISSING = UsageObservation()
+RUNS = count(1)
 
 
 def encode(value):
@@ -47,8 +56,9 @@ class OfflineControllerCases(unittest.TestCase):
 
     def setup_controller(self, limits=None):
         fixed = self.fixed
+        run = f"run-206-{next(RUNS)}"
         assignment = AssignmentRef(
-            flow_id="flow-206", run_id="run-206", root_run_id="run-206",
+            flow_id="flow-206", run_id=run, root_run_id=run,
             work_item_id=fixed["work_id"], node_id="node-206", route_id="offline-206-r2",
             route_revision=1, binding_sha256=digest(fixed["assignment_id"].encode()),
             owner_generation=1, execution_id="execution-206",
@@ -59,12 +69,15 @@ class OfflineControllerCases(unittest.TestCase):
             "payload_sha256": digest(payload), "hold_reason": None,
         })
         context = ContextAssembly(payload, provenance, None)
+        self.rubric = encode({"revision": "e206-rubric-r2", "criterion": fixed["criterion"]})
+        reviewer = ReviewAuthority("independent-fixture-reviewer", "independent-fixture-context")
         self.binding = ControllerBinding(
             assignment, fixed["session_id"], "invoke-206", fixed["model"], fixed["instruction_revision"],
             fixed["recipient"], fixed["tool_name"], fixed["arguments"]["document_id"], "e206-rubric-r2",
-            digest(fixed["criterion"].encode()), limits or self.limits, context, encode(fixed["tool_result"]),
+            digest(self.rubric), reviewer, limits or self.limits, context, encode(fixed["tool_result"]),
         )
-        self.current = CurrentState(assignment, context, fixed["instruction_revision"], fixed["recipient"])
+        self.current = CurrentState(assignment, context, fixed["instruction_revision"], fixed["recipient"],
+                                    fixed["session_id"], self.binding.invocation_id)
         self.controller = OfflineController(self.binding)
         self.call = ToolCall(fixed["call_id"], fixed["tool_name"], encode(fixed["arguments"]))
 
@@ -73,30 +86,105 @@ class OfflineControllerCases(unittest.TestCase):
 
     def receipt(self, *, kind="completed", calls=(), usage=USAGE):
         entry = self.controller.provider_entries[-1].entry
+        response_id = f"response-{entry.attempt}"
+        output = encode({"objective": self.fixed["criterion"]})
+        wire = None
+        if kind in ("completed", "refused", "failed", "safe_rejection"):
+            items = [{
+                "type": "function_call", "id": f"result-{index}", "name": call.name,
+                "call_id": call.call_id, "arguments": call.arguments.decode(),
+            } for index, call in enumerate(calls)] or [{
+                "type": "refusal" if kind == "refused" else "text", "id": "text-1", "text": output.decode(),
+            }]
+            body = {
+                "id": response_id, "http": 200, "status": "failed" if kind == "failed" else "completed",
+                "model": self.fixed["model"], "output": items,
+                "usage": {"input_tokens": usage.input_tokens, "output_tokens": usage.output_tokens,
+                          "total_tokens": usage.total_tokens},
+            }
+            if kind == "safe_rejection":
+                body.update(http=429, code="rate_limit_exceeded", submission="confirmed_rejected")
+            wire = FakeResponse(f"request-{entry.attempt}", body)
         return ProviderReceipt(
-            entry, f"response-{entry.attempt}", 1, kind, self.fixed["model"], usage, calls,
-            self.fixed["criterion"].encode(),
+            entry, response_id, 1, kind, usage if wire is None else MISSING, wire_response=wire,
         )
 
-    def assessment(self, receipt, **changes):
-        # Frozen synthetic #205 projection. #205's native evaluator and 57 conditions
-        # are exercised separately by the package regression run.
-        evaluation = Evaluation(
-            criteria_revision=self.binding.criterion_revision,
-            criteria_sha256=self.binding.criterion_sha256,
-            criteria=(Criterion("aggregate", "pass", "all_applicable_criteria_met"),),
-            aggregate="criteria_met", next_proposal="report_only", v1_assessment="review_required",
-            api_outcome="completed", tool_outcome="executed" if receipt.entry.call_id else "not_applicable",
-            tool_effect="observed" if receipt.entry.call_id else "none", entry_observed=True, usage=receipt.usage,
-            retained_reviewers=("independent-fixture-reviewer",), review_state="reviewed",
-            output_sha256=digest(receipt.output), approved_policy_sha256=digest(encode(self.fixed["review"])),
-            source_findings=(),
+    def proof(self, receipt):
+        return RetryProof(
+            receipt.entry, receipt.receipt_id, receipt.revision, receipt.kind,
+            digest(self.controller.provider_entries[-1].body), receipt.evidence_sha256,
+            "independent-fixture-no-effect-check",
         )
-        return Assessment(receipt.entry, receipt.receipt_id, receipt.evidence_sha256, replace(evaluation, **changes))
+
+    def retries(self, tick, receipt, proof):
+        return self.step(tick, observation=receipt, retry_proof=proof,
+                         state=replace(self.current, retry_evidence=(proof,) if proof else ()))
+
+    def assessment(self, receipt, *, review=True, other_reviewer=False):
+        entry = receipt.entry
+        binding = self.binding
+        assignment = binding.assignment
+        request_digest = digest(self.controller.provider_entries[-1].body)
+        output = encode({"objective": self.fixed["criterion"]})
+        diagnostics = AttemptDiagnostics(
+            assignment.run_id, assignment.work_item_id, assignment.binding_sha256,
+            entry.attempt, entry.reservation, request_digest,
+        )
+        api = normalize_controller_response(
+            receipt.wire_response, diagnostics, model=binding.selected_model,
+            tool_name=binding.tool_name, expected_response_id=receipt.receipt_id,
+        )
+        evidence = dict(
+            version=1, assignment=assignment, attempt_id=entry.attempt,
+            operation_id=entry.operation, call_id=entry.call_id or "no-tool-call",
+        )
+        request = ExecutionRequest(
+            version=1, assignment=assignment, criteria_sha256=binding.criterion_sha256,
+            reservation_ref=entry.reservation, authorization_ref=entry.admission,
+            budget=BudgetLimits(max_attempts=3, max_input_tokens=1, max_output_tokens=1, deadline_ms=8),
+            cancelled=False, selected_model=binding.selected_model,
+        )
+        events = tuple(ExecutionEvent(sequence=i, kind=kind, **evidence)
+                       for i, kind in enumerate(("admitted", "dispatched", "receipt"), 1))
+        result = ExecutionResult(
+            **evidence, outcome="allowed", transport_completed=True,
+            observed_model=binding.selected_model, evidence_ref=receipt.evidence_sha256,
+        )
+        pins = trace_pins(request, events, result)
+        links = RevisionLinks(
+            "e206-request-r2", "e206-result-r2", "e206-tool-r2", binding.criterion_revision,
+            binding.criterion_sha256, "e206-evidence-r2", (entry.attempt, entry.operation, evidence["call_id"]),
+        )
+        continued = entry.operation == "continuation"
+        tool = self.controller._tool_result if continued else ToolDecision("hold", "tool_not_requested")
+        tool_return = binding.synthetic_tool_result if continued else b""
+        tool_effect = "observed" if continued else "none"
+        reviewer = ReviewAuthority("wrong-reviewer", "wrong-context") if other_reviewer else binding.reviewer
+        reviews = (SemanticReview(
+            reviewer.reviewer_id, "independent_semantic_fixture", True, reviewer.context,
+            "producer-context", links, digest(output), "pass", (result.evidence_ref,),
+            self.fixed["review"], (pins[2],),
+        ),) if review else ()
+        inputs = EvaluationInputs(
+            request, events, result, links, api, tool, output, tool_return,
+            recorded_tool_effect=tool_effect, reviews=reviews,
+        )
+        policy = EvaluationPolicy(
+            assignment, links, request_digest, api_observation_digest(api),
+            tool_observation_digest(tool, tool_effect), digest(output), pins, self.rubric,
+            "", entry.reservation, (), None, tuple(evidence_digest(item) for item in reviews),
+            binding.selected_model, None, 128, "producer", "producer-context", (binding.reviewer,), frozenset(),
+            controller_profile="continuation" if continued else "provider_only",
+            controller_tool_correlation=tool.receipt.correlation if continued else None,
+        )
+        policy = replace(policy, approved_rules_sha256=effective_rules_digest(policy))
+        return Assessment(entry, receipt.receipt_id, receipt.evidence_sha256, policy, inputs)
 
     def final(self, tick):
         receipt = self.receipt()
-        return self.step(tick, observation=receipt, assessment=self.assessment(receipt))
+        assessment = self.assessment(receipt)
+        state = replace(self.current, approved_evaluation_sha256=evaluation_policy_digest(assessment.policy))
+        return self.step(tick, state=state, observation=receipt, assessment=assessment)
 
     def expect(self, result, disposition, provider, tool):
         self.assertEqual((result.disposition, result.provider_entries, result.tool_entries),
@@ -135,8 +223,8 @@ class OfflineControllerCases(unittest.TestCase):
         if variant == "required-intent-write-fault":
             return self.step(ticks[0], start=True, state=replace(self.current, intent_available=False))
         if variant == "stalled":
-            self.step(ticks[0], no_progress=True)
-            return self.step(ticks[1], no_progress=True, start=True)
+            self.step(ticks[0], evaluate_only=True)
+            return self.step(ticks[1], evaluate_only=True)
         if variant == "simultaneous-signals":
             self.setup_controller(replace(self.limits, deadline_tick_exclusive=0))
             result = self.step(ticks[0], start=True, state=replace(
@@ -170,8 +258,8 @@ class OfflineControllerCases(unittest.TestCase):
             return duplicate_result
         if variant == "matched-no-submit":
             receipt = replace(self.receipt(kind="no_submit", usage=MISSING), delay_ticks=2)
-            proof = RetryProof(receipt.entry, receipt.receipt_id, receipt.revision, "no_submit")
-            released = self.step(ticks[1], observation=receipt, retry_proof=proof)
+            proof = self.proof(receipt)
+            released = self.retries(ticks[1], receipt, proof)
             self.assertFalse(released.outstanding)
             self.step(ticks[2], start=True)
             self.assertNotEqual(self.controller.provider_entries[-1].entry.attempt, receipt.entry.attempt)
@@ -240,6 +328,7 @@ class OfflineControllerCases(unittest.TestCase):
         for mode, reason in (
             ("missing-model", "hold_model"), ("wrong-model", "hold_model"),
             ("missing-review", "hold_evaluation"), ("other-policy", "hold_evaluation"),
+            ("wrong-reviewer", "hold_evaluation"),
             ("refusal", "hold_outcome"), ("wrong-session", "hold_reconciliation"),
             ("wrong-call", "hold_reconciliation"),
         ):
@@ -248,19 +337,20 @@ class OfflineControllerCases(unittest.TestCase):
                 self.step(0, start=True)
                 receipt = self.receipt()
                 if mode in ("missing-model", "wrong-model"):
-                    receipt = replace(receipt, observed_model=None if mode == "missing-model" else "unplanned")
+                    wire = receipt.wire_response
+                    model = None if mode == "missing-model" else "unplanned"
+                    receipt = replace(receipt, wire_response=replace(wire, body=wire.body | {"model": model}))
                 elif mode == "refusal":
-                    receipt = replace(receipt, kind="refused")
+                    receipt = self.receipt(kind="refused")
                 elif mode in ("wrong-session", "wrong-call"):
                     entry = (replace(receipt.entry, session_id="other") if mode == "wrong-session"
                              else replace(receipt.entry, call_id="wrong"))
                     receipt = replace(receipt, entry=entry)
-                assessment = self.assessment(
-                    receipt,
-                    **({"retained_reviewers": (), "review_state": "pending"} if mode == "missing-review"
-                       else {"criteria_sha256": digest(b"other")} if mode == "other-policy" else {}),
-                )
-                self.expect(self.step(1, observation=receipt, assessment=assessment), reason, 1, 0)
+                assessment = self.assessment(receipt, review=mode != "missing-review",
+                                             other_reviewer=mode == "wrong-reviewer")
+                pin = digest(b"other-policy") if mode == "other-policy" else evaluation_policy_digest(assessment.policy)
+                state = replace(self.current, approved_evaluation_sha256=pin)
+                self.expect(self.step(1, observation=receipt, assessment=assessment, state=state), reason, 1, 0)
 
     def test_retry_proof_delay_usage_and_cap(self):
         for kind, evidence, usage, delay, expected in (
@@ -273,13 +363,12 @@ class OfflineControllerCases(unittest.TestCase):
                 self.setup_controller()
                 self.step(0, start=True)
                 receipt = replace(self.receipt(kind=kind, usage=usage), delay_ticks=delay)
-                proof = RetryProof(receipt.entry, receipt.receipt_id, 1, kind) if evidence else None
-                self.expect(self.step(1, observation=receipt, retry_proof=proof), expected, 1, 0)
+                proof = self.proof(receipt) if evidence else None
+                self.expect(self.retries(1, receipt, proof), expected, 1, 0)
                 if expected == "pending":
                     self.step(2, start=True)
                     retry = self.receipt(kind=kind, usage=MISSING)
-                    retry_proof = RetryProof(retry.entry, retry.receipt_id, 1, kind)
-                    self.expect(self.step(3, observation=retry, retry_proof=retry_proof),
+                    self.expect(self.retries(3, retry, self.proof(retry)),
                                 "stop_retry_limit", 2, 0)
 
     def test_no_submit_cannot_release_prior_explicit_zero_or_usage(self):
@@ -289,9 +378,8 @@ class OfflineControllerCases(unittest.TestCase):
                 self.step(0, start=True)
                 first = self.receipt(kind="unknown", usage=usage)
                 self.step(1, observation=first)
-                later = replace(first, revision=2, kind="no_submit", usage=MISSING)
-                proof = RetryProof(later.entry, later.receipt_id, 2, "no_submit")
-                outcome = self.step(2, observation=later, retry_proof=proof, start=True)
+                later = replace(first, revision=2, kind="no_submit", usage_if_wire_unavailable=MISSING)
+                outcome = self.retries(2, later, self.proof(later))
                 self.expect(outcome, "hold_reconciliation", 1, 0)
                 self.assertEqual(outcome.outstanding, (first.entry,))
                 self.assertIn(outcome.last_checkpoint.reason,
@@ -343,8 +431,7 @@ class OfflineControllerCases(unittest.TestCase):
     def test_delayed_retry_does_not_open_a_second_entry_early(self):
         self.step(0, start=True)
         receipt = replace(self.receipt(kind="no_submit", usage=MISSING), delay_ticks=2)
-        proof = RetryProof(receipt.entry, receipt.receipt_id, receipt.revision, "no_submit")
-        self.step(1, observation=receipt, retry_proof=proof)
+        self.retries(1, receipt, self.proof(receipt))
         self.expect(self.step(2, start=True), "pending", 1, 0)
         self.expect(self.step(3, start=True), "pending", 2, 0)
 
@@ -353,4 +440,161 @@ class OfflineControllerCases(unittest.TestCase):
         receipt = self.receipt()
         assessment = self.assessment(receipt)
         amended = replace(receipt, revision=2)
-        self.expect(self.step(1, observation=amended, assessment=assessment), "hold_evaluation", 1, 0)
+        state = replace(self.current, approved_evaluation_sha256=evaluation_policy_digest(assessment.policy))
+        self.expect(self.step(1, observation=amended, assessment=assessment, state=state), "hold_evaluation", 1, 0)
+
+    def test_wait_expiry_alone_blocks_tool_after_matched_late_reply(self):
+        self.step(0, start=True)
+        observed = self.controller.status(wait_ended=True)
+        self.expect(observed, "hold_reconciliation", 1, 0)
+        receipt = self.receipt(calls=(self.call,))
+        self.expect(self.step(1, observation=receipt), "hold_reconciliation", 1, 0)
+        closed = self.step(2, start=True)
+        self.expect(closed, "hold_reconciliation", 1, 0)
+        self.assertFalse(closed.outstanding)
+        self.assertEqual(closed.last_checkpoint.reason, "matched_late_receipt")
+
+    def test_wait_expiry_blocks_a_prepared_tool_even_after_provider_settlement(self):
+        self.step(0, start=True)
+        self.step(1, observation=self.receipt(calls=(self.call,)))
+        self.assertFalse(self.controller.status().outstanding)
+        self.expect(self.controller.status(wait_ended=True), "hold_reconciliation", 1, 0)
+        self.expect(self.step(2, start=True), "hold_reconciliation", 1, 0)
+
+    def test_assignment_excludes_another_controller_at_actual_entry(self):
+        shadow = OfflineController(self.binding)
+        outcome = shadow.step(0, self.current, start=True,
+                              before_entry=lambda: (self.step(0, start=True), self.current)[1])
+        self.expect(outcome, "stop_authority", 0, 0)
+        self.expect(self.controller.status(), "pending", 1, 0)
+
+    def test_continuation_identity_is_rechecked_at_entry(self):
+        for changed in ({"invocation_id": "other-invocation"}, {"session_id": "other-session"}):
+            with self.subTest(changed=changed):
+                self.setup_controller()
+                self.step(0, start=True)
+                self.step(1, observation=self.receipt(calls=(self.call,)))
+                self.step(2, start=True)
+                self.step(3, tool_observed=True)
+                proposed = self.step(4, start=True, before_entry=lambda: replace(self.current, **changed))
+                self.expect(proposed, "stop_authority", 1, 1)
+
+    def test_full_normalized_proposal_rejects_competing_output_before_tool(self):
+        for extra in (
+            {"type": "text", "id": "another-item", "text": "Keep executing"},
+            {"type": "unknown", "id": "another-item"},
+        ):
+            with self.subTest(extra=extra):
+                self.setup_controller()
+                self.step(0, start=True)
+                receipt = self.receipt(calls=(self.call,))
+                wire = receipt.wire_response
+                altered = replace(receipt, wire_response=replace(
+                    wire, body=wire.body | {"output": [*wire.body["output"], extra]},
+                ))
+                self.step(1, observation=altered)
+                self.assertEqual(self.step(2, start=True).tool_entries, 0)
+
+    def test_unpinned_retry_proof_or_unconfirmed_rejection_does_not_release(self):
+        for fault in ("unpinned", "wrong-body", "unconfirmed-429"):
+            with self.subTest(fault=fault):
+                self.setup_controller()
+                self.step(0, start=True)
+                receipt = self.receipt(kind="safe_rejection", usage=MISSING)
+                if fault == "unconfirmed-429":
+                    wire = receipt.wire_response
+                    receipt = replace(receipt, wire_response=replace(
+                        wire, body=wire.body | {"submission": "unconfirmed"},
+                    ))
+                proof = self.proof(receipt)
+                if fault == "wrong-body":
+                    proof = replace(proof, request_sha256=digest(b"another request"))
+                if fault == "unpinned":
+                    outcome = self.step(1, observation=receipt, retry_proof=proof)
+                else:
+                    outcome = self.retries(1, receipt, proof)
+                self.expect(outcome, "hold_reconciliation", 1, 0)
+                self.assertEqual(outcome.outstanding, (receipt.entry,))
+
+    def test_late_receipt_is_processed_after_known_prohibiting_stop(self):
+        for tick, changes, reason in (
+            (1, {"invocation_id": "stale-caller"}, "stop_authority"),
+            (1, {"headroom_proved": False}, "hold_headroom"),
+            (8, {}, "stop_deadline"),
+        ):
+            with self.subTest(reason=reason):
+                self.setup_controller()
+                self.step(0, start=True)
+                receipt = self.receipt()
+                blocked = self.step(tick, state=replace(self.current, **changes))
+                self.expect(blocked, reason, 1, 0)
+                self.assertEqual(blocked.outstanding, (receipt.entry,))
+                reconciled = self.step(tick + 1, observation=receipt, start=True)
+                self.expect(reconciled, reason, 1, 0)
+                self.assertFalse(reconciled.outstanding)
+
+    def test_cancellation_acknowledgement_does_not_settle_remote_result(self):
+        self.step(0, start=True)
+        requested = self.step(1, state=replace(self.current, cancelled=True))
+        self.assertTrue(requested.cancellation_requested)
+        self.assertFalse(requested.cancellation_acknowledged)
+        acknowledged = self.step(2, state=replace(self.current, cancellation_acknowledged=True))
+        self.assertTrue(acknowledged.cancellation_acknowledged)
+        self.assertEqual(requested.outstanding, acknowledged.outstanding)
+        late = self.step(3, observation=self.receipt())
+        self.expect(late, "cancelled_with_reconciliation_evidence", 1, 0)
+        self.assertFalse(late.outstanding)
+
+    def test_budget_precedes_no_progress_at_the_same_gate(self):
+        self.setup_controller(replace(self.limits, synthetic_budget_units=0,
+                                      max_consecutive_no_progress_decision_ticks=1))
+        outcome = self.step(0, start=True)
+        self.expect(outcome, "stop_budget", 0, 0)
+        self.assertEqual(outcome.last_checkpoint.signals, ("stop_budget", "stop_no_progress"))
+
+    def test_required_writer_faults_hold_at_the_real_append_boundary(self):
+        class BrokenStage(OfflineJournal):
+            def __init__(self, failed):
+                super().__init__()
+                self.failed = failed
+
+            def append(self, event):
+                if event.stage == self.failed:
+                    self.failed = None
+                    raise OSError("synthetic append failure")
+                super().append(event)
+
+        for stage in ("prepared", "entry", "observed"):
+            with self.subTest(stage=stage):
+                self.setup_controller()
+                self.controller = OfflineController(self.binding, journal=BrokenStage(stage))
+                status = self.step(0, start=True)
+                if stage == "prepared":
+                    self.expect(status, "hold_journal", 0, 0)
+                else:
+                    receipt = self.receipt()
+                    if stage == "observed":
+                        status = self.step(1, observation=receipt)
+                    self.expect(status, "hold_reconciliation", 1, 0)
+                    self.assertEqual(status.outstanding, (receipt.entry,))
+                    status = self.step(2, observation=receipt)
+                    self.assertFalse(status.outstanding)
+                self.assertIn(f"{stage}_write_failed", [event.reason for event in self.controller.journal])
+
+    def test_api_key_marker_is_absent_at_the_actual_runner_boundary(self):
+        original = _FakeRunner._enter
+        calls = []
+        marker = "e206-only-for-credential-exclusion"
+
+        def inspect_runner(runner):
+            calls.append(tuple(vars(runner)))
+            self.assertNotIn(marker, repr(vars(runner)))
+            self.assertEqual(runner.result, self.binding.synthetic_tool_result)
+            return original(runner)
+
+        self.step(0, start=True)
+        self.step(1, observation=self.receipt(calls=(self.call,)))
+        with patch.dict(os.environ, {"OPENAI_API_KEY": marker}), patch.object(_FakeRunner, "_enter", inspect_runner):
+            self.expect(self.step(2, start=True), "pending", 1, 1)
+        self.assertEqual(calls, [("result", "entry_count")])
+        self.assertNotIn(marker, repr(self.controller.journal))

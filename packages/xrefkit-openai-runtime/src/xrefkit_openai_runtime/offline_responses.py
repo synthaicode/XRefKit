@@ -263,7 +263,9 @@ class _OutputError(ValueError):
         self.invalid_proposal = invalid_proposal
 
 
-def _ordered_items(output: object) -> tuple[TextItem | ToolProposal, ...]:
+def _ordered_items(
+    output: object, *, tool_name: str = FIXTURE_TOOL, argument_name: str = "query",
+) -> tuple[TextItem | ToolProposal, ...]:
     if not isinstance(output, list):
         raise _OutputError()
     items: list[TextItem | ToolProposal] = []
@@ -286,7 +288,7 @@ def _ordered_items(output: object) -> tuple[TextItem | ToolProposal, ...]:
             call_id = _identifier(row.get("call_id"))
             arguments = row.get("arguments")
             if (
-                call_id is None or call_id in call_ids or row.get("name") != FIXTURE_TOOL
+                call_id is None or call_id in call_ids or row.get("name") != tool_name
                 or not isinstance(arguments, str)
             ):
                 raise _OutputError(True)
@@ -294,16 +296,20 @@ def _ordered_items(output: object) -> tuple[TextItem | ToolProposal, ...]:
                 values = _json_object(arguments)
             except (ValueError, RecursionError) as exc:
                 raise _OutputError(True) from exc
-            if set(values) != {"query"} or not isinstance(values["query"], str):
+            if set(values) != {argument_name} or not isinstance(values[argument_name], str):
                 raise _OutputError(True)
             call_ids.add(call_id)
-            items.append(ToolProposal(item_id, call_id, FIXTURE_TOOL, values["query"]))
+            items.append(ToolProposal(item_id, call_id, tool_name, values[argument_name]))
         else:
             raise _OutputError()
     return tuple(items)
 
 
-def _normalize(response: FakeResponse, diagnostics: AttemptDiagnostics) -> AdapterResult:
+def _normalize(
+    response: FakeResponse, diagnostics: AttemptDiagnostics, *,
+    tool_name: str = FIXTURE_TOOL, argument_name: str = "query", model: str = FIXTURE_MODEL,
+    response_ids: tuple[str, ...] = _RESPONSE_IDS,
+) -> AdapterResult:
     if not isinstance(response, FakeResponse):
         return AdapterResult("unknown_remote_outcome", "invalid_fake_response", diagnostics)
     diagnostics = replace(
@@ -317,9 +323,9 @@ def _normalize(response: FakeResponse, diagnostics: AttemptDiagnostics) -> Adapt
     error = body.get("code")
     error = error if isinstance(error, str) and error in _ERROR_CODES else None
     diagnostics = replace(
-        diagnostics, response_id=_diagnostic_id(body.get("id"), _RESPONSE_IDS),
+        diagnostics, response_id=_diagnostic_id(body.get("id"), response_ids),
         http_status=status, error_code=error,
-        observed_model=_diagnostic_id(body.get("model"), (FIXTURE_MODEL,)),
+        observed_model=_diagnostic_id(body.get("model"), (model,)),
     )
     usage = _usage(body.get("usage"))
     if status is None:
@@ -353,7 +359,7 @@ def _normalize(response: FakeResponse, diagnostics: AttemptDiagnostics) -> Adapt
     if outcome == "completed" and not body.get("output"):
         return AdapterResult("unsupported_output", "missing_completed_output", diagnostics, usage)
     try:
-        items = _ordered_items(body.get("output", []))
+        items = _ordered_items(body.get("output", []), tool_name=tool_name, argument_name=argument_name)
     except _OutputError as exc:
         if exc.invalid_proposal:
             return AdapterResult("hold_invalid_proposal", "invalid_tool_proposal", diagnostics, usage)
@@ -367,6 +373,15 @@ def _normalize(response: FakeResponse, diagnostics: AttemptDiagnostics) -> Adapt
     if any(item.kind == "refusal" for item in text_items):
         return AdapterResult("refusal", "provider_refusal", diagnostics, usage, text_items)
     return AdapterResult("completed", "provider_completed", diagnostics, usage, items)
+
+
+def normalize_controller_response(
+    response: FakeResponse, diagnostics: AttemptDiagnostics, *,
+    model: str, tool_name: str, expected_response_id: str,
+) -> AdapterResult:
+    """Use #202's complete response parser with the pinned #206 Tool profile."""
+    return _normalize(response, diagnostics, tool_name=tool_name, argument_name="document_id",
+                      model=model, response_ids=(expected_response_id,))
 
 
 class OfflineResponsesAdapter:
