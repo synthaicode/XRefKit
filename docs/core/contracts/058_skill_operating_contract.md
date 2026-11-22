@@ -264,6 +264,9 @@ The receiving startup must not continue from that handoff unless the source run
 shows `Closure Gate` as `done` or `escalated` and `Handoff` as `done` or
 `escalated`.
 
+Use the [Offline Decision Handoff](116_decision_handoff.md#xid-E19D62FA834B)
+for a formal request for judgment while the affected work is pending.
+
 `draft` Skills are managed records and are not load-ready. Promote them to
 `trial` before operational use.
 
