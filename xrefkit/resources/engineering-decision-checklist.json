@@ -1,0 +1,52 @@
+{
+  "revision": "1",
+  "groups": {
+    "global": [
+      ["GDC-01", "要求・制約・前提条件が明確か", []],
+      ["GDC-02", "設計判断の責任範囲が明確か", ["responsibility"]],
+      ["GDC-03", "関連する上位設計と矛盾しないか", ["contract", "dependencies"]],
+      ["GDC-04", "必要な原則XIDを参照したか", []],
+      ["GDC-05", "採用案が他の重要な原則を損なわないか", []],
+      ["GDC-06", "設計上の不変条件を維持できるか", ["invariants", "consistency"]],
+      ["GDC-07", "障害時・例外時の挙動を検討したか", ["failure", "recovery", "unknown_outcome"]],
+      ["GDC-08", "より単純な方式で要求を満たせないか", []],
+      ["GDC-09", "設計の保証条件を検証できるか", []],
+      ["GDC-10", "未解決事項と判断権限を明確にしたか", ["authorization", "responsibility"]]
+    ],
+    "api": [
+      ["API-01", "外部副作用の有無と範囲を確認したか", ["external_side_effects"]],
+      ["API-02", "タイムアウト時の成否不明を評価したか", ["unknown_outcome", "failure"]],
+      ["API-03", "再試行の安全性を評価したか", ["safe_replay", "idempotency"]],
+      ["API-04", "冪等性の保証範囲を評価したか", ["idempotency"]],
+      ["API-05", "外部システムの保証と自システムの責任を確認したか", ["contract"]]
+    ],
+    "state": [
+      ["STA-01", "状態の正本を特定したか", ["consistency"]],
+      ["STA-02", "更新権限を確認したか", ["authorization"]],
+      ["STA-03", "更新の原子性を評価したか", ["transactions"]],
+      ["STA-04", "状態の一貫性を評価したか", ["consistency", "invariants"]],
+      ["STA-05", "障害時の状態復元を評価したか", ["recovery"]]
+    ],
+    "concurrency": [
+      ["CON-01", "並行更新の有無と競合条件を確認したか", ["contention"]],
+      ["CON-02", "排他・同期方式を評価したか", ["exclusion"], "no_concurrency"],
+      ["CON-03", "停止と実行開始の順序を評価したか", ["visibility", "exclusion"], "no_concurrency"],
+      ["CON-04", "重複実行を評価したか", ["idempotency", "contention"], "no_concurrency"],
+      ["CON-05", "古い実行者による状態更新を評価したか", ["visibility", "consistency"], "no_concurrency"]
+    ],
+    "architecture": [
+      ["ARC-01", "責任分離を評価したか", ["responsibility"]],
+      ["ARC-02", "依存関係を評価したか", ["dependencies"]],
+      ["ARC-03", "境界の明確性を確認したか", ["responsibility"]],
+      ["ARC-04", "変更影響を評価したか", ["change_impact"]],
+      ["ARC-05", "不要な複雑性を評価したか", []]
+    ],
+    "security": [
+      ["SEC-01", "認証と認可を評価したか", ["authorization"]],
+      ["SEC-02", "最小権限を確認したか", ["least_privilege"]],
+      ["SEC-03", "信頼境界を確認したか", ["boundary_validation"]],
+      ["SEC-04", "入力検証を評価したか", ["boundary_validation"]],
+      ["SEC-05", "機密情報の保護を評価したか", []]
+    ]
+  }
+}
