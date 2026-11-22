@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.2
+
+- Record evidence-backed design findings and route unresolved findings to Project Management.
+
 ## 0.3.1 — 2026-11-20
 
 - Connect reporting conclusions to the requested purpose, confirmed conditions
