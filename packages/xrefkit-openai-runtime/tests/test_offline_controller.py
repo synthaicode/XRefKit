@@ -217,6 +217,14 @@ class OfflineControllerCases(unittest.TestCase):
         self.assertEqual((result.disposition, result.provider_entries, result.tool_entries),
                          (disposition, provider, tool))
 
+    def supplemental_evidence(self, case, status):
+        if os.environ.get("XREFKIT_E206_EVIDENCE") == "1":
+            print(json.dumps({
+                "supplemental": case,
+                "status": asdict(status) | {"candidate": digest(status.candidate) if status.candidate else None},
+                "journal": [asdict(event) for event in self.controller.journal],
+            }))
+
     def run_fixed(self, case):
         variants = [variant for variant in self.manifest["variants"] if variant["case_id"] == case]
         self.assertTrue(variants)
@@ -290,10 +298,12 @@ class OfflineControllerCases(unittest.TestCase):
             receipt = self.receipt()
             cancelled = self.step(ticks[1], state=replace(self.current, cancelled=True))
             self.assertEqual(len(cancelled.outstanding), 1)
-            self.step(ticks[2], observation=receipt, start=True)
+            settled = self.step(ticks[2], observation=receipt, start=True)
+            journal = self.controller.journal
             duplicate_result = self.step(ticks[3], observation=receipt, start=True)
             self.assertFalse(duplicate_result.outstanding)
-            self.assertEqual(duplicate_result.last_checkpoint.reason, "duplicate_receipt")
+            self.assertEqual(duplicate_result, settled)
+            self.assertEqual(self.controller.journal, journal)
             return duplicate_result
         if variant == "matched-no-submit":
             receipt = replace(self.receipt(kind="no_submit", usage=MISSING), delay_ticks=2)
@@ -428,7 +438,7 @@ class OfflineControllerCases(unittest.TestCase):
                 self.expect(outcome, "hold_reconciliation", 1, 0)
                 self.assertEqual(outcome.outstanding, (first.entry,))
                 self.assertIn(outcome.last_checkpoint.reason,
-                              {"usage_conflicts_with_prior_observation", "conflicting_no_submit"})
+                              {"late_usage_conflicts_with_prior_observation", "late_conflicting_no_submit"})
 
     def test_deadline_counts_budget_and_stale_assignment(self):
         for tick, limits, changes, expected in (
@@ -467,10 +477,12 @@ class OfflineControllerCases(unittest.TestCase):
         self.step(1, observation=self.receipt(calls=(self.call,)))
         self.step(2, start=True)
         self.expect(self.step(3, state=replace(self.current, cancelled=True)), "cancelled", 1, 1)
-        self.expect(self.step(4, tool_observed=True, start=True), "cancelled_with_reconciliation_evidence", 1, 1)
+        settled = self.step(4, tool_observed=True, start=True)
+        self.expect(settled, "cancelled_with_reconciliation_evidence", 1, 1)
+        journal = self.controller.journal
         duplicate = self.step(5, tool_observed=True, start=True)
-        self.expect(duplicate, "cancelled_with_reconciliation_evidence", 1, 1)
-        self.assertEqual(duplicate.last_checkpoint.reason, "duplicate_tool_receipt")
+        self.assertEqual(duplicate, settled)
+        self.assertEqual(self.controller.journal, journal)
         self.assertFalse(duplicate.outstanding)
 
     def test_delayed_retry_does_not_open_a_second_entry_early(self):
@@ -645,7 +657,7 @@ class OfflineControllerCases(unittest.TestCase):
         self.assertFalse(matched.outstanding)
         self.assertEqual(matched.last_checkpoint.reason, "matched_late_tool_receipt")
         settled = next(event for event in self.controller.journal
-                       if event.stage == "observation" and event.entry == original)
+                       if event.reason == "matched_late_tool_receipt" and event.entry == original)
         self.assertEqual((settled.ledger_before.work.reserved, settled.ledger_after.work.reserved), (1, 0))
         self.assertEqual((settled.ledger_before.work.debit, settled.ledger_after.work.debit), (1, 2))
         self.assertEqual(settled.ledger_after.observation_ticks, (4,))
@@ -751,9 +763,10 @@ class OfflineControllerCases(unittest.TestCase):
         self.assertEqual(revision.evidence_ref, revised.evidence_sha256)
         self.assertEqual(revision.ledger_before, revision.ledger_after)
         self.assertEqual(revision.ledger_after.reservation_state, "settled")
+        journal = self.controller.journal
         repeated = self.step(5, observation=initial, start=True)
-        self.expect(repeated, "hold_reconciliation", 1, 1)
-        self.assertEqual(repeated.last_checkpoint.reason, "duplicate_receipt")
+        self.assertEqual(repeated, held)
+        self.assertEqual(self.controller.journal, journal)
 
     def test_wire_body_snapshot_is_immune_to_caller_mutation_during_append(self):
         class MutatingWriter(OfflineJournal):
@@ -831,6 +844,338 @@ class OfflineControllerCases(unittest.TestCase):
         self.assertEqual(aborted.reason, "local_tool_gate")
         self.assertEqual((aborted.ledger_before.reservation_state, aborted.ledger_after.reservation_state),
                          ("reserved", "released"))
+
+    def pending_tool(self):
+        self.step(0, start=True)
+        self.step(1, observation=self.receipt(calls=(self.call,)))
+        self.step(2, start=True)
+
+    def invalid_provider(self):
+        receipt = replace(self.receipt(), revision=2)
+        return replace(receipt, wire_response=replace(receipt.wire_response, body=42))
+
+    def test_closed_tick_keeps_provider_gap_and_settles_tool_in_both_fragment_orders(self):
+        details = []
+        for provider_first in (True, False):
+            with self.subTest(provider_first=provider_first):
+                self.setup_controller()
+                self.pending_tool()
+                invalid = self.invalid_provider()
+                fragments = ({"observation": invalid}, {"tool_observed": True})
+                if not provider_first:
+                    fragments = fragments[::-1]
+                prior = self.controller.journal
+                pending = self.step(3, batch_closed=False, start=True, **fragments[0])
+                self.expect(pending, "hold_batch_incomplete", 1, 1)
+                wait = self.step(4, start=True)
+                self.expect(wait, "hold_batch_incomplete", 1, 1)
+                self.assertEqual(self.controller.journal, prior)
+                closed = self.step(3, start=True, **fragments[1])
+                self.expect(closed, "hold_reconciliation", 1, 1)
+                self.assertFalse(closed.outstanding)
+                events = [event for event in self.controller.journal if event.tick == 3]
+                details.append([(event.stage, event.reason, event.ledger_after.work.debit) for event in events])
+                gap = next(event for event in events if event.reason == "invalid_provider_observation")
+                observed = next(event for event in events if event.stage == "observation")
+                self.assertLess(events.index(gap), events.index(observed))
+                self.assertEqual(gap.ledger_before, gap.ledger_after)
+                self.assertEqual((observed.ledger_before.work.debit, observed.ledger_after.work.debit), (1, 2))
+                self.assertEqual((observed.ledger_before.work.reserved, observed.ledger_after.work.reserved), (1, 0))
+                self.controller = self.controller.reconstruct(continuity_verified=True)
+                journal = self.controller.journal
+                replay = self.step(3, start=True, observation=invalid, tool_observed=True)
+                self.assertEqual(replay, closed)
+                self.assertEqual(self.controller.journal, journal)
+                later = self.step(4, start=True, observation=invalid, tool_observed=True)
+                self.expect(later, "hold_reconciliation", 1, 1)
+                self.assertEqual(sum(event.stage == "observation" and event.entry.operation == "tool"
+                                     for event in self.controller.journal if event.entry is not None), 1)
+                self.supplemental_evidence(f"closed-batch-order-{provider_first}", later)
+        self.assertEqual(*details)
+
+    def test_cancellation_revocation_and_invalid_provider_gap_remain_visible_at_tick_close(self):
+        self.pending_tool()
+        state = replace(self.current, cancelled=True, provider_allowed=False)
+        cancelled = self.step(3, state=state, start=True, observation=self.invalid_provider(), tool_observed=True)
+        self.expect(cancelled, "cancelled", 1, 1)
+        self.assertEqual(cancelled.last_checkpoint.signals, ("cancelled", "stop_authority", "hold_reconciliation"))
+        self.assertFalse(cancelled.outstanding)
+        self.assertEqual(cancelled.last_checkpoint.ledger_after.work.debit, 2)
+        self.supplemental_evidence("closed-batch-cancel-revoke-gap", cancelled)
+
+    def test_conflicting_provider_fragments_are_rejected_before_ledger_can_settle(self):
+        for first_usage in (ZERO, USAGE):
+            with self.subTest(first_usage=first_usage):
+                self.setup_controller()
+                self.step(0, start=True)
+                one = self.receipt(usage=first_usage)
+                other = self.receipt(usage=USAGE if first_usage == ZERO else ZERO)
+                self.step(1, observation=one, batch_closed=False)
+                outcome = self.step(1, observation=other, start=True)
+                self.expect(outcome, "hold_reconciliation", 1, 0)
+                self.assertEqual(outcome.outstanding, (one.entry,))
+                self.assertEqual(outcome.last_checkpoint.ledger_after.work.debit, 0)
+                self.assertEqual(outcome.last_checkpoint.ledger_after.work.reserved, 1)
+
+    def test_incomplete_batch_reconstruction_holds_original_execution(self):
+        self.pending_tool()
+        incomplete = self.step(3, tool_observed=True, batch_closed=False)
+        prior = self.controller
+        self.controller = prior.reconstruct(continuity_verified=True)
+        observed = self.controller.status()
+        self.expect(observed, "hold_reconciliation", 1, 1)
+        self.assertEqual(observed.execution_id, incomplete.execution_id)
+        self.assertIn("batch.continuity", observed.checkpoint_gaps)
+        self.assertEqual(observed.outstanding, incomplete.outstanding)
+        self.expect(self.step(3, start=True), "hold_reconciliation", 1, 1)
+        with self.assertRaises(ValueError):
+            prior.step(3, self.current, start=True)
+
+    def test_consumed_no_submit_revisions_distinguish_positive_zero_and_absence(self):
+        for label, usage in (("positive", USAGE), ("zero", ZERO),
+                             ("absent-conflicting", MISSING), ("absent-no-contrary", MISSING)):
+            with self.subTest(label=label):
+                self.setup_controller()
+                self.step(0, start=True)
+                initial = replace(self.receipt(kind="no_submit", usage=MISSING), delay_ticks=2)
+                self.retries(1, initial, self.proof(initial))
+                if label == "absent-no-contrary":
+                    adjusted = replace(initial, revision=2)
+                else:
+                    adjusted = replace(self.receipt(usage=usage), revision=2)
+                    if label == "absent-conflicting":
+                        wire = adjusted.wire_response
+                        adjusted = replace(adjusted, wire_response=replace(
+                            wire, body={key: value for key, value in wire.body.items() if key != "usage"},
+                        ))
+                result = self.step(2, observation=adjusted, start=True)
+                disputed = label != "absent-no-contrary"
+                self.expect(result, "hold_reconciliation" if disputed else "pending", 1, 0)
+                self.assertEqual(result.outstanding, (initial.entry,) if disputed else ())
+                revision = next(event for event in self.controller.journal
+                                if event.evidence_ref == adjusted.evidence_sha256)
+                self.assertEqual(revision.stage, "reconciliation")
+                self.assertEqual(revision.reported_usage.total_tokens, usage.total_tokens)
+                self.assertEqual(revision.ledger_before.work.debit, 0)
+                self.assertEqual(revision.ledger_after.work.debit, 0)
+                self.assertEqual(revision.ledger_before.reservation_state, "released")
+                self.assertEqual(revision.ledger_after.reservation_state, "released")
+                self.assertEqual(revision.ledger_after.work.headroom,
+                                 None if disputed else self.limits.synthetic_budget_units)
+                self.controller = self.controller.reconstruct(continuity_verified=True)
+                journal = self.controller.journal
+                self.assertEqual(self.step(2, observation=adjusted, start=True), result)
+                self.assertEqual(self.controller.journal, journal)
+                replay = self.step(3, observation=adjusted, start=True)
+                if disputed:
+                    self.assertEqual(replay, result)
+                    self.assertEqual(self.controller.journal, journal)
+                else:
+                    self.expect(replay, "pending", 1, 0)
+                    self.assertFalse(replay.outstanding)
+                self.supplemental_evidence(f"consumed-no-submit-revision-{label}", replay)
+
+    def test_revision_dispute_publishes_no_ledger_change_before_checkpoint(self):
+        self.controller = OfflineController(self.binding, journal=BrokenStage("reconciliation"))
+        self.step(0, start=True)
+        initial = replace(self.receipt(kind="no_submit", usage=MISSING), delay_ticks=2)
+        self.retries(1, initial, self.proof(initial))
+        revision = replace(self.receipt(usage=ZERO), revision=2)
+        failed = self.step(2, observation=revision, start=True)
+        self.expect(failed, "hold_reconciliation", 1, 0)
+        self.assertIn(f"reconciliation.revision:{initial.entry.admission}", failed.checkpoint_gaps)
+        gap = next(event for event in self.controller.journal if event.reason == "reconciliation_write_failed")
+        self.assertEqual(gap.ledger_before, gap.ledger_after)
+        self.assertEqual(gap.ledger_after.work.headroom, self.limits.synthetic_budget_units)
+        resumed = self.step(3, observation=revision, start=True)
+        self.expect(resumed, "hold_reconciliation", 1, 0)
+        self.assertEqual(resumed.outstanding, (initial.entry,))
+        self.assertEqual(resumed.last_checkpoint.ledger_after.work.headroom, None)
+        self.assertFalse(resumed.checkpoint_gaps)
+
+    def test_late_dispute_blocks_redisplay_of_a_previously_checkpointed_candidate(self):
+        self.step(0, start=True)
+        first_revision = replace(self.receipt(usage=ZERO), revision=2)
+        initial = replace(self.receipt(kind="no_submit", usage=MISSING), delay_ticks=2)
+        self.retries(1, initial, self.proof(initial))
+        self.step(3, start=True)
+        self.expect(self.final(4), "candidate", 2, 0)
+        held = self.step(5, observation=first_revision)
+        self.expect(held, "hold_reconciliation", 2, 0)
+        self.assertIsNone(held.candidate)
+        self.assertEqual(held.outstanding, (initial.entry,))
+
+    def test_ordinary_advance_in_retry_delay_counts_second_stalled_tick(self):
+        self.step(0, start=True)
+        self.step(1, evaluate_only=True)
+        initial = replace(self.receipt(kind="no_submit", usage=MISSING), delay_ticks=2)
+        delayed = self.retries(2, initial, self.proof(initial))
+        self.assertEqual(delayed.no_progress_ticks, 1)
+        stopped = self.step(3, start=True)
+        self.expect(stopped, "stop_no_progress", 1, 0)
+        self.assertEqual(stopped.no_progress_ticks, 2)
+        self.assertFalse(stopped.outstanding)
+        event = next(event for event in self.controller.journal if event.reason == "tick_closed" and event.tick == 3)
+        self.assertEqual((event.progress_before, event.progress_after), (1, 2))
+        self.supplemental_evidence("ordinary-retry-delay-1-to-2", stopped)
+
+    def test_ordinary_duplicate_ticks_count_once_across_replay_and_reconstruction(self):
+        self.step(0, start=True)
+        receipt = self.receipt(calls=(self.call,))
+        admitted = self.step(1, observation=receipt)
+        self.assertEqual(admitted.no_progress_ticks, 0)
+        first = self.step(2, observation=receipt)
+        self.assertEqual(first.no_progress_ticks, 1)
+        self.controller = self.controller.reconstruct(continuity_verified=True)
+        journal = self.controller.journal
+        self.assertEqual(self.step(2, observation=receipt), first)
+        self.assertEqual(self.controller.status(), first)
+        self.assertEqual(self.controller.journal, journal)
+        second = self.step(3, observation=receipt)
+        self.expect(second, "stop_no_progress", 1, 0)
+        self.assertEqual(second.no_progress_ticks, 2)
+        self.assertEqual(second.last_checkpoint.ledger_after.work, first.last_checkpoint.ledger_after.work)
+        transitions = [(event.progress_before, event.progress_after) for event in self.controller.journal
+                       if event.reason == "tick_closed" and event.tick in (2, 3)]
+        self.assertEqual(transitions, [(0, 1), (1, 2)])
+        self.supplemental_evidence("ordinary-duplicate-0-to-1-to-2", second)
+
+    def test_cancel_checkpoint_gap_before_entry_never_allows_dispatch(self):
+        self.controller = OfflineController(self.binding, journal=BrokenStage("cancellation"))
+        held = self.step(0, start=True, before_entry=lambda: replace(self.current, cancelled=True))
+        self.expect(held, "cancelled", 0, 0)
+        self.assertTrue(held.cancellation_requested)
+        self.assertIn("cancellation.local_request", held.checkpoint_gaps)
+        self.assertFalse(held.outstanding)
+        self.assertEqual(held.last_safe_checkpoint.reason, "entry_gate_denied")
+        self.supplemental_evidence("cancel-before-entry-journal-gap", held)
+        recovered = self.step(1, start=True)
+        self.expect(recovered, "cancelled", 0, 0)
+        self.assertFalse(recovered.checkpoint_gaps)
+
+    def test_missing_cancel_checkpoint_remains_sticky_with_pending_exposure_after_reconstruction(self):
+        self.controller = OfflineController(self.binding, journal=BrokenStage("cancellation"))
+        self.step(0, start=True)
+        receipt = self.receipt()
+        stopped = self.step(1, state=replace(self.current, cancelled=True))
+        self.expect(stopped, "cancelled", 1, 0)
+        self.assertEqual(stopped.outstanding, (receipt.entry,))
+        self.assertFalse(stopped.cancellation_acknowledged)
+        self.assertIn("cancellation.local_request", stopped.checkpoint_gaps)
+        self.assertEqual(stopped.last_safe_checkpoint.reason, "intent_and_reservation_saved")
+        self.controller = self.controller.reconstruct(continuity_verified=False)
+        recovered = self.controller.status()
+        self.expect(recovered, "cancelled", 1, 0)
+        self.assertEqual(recovered.execution_id, stopped.execution_id)
+        self.assertIn("batch.continuity", recovered.checkpoint_gaps)
+        self.assertEqual(recovered.outstanding, stopped.outstanding)
+        self.expect(self.step(2, start=True), "cancelled", 1, 0)
+        self.supplemental_evidence("cancel-after-entry-reconstruction-gap", recovered)
+
+    def test_late_reconciliation_checkpoint_failure_does_not_publish_or_settle_until_recovery(self):
+        self.controller = OfflineController(self.binding, journal=BrokenStage("reconciliation"))
+        self.step(0, start=True)
+        receipt = self.receipt()
+        self.step(1, state=replace(self.current, cancelled=True))
+        failed = self.step(2, observation=receipt, start=True)
+        self.expect(failed, "cancelled", 1, 0)
+        self.assertIn(f"reconciliation.provider:{receipt.entry.admission}", failed.checkpoint_gaps)
+        self.assertEqual(failed.outstanding, (receipt.entry,))
+        self.assertEqual(failed.last_checkpoint.ledger_after.work.reserved, 1)
+        self.assertEqual(failed.last_checkpoint.ledger_after.work.debit, 0)
+        self.controller = self.controller.reconstruct(continuity_verified=True)
+        reconciled = self.step(3, observation=receipt, start=True)
+        self.expect(reconciled, "cancelled_with_reconciliation_evidence", 1, 0)
+        self.assertFalse(reconciled.checkpoint_gaps)
+        self.assertFalse(reconciled.outstanding)
+        self.assertEqual(reconciled.last_checkpoint.ledger_after.work.debit, 1)
+        journal = self.controller.journal
+        self.assertEqual(sum(event.reason == "matched_late_receipt" for event in journal), 1)
+        self.assertEqual(self.step(4, observation=receipt, start=True), reconciled)
+        self.assertEqual(self.controller.journal, journal)
+        self.supplemental_evidence("late-provider-checkpoint-recovery", reconciled)
+
+    def test_late_checkpoint_acknowledgement_is_checked_before_any_retry(self):
+        class UncertainWriter(OfflineJournal):
+            def __init__(self, append_first):
+                super().__init__()
+                self.append_first = append_first
+                self.fail = True
+                self.readable = False
+                self.late_attempts = 0
+
+            def append(self, event):
+                if event.reason == "matched_late_receipt":
+                    self.late_attempts += 1
+                    if self.fail:
+                        self.fail = False
+                        if self.append_first:
+                            super().append(event)
+                        raise OSError("synthetic missing write acknowledgement")
+                super().append(event)
+
+            def committed(self, event):
+                if event.reason == "matched_late_receipt" and not self.readable:
+                    raise OSError("synthetic checkpoint lookup unavailable")
+                return super().committed(event)
+
+        for append_first in (True, False):
+            with self.subTest(append_first=append_first):
+                self.setup_controller()
+                writer = UncertainWriter(append_first)
+                self.controller = OfflineController(self.binding, journal=writer)
+                self.step(0, start=True)
+                receipt = self.receipt()
+                self.step(1, state=replace(self.current, cancelled=True))
+                failed = self.step(2, observation=receipt)
+                self.expect(failed, "cancelled", 1, 0)
+                self.assertIn("journal.commit_unknown", failed.checkpoint_gaps)
+                still_unknown = self.step(3, observation=receipt)
+                self.assertEqual(still_unknown.outstanding, (receipt.entry,))
+                self.assertEqual(writer.late_attempts, 1)
+                writer.readable = True
+                recovered = self.step(4, observation=receipt)
+                if append_first:
+                    # A committed record of an earlier tick conflicts with the proposed local delta.
+                    self.expect(recovered, "cancelled", 1, 0)
+                    self.assertEqual(recovered.outstanding, (receipt.entry,))
+                    self.assertIn("journal.commit_unknown", recovered.checkpoint_gaps)
+                    self.assertEqual(writer.late_attempts, 1)
+                else:
+                    self.expect(recovered, "cancelled_with_reconciliation_evidence", 1, 0)
+                    self.assertFalse(recovered.outstanding)
+                    self.assertFalse(recovered.checkpoint_gaps)
+                    self.assertEqual(writer.late_attempts, 2)
+
+    def test_cancel_and_no_entry_write_gaps_leave_unsent_reservation_held(self):
+        class UnavailableCancellationWriter(OfflineJournal):
+            def append(self, event):
+                if event.stage in ("cancellation", "not_sent"):
+                    raise OSError("synthetic checkpoint unavailable")
+                super().append(event)
+
+        self.controller = OfflineController(self.binding, journal=UnavailableCancellationWriter())
+        stopped = self.step(0, start=True, before_entry=lambda: replace(self.current, cancelled=True))
+        self.expect(stopped, "cancelled", 0, 0)
+        admission = stopped.outstanding[0]
+        self.assertEqual(stopped.checkpoint_gaps, ("cancellation.local_request", f"not_sent:{admission.admission}"))
+        self.assertEqual(stopped.last_checkpoint.ledger_after.work.reserved, 1)
+        self.assertEqual(stopped.last_safe_checkpoint.reason, "intent_and_reservation_saved")
+
+    def test_batch_close_failure_prevents_entry_and_retains_continuity_gap(self):
+        class BrokenClose(OfflineJournal):
+            def append(self, event):
+                if event.reason == "tick_closed":
+                    raise OSError("synthetic missing batch checkpoint")
+                super().append(event)
+
+        self.controller = OfflineController(self.binding, journal=BrokenClose())
+        held = self.step(0, start=True)
+        self.expect(held, "hold_reconciliation", 0, 0)
+        self.assertEqual(held.committed_tick, -1)
+        self.controller = self.controller.reconstruct(continuity_verified=True)
+        self.assertIn("batch.continuity", self.controller.status().checkpoint_gaps)
+        self.expect(self.step(1, start=True), "hold_reconciliation", 0, 0)
 
     def test_api_key_marker_is_absent_at_the_actual_runner_boundary(self):
         original = _FakeRunner._enter
