@@ -213,9 +213,13 @@ def _action_bytes(definition: ToolDefinition, request: ToolRequest) -> bytes | T
         return ToolDecision("deny", "argument_ambiguous")
     except (ValueError, RecursionError):
         return ToolDecision("deny", "argument_schema_invalid")
+    argument_name, pattern = (
+        ("document_id", r"[A-Za-z0-9_-]{1,16}") if definition.schema == "e206-document-v1"
+        else ("key", r"[A-Za-z0-9_]{1,16}")
+    )
     if (
-        not isinstance(raw, dict) or set(raw) != {"key"} or type(raw["key"]) is not str
-        or re.fullmatch(r"[A-Za-z0-9_]{1,16}", raw["key"]) is None
+        not isinstance(raw, dict) or set(raw) != {argument_name} or type(raw[argument_name]) is not str
+        or re.fullmatch(pattern, raw[argument_name]) is None
     ):
         return ToolDecision("deny", "argument_schema_invalid")
     return _json_bytes({
@@ -491,9 +495,13 @@ class OfflineToolDispatch:
             return None, "oversize_result"
         try:
             raw = json.loads(output.decode("utf-8"), object_pairs_hook=_unique_fields)
-            if isinstance(raw, dict) and set(raw) == {"value"} and type(raw["value"]) is str:
-                if 0 < len(raw["value"].encode("utf-8")) <= 64:
-                    return raw["value"], "bounded_typed_result"
+            if self._definition.schema == "e206-document-v1":
+                value = raw.get("text") if isinstance(raw, dict) and set(raw) == {"status", "text"} \
+                    and raw["status"] == "ok" else None
+            else:
+                value = raw.get("value") if isinstance(raw, dict) and set(raw) == {"value"} else None
+            if type(value) is str and 0 < len(value.encode("utf-8")) <= 64:
+                return value, "bounded_typed_result"
         except (ValueError, RecursionError):
             pass
         return None, "invalid_result"

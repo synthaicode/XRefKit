@@ -148,14 +148,16 @@ def _json_object(raw: bytes | str) -> dict:
     return value
 
 
-def _serialize_request(request: ExecutionRequest, context: ContextAssembly) -> bytes:
+def verified_context(
+    assignment: AssignmentRef, context: ContextAssembly,
+) -> tuple[list[str], list[dict[str, object]]]:
     if context.hold_reason is not None or context.payload is None:
         raise ValueError("context hold")
     payload = _json_object(context.payload)
     manifest = _json_object(context.provenance)
     if (
         manifest.get("payload_sha256") != sha256(context.payload).hexdigest()
-        or manifest.get("assignment") != request.assignment.model_dump(mode="json")
+        or manifest.get("assignment") != assignment.model_dump(mode="json")
         or type(manifest.get("version")) is not int
         or manifest["version"] != 1
         or "hold_reason" not in manifest
@@ -192,6 +194,11 @@ def _serialize_request(request: ExecutionRequest, context: ContextAssembly) -> b
         else:
             raise ValueError("unexpected supporting item")
 
+    return instructions, inputs
+
+
+def _serialize_request(request: ExecutionRequest, context: ContextAssembly) -> bytes:
+    instructions, inputs = verified_context(request.assignment, context)
     body = {
         "model": request.selected_model,
         "max_output_tokens": request.budget.max_output_tokens,
