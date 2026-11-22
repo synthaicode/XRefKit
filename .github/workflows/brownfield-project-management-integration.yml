@@ -25,12 +25,13 @@ jobs:
         with:
           name: ${{ inputs.distribution_artifact }}
           path: integration-dist
-      - name: Build companion and install both wheels with released Core
+      - name: Build companion and install both wheels with Core
         env:
           COMPANION_PROJECT: ${{ inputs.companion_project }}
         run: |
           python -m pip install build pytest
           python -m build --wheel --outdir integration-dist "$COMPANION_PROJECT"
+          if [[ "$GITHUB_REF" != refs/tags/* ]]; then python -m pip install "$GITHUB_WORKSPACE"; fi
           python -m pip install integration-dist/*.whl
           python -m pip check
       - name: Run installed contract and integration tests
