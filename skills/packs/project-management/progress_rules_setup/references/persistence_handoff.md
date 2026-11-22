@@ -151,6 +151,20 @@ behavior, including work-specific validation of existing controls.
 
 ## Existing routes and limits
 
+For projects enrolled in Engineering Decision Gate (XID `C34E62A9B710`),
+route reserved Brownfield authority decisions through the pending decision
+Handoff. Preserve the engineering decision ID, related finding revision and
+affected Hold scope. Use the current engineering decision when evaluating
+resume after Brownfield re-evaluation.
+
+For discovery-enabled requests, inspect the linked decision's principle
+assessment, unresolved constraints and technical alternatives. Use them to
+identify the authority and scope the schedule impact. Technical reassessment
+remains a Brownfield responsibility.
+
+For checklist-enabled decisions, preserve the checklist's pending items
+and their stated impact in the Hold. Return technical checks to Brownfield.
+
 - [local_work_management](../../../../os/local_work_management/SKILL.v1.md#xid-E7C4A916B280) persists approved local plans and
   explicit observations. Use it only when the configured local plan schema and
   required approvals support the requested record; do not treat it as a generic
@@ -185,3 +199,85 @@ those steps as outstanding and do not claim them from local creation alone.
 Chat-only notice remains insufficient when the configured output is an artifact
 or management record. On resume use the configured authoritative artifact/record
 and preserve outstanding human actions rather than assuming they were performed.
+
+## UNKNOWN resolution requests
+
+For a received `UNKNOWN_RESOLUTION`, check the Work Item, original Run,
+decision, candidate digest and Check IDs recorded in Decision Handoff.
+Coordinate information with the investigator, evidence with the verifier,
+environment work with its owner, Knowledge with its owner and reserved policy
+with the decision authority. Record owner, due time, the affected Work Item,
+progress and restart condition in the existing Handoff and management records.
+Keep unrelated work on its own gates.
+
+Return the human's recorded response through the host for each original Check
+ID with its actor, authority, timestamp, evidence digest and remaining issues.
+Have the host verify the original response and the authority for directions or
+risk acceptance. Preserve the original request ID and candidate binding.
+Brownfield owns the new technical evaluation. Keep the affected work held
+until the engineering gate and project restart requirements are satisfied.
+
+## Summary for people making a project decision
+
+Apply this format to Issue bodies and comments, Project updates, progress and
+schedule impact, Handoff status, decision requests and returns, and verification
+reports. Start with the scoped current outcome and its reason. State what was
+confirmed and how, group open items by common cause and action, identify the
+recorded owner or the assignment gap, and state the effect on the affected
+work or phase. Link the current records at the end. Keep the full checklist,
+identifiers and receipts in the existing authoritative records.
+
+For Japanese reports with structured facts, run
+`python -m xrefkit_skills_project_management.human_report facts.json`.
+Use the same verified facts as the optional PM State `human_report` value for
+an Issue Human View. Source the decision from Brownfield or its decision
+record, the Handoff from its journal, and permission or approval from the
+record that owns it. Verify every display claim against its linked source.
+Use the requested report language if supplying the prose directly. For
+technical or completion claims absent from a source, record the gap.
+
+Distinguish design document inspection, static analysis, synthetic execution,
+Wheel integration, real-host execution, external effects and formal human
+records. A trial assignment can identify the role used in the trial. Record
+a real assignee only when the authoritative record confirms them. An
+engineering decision, a completed Run, a returned answer, and permission to
+manufacture or test each need their own evidence. PM reports the effect on the
+scoped work and coordinates the next action. Technical reevaluation stays
+with its technical owner. Keep the Issue's current work record, manually
+written text, comments and native history in place.
+
+## Explain the work and why it matters
+
+Name the processing step or behavior in terms the reader can identify. Use the
+source finding for the observed or unconfirmed problem, its possible effects,
+the action, the test conditions and the expected evidence. In structured reports
+put the target and action in the work item and use its optional explanation for
+the source-backed context. Keep the check references with the work. If the
+technical meaning is missing, ask the source owner to clarify. When the
+verification method is absent, report the need to decide how to verify it.
+
+State the scoped effect on the next step with the conclusion. A missing test
+is an open question. A confirmed issue must retain the scope and method of the
+observation. Include a human decision request only when the source requires it.
+Place synthetic handoffs and exercises under the mechanism verification
+heading, keeping their outcomes and actors distinct from actual project work.
+Link the original checklist, decision, XIDs, and handoff evidence.
+
+## Assess the next steps
+
+Read the latest governed schedule and actuals. Use their dependencies and the
+declared start conditions, authority, and scope. Resolve evidence from the
+current owners. Separate a start requirement from a trial or post-work
+acceptance requirement. Preserve Gate decisions, unresolved evidence, and
+whether a handoff is a real assignment or a test. Record missing conditions
+as proposals and ask the planning owner to confirm them. When a condition
+depends on a successor, carry the contributing work references and ask
+Brownfield to review the cycle without changing technology guarantees.
+
+Evaluate a read-only projection with
+`python -m xrefkit_skills_project_management.next_step_readiness records.json`.
+Use the same records as the optional readiness input to the Human View.
+Group work with the same action and acceptance criteria. Keep unknown owners
+and dates explicit. Report readiness by step and compare the PM assessment
+with the recorded Gate observation. READY describes the PM inputs and is
+subject to existing runtime controls and human approval.
