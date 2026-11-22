@@ -302,6 +302,9 @@ result, observation, evidence, and ownership information to define a
 reproducible test case. Load [testability gate and AI case generation](references/testability-and-case-generation.md)
 for the check and gap report.
 
+Before retrying implementation after a review or verification finding, return
+to this design phase and apply the [retry procedure](references/specification-reconciliation.md#before-retrying-implementation).
+
 ### Manufacturing
 
 Implement only approved design items. Preserve existing file conventions and

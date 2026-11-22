@@ -42,6 +42,31 @@ record an impact-bearing `unknown` and do not approve a design delta.
 7. Obtain human approval for the reconciliation decision before design,
    manufacturing, or test-case approval proceeds.
 
+## Before retrying implementation
+
+Return to the design phase before starting an implementation retry after a
+review or verification finding. Reuse the current reconciliation record and
+the exact reviewed candidate.
+
+1. For each finding, link the observed behavior and evidence to the approved
+   design principle, requirement and acceptance condition at their recorded
+   revisions. State the expected behavior and the affected boundary.
+2. Record whether the evidence shows implementation drift from a clear design,
+   a missing or conflicting design condition, or insufficient evidence to
+   decide. If the required behavior or acceptance condition itself is unclear,
+   route the question back to requirements. Preserve approved invariants and
+   carry forward any unresolved finding.
+3. For implementation drift, record the scoped correction and expected
+   verification result. For a design gap or conflict, reconcile the design
+   delta before handing it back to implementation. Where relevant, specify
+   avoided effects, failure handling, recovery, escalation and the evidence
+   that demonstrates each expected result. Record the owner and what would
+   resolve any remaining unknown.
+4. Record the judgment, grounds, affected regression coverage and retry
+   conditions in the designated work record. Apply the existing design review,
+   approval and retry rules for the affected scope. Resume implementation
+   only when the applicable conditions are satisfied.
+
 ## Reconciliation matrix
 
 Each row should be traceable and contain at least:
