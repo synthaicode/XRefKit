@@ -247,6 +247,17 @@ class OfflineBudget:
         with self._lock:
             return self._snapshot(action, tuple(self._entries.values()))
 
+    def fork_fixture(self) -> OfflineBudget:
+        """Copy only the in-process accounting state for an isolated decision recomputation."""
+        with self._lock:
+            branch = OfflineBudget(self._authority)
+            branch._entries = self._entries.copy()
+            branch._attempts = self._attempts.copy()
+            branch._receipt_owners = self._receipt_owners.copy()
+            branch._adapter_owners = self._adapter_owners.copy()
+            branch._fake_effects = self._fake_effects
+            return branch
+
     def reserve(self, action: Action) -> Decision:
         with self._lock:
             obstruction = self._check_action(action)
@@ -306,6 +317,7 @@ class OfflineBudget:
     def settle(
         self, action: Action, observation: Observation, verified: VerifiedReceipt | None, *,
         before_commit: SettlementCheckpoint | None = None,
+        observation_tick: int | None = None,
     ) -> Decision:
         """Reconcile under the ledger lock. The optional writer uses the supplied snapshots without re-entry."""
         with self._lock:
@@ -315,7 +327,8 @@ class OfflineBudget:
                 or verified.action != action or verified.observation != observation
             ):
                 return Decision("hold", "correlation_unproved")
-            return self._settle_verified(entry, observation, before_commit=before_commit)
+            return self._settle_verified(entry, observation, before_commit=before_commit,
+                                         observation_tick=observation_tick)
 
     def settle_adapter(
         self, action: Action, result: AdapterResult, *, revision: int, settlement_rate: str | None,
@@ -357,14 +370,24 @@ class OfflineBudget:
             ))
             if not before_commit(decision, before, after):
                 return Decision("hold", "settlement_checkpoint_unavailable")
-        for key in receipt_keys:
-            self._receipt_owners[key] = reservation
-        self._entries[reservation] = updated
+        entries = self._entries | {reservation: updated}
+        owners = self._receipt_owners | dict.fromkeys(receipt_keys, reservation)
+        try:
+            self._publish_settlement(entries, owners)
+        except OSError:
+            return Decision("hold", "settlement_publication_unavailable")
         return decision
+
+    def _publish_settlement(
+        self, entries: dict[str, Reservation], receipt_owners: dict[tuple[str, str], str],
+    ) -> None:
+        """Publish the complete local ledger projection under the settlement lock."""
+        self._entries, self._receipt_owners = entries, receipt_owners
 
     def _settle_verified(
         self, entry: Reservation, observation: Observation, *,
         before_commit: SettlementCheckpoint | None = None,
+        observation_tick: int | None = None,
     ) -> Decision:
         if not self._authority.ledger_available:
             return Decision("hold", "ledger_unavailable")
@@ -376,6 +399,10 @@ class OfflineBudget:
             or not (reference.fallback_id or (reference.request_id and reference.response_id))
         ):
             return Decision("hold", "correlation_unproved")
+        if observation_tick is not None and (
+            not _quantity(observation_tick) or not entry.reserved_tick <= observation_tick <= self._authority.now_tick
+        ):
+            return Decision("hold", "observation_tick_unproved")
         keys = reference.identity_keys()
         if any(self._receipt_owners.get(key, action.reservation_id) != action.reservation_id for key in keys):
             return Decision("hold", "receipt_owned_by_other_reservation")
@@ -399,8 +426,9 @@ class OfflineBudget:
             return self._commit_settlement(replace(entry, exposure_uncertain=True),
                                            Decision("hold", "conflicting_no_submit"), before_commit)
 
+        tick = self._authority.now_tick if observation_tick is None else observation_tick
         updated = replace(entry, observations=(*entry.observations, observation),
-                          observation_ticks=(*entry.observation_ticks, self._authority.now_tick))
+                          observation_ticks=(*entry.observation_ticks, tick))
         decision, updated = self._apply_observation(updated, observation)
         return self._commit_settlement(updated, decision, before_commit, receipt_keys=keys)
 
