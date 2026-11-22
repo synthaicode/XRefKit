@@ -1,5 +1,6 @@
 import pytest
 
+from xrefkit_skills_project_management.human_report import HumanReport, render_report
 from xrefkit_skills_project_management.next_step_readiness import ReadinessInput, evaluate, report_lines
 
 
@@ -109,17 +110,20 @@ def test_gate_disagreement_and_schedule_reuse():
 
 
 def test_report_uses_scoped_readiness_from_existing_render_path():
-    from test_human_report import facts, render
-
-    data = facts()
+    data = {
+        "schema_version": 1,
+        "scope": "Design review",
+        "decision": {"status": "CONDITIONAL", "reason": "Evidence is pending", "source": "decision"},
+        "evidence": {"decision": {"label": "Design review", "link": "#decision", "kind": "decision", "method": "design"}},
+    }
     value = records()
     data["evidence"].update({key: {"label": key, "link": "#" + key, "kind": "evidence",
                                   "method": "synthetic" if source == "synthetic" else "design"}
                              for key, source in value["sources"].items()})
     data["readiness"] = value
-    output = render(data)
+    output = render_report(HumanReport.model_validate(data))
     assert output.index("**現在") < output.index("**次のStep**") < output.index("**誰が何をするか**")
     assert "着手条件が成立" in output and "[schedule](<#schedule>)" in output
     data["evidence"]["snapshot"]["method"] = "synthetic"
     with pytest.raises(ValueError, match="actual project readiness"):
-        render(data)
+        HumanReport.model_validate(data)
