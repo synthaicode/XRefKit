@@ -14,7 +14,8 @@ from xrefkit_openai_runtime.contracts import AssignmentRef, BudgetLimits, Execut
 from xrefkit_openai_runtime.offline_budget import OfflineBudget
 from xrefkit_openai_runtime.offline_context import ContextAssembly
 from xrefkit_openai_runtime.offline_controller import (
-    Assessment, ControllerBinding, ControllerLimits, CriterionEvidence, CurrentState, OfflineController, OfflineJournal,
+    Assessment, ControllerBinding, ControllerLimits, CriterionEvidence, CurrentState, HostPresentation,
+    OfflineController, OfflineJournal,
     ProviderReceipt, RetryProof, ToolCall,
 )
 from xrefkit_openai_runtime.offline_dispatch import OfflineToolDispatch, ToolDecision, _FakeRunner
@@ -1403,6 +1404,239 @@ class OfflineControllerCases(unittest.TestCase):
                 self.assertIn(signal, held.last_checkpoint.signals)
                 self.expect(self.step(2, start=True), "hold_evaluation", 1, 0)
                 self.supplemental_evidence(f"evaluation-arbitration-{mode}", held)
+
+    def test_provider_evidence_availability_stays_with_the_fragment_in_both_orders(self):
+        for field in ("capture_available", "observation_available"):
+            for restricted_first in (True, False):
+                with self.subTest(field=field, restricted_first=restricted_first):
+                    self.setup_controller()
+                    self.step(0, start=True)
+                    receipt = self.receipt()
+                    assessment = self.assessment(receipt)
+                    permitted = replace(self.current, approved_evaluation_sha256=evaluation_policy_digest(assessment.policy))
+                    restricted = replace(permitted, **{field: False})
+                    fragments = (
+                        {"state": restricted, "observation": receipt, "assessment": assessment},
+                        {"state": permitted},
+                    )
+                    first, last = fragments if restricted_first else fragments[::-1]
+                    open_batch = self.step(1, batch_closed=False, **first)
+                    self.expect(open_batch, "hold_batch_incomplete", 1, 0)
+                    held = self.step(1, start=True, **last)
+                    self.expect(held, "hold_reconciliation", 1, 0)
+                    self.assertEqual(held.outstanding, (receipt.entry,))
+                    self.assertEqual(held.last_consistent_ledger.work.reserved, 1)
+                    self.assertEqual(held.last_consistent_ledger.work.debit, 0)
+                    self.assertIsNone(held.candidate)
+                    self.supplemental_evidence(f"provider-evidence-{field}-{restricted_first}", held)
+
+    def test_missing_provider_evidence_does_not_prevent_independent_tool_accounting(self):
+        for restricted_first in (True, False):
+            with self.subTest(restricted_first=restricted_first):
+                self.setup_controller()
+                self.step(0, start=True)
+                first_receipt = self.receipt(calls=(self.call,))
+                self.step(1, observation=first_receipt)
+                self.step(2, start=True)
+                fragments = (
+                    {"state": replace(self.current, capture_available=False),
+                     "observation": replace(first_receipt, revision=2)},
+                    {"state": self.current, "tool_observed": True},
+                )
+                first, last = fragments if restricted_first else fragments[::-1]
+                self.step(3, batch_closed=False, **first)
+                held = self.step(3, start=True, **last)
+                self.expect(held, "hold_reconciliation", 1, 1)
+                changes = [event for event in self.controller.journal if event.stage == "observation"]
+                self.assertEqual([event.entry.operation for event in changes], ["provider", "tool"])
+                self.assertEqual(held.last_consistent_ledger.work.debit, 2)
+                self.assertFalse(held.outstanding)
+
+    def test_tool_receipt_evidence_is_not_replaced_by_closing_fragment(self):
+        for restricted_first in (True, False):
+            with self.subTest(restricted_first=restricted_first):
+                self.setup_controller()
+                self.pending_tool()
+                fragments = (
+                    {"state": replace(self.current, observation_available=False), "tool_observed": True},
+                    {"state": self.current},
+                )
+                first, last = fragments if restricted_first else fragments[::-1]
+                self.step(3, batch_closed=False, **first)
+                result = self.step(3, start=True, **last)
+                self.expect(result, "hold_reconciliation", 1, 1)
+                self.assertEqual(len(result.outstanding), 1)
+                self.assertEqual(result.outstanding[0].operation, "tool")
+                self.assertEqual(result.last_consistent_ledger.work.debit, 1)
+                self.assertEqual(result.last_consistent_ledger.work.reserved, 1)
+                self.supplemental_evidence(f"tool-receipt-affine-evidence-{restricted_first}", result)
+
+    def test_unpublished_dispute_reports_original_attempt_and_replays_across_headroom_change(self):
+        for initial_headroom in (True, False):
+            with self.subTest(initial_headroom=initial_headroom):
+                self.setup_controller()
+                self.step(0, start=True)
+                original = replace(self.receipt(kind="no_submit", usage=MISSING), delay_ticks=2)
+                self.retries(1, original, self.proof(original))
+                revision = replace(self.receipt(usage=ZERO), revision=2)
+                first = replace(self.current, headroom_proved=initial_headroom)
+                with patch.object(OfflineBudget, "_publish_settlement", side_effect=OSError("synthetic publication loss")):
+                    failed = self.step(2, state=first, observation=revision, start=True)
+                self.expect(failed, "hold_reconciliation", 1, 0)
+                self.assertEqual(failed.outstanding, (original.entry,))
+                self.assertEqual(failed.last_consistent_ledger.work.debit, 0)
+                self.assertEqual(failed.last_consistent_ledger.work.headroom,
+                                 self.limits.synthetic_budget_units if initial_headroom else None)
+                self.assertEqual(failed.last_safe_checkpoint.reason, "verified_no_submit")
+                pending = next(event for event in self.controller.journal
+                               if event.reason == "consumed_no_submit_usage_reported")
+                self.assertEqual(failed.last_consistent_ledger.accounting_fact_sha256,
+                                 pending.ledger_before.accounting_fact_sha256)
+                self.assertNotEqual(pending.ledger_after.accounting_fact_sha256,
+                                    failed.last_consistent_ledger.accounting_fact_sha256)
+                self.controller = self.controller.reconstruct(continuity_verified=True)
+                new_headroom = replace(self.current, headroom_proved=not initial_headroom)
+                recovered = self.step(3, state=new_headroom, observation=revision, start=True)
+                self.expect(recovered, "hold_reconciliation", 1, 0)
+                self.assertEqual(recovered.outstanding, (original.entry,))
+                self.assertFalse(recovered.checkpoint_gaps)
+                self.assertEqual(recovered.last_consistent_ledger.work.debit, 0)
+                self.assertIsNone(recovered.last_consistent_ledger.work.headroom)
+                self.assertEqual(recovered.last_consistent_ledger.accounting_fact_sha256,
+                                 pending.ledger_after.accounting_fact_sha256)
+                self.assertEqual(sum(event.accounting_key == pending.accounting_key
+                                     for event in self.controller.journal), 1)
+                stable = self.controller.journal
+                self.assertEqual(self.step(4, state=first, observation=revision, start=True), recovered)
+                self.assertEqual(self.controller.journal, stable)
+                self.supplemental_evidence(f"outstanding-unpublished-dispute-headroom-{initial_headroom}", recovered)
+
+    def test_billable_invalid_output_does_not_satisfy_a_simultaneous_advance(self):
+        self.step(0, start=True)
+        self.assertEqual(self.step(1, evaluate_only=True).no_progress_ticks, 1)
+        receipt = self.receipt()
+        malformed = replace(receipt, wire_response=replace(
+            receipt.wire_response, body=receipt.wire_response.body | {"output": [{"type": "unsupported"}]},
+        ))
+        stopped = self.step(2, observation=malformed, start=True)
+        self.expect(stopped, "stop_no_progress", 1, 0)
+        self.assertEqual(stopped.no_progress_ticks, 2)
+        self.assertEqual(stopped.last_checkpoint.signals, ("stop_no_progress", "hold_outcome"))
+        self.assertEqual(stopped.last_consistent_ledger.work.debit, 1)
+        self.assertIsNone(stopped.candidate)
+        self.supplemental_evidence("billable-invalid-output-plus-explicit-advance", stopped)
+
+    def test_required_unchanged_criterion_checkpoint_failure_blocks_ready_entry(self):
+        self.controller = OfflineController(self.binding, journal=BrokenStage("evaluation"))
+        unchanged = self.criterion_evidence(self.baseline_criterion_sha256)
+        state = replace(self.current, verified_criterion_evidence=(unchanged,))
+        held = self.step(0, state=state, start=True)
+        self.expect(held, "hold_reconciliation", 0, 0)
+        self.assertIn(f"progress.criterion:{unchanged.observation_sha256}", held.checkpoint_gaps)
+        self.assertTrue(any(event.reason == "evaluation_write_failed" for event in self.controller.journal))
+        self.assertEqual(held.last_consistent_ledger.work.reserved, 0)
+        self.supplemental_evidence("required-unchanged-evidence-checkpoint-failure", held)
+
+    def host_presentation(self, status, tick, *, execution_id=None):
+        binding = self.binding
+        return HostPresentation(
+            execution_id or binding.assignment.execution_id, binding.invocation_id, binding.session_id,
+            status, tick, f"host-{status}-{tick}",
+        )
+
+    def test_post_candidate_cancel_applies_all_authoritative_host_presentation_branches(self):
+        for mode in ("pending", "delivered", "absent", "contradictory", "unattributed", "unordered"):
+            with self.subTest(mode=mode):
+                self.setup_controller()
+                self.step(0, start=True)
+                receipt = self.receipt()
+                recorded = self.final(1)
+                self.expect(recorded, "candidate", 1, 0)
+                candidate_hash = digest(recorded.candidate)
+                if mode in ("delivered", "contradictory"):
+                    delivered = self.host_presentation("completed", 2)
+                    self.step(2, state=replace(self.current, presentation_evidence=(delivered,)))
+                if mode in ("pending", "contradictory"):
+                    evidence = (self.host_presentation("not_presented", 3),)
+                elif mode == "unattributed":
+                    evidence = (self.host_presentation("completed", 2, execution_id="wrong-execution"),)
+                elif mode == "unordered":
+                    evidence = (self.host_presentation("completed", 3),)
+                else:
+                    evidence = ()
+                state = replace(self.current, cancelled=True, presentation_evidence=evidence)
+                cancelled = self.step(3, state=state, observation=receipt, start=True)
+                self.expect(cancelled, "cancelled", 1, 0)
+                expected = {"pending": "suppressed", "delivered": "historical"}.get(mode, "held")
+                self.assertEqual(cancelled.presentation, expected)
+                self.assertEqual(cancelled.presentation_owner, "#208" if expected == "held" else None)
+                self.assertTrue(cancelled.cancellation_requested)
+                self.assertIsNone(cancelled.candidate)
+                self.assertEqual(cancelled.recorded_candidate_sha256, candidate_hash)
+                self.assertEqual(cancelled.last_consistent_ledger.work.debit, 1)
+                preserved = self.controller.journal
+                self.assertEqual(self.step(4, observation=receipt, start=True), cancelled)
+                self.assertEqual(self.controller.journal, preserved)
+                self.assertTrue(any(event.reason == "candidate" for event in preserved))
+                self.assertTrue(any(event.reason == "local_request" for event in preserved))
+                self.supplemental_evidence(f"post-candidate-cancel-presentation-{mode}", cancelled)
+
+    def test_committed_tick_duplicate_keeps_new_cancellation_for_subsequent_decision(self):
+        self.step(0, start=True)
+        receipt = self.receipt()
+        candidate = self.final(1)
+        original = self.controller.journal
+        foreign = replace(self.current, cancelled=True, invocation_id="unattributed")
+        self.assertEqual(self.step(1, observation=receipt, start=True, state=foreign), candidate)
+        deferred = self.step(1, observation=receipt, start=True, state=replace(self.current, cancelled=True))
+        self.expect(deferred, "cancelled", 1, 0)
+        self.assertTrue(deferred.cancellation_requested)
+        self.assertIsNone(deferred.candidate)
+        self.assertEqual(deferred.committed_tick, 1)
+        self.assertEqual(self.controller.journal, original)
+        self.assertIn("cancellation.awaiting_decision", deferred.checkpoint_gaps)
+        current_host = self.host_presentation("not_presented", 2)
+        progressed = self.step(2, state=replace(self.current, presentation_evidence=(current_host,)), start=True)
+        self.expect(progressed, "cancelled", 1, 0)
+        self.assertEqual(progressed.presentation, "suppressed")
+        self.assertEqual(progressed.recorded_candidate_sha256, digest(candidate.candidate))
+        self.assertFalse(progressed.checkpoint_gaps)
+        self.assertEqual(sum(event.reason == "local_request" for event in self.controller.journal), 1)
+        self.supplemental_evidence("new-cancellation-mixed-with-committed-tick-replay", progressed)
+
+    def test_partially_delivered_cancellation_holds_candidate_until_the_batch_closes(self):
+        self.step(0, start=True)
+        candidate = self.final(1)
+        journal = self.controller.journal
+        partial = self.step(2, state=replace(self.current, cancelled=True), batch_closed=False)
+        self.expect(partial, "cancelled", 1, 0)
+        self.assertEqual(partial.presentation, "held")
+        self.assertIsNone(partial.candidate)
+        self.assertEqual(self.controller.journal, journal)
+        confirmed = self.host_presentation("not_presented", 2)
+        closed = self.step(2, state=replace(self.current, presentation_evidence=(confirmed,)), start=True)
+        self.expect(closed, "cancelled", 1, 0)
+        self.assertEqual(closed.presentation, "suppressed")
+        self.assertEqual(closed.recorded_candidate_sha256, digest(candidate.candidate))
+
+    def test_presentation_checkpoint_failure_holds_without_erasing_the_candidate(self):
+        self.controller = OfflineController(self.binding, journal=BrokenStage("presentation"))
+        self.step(0, start=True)
+        candidate = self.final(1)
+        awaiting = self.host_presentation("not_presented", 2)
+        state = replace(self.current, cancelled=True, presentation_evidence=(awaiting,))
+        held = self.step(2, state=state, start=True)
+        self.expect(held, "cancelled", 1, 0)
+        self.assertEqual(held.presentation, "held")
+        self.assertEqual(held.presentation_owner, "#208")
+        self.assertTrue(any(key.startswith("presentation.evidence:") for key in held.checkpoint_gaps))
+        self.assertIsNone(held.candidate)
+        self.assertEqual(held.recorded_candidate_sha256, digest(candidate.candidate))
+        recovered = self.step(3, state=state, start=True)
+        self.expect(recovered, "cancelled", 1, 0)
+        self.assertEqual(recovered.presentation, "suppressed")
+        self.assertFalse(recovered.checkpoint_gaps)
+        self.assertIsNone(recovered.candidate)
 
     def test_api_key_marker_is_absent_at_the_actual_runner_boundary(self):
         original = _FakeRunner._enter

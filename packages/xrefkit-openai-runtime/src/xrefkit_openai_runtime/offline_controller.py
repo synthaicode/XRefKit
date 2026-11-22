@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from copy import copy
-from dataclasses import dataclass, field, replace
+from dataclasses import asdict, dataclass, field, replace
 from hashlib import sha256
 import json
 from threading import Lock, RLock
@@ -119,6 +119,7 @@ class CurrentState:
     retry_evidence: tuple[RetryProof, ...] = ()
     approved_evaluation_sha256: str | None = None
     verified_criterion_evidence: tuple[CriterionEvidence, ...] = ()
+    presentation_evidence: tuple[HostPresentation, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -204,6 +205,20 @@ class ProviderInput:
     receipt: ProviderReceipt | None
     proof: RetryProof | None
     assessment: Assessment | None
+    evidence_available: bool
+    retry_evidence: tuple[RetryProof, ...]
+
+
+@dataclass(frozen=True)
+class HostPresentation:
+    """Authoritative observation from the synthetic upper Runtime/#208 host."""
+
+    execution_id: str
+    invocation_id: str
+    session_id: str
+    status: Literal["completed", "not_presented"]
+    observed_tick: int
+    record_ref: str
 
 
 @dataclass(frozen=True)
@@ -215,6 +230,20 @@ class TickBatch:
     cancel: bool = False
     cancel_ack: bool = False
     restrictions: tuple[str, ...] = ()
+    tool_evidence_available: bool = True
+    presentation: tuple[HostPresentation, ...] = ()
+
+
+@dataclass(frozen=True)
+class ProviderDecision:
+    outcome: str
+    proposal: ToolProposal | None = None
+    evaluation: Evaluation | None = None
+    evidence_reason: str | None = None
+
+    @property
+    def eligible(self) -> bool:
+        return self.outcome in ("tool_proposal", "candidate")
 
 
 @dataclass(frozen=True)
@@ -226,6 +255,7 @@ class LedgerEvidence:
     reservation_state: str | None
     reservation_units: int | None
     observation_ticks: tuple[int, ...]
+    accounting_fact_sha256: str
 
 
 @dataclass(frozen=True)
@@ -283,6 +313,10 @@ class ControllerStatus:
     committed_tick: int
     no_progress_ticks: int
     candidate: bytes | None = field(default=None, repr=False)
+    recorded_candidate_sha256: str | None = None
+    presentation: str = "not_applicable"
+    presentation_owner: str | None = None
+    last_consistent_ledger: LedgerEvidence | None = None
 
 
 @dataclass(frozen=True)
@@ -335,6 +369,13 @@ class OfflineController:
         self._terminal: str | None = None
         self._terminal_signals: tuple[str, ...] = ()
         self._candidate: bytes | None = None
+        self._candidate_tick: int | None = None
+        self._cancel_tick: int | None = None
+        self._deferred_cancel = False
+        self._deferred_ack = False
+        self._presentation = "not_applicable"
+        self._host_presentation: set[HostPresentation] = set()
+        self._deferred_presentation: set[HostPresentation] = set()
         self._journal: list[JournalEvent] = []
         self._writer = journal or OfflineJournal()
         self._writing_journal = False
@@ -362,6 +403,7 @@ class OfflineController:
         self._checkpoint_gaps: set[str] = set()
         self._unconfirmed_appends: dict[tuple[object, ...], JournalEvent] = {}
         self._accounting_checkpoints: dict[str, JournalEvent] = {}
+        self._unpublished_accounting: set[str] = set()
         self._stalled = 0
         self._criterion_evidence = set(binding.initial_criterion_evidence_sha256)
         self._retry_at = 0
@@ -387,29 +429,48 @@ class OfflineController:
             if wait_ended and disposition == "pending" and self._admitted:
                 self._stop("hold_reconciliation", signals=("host_wait_expired",))
                 disposition = self._terminal
-            if self._cancel_requested and disposition in ("cancelled", "hold_reconciliation", "hold_journal"):
+            open_cancellation = self._batch is not None and self._batch.cancel
+            cancelling = self._cancel_requested or self._deferred_cancel or open_cancellation
+            if cancelling and disposition in ("candidate", "cancelled", "hold_reconciliation", "hold_journal"):
                 disposition = ("cancelled_with_reconciliation_evidence"
                                if self._late_evidence and not self._checkpoint_gaps else "cancelled")
             elif disposition == "pending" and self._batch is not None:
                 disposition = "hold_batch_incomplete"
             binding = self._binding
+            unpublished = (
+                self._accounting_checkpoints[key].entry for key in sorted(self._unpublished_accounting)
+            )
             outstanding = tuple(dict.fromkeys((*self._pending,
-                *(entry for entry in self._admitted if entry in self._disputes))))
+                *(entry for entry in self._admitted if entry in self._disputes),
+                *(entry for entry in unpublished if entry is not None))))
+            applied_events = tuple(event for event in self._journal if event.stage != "gap"
+                                   and event.accounting_key not in self._unpublished_accounting)
             checkpoint = next((event for event in reversed(self._journal)
                                if event.stage in (
                                    "prepared", "observation", "evaluation", "not_sent", "cancellation", "reconciliation",
                                )
+                               and event.accounting_key not in self._unpublished_accounting
                                and event.reason not in ("submission_unresolved",)), None)
             latest = next((event for event in reversed(self._journal) if event.stage != "batch"), None)
+            presentation = self._presentation
+            if cancelling and self._candidate is not None and (
+                self._deferred_cancel or open_cancellation or not self._cancel_saved
+                or "presentation.decision" in self._checkpoint_gaps or presentation == "pending"
+            ):
+                presentation = "held"
             return ControllerStatus(
                 binding.assignment.execution_id, binding.invocation_id, binding.session_id,
                 disposition, len(self._provider), self._tool_count, outstanding, latest, checkpoint,
-                "#207" if outstanding or self._checkpoint_gaps or disposition in (
+                "#207" if outstanding or any(not gap.startswith("presentation.") for gap in self._checkpoint_gaps)
+                or disposition in (
                     "hold_reconciliation", "hold_batch_incomplete",
-                ) else "xrefkit-runtime",
-                self._cancel_requested, self._cancel_acknowledged,
+                ) else "#208" if presentation == "held" else "xrefkit-runtime",
+                cancelling, self._cancel_acknowledged,
                 tuple(sorted(self._checkpoint_gaps)), self._committed_tick, self._stalled,
-                self._candidate,
+                self._candidate if disposition == "candidate" and not cancelling else None,
+                _digest(self._candidate) if self._candidate is not None else None, presentation,
+                "#208" if presentation == "held" else None,
+                applied_events[-1].ledger_after if applied_events else None,
             )
 
     def reconstruct(self, *, continuity_verified: bool) -> OfflineController:
@@ -424,6 +485,7 @@ class OfflineController:
             restored._provider = self._provider.copy()
             restored._pending = self._pending.copy()
             restored._disputes = self._disputes.copy()
+            restored._unpublished_accounting = self._unpublished_accounting.copy()
             restored._checkpoint_gaps = self._checkpoint_gaps.copy()
             self._retired = True
             if continuity_verified and self._committed_tick >= 0:
@@ -437,7 +499,6 @@ class OfflineController:
             if not continuity_verified or self._batch is not None or self._tick != self._committed_tick:
                 restored._checkpoint_gaps.add("batch.continuity")
                 restored._terminal = "hold_reconciliation"
-                restored._candidate = None
             restored._batch = None
             return restored
 
@@ -454,7 +515,8 @@ class OfflineController:
             for name in (
                 "_journal", "_provider", "_pending", "_admitted", "_receipt_ids", "_receipts",
                 "_revisions", "_disputes", "_normalized", "_unsent", "_checkpoint_gaps",
-                "_unconfirmed_appends", "_accounting_checkpoints", "_criterion_evidence",
+                "_unconfirmed_appends", "_accounting_checkpoints", "_unpublished_accounting",
+                "_criterion_evidence", "_host_presentation", "_deferred_presentation",
             ):
                 setattr(branch, name, getattr(self, name).copy())
             return branch
@@ -515,7 +577,8 @@ class OfflineController:
                 self._checkpoint_gaps.add("journal.commit_unknown")
                 return None
             if committed and before_ledger_commit and (
-                previous.ledger_before != event.ledger_before or previous.ledger_after != event.ledger_after
+                previous.ledger_before.accounting_fact_sha256 != event.ledger_before.accounting_fact_sha256
+                or previous.ledger_after.accounting_fact_sha256 != event.ledger_after.accounting_fact_sha256
             ):
                 self._unconfirmed_appends[key] = previous
                 self._checkpoint_gaps.add("journal.commit_unknown")
@@ -543,11 +606,21 @@ class OfflineController:
     def _ledger_evidence(snapshot: LedgerSnapshot, entry: Entry | None) -> LedgerEvidence:
         reservation = next((item for item in snapshot.reservations
                             if entry is not None and item.action.reservation_id == entry.reservation), None)
+        facts = []
+        for item in sorted(snapshot.reservations, key=lambda value: value.action.reservation_id):
+            row = asdict(item)
+            actions = [row["action"]]
+            if row["adapter_link"] is not None:
+                actions.append(row["adapter_link"]["action"])
+            for action in actions:
+                action["canonical_arguments"] = _digest(action["canonical_arguments"])
+            facts.append(row)
         return LedgerEvidence(
             snapshot.work, snapshot.parent, reservation.action.authorization_ref if reservation else None,
             entry.reservation if entry else None, reservation.state if reservation else None,
             reservation.original_units if reservation else None,
             reservation.observation_ticks if reservation else (),
+            _digest(_encode((snapshot.attempts_consumed, snapshot.fake_effects, facts))),
         )
 
     def _stop(self, reason: str, *, signals: tuple[str, ...] = ()) -> bool:
@@ -563,6 +636,12 @@ class OfflineController:
         binding = self._binding
         return (state.assignment, state.session_id, state.invocation_id) == (
             binding.assignment, binding.session_id, binding.invocation_id,
+        )
+
+    def _same_invocation(self, state: CurrentState) -> bool:
+        binding = self._binding
+        return (state.assignment.execution_id, state.session_id, state.invocation_id) == (
+            binding.assignment.execution_id, binding.session_id, binding.invocation_id,
         )
 
     def _input_restrictions(self, state: CurrentState) -> tuple[str, ...]:
@@ -582,13 +661,11 @@ class OfflineController:
         return tuple(name for name, allowed in checks if not allowed)
 
     def _latch_cancellation(self, state: CurrentState, *, correlated_fragment: bool = False) -> None:
-        binding = self._binding
-        if not correlated_fragment and (state.assignment.execution_id, state.session_id, state.invocation_id) != (
-            binding.assignment.execution_id, binding.session_id, binding.invocation_id,
-        ):
+        if not correlated_fragment and not self._same_invocation(state):
             return
         if state.cancelled and not self._cancel_requested:
             self._cancel_requested = True
+            self._cancel_tick = self._tick
         if self._cancel_requested and not self._cancel_saved:
             self._cancel_saved = self._record("cancellation", "local_request")
             self._set_gap("cancellation.local_request", not self._cancel_saved)
@@ -597,6 +674,53 @@ class OfflineController:
         if self._cancel_saved and self._cancel_ack_pending and not self._cancel_acknowledged:
             self._cancel_acknowledged = self._record("cancellation", "acknowledged")
             self._set_gap("cancellation.acknowledged", not self._cancel_acknowledged)
+
+    def _process_presentation(self, incoming: tuple[HostPresentation, ...]) -> None:
+        """Resolve the delivery fact without reopening the recorded candidate or an effect."""
+        binding = self._binding
+        for item in incoming:
+            if item in self._host_presentation:
+                continue
+            reference = _digest(_encode(asdict(item)))
+            if (
+                (item.execution_id, item.invocation_id, item.session_id) != (
+                    binding.assignment.execution_id, binding.invocation_id, binding.session_id,
+                )
+                or not item.record_ref or item.status not in ("completed", "not_presented")
+                or type(item.observed_tick) is not int
+                or not self._candidate_tick <= item.observed_tick <= self._tick
+            ):
+                self._record("presentation", "host_presentation_evidence_unattributed", ref=reference)
+                continue
+            recorded = self._record("presentation", f"host_{item.status}", ref=reference)
+            self._set_gap(f"presentation.evidence:{reference}", not recorded)
+            if recorded:
+                self._host_presentation.add(item)
+        if self._cancel_tick is None:
+            return
+        completions = {item.observed_tick for item in self._host_presentation if item.status == "completed"}
+        absences = {item.observed_tick for item in self._host_presentation if item.status == "not_presented"}
+        incomplete = any(key.startswith("presentation.evidence:") for key in self._checkpoint_gaps)
+        if (not incomplete and len(completions) == 1
+                and next(iter(completions)) < self._cancel_tick
+                and not any(tick >= next(iter(completions)) for tick in absences)):
+            decision = "historical"
+        elif not incomplete and not completions and any(tick >= self._cancel_tick for tick in absences):
+            decision = "suppressed"
+        else:
+            decision = "held"
+        if decision != self._presentation or "presentation.decision" in self._checkpoint_gaps:
+            recorded = self._record("presentation", f"after_cancellation_{decision}")
+            self._set_gap("presentation.decision", not recorded)
+            if recorded:
+                self._presentation = decision
+
+    @staticmethod
+    def _presentation_inputs(state: CurrentState) -> tuple[HostPresentation, ...]:
+        return tuple(item for item in state.presentation_evidence if isinstance(item, HostPresentation)
+                     and type(item.observed_tick) is int and all(isinstance(value, str) for value in (
+                         item.execution_id, item.invocation_id, item.session_id, item.status, item.record_ref,
+                     )))
 
     def _set_gap(self, key: str, present: bool) -> None:
         if present:
@@ -693,6 +817,15 @@ class OfflineController:
             if self._active or self._writing_journal or self._retired or type(tick) is not int or tick < 0:
                 raise ValueError("Expected a nonnegative synthetic tick from the current, idle owner")
             if tick <= self._tick:
+                if self._same_invocation(state):
+                    new_cancel = state.cancelled and not self._cancel_requested
+                    new_ack = (state.cancellation_acknowledged and not self._cancel_acknowledged
+                               and (state.cancelled or self._cancel_requested or self._deferred_cancel))
+                    if new_cancel or new_ack:
+                        self._deferred_cancel |= new_cancel
+                        self._deferred_ack |= new_ack
+                        self._deferred_presentation.update(self._presentation_inputs(state))
+                        self._checkpoint_gaps.add("cancellation.awaiting_decision")
                 return self.status()
             if self._batch is not None and self._batch.tick != tick:
                 return self.status()
@@ -703,20 +836,33 @@ class OfflineController:
                     captured = self._capture_provider(observation)
                 except (ValueError, TypeError, RecursionError):
                     captured = None
-                packet = ProviderInput(observation.entry, captured, retry_proof, assessment)
-                if packet not in inputs:
+                packet = ProviderInput(observation.entry, captured, retry_proof, assessment,
+                                       state.capture_available and state.observation_available,
+                                       state.retry_evidence)
+                same = next((item for item in inputs
+                             if replace(item, evidence_available=packet.evidence_available) == packet), None)
+                if same is None:
                     inputs += (packet,)
-            binding = self._binding
-            correlated = (state.assignment.execution_id, state.session_id, state.invocation_id) == (
-                binding.assignment.execution_id, binding.session_id, binding.invocation_id,
-            )
+                elif not packet.evidence_available:
+                    inputs = tuple(replace(item, evidence_available=False) if item is same else item for item in inputs)
+            correlated = self._same_invocation(state)
+            presentation = set(batch.presentation) | self._deferred_presentation
+            if correlated:
+                presentation.update(self._presentation_inputs(state))
             batch = TickBatch(
                 tick, tuple(sorted(inputs, key=lambda item: (
                     item.entry.attempt, item.receipt.evidence_sha256 if item.receipt is not None else "",
                 ))), batch.tool_observed or tool_observed, batch.timeout or timeout,
-                batch.cancel or correlated and state.cancelled,
-                batch.cancel_ack or correlated and state.cancellation_acknowledged,
+                batch.cancel or self._deferred_cancel or correlated and state.cancelled,
+                batch.cancel_ack or self._deferred_ack or correlated and state.cancellation_acknowledged,
                 tuple(sorted(set(batch.restrictions) | set(self._input_restrictions(state)))),
+                batch.tool_evidence_available and (
+                    not tool_observed or state.capture_available and state.observation_available
+                ),
+                tuple(sorted(presentation, key=lambda item: (
+                    item.observed_tick, item.execution_id, item.invocation_id, item.session_id,
+                    item.status, item.record_ref,
+                ))),
             )
             if not batch_closed:
                 self._batch = batch
@@ -724,6 +870,10 @@ class OfflineController:
             self._batch = None
             if self._terminal is not None and self._terminal_duplicate(batch):
                 return self.status()
+            self._deferred_cancel = False
+            self._deferred_ack = False
+            self._deferred_presentation.clear()
+            self._checkpoint_gaps.discard("cancellation.awaiting_decision")
             self._active = True
             self._tick = tick
             try:
@@ -738,6 +888,8 @@ class OfflineController:
         if (self._checkpoint_gaps or self._unsent or batch.timeout
                 or batch.cancel and not self._cancel_requested
                 or batch.cancel_ack and not self._cancel_acknowledged):
+            return False
+        if any(item not in self._host_presentation for item in batch.presentation):
             return False
         if batch.tool_observed and (self._tool_entry is None or self._tool_entry in self._pending):
             return False
@@ -760,7 +912,6 @@ class OfflineController:
         else:
             self._checkpoint_gaps.add("batch.continuity")
             self._terminal = "hold_reconciliation"
-            self._candidate = None
         return available
 
     def _advance(
@@ -789,8 +940,12 @@ class OfflineController:
                 self._record("gap", "invalid_provider_observation", packet.entry)
                 provider_verdict = "unresolved"
             else:
-                provider_verdict = self._observe_provider(state, packet.receipt, packet.proof, late=late)
-        tool_verdict = self._observe_tool(state, late=late) if batch.tool_observed else None
+                provider_verdict = self._observe_provider(
+                    packet.receipt, packet.proof, evidence_available=packet.evidence_available,
+                    retry_evidence=packet.retry_evidence, late=late,
+                )
+        tool_verdict = self._observe_tool(evidence_available=batch.tool_evidence_available,
+                                          late=late) if batch.tool_observed else None
         timeout_pending = batch.timeout and bool(self._pending)
         if timeout_pending:
             self._record("gap", "transport_timeout_without_receipt", next(iter(self._pending)))
@@ -803,9 +958,10 @@ class OfflineController:
             if not self._commit_tick(self._stalled, classification="terminal_reconciliation"):
                 return
             if unresolved and self._terminal == "candidate":
-                self._candidate = None
                 self._stop("hold_reconciliation", signals=("hold_reconciliation",))
-            if self._cancel_requested and self._terminal not in ("candidate", "cancelled"):
+            if self._candidate is not None:
+                self._process_presentation(batch.presentation)
+            if self._cancel_requested and self._terminal != "cancelled":
                 signals = self._signals(
                     state, operation=None, unresolved=unresolved, authority_operation=self._next,
                     fragment_restrictions=batch.restrictions, tool_receipt=batch.tool_observed,
@@ -822,6 +978,9 @@ class OfflineController:
         progress = self._stalled
         verdicts = tuple(verdict for verdict in (provider_verdict, tool_verdict) if verdict is not None)
         credited, progress_gap = self._record_progress(state)
+        provider_decision = None
+        if provider_verdict == "settled" and packet is not None:
+            provider_decision = self._plan_provider(packet.receipt, packet.assessment, state)
         requested = self._next if not receiving and not self._pending and (ready or evaluate_only) else None
         blockers = self._signals(
             state, operation=requested, unresolved=unresolved or progress_gap, progress=0,
@@ -829,7 +988,8 @@ class OfflineController:
             fragment_restrictions=batch.restrictions, tool_receipt=batch.tool_observed,
         )
         ready_admission = ready and not evaluate_only and not blockers
-        protocol_resolution = any(verdict in ("settled", "retry", "retry_limit") for verdict in verdicts)
+        protocol_resolution = (provider_verdict in ("retry", "retry_limit") or tool_verdict == "settled"
+                               or provider_decision is not None and provider_decision.eligible)
         transition = ready_admission or protocol_resolution
         active = start or evaluate_only or not receiving or "duplicate" in verdicts
         if credited:
@@ -850,13 +1010,15 @@ class OfflineController:
         if not self._commit_tick(progress, signals, classification=classification):
             return
         if signals:
-            self._stop(signals[0], signals=signals)
+            reasons = ((provider_decision.outcome,) if provider_decision is not None
+                       and not provider_decision.eligible else ())
+            self._stop(signals[0], signals=tuple(dict.fromkeys((*signals, *reasons))))
             return
         if provider_verdict == "retry_limit":
             self._stop("stop_retry_limit")
             return
-        if provider_verdict == "settled" and packet is not None:
-            self._consume_provider(packet.receipt, packet.assessment, state)
+        if provider_decision is not None:
+            self._consume_provider(packet.receipt, packet.assessment, provider_decision)
             return
         if receiving:
             return
@@ -878,7 +1040,9 @@ class OfflineController:
             ):
                 continue
             if reference in self._criterion_evidence:
-                self._record("evaluation", "unchanged_verified_criterion_evidence", ref=reference)
+                if not self._record("evaluation", "unchanged_verified_criterion_evidence", ref=reference):
+                    self._checkpoint_gaps.add(f"progress.criterion:{reference}")
+                    unavailable = True
                 continue
             if self._record("evaluation", "new_verified_criterion_evidence", ref=reference):
                 self._criterion_evidence.add(reference)
@@ -889,7 +1053,8 @@ class OfflineController:
         return recorded, unavailable
 
     def _observe_provider(
-        self, state: CurrentState, receipt: ProviderReceipt, proof: RetryProof | None, *, late: bool,
+        self, receipt: ProviderReceipt, proof: RetryProof | None, *,
+        evidence_available: bool, retry_evidence: tuple[RetryProof, ...], late: bool,
     ) -> str:
         entry = receipt.entry
         action = self._admitted.get(entry)
@@ -911,7 +1076,7 @@ class OfflineController:
                        for old_entry, old_revision in self._revisions)):
             self._record("reconciliation", "receipt_correlation_unproved", ref=receipt_ref)
             return "unresolved"
-        if not state.observation_available or not state.capture_available:
+        if not evidence_available:
             self._record("gap", "required_provider_observation_unavailable", entry)
             if late:
                 self._checkpoint_gaps.add(f"reconciliation.provider:{entry.admission}")
@@ -929,7 +1094,7 @@ class OfflineController:
             return "unresolved"
         positive_no_effect = (
             receipt.kind in ("no_submit", "safe_rejection")
-            and proof is not None and proof in state.retry_evidence and bool(proof.evidence_ref)
+            and proof is not None and proof in retry_evidence and bool(proof.evidence_ref)
             and (proof.entry, proof.receipt_id, proof.revision, proof.kind) ==
                 (entry, receipt.receipt_id, receipt.revision, receipt.kind)
             and proof.request_sha256 == _digest(action.canonical_arguments)
@@ -1066,7 +1231,9 @@ class OfflineController:
         pinned = self._accounting_checkpoints.get(accounting_key)
         if pinned is None:
             pinned = self._unconfirmed_appends.get(("accounting", accounting_key))
+        verified_checkpoint = False
         def checkpoint(decision: Decision, before: LedgerSnapshot, after: LedgerSnapshot) -> bool:
+            nonlocal verified_checkpoint
             stage = "observation"
             reason = decision.reason
             if unsent:
@@ -1087,6 +1254,8 @@ class OfflineController:
                     event for event in reversed(self._journal) if event.accounting_key == accounting_key
                     and event.stage != "gap"
                 )
+                self._unpublished_accounting.add(accounting_key)
+                verified_checkpoint = True
             return saved
 
         result = self._budget.settle(
@@ -1095,61 +1264,72 @@ class OfflineController:
             observation_tick=(pinned.ledger_after.observation_ticks[-1]
                               if pinned is not None and pinned.ledger_after.observation_ticks else None),
         )
-        if result.reason != "settlement_checkpoint_unavailable":
+        if result.reason == "settlement_publication_unavailable" or verified_checkpoint:
             self._set_gap(f"ledger.publication:{action.attempt_id}", result.reason == "settlement_publication_unavailable")
+        if verified_checkpoint and result.reason != "settlement_publication_unavailable":
+            self._unpublished_accounting.discard(accounting_key)
         return result
 
-    def _consume_provider(
+    def _plan_provider(
         self, receipt: ProviderReceipt, assessment: Assessment | None, current: CurrentState,
-    ) -> None:
+    ) -> ProviderDecision:
         api = self._normalized.get(receipt.entry)
         raw_output = receipt.wire_response.body.get("output") if receipt.wire_response else None
         raw_calls = (sum(isinstance(item, Mapping) and item.get("type") == "function_call"
                          for item in raw_output) if isinstance(raw_output, list) else 0)
         if receipt.kind != "completed" or api is None:
-            self._stop("hold_outcome")
-        elif raw_calls > 1:
-            self._stop("stop_tool_cardinality")
-        elif api.disposition != "completed":
-            self._stop("hold_outcome")
-        elif api.diagnostics.observed_model != self._binding.selected_model:
-            self._stop("hold_model")
-        elif raw_calls:
+            return ProviderDecision("hold_outcome")
+        if raw_calls > 1:
+            return ProviderDecision("stop_tool_cardinality")
+        if api.disposition != "completed":
+            return ProviderDecision("hold_outcome")
+        if api.diagnostics.observed_model != self._binding.selected_model:
+            return ProviderDecision("hold_model")
+        if raw_calls:
             if receipt.entry.operation != "provider" or self._call is not None:
-                self._stop("hold_scope")
-                return
+                return ProviderDecision("hold_scope")
             criterion = controller_tool_criterion(
                 api, expected_model=self._binding.selected_model,
                 tool_name=self._binding.tool_name, document_id=self._binding.document_id,
             )
-            if (criterion.outcome != "pass"
-                    or not self._record("evaluation", criterion.reason, receipt.entry, ref=receipt.evidence_sha256)):
-                self._stop("hold_evaluation")
-                return
+            if criterion.outcome != "pass":
+                return ProviderDecision("hold_evaluation", evidence_reason=criterion.reason)
             proposal = api.items[0]
             if not isinstance(proposal, ToolProposal):
-                self._stop("hold_scope")
+                return ProviderDecision("hold_scope")
+            return ProviderDecision("tool_proposal", proposal=proposal, evidence_reason=criterion.reason)
+        evaluation = self._evaluate(receipt, assessment, current)
+        eligible = (evaluation is not None and evaluation.aggregate == "criteria_met"
+                    and evaluation.v1_assessment == "review_required" and evaluation.review_state == "reviewed"
+                    and bool(evaluation.retained_reviewers))
+        return ProviderDecision("candidate" if eligible else "hold_evaluation", evaluation=evaluation)
+
+    def _consume_provider(
+        self, receipt: ProviderReceipt, assessment: Assessment | None, decision: ProviderDecision,
+    ) -> None:
+        proposal, evaluation = decision.proposal, decision.evaluation
+        if proposal is not None:
+            if not self._record("evaluation", decision.evidence_reason, receipt.entry, ref=receipt.evidence_sha256):
+                self._stop("hold_evaluation")
                 return
             self._call = ToolCall(proposal.call_id, proposal.name, _encode({"document_id": proposal.query}))
             self._call_response = receipt.receipt_id
             self._next = "tool"
+        elif evaluation is None:
+            self._stop(decision.outcome)
         else:
-            evaluation = self._evaluate(receipt, assessment, current)
-            if evaluation is None:
-                self._stop("hold_evaluation")
-                return
-            eligible = (evaluation.aggregate == "criteria_met" and evaluation.v1_assessment == "review_required"
-                        and evaluation.review_state == "reviewed" and bool(evaluation.retained_reviewers))
             findings = tuple(criterion.reason for criterion in evaluation.criteria
                              if criterion.outcome in ("fail", "unresolved"))
-            reasons = () if eligible else (evaluation.next_proposal, *findings)
-            saved = self._record("evaluation", "criteria_met" if eligible else "criteria_unmet",
+            reasons = () if decision.eligible else (evaluation.next_proposal, *findings)
+            saved = self._record("evaluation", "criteria_met" if decision.eligible else "criteria_unmet",
                                  receipt.entry, ref=evaluation_digest(evaluation), signals=reasons)
-            if not saved or not eligible:
+            if not saved or not decision.eligible:
                 self._stop("hold_evaluation", signals=reasons)
                 return
             if self._stop("candidate"):
                 self._candidate = assessment.inputs.output_utf8
+                self._candidate_tick = self._tick
+                self._presentation = "pending"
 
     def _evaluate(
         self, receipt: ProviderReceipt, assessment: Assessment | None, current: CurrentState,
@@ -1192,12 +1372,12 @@ class OfflineController:
             return None
         return evaluate_io(policy, inputs)
 
-    def _observe_tool(self, state: CurrentState, *, late: bool) -> str:
+    def _observe_tool(self, *, evidence_available: bool, late: bool) -> str:
         entries = [entry for entry in self._pending if entry.operation == "tool"]
         if not entries and self._tool_entry is not None:
             self._record("reconciliation", "duplicate_tool_receipt", self._tool_entry)
             return "duplicate"
-        if len(entries) != 1 or not state.observation_available or not state.capture_available:
+        if len(entries) != 1 or not evidence_available:
             self._record("gap", "required_tool_observation_unavailable")
             if late and len(entries) == 1:
                 self._checkpoint_gaps.add(f"reconciliation.tool:{entries[0].admission}")
