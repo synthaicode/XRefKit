@@ -14,12 +14,12 @@ from xrefkit.decision_handoff import _digest
 from xrefkit.engineering_decision import record_decision, require_decision
 from xrefkit.loaders import load_package_manifest
 from xrefkit.unknown_resolution import JOURNAL
-from xrefkit_skills_brownfield import package_root as brownfield_root
-from xrefkit_skills_project_management import package_root as pm_root
 
 
 @pytest.fixture
 def resolution_case(tmp_path, checklist_project, monkeypatch):
+    brownfield_root = pytest.importorskip("xrefkit_skills_brownfield").package_root
+    pm_root = pytest.importorskip("xrefkit_skills_project_management").package_root
     discovered = discovery.discover_skill_packages()
     if not {"brownfield", "project_management"}.issubset({package.entry_point_name for package in discovered}):
         packages = []
