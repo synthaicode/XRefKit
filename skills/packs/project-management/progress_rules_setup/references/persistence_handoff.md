@@ -121,6 +121,72 @@ behavior, including work-specific validation of existing controls.
    Stop the affected handoff when any required current source is missing, stale,
    mismatched or outside the approved scope. Keep other authorized work moving.
 
+## Brownfield design findings
+
+When the project uses Engineering Decision Gate (XID `C34E62A9B710`), receive
+an authority escalation through the pending decision Handoff. Match the
+engineering decision ID and finding revision. Keep the affected Execution
+scope on Hold until the authority responds and Brownfield re-evaluates the
+candidate. A resume assessment references the current technical decision.
+PM coordinates owners, impact and schedule. The normal completed-artifact
+route below applies to other findings.
+
+For a discovery-enabled engineering decision, use the linked decision
+`--inspect` record to read the global and project references, applicability
+reasons, unresolved constraints, conflicts and technical alternatives. Record
+why a decision authority is needed, the owner and the affected schedule.
+Return missing technical evidence to Brownfield for further investigation.
+
+If the decision uses a checklist, inspect `checklist_pending` and the recorded
+reasons and unresolved issues. Carry them into the schedule impact and Hold.
+Brownfield retains responsibility for resolving or re-evaluating technical
+checks before a protected action can resume.
+
+Receive `brownfield.design_finding/v1` as a technical artifact linked by the
+existing Skill Run Handoff. Verify source closure and Handoff state, source
+revision and content, Work Item identity/current revision and evidence
+readback before using it. Use
+`xrefkit_skills_project_management.design_review.receive_finding` for the
+current-work binding and routing proposal. Brownfield owns technical cause
+and design-policy evaluation. Keep missing evidence, owner or approval as an
+explicit unresolved handoff condition.
+
+- `IMPLEMENTATION_FIX`: coordinate the existing Execution work under its gates.
+- `DESIGN_REVIEW_REQUIRED`: hold affected Execution, link the finding and
+  required decision in the current Decision record, and request Brownfield
+  re-evaluation. Record the reason, affected scope, responsible owner,
+  pending decisions and supporting evidence. Use the configured Decision and
+  approval records for proposals, evaluation and approval state. Apply
+  formally accepted principle updates through Knowledge/XID governance.
+- `INVESTIGATION_REQUIRED`: use the existing investigation and Decision route
+  to collect the specified evidence. Hold affected starts where that evidence
+  is a prerequisite.
+
+Look up the Work Item, source work revision and stable finding ID in the
+existing records before changing anything. Same identity and same evidence
+reuse the recorded decision and Hold. Conflicting payloads require
+reconciliation. Before writing, recheck the authoritative revision using the
+guarded writer below. After ambiguous or partial delivery, read back current
+Decision, Hold and Issue links and apply only the missing authorized change.
+If the configured route cannot protect duplicates under concurrent delivery,
+hand the proposed update to the designated owner. Do not automatically open
+another Issue based on a receipt or an unverified impact candidate.
+
+Check related Issues by their verified references to the changed design
+decision and its scope. Link confirmed direct/dependent effects through the
+existing impact notification and assessment; retain unmapped and unknown
+references, owner and next action. Related work retains its own evidence,
+approval and acceptance. Use shared decision references for a common cause.
+
+To resume, read back the current in-scope design revision, any required
+human approval bound to it, the reviewed impact, current acceptance,
+Hold resolution and separate implementation start authorization. Use
+`xrefkit_skills_project_management.design_review.resume_blockers` with those
+verified conditions; unknown or failed conditions hold the affected start.
+Even a reviewed design does not grant start authority. Use the existing
+Workflow Runtime Binding to issue an authorized new work instruction with
+the approved inputs. This handoff does not dispatch a Skill or mutate Runtime.
+
 ## Update procedure
 
 1. Read the current designated record and revision where applicable. Determine
@@ -150,20 +216,6 @@ behavior, including work-specific validation of existing controls.
    reload the authoritative management and detail records as the basis for work.
 
 ## Existing routes and limits
-
-For projects enrolled in Engineering Decision Gate (XID `C34E62A9B710`),
-route reserved Brownfield authority decisions through the pending decision
-Handoff. Preserve the engineering decision ID, related finding revision and
-affected Hold scope. Use the current engineering decision when evaluating
-resume after Brownfield re-evaluation.
-
-For discovery-enabled requests, inspect the linked decision's principle
-assessment, unresolved constraints and technical alternatives. Use them to
-identify the authority and scope the schedule impact. Technical reassessment
-remains a Brownfield responsibility.
-
-For checklist-enabled decisions, preserve the checklist's pending items
-and their stated impact in the Hold. Return technical checks to Brownfield.
 
 - [local_work_management](../../../../os/local_work_management/SKILL.v1.md#xid-E7C4A916B280) persists approved local plans and
   explicit observations. Use it only when the configured local plan schema and
