@@ -348,6 +348,33 @@ def test_update_preserves_outside_bytes_and_never_appends_managed_history():
     assert prepare_update(writer.issue, view, resolve=records.resolve).changed is False
 
 
+def test_structured_summary_preserves_existing_issue_text_in_place():
+    records = Records()
+    prefix = b"Human-maintained heading\r\n\r\n"
+    suffix = b"\r\n\r\n# Original work and evidence links\r\n"
+    _, original, _, archive, delivery, _ = prepare_fixture(records, prefix=prefix, suffix=suffix)
+    report = {
+        "schema_version": 1, "scope": "設計確認", "decision": {
+            "status": "BLOCKED", "reason": "実行証拠が不足しています。", "source": "decision",
+        }, "evidence": {
+            "decision": {"label": "判断の根拠", "kind": "decision", "method": "design",
+                         "link": "https://records.example/pm/pm-3"},
+        },
+    }
+    source = records.authority(pm_revision="pm-3", human_report=report, kind="blocked", blockers=("Evidence pending",))
+    view = render_view(source, records.resolve)
+    message = view.body.decode()
+    assert "設計判断を保留しています" in message and "判断の根拠" in message
+    assert "BLOCKED" not in message
+    plan = prepare_update(original, view, archive=archive, prior_delivery=delivery, resolve=records.resolve)
+    assert plan.replacement == prefix + view.body[:-1].replace(b"\n", b"\r\n") + suffix
+    assert plan.replacement.count(VIEW_START) == plan.replacement.count(VIEW_END) == 1
+    report["evidence"]["decision"]["link"] = "https://records.example/stale"
+    stale = records.authority(pm_revision="pm-4", human_report=report)
+    with pytest.raises(ProjectionError, match="verified current"):
+        render_view(stale, records.resolve)
+
+
 def test_regular_overwrite_requires_exact_archive_and_unchanged_prior_managed_delivery():
     records = Records()
     _, original, view, archive, delivery, _ = prepare_fixture(records)
