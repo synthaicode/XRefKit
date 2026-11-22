@@ -9,6 +9,7 @@ from importlib.metadata import version
 from pathlib import Path
 
 import pytest
+from packaging.version import Version
 
 from xrefkit.discovery import DiscoveredSkillPackage, discover_skill_packages
 from xrefkit.loaders import load_package_manifest
@@ -26,10 +27,11 @@ RELEASE_SKILLS = {
     '0.1.1': BASE_SKILLS + ('pm_coordination_setup', 'pm_decision_coordination'),
     '0.1.2': BASE_SKILLS + ('pm_coordination_setup', 'pm_decision_coordination'),
     '0.1.3': BASE_SKILLS + ('pm_coordination_setup', 'pm_decision_coordination'),
+    '0.1.4': BASE_SKILLS + ('pm_coordination_setup', 'pm_decision_coordination'),
 }
-INSTALLED_VERSION = version('xrefkit-skills-project-management')
+INSTALLED_VERSION = Version(version('xrefkit-skills-project-management')).public
 EXPECTED_SKILLS = RELEASE_SKILLS[INSTALLED_VERSION]
-TRIAL_RELEASES = {'0.1.0', '0.1.1', '0.1.2', '0.1.3'}
+TRIAL_RELEASES = {'0.1.0', '0.1.1', '0.1.2', '0.1.3', '0.1.4'}
 EXPECTED_MATURITY = 'trial' if INSTALLED_VERSION in TRIAL_RELEASES else 'draft'
 
 
@@ -134,7 +136,7 @@ def test_shared_persistence_procedure_is_reachable_from_all_native_methods():
             'authoritative detailed records',
         ):
             assert condition in procedure
-    if INSTALLED_VERSION in {'0.1.2', '0.1.3'}:
+    if INSTALLED_VERSION in {'0.1.2', '0.1.3', '0.1.4'}:
         for condition in (
             'work or decision and its current status in plain language',
             'project-specific meaning for stage and status codes',
