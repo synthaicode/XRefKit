@@ -41,6 +41,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install pytest pyyaml
+          if [[ "$GITHUB_REF" != refs/tags/* ]]; then python -m pip install "$GITHUB_WORKSPACE"; fi
           python -m pip install "${PACKAGE_ROOT}"
       - name: Run package tests
         working-directory: ${{ runner.temp }}
@@ -143,6 +144,7 @@ jobs:
       - name: Install wheel and verify package root
         shell: bash
         run: |
+          if [[ "$GITHUB_REF" != refs/tags/* ]]; then python -m pip install "$GITHUB_WORKSPACE"; fi
           python -m pip install "$(find dist -name 'xrefkit_skills_brownfield-*.whl' -print -quit)"
           python - <<'PY'
           from xrefkit_skills_brownfield import package_root
@@ -173,6 +175,7 @@ jobs:
         run: |
           set -euo pipefail
           sdist="$(find "${GITHUB_WORKSPACE}/dist" -name 'xrefkit_skills_brownfield-*.tar.gz' -print -quit)"
+          if [[ "$GITHUB_REF" != refs/tags/* ]]; then python -m pip install "$GITHUB_WORKSPACE"; fi
           python -m pip install "$sdist" pytest
           python -m pytest "${GITHUB_WORKSPACE}/${PACKAGE_ROOT}/tests" --import-mode=importlib -o pythonpath= -q
 
