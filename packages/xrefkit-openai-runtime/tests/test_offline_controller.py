@@ -1,6 +1,7 @@
 """Exercise the pinned #206 six groups through actual in-process admissions."""
 
 from dataclasses import asdict, replace
+from copy import deepcopy
 from hashlib import sha256
 from itertools import count
 import json
@@ -15,7 +16,7 @@ from xrefkit_openai_runtime.offline_controller import (
     Assessment, ControllerBinding, ControllerLimits, CriterionEvidence, CurrentState, OfflineController, OfflineJournal,
     ProviderReceipt, RetryProof, ToolCall,
 )
-from xrefkit_openai_runtime.offline_dispatch import ToolDecision, _FakeRunner
+from xrefkit_openai_runtime.offline_dispatch import OfflineToolDispatch, ToolDecision, _FakeRunner
 from xrefkit_openai_runtime.offline_evaluation import (
     EvaluationInputs, EvaluationPolicy, ReviewAuthority, RevisionLinks, SemanticReview,
     api_observation_digest, effective_rules_digest, evaluation_policy_digest, evidence_digest,
@@ -306,7 +307,13 @@ class OfflineControllerCases(unittest.TestCase):
 
         self.step(ticks[1], observation=self.receipt(calls=(self.call,)))
         if variant == "revoked-before-tool":
-            return self.step(ticks[2], start=True, before_entry=lambda: replace(self.current, tool_allowed=False))
+            outcome = self.step(ticks[2], start=True, before_entry=lambda: replace(self.current, tool_allowed=False))
+            aborted = next(event for event in self.controller.journal if event.stage == "not_sent")
+            self.assertEqual(
+                (aborted.ledger_before.reservation_state, aborted.ledger_after.reservation_state),
+                ("reserved", "released"),
+            )
+            return outcome
         with patch.dict(os.environ, {"OPENAI_API_KEY": "e206-synthetic-secret-marker"}):
             self.step(ticks[2], start=True)
         self.step(ticks[3], tool_observed=True)
@@ -586,7 +593,7 @@ class OfflineControllerCases(unittest.TestCase):
     def test_budget_precedes_no_progress_at_the_same_gate(self):
         self.setup_controller(replace(self.limits, synthetic_budget_units=0,
                                       max_consecutive_no_progress_decision_ticks=1))
-        outcome = self.step(0, start=True)
+        outcome = self.step(0, evaluate_only=True)
         self.expect(outcome, "stop_budget", 0, 0)
         self.assertEqual(outcome.last_checkpoint.signals, ("stop_budget", "stop_no_progress"))
 
@@ -598,6 +605,12 @@ class OfflineControllerCases(unittest.TestCase):
                 status = self.step(0, start=True)
                 if stage == "prepared":
                     self.expect(status, "hold_journal", 0, 0)
+                    aborted = next(event for event in self.controller.journal if event.stage == "not_sent")
+                    self.assertEqual(aborted.reason, "intent_checkpoint_unavailable")
+                    self.assertEqual(
+                        (aborted.ledger_before.reservation_state, aborted.ledger_after.reservation_state),
+                        ("reserved", "released"),
+                    )
                 else:
                     receipt = self.receipt()
                     if stage in ("observed", "observation"):
@@ -644,11 +657,12 @@ class OfflineControllerCases(unittest.TestCase):
                 if failed_write:
                     self.controller = OfflineController(self.binding, journal=BrokenStage("retry"))
                 self.step(0, start=True)
+                self.step(1, evaluate_only=True)
                 receipt = replace(self.receipt(kind="no_submit", usage=MISSING), delay_ticks=2)
-                self.retries(1, receipt, self.proof(receipt))
-                stopped = self.step(2, evaluate_only=True)
+                self.retries(2, receipt, self.proof(receipt))
+                stopped = self.step(3, evaluate_only=True)
                 self.expect(stopped, terminal, 1, 0)
-                retry = self.step(3, start=True)
+                retry = self.step(4, start=True)
                 self.expect(retry, terminal, 1, 0)
                 self.assertFalse(retry.outstanding)
                 if failed_write:
@@ -719,6 +733,104 @@ class OfflineControllerCases(unittest.TestCase):
         self.expect(stopped, "hold_reconciliation", 1, 0)
         self.assertEqual(stopped.outstanding, (receipt.entry,))
         self.assertEqual(stopped.last_checkpoint.ledger_after.work.reserved, 1)
+
+    def test_consumed_initial_receipt_revision_cannot_bypass_tool_continuation(self):
+        self.step(0, start=True)
+        initial = self.receipt(calls=(self.call,))
+        self.step(1, observation=initial)
+        self.step(2, start=True)
+        self.step(3, tool_observed=True)
+        revised = replace(self.receipt(), revision=2)
+        assessment = self.assessment(revised)
+        state = replace(self.current, approved_evaluation_sha256=evaluation_policy_digest(assessment.policy))
+        held = self.step(4, state=state, observation=revised, assessment=assessment, start=True)
+        self.expect(held, "hold_reconciliation", 1, 1)
+        self.assertIsNone(held.candidate)
+        revision = next(event for event in self.controller.journal
+                        if event.reason == "consumed_provider_receipt_revision")
+        self.assertEqual(revision.evidence_ref, revised.evidence_sha256)
+        self.assertEqual(revision.ledger_before, revision.ledger_after)
+        self.assertEqual(revision.ledger_after.reservation_state, "settled")
+        repeated = self.step(5, observation=initial, start=True)
+        self.expect(repeated, "hold_reconciliation", 1, 1)
+        self.assertEqual(repeated.last_checkpoint.reason, "duplicate_receipt")
+
+    def test_wire_body_snapshot_is_immune_to_caller_mutation_during_append(self):
+        class MutatingWriter(OfflineJournal):
+            receipt = None
+
+            def append(writer, event):
+                if event.stage == "observed" and writer.receipt is not None:
+                    writer.receipt.wire_response.body["output"].clear()
+                    writer.receipt = None
+                super().append(event)
+
+        writer = MutatingWriter()
+        self.controller = OfflineController(self.binding, journal=writer)
+        self.step(0, start=True)
+        original = self.receipt(calls=(self.call,))
+        redelivery = deepcopy(original)
+        writer.receipt = original
+        self.expect(self.step(1, observation=original), "pending", 1, 0)
+        self.assertEqual(original.wire_response.body["output"], [])
+        repeated = self.step(2, observation=redelivery)
+        self.expect(repeated, "pending", 1, 0)
+        self.assertEqual(repeated.last_checkpoint.reason, "duplicate_receipt")
+        self.expect(self.step(3, start=True), "pending", 1, 1)
+
+    def test_tool_proposal_and_settlement_do_not_credit_progress_by_themselves(self):
+        for stage in ("proposal", "result"):
+            with self.subTest(stage=stage):
+                self.setup_controller()
+                self.step(0, start=True)
+                initial = self.receipt(calls=(self.call,))
+                if stage == "proposal":
+                    self.step(1, evaluate_only=True)
+                    self.step(2, observation=initial)
+                    self.expect(self.step(3, evaluate_only=True), "stop_no_progress", 1, 0)
+                else:
+                    self.step(1, observation=initial)
+                    self.step(2, start=True)
+                    self.step(3, evaluate_only=True)
+                    self.step(4, tool_observed=True)
+                    self.expect(self.step(5, evaluate_only=True), "stop_no_progress", 1, 1)
+
+    def test_failed_terminal_checkpoint_never_exposes_candidate(self):
+        self.controller = OfflineController(self.binding, journal=BrokenStage("terminal"))
+        self.step(0, start=True)
+        result = self.final(1)
+        self.expect(result, "hold_journal", 1, 0)
+        self.assertIsNone(result.candidate)
+        self.assertEqual(result.last_checkpoint.reason, "terminal_write_failed")
+        self.assertEqual(result.last_safe_checkpoint.reason, "criteria_met")
+        self.assertIsNone(self.step(2, start=True).candidate)
+
+    def test_not_sent_checkpoint_failure_retains_reservation_until_reconciled(self):
+        self.controller = OfflineController(self.binding, journal=BrokenStage("not_sent"))
+        outcome = self.step(0, start=True, before_entry=lambda: replace(self.current, provider_allowed=False))
+        self.expect(outcome, "hold_reconciliation", 0, 0)
+        self.assertEqual(len(outcome.outstanding), 1)
+        gap = next(event for event in self.controller.journal if event.reason == "not_sent_write_failed")
+        self.assertEqual(gap.ledger_before, gap.ledger_after)
+        self.assertEqual(gap.ledger_after.reservation_state, "reserved")
+        reconciled = self.step(1, start=True)
+        self.expect(reconciled, "hold_reconciliation", 0, 0)
+        self.assertFalse(reconciled.outstanding)
+        recovered = next(event for event in self.controller.journal if event.stage == "not_sent")
+        self.assertEqual((recovered.ledger_before.reservation_state, recovered.ledger_after.reservation_state),
+                         ("reserved", "released"))
+        self.assertEqual(reconciled.last_checkpoint.reason, "local_no_entry_checkpoint_recovered")
+
+    def test_tool_dispatch_denial_is_recorded_before_reservation_release(self):
+        self.step(0, start=True)
+        self.step(1, observation=self.receipt(calls=(self.call,)))
+        with patch.object(OfflineToolDispatch, "invoke", return_value=ToolDecision("deny", "local_tool_gate")):
+            stopped = self.step(2, start=True)
+        self.expect(stopped, "hold_scope", 1, 0)
+        aborted = next(event for event in self.controller.journal if event.stage == "not_sent")
+        self.assertEqual(aborted.reason, "local_tool_gate")
+        self.assertEqual((aborted.ledger_before.reservation_state, aborted.ledger_after.reservation_state),
+                         ("reserved", "released"))
 
     def test_api_key_marker_is_absent_at_the_actual_runner_boundary(self):
         original = _FakeRunner._enter
