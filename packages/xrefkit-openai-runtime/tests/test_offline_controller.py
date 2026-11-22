@@ -12,7 +12,7 @@ from unittest.mock import patch
 from xrefkit_openai_runtime.contracts import AssignmentRef, BudgetLimits, ExecutionEvent, ExecutionRequest, ExecutionResult
 from xrefkit_openai_runtime.offline_context import ContextAssembly
 from xrefkit_openai_runtime.offline_controller import (
-    Assessment, ControllerBinding, ControllerLimits, CurrentState, OfflineController, OfflineJournal,
+    Assessment, ControllerBinding, ControllerLimits, CriterionEvidence, CurrentState, OfflineController, OfflineJournal,
     ProviderReceipt, RetryProof, ToolCall,
 )
 from xrefkit_openai_runtime.offline_dispatch import ToolDecision, _FakeRunner
@@ -39,6 +39,21 @@ def encode(value):
 
 def digest(content):
     return sha256(content).hexdigest()
+
+
+class BrokenStage(OfflineJournal):
+    def __init__(self, failed, operation=None):
+        super().__init__()
+        self.failed = failed
+        self.operation = operation
+
+    def append(self, event):
+        if event.stage == self.failed and (
+            self.operation is None or event.entry is not None and event.entry.operation == self.operation
+        ):
+            self.failed = None
+            raise OSError("synthetic append failure")
+        super().append(event)
 
 
 class OfflineControllerCases(unittest.TestCase):
@@ -70,16 +85,27 @@ class OfflineControllerCases(unittest.TestCase):
         })
         context = ContextAssembly(payload, provenance, None)
         self.rubric = encode({"revision": "e206-rubric-r2", "criterion": fixed["criterion"]})
+        self.baseline_criterion_sha256 = digest(encode({
+            "criterion": fixed["criterion"], "reference": "initial-verified-evidence",
+        }))
         reviewer = ReviewAuthority("independent-fixture-reviewer", "independent-fixture-context")
         self.binding = ControllerBinding(
             assignment, fixed["session_id"], "invoke-206", fixed["model"], fixed["instruction_revision"],
             fixed["recipient"], fixed["tool_name"], fixed["arguments"]["document_id"], "e206-rubric-r2",
             digest(self.rubric), reviewer, limits or self.limits, context, encode(fixed["tool_result"]),
+            frozenset({self.baseline_criterion_sha256}),
         )
         self.current = CurrentState(assignment, context, fixed["instruction_revision"], fixed["recipient"],
                                     fixed["session_id"], self.binding.invocation_id)
         self.controller = OfflineController(self.binding)
         self.call = ToolCall(fixed["call_id"], fixed["tool_name"], encode(fixed["arguments"]))
+
+    def criterion_evidence(self, observation_sha256):
+        binding = self.binding
+        return CriterionEvidence(
+            binding.assignment, binding.session_id, binding.invocation_id,
+            binding.criterion_sha256, observation_sha256,
+        )
 
     def step(self, tick, *, state=None, **kwargs):
         return self.controller.step(tick, state or self.current, **kwargs)
@@ -223,8 +249,15 @@ class OfflineControllerCases(unittest.TestCase):
         if variant == "required-intent-write-fault":
             return self.step(ticks[0], start=True, state=replace(self.current, intent_available=False))
         if variant == "stalled":
-            self.step(ticks[0], evaluate_only=True)
-            return self.step(ticks[1], evaluate_only=True)
+            same_evidence = self.criterion_evidence(self.baseline_criterion_sha256)
+            state = replace(self.current, verified_criterion_evidence=(same_evidence,))
+            self.step(ticks[0], state=state, evaluate_only=True)
+            outcome = self.step(ticks[1], state=state, evaluate_only=True)
+            repeated = [event for event in self.controller.journal
+                        if event.reason == "unchanged_verified_criterion_evidence"]
+            self.assertEqual([(event.tick, event.evidence_ref) for event in repeated],
+                             [(tick, same_evidence.observation_sha256) for tick in ticks])
+            return outcome
         if variant == "simultaneous-signals":
             self.setup_controller(replace(self.limits, deadline_tick_exclusive=0))
             result = self.step(ticks[0], start=True, state=replace(
@@ -240,9 +273,14 @@ class OfflineControllerCases(unittest.TestCase):
             second = self.call if duplicate else replace(self.call, call_id="call-206-distinct")
             return self.step(ticks[1], observation=self.receipt(calls=(self.call, second)))
         if variant == "timeout":
-            self.assertEqual(self.controller.status(wait_ended=True).disposition, "hold_reconciliation")
+            self.assertEqual(self.controller.status().disposition, "pending")
             result = self.step(ticks[1], timeout=True)
             self.assertEqual(len(result.outstanding), 1)
+            self.assertEqual(result.last_checkpoint.tick, ticks[1])
+            self.assertEqual(result.last_checkpoint.signals, ("hold_reconciliation",))
+            self.assertFalse(any("host_wait_expired" in event.signals for event in self.controller.journal))
+            self.assertTrue(any(event.tick == ticks[1] and event.reason == "transport_timeout_without_receipt"
+                                for event in self.controller.journal))
             return result
         if variant == "required-observation-write-fault":
             return self.step(ticks[1], observation=self.receipt(),
@@ -553,18 +591,7 @@ class OfflineControllerCases(unittest.TestCase):
         self.assertEqual(outcome.last_checkpoint.signals, ("stop_budget", "stop_no_progress"))
 
     def test_required_writer_faults_hold_at_the_real_append_boundary(self):
-        class BrokenStage(OfflineJournal):
-            def __init__(self, failed):
-                super().__init__()
-                self.failed = failed
-
-            def append(self, event):
-                if event.stage == self.failed:
-                    self.failed = None
-                    raise OSError("synthetic append failure")
-                super().append(event)
-
-        for stage in ("prepared", "entry", "observed"):
+        for stage in ("prepared", "entry", "observed", "observation"):
             with self.subTest(stage=stage):
                 self.setup_controller()
                 self.controller = OfflineController(self.binding, journal=BrokenStage(stage))
@@ -573,13 +600,125 @@ class OfflineControllerCases(unittest.TestCase):
                     self.expect(status, "hold_journal", 0, 0)
                 else:
                     receipt = self.receipt()
-                    if stage == "observed":
+                    if stage in ("observed", "observation"):
                         status = self.step(1, observation=receipt)
                     self.expect(status, "hold_reconciliation", 1, 0)
                     self.assertEqual(status.outstanding, (receipt.entry,))
+                    if stage == "observation":
+                        gap = next(event for event in self.controller.journal
+                                   if event.reason == "observation_write_failed")
+                        self.assertEqual(gap.ledger_before, gap.ledger_after)
+                        self.assertEqual(gap.ledger_after.reservation_state, "reserved")
                     status = self.step(2, observation=receipt)
                     self.assertFalse(status.outstanding)
+                    if stage == "observation":
+                        self.assertEqual(status.last_checkpoint.reason, "matched_late_receipt")
                 self.assertIn(f"{stage}_write_failed", [event.reason for event in self.controller.journal])
+
+    def test_tool_settlement_checkpoint_failure_preserves_ledger_and_allows_redelivery(self):
+        self.controller = OfflineController(self.binding, journal=BrokenStage("observation", "tool"))
+        self.step(0, start=True)
+        self.step(1, observation=self.receipt(calls=(self.call,)))
+        self.step(2, start=True)
+        pending = self.step(3, tool_observed=True)
+        self.expect(pending, "hold_reconciliation", 1, 1)
+        original = pending.outstanding[0]
+        self.assertEqual(original.operation, "tool")
+        failure = next(event for event in self.controller.journal if event.reason == "observation_write_failed")
+        self.assertEqual(failure.ledger_before, failure.ledger_after)
+        self.assertEqual(failure.ledger_before.reservation_state, "reserved")
+        matched = self.step(4, tool_observed=True, start=True)
+        self.expect(matched, "hold_reconciliation", 1, 1)
+        self.assertFalse(matched.outstanding)
+        self.assertEqual(matched.last_checkpoint.reason, "matched_late_tool_receipt")
+        settled = next(event for event in self.controller.journal
+                       if event.stage == "observation" and event.entry == original)
+        self.assertEqual((settled.ledger_before.work.reserved, settled.ledger_after.work.reserved), (1, 0))
+        self.assertEqual((settled.ledger_before.work.debit, settled.ledger_after.work.debit), (1, 2))
+        self.assertEqual(settled.ledger_after.observation_ticks, (4,))
+
+    def test_retry_requires_its_checkpoint_and_preserves_progress_count(self):
+        for failed_write, terminal in ((True, "hold_reconciliation"), (False, "stop_no_progress")):
+            with self.subTest(failed_write=failed_write):
+                self.setup_controller()
+                if failed_write:
+                    self.controller = OfflineController(self.binding, journal=BrokenStage("retry"))
+                self.step(0, start=True)
+                receipt = replace(self.receipt(kind="no_submit", usage=MISSING), delay_ticks=2)
+                self.retries(1, receipt, self.proof(receipt))
+                stopped = self.step(2, evaluate_only=True)
+                self.expect(stopped, terminal, 1, 0)
+                retry = self.step(3, start=True)
+                self.expect(retry, terminal, 1, 0)
+                self.assertFalse(retry.outstanding)
+                if failed_write:
+                    self.assertIn("retry_write_failed", [event.reason for event in self.controller.journal])
+
+    def test_candidate_at_provider_cap_with_start_signal_still_evaluates(self):
+        self.setup_controller(replace(self.limits, max_provider_entries=1))
+        self.step(0, start=True)
+        receipt = self.receipt()
+        assessment = self.assessment(receipt)
+        state = replace(self.current, approved_evaluation_sha256=evaluation_policy_digest(assessment.policy))
+        result = self.step(1, state=state, start=True, observation=receipt, assessment=assessment)
+        self.expect(result, "candidate", 1, 0)
+        self.assertIn("criteria_met", [event.reason for event in self.controller.journal])
+
+    def test_wrong_call_on_continuation_cannot_claim_or_settle_its_reservation(self):
+        self.step(0, start=True)
+        self.step(1, observation=self.receipt(calls=(self.call,)))
+        self.step(2, start=True)
+        self.step(3, tool_observed=True)
+        self.step(4, start=True)
+        exact = self.receipt()
+        wrong = replace(exact, entry=replace(exact.entry, call_id="wrong-continuation-call"))
+        held = self.step(5, observation=wrong, start=True)
+        self.expect(held, "hold_reconciliation", 2, 1)
+        self.assertEqual(held.outstanding, (exact.entry,))
+        matched = self.step(6, observation=exact, start=True)
+        self.expect(matched, "hold_reconciliation", 2, 1)
+        self.assertFalse(matched.outstanding)
+
+    def test_unique_current_criterion_evidence_resets_count_once(self):
+        self.step(0, evaluate_only=True)
+        same = self.criterion_evidence(digest(b"new trusted evidence"))
+        state = replace(self.current, verified_criterion_evidence=(same,))
+        self.expect(self.step(1, state=state, evaluate_only=True), "pending", 0, 0)
+        self.expect(self.step(2, state=state, evaluate_only=True), "pending", 0, 0)
+        self.expect(self.step(3, state=state, evaluate_only=True), "stop_no_progress", 0, 0)
+
+    def test_journal_records_binding_and_grant_with_reservation_deltas(self):
+        self.step(0, start=True)
+        self.final(1)
+        journal = self.controller.journal
+        self.assertTrue(all(event.assignment.binding_sha256 == self.binding.assignment.binding_sha256
+                            and event.assignment.work_item_id == self.binding.assignment.work_item_id
+                            and event.session_id == self.binding.session_id
+                            and event.invocation_id == self.binding.invocation_id for event in journal))
+        prepared = next(event for event in journal if event.stage == "prepared")
+        self.assertIsNone(prepared.ledger_before.grant)
+        self.assertEqual(prepared.ledger_after.grant, prepared.entry.admission)
+        self.assertEqual((prepared.ledger_before.work.reserved, prepared.ledger_after.work.reserved), (0, 1))
+        settled = next(event for event in journal if event.stage == "observation")
+        self.assertEqual(settled.previous_stage, "observed")
+        self.assertEqual((settled.ledger_before.work.reserved, settled.ledger_after.work.reserved), (1, 0))
+        self.assertEqual((settled.ledger_before.work.debit, settled.ledger_after.work.debit), (0, 1))
+        self.assertEqual(settled.ledger_after.observation_ticks, (1,))
+
+    def test_writer_cannot_reenter_controller_and_commit_a_settlement(self):
+        class ReenteringWriter(OfflineJournal):
+            def append(writer, event):
+                if event.stage == "observation":
+                    self.controller.status(wait_ended=True)
+                super().append(event)
+
+        self.controller = OfflineController(self.binding, journal=ReenteringWriter())
+        self.step(0, start=True)
+        receipt = self.receipt()
+        stopped = self.step(1, observation=receipt)
+        self.expect(stopped, "hold_reconciliation", 1, 0)
+        self.assertEqual(stopped.outstanding, (receipt.entry,))
+        self.assertEqual(stopped.last_checkpoint.ledger_after.work.reserved, 1)
 
     def test_api_key_marker_is_absent_at_the_actual_runner_boundary(self):
         original = _FakeRunner._enter

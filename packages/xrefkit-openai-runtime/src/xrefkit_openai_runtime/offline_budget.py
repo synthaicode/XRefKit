@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import astuple, dataclass, replace
 from threading import Lock
 from typing import Literal
@@ -167,6 +168,9 @@ class LedgerSnapshot:
     fake_effects: int
 
 
+SettlementCheckpoint = Callable[[Decision, LedgerSnapshot, LedgerSnapshot], bool]
+
+
 def _quantity(value: object) -> bool:
     return type(value) is int and value >= 0
 
@@ -230,17 +234,18 @@ class OfflineBudget:
                  and _quantity(cap) and not any(entry.exposure_uncertain for entry in entries))
         return ScopeTotals(cap, reserved, debit, cap - reserved - debit if known else None)
 
-    def _scopes(self, action: Action) -> tuple[ScopeTotals, ScopeTotals]:
-        entries = tuple(self._entries.values())
+    def _scopes(self, action: Action, entries: tuple[Reservation, ...]) -> tuple[ScopeTotals, ScopeTotals]:
         work_entries = tuple(entry for entry in entries if entry.action.work == action.work)
         return (self._totals(work_entries, self._authority.work_cap),
                 self._totals(entries, self._authority.parent_cap))
 
+    def _snapshot(self, action: Action, entries: tuple[Reservation, ...]) -> LedgerSnapshot:
+        work, parent = self._scopes(action, entries)
+        return LedgerSnapshot(work, parent, entries, len(self._attempts), self._fake_effects)
+
     def snapshot(self, action: Action) -> LedgerSnapshot:
         with self._lock:
-            work, parent = self._scopes(action)
-            return LedgerSnapshot(work, parent, tuple(self._entries.values()),
-                                  len(self._attempts), self._fake_effects)
+            return self._snapshot(action, tuple(self._entries.values()))
 
     def reserve(self, action: Action) -> Decision:
         with self._lock:
@@ -255,7 +260,7 @@ class OfflineBudget:
                         rate.input_units, rate.output_units, action.input_bound, action.output_bound))):
                 return Decision("hold", "rate_or_bounds_unproved")
             units = action.input_bound * rate.input_units + action.output_bound * rate.output_units
-            work, parent = self._scopes(action)
+            work, parent = self._scopes(action, tuple(self._entries.values()))
             if work.headroom is None or parent.headroom is None:
                 return Decision("hold", "headroom_unproved")
             if units > min(work.headroom, parent.headroom):
@@ -289,7 +294,7 @@ class OfflineBudget:
                 return Decision("deny", "permit_consumed")
             if self._authority.rate != entry.rate:
                 return Decision("hold", "rate_changed")
-            work, parent = self._scopes(action)
+            work, parent = self._scopes(action, tuple(self._entries.values()))
             if work.headroom is None or parent.headroom is None:
                 return Decision("hold", "headroom_unproved")
             if min(work.headroom, parent.headroom) < 0:
@@ -299,8 +304,10 @@ class OfflineBudget:
             return Decision("executed", "fake_effect_counted")
 
     def settle(
-        self, action: Action, observation: Observation, verified: VerifiedReceipt | None,
+        self, action: Action, observation: Observation, verified: VerifiedReceipt | None, *,
+        before_commit: SettlementCheckpoint | None = None,
     ) -> Decision:
+        """Reconcile under the ledger lock. The optional writer uses the supplied snapshots without re-entry."""
         with self._lock:
             entry = self._entries.get(action.reservation_id)
             if (
@@ -308,7 +315,7 @@ class OfflineBudget:
                 or verified.action != action or verified.observation != observation
             ):
                 return Decision("hold", "correlation_unproved")
-            return self._settle_verified(entry, observation)
+            return self._settle_verified(entry, observation, before_commit=before_commit)
 
     def settle_adapter(
         self, action: Action, result: AdapterResult, *, revision: int, settlement_rate: str | None,
@@ -337,7 +344,28 @@ class OfflineBudget:
                 submission = "possible"
             return self._settle_verified(entry, Observation(reference, submission, result.usage, settlement_rate))
 
-    def _settle_verified(self, entry: Reservation, observation: Observation) -> Decision:
+    def _commit_settlement(
+        self, updated: Reservation, decision: Decision, before_commit: SettlementCheckpoint | None, *,
+        receipt_keys: tuple[tuple[str, str], ...] = (),
+    ) -> Decision:
+        action = updated.action
+        reservation = action.reservation_id
+        if before_commit is not None:
+            before = self._snapshot(action, tuple(self._entries.values()))
+            after = self._snapshot(action, tuple(
+                updated if key == reservation else entry for key, entry in self._entries.items()
+            ))
+            if not before_commit(decision, before, after):
+                return Decision("hold", "settlement_checkpoint_unavailable")
+        for key in receipt_keys:
+            self._receipt_owners[key] = reservation
+        self._entries[reservation] = updated
+        return decision
+
+    def _settle_verified(
+        self, entry: Reservation, observation: Observation, *,
+        before_commit: SettlementCheckpoint | None = None,
+    ) -> Decision:
         if not self._authority.ledger_available:
             return Decision("hold", "ledger_unavailable")
         action = entry.action
@@ -360,24 +388,21 @@ class OfflineBudget:
             or (earlier.receipt.fallback_id is not None and reference.fallback_id != earlier.receipt.fallback_id)
             for earlier in entry.observations
         ):
-            self._entries[action.reservation_id] = replace(entry, exposure_uncertain=True)
-            return Decision("hold", "conflicting_observation")
+            return self._commit_settlement(replace(entry, exposure_uncertain=True),
+                                           Decision("hold", "conflicting_observation"), before_commit)
         if any(_contradicts_known_usage(earlier.usage, observation.usage) for earlier in entry.observations):
-            self._entries[action.reservation_id] = replace(entry, exposure_uncertain=True)
-            return Decision("hold", "usage_conflicts_with_prior_observation")
+            return self._commit_settlement(replace(entry, exposure_uncertain=True),
+                                           Decision("hold", "usage_conflicts_with_prior_observation"), before_commit)
         if observation.submission == "no_submit" and any(
             earlier.usage != UsageObservation() for earlier in entry.observations
         ):
-            self._entries[action.reservation_id] = replace(entry, exposure_uncertain=True)
-            return Decision("hold", "conflicting_no_submit")
+            return self._commit_settlement(replace(entry, exposure_uncertain=True),
+                                           Decision("hold", "conflicting_no_submit"), before_commit)
 
         updated = replace(entry, observations=(*entry.observations, observation),
                           observation_ticks=(*entry.observation_ticks, self._authority.now_tick))
         decision, updated = self._apply_observation(updated, observation)
-        for key in keys:
-            self._receipt_owners[key] = action.reservation_id
-        self._entries[action.reservation_id] = updated
-        return decision
+        return self._commit_settlement(updated, decision, before_commit, receipt_keys=keys)
 
     def _apply_observation(
         self, entry: Reservation, observation: Observation,
