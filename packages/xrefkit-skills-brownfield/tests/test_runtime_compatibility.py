@@ -7,6 +7,7 @@ from importlib.metadata import metadata, version
 import pytest
 import yaml
 from packaging.requirements import Requirement
+from packaging.version import Version
 
 from xrefkit.discovery import discover_skill_packages
 from xrefkit.models import LocalDomainSkill
@@ -17,7 +18,7 @@ from xrefkit.workspace import CORE_PROTOCOL_VERSION, build_registry
 def installed_package():
     package = next(p for p in discover_skill_packages()
                    if p.package_id == "xrefkit.skills.brownfield")
-    assert package.version == version("xrefkit-skills-brownfield")
+    assert package.version == Version(version("xrefkit-skills-brownfield")).public
     return package
 
 
@@ -42,13 +43,13 @@ def test_installed_distribution_dependency_matches_core():
     assert version("xrefkit") in core.specifier
     assert "0.6.0" not in core.specifier
     # The published gate also runs this suite against the previous release.
-    from packaging.version import Version
-
-    supports_core_07 = Version(version("xrefkit-skills-brownfield")) >= Version("0.1.6")
-    mixed_package = Version(version("xrefkit-skills-brownfield")) >= Version("0.2.0")
+    installed = Version(version("xrefkit-skills-brownfield"))
+    supports_core_07 = installed >= Version("0.1.6")
+    mixed_package = installed >= Version("0.2.0")
     assert ("0.7.0" in core.specifier) is (supports_core_07 and not mixed_package)
     if mixed_package:
-        assert "0.7.10" in core.specifier
+        assert ("0.7.10" in core.specifier) is (installed < Version("0.3.2"))
+        assert "0.7.13" in core.specifier
     assert "0.8.0" not in core.specifier
     assert CORE_PROTOCOL_VERSION == "2.0.0"
 
