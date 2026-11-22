@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4
+
+- Evaluate downstream start conditions and explain evidence gaps, actions, and dependencies in Issue reports.
+
 ## 0.1.3 — 2026-11-21
 
 - Prepare a compact Issue view from the current Issue work record and verified

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.13
+
+- Add engineering decision checks, scoped decision handoffs, and offline host execution evidence.
+
 ## 0.7.12 (2026-11-15)
 
 - Add Quality Issue metadata to existing Skill observation contributions, with

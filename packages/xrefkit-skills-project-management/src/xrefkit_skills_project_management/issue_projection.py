@@ -86,6 +86,7 @@ class PMState:
     deadline: str | None = None
     required_evidence: tuple[str, ...] = ()
     decision_locator: str | None = None
+    human_report: dict | None = None
 
 
 @dataclass(frozen=True)
@@ -334,39 +335,61 @@ def _render_verified(
             "previous report basis is for different work",
         )
 
-    lines = [VIEW_START.decode(), f"**{_inline(state.state)}**", "", _changes(verified, prior, extra_changes), ""]
-    lines += [f"**Purpose.** {_inline(state.purpose)}", "", "**Acceptance.**", ""]
-    lines.extend(f"- {_inline(criterion)}" for criterion in state.acceptance)
-    for label, items in (("Blockers", state.blockers), ("Risks and unknowns", state.risks)):
-        if items:
-            lines += ["", f"**{label}.** " + " / ".join(_inline(item) for item in items)]
-    if state.review is not None:
-        review = state.review
-        lines += ["", f"**Review.** {_inline(review.verdict)}. Scope: {_inline(review.scope)}."]
-        if review.gaps:
-            lines.append("Remaining verification: " + " / ".join(_inline(gap) for gap in review.gaps))
-    elif state.kind == "review":
-        lines += ["", "**Review result pending.**"]
+    lines = [VIEW_START.decode()]
+    if state.human_report is not None:
+        from .human_report import HumanReport, summary_lines
+
+        try:
+            report = HumanReport.model_validate(state.human_report)
+        except ValueError as exc:
+            raise ProjectionError("invalid structured PM report") from exc
+        verified_links = {url for _, url in verified.links}
+        _require(all(evidence.link in verified_links for evidence in report.evidence.values()),
+                 "report evidence must link to a verified current source")
+        _require(state.kind != "blocked" or not any(result.state == "permitted" for result in report.stages.values()),
+                 "reported start permission conflicts with the current PM blocker")
+    else:
+        lines += [f"**{_inline(state.state)}**", "", _changes(verified, prior, extra_changes), ""]
+        lines += [f"**Purpose.** {_inline(state.purpose)}", "", "**Acceptance.**", ""]
+        lines.extend(f"- {_inline(criterion)}" for criterion in state.acceptance)
+        for label, items in (("Blockers", state.blockers), ("Risks and unknowns", state.risks)):
+            if items:
+                lines += ["", f"**{label}.** " + " / ".join(_inline(item) for item in items)]
+        if state.review is not None:
+            review = state.review
+            lines += ["", f"**Review.** {_inline(review.verdict)}. Scope: {_inline(review.scope)}."]
+            if review.gaps:
+                lines.append("Remaining verification: " + " / ".join(_inline(gap) for gap in review.gaps))
+        elif state.kind == "review":
+            lines += ["", "**Review result pending.**"]
     if verified.decision is not None:
         decision = verified.decision
-        lines += [
-            "", "**Decision needed.** " + _inline(decision.question), "",
-            "- Decision owner: " + _inline(decision.owner),
-            "- Why now: " + _inline(decision.why_now),
-            "- Enables: " + _inline(decision.enables),
-            "- Outside scope: " + _inline(decision.excluded),
-            "- If deferred: " + _inline(decision.deferred),
-        ]
+        if state.human_report is None:
+            labels = ("Decision needed.", "Decision owner: ", "Why now: ", "Enables: ",
+                      "Outside scope: ", "If deferred: ", "Decision risks: ", "Recommendation: ")
+        else:
+            labels = ("判断依頼", "判断する人　", "今必要な理由　", "判断後に進めること　",
+                      "判断の対象外　", "保留した場合　", "判断に伴うリスク　", "推奨案　")
+        heading, owner, timing, enables, outside, deferred, risks, recommendation = labels
+        lines += ["", f"**{heading}** " + _inline(decision.question), ""]
+        for label, value in ((owner, decision.owner), (timing, decision.why_now), (enables, decision.enables),
+                             (outside, decision.excluded), (deferred, decision.deferred)):
+            lines.append(f"- {label}{_inline(value)}")
         if decision.risks:
-            lines.append("- Decision risks: " + " / ".join(_inline(risk) for risk in decision.risks))
+            lines.append(f"- {risks}" + " / ".join(_inline(risk) for risk in decision.risks))
         lines.extend(f"- {_inline(option.label)}: {_inline(option.impact)}" for option in decision.options)
         if decision.recommendation is not None:
-            lines.append("- Recommendation: " + _inline(decision.recommendation))
-    if state.plan is not None:
+            lines.append(f"- {recommendation}" + _inline(decision.recommendation))
+    if state.human_report is not None:
+        lines = [lines[0], *summary_lines(report, decision_details=lines[1:])]
+    if state.plan is not None and state.human_report is None:
         lines += ["", "**Plan.** " + _inline(state.plan)]
     if state.deadline is not None:
         lines += ["", "**Deadline.** " + _inline(state.deadline)]
-    lines += ["", f"**Next.** {_inline(state.owner)} — {_inline(state.next_action)}.", ""]
+    if state.human_report is None:
+        lines += ["", f"**Next.** {_inline(state.owner)} — {_inline(state.next_action)}.", ""]
+    else:
+        lines += ["", "**根拠**", ""]
     links = list(verified.links)
     if reference_labels:
         _require(len(reference_labels) == len(current.evidence), "technical link labels do not match records")
@@ -375,6 +398,9 @@ def _render_verified(
     if prior is not None:
         links.append(("Previous PM record", prior.links[1][1]))
     links.extend(("Issue history snapshot", _url(link)) for link in history_links)
+    if state.human_report is not None:
+        labels = {record.link: _inline(record.label) for record in report.evidence.values()}
+        links = [(labels.get(link, label), link) for label, link in links]
     lines += [" · ".join(f"[{label}](<{link}>)" for label, link in links), VIEW_END.decode()]
     sources = (current.project, current.pm, *current.evidence)
     if current.decision is not None:

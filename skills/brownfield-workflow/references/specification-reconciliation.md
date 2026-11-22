@@ -42,6 +42,31 @@ record an impact-bearing `unknown` and do not approve a design delta.
 7. Obtain human approval for the reconciliation decision before design,
    manufacturing, or test-case approval proceeds.
 
+## Before retrying implementation
+
+Return to the design phase before starting an implementation retry after a
+review or verification finding. Reuse the current reconciliation record and
+the exact reviewed candidate.
+
+1. For each finding, link the observed behavior and evidence to the approved
+   design principle, requirement and acceptance condition at their recorded
+   revisions. State the expected behavior and the affected boundary.
+2. Record whether the evidence shows implementation drift from a clear design,
+   a missing or conflicting design condition, or insufficient evidence to
+   decide. If the required behavior or acceptance condition itself is unclear,
+   route the question back to requirements. Preserve approved invariants and
+   carry forward any unresolved finding.
+3. For implementation drift, record the scoped correction and expected
+   verification result. For a design gap or conflict, reconcile the design
+   delta before handing it back to implementation. Where relevant, specify
+   avoided effects, failure handling, recovery, escalation and the evidence
+   that demonstrates each expected result. Record the owner and what would
+   resolve any remaining unknown.
+4. Record the judgment, grounds, affected regression coverage and retry
+   conditions in the designated work record. Apply the existing design review,
+   approval and retry rules for the affected scope. Resume implementation
+   only when the applicable conditions are satisfied.
+
 ## Reconciliation matrix
 
 Each row should be traceable and contain at least:
@@ -74,8 +99,42 @@ Produce a summary-first reconciliation result containing:
 
 ## Human design gate
 
+In an enrolled Engineering Decision Gate project (XID `C34E62A9B710`), record
+the decision in the draft Run and provide its verified reference receipt before
+choosing the design. Use the exact authorized candidate at the manufacturing or
+test-design boundary. Re-enter this gate for material changes or retry decisions.
+
+With principle discovery enabled, prepare the decision context and read the
+configured and discovered references. Record all applicability assessments,
+explicit unknowns and conflicts through `resolve` before selecting a design.
+Use its reference-set digest in review. Supersede and reassess the decision
+when the governing facts or the design candidate change.
+
+In a checklist-enabled project, evaluate the Core-selected checks against the
+exact candidate before review. Preserve reasons, applicable reference
+revisions, evidence and unresolved checks in the decision record.
+
 The design may proceed only when each in-scope new requirement has a recorded
 delta class and decision, current behavior and current specification drift is
 visible, protected invariants are explicit, and downstream/test impacts are
 understood. A material `incompatible` or `unknown` row requires human decision,
 revision, deferral, or escalation; it is not an implicit approval.
+
+## UNKNOWN resolution through Decision Handoff
+
+For each recorded checklist UNKNOWN, capture its cause, required action,
+expected evidence and acceptance criteria. Use `DESIGN_UNRESOLVED` for technical
+rework Brownfield can perform. For work requiring another party, classify the
+gap as `MISSING_INFORMATION`, `MISSING_EVIDENCE`, `AUTHORITY_REQUIRED`,
+`ENVIRONMENT_BLOCKED` or `KNOWLEDGE_GAP`. Group Check IDs by common cause,
+assignee, environment, authority and routing role for the same decision.
+Provide the host with the recorded finding, including the checklist question,
+reason, evaluated XID revisions and exact candidate digest. The host publishes
+the scoped `UNKNOWN_RESOLUTION` request through Decision Handoff.
+
+After the original Run acknowledges the return, inspect the request and human
+evidence. Use a new draft Run and decision ID, link the superseded decision,
+resolve XIDs again and rerun the checklist against the current candidate.
+Record the effect of the supplied information or evidence and keep incomplete
+checks UNKNOWN. Risk acceptance supplies policy context. Technical claims still
+need verification and independent review through the Engineering Decision Gate.

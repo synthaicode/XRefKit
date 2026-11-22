@@ -28,8 +28,8 @@
     },
     {
       "source": "skills/packs/project-management/progress_rules_setup/references/persistence_handoff.md",
-      "source_sha256": "519a8c6ab03cdc591fcd391a2790483e1296872c2bc3af430756a0e5a802f9c8",
-      "packaged_sha256": "cff8cbc0728485921efb56cd09aedf1ae8df97415eeb82368cba85f88cf379ae"
+      "source_sha256": "570c863a0e0a390a9221a873d018e96baa919acb4d4e37ff958d678f8a553eca",
+      "packaged_sha256": "f8b8560630b0f554ccf2064f474f033110dac9186416e26b674930165deccfb6"
     },
     {
       "source": "docs/packs/project-management/entry.md",

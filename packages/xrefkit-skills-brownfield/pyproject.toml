@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xrefkit-skills-brownfield"
-version = "0.3.1"
+version = "0.3.2"
 description = "XRefKit brownfield requirements, planning, design, manufacturing, and testing Skill Package"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-  "xrefkit>=0.7.10,<0.8.0"
+  "xrefkit>=0.7.13,<0.8.0"
 ]
 
 [project.optional-dependencies]

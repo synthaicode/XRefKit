@@ -160,6 +160,9 @@ def build_execution_binding(log: Path, request: dict) -> dict:
         if error is not None:
             _fail("; ".join(error.errors))
         assert run_text is not None
+        from xrefkit.engineering_decision import validate_run_decision
+
+        validate_run_decision(run_text)
         snap = _run_snapshot(run_text, request["work_item_id"])
         fields = snap["fields"]
         captured = {"xid": fields["definition_xid"],
@@ -192,6 +195,9 @@ def build_execution_binding(log: Path, request: dict) -> dict:
 
 def validate_binding_context(run_text: str, binding: dict) -> None:
     """Reject generated bindings whose captured workflow context has changed."""
+    from xrefkit.engineering_decision import validate_run_decision
+
+    validate_run_decision(run_text)
     if type(binding) is not dict:
         _fail("binding must be an object")
     if "binding_origin" not in binding and "run_snapshot" not in binding:
