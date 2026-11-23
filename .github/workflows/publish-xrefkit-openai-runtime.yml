@@ -1,0 +1,88 @@
+name: publish-xrefkit-openai-runtime
+
+on:
+  pull_request:
+    paths:
+      - "packages/xrefkit-openai-runtime/**"
+      - ".github/workflows/publish-xrefkit-openai-runtime.yml"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Exact Runtime package version to verify"
+        required: true
+        type: string
+      publish:
+        description: "Upload to PyPI after successful verification"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Runtime / Verify publish artifact
+    runs-on: windows-latest
+    env:
+      EXPECTED_VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12.9"
+          architecture: x64
+      - name: Check distribution identity and build
+        shell: pwsh
+        run: |
+          python -c "import os, pathlib, tomllib; p=tomllib.loads(pathlib.Path('packages/xrefkit-openai-runtime/pyproject.toml').read_text())['project']; expected=os.environ.get('EXPECTED_VERSION'); assert p['name']=='xrefkit-openai-runtime' and (not expected or expected==p['version']), 'Unexpected project or version'"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python -m pip wheel --no-deps --wheel-dir dist packages/xrefkit-openai-runtime
+          exit $LASTEXITCODE
+      - name: Verify the built wheel
+        shell: pwsh
+        run: |
+          $wheels = @(Get-ChildItem dist -Filter *.whl)
+          if ($wheels.Count -ne 1 -or $wheels[0].Name -notlike 'xrefkit_openai_runtime-*.whl') {
+            throw 'Expected exactly one Runtime wheel'
+          }
+          python -m pip install $wheels[0].FullName
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python -m pip check
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python -I -c "import hashlib; from xrefkit_openai_runtime.distribution import CORE_LOCK, STARTUP_CONTRACT, STARTUP_SHA256; assert hashlib.sha256(CORE_LOCK.read_bytes()).hexdigest() == '7d52e966e76e1134f66b14ed2516deb4b2b2655cc7852d76158f0288cce7e740'; assert hashlib.sha256(STARTUP_CONTRACT.read_bytes()).hexdigest() == STARTUP_SHA256"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          xrefkit-openai-runtime-core --help
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          xrefkit-openai-runtime-desktop --help
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          Get-FileHash $wheels[0].FullName
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: xrefkit-openai-runtime-wheel
+          path: dist/*.whl
+          if-no-files-found: error
+
+  publish:
+    name: Runtime / Publish to PyPI
+    needs: verify
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish == true
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/xrefkit-openai-runtime/
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
+        with:
+          name: xrefkit-openai-runtime-wheel
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b
+        with:
+          packages-dir: dist/
+          skip-existing: false
+          verify-metadata: true
+          print-hash: true
