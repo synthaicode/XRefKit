@@ -1,0 +1,41 @@
+name: python-runtime-windows
+
+on:
+  pull_request:
+    paths:
+      - "packages/xrefkit-openai-runtime/**"
+      - ".github/workflows/python-runtime-windows.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Runtime / Windows installed wheel
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12.9"
+          architecture: x64
+      - name: Build and install the optional Runtime wheel
+        shell: pwsh
+        run: |
+          python -m pip wheel --no-deps --wheel-dir dist packages/xrefkit-openai-runtime
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $wheel = (Get-ChildItem dist -Filter xrefkit_openai_runtime-*.whl).FullName
+          python -m pip install $wheel pytest
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python -m pip check
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          xrefkit-openai-runtime-core --help
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          xrefkit-openai-runtime-desktop --help
+          exit $LASTEXITCODE
+      - name: Run Runtime regression tests
+        shell: pwsh
+        run: |
+          $env:PYTHONPATH = (Resolve-Path 'packages/xrefkit-openai-runtime/src').Path
+          python -B -m pytest packages/xrefkit-openai-runtime/tests -q --import-mode=importlib -o pythonpath=
+          exit $LASTEXITCODE
