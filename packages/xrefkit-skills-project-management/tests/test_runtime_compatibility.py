@@ -119,9 +119,9 @@ def test_package_contains_no_project_configuration_or_adapter():
 
 def test_shared_persistence_procedure_is_reachable_from_all_native_methods():
     root = package_root()
-    reference = root / (
+    reference = (root / (
         'skills/packs/project-management/progress_rules_setup/references/persistence_handoff.md'
-    )
+    )).resolve(strict=True)
     for provided in package().manifest.provides.skills:
         method = (root / provided.path).read_text(encoding='utf-8')
         matches = re.findall(r'\]\(([^)#]+)#xid-62A9D4E7B103\)', method)
