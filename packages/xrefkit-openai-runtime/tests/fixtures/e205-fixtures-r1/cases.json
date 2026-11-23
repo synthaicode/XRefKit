@@ -1,0 +1,485 @@
+{
+  "revision": "e205-fixtures-r1",
+  "scope": "deterministic evaluation of recorded synthetic inputs with no effects",
+  "baseline": {
+    "commit": "343b892e88603f420ef39cd527699269765dd625",
+    "tree": "4f41e6433f9081a0681984a0e33cdaaa5dd143be",
+    "v1": "b6cf585f3fedd20e9202e9dbc26b9e7ceb1816c6",
+    "api": "00948d9274dd94aeceee4cbc59ee76d010fb2f84",
+    "tool": "343b892e88603f420ef39cd527699269765dd625"
+  },
+  "rubrics": {
+    "rubric-r1": {
+      "id": "rubric-205",
+      "revision": "rubric-r1",
+      "objective": "synthetic-confirmed",
+      "expected_postcondition": "synthetic-confirmed",
+      "checks": [
+        [
+          "identity",
+          "required",
+          "checker",
+          "Exact approved request/binding/criteria and ordered correlated trace, including API and Tool observations"
+        ],
+        [
+          "model",
+          "required_when_model_selected",
+          "checker",
+          "Compare expected and authenticated observed model"
+        ],
+        [
+          "structure",
+          "required",
+          "checker",
+          "Decode strict UTF-8 JSON with unique names and a single field objective, which must be a nonempty string, no more than 96 encoded bytes for the complete payload"
+        ],
+        [
+          "outcome",
+          "required",
+          "checker",
+          "Independently preserve typed API and Tool outcomes; fixture objective requires completed API and an eligible executed or authorized replay Tool outcome"
+        ],
+        [
+          "effect",
+          "required_when_postcondition_declared",
+          "checker",
+          "Independent current authorized exact-operation postcondition equals expected value; neither completion nor observed entry alone suffices"
+        ],
+        [
+          "usage",
+          "optional_unless_declared",
+          "checker",
+          "Typed nullable per-field usage; preserve reported zero and unknown; fixture objectives require usage only when explicitly declared"
+        ],
+        [
+          "interaction",
+          "required_when_declared",
+          "checker",
+          "Current accessible versioned reference supports required evidence; blocked or redacted beyond sufficiency is unresolved"
+        ],
+        [
+          "semantic",
+          "required_when_declared",
+          "independent_fixture_reviewer",
+          "Exact independently attributed decision against the pinned objective, output and evidence; no self-review"
+        ]
+      ]
+    },
+    "rubric-r2": {
+      "id": "rubric-205",
+      "revision": "rubric-r2",
+      "supersedes": "rubric-r1",
+      "objective": "synthetic-revised",
+      "expected_postcondition": "synthetic-revised",
+      "checks": [
+        [
+          "identity",
+          "required",
+          "checker",
+          "Exact approved request/binding/criteria and ordered correlated trace, including API and Tool observations"
+        ],
+        [
+          "model",
+          "required_when_model_selected",
+          "checker",
+          "Compare expected and authenticated observed model"
+        ],
+        [
+          "structure",
+          "required",
+          "checker",
+          "Decode strict UTF-8 JSON with unique names and a single field objective, which must be a nonempty string, no more than 96 encoded bytes for the complete payload"
+        ],
+        [
+          "outcome",
+          "required",
+          "checker",
+          "Independently preserve typed API and Tool outcomes; fixture objective requires completed API and an eligible executed or authorized replay Tool outcome"
+        ],
+        [
+          "effect",
+          "required_when_postcondition_declared",
+          "checker",
+          "Independent current authorized exact-operation postcondition equals expected value; neither completion nor observed entry alone suffices"
+        ],
+        [
+          "usage",
+          "optional_unless_declared",
+          "checker",
+          "Typed nullable per-field usage; preserve reported zero and unknown; fixture objectives require usage only when explicitly declared"
+        ],
+        [
+          "interaction",
+          "required_when_declared",
+          "checker",
+          "Current accessible versioned reference supports required evidence; blocked or redacted beyond sufficiency is unresolved"
+        ],
+        [
+          "semantic",
+          "required_when_declared",
+          "independent_fixture_reviewer",
+          "Exact independently attributed decision against the pinned objective, output and evidence; no self-review"
+        ]
+      ]
+    }
+  },
+  "evidence_policy": {
+    "trusted_owners": {
+      "trace": "fixture-v1-owner",
+      "api": "fixture-adapter-owner",
+      "tool": "fixture-dispatch-owner",
+      "effect": "fixture-readback-owner",
+      "interaction": "fixture-evidence-owner",
+      "semantic": "fixture-review-owner"
+    },
+    "conditional_rules": {
+      "usage_required": "All declared fields must be known. Others retain nullable observations.",
+      "interaction_required": "Require a current accessible exact-attempt reference with sufficient evidence.",
+      "semantic_required": "Require an attributable independent reviewer with exact revision, digest and authorized evidence basis."
+    },
+    "all_rows_expect": {
+      "workflow_projection": false,
+      "gateway_succeeded": false,
+      "followup_executed": false,
+      "feedback_created": false,
+      "transfer_performed": false,
+      "tool_executed": false,
+      "api_connected": false,
+      "human_acceptance": null
+    }
+  },
+  "apply": [
+    "Each row is [name, ordered replacements, [criterion label, reason label], additional assertions]. Start from independent defaults. Apply JSON Pointer replacements in order; an index equal to array length appends. All ids, models, source references and evidence are synthetic. Acceptance labels are fixture assertions, not canonical Runtime statuses.",
+    "Resolve @sha:TEXT as SHA-256 of literal UTF-8 TEXT and @jsonsha:TEXT as SHA-256 of compact ASCII JSON encoding of the literal string (including quotes), matching #204 correlation. Resolve @rubric:KEY as SHA-256 of compact UTF-8 JSON of rubrics[KEY], with object keys sorted recursively; each digest is also pinned in rubric_sha256. Resolve @record:FIELD after applying changes, using raw UTF-8 bytes for output_utf8 and tool_return_utf8 and recursively sorted compact JSON for structured values.",
+    "The default evaluator subject is the exact original task, declared in rubric-r1. Source versions and authority come from the pinned defaults and their synthetic evidence policy. A changed model, result, recipient or expectation never supplies its own authorization. Proposal reason/label spelling may be explicitly mapped from an implementation's typed evidence.",
+    "Absent usage observations expand to unknown per field, never to zero. V1 allowed, refused or held and completed transport remain separate from typed API/Tool results and effect. Where this fixture calls for an effect, the trusted postcondition proof is a separate input. A reviewer result cannot resolve deterministic failure or unverified contradictory evidence.",
+    "Record the affected criterion/revision, applicability, safe correlation, expected/observed values and reason, origin/access status and evidence references. Assign an owner and next check for material gaps. Handoff proposals and no-effect assertions describe this evaluator invocation, not the synthetic observations. A declared rubric change creates a separately linked reevaluation; the old record stays pinned. Human decision is absent in every fixture."
+  ],
+  "defaults": {
+    "active_assignment": {
+      "flow_id": "flow-205",
+      "run_id": "run-205",
+      "parent_run_id": null,
+      "root_run_id": "run-205",
+      "work_item_id": "work-205",
+      "node_id": "node-205",
+      "route_id": "route-205",
+      "route_revision": 1,
+      "binding_sha256": "@sha:binding-r1",
+      "owner_generation": 1,
+      "execution_id": "exec-205"
+    },
+    "request": {
+      "version": 1,
+      "assignment": {
+        "flow_id": "flow-205",
+        "run_id": "run-205",
+        "parent_run_id": null,
+        "root_run_id": "run-205",
+        "work_item_id": "work-205",
+        "node_id": "node-205",
+        "route_id": "route-205",
+        "route_revision": 1,
+        "binding_sha256": "@sha:binding-r1",
+        "owner_generation": 1,
+        "execution_id": "exec-205"
+      },
+      "criteria_sha256": "@rubric:rubric-r1",
+      "authorization_ref": "auth-205",
+      "reservation_ref": "provider-reservation-205",
+      "budget": {
+        "max_attempts": 1,
+        "max_input_tokens": 128,
+        "max_output_tokens": 64,
+        "deadline_ms": 1000
+      },
+      "cancelled": false,
+      "selected_model": "fixture-model-a"
+    },
+    "events": [
+      {
+        "version": 1,
+        "sequence": 1,
+        "assignment": {
+          "flow_id": "flow-205",
+          "run_id": "run-205",
+          "parent_run_id": null,
+          "root_run_id": "run-205",
+          "work_item_id": "work-205",
+          "node_id": "node-205",
+          "route_id": "route-205",
+          "route_revision": 1,
+          "binding_sha256": "@sha:binding-r1",
+          "owner_generation": 1,
+          "execution_id": "exec-205"
+        },
+        "attempt_id": "attempt-205",
+        "operation_id": "operation-205",
+        "call_id": "call-205",
+        "kind": "admitted"
+      },
+      {
+        "version": 1,
+        "sequence": 2,
+        "assignment": {
+          "flow_id": "flow-205",
+          "run_id": "run-205",
+          "parent_run_id": null,
+          "root_run_id": "run-205",
+          "work_item_id": "work-205",
+          "node_id": "node-205",
+          "route_id": "route-205",
+          "route_revision": 1,
+          "binding_sha256": "@sha:binding-r1",
+          "owner_generation": 1,
+          "execution_id": "exec-205"
+        },
+        "attempt_id": "attempt-205",
+        "operation_id": "operation-205",
+        "call_id": "call-205",
+        "kind": "dispatched"
+      },
+      {
+        "version": 1,
+        "sequence": 3,
+        "assignment": {
+          "flow_id": "flow-205",
+          "run_id": "run-205",
+          "parent_run_id": null,
+          "root_run_id": "run-205",
+          "work_item_id": "work-205",
+          "node_id": "node-205",
+          "route_id": "route-205",
+          "route_revision": 1,
+          "binding_sha256": "@sha:binding-r1",
+          "owner_generation": 1,
+          "execution_id": "exec-205"
+        },
+        "attempt_id": "attempt-205",
+        "operation_id": "operation-205",
+        "call_id": "call-205",
+        "kind": "receipt"
+      }
+    ],
+    "result": {
+      "version": 1,
+      "assignment": {
+        "flow_id": "flow-205",
+        "run_id": "run-205",
+        "parent_run_id": null,
+        "root_run_id": "run-205",
+        "work_item_id": "work-205",
+        "node_id": "node-205",
+        "route_id": "route-205",
+        "route_revision": 1,
+        "binding_sha256": "@sha:binding-r1",
+        "owner_generation": 1,
+        "execution_id": "exec-205"
+      },
+      "attempt_id": "attempt-205",
+      "operation_id": "operation-205",
+      "call_id": "call-205",
+      "outcome": "allowed",
+      "transport_completed": true,
+      "observed_model": "fixture-model-a",
+      "evidence_ref": "v1-ev-205"
+    },
+    "revision_links": {
+      "request_revision": "request-r1",
+      "result_revision": "result-r1",
+      "tool_receipt_revision": "tool-receipt-r1",
+      "criteria_revision": "rubric-r1",
+      "criteria_sha256": "@rubric:rubric-r1",
+      "evidence_revision": "evidence-r1",
+      "correlation": {
+        "attempt_id": "attempt-205",
+        "operation_id": "operation-205",
+        "call_id": "call-205"
+      }
+    },
+    "output_utf8": "{\"objective\":\"synthetic-confirmed\"}",
+    "api": {
+      "disposition": "completed",
+      "reason": "synthetic_complete",
+      "diagnostics": {
+        "run_id": "run-205",
+        "work_item_id": "work-205",
+        "binding_sha256": "@sha:binding-r1",
+        "attempt_id": "attempt-205",
+        "reservation_ref": "provider-reservation-205",
+        "request_sha256": "@record:request",
+        "transport_request_id": "transport-205",
+        "response_id": "response-205",
+        "http_status": 200,
+        "error_code": null,
+        "observed_model": "fixture-model-a"
+      },
+      "usage": {
+        "input_tokens": 8,
+        "output_tokens": 3,
+        "total_tokens": 11,
+        "cached_input_tokens": null,
+        "reasoning_output_tokens": null
+      }
+    },
+    "tool": {
+      "outcome": "executed",
+      "reason": "bounded_typed_result",
+      "receipt": {
+        "action_digest": "@sha:action-205",
+        "tool_schema": "fixture-read-v1",
+        "runner_digest": "@sha:runner-205",
+        "binding_generation": 1,
+        "entry_tick": 11,
+        "correlation": {
+          "run_digest": "@jsonsha:run-205",
+          "work_digest": "@jsonsha:work-205",
+          "route_digest": "@jsonsha:route-205",
+          "operation_digest": "@jsonsha:operation-205",
+          "attempt_digest": "@jsonsha:attempt-205",
+          "call_digest": "@jsonsha:call-205",
+          "policy_digest": "@jsonsha:policy-205",
+          "grant_digest": "@jsonsha:grant-205",
+          "reservation_digest": "@jsonsha:tool-reservation-205"
+        },
+        "outcome": "completed",
+        "effect": "observed",
+        "result_digest": "@record:tool_return_utf8"
+      },
+      "evidence": {
+        "effect": "observed",
+        "workflow_acceptance": "not_evaluated"
+      },
+      "value": "synthetic-confirmed"
+    },
+    "postcondition_required": true,
+    "postconditions": [
+      {
+        "ref": "effect-1",
+        "origin": "independent-fixture-readback",
+        "authorized": true,
+        "current": true,
+        "operation_id": "operation-205",
+        "revision": "evidence-r1",
+        "observed": "synthetic-confirmed"
+      }
+    ],
+    "usage_required_fields": [],
+    "interaction_required": false,
+    "interaction": {
+      "ref": "interaction-205",
+      "revision": "evidence-r1",
+      "attempt_id": "attempt-205",
+      "access": "allowed",
+      "status": "complete",
+      "origin": "synthetic-registry"
+    },
+    "semantic_required": true,
+    "producer": "producer-205",
+    "reviewers": [
+      {
+        "id": "reviewer-a",
+        "role": "independent_semantic_fixture",
+        "authorized": true,
+        "context": "review-context-a",
+        "author_context": "producer-context",
+        "request_revision": "request-r1",
+        "result_revision": "result-r1",
+        "tool_receipt_revision": "tool-receipt-r1",
+        "criteria_revision": "rubric-r1",
+        "criteria_sha256": "@rubric:rubric-r1",
+        "evidence_revision": "evidence-r1",
+        "correlation": {
+          "attempt_id": "attempt-205",
+          "operation_id": "operation-205",
+          "call_id": "call-205"
+        },
+        "output_sha256": "@record:output_utf8",
+        "verdict": "pass",
+        "basis_refs": [
+          "effect-1",
+          "v1-ev-205"
+        ],
+        "rationale": "Fixture objective is met"
+      }
+    ],
+    "human_acceptance": null,
+    "tool_return_utf8": "{\"value\":\"synthetic-confirmed\"}",
+    "reevaluation": null
+  },
+  "rubric_sha256": {
+    "rubric-r1": "affacae6113fdf49e060d2faa313c616a661f95e1cab5bb00b65cd8af32f59f7",
+    "rubric-r2": "64b8a98523c29f24ddb8fab1e4039ea00acae8d95dc35d36f92926be363d4e76"
+  },
+  "cases": {
+    "E205-01": [
+      ["exact-trace",[],["pass","trace_correlated"],{"criterion":"identity","v1":"review_required","aggregate":"criteria_met","next":"report_only"}],
+      ["unsupported-result-version",[["/result/version",2]],["unresolved","unsupported_source_revision"],{"criterion":"identity","next":"verify_evidence"}],
+      ["stale-route",[["/active_assignment/route_revision",2]],["unresolved","assignment_not_current"],{"criterion":"identity","v1":"held","next":"verify_evidence"}],
+      ["binding-mismatch",[["/active_assignment/binding_sha256","@sha:binding-r2"]],["unresolved","assignment_not_current"],{"criterion":"identity","v1":"held","next":"verify_evidence"}],
+      ["wrong-api-attempt",[["/api/diagnostics/attempt_id","attempt-other"]],["unresolved","attempt_uncorrelated"],{"criterion":"identity"}],
+      ["wrong-tool-operation",[["/tool/receipt/correlation/operation_digest","@jsonsha:operation-other"]],["unresolved","operation_uncorrelated"],{"criterion":"identity"}],
+      ["wrong-tool-call",[["/tool/receipt/correlation/call_digest","@jsonsha:call-other"]],["unresolved","call_uncorrelated"],{"criterion":"identity"}],
+      ["misordered-events",[["/events/1/sequence",3]],["fail","trace_order_invalid"],{"criterion":"identity"}],
+      ["rubric-drift",[["/request/criteria_sha256","@rubric:rubric-r2"]],["unresolved","criteria_digest_mismatch"],{"criterion":"identity","next":"verify_evidence"}],
+      ["expected-model-missing",[["/request/selected_model",null]],["unresolved","expected_model_missing"],{"criterion":"model","v1":"held"}],
+      ["observed-model-mismatch",[["/result/observed_model","fixture-model-b"],["/api/diagnostics/observed_model","fixture-model-b"]],["fail","observed_model_mismatch"],{"criterion":"model","v1":"held"}],
+      ["observed-model-unknown",[["/result/observed_model",null],["/api/diagnostics/observed_model",null]],["unresolved","observed_model_missing"],{"criterion":"model","v1":"held"}]
+    ],
+    "E205-02": [
+      ["malformed-json",[["/output_utf8","{\"objective\":"]],["fail","invalid_json"],{"criterion":"structure"}],
+      ["oversized-result",[["/output_utf8","{\"objective\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}"]],["fail","byte_limit_exceeded"],{"criterion":"structure"}],
+      ["duplicate-field",[["/output_utf8","{\"objective\":\"a\",\"objective\":\"b\"}"]],["fail","duplicate_field"],{"criterion":"structure"}],
+      ["wrong-schema",[["/output_utf8","{\"objective\":3}"]],["fail","schema_mismatch"],{"criterion":"structure"}],
+      ["valid-shape-wrong-objective",[["/output_utf8","{\"objective\":\"synthetic-wrong\"}"],["/reviewers/0/verdict","fail"],["/reviewers/0/rationale","The declared objective is unmet"]],["fail","review_objective_mismatch"],{"criterion":"semantic","structure":"pass"}],
+      ["api-refusal",[["/api/disposition","refusal"],["/api/reason","fixture_refusal"]],["fail","api_refusal"],{"criterion":"outcome","api_outcome":"refusal"}],
+      ["api-incomplete",[["/api/disposition","incomplete"],["/api/reason","fixture_incomplete"]],["fail","api_incomplete"],{"criterion":"outcome","api_outcome":"incomplete"}],
+      ["tool-denied",[["/tool/outcome","deny"],["/tool/reason","command_not_allowed"],["/tool/receipt",null],["/tool/evidence/effect","none"],["/tool/value",null]],["fail","tool_denied"],{"criterion":"outcome","tool_outcome":"deny"}],
+      ["tool-cancelled",[["/tool/outcome","stop"],["/tool/reason","cancelled"],["/tool/receipt",null],["/tool/evidence/effect","none"],["/tool/value",null]],["fail","tool_cancelled"],{"criterion":"outcome","tool_outcome":"stop"}],
+      ["completion-alone",[["/reviewers",[]],["/postconditions",[]]],["unresolved","postcondition_missing"],{"criterion":"effect","v1":"review_required","next":"verify_effect"}]
+    ],
+    "E205-03": [
+      ["matched-postcondition",[],["pass","postcondition_matched"],{"criterion":"effect"}],
+      ["authoritative-opposite",[["/postconditions/0/observed","synthetic-absent"]],["fail","postcondition_mismatch"],{"criterion":"effect"}],
+      ["missing-postcondition",[["/postconditions",[]]],["unresolved","postcondition_missing"],{"criterion":"effect","next":"verify_effect"}],
+      ["conflicting-postconditions",[["/postconditions/1",{"ref":"effect-2","origin":"independent-fixture-readback-b","authorized":true,"current":true,"operation_id":"operation-205","revision":"evidence-r1","observed":"synthetic-absent"}]],["unresolved","postcondition_conflict"],{"criterion":"effect","evidence_refs":["effect-1","effect-2"],"next":"reconcile"}],
+      ["stale-postcondition",[["/postconditions/0/current",false]],["unresolved","postcondition_stale"],{"criterion":"effect"}],
+      ["unrelated-readback",[["/postconditions/0/operation_id","operation-other"]],["unresolved","postcondition_uncorrelated"],{"criterion":"effect"}],
+      ["unapproved-readback",[["/postconditions/0/authorized",false]],["unresolved","postcondition_not_authorized"],{"criterion":"effect"}],
+      ["possible-tool-effect",[["/tool/outcome","hold"],["/tool/reason","effect_unknown"],["/tool/receipt/outcome","effect_unknown"],["/tool/receipt/effect","unknown"],["/tool/receipt/result_digest",null],["/tool/evidence/effect","unknown"],["/tool/value",null],["/postconditions",[]]],["unresolved","possible_effect_unreconciled"],{"criterion":"effect","next":"reconcile","allow_repeat":false}],
+      ["observed-entry-alone",[["/postconditions",[]]],["unresolved","postcondition_missing"],{"criterion":"effect","entry_observed":true,"next":"verify_effect"}]
+    ],
+    "E205-04": [
+      ["explicit-zero",[["/api/usage/input_tokens",0],["/api/usage/output_tokens",0],["/api/usage/total_tokens",0],["/usage_required_fields",["input_tokens","output_tokens","total_tokens"]]],["pass","required_usage_reported"],{"criterion":"usage","retained_usage":{"input_tokens":0,"output_tokens":0,"total_tokens":0}}],
+      ["partial-usage",[["/api/usage/input_tokens",0],["/api/usage/output_tokens",null],["/api/usage/total_tokens",null],["/usage_required_fields",["input_tokens","output_tokens","total_tokens"]]],["unresolved","required_usage_partial"],{"criterion":"usage","retained_usage":{"input_tokens":0,"output_tokens":null,"total_tokens":null},"structure":"pass"}],
+      ["absent-usage",[["/api/usage",null],["/usage_required_fields",["total_tokens"]]],["unresolved","required_usage_missing"],{"criterion":"usage","retained_usage":{"input_tokens":null,"output_tokens":null,"total_tokens":null},"structure":"pass"}],
+      ["optional-usage-omission",[["/api/usage",null]],["omitted","usage_not_required_by_fixture"],{"criterion":"usage","structure":"pass"}],
+      ["interaction-approved",[["/interaction_required",true]],["pass","interaction_reference_sufficient"],{"criterion":"interaction"}],
+      ["interaction-missing",[["/interaction_required",true],["/interaction",null]],["unresolved","interaction_reference_missing"],{"criterion":"interaction","next":"verify_evidence"}],
+      ["interaction-redacted",[["/interaction_required",true],["/interaction/status","redacted_insufficient"]],["unresolved","interaction_reference_insufficient"],{"criterion":"interaction"}],
+      ["interaction-unavailable-to-checker",[["/interaction_required",true],["/interaction/access","blocked"]],["unresolved","interaction_access_blocked"],{"criterion":"interaction"}],
+      ["interaction-stale",[["/interaction_required",true],["/interaction/revision","evidence-r0"]],["unresolved","interaction_reference_stale"],{"criterion":"interaction"}],
+      ["interaction-optional",[["/interaction",null]],["not_applicable","interaction_not_declared"],{"criterion":"interaction"}]
+    ],
+    "E205-05": [
+      ["independent-review",[],["pass","independent_review_matched"],{"criterion":"semantic","review_state":"reviewed"}],
+      ["producer-self-review",[["/reviewers/0/id","producer-205"],["/reviewers/0/context","producer-context"]],["unresolved","reviewer_not_independent"],{"criterion":"semantic","review_state":"pending"}],
+      ["rubric-changed",[["/reviewers/0/criteria_revision","rubric-r2"],["/reviewers/0/criteria_sha256","@rubric:rubric-r2"]],["unresolved","review_rubric_mismatch"],{"criterion":"semantic"}],
+      ["reviewed-artifact-changed",[["/reviewers/0/result_revision","result-r0"],["/reviewers/0/output_sha256","@sha:stale-result"]],["unresolved","review_result_mismatch"],{"criterion":"semantic"}],
+      ["review-evidence-changed",[["/reviewers/0/evidence_revision","evidence-r0"]],["unresolved","review_evidence_mismatch"],{"criterion":"semantic"}],
+      ["review-unavailable",[["/reviewers",[]]],["unresolved","review_unavailable"],{"criterion":"semantic","next":"request_independent_review"}],
+      ["review-share-blocked",[["/interaction_required",true],["/interaction/access","blocked"],["/reviewers/0/basis_refs",["interaction-205"]]],["unresolved","review_basis_unavailable"],{"criterion":"semantic","next":"verify_evidence"}],
+      ["reviewer-disagreement",[["/reviewers/1",{"id":"reviewer-b","role":"independent_semantic_fixture","authorized":true,"context":"review-context-b","author_context":"producer-context","request_revision":"request-r1","result_revision":"result-r1","tool_receipt_revision":"tool-receipt-r1","criteria_revision":"rubric-r1","criteria_sha256":"@rubric:rubric-r1","evidence_revision":"evidence-r1","correlation":{"attempt_id":"attempt-205","operation_id":"operation-205","call_id":"call-205"},"output_sha256":"@record:output_utf8","verdict":"fail","basis_refs":["effect-1","v1-ev-205"],"rationale":"Independent fixture finding disagrees"}]],["unresolved","independent_review_conflict"],{"criterion":"semantic","retained_reviewers":["reviewer-a","reviewer-b"],"next":"reconcile"}],
+      ["favorable-review-cannot-override-failure",[["/output_utf8","{\"objective\":false}"]],["fail","schema_mismatch"],{"criterion":"structure","semantic_review_input":"pass","aggregate":"criteria_failed","human_acceptance":null}]
+    ],
+    "E205-06": [
+      ["all-mandatory-criteria",[],["pass","all_applicable_criteria_met"],{"criterion":"aggregate","aggregate":"criteria_met","next":"report_only","human_acceptance":null}],
+      ["required-review-pending",[["/reviewers",[]]],["unresolved","required_review_pending"],{"criterion":"aggregate","aggregate":"criteria_unresolved","next":"request_independent_review","human_acceptance":null}],
+      ["required-evidence-unknown",[["/postconditions",[]]],["unresolved","required_evidence_unresolved"],{"criterion":"aggregate","aggregate":"criteria_unresolved","next":"verify_effect","human_acceptance":null}],
+      ["trusted-failure-prevents-promotion",[["/postconditions/0/observed","synthetic-absent"]],["fail","mandatory_criterion_failed"],{"criterion":"aggregate","aggregate":"criteria_failed","next":"report_only","human_acceptance":null}],
+      ["explicit-reevaluation",[["/reevaluation",{"prior_evaluation_ref":"evaluation-205-r1","previous_criteria_revision":"rubric-r1","new_criteria_revision":"rubric-r2","new_criteria_sha256":"@rubric:rubric-r2","new_evaluation_ref":"evaluation-205-r2"}],["/reviewers/0/criteria_revision","rubric-r2"],["/reviewers/0/criteria_sha256","@rubric:rubric-r2"]],["unresolved","existing_evaluation_pinned"],{"criterion":"aggregate","next":"record_reevaluation_link","old_revision":"rubric-r1","new_revision":"rubric-r2","old_evaluation_unchanged":true,"human_acceptance":null}],
+      ["criteria-rewrite-without-reevaluation",[["/revision_links/criteria_revision","rubric-r2"],["/revision_links/criteria_sha256","@rubric:rubric-r2"]],["unresolved","criteria_change_unlinked"],{"criterion":"aggregate","next":"verify_evidence","old_evaluation_unchanged":true,"human_acceptance":null}],
+      ["handoff-sanitized-evidence",[["/postconditions",[]],["/interaction/status","partial"],["/interaction/fixture_forbidden_content","FIXTURE_PRIVATE_TRANSCRIPT_CANARY"]],["unresolved","required_evidence_unresolved"],{"criterion":"aggregate","next":"verify_effect","handoff":["#206","#209"],"feedback_created":false,"transfer_performed":false,"ordinary_output_excludes":["FIXTURE_PRIVATE_TRANSCRIPT_CANARY"],"human_acceptance":null}]
+    ]
+  }
+}

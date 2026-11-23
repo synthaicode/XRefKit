@@ -7,6 +7,12 @@ import sys
 from xrefkit.xref import XrefConfig, cmd_xref
 
 
+def _add_engineering_binding_arguments(parser):
+    parser.add_argument("--engineering-action", choices=["draft", "manufacturing", "test_design", "retry"])
+    parser.add_argument("--engineering-decision-id", help="Current decision authorizing the protected action")
+    parser.add_argument("--engineering-candidate", help="Path to the exact authorized design artifact")
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="xrefkit", description="XRefKit control CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -436,6 +442,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_skill_run.add_argument("--root-run-id", default=None, help="Root run ID of the Prompt Flow")
     p_skill_run.add_argument("--parent-run-id", default=None, help="Parent run ID for delegated Skill work")
     p_skill_run.add_argument("--work-item-id", default=None, help="Parent work item ID represented by this Skill Run")
+    _add_engineering_binding_arguments(p_skill_run)
     p_skill_run.add_argument("--node-id", default=None, help="Prompt Flow node ID for Dashboard traceability")
     p_skill_run.add_argument(
         "--domain-knowledge-catalog",
@@ -686,6 +693,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_workflow_run.add_argument("--root-run-id", default=None, help="Root run ID of the Prompt Flow")
     p_workflow_run.add_argument("--parent-run-id", default=None, help="Parent run ID when this is a nested workflow")
     p_workflow_run.add_argument("--work-item-id", default=None, help="Parent work item ID represented by this workflow")
+    _add_engineering_binding_arguments(p_workflow_run)
     p_workflow_run.add_argument("--node-id", default=None, help="Prompt Flow node ID for Dashboard traceability")
     p_workflow_run.add_argument("--purpose", default=None, help="Prompt purpose; omitted values are recorded as unknown")
     p_workflow_run.add_argument("--scope-in", action="append", default=[], help="In-scope boundary; repeatable")
@@ -730,14 +738,48 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_workflow_delegate.add_argument("--root", default=".", help="Project root (default: .)")
     p_workflow_delegate.add_argument("--parent-log", required=True, help="Parent Prompt Flow run log")
-    p_workflow_delegate.add_argument("--meta", required=True, help="Relative path to the delegated Skill meta.md")
+    delegated_source = p_workflow_delegate.add_mutually_exclusive_group(required=True)
+    delegated_source.add_argument("--meta", help="Relative path to the delegated Skill meta.md")
+    delegated_source.add_argument("--definition", help="Explicit delegated SkillDefinition")
+    delegated_source.add_argument("--package-skill", help="Installed package_id::skill_id")
+    p_workflow_delegate.add_argument("--governance", help="Governance for the delegated SkillDefinition")
+    p_workflow_delegate.add_argument("--capability", help="Instruction-derived capability")
+    p_workflow_delegate.add_argument("--tuning", help="Instruction-derived tuning")
+    p_workflow_delegate.add_argument("--responsibility", help="Instruction-derived responsibility")
+    p_workflow_delegate.add_argument(
+        "--execution-mode", choices=["local_default", "subagent_preferred", "subagent_required"],
+    )
     p_workflow_delegate.add_argument("--task", default=None, help="Child Skill task text")
     p_workflow_delegate.add_argument("--task-file", default=None, help="Read child task text from a UTF-8 file")
     p_workflow_delegate.add_argument("--out", default=None, help="Write child Skill run log to this path")
     p_workflow_delegate.add_argument("--run-id", default=None, help="Caller-supplied child run UUID")
     p_workflow_delegate.add_argument("--work-item-id", required=True, help="Parent work item delegated to the child Skill")
+    _add_engineering_binding_arguments(p_workflow_delegate)
     p_workflow_delegate.add_argument("--node-id", default=None, help="Prompt Flow node ID")
     p_workflow_delegate.add_argument("--json", action="store_true", help="Emit JSON")
+
+    p_decision = workflow_sub.add_parser(
+        "decision-handoff", help="Apply an offline decision handoff transition from a trusted host",
+    )
+    p_decision.add_argument("--root", default=".", help="Local project root")
+    p_decision.add_argument("--journal", required=True, help="Host-owned SQLite journal within --root")
+    decision_input = p_decision.add_mutually_exclusive_group(required=True)
+    decision_input.add_argument("--input", help="Host-verified transition JSON within --root")
+    decision_input.add_argument("--inspect", help="Read the verified history for this request ID")
+    p_engineering = workflow_sub.add_parser("engineering-decision", help="Prepare, resolve, finalize or check an engineering decision")
+    p_engineering.add_argument("--root", default=".", help="Trust-managed project root")
+    engineering_input = p_engineering.add_mutually_exclusive_group(required=True)
+    engineering_input.add_argument("--input", help="Prepare, resolve, review or finalize JSON under --root")
+    engineering_input.add_argument("--inspect", help="Read the recorded decision and reference set")
+    engineering_input.add_argument("--use", nargs=3, metavar=("WORK_ITEM", "ACTION", "DECISION"),
+                                   help="Check current authorization and return the exact candidate")
+    p_host_receipt = workflow_sub.add_parser(
+        "record-child-execution", help="Record a trusted host's successful child execution receipt",
+    )
+    p_host_receipt.add_argument("--root", default=".", help="Local project root")
+    p_host_receipt.add_argument("--log", required=True, help="Child Run log within --root")
+    p_host_receipt.add_argument("--receipt", required=True, help="Host receipt in the same directory as the log")
+    p_host_receipt.add_argument("--json", action="store_true", help="Emit JSON")
 
     p_workflow_quality = workflow_sub.add_parser(
         "quality-review",
@@ -754,6 +796,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_workflow_quality.add_argument("--out", default=None, help="Write child Skill run log to this path")
     p_workflow_quality.add_argument("--run-id", default=None, help="Caller-supplied child run UUID")
     p_workflow_quality.add_argument("--work-item-id", required=True, help="Parent work item under review")
+    _add_engineering_binding_arguments(p_workflow_quality)
     p_workflow_quality.add_argument("--node-id", default=None, help="Prompt Flow node ID")
     p_workflow_quality.add_argument("--json", action="store_true", help="Emit JSON")
 
@@ -773,6 +816,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_workflow_recovery.add_argument("--maximum-attempts", type=int, default=None, help="Maximum permitted recovery attempts")
     p_workflow_recovery.add_argument("--stop-condition", action="append", default=[], help="Recovery stop condition; repeatable")
     p_workflow_recovery.add_argument("--reviewer", default=None, help="Human reviewer confirming the resume")
+    p_workflow_recovery.add_argument("--engineering-decision-id", help="Current decision authorizing a managed retry")
     p_workflow_recovery.add_argument("--json", action="store_true", help="Emit JSON")
 
     p_workflow_reconcile = workflow_sub.add_parser(
@@ -959,6 +1003,18 @@ def main(argv: list[str] | None = None) -> int:
             from xrefkit.skillrun import cmd_workflow_delegate
 
             return cmd_workflow_delegate(args)
+        if args.workflow_cmd == "decision-handoff":
+            from xrefkit.decision_handoff import cmd_decision_handoff
+
+            return cmd_decision_handoff(args)
+        if args.workflow_cmd == "engineering-decision":
+            from xrefkit.engineering_decision import cmd_engineering_decision
+
+            return cmd_engineering_decision(args)
+        if args.workflow_cmd == "record-child-execution":
+            from xrefkit.host_execution import cmd_record_child_execution
+
+            return cmd_record_child_execution(args)
         if args.workflow_cmd == "quality-review":
             from xrefkit.skillrun import cmd_workflow_quality_review
 

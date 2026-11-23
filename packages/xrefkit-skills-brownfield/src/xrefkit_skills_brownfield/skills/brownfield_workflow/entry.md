@@ -13,8 +13,8 @@ Before requirements become design, resolve service ownership and the
 service-interaction/data-flow records for communication and database
 propagation. Missing or stale evidence is an impact-bearing `unknown`.
 
-Before retrying implementation after a review or verification finding, return
-to design and apply the retry procedure in [specification reconciliation](references/specification-reconciliation.md#before-retrying-implementation).
+Before exploring an implementation correction after a finding, return to the
+existing design checkpoint and apply the judgment and retry procedure in [specification reconciliation](references/specification-reconciliation.md#before-retrying-implementation).
 
 Maintain each item with stable `id`, `upstream_ref`, `target`, phase result,
 state, evidence/decision basis, `knowledge_refs`, `pattern_decision`,
