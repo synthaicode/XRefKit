@@ -1,0 +1,442 @@
+{
+  "revision": "e203-fixtures-r1",
+  "scope": "synthetic permission and reservation specification; in-memory ledger and in-process effect counter only",
+  "baseline": {
+    "commit": "00948d9274dd94aeceee4cbc59ee76d010fb2f84",
+    "tree": "c9bbe24beb32f7e013549e7003d18c21dc99a609",
+    "adapter_fixture_revision": "e202-fixtures-r1",
+    "adapter_fixture_sha256": "c9b09627fda3343d6a67a43f3b0ad3f03af45b51401726b89ee58ab477eed28c",
+    "verification_sha256": "abe25a74a463537ae822b5e12064b92d87969a60bb71efaa075db625a12eb0ef",
+    "v1_commit": "b6cf585f3fedd20e9202e9dbc26b9e7ceb1816c6"
+  },
+  "defaults": {
+    "now_tick": 10,
+    "grant_expires_tick": 20,
+    "deadline_tick": 30,
+    "policy_revision": "policy-fixture-1",
+    "binding_revision": 1,
+    "run_id": "run-203",
+    "work_item_id": "work-203",
+    "attempt_id": "attempt-1",
+    "reservation_id": "reservation-1",
+    "authorization_ref": "grant-1",
+    "model": "synthetic-model",
+    "action": "fixture-read",
+    "arguments": {
+      "key": "synthetic"
+    },
+    "effect_class": "read_only",
+    "destination": "https://e203-target.invalid",
+    "registry": [
+      "fixture-read",
+      "fixture-other"
+    ],
+    "available": [
+      "fixture-read",
+      "fixture-other"
+    ],
+    "policy_commands": [
+      "fixture-read",
+      "fixture-other"
+    ],
+    "user_commands": [
+      "fixture-read"
+    ],
+    "confirmed_destination": "https://e203-target.invalid",
+    "rate_revision": "rate-fixture-1",
+    "rate_units": {
+      "input": 1,
+      "output": 2
+    },
+    "token_bounds": {
+      "input": 8,
+      "output": 4
+    },
+    "initial_ledger": {
+      "available": true,
+      "work_cap": 30,
+      "parent_cap": 35,
+      "debit": 0,
+      "reserved": 0
+    },
+    "reservation_units": 16,
+    "reported_complete": {
+      "input": 8,
+      "output": 3,
+      "total": 11,
+      "cached_input": 2,
+      "reasoning_output": 1
+    },
+    "receipt": {
+      "attempt_id": "attempt-1",
+      "reservation_id": "reservation-1",
+      "request_id": "e202-http-request-001",
+      "response_id": "e202-response-001",
+      "receipt_revision": 1
+    }
+  },
+  "apply": [
+    "Each row is independent; start from defaults. Host grant and observed identity/rate/policy match the defaults unless a row changes them. Unspecified settlement submissions have a matching definite outcome unless the row supplies a different observation. Settlement cases start after one matched 16-unit reservation unless stated. Amounts are synthetic integer units only. Reserve input_bound * input_rate + output_bound * output_rate. Track remaining limit as cap minus settled and outstanding exposure in each applicable scope.",
+    "Usage rows map input/output/total to #202 UsageObservation. Null denotes unknown; cached input/reasoning output are optional, nonadditive annotations. Valid complete counts satisfy input + output = total for this fixture. Exact duplicate observations do not add a debit or release. Missing or untrusted correlation holds.",
+    "Use a fake clock, fake authorization source and fake effect counter. Record expected and observed reason/receipt and ledger transitions. Count only the transition named in the expected value; exposure checks have no remote effect. Never use SDK, real API, Tool, network or credentials."
+  ],
+  "cases": {
+    "E203-01": [
+      [
+        "current-grant",
+        {},
+        "permit_then_reserve_16_and_one_fake_effect"
+      ],
+      [
+        "grant-missing",
+        {
+          "grant": null
+        },
+        "deny_zero_fake_effect"
+      ],
+      [
+        "grant-denied",
+        {
+          "grant_status": "denied"
+        },
+        "deny_zero_fake_effect"
+      ],
+      [
+        "permit-replayed",
+        {
+          "permit_consumed": true
+        },
+        "deny_zero_additional_effect"
+      ],
+      [
+        "stale-binding",
+        {
+          "observed_binding_revision": 0
+        },
+        "hold_zero_fake_effect"
+      ],
+      [
+        "revoked-before-dispatch",
+        {
+          "revoke_after_preflight": true
+        },
+        "hold_zero_fake_effect"
+      ],
+      [
+        "expired",
+        {
+          "now_tick": 20
+        },
+        "hold_zero_fake_effect"
+      ],
+      [
+        "changed-action",
+        {
+          "effective_arguments": {
+            "key": "other"
+          }
+        },
+        "hold_zero_fake_effect"
+      ],
+      [
+        "user-excluded",
+        {
+          "action": "fixture-other"
+        },
+        "deny_zero_fake_effect"
+      ],
+      [
+        "new-destination",
+        {
+          "destination": "https://e203-new.invalid"
+        },
+        "hold_zero_fake_effect"
+      ],
+      [
+        "cancelled",
+        {
+          "cancelled": true
+        },
+        "stop_zero_fake_effect"
+      ]
+    ],
+    "E203-02": [
+      [
+        "exact-fit",
+        {
+          "work_cap": 16
+        },
+        "reserve_16"
+      ],
+      [
+        "over-limit",
+        {
+          "work_cap": 15
+        },
+        "stop_no_reservation_or_effect"
+      ],
+      [
+        "existing-reserve-exhausts-cap",
+        {
+          "work_cap": 16,
+          "existing_reserved_units": 16
+        },
+        "stop_no_new_reservation"
+      ],
+      [
+        "concurrent-parent",
+        {
+          "parent_cap": 24,
+          "contenders": [
+            [
+              "attempt-1",
+              "reservation-1"
+            ],
+            [
+              "attempt-2",
+              "reservation-2"
+            ]
+          ]
+        },
+        "exactly_one_reservation_of_16"
+      ],
+      [
+        "cap-unknown",
+        {
+          "work_cap": null
+        },
+        "hold"
+      ],
+      [
+        "rate-missing",
+        {
+          "rate_revision": null
+        },
+        "hold"
+      ],
+      [
+        "stale-rate",
+        {
+          "current_rate_revision": "rate-fixture-2"
+        },
+        "hold"
+      ],
+      [
+        "stale-policy",
+        {
+          "current_policy_revision": "policy-fixture-2"
+        },
+        "hold"
+      ],
+      [
+        "deadline-expired",
+        {
+          "now_tick": 30
+        },
+        "stop"
+      ],
+      [
+        "ledger-unavailable",
+        {
+          "ledger_available": false
+        },
+        "hold_no_cap_reset"
+      ]
+    ],
+    "E203-03": [
+      [
+        "reported-complete",
+        {
+          "use_upstream": "E202-05/reported-with-breakdown",
+          "submission": "confirmed",
+          "outcome": "completed"
+        },
+        "debit_14_release_unused_2"
+      ],
+      [
+        "explicit-zero",
+        {
+          "use_upstream": "E202-05/zero",
+          "submission": "confirmed",
+          "outcome": "completed"
+        },
+        "settle_zero_release_16_once"
+      ],
+      [
+        "reported-nonsuccess",
+        {
+          "use_upstream": "E202-05/non-success-reported",
+          "submission": "confirmed",
+          "outcome": "incomplete"
+        },
+        "debit_8_release_unused_8"
+      ]
+    ],
+    "E203-04": [
+      [
+        "missing",
+        {
+          "use_upstream": "E202-05/missing"
+        },
+        "retain_16_all_usage_unknown"
+      ],
+      [
+        "partial",
+        {
+          "use_upstream": "E202-05/partial"
+        },
+        "retain_16_keep_reported_input_others_unknown"
+      ],
+      [
+        "partial-zero",
+        {
+          "usage": {
+            "input": 0,
+            "output": null,
+            "total": null
+          }
+        },
+        "retain_16_keep_zero_and_unknown_distinct"
+      ],
+      [
+        "inconsistent",
+        {
+          "usage": {
+            "input": 8,
+            "output": 3,
+            "total": 99
+          }
+        },
+        "retain_16_hold_conflict"
+      ],
+      [
+        "over-reserve",
+        {
+          "usage": {
+            "input": 8,
+            "output": 5,
+            "total": 13
+          }
+        },
+        "retain_16_hold_conservative_headroom"
+      ],
+      [
+        "missing-rate-at-settlement",
+        {
+          "settlement_rate_revision": null
+        },
+        "retain_16_no_synthetic_debit"
+      ],
+      [
+        "unprovable-next-headroom",
+        {
+          "hold_reason": "unresolved_exposure",
+          "headroom_proved": false
+        },
+        "retain_16_hold_next_admission"
+      ]
+    ],
+    "E203-05": [
+      [
+        "proved-no-submit",
+        {
+          "use_upstream": "E202-04/timeout-before",
+          "evidence": "trusted-matching-no-submit",
+          "attempts_consumed": 1
+        },
+        "release_provider_16_once_keep_attempt_history"
+      ],
+      [
+        "cancel-before-submit",
+        {
+          "use_upstream": "E202-04/cancel-before",
+          "evidence": "trusted-matching-no-submit",
+          "attempts_consumed": 1
+        },
+        "release_provider_16_once_keep_attempt_history"
+      ],
+      [
+        "cancel-after-possible-submit",
+        {
+          "use_upstream": "E202-04/cancel-after"
+        },
+        "hold_reservation_16_reconcile"
+      ],
+      [
+        "timeout-after-possible-submit",
+        {
+          "use_upstream": "E202-04/timeout-after"
+        },
+        "hold_reservation_16_reconcile"
+      ],
+      [
+        "zero-but-submit-unknown",
+        {
+          "use_upstream": "E202-05/zero",
+          "submission": "unknown"
+        },
+        "preserve_all_zeros_keep_reservation_16"
+      ]
+    ],
+    "E203-06": [
+      [
+        "duplicate-observation",
+        {
+          "use_upstream": "E202-05/replayed-observation",
+          "deliveries": 2
+        },
+        "one_14_debit_one_release_duplicate_no_op"
+      ],
+      [
+        "late-matching",
+        {
+          "sequence": [
+            "possible_submit",
+            "matching_complete",
+            "identical_replay"
+          ]
+        },
+        "hold_then_debit_14_once"
+      ],
+      [
+        "conflicting-replay",
+        {
+          "sequence": [
+            "matching_complete",
+            "same_identity_different_usage"
+          ]
+        },
+        "hold_conflict_no_overwrite_or_second_debit"
+      ],
+      [
+        "wrong-attempt",
+        {
+          "receipt_attempt_id": "attempt-other"
+        },
+        "hold_missing_correlation"
+      ],
+      [
+        "wrong-reservation",
+        {
+          "receipt_reservation_id": "reservation-other"
+        },
+        "hold_missing_correlation"
+      ],
+      [
+        "missing-trusted-correlation",
+        {
+          "receipt_attempt_id": null,
+          "verified_binding_ref": null
+        },
+        "hold_missing_correlation"
+      ],
+      [
+        "ledger-recovery-unavailable",
+        {
+          "ledger_available": false
+        },
+        "hold_no_reset_no_fake_retry"
+      ]
+    ]
+  }
+}

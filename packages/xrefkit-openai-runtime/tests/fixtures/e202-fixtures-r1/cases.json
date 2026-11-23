@@ -1,0 +1,484 @@
+{
+  "revision": "e202-fixtures-r1",
+  "purpose": "synthetic fixture specification only",
+  "baseline": {
+    "commit": "78e11fe562605640b45523c5d291f956ab29decf",
+    "tree": "0b7b56f47088ff2cde096acb2a68de5316e57893",
+    "v1_source": "packages/xrefkit-openai-runtime/tests/fixtures/execution_v1.json",
+    "v1_git_blob_sha256": "bfe2ded152d0cd011292909110971326b32923828d6aafc50d98ee0884031635",
+    "context_revision": "e201-fixtures-r1",
+    "inventory_sha256": "cf3bc0d7c12461b5347526f86442b4ec87b143370b459917491854b8d61e30fb",
+    "context_sha256": "61b8b76fd6595e622b28940796ea83fcdf20b3f598198b0586f91a46407b5bbe",
+    "provenance_sha256": "3aa7b60e0f90dbf9c80b8350e4db482c9bdcb930116460719266e1ccdeec13a1"
+  },
+  "defaults": {
+    "context_state": "eligible",
+    "assignment": "V1 golden request assignment",
+    "profile": "e202-fake-only",
+    "destination": "https://e202-provider.invalid/v1/responses",
+    "admission": "current-unconsumed",
+    "attempt_id": "e202-attempt-001",
+    "transport_request_id": "e202-http-request-001",
+    "reservation": "V1 golden request reservation_ref",
+    "model": "synthetic-model",
+    "max_output_tokens": 16,
+    "deadline_ms": 1000,
+    "tool_schema": {
+      "name": "fixture_lookup",
+      "arguments": {
+        "query": "string"
+      }
+    },
+    "response": {
+      "http": 200,
+      "status": "completed",
+      "id": "e202-response-001",
+      "output": [
+        {
+          "type": "text",
+          "id": "e202-item-text-001",
+          "text": "synthetic result"
+        },
+        {
+          "type": "function_call",
+          "id": "e202-item-call-002",
+          "call_id": "e202-call-009",
+          "name": "fixture_lookup",
+          "arguments": "{\"query\":\"synthetic\"}"
+        }
+      ],
+      "usage": {
+        "input_tokens": 8,
+        "output_tokens": 3,
+        "total_tokens": 11,
+        "input_tokens_details": {
+          "cached_tokens": 2
+        },
+        "output_tokens_details": {
+          "reasoning_tokens": 1
+        }
+      }
+    }
+  },
+  "case_rules": [
+    "Each row starts from the defaults and applies only listed mutations. Response replacement overrides the full fake response; top-level status/usage overrides only that default response property.",
+    "Fields such as denied grant, consumption and delivery stage are synthetic harness controls, not provider wire schema. Zero/one/one_total count actual calls to the in-process fake boundary only.",
+    "Use explicit zero fake sends for held/rejected preflight and zero additional sends for replays. Any sent request still uses fake transport only; no Tool execution, network, SDK, external credential, MCP or runtime download.",
+    "Preserve attempt/response correlation and unknown values for #203/#206/#207. No invoice, live budget or production model/limits are inferred."
+  ],
+  "cases": {
+    "E202-01": [
+      [
+        "mapped-request",
+        {},
+        "one",
+        {
+          "checks": [
+            "same serialized body on repeated rendering",
+            "instructions separated from supporting input",
+            "retain local V1 run_id, work_item_id, binding_sha256 and attempt_id",
+            "model and output limit from V1",
+            "deadline held locally",
+            "transport request ID, provider response ID, item and call IDs remain distinct"
+          ]
+        }
+      ]
+    ],
+    "E202-02": [
+      [
+        "context-held",
+        {
+          "context_state": "held"
+        },
+        "zero",
+        "local_hold"
+      ],
+      [
+        "payload-mismatch",
+        {
+          "context_digest": "different"
+        },
+        "zero",
+        "local_hold"
+      ],
+      [
+        "stale-binding",
+        {
+          "current_route_revision": 0
+        },
+        "zero",
+        "local_hold"
+      ],
+      [
+        "missing-admission",
+        {
+          "admission": null
+        },
+        "zero",
+        "local_hold"
+      ],
+      [
+        "missing-current-assignment",
+        {
+          "current_assignment": null
+        },
+        "zero",
+        "local_hold"
+      ],
+      [
+        "cancel-before-call",
+        {
+          "cancelled": true
+        },
+        "zero",
+        "local_hold"
+      ],
+      [
+        "wrong-profile",
+        {
+          "profile": "other"
+        },
+        "zero",
+        "local_hold"
+      ],
+      [
+        "wrong-destination",
+        {
+          "destination": "https://other.invalid/v1/responses"
+        },
+        "zero",
+        "local_hold"
+      ],
+      [
+        "body-denied",
+        {
+          "final_body_grant": false
+        },
+        "zero",
+        "local_hold"
+      ],
+      [
+        "consumed-attempt",
+        {
+          "admission": "consumed"
+        },
+        "zero",
+        "local_hold"
+      ],
+      [
+        "repeat-attempt",
+        {
+          "invoke_same_attempt_twice": true
+        },
+        "one_total",
+        "no_second_send"
+      ],
+      [
+        "redirect",
+        {
+          "response": {
+            "http": 307,
+            "location": "https://other.invalid/v1/responses"
+          }
+        },
+        "one",
+        "no_redirect_or_forwarding"
+      ],
+      [
+        "model-unavailable",
+        {
+          "response": {
+            "http": 400,
+            "code": "model_not_found"
+          }
+        },
+        "one",
+        "no_fallback"
+      ]
+    ],
+    "E202-03": [
+      [
+        "ordered-items",
+        {},
+        "one",
+        "stable_order_and_typed_tool_proposal"
+      ],
+      [
+        "refusal",
+        {
+          "response": {
+            "http": 200,
+            "status": "completed",
+            "output": [
+              {
+                "type": "refusal",
+                "id": "item-refusal",
+                "text": "synthetic refusal"
+              }
+            ]
+          }
+        },
+        "one",
+        "refusal"
+      ],
+      [
+        "incomplete",
+        {
+          "response": {
+            "http": 200,
+            "status": "incomplete",
+            "reason": "max_output_tokens"
+          }
+        },
+        "one",
+        "incomplete"
+      ],
+      [
+        "failed",
+        {
+          "response": {
+            "http": 200,
+            "status": "failed"
+          }
+        },
+        "one",
+        "provider_failed"
+      ],
+      [
+        "malformed-arguments",
+        {
+          "tool_arguments": "{"
+        },
+        "one",
+        "hold_invalid_proposal"
+      ],
+      [
+        "undeclared-tool",
+        {
+          "tool_name": "not-in-approved-schema"
+        },
+        "one",
+        "hold_invalid_proposal"
+      ],
+      [
+        "duplicate-call-id",
+        {
+          "duplicate_call": true
+        },
+        "one",
+        "hold_invalid_proposal"
+      ],
+      [
+        "unsupported-item",
+        {
+          "append_item_type": "unknown-fixture-type"
+        },
+        "one",
+        "unsupported_output"
+      ]
+    ],
+    "E202-04": [
+      [
+        "invalid",
+        {
+          "response": {
+            "http": 400,
+            "code": "invalid_request_error"
+          }
+        },
+        "one",
+        "no_retry"
+      ],
+      [
+        "auth",
+        {
+          "response": {
+            "http": 401,
+            "code": "invalid_api_key"
+          }
+        },
+        "one",
+        "no_retry"
+      ],
+      [
+        "quota",
+        {
+          "response": {
+            "http": 429,
+            "code": "insufficient_quota"
+          }
+        },
+        "one",
+        "no_retry"
+      ],
+      [
+        "confirmed-transient",
+        {
+          "response": {
+            "http": 429,
+            "code": "rate_limit_exceeded",
+            "retry_after_seconds": 2,
+            "submission": "confirmed_rejected"
+          }
+        },
+        "one",
+        "controller_retry_advice_only"
+      ],
+      [
+        "ambiguous-429",
+        {
+          "response": {
+            "http": 429
+          }
+        },
+        "one",
+        {
+          "disposition": "unresolved_no_resend",
+          "correlation": ["attempt_id", "reservation_ref"]
+        }
+      ],
+      [
+        "ambiguous-5xx",
+        {
+          "response": {
+            "http": 503
+          }
+        },
+        "one",
+        {
+          "disposition": "unknown_remote_outcome",
+          "correlation": ["attempt_id", "reservation_ref"]
+        }
+      ],
+      [
+        "timeout-before",
+        {
+          "transport_observation": "deadline_expired_before_dispatch"
+        },
+        "zero",
+        "no_submit"
+      ],
+      [
+        "timeout-after",
+        {
+          "transport_observation": "timeout_after_possible_submission"
+        },
+        "one",
+        {
+          "disposition": "unknown_remote_outcome",
+          "correlation": ["attempt_id", "reservation_ref"]
+        }
+      ],
+      [
+        "cancel-before",
+        {
+          "transport_observation": "cancelled_before_dispatch"
+        },
+        "zero",
+        "no_submit"
+      ],
+      [
+        "cancel-after",
+        {
+          "transport_observation": "cancelled_after_possible_submission"
+        },
+        "one",
+        {
+          "disposition": "unknown_remote_outcome",
+          "correlation": ["attempt_id", "reservation_ref"]
+        }
+      ]
+    ],
+    "E202-05": [
+      [
+        "reported-with-breakdown",
+        {},
+        "one",
+        "observed_totals_with_nested_breakdowns"
+      ],
+      [
+        "zero",
+        {
+          "usage": {
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "total_tokens": 0
+          }
+        },
+        "one",
+        "zeros_preserved"
+      ],
+      [
+        "missing",
+        {
+          "usage": null
+        },
+        "one",
+        "usage_unknown"
+      ],
+      [
+        "partial",
+        {
+          "usage": {
+            "input_tokens": 8
+          }
+        },
+        "one",
+        "unreported_fields_unknown"
+      ],
+      [
+        "non-success-reported",
+        {
+          "status": "incomplete",
+          "usage": {
+            "input_tokens": 8,
+            "output_tokens": 0,
+            "total_tokens": 8
+          }
+        },
+        "one",
+        "reported_usage_preserved"
+      ],
+      [
+        "replayed-observation",
+        {
+          "deliver_same_observation_twice": true
+        },
+        "one_total",
+        "same_attempt_and_receipt_identity_no_charge_or_reservation_release"
+      ]
+    ],
+    "E202-06": [
+      [
+        "reject-input-canary",
+        {
+          "restricted_field": "E202_INPUT_CANARY",
+          "final_body_grant": false
+        },
+        "zero",
+        "no_protected_outbound_fields"
+      ],
+      [
+        "failure-diagnostics",
+        {
+          "response": {
+            "http": 400,
+            "code": "invalid_request_error",
+            "raw_body": "E202_RAW_BODY_CANARY",
+            "headers": {
+              "authorization": "E202_HEADER_CANARY"
+            }
+          }
+        },
+        "one",
+        "keep_allowed_ids_status_code_exclude_canaries"
+      ],
+      [
+        "local-provenance",
+        {},
+        "one",
+        "no_local_manifest_or_credential_in_provider_input_or_default_diagnostics"
+      ]
+    ]
+  }
+}

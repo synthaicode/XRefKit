@@ -1,0 +1,332 @@
+{
+  "revision": "e206-design-fixtures-r2",
+  "base": "f13e043e8f8ef0709fef818426d10d0349047161",
+  "tree": "94c8dd4373ad9e0a5c783e66fbbcab8d51a497bd",
+  "accepted_inputs": {
+    "201": "78e11fe562605640b45523c5d291f956ab29decf",
+    "202": "00948d9274dd94aeceee4cbc59ee76d010fb2f84",
+    "203": "7d3d6cad90a154eac4bf06b03da1bf120d9f258f",
+    "204": "343b892e88603f420ef39cd527699269765dd625",
+    "205": "f13e043e8f8ef0709fef818426d10d0349047161"
+  },
+  "fixed": {
+    "work_id": "work-206",
+    "session_id": "session-206",
+    "assignment_id": "assignment-206-r1",
+    "model": "mock-model-206",
+    "instruction_revision": "startup-206-r1",
+    "instructions": "Apply the current synthetic assignment and allow only tool206_read.",
+    "tool_name": "tool206_read",
+    "arguments": {
+      "document_id": "doc-206"
+    },
+    "tool_result": {
+      "status": "ok",
+      "text": "synthetic excerpt"
+    },
+    "call_id": "call-206",
+    "recipient": "mock-openai-206",
+    "parallel_tool_calls": false,
+    "criterion": "verified synthetic outcome",
+    "review": "pass for eligible candidate fixtures only"
+  },
+  "limits": {
+    "deadline_tick_exclusive": 8,
+    "max_provider_entries": 3,
+    "max_tool_entries": 1,
+    "max_same_operation_provider_retries": 1,
+    "max_delay_ticks": 2,
+    "synthetic_budget_units": 4,
+    "reservation_units_per_entry": 1,
+    "max_consecutive_no_progress_decision_ticks": 2
+  },
+  "variants": [
+    {
+      "case_id": "E206-01",
+      "variant": "provider-only",
+      "ticks": [
+        [
+          0,
+          "prepare and enter initial provider"
+        ],
+        [
+          1,
+          "observe eligible final candidate"
+        ]
+      ],
+      "expected": {
+        "terminal": "candidate",
+        "provider_entries": 1,
+        "tool_entries": 0
+      }
+    },
+    {
+      "case_id": "E206-01",
+      "variant": "single-tool-success",
+      "ticks": [
+        [
+          0,
+          "prepare and enter initial provider"
+        ],
+        [
+          1,
+          "observe one function_call with call-206"
+        ],
+        [
+          2,
+          "admit and enter Tool"
+        ],
+        [
+          3,
+          "record verified Tool result"
+        ],
+        [
+          4,
+          "prepare and send authorized matched result"
+        ],
+        [
+          5,
+          "record eligible final candidate"
+        ]
+      ],
+      "expected": {
+        "terminal": "candidate",
+        "provider_entries": 2,
+        "tool_entries": 1
+      }
+    },
+    {
+      "case_id": "E206-01",
+      "variant": "held-context",
+      "ticks": [
+        [
+          0,
+          "required context is held"
+        ]
+      ],
+      "expected": {
+        "terminal": "hold_context",
+        "provider_entries": 0,
+        "tool_entries": 0
+      }
+    },
+    {
+      "case_id": "E206-02",
+      "variant": "multiple-or-duplicate-tool-calls",
+      "ticks": [
+        [
+          0,
+          "enter initial provider"
+        ],
+        [
+          1,
+          "observe two Tool requests, use cases with distinct and duplicated call IDs"
+        ]
+      ],
+      "expected": {
+        "terminal": "stop_tool_cardinality",
+        "provider_entries": 1,
+        "tool_entries": 0
+      }
+    },
+    {
+      "case_id": "E206-02",
+      "variant": "revoked-before-tool",
+      "ticks": [
+        [
+          0,
+          "enter initial provider"
+        ],
+        [
+          1,
+          "observe eligible Tool request"
+        ],
+        [
+          2,
+          "revoke authority at final gate"
+        ]
+      ],
+      "expected": {
+        "terminal": "stop_authority",
+        "provider_entries": 1,
+        "tool_entries": 0
+      }
+    },
+    {
+      "case_id": "E206-02",
+      "variant": "tool-after-continuation",
+      "ticks": [
+        [
+          0,
+          "enter initial provider"
+        ],
+        [
+          1,
+          "observe one eligible Tool call"
+        ],
+        [
+          2,
+          "enter Tool"
+        ],
+        [
+          3,
+          "record Tool result"
+        ],
+        [
+          4,
+          "enter continuation"
+        ],
+        [
+          5,
+          "continuation proposes another Tool"
+        ]
+      ],
+      "expected": {
+        "terminal": "hold_scope",
+        "provider_entries": 2,
+        "tool_entries": 1
+      }
+    },
+    {
+      "case_id": "E206-03",
+      "variant": "matched-no-submit",
+      "ticks": [
+        [
+          0,
+          "enter initial mock transport attempt"
+        ],
+        [
+          1,
+          "receive matched positive no-submit and request two-tick delay"
+        ],
+        [
+          3,
+          "enter fresh attempt with settled old reservation"
+        ],
+        [
+          4,
+          "observe eligible candidate"
+        ]
+      ],
+      "expected": {
+        "terminal": "candidate",
+        "provider_entries": 2,
+        "tool_entries": 0
+      }
+    },
+    {
+      "case_id": "E206-03",
+      "variant": "timeout",
+      "ticks": [
+        [
+          0,
+          "enter initial provider"
+        ],
+        [
+          1,
+          "timeout with no receipt"
+        ]
+      ],
+      "expected": {
+        "terminal": "hold_reconciliation",
+        "provider_entries": 1,
+        "tool_entries": 0
+      }
+    },
+    {
+      "case_id": "E206-04",
+      "variant": "simultaneous-signals",
+      "ticks": [
+        [
+          0,
+          "cancel with concurrent revocation, unknown headroom and exhausted deadline"
+        ]
+      ],
+      "expected": {
+        "terminal": "cancelled",
+        "provider_entries": 0,
+        "tool_entries": 0
+      }
+    },
+    {
+      "case_id": "E206-04",
+      "variant": "stalled",
+      "ticks": [
+        [
+          0,
+          "no candidate effect and unchanged criterion evidence"
+        ],
+        [
+          1,
+          "repeat unchanged evidence"
+        ]
+      ],
+      "expected": {
+        "terminal": "stop_no_progress",
+        "provider_entries": 0,
+        "tool_entries": 0
+      }
+    },
+    {
+      "case_id": "E206-05",
+      "variant": "cancel-then-matched-late",
+      "ticks": [
+        [
+          0,
+          "enter initial provider"
+        ],
+        [
+          1,
+          "latch cancellation while outcome is unknown"
+        ],
+        [
+          3,
+          "receive matched late observation"
+        ],
+        [
+          4,
+          "deliver same observation again"
+        ]
+      ],
+      "expected": {
+        "terminal": "cancelled_with_reconciliation_evidence",
+        "provider_entries": 1,
+        "tool_entries": 0
+      }
+    },
+    {
+      "case_id": "E206-06",
+      "variant": "required-intent-write-fault",
+      "ticks": [
+        [
+          0,
+          "simulate required intent write failure before provider entry"
+        ]
+      ],
+      "expected": {
+        "terminal": "hold_journal",
+        "provider_entries": 0,
+        "tool_entries": 0
+      }
+    },
+    {
+      "case_id": "E206-06",
+      "variant": "required-observation-write-fault",
+      "ticks": [
+        [
+          0,
+          "enter provider after intent write"
+        ],
+        [
+          1,
+          "simulate required observation write failure"
+        ]
+      ],
+      "expected": {
+        "terminal": "hold_reconciliation",
+        "provider_entries": 1,
+        "tool_entries": 0
+      }
+    }
+  ]
+}
