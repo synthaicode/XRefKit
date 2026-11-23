@@ -37,5 +37,5 @@ jobs:
         shell: pwsh
         run: |
           $env:PYTHONPATH = (Resolve-Path 'packages/xrefkit-openai-runtime/src').Path
-          python -B -m pytest packages/xrefkit-openai-runtime/tests -q --import-mode=importlib -o pythonpath=
+          python -B -m pytest packages/xrefkit-openai-runtime/tests -q
           exit $LASTEXITCODE
