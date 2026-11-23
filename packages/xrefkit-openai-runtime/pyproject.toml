@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xrefkit-openai-runtime"
+version = "0.0.1"
+description = "Optional XRefKit API execution runtime"
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2,<3"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.scripts]
+xrefkit-openai-runtime-core = "xrefkit_openai_runtime.acquisition:main"
+xrefkit-openai-runtime-desktop = "xrefkit_openai_runtime.desktop_flow:offline_main"
+
+[tool.setuptools.package-data]
+xrefkit_openai_runtime = ["windows_profile/*.json", "windows_profile/*.md"]
