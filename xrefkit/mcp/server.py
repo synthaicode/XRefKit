@@ -488,7 +488,9 @@ def main(argv: list[str] | None = None) -> int:
         dist_base_url = args.public_base_url or f"{scheme}://{args.host}:{args.port}"
 
     try:
-        from mcp.server.fastmcp import Context, FastMCP
+        from mcp.server.fastmcp import Context
+        from .skills_transport import SkillsFastMCP, install_skills_handlers
+        from .skills_extension import SkillsExtension
     except ImportError as exc:
         raise SystemExit(
             "The MCP server requires the optional dependency: "
@@ -501,7 +503,7 @@ def main(argv: list[str] | None = None) -> int:
     # there even though it was only imported into this local scope.
     globals()["Context"] = Context
 
-    app = FastMCP(
+    app = SkillsFastMCP(
         "xrefkit-mcp",
         host=args.host,
         port=args.port,
@@ -509,6 +511,7 @@ def main(argv: list[str] | None = None) -> int:
         log_level=args.log_level.upper(),
         stateless_http=args.stateless_http,
     )
+    install_skills_handlers(app, SkillsExtension(catalog))
 
     def hidden_admin_tool(*_args: Any, **_kwargs: Any) -> Any:
         return lambda function: function
