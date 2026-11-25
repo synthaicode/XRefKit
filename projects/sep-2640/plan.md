@@ -3,7 +3,7 @@
 
 # SEP-2640 work plan
 
-Revision: 3, 2026-11-25. Highest priority, from the user's instruction.
+Revision: 4, 2026-11-25. Highest priority, from the user's instruction.
 This task-level breakdown precedes implementation. It is not an estimated
 schedule, a detailed Brownfield WBS or a claim that planned work has passed.
 
@@ -14,7 +14,7 @@ schedule, a detailed Brownfield WBS or a claim that planned work has passed.
 - Context: dedicated worktree `C:/dev/itsm/XRefKit-sep2640`; initial source `7303a46d`; existing FastMCP server and catalog; observed SDK `mcp==1.28.0`, base protocol `2025-11-25`.
 - Constraints: preserve existing tool interfaces and unrelated original-worktree changes; retain current governance authority; do not infer execution authorization from resource inspection.
 - Done when: the implemented contract is source-backed, current-diff review is resolved, targeted protocol/regression tests pass, and remaining live-client/deployment limits are named.
-- Out of scope: release, deployment, SDK-wide protocol migration unrelated to required compatibility, organization-policy changes and client-host permission implementations. GitHub Projects registration is explicitly requested and in scope.
+- Out of scope: SDK-wide protocol migration unrelated to required compatibility, organization-policy changes, new release-policy design, unrelated deployment targets and client-host permission implementations. The later user instruction explicitly adds official release and the existing MCP server update; GitHub Projects registration remains in scope.
 - Verification: focused new tests, existing MCP integration/catalog/startup tests relevant to the diff, deterministic structured-data validation when applicable, and `python -m xrefkit xref fix` with resulting diff inspection.
 - Stop/re-route: unresolved protocol/security behavior, inability to preserve the execution boundary, scope expansion, or evidence refuting the design basis.
 - Handoff: this plan, its technical basis, `work/sep2640/` evidence and the associated Skill Run logs.
@@ -162,3 +162,38 @@ and the unmerged/unreleased/undeployed boundary.
 Recorded board states are the parent's observed snapshot at registration.
 A completed local test does not itself update a remote Project field. The parent
 must persist/read back any later status transition after receiving final evidence.
+
+
+## Follow-up: release, existing MCP update and fresh-connection verification
+
+The user now authorizes publishing the SEP-2640 version, updating the running
+MCP server and verifying connection plus XID search/retrieval afterward. This
+is a new operation phase after merged PR #303 (`035bab59`), not a reinterpretation
+of the earlier unreleased/undeployed evidence. Existing completed implementation
+and test tasks retain their original scope. No new task below is marked complete.
+
+| ID | Work and responsible role | Depends on | Required acceptance evidence | State |
+| --- | --- | --- | --- | --- |
+| REL-01 | Parent release operator: release Core 0.7.14 through the existing official workflow | Merged SEP-2640 source; matching version/tag; existing required quality and artifact gates | Exact release commit/tag; successful required release CI; inspected wheel/sdist and official-Skill compatibility; GitHub Release and PyPI 0.7.14; fresh installed-artifact/version verification | In progress: parent committed version change `c402ca5`; publication not yet verified |
+| DEPLOY-01 | Parent deployment operator: update the actual existing `xrefkitmcp` host from observed 0.7.9 to verified 0.7.14 | REL-01 verified artifact; actual host/executable/endpoint and supported update/recovery mechanism identified | Prior working state retained as evidence; exact installed artifact/version; actual serving process restarted through its existing mechanism and serving expected endpoint | Pending |
+| DEPLOY-VERIFY | Parent/test operator: verify a fresh connection to the updated actual server | DEPLOY-01 | Actual post-update runtime/version; initialization/connection; SEP declaration and required Skill/resource requests; existing XID search and retrieval with canonical content/identity and error/recovery coverage applicable to the live endpoint | Pending |
+| REL-CLOSE | Parent coordinator: reconcile release/deployment proof and GitHub Project state | REL-01, DEPLOY-01, DEPLOY-VERIFY | Release/host/test evidence links; explicit limits or failures; operation/PM runtime verification and closure; actual Project/Issue result updates and readback | Pending |
+
+Operational Run: `2a1ff99b-1232-4c9f-b760-4ae24eac81cb`, opened by the parent
+for existing official workflow execution and the explicitly identified host.
+PM coordination Run: `626bbd77-135a-4ae6-91be-3b293c826a28`,
+`work/sessions/2026-11-25_skill_run_sep2640_release_coordination.md`.
+
+The release-planning Skill gate refusal is recorded in
+`work/sessions/2026-11-25_session_sep2640_release_route_check.md`; the method
+is not executed or copied into these operation items. Required publication
+checks remain owned by `.github/workflows/python-package.yml` and
+`docs/guides/112_core_skill_release_compatibility.md`.
+
+The parent registered and read back
+[Issue #304: [P0][REL] Release SEP-2640 Core and verify deployed MCP XID access](https://github.com/synthaicode/XRefKit/issues/304)
+on [Project 7](https://github.com/users/synthaicode/projects/7), state **In Progress**.
+Its checklist maps REL-01, DEPLOY-01, DEPLOY-VERIFY and REL-CLOSE. Existing issues
+#297–302 cover the previous implementation phase; their Done states do not
+establish release, deployment or fresh-connection completion. REL-CLOSE requires
+the updated #304 result/state and actual destination readback.
