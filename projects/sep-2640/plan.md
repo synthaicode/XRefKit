@@ -190,8 +190,10 @@ is not executed or copied into these operation items. Required publication
 checks remain owned by `.github/workflows/python-package.yml` and
 `docs/guides/112_core_skill_release_compatibility.md`.
 
-The exact new GitHub Project/Issue mapping for these four operation items is
-pending the parent's registration/readback. Existing issues #297–302 cover the
-previous implementation phase; their Done states do not establish release,
-deployment or fresh-connection completion. The parent must record new or
-explicitly extended item identities and their observed states before REL-CLOSE.
+The parent registered and read back
+[Issue #304: [P0][REL] Release SEP-2640 Core and verify deployed MCP XID access](https://github.com/synthaicode/XRefKit/issues/304)
+on [Project 7](https://github.com/users/synthaicode/projects/7), state **In Progress**.
+Its checklist maps REL-01, DEPLOY-01, DEPLOY-VERIFY and REL-CLOSE. Existing issues
+#297–302 cover the previous implementation phase; their Done states do not
+establish release, deployment or fresh-connection completion. REL-CLOSE requires
+the updated #304 result/state and actual destination readback.

@@ -46,7 +46,7 @@ baseline or stakeholder assignment was requested or is inferred.
 | Record | Authoritative local destination | Responsible role | Evidence of delivery |
 | --- | --- | --- | --- |
 | Intent and task authorization | This file, citing the current user instructions | Parent coordinator preserves scope | File readback and references in the plan |
-| GitHub Project task registration and board fields | [synthaicode Project 7](https://github.com/users/synthaicode/projects/7), issues #297–302 | Parent coordinator | Actual board/item URLs, saved fields and destination readback |
+| GitHub Project task registration and board fields | [synthaicode Project 7](https://github.com/users/synthaicode/projects/7), issues #297–302 and [release/update #304](https://github.com/synthaicode/XRefKit/issues/304) | Parent coordinator | Actual board/item URLs, saved fields and destination readback |
 | Work split, dependencies, current results and next actions | `projects/sep-2640/plan.md` | Parent coordinator consumes executor/reviewer evidence | Saved plan with actual status and evidence links |
 | Protocol/design basis and acceptance mapping | `projects/sep-2640/` technical record created by technical analysis | Technical analysis executor | Exact source references and explicit compatibility decision |
 | Code and test artifacts | `xrefkit/mcp/`, selected `tests/` files | Implementation executor | Diff linked to plan IDs and validation evidence |
@@ -86,6 +86,8 @@ with the repository Runtime and the technical review/test routes.
 PR #303 merged as `035bab592a75f81eb5117fd721016dbdd68269ec`. The parent
 opened instruction-backed Run `2a1ff99b-1232-4c9f-b760-4ae24eac81cb` for the
 existing official release workflow and explicitly identified host operation.
+The parent registered [Issue #304](https://github.com/synthaicode/XRefKit/issues/304)
+on Project 7 with the four operation checklist items and read back **In Progress**.
 The active operation worktree is `C:/dev/itsm/XRefKit-sep2640-release`, branch
 `release/0.7.14`. The parent committed the version change as `c402ca5`.
 
