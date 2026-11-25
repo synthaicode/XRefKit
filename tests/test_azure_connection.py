@@ -9,6 +9,7 @@ from contextlib import redirect_stdout, redirect_stderr
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from unittest.mock import patch
+from environment_helpers import mock_environment
 
 from xrefkit.azure_connection import MAX_BYTES, _NoRedirect, load_connection, main, read_check, register_connection, validate_profile
 from xrefkit.work_management import register_workspace
@@ -117,7 +118,7 @@ class AzureConnectionTests(unittest.TestCase):
 
     def test_missing_named_credential_has_no_other_env_fallback(self):
         self.register()
-        with patch.dict("os.environ", {"AZURE_DEVOPS_PAT": CANARY}, clear=True), patch("xrefkit.azure_connection.build_opener") as network:
+        with mock_environment({"AZURE_DEVOPS_PAT": CANARY}, clear=True), patch("xrefkit.azure_connection.build_opener") as network:
             result = self.check()
         self.assertEqual("credential_unavailable", result["diagnostic_code"])
         self.assertFalse(result["network_attempted"])
@@ -135,7 +136,7 @@ class AzureConnectionTests(unittest.TestCase):
             self.assertEqual("Basic " + base64.b64encode((":" + CANARY).encode()).decode(), req.get_header("Authorization"))
             response = Response(req)
             return response
-        with patch.dict("os.environ", {"EXPLICIT_TEST_PAT": CANARY}), patch("xrefkit.azure_connection.build_opener") as builder:
+        with mock_environment({"EXPLICIT_TEST_PAT": CANARY}), patch("xrefkit.azure_connection.build_opener") as builder:
             builder.return_value.open.side_effect = request
             result = self.check()
         builder.return_value.open.assert_called_once()
@@ -151,7 +152,7 @@ class AzureConnectionTests(unittest.TestCase):
     def test_http_failures_and_redirects_are_sanitized_without_retry(self):
         self.register()
         for status, code in ((401, "authentication_rejected"), (403, "access_forbidden"), (404, "unavailable_or_not_visible"), (302, "redirect_rejected"), (307, "redirect_rejected"), (429, "rate_limited"), (503, "server_failure")):
-            with self.subTest(status=status), patch.dict("os.environ", {"EXPLICIT_TEST_PAT": CANARY}), patch("xrefkit.azure_connection.build_opener") as builder:
+            with self.subTest(status=status), mock_environment({"EXPLICIT_TEST_PAT": CANARY}), patch("xrefkit.azure_connection.build_opener") as builder:
                 builder.return_value.open.side_effect = HTTPError("https://evil.test/" + CANARY, status, CANARY, {}, io.BytesIO(CANARY.encode()))
                 result = self.check()
             self.assertEqual(code, result["diagnostic_code"])
@@ -165,7 +166,7 @@ class AzureConnectionTests(unittest.TestCase):
         echo = copy.deepcopy(base)
         echo["fields"]["System.State"] = CANARY
         for body in (b"invalid " + CANARY.encode(), b"x" * (MAX_BYTES + 1), json.dumps({**base, "id": 11}).encode(), json.dumps({**base, "fields": {"System.TeamProject": "other"}}).encode(), json.dumps(echo).encode()):
-            with self.subTest(size=len(body)), patch.dict("os.environ", {"EXPLICIT_TEST_PAT": CANARY}), patch("xrefkit.azure_connection.build_opener") as builder:
+            with self.subTest(size=len(body)), mock_environment({"EXPLICIT_TEST_PAT": CANARY}), patch("xrefkit.azure_connection.build_opener") as builder:
                 builder.return_value.open.side_effect = lambda req, timeout: Response(req, body)
                 result = self.check()
             self.assertFalse(result["read_verified"])
@@ -174,18 +175,18 @@ class AzureConnectionTests(unittest.TestCase):
     def test_network_timeout_nonjson_and_unexpected_final_url_are_controlled(self):
         self.register()
         for error in (TimeoutError(CANARY), URLError(CANARY)):
-            with patch.dict("os.environ", {"EXPLICIT_TEST_PAT": CANARY}), patch("xrefkit.azure_connection.build_opener") as builder:
+            with mock_environment({"EXPLICIT_TEST_PAT": CANARY}), patch("xrefkit.azure_connection.build_opener") as builder:
                 builder.return_value.open.side_effect = error
                 self.assertEqual("network_request_failed", self.check()["diagnostic_code"])
         for changes, code in (({"content_type": "text/html"}, "response_not_json"), ({"url": "https://evil.test"}, "response_destination_mismatch")):
-            with patch.dict("os.environ", {"EXPLICIT_TEST_PAT": CANARY}), patch("xrefkit.azure_connection.build_opener") as builder:
+            with mock_environment({"EXPLICIT_TEST_PAT": CANARY}), patch("xrefkit.azure_connection.build_opener") as builder:
                 builder.return_value.open.side_effect = lambda req, timeout: Response(req, **changes)
                 self.assertEqual(code, self.check()["diagnostic_code"])
 
     def test_cli_never_echoes_secret_or_server_error_text(self):
         self.register()
         output = io.StringIO()
-        with redirect_stdout(output), patch.dict("os.environ", {"EXPLICIT_TEST_PAT": CANARY}), patch("xrefkit.azure_connection.build_opener") as builder:
+        with redirect_stdout(output), mock_environment({"EXPLICIT_TEST_PAT": CANARY}), patch("xrefkit.azure_connection.build_opener") as builder:
             builder.return_value.open.side_effect = HTTPError(CANARY, 401, CANARY, {}, io.BytesIO(CANARY.encode()))
             status = main(["read-check", "--root", str(self.root), "--workspace-id", "local", "--connection-id", "test", "--item-id", "10"])
         self.assertEqual(1, status)

@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 from urllib.error import HTTPError
 from unittest.mock import patch
+from environment_helpers import mock_environment
 
 import pytest
 
@@ -39,7 +40,7 @@ def publish_remote(setup, request=None, lost=False, intent_only=False, before=No
                 return Response(req, payload(10))
             return Response(req, current)
     root, original, _, _ = setup
-    with patch.dict("os.environ", {"IMPORT_TEST_PAT": CANARY}), patch.object(writer, "build_opener", return_value=Opener()):
+    with mock_environment({"IMPORT_TEST_PAT": CANARY}), patch.object(writer, "build_opener", return_value=Opener()):
         if intent_only:
             with pytest.raises(KeyboardInterrupt): writer.publish(root, "local", request or original)
             result = None
@@ -70,7 +71,7 @@ def reads(current, historical=None, *, fail_phase=None, error=None, mutation=Non
                 value["url"] += "/revisions/" + str(value["rev"])
             if mutation: value = mutation(phase, value)
             return Response(req, value)
-    return patch.dict("os.environ", {"IMPORT_TEST_PAT": CANARY}), patch.object(writer, "build_opener", return_value=Opener()), calls
+    return mock_environment({"IMPORT_TEST_PAT": CANARY}), patch.object(writer, "build_opener", return_value=Opener()), calls
 
 
 def reconcile(setup, request=None, current=None, historical=None, **kwargs):
@@ -185,7 +186,7 @@ def test_expired_auth_partial_failure_and_later_explicit_read(setup, phase, code
 
 def test_missing_pat_no_network_and_original_unknown_still_blocks(setup):
     writer_setup, request, _ = setup
-    with patch.dict("os.environ", {}, clear=True), patch.object(writer, "build_opener") as http:
+    with mock_environment({}, clear=True), patch.object(writer, "build_opener") as http:
         result = module.reconcile(writer_setup[0], "local", request)
     assert result["outcome"] == "unresolved" and not result["network_attempted"]
     assert result["phases"] == [{"phase": "root", "outcome": "not_attempted", "diagnostic_code": "credential_unavailable", "network_attempted": False}]
@@ -286,7 +287,7 @@ def test_intent_only_crash_before_send_never_infers_not_sent(writer_setup):
 
 def test_known_hold_retained_without_credential_or_remote_read(writer_setup):
     root = writer_setup[0]
-    with patch.dict("os.environ", {}, clear=True):
+    with mock_environment({}, clear=True):
         assert writer.publish(root, "local", writer_setup[1])["outcome"] == "hold"
     req = {"schema_version": 1, "reconciliation_id": "hold", "report_id": "write-1", "connection_id": "import-test", "source_connection_id": "write-test", "binding_id": "binding-1", "expected_observation_revision": 2, "approval_refs": ["recover.md"]}
     with patch.object(writer.os.environ, "get", side_effect=AssertionError("credential read")), patch.object(writer, "build_opener") as http:

@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 from urllib.error import HTTPError
 from unittest.mock import patch
+from environment_helpers import mock_environment
 
 import pytest
 
@@ -70,7 +71,7 @@ def network(*, mutation=None, patch_failure=None, readback_failure=None, patch_f
                 value = mutation(request, copy.deepcopy(value))
             return Response(request, value)
 
-    return patch.dict("os.environ", {"IMPORT_TEST_PAT": CANARY}), patch.object(module, "build_opener", return_value=Opener()), calls
+    return mock_environment({"IMPORT_TEST_PAT": CANARY}), patch.object(module, "build_opener", return_value=Opener()), calls
 
 
 def deliver(setup, request=None, **kwargs):
@@ -252,7 +253,7 @@ def test_success_chain_requires_explicit_predecessor_and_new_observation(setup):
                 after["fields"]["System.History"] = operations[-1]["value"]
                 return Response(req, after)
             return Response(req, sequence.pop(0) if sequence else after)
-    with patch.dict("os.environ", {"IMPORT_TEST_PAT": CANARY}), patch.object(module, "build_opener", return_value=Opener()):
+    with mock_environment({"IMPORT_TEST_PAT": CANARY}), patch.object(module, "build_opener", return_value=Opener()):
         result = module.publish(root, "local", second)
     assert result["sent_confirmed"] and result["after"] == {"revision": 4, "state": "Done"}
     with pytest.raises(ValueError): module.publish(root, "local", {**second, "report_id": "fork", "expected_observation_revision": 4})
@@ -296,7 +297,7 @@ def test_same_id_changed_request_refuses_before_credentials(setup):
 
 def test_resealed_unknown_without_intent_cannot_bypass_target_guard(setup):
     root, request, _, _ = setup
-    with patch.dict("os.environ", {}, clear=True):
+    with mock_environment({}, clear=True):
         result = module.publish(root, "local", request)
     path = Path(result["output"])
     record = read_json(path)
