@@ -31,7 +31,7 @@ schedule, a detailed Brownfield WBS or a claim that planned work has passed.
 | TS-01 | Test executor: validate protocol and resource behavior | IM-01, IM-02 | Positive and negative fixtures; wire-level dispatch; invalid URIs/traversal; byte/digest equality; metadata fidelity; pagination if present; package/native eligibility | Done; 9 passed, 1 privilege-dependent skip, 9 subtests |
 | RV-01 | Independent reviewer: review current diff against requirements and existing boundaries | IM-01, IM-02; TS-01 evidence when available | Version-scoped review, evidence-backed findings and severity; compatibility/security/governance analysis; no producer self-acceptance | Done; independent review.md, two test findings corrected |
 | IM-03 | Python executor: address review/test findings within scope | TS-01 or RV-01 findings | Each finding linked to fix or reasoned handoff; changed design basis rechecked before retry | Done; optional-import and HTTP Host test fixes reviewed |
-| TS-02 | Test executor and reviewer: validate final diff and relevant regressions | TS-01, RV-01; IM-03 when needed | Fresh affected test results, relevant existing MCP regressions and review disposition for final diff | Done; focused/regression pass; same 145 broad-suite failure/error nodes reproduced on baseline |
+| TS-02 | Test executor and reviewer: validate final diff and relevant regressions | TS-01, RV-01; IM-03 when needed | Fresh affected test results, relevant existing MCP regressions and review disposition for final diff | Done; repaired full quality gate passed, 1,481 tests passed |
 | CL-01 | Parent coordinator: reconcile actual evidence and deliver | TS-02 | Plan updated with artifact links, runtime verification/closure, explicit unverified items, user-facing result | Done; result.md records evidence, limits and closed task runs |
 
 The parent records actual executor identity when dispatching each work item.
@@ -83,4 +83,18 @@ by the creation of this plan.
 ## Final evidence
 
 See [delivery result](result.md#xid-73D8E921C4A6). All task work items have
-recorded outcomes; the existing whole-suite gate remains non-green as documented.
+recorded outcomes; the follow-up repair below brought the whole quality gate to pass.
+
+## Follow-up: repair and verify the whole test environment
+
+The user subsequently requested `修正確認` after the failure-cause investigation.
+This authorizes correction of the confirmed test-environment defects and a new
+whole-gate run. It does not change the SEP transport or release scope.
+
+| ID | Work and owner | Depends on | Acceptance evidence | State |
+| --- | --- | --- | --- | --- |
+| FX-01 | Python executor: isolate test environment mocking without dropping inherited empty Windows variables | Confirmed reproduction | Focused regression preserves child environment and existing assertions | Done |
+| FX-02 | Parent: install repository package in the isolated test environment | Confirmed setup import error | Import succeeds from a different working directory | Done |
+| FX-03 | Independent reviewer and parent: review fix, rerun full quality gate, reconcile result | FX-01, FX-02 | Final diff review and complete gate output; 1,481 passed, 8 skipped, zero failures/errors | Done |
+
+Repair Run: `work/sessions/2026-11-25_skill_run_sep2640_test_environment_repair.md`.

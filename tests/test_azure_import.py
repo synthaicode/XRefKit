@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from urllib.error import HTTPError
 from unittest.mock import patch
+from environment_helpers import mock_environment
 
 import pytest
 
@@ -55,7 +56,7 @@ def network(values=None, headers=None):
             value = values.get(item_id, payload(item_id)) if values is not None else payload(item_id)
             if isinstance(value, BaseException): raise value
             return Response(request, value, **(headers or {}))
-    return patch.dict("os.environ", {"IMPORT_TEST_PAT": CANARY}), patch.object(module, "build_opener", return_value=Opener()), calls
+    return mock_environment({"IMPORT_TEST_PAT": CANARY}), patch.object(module, "build_opener", return_value=Opener()), calls
 
 
 def acquire(setup, values=None, request=None, headers=None):
@@ -230,7 +231,7 @@ def test_unexpected_body_continuation_metadata_is_rejected(setup, key):
 @pytest.mark.parametrize("mutation", ["attempted", "diagnostic", "failed_not_attempted", "bool_id", "outcome", "unknown_field"])
 def test_resealed_contradictory_receipts_are_not_accepted(setup, mutation):
     root, _, request, _, _, _ = setup
-    with patch.dict("os.environ", {}, clear=True):
+    with mock_environment({}, clear=True):
         result = module.capture(root, "local", request)
     receipt = read_json(Path(result["output"]))
     if mutation == "attempted": receipt["items"][0]["network_attempted"] = True
