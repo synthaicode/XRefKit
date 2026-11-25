@@ -76,3 +76,34 @@ Both Project Management runs, the implementation run and the repair run passed d
 verification and closure. Their closure records establish recorded workflow
 progression, separately from the independent review and test results above.
 See the [work plan](plan.md#xid-9A62E4B817C3) for task-to-evidence mapping.
+
+
+## Additional existing-XID verification
+
+The user's requested existing-XID regression check passed in the modified
+server worktree. Existing focused tests produced **96 passed and 8 subtests**.
+An independent actual stdio server probe exited 0 with **27 tool calls plus
+ping**, while the Skills extension was advertised under MCP `2025-11-25`.
+
+The probe checked three canonical XIDs through `search_knowledge_catalog`,
+`get_knowledge_summary`, `expand_knowledge` and `get_document_by_xid`. Search,
+metadata and content agreed with their canonical sources; the existing document
+link-normalization behavior was accounted for rather than requiring raw-byte
+identity where the API normalizes links. It also verified three cache hits,
+three cache misses, three pre-startup refusals, three unknown-XID errors and
+successful ping/normal retrieval after those errors.
+
+- `work/sep2640/xid-existing-tests.txt`
+- `work/sep2640/xid-wire-results.json`
+- `work/sep2640/xid-wire-transcript.json`
+- `work/sep2640/xid-verification-report.md`
+- Server source SHA-256: `b2e2a9b2c84c896b4c58aaff91e01286c5c0ccd26181cbd46d868ce80c307051`.
+
+This confirms the tested local server/API paths, not third-party client UI
+behavior or production deployment. The parent registered six issues on
+[GitHub Project 7](https://github.com/users/synthaicode/projects/7); [#301](https://github.com/synthaicode/XRefKit/issues/301) now contains the final
+XID evidence and its Done board state was read back by the parent.
+[#302](https://github.com/synthaicode/XRefKit/issues/302) is also Done after
+deterministic verification and accepted closure of all three QA runs and both
+PM runs. The parent read back all six items as Done in the actual board.
+These completion states describe the recorded local work, not merge or release.

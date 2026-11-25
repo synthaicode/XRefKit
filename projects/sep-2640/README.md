@@ -20,5 +20,10 @@ verification remain separate work items with separate evidence.
 - Source baseline: `7303a46d`; automatic Skill checkpoints may add trace commits.
 - The original `C:/dev/itsm/XRefKit` contains pre-existing changes and is not the implementation working tree.
 
-This local record is the delivery endpoint requested for this task. It does not
-claim GitHub Project registration, production deployment or release.
+The user clarified that `Projects` means **GitHub Projects**. These files are
+local technical and coordination records, not evidence of board registration.
+The parent registered and read back six issues on
+[GitHub Project 7: XRefKit — SEP-2640 MCP Skills Extension](https://github.com/users/synthaicode/projects/7).
+See the plan for issue mapping and recorded states. Existing XID verification
+has passed; final remote status/evidence reconciliation remains in progress. Merge,
+production deployment and release have not been performed.
