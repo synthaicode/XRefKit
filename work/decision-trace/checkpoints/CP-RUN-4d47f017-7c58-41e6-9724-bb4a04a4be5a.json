@@ -1,0 +1,12 @@
+{
+  "recorded_by": "ai_protocol",
+  "checkpoint_id": "CP-RUN-4d47f017-7c58-41e6-9724-bb4a04a4be5a",
+  "checkpoint_type": "before-ai-run",
+  "created_at": "2026-11-25T11:39:12Z",
+  "git_commit": "b2327358273496db34e15bdf52cec865db12f3d7",
+  "purpose": "before AI Skill run qa_gate_review",
+  "work_item_id": "DEPLOY-VERIFY",
+  "run_id": "4d47f017-7c58-41e6-9724-bb4a04a4be5a",
+  "context_policy": "current-only",
+  "human_approved": false
+}
