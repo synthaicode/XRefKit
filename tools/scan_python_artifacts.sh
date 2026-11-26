@@ -3,9 +3,9 @@ set -euo pipefail
 
 artifact_dir="$1"
 scanner_dir="$(mktemp -d)"
-clamav_release="clamav-1.5.4"
-installer="clamav-1.5.4.linux.x86_64.deb"
-installer_sha256="28d6efc5b4423e7830c3559339552eb53870a9eac51ac4efb37d60530d329886"
+clamav_release="clamav-1.5.5"
+installer="clamav-1.5.5.linux.x86_64.deb"
+installer_sha256="fff17fb1f8917d1ea1308c9736dabe376077458aba000a5dadcce7193a8c538c"
 
 curl --fail --location --silent --show-error --retry 2 --max-time 120 \
   "https://github.com/Cisco-Talos/clamav/releases/download/${clamav_release}/${installer}" \

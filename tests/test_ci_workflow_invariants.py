@@ -23,6 +23,9 @@ PACKAGES = {
 @pytest.mark.parametrize("filename", [
     "python-package.yml",
     "python-skill-project-management-package.yml",
+    "python-skill-brownfield-package.yml",
+    "python-skill-csharp-package.yml",
+    "python-skill-batch-regression-package.yml",
 ])
 def test_release_artifact_inspection_uses_verified_fresh_clamav(filename):
     steps = workflow(filename)["jobs"]["artifact-inspection"]["steps"]
