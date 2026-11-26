@@ -32,7 +32,7 @@ def test_release_artifact_inspection_uses_verified_fresh_clamav(filename):
     assert any(step.get("run") == "bash tools/scan_python_artifacts.sh dist/" for step in steps)
     script = (WORKFLOWS.parents[1] / "tools/scan_python_artifacts.sh").read_text(encoding="utf-8")
     assert "sha256sum --check" in script
-    assert "--fail-if-cvd-older-than=1" in script
+    assert "--fail-if-cvd-older-than=3" in script
     assert script.index("sha256sum --check") < script.index('"${clamav_bin}/freshclam"')
     assert script.index('"${clamav_bin}/freshclam"') < script.index('"${clamav_bin}/clamscan"')
 

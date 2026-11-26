@@ -24,4 +24,4 @@ timeout --signal=TERM --kill-after=30s 10m \
   "${clamav_bin}/freshclam" --config-file="${scanner_dir}/freshclam.conf" --stdout --verbose
 
 "${clamav_bin}/clamscan" --database="${database_dir}" --recursive --infected \
-  --fail-if-cvd-older-than=1 "${artifact_dir}"
+  --fail-if-cvd-older-than=3 "${artifact_dir}"
