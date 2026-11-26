@@ -20,6 +20,9 @@ on:
       candidate_run_id:
         description: "Run containing the wheel verified in #250 (omit both candidate inputs to build only)"
         type: string
+      candidate_commit:
+        description: "Full commit SHA holding the accepted local wheel in dist/ (alternative to candidate_run_id)"
+        type: string
       wheel_sha256:
         description: "SHA-256 of the wheel recorded at #250 acceptance (also required for a handoff dry run)"
         type: string
@@ -36,7 +39,8 @@ jobs:
       actions: read
     env:
       EXPECTED_VERSION: ${{ inputs.version }}
-      HANDOFF: ${{ inputs.publish == true || inputs.candidate_run_id != '' || inputs.wheel_sha256 != '' }}
+      HANDOFF: ${{ inputs.publish == true || inputs.candidate_run_id != '' || inputs.candidate_commit != '' || inputs.wheel_sha256 != '' }}
+      SOURCE_COMMIT: ${{ inputs.candidate_commit }}
       SOURCE_RUN_ID: ${{ inputs.candidate_run_id }}
       EXPECTED_SHA256: ${{ inputs.wheel_sha256 }}
     steps:
@@ -59,13 +63,27 @@ jobs:
         if: env.HANDOFF == 'true'
         shell: pwsh
         run: |
-          if ($env:SOURCE_RUN_ID -notmatch '\A[1-9][0-9]*\z' -or
+          $fromRun = $env:SOURCE_RUN_ID -match '\A[1-9][0-9]*\z' -and !$env:SOURCE_COMMIT
+          $fromCommit = $env:SOURCE_COMMIT -match '\A[0-9a-f]{40}\z' -and !$env:SOURCE_RUN_ID
+          if ((!$fromRun -and !$fromCommit) -or
               $env:EXPECTED_SHA256 -notmatch '\A[0-9a-fA-F]{64}\z' -or
               [string]::IsNullOrWhiteSpace($env:EXPECTED_VERSION)) {
-            throw 'Provide the original candidate run, accepted wheel SHA-256 and exact package version'
+            throw 'Provide exactly one original candidate run or commit, accepted wheel SHA-256 and exact package version'
           }
+      - name: Fetch accepted local wheel from immutable commit
+        if: env.SOURCE_COMMIT != ''
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ inputs.candidate_commit }}
+          path: accepted
+          sparse-checkout: dist
+          persist-credentials: false
+      - name: Stage the accepted distribution
+        if: env.SOURCE_COMMIT != ''
+        shell: pwsh
+        run: Copy-Item -LiteralPath accepted/dist -Destination dist -Recurse -ErrorAction Stop
       - name: Download original candidate
-        if: env.HANDOFF == 'true'
+        if: env.SOURCE_RUN_ID != ''
         uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
         with:
           name: xrefkit-openai-runtime-wheel
