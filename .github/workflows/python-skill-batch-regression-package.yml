@@ -6,6 +6,7 @@ on:
       - "packages/xrefkit-skills-batch-regression/**"
       - ".github/workflows/python-skill-batch-regression-package.yml"
       - "tools/inspect_python_artifacts.py"
+      - "tools/scan_python_artifacts.sh"
       - "tools/run_import_smoke.py"
   push:
     tags:
@@ -151,31 +152,9 @@ jobs:
             --required-member xrefkit_skills_batch_regression/skill_assets/scripts/batch_regression.py \
             --required-member xrefkit_skills_batch_regression/skill_assets/scripts/code_tables.py \
             --manifest-output artifact-manifest.txt
-      - name: Install ClamAV and update virus definitions
+      - name: Scan built artifacts with verified ClamAV
         shell: bash
-        run: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install --yes clamav clamav-freshclam
-          # apt may start the background updater. Stop it so the required
-          # one-shot update owns the database and freshclam.log lock.
-          if command -v systemctl >/dev/null 2>&1 && \
-             sudo systemctl cat clamav-freshclam.service >/dev/null 2>&1; then
-            sudo systemctl stop clamav-freshclam.service
-          fi
-          # A failed definition update must fail this job; malware scanning
-          # has no success fallback.
-          sudo freshclam
-      - name: Scan built artifacts with ClamAV
-        shell: bash
-        run: |
-          set -euo pipefail
-          if clamscan --help | grep -Fq -- "--fail-if-cvd-older-than"; then
-            clamscan --recursive --infected --fail-if-cvd-older-than=1 dist/
-          else
-            echo "::warning::ClamAV lacks --fail-if-cvd-older-than; freshclam succeeded, using recursive infected scan."
-            clamscan --recursive --infected dist/
-          fi
+        run: bash tools/scan_python_artifacts.sh dist/
       # actions/upload-artifact v4.6.2; pinned to the release commit.
       - name: Upload artifact member manifest
         if: always()
