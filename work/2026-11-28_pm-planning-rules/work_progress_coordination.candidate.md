@@ -173,7 +173,7 @@ item IDs, findings and evidence scope for each question.
    person/action, and what needs a decision. Do not authorize a start, approve
    completion, change an assignee or reprioritize beyond granted authority.
    Persist actual results, answers, hold updates and proposals through the
-   persistence handoff (XID `62A9D4E7B103`).
+   [persistence handoff](../progress_rules_setup/references/persistence_handoff.md#xid-62A9D4E7B103).
 7. When input artifacts or decisions change, identify affected assessments and
    request the appropriate owner to revalidate them. Preserve old evidence;
    do not erase completion history or assume that an old quality result covers

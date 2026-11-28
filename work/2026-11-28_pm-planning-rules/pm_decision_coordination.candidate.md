@@ -182,7 +182,7 @@ do not perform a second internal question-generation process.
 ## Completion and handoff
 
 Persist each cycle through the configured
-persistence handoff (XID `62A9D4E7B103`).
+[persistence handoff](../progress_rules_setup/references/persistence_handoff.md#xid-62A9D4E7B103).
 Return source/settings revisions, attributable answers, AI findings, PM decisions
 and treatment, exact applicability, internal reflection/quality links, outstanding
 owners/actions, decision timing and bounded start choices. Distinguish prepared,
