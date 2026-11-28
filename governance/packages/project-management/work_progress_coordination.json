@@ -2,7 +2,7 @@
   "schema_version": 1,
   "skill_id": "work_progress_coordination",
   "definition_xid": "A4D902C7E651",
-  "definition_content_hash": "fae7a802bde4b4a632d870040a2005e0fea40d23397eade0fb5449d2028e6ad7",
+  "definition_content_hash": "322f6c0c88793d7dd96cd244239cf9a40e09ff31d54304b18aac5466905addd4",
   "maturity": "trial",
   "observation_refs": [
     "observations/2026-11-14_project_management_trial_authoring.md"

@@ -6,12 +6,13 @@ summary: support PM decisions and scoped stakeholder agreement while tracing int
 applies_when:
 - internal work has produced confirmation items or readiness results that need PM handling, stakeholder coordination, agreement follow-through or a bounded start decision
 - changed agreements, conditions or involvement require renewed coordination during any project stage
+- benefit, risk or change options need an accountable decision or an execution handoff
 exclusions:
 - regenerating internal confirmation questions, technical readiness evaluation, product quality acceptance, automatic start approval, unapproved plan changes, external message sending, and comprehensive procurement or contract management
 inputs:
-- confirmed coordination settings and stakeholder roles, internal confirmation-item records, attributable answers and decisions, current requirements/design/WBS and verification links, internal start-condition results and quality-owner results
+- confirmed coordination settings and stakeholder roles, internal confirmation-item records, attributable answers and decisions, current requirements/design/WBS and verification links, internal start-condition results and quality-owner results, applicable benefit baselines and observations, risk and issue evidence, and change options
 outputs:
-- versioned coordination records linking PM routing and agreement judgments, stakeholder answers and conditions, AI findings, internal handoffs and reflection/quality state, impact evidence and PM work-start choices
+- versioned coordination records linking PM routing and agreement judgments, stakeholder answers and conditions, AI findings, internal handoffs and reflection/quality state, impact evidence, PM work-start choices, benefit review records, risk response records, and authorized change decisions and handoffs
 criteria:
 - id: decision_authority
   statement: PM routing and agreement judgments remain distinct from AI proposals and consistency findings, within actual organization authority.
@@ -25,6 +26,9 @@ criteria:
 - id: bounded_start_choice
   statement: PM work-start choices consume the existing internal readiness result and expose remaining conditions and impacts without duplicating evaluation or authorizing starts automatically.
   verification: Trace each proposed slice and PM choice to the scoped internal result, unresolved conditions, evidence limits and authorized return path.
+- id: value_risk_and_change_decision
+  statement: Benefit reviews, risk responses, and change choices retain their evidence, scope, and designated decision authority.
+  verification: Trace hypotheses to baselines and review results, risks to triggers and owners, and change comparisons to attributable decisions, conditions, and the execution handoff.
 knowledge_needs:
 - id: coordination_authority_and_roles
   query: selected project confirmed PM decision scope stakeholder role responsibility consultation process organization authority conditions
@@ -50,16 +54,16 @@ project-specific prerequisites and human authority; publication is not adoption.
 
 Reload current coordination settings and designated records, including their
 revisions and pending actions. Missing or changed decision/role settings go to
-[pm_coordination_setup](../pm_coordination_setup/SKILL.v1.md#xid-F7B3C9A204D6);
+`pm_coordination_setup` (XID `F7B3C9A204D6`);
 base progress and persistence settings remain with
-[progress_rules_setup](../progress_rules_setup/SKILL.v1.md#xid-91F7D3B6A204).
+`progress_rules_setup` (XID `91F7D3B6A204`).
 An existing configured artifact or human handoff is sufficient; no direct
 communication integration or all-participant meeting is required.
 
 Receive confirmation items from their existing internal owner, including
-[requirements_discovery_coordination](../requirements_discovery_coordination/SKILL.v1.md#xid-3B8E71A5C902),
+`requirements_discovery_coordination` (XID `3B8E71A5C902`),
 and scoped condition results from
-[work_progress_coordination](../work_progress_coordination/SKILL.v1.md#xid-A4D902C7E651).
+`work_progress_coordination` (XID `A4D902C7E651`).
 Other stages may supply their own current internal items. Keep source identity,
 question, evidence, affected scope, requested decision and needed-by point.
 Return an unclear or incomplete source item to its owner for clarification;
@@ -135,6 +139,45 @@ do not perform a second internal question-generation process.
    decision and identify affected artifacts, work and verification evidence.
    Ask the responsible owners to reassess affected readiness and quality
    results; an old pass does not automatically cover a revised agreement.
+
+## Benefits, risks, and change decisions
+
+1. Record the intended benefit and its hypothesis for the agreed project goal.
+   Record the baseline and its date, metric, target or expected outcome where
+   defined, evidence source, review timing and accountable owner. At review,
+   compare attributable observations with that baseline and record scope,
+   limitations and the owner's disposition. A signal can prompt investigation,
+   consultation or a change proposal. A plan change requires its designated
+   decision.
+2. Track prospective risks with affected objectives and work, a trigger to
+   monitor, response options, responsible owner and decision timing. Route an
+   unresolved fact to investigation under the Uncertainty Protocol (XID
+   `8A666C1FD121`). When an event occurs, record the actual issue and its
+   evidence, link the originating risk where applicable, and assess current
+   impact and response under project rules. Keep trigger, occurrence, unknowns
+   and decisions traceable as distinct facts. Apply the existing authority
+   and uncertainty rules for holds, escalation and closure.
+3. Compare feasible change options against the current approved baseline.
+   Include retaining the current plan when feasible. Show each option's
+   expected value or benefit, cost, people and capacity, schedule, scope,
+   quality, risks and material uncertainty. Record assumptions, missing
+   evidence and tradeoffs. Use existing project criteria and authority for
+   the choice. Record the designated owner's attributable decision, reason,
+   scope, constraints, effective conditions and follow-up, including pending,
+   declined or deferred choices where applicable.
+4. Deliver the versioned decision and supporting records through the configured
+   route to `work_progress_coordination` (XID `A4D902C7E651`) and other
+   affected owners. Include the exact decision ID and version, decision owner
+   and disposition, the baseline and plan revisions to which the decision
+   applies, affected task and goal references, and each effective condition
+   with its status and latest applicable evidence. Track approval separately
+   from effectiveness. If the decision is superseded or loses applicability
+   to the current baseline, record that state and ask the designated owner
+   for refreshed authority where needed. Send updated attributable records
+   when evidence or the decision changes. Keep holds, outstanding actions,
+   delivery and actual reflection separately traceable. If the receiving
+   route or required records are unavailable, use the configured handoff.
+   Route disputed or unclear impacts to the appropriate owner.
 
 ## Completion and handoff
 
