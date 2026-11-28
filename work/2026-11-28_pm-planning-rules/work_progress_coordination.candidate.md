@@ -41,7 +41,7 @@ criteria:
   verification: Trace the trigger, review scope, evidence and affected IDs, disposition or handoff, and separate authorization and verification results.
 - id: decision_to_execution_trace
   statement: Benefit, risk and change records inform scoped reassessment and only authorized changes become reflected plan revisions.
-  verification: Trace source revisions and authority, impacted priorities, conditions and dependencies, applicable review or holds, and any reflected plan change and notice.
+  verification: Trace source revisions, authorized disposition and authority, impacted priorities, conditions and dependencies, applicable review or holds, and any reflected plan change and notice.
 - id: current_state_and_scope
   statement: A bounded survey grounds scope and verification in existing implementation and current, applicable evidence.
   verification: Trace provisional criteria through observed call paths, versions and covered cases to retained evidence, changed or integration work, and explicit gaps.
@@ -292,18 +292,22 @@ Record recommended changes and affected work against the current baseline.
 Before reflecting a change, compare the attributable decision ID and version
 with the current authoritative decision record. Verify its scope, authority
 and baseline mapping against the current authoritative plan or baseline.
-Check the latest applicable evidence for each effective condition. Approval
-can be recorded before it becomes effective. Keep conditional approvals whose
-conditions are unmet or unverified, and decisions that are stale, superseded,
-or based on an outdated baseline, on record without reflecting their changes.
+Confirm that the decision's disposition explicitly authorizes the proposed
+change. Record pending, declined, deferred, or otherwise non-authorizing
+dispositions and withhold their proposed changes, including when the
+coordinator can ordinarily edit the plan. Check the latest applicable evidence
+for each effective condition. Approval can be recorded before it becomes
+effective. Keep conditional approvals whose conditions are unmet or
+unverified, and decisions that are stale, superseded, or based on an outdated
+baseline, on record without reflecting their changes.
 Reassess impacts against the current baseline, repeat the affected survey
 when evidence or existing boundaries change, and seek missing evidence or
 refreshed authority from the designated owner as applicable. Record the exact
 dependent transitions on hold and continue unaffected authorized work.
 
-When the decision is current and applicable, effective conditions are
-verified, and existing gates are satisfied, reflect the change within granted
-authority through the existing plan route. Link the decision and evidence,
+When the current, applicable decision authorizes the change, its effective
+conditions are verified, and existing gates are satisfied, reflect the change
+within granted authority through the existing plan route. Link the decision and evidence,
 changed WBS entries, impacts on priorities, dependencies and conditions, and
 any downstream reassessment or verification to the authorized revision.
 Record actual reflection and use the common notice lookup. Keep observations,
