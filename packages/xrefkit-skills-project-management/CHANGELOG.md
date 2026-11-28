@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.5
+
+- Define separate rules for planning, execution, and replanning. Track WBS
+  hierarchy and dependencies, reuse applicable investigation results, and
+  register and communicate task changes as they occur.
+- Define bounded independent checks and downstream holds when required review
+  coverage is unavailable.
+- Assess benefits, future risks, and change options in decision coordination.
+  Apply effective decisions to the current baseline and reuse matching
+  notification records.
+
 ## 0.1.4
 
 - Evaluate downstream start conditions and explain evidence gaps, actions, and dependencies in Issue reports.

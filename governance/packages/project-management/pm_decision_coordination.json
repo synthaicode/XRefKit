@@ -2,7 +2,7 @@
   "schema_version": 1,
   "skill_id": "pm_decision_coordination",
   "definition_xid": "C8E4A1D760B3",
-  "definition_content_hash": "323f758cb9538f702e87c34e8ebdd58632d1f2ea5f1db74d884e844a53042249",
+  "definition_content_hash": "344a1a47ec069673b99f801fb8c89952fb048b227cefa0cbe2a37f5241d5235c",
   "maturity": "trial",
   "observation_refs": [
     "observations/2026-11-14_project_management_trial_authoring.md"

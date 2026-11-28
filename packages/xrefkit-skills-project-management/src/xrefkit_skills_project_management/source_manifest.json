@@ -13,8 +13,8 @@
     },
     {
       "source": "skills/packs/project-management/work_progress_coordination/SKILL.v1.md",
-      "source_sha256": "18f84ff496a1d11d09bdb688cac112366175d1edf869dc6f1fe400ed102cbbac",
-      "packaged_sha256": "fae7a802bde4b4a632d870040a2005e0fea40d23397eade0fb5449d2028e6ad7"
+      "source_sha256": "322f6c0c88793d7dd96cd244239cf9a40e09ff31d54304b18aac5466905addd4",
+      "packaged_sha256": "322f6c0c88793d7dd96cd244239cf9a40e09ff31d54304b18aac5466905addd4"
     },
     {
       "source": "skills/packs/project-management/pm_coordination_setup/SKILL.v1.md",
@@ -23,8 +23,8 @@
     },
     {
       "source": "skills/packs/project-management/pm_decision_coordination/SKILL.v1.md",
-      "source_sha256": "323f758cb9538f702e87c34e8ebdd58632d1f2ea5f1db74d884e844a53042249",
-      "packaged_sha256": "323f758cb9538f702e87c34e8ebdd58632d1f2ea5f1db74d884e844a53042249"
+      "source_sha256": "344a1a47ec069673b99f801fb8c89952fb048b227cefa0cbe2a37f5241d5235c",
+      "packaged_sha256": "344a1a47ec069673b99f801fb8c89952fb048b227cefa0cbe2a37f5241d5235c"
     },
     {
       "source": "skills/packs/project-management/progress_rules_setup/references/persistence_handoff.md",
